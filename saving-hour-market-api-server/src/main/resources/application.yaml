@@ -1,0 +1,17 @@
+spring:
+  jpa:
+    properties:
+      hibernate:
+        dialect:
+          storage_engine: innodb
+        enable_lazy_load_no_trans: 'true'
+    defer-datasource-initialization: 'true'
+    hibernate:
+      ddl-auto: create-drop
+  datasource:
+    password: 123456vinh
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    url: jdbc:mysql://localhost/saving_hour_market
+server:
+  port: 8082
