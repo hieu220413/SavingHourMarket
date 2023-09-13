@@ -29,9 +29,19 @@ public class Transaction {
 
     private Long transactionNo;
 
-    @OneToOne(
-            mappedBy = "transaction",
+    @ManyToOne(
             fetch = FetchType.LAZY
     )
+    @JoinColumn(
+            name = "order_id",
+            referencedColumnName = "id"
+    )
     private Order order;
+
+    @OneToOne
+    @JoinColumn(
+            name = "refund_id",
+            referencedColumnName = "id"
+    )
+    private Transaction refundTransaction;
 }

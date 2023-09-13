@@ -21,22 +21,22 @@ public class Policy {
     @UuidGenerator
     private UUID id;
 
-    @Column(columnDefinition = "varchar(255)")
+    @Column(columnDefinition = "text")
     private String termsOfService;
 
-    @Column(columnDefinition = "varchar(255)")
+    @Column(columnDefinition = "text")
     private String privacyPolicy;
 
-    @Column(columnDefinition = "varchar(255)")
+    @Column(columnDefinition = "text")
     private String operatingRegulations;
 
-    @Column(columnDefinition = "varchar(255)")
+    @Column(columnDefinition = "text")
     private String shippingPolicy;
 
-    @Column(columnDefinition = "varchar(255)")
+    @Column(columnDefinition = "text")
     private String returnAndRefundPolicy;
 
-    @Column(columnDefinition = "varchar(255)")
+    @Column(columnDefinition = "text")
     private String complaintHandlingProcess;
 
 }

@@ -71,14 +71,11 @@ public class Order {
     )
     private Discount discount;
 
-    @OneToOne(
-            fetch = FetchType.LAZY
+    @OneToMany(
+            fetch = FetchType.LAZY,
+            mappedBy = "order"
     )
-    @JoinColumn(
-            name = "transaction_id",
-            referencedColumnName = "id"
-    )
-    private Transaction transaction;
+    private List<Transaction> transaction;
 
     @ManyToOne(
             fetch = FetchType.LAZY
