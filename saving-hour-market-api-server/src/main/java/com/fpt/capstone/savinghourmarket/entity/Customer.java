@@ -41,9 +41,6 @@ public class Customer {
     @Column(columnDefinition = "text")
     private String avatarUrl;
 
-    @Column(columnDefinition = "varchar(10)")
-    private String role;
-
     @Column(columnDefinition = "varchar(255)")
     private String address;
 

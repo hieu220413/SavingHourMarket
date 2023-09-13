@@ -13,5 +13,10 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     url: jdbc:mysql://localhost/saving_hour_market
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken%40system.gserviceaccount.com'
 server:
   port: 8082

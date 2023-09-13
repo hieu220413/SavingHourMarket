@@ -26,6 +26,9 @@ public class Order {
 
     private LocalDateTime createdTime;
 
+    @Column(columnDefinition = "text")
+    private String qrCodeUrl;
+
     @Column(columnDefinition = "tinyint")
     private Integer status;
 

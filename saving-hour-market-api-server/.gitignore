@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### firebase serive account json ###
+service_account.json
