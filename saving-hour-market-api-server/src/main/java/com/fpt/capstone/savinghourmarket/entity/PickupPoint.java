@@ -27,9 +27,6 @@ public class PickupPoint {
     @Column(columnDefinition = "tinyint")
     private Integer status;
 
-    @Column(columnDefinition = "text")
-    private String placeId;
-
     @Column(columnDefinition = "decimal(11,8)")
     private Float longitude;
 
