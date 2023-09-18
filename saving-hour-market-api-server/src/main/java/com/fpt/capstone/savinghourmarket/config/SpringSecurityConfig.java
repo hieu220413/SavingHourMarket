@@ -18,7 +18,8 @@ public class SpringSecurityConfig {
         http.authorizeHttpRequests((auth) -> auth
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/swagger-resources/**").permitAll()
-                .requestMatchers("/v3/api-docs/**").permitAll());
+                .requestMatchers("/v3/api-docs/**").permitAll()
+                .requestMatchers("/swagger-ui.html").permitAll());
         http.authorizeHttpRequests((auth) -> auth
                 .anyRequest().authenticated());
         http.oauth2ResourceServer((res) -> res.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter())));
