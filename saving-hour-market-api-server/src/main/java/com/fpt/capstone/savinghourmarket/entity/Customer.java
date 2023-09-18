@@ -21,12 +21,6 @@ public class Customer {
     @UuidGenerator
     private UUID id;
 
-    @Column(columnDefinition = "varchar(32)")
-    private String username;
-
-    @Column(columnDefinition = "varchar(32)")
-    private String password;
-
     @Column(columnDefinition = "varchar(50)")
     private String fullName;
 
@@ -43,6 +37,9 @@ public class Customer {
 
     @Column(columnDefinition = "varchar(255)")
     private String address;
+
+    @Column(columnDefinition = "tinyint")
+    private Integer gender;
 
     @Column(columnDefinition = "tinyint")
     private Integer status;
