@@ -1,6 +1,7 @@
 package com.fpt.capstone.savinghourmarket.service;
 
 import com.fpt.capstone.savinghourmarket.entity.Order;
+import com.fpt.capstone.savinghourmarket.entity.OrderDetail;
 import com.fpt.capstone.savinghourmarket.entity.OrderGroup;
 import com.fpt.capstone.savinghourmarket.exception.BadRequestException;
 import com.fpt.capstone.savinghourmarket.exception.NoSuchOrderException;
@@ -14,4 +15,6 @@ public interface OrderService {
     List<Order> fetchAll() throws NoSuchOrderException;
 
     List<Order> fetchByStatus(Integer status) throws NoSuchOrderException;
+
+
 }

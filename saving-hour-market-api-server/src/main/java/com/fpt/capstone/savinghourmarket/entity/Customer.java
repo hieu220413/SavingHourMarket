@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -48,6 +49,7 @@ public class Customer {
             mappedBy = "customer",
             fetch = FetchType.LAZY
     )
+    @JsonManagedReference
     private List<Order> orderList;
 
     @OneToMany(
