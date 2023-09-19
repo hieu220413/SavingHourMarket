@@ -13,6 +13,9 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     url: jdbc:mysql://localhost/saving_hour_market
+  sql:
+    init:
+      mode: always
   security:
     oauth2:
       resourceserver:

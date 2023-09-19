@@ -23,18 +23,10 @@ public class ProductCategory {
     @Column(columnDefinition = "varchar(50)")
     private String name;
 
-    @Column(columnDefinition = "tinyint")
-    private Integer allowableDisplayThreshold;
-
     @ManyToMany(
             mappedBy = "productCategoryList",
             fetch = FetchType.LAZY
     )
     private List<Discount> discountList;
 
-    @OneToMany(
-            mappedBy = "productCategory",
-            fetch = FetchType.LAZY
-    )
-    private List<Product> productList;
 }

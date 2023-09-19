@@ -46,5 +46,15 @@ public class Discount {
     )
     private List<ProductCategory> productCategoryList;
 
+    @ManyToMany(
+            fetch = FetchType.LAZY
+    )
+    @JoinTable(
+            name = "discount_product_sub_category",
+            joinColumns = @JoinColumn(name = "discount_id"),
+            inverseJoinColumns = @JoinColumn(name = "product_sub_category_id")
+    )
+    private List<ProductSubCategory> productSubCategoryList;
+
 
 }
