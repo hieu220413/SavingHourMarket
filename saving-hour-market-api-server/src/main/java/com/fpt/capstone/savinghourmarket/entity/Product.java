@@ -42,10 +42,10 @@ public class Product {
 
     @ManyToOne
     @JoinColumn(
-            name = "product_category_id",
+            name = "product_sub_category_id",
             referencedColumnName = "id"
     )
-    private ProductCategory productCategory;
+    private ProductSubCategory productSubCategory;
 
     @ManyToOne
     @JoinColumn(

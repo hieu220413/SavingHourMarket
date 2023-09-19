@@ -15,7 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Setter
 @Getter
-public class ProductCategory {
+public class ProductSubCategory {
     @Id
     @UuidGenerator
     private UUID id;
@@ -23,8 +23,26 @@ public class ProductCategory {
     @Column(columnDefinition = "varchar(50)")
     private String name;
 
+    @Column(columnDefinition = "tinyint")
+    private Integer allowableDisplayThreshold;
+
+    @OneToMany(
+            mappedBy = "productSubCategory",
+            fetch = FetchType.LAZY
+    )
+    private List<Product> productList;
+
+    @ManyToOne(
+            fetch = FetchType.LAZY
+    )
+    @JoinColumn(
+            name = "product_category_id",
+            referencedColumnName = "id"
+    )
+    private ProductCategory productCategory;
+
     @ManyToMany(
-            mappedBy = "productCategoryList",
+            mappedBy = "productSubCategoryList",
             fetch = FetchType.LAZY
     )
     private List<Discount> discountList;

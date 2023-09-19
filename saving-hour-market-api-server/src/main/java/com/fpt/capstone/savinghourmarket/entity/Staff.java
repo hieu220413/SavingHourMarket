@@ -21,12 +21,6 @@ public class Staff {
     @UuidGenerator
     private UUID id;
 
-    @Column(columnDefinition = "varchar(32)")
-    private String username;
-
-    @Column(columnDefinition = "varchar(32)")
-    private String password;
-
     @Column(columnDefinition = "varchar(50)")
     private String fullName;
 
