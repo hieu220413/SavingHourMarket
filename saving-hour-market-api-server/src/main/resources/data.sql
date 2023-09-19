@@ -257,7 +257,16 @@ INSERT INTO `saving_hour_market`.`orders` (`id`, `total_price`, `created_time`, 
                 UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf4d19-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf4f95-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf51d6-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf2391-5541-11ee-8a50-a85e45c41921')),
 
             (UUID_TO_BIN('accf7dc4-5541-11ee-8a50-a85e45c41921'), 546000, '2023-09-16 15:00:00', '240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh', 'qr code url here', @cancel,
-                UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), null, null, null, UUID_TO_BIN('accf2391-5541-11ee-8a50-a85e45c41921'));
+                UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), null, null, null, UUID_TO_BIN('accf2391-5541-11ee-8a50-a85e45c41921')),
+
+            (UUID_TO_BIN('ec5dcac6-56dc-11ee-8a50-a85e45c41921'), 67000, '2023-09-19 13:00:00', '240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh', 'qr code url here', @processing,
+                UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), null, null, null, UUID_TO_BIN('accf2391-5541-11ee-8a50-a85e45c41921')),
+
+            (UUID_TO_BIN('ec5de351-56dc-11ee-8a50-a85e45c41921'), 216000, '2023-09-20 08:00:00', '240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh', 'qr code url here', @packaging,
+                UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf4d19-5541-11ee-8a50-a85e45c41921'), null, null, UUID_TO_BIN('accf2391-5541-11ee-8a50-a85e45c41921')),
+
+            (UUID_TO_BIN('ec5de6e9-56dc-11ee-8a50-a85e45c41921'), 111000, '2023-09-19 15:00:00', '240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh', 'qr code url here', @delivering,
+                UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf4d19-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf4f95-5541-11ee-8a50-a85e45c41921'), null, UUID_TO_BIN('accf2391-5541-11ee-8a50-a85e45c41921'));
 
 
 -- Order Detail
@@ -267,17 +276,113 @@ INSERT INTO `saving_hour_market`.`order_detail` (`id`, `product_id`, `bought_qua
             (UUID_TO_BIN('accf8026-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf2f65-5541-11ee-8a50-a85e45c41921'), 1, 75000, 100000, UUID_TO_BIN('accf7b01-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('accf814e-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf377f-5541-11ee-8a50-a85e45c41921'), 1, 42000, 60000, UUID_TO_BIN('accf7b01-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('accf8271-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf3664-5541-11ee-8a50-a85e45c41921'), 1, 145000, 180000, UUID_TO_BIN('accf7b01-5541-11ee-8a50-a85e45c41921')),
+
             (UUID_TO_BIN('accf8390-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf2c1d-5541-11ee-8a50-a85e45c41921'), 2, 55000, 85000, UUID_TO_BIN('accf7c79-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('accf84af-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf3be3-5541-11ee-8a50-a85e45c41921'), 1, 58000, 80000, UUID_TO_BIN('accf7c79-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('accf864a-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf2d37-5541-11ee-8a50-a85e45c41921'), 2, 90000, 135000, UUID_TO_BIN('accf7c79-5541-11ee-8a50-a85e45c41921')),
+
             (UUID_TO_BIN('accf8775-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf3ac4-5541-11ee-8a50-a85e45c41921'), 2, 88000, 110000, UUID_TO_BIN('accf7dc4-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf88e1-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf39b0-5541-11ee-8a50-a85e45c41921'), 2, 185000, 245000, UUID_TO_BIN('accf7dc4-5541-11ee-8a50-a85e45c41921'));
+            (UUID_TO_BIN('accf88e1-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf39b0-5541-11ee-8a50-a85e45c41921'), 2, 185000, 245000, UUID_TO_BIN('accf7dc4-5541-11ee-8a50-a85e45c41921')),
 
+            (UUID_TO_BIN('ec5ddff7-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf343c-5541-11ee-8a50-a85e45c41921'), 1, 42000, 60000, UUID_TO_BIN('ec5dcac6-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5de21a-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf3552-5541-11ee-8a50-a85e45c41921'), 1, 25000, 33000, UUID_TO_BIN('ec5dcac6-56dc-11ee-8a50-a85e45c41921')),
 
+            (UUID_TO_BIN('ec5de48d-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf39b0-5541-11ee-8a50-a85e45c41921'), 1, 185000, 245000, UUID_TO_BIN('ec5de351-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5de5be-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf3cf4-5541-11ee-8a50-a85e45c41921'), 1, 31000, 41000, UUID_TO_BIN('ec5de351-56dc-11ee-8a50-a85e45c41921')),
 
-
+            (UUID_TO_BIN('ec5de94e-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf3079-5541-11ee-8a50-a85e45c41921'), 1, 60000, 80000, UUID_TO_BIN('ec5de6e9-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5dea86-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf3897-5541-11ee-8a50-a85e45c41921'), 1, 51000, 70000, UUID_TO_BIN('ec5de6e9-56dc-11ee-8a50-a85e45c41921'));
 
 -- UUID gen
+-- 'ec5debf5-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5ded18-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5dee28-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5def3a-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5df0fa-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5df219-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5df327-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5df442-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5df557-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5df668-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5df810-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5df929-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5dfa4a-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5dfb70-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5dfc7e-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5dfde4-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5dffb7-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e00f7-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e0293-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e0433-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e05ac-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e070b-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e0855-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e099f-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e1c52-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e1ddc-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e1f3a-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e2090-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e321c-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e33d6-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e3596-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e3778-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e38e3-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e3a42-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e3b8f-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e3ced-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e3e40-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e4012-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e41d8-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e432f-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e44d1-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e4627-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e4897-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e49f8-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e4b66-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e4cbe-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e4e60-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e4fce-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e574e-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e5994-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e5e8d-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e6233-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e65cb-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e68fd-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e6c43-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e6db5-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e6f17-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e713f-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e744a-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e77a5-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e7bef-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e7e0c-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e8083-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e8385-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e84dd-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e869e-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e87ec-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e894d-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e8b2b-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e8c78-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e8dca-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e8f16-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e9073-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e923c-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e9414-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5ea1b4-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5ea361-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5ea50d-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5ea6b7-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5ea831-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5ea9a5-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5eab5f-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5eacbb-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5eae10-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5eaf69-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5eb268-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5eb3ce-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5eb531-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5eb87e-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5ebcb3-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5ec37a-56dc-11ee-8a50-a85e45c41921'
 
-
---
