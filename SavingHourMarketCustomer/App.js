@@ -9,6 +9,7 @@ import Discount from './screens/Discount';
 import Orders from './screens/Orders';
 import Cart from './screens/Cart';
 import Profile from './screens/Profile';
+import EditProfile from './screens/EditProfile';
 const Stack = createStackNavigator();
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
           <Stack.Screen name="Orders" component={Orders} />
           <Stack.Screen name="Cart" component={Cart} />
           <Stack.Screen name="Profile" component={Profile} />
+          <Stack.Screen name="Edit Profile" component={EditProfile} />
         </Stack.Navigator>
       </NavigationContainer>
     </>

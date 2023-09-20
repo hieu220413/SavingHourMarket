@@ -28,7 +28,7 @@ const Tabs = () => {
           elevation: 0,
           backgroundColor: COLORS.tabBackground,
           borderTopColor: 'transparent',
-          height: 100,
+          height: 80,
         },
       }}
       //   tabBarOptions={{
