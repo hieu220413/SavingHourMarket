@@ -27,3 +27,7 @@ springdoc:
     path: /swagger-ui.html
 server:
   port: 8082
+  error:
+    include-stacktrace: ${TRACE_MODE:never}
+
+google-api-key: ${GOOGLE_API_KEY}

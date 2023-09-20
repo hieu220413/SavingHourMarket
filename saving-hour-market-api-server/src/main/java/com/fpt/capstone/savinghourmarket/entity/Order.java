@@ -39,6 +39,9 @@ public class Order {
     @Column(columnDefinition = "tinyint")
     private Integer status;
 
+    @Column(columnDefinition = "tinyint")
+    private Integer payment_method;
+
     @Column(columnDefinition = "varchar(255)")
     private String addressDeliver;
 
