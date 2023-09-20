@@ -145,7 +145,7 @@ const Profile = ({navigation}) => {
                 fontWeight: '700',
                 color: 'black',
               }}>
-              Edit Profile
+              View Profile
             </Text>
           </View>
           <View>
@@ -298,7 +298,10 @@ const Profile = ({navigation}) => {
             marginHorizontal: '3%',
             justifyContent: 'space-between',
           }}
-          activeOpacity={0.8}>
+          activeOpacity={0.8}
+          onPress={() => {
+            navigation.navigate('Login');
+          }}>
           <View
             style={{flexDirection: 'row', columnGap: 15, alignItems: 'center'}}>
             <AntDesign name="logout" size={30} color="red"></AntDesign>
