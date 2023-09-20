@@ -23,6 +23,6 @@ public class FirebaseExceptionHandler {
         if(e.getAuthErrorCode() == AuthErrorCode.EMAIL_ALREADY_EXISTS) {
             return ResponseEntity.status(HttpStatus.valueOf(AdditionalResponseCode.EMAIL_ALREADY_EXISTS.getCode())).body(new ApiError(LocalDateTime.now().toString(), AdditionalResponseCode.EMAIL_ALREADY_EXISTS.getCode(), AdditionalResponseCode.EMAIL_ALREADY_EXISTS.toString()));
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiError(LocalDateTime.now().toString(), HttpStatus.UNAUTHORIZED.value(), "UNAUTHORIZED"));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiError(LocalDateTime.now().toString(), HttpStatus.UNAUTHORIZED.value(), e.getAuthErrorCode().toString()));
     }
 }

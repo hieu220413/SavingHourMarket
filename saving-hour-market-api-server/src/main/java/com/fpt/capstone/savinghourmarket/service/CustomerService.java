@@ -9,4 +9,8 @@ import java.util.UUID;
 
 public interface CustomerService {
     Customer register(CustomerRegisterRequestBody customerRegisterRequestBody) throws FirebaseAuthException;
+
+    Customer getInfoGoogleLogged(String email) throws FirebaseAuthException;
+
+    Customer getInfo(String email);
 }

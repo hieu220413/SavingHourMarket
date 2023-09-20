@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
+import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.exception.InvalidUserInputException;
 import com.fpt.capstone.savinghourmarket.model.CustomerRegisterRequestBody;
@@ -7,6 +8,7 @@ import com.fpt.capstone.savinghourmarket.repository.CustomerRepository;
 import com.fpt.capstone.savinghourmarket.service.CustomerService;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.UserInfo;
 import com.google.firebase.auth.UserRecord;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -96,5 +99,26 @@ public class CustomerServiceImpl implements CustomerService {
 
         return customerRepository.save(customerEntity);
 
+    }
+
+    @Override
+    public Customer getInfoGoogleLogged(String email) throws FirebaseAuthException {
+        Optional<Customer> customer = customerRepository.getCustomerByEmail(email);
+        if(!customer.isPresent()){
+            UserInfo userInfo = firebaseAuth.getUserByEmail(email);
+            Customer newCustomer = new Customer();
+            newCustomer.setEmail(userInfo.getEmail());
+            newCustomer.setAvatarUrl(userInfo.getPhotoUrl());
+            newCustomer.setFullName(userInfo.getDisplayName());
+            newCustomer.setStatus(EnableDisableStatus.ENABLE.ordinal());
+            return customerRepository.save(newCustomer);
+        }
+        return customer.get();
+    }
+
+    @Override
+    public Customer getInfo(String email) {
+        Optional<Customer> customer = customerRepository.getCustomerByEmail(email);
+        return customer.get();
     }
 }
