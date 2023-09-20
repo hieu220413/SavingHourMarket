@@ -2,17 +2,15 @@ package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
 import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.entity.Order;
-import com.fpt.capstone.savinghourmarket.entity.OrderGroup;
-import com.fpt.capstone.savinghourmarket.exception.BadRequestException;
 import com.fpt.capstone.savinghourmarket.exception.NoSuchOrderException;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
+import com.fpt.capstone.savinghourmarket.model.OrderCreate;
 import com.fpt.capstone.savinghourmarket.repository.CustomerRepository;
 import com.fpt.capstone.savinghourmarket.repository.OrderRepository;
 import com.fpt.capstone.savinghourmarket.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -77,7 +75,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order createOrder(Order order) {
+    public Order createOrder(OrderCreate order) {
 
         return null;
     }

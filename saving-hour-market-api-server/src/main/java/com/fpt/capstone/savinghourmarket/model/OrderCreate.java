@@ -22,6 +22,8 @@ public class OrderCreate {
 
     private Integer status;
 
+    private Integer payment_method;
+
     private String addressDeliver;
 
     private String customerEmail;

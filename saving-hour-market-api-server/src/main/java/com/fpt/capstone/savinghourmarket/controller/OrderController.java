@@ -6,6 +6,7 @@ import com.fpt.capstone.savinghourmarket.entity.OrderGroup;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.exception.NoSuchOrderException;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
+import com.fpt.capstone.savinghourmarket.model.OrderCreate;
 import com.fpt.capstone.savinghourmarket.model.OrderProduct;
 import com.fpt.capstone.savinghourmarket.service.OrderGroupService;
 import com.fpt.capstone.savinghourmarket.service.OrderService;
@@ -88,7 +89,7 @@ public class OrderController {
     }
 
     @PutMapping ("/createOrder")
-    public ResponseEntity<Order> getCustomerOrder(@RequestBody Order order) throws ResourceNotFoundException, NoSuchOrderException {
+    public ResponseEntity<Order> getCustomerOrder(@RequestBody OrderCreate order) throws ResourceNotFoundException, NoSuchOrderException {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.createOrder(order));
     }
 
