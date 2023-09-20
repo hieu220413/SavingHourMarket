@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -24,9 +25,13 @@ public class Order {
     @UuidGenerator
     private UUID id;
 
+    private Integer shippingFee;
+
     private Integer totalPrice;
 
     private LocalDateTime createdTime;
+
+    private Date deliveryDate;
 
     @Column(columnDefinition = "text")
     private String qrCodeUrl;
