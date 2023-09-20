@@ -18,10 +18,11 @@ public class FirebaseExceptionHandler {
     @ExceptionHandler(FirebaseAuthException.class)
     public ResponseEntity<ApiError> handleFirebaseAuthException(FirebaseAuthException e) {
         if(e.getAuthErrorCode() == AuthErrorCode.REVOKED_ID_TOKEN){
-            if(e.getAuthErrorCode() == AuthErrorCode.REVOKED_ID_TOKEN){
-                return ResponseEntity.status(HttpStatus.valueOf(AdditionalResponseCode.REVOKED_ID_TOKEN.getCode())).body(new ApiError(LocalDateTime.now(), HttpStatus.UNAUTHORIZED.value(), AdditionalResponseCode.REVOKED_ID_TOKEN.toString()));
-            }
+            return ResponseEntity.status(HttpStatus.valueOf(AdditionalResponseCode.REVOKED_ID_TOKEN.getCode())).body(new ApiError(LocalDateTime.now().toString(), AdditionalResponseCode.REVOKED_ID_TOKEN.getCode(), AdditionalResponseCode.REVOKED_ID_TOKEN.toString()));
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiError(LocalDateTime.now(), HttpStatus.UNAUTHORIZED.value(), "UNAUTHORIZED"));
+        if(e.getAuthErrorCode() == AuthErrorCode.EMAIL_ALREADY_EXISTS) {
+            return ResponseEntity.status(HttpStatus.valueOf(AdditionalResponseCode.EMAIL_ALREADY_EXISTS.getCode())).body(new ApiError(LocalDateTime.now().toString(), AdditionalResponseCode.EMAIL_ALREADY_EXISTS.getCode(), AdditionalResponseCode.EMAIL_ALREADY_EXISTS.toString()));
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiError(LocalDateTime.now().toString(), HttpStatus.UNAUTHORIZED.value(), "UNAUTHORIZED"));
     }
 }

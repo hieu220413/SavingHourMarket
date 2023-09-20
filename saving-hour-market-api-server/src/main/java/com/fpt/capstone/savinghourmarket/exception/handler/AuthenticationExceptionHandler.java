@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 public class AuthenticationExceptionHandler {
     @ExceptionHandler(UnverifiedEmailException.class)
     public ResponseEntity<ApiError> unverifiedEmailExceptionHandler(UnverifiedEmailException e) {
-        ApiError apiError = new ApiError(LocalDateTime.now(), e.getStatusCode().value(), e.getMessage());
+        ApiError apiError = new ApiError(LocalDateTime.now().toString(), e.getStatusCode().value(), e.getMessage());
         return ResponseEntity.status(e.getStatusCode()).body(apiError);
     }
 }
