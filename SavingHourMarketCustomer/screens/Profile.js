@@ -1,6 +1,6 @@
 import React from 'react';
 import {Text, View, SafeAreaView, Image, Touchable, Switch} from 'react-native';
-import Header from '../assets/Header';
+import Header from '../shared/Header';
 import {COLORS} from '../constants/theme';
 import {icons} from '../constants';
 import {ScrollView, TouchableOpacity} from 'react-native-gesture-handler';

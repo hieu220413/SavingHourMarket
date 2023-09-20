@@ -15,14 +15,19 @@ import {TouchableOpacity} from 'react-native-gesture-handler';
 import {ScrollView} from 'react-native-gesture-handler';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import FlatButton from '../shared/button';
 
 const EditProfile = ({navigation}) => {
-  const [firstname, setFirstname] = useState('');
-  const [lastnname, setLastname] = useState('');
+  const [username, setUsername] = useState('');
   const [address, setAddress] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
+  const [usernameError, setUsernameError] = useState('');
+  const [addressError, setAddressError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [dateOfBirthError, setDateOfBirthError] = useState('');
   const [date, setDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
   const [display, setDisplay] = useState(false);
@@ -48,6 +53,45 @@ const EditProfile = ({navigation}) => {
     let day = date.getDate();
 
     return `${day}/${month}/${year}`;
+  };
+  const isValidEmail = email => {
+    const regex = /^([A-Za-z0-9_\-\.])+@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
+    return regex.test(email);
+  };
+  const isValidForm = () => {
+    setUsernameError('');
+    setDateOfBirthError('');
+    setEmailError('');
+    setAddressError('');
+    setPhoneError('');
+    if (username.trim().length == 0) {
+      return setUsernameError('Username can not be empty !');
+    }
+    if (username.trim().length < 3) {
+      return setUsernameError('Invalid username');
+    }
+    if (dateOfBirth.trim().length == 0) {
+      return setDateOfBirthError('Date of birth can not be empty !');
+    }
+    if (email.trim().length == 0) {
+      return setEmailError('Email can not be empty !');
+    }
+    if (!isValidEmail(email)) {
+      return setEmailError('Invalid email !');
+    }
+    if (address.trim().length == 0) {
+      return setAddressError('Address can not be empty !');
+    }
+    if (phone.trim().length == 0) {
+      return setPhoneError('Phone can not be empty !');
+    }
+    return true;
+  };
+  const submitForm = () => {
+    if (isValidForm()) {
+      const userInfo = {username, dateOfBirth, email, address, phone};
+      console.log(userInfo);
+    }
   };
   return (
     <SafeAreaView style={{backgroundColor: 'white', height: '100%'}}>
@@ -94,50 +138,51 @@ const EditProfile = ({navigation}) => {
         enabled
         style={{flex: 1, marginBottom: 10}}
         behavior={Platform.OS === 'ios' ? 'padding' : null}>
-        <ScrollView>
+        <ScrollView
+          style={{flexDirection: 'column'}}
+          contentContainerStyle={{
+            justifyContent: 'space-between',
+            flexGrow: 1,
+          }}>
           <View
-            style={{flexDirection: 'column', rowGap: 4, alignItems: 'center'}}>
+            style={{
+              flexDirection: 'column',
+              rowGap: 2,
+              alignItems: 'center',
+            }}>
             <TextInput
-              style={{
-                height: 40,
-                width: '90%',
-                backgroundColor: '#e5e5e5',
-                margin: '3%',
-                borderRadius: 20,
-                padding: 10,
-              }}
-              onChangeText={setFirstname}
-              value={firstname}
-              placeholder="First Name"
+              style={[
+                {
+                  height: 40,
+                  width: '90%',
+                  backgroundColor: '#e5e5e5',
+                  margin: 12,
+                  borderRadius: 20,
+                  padding: 10,
+                },
+                usernameError ? {borderColor: 'red', borderWidth: 1} : {},
+              ]}
+              onChangeText={setUsername}
+              value={username}
+              placeholder="User Name"
               keyboardType="default"></TextInput>
-            <TextInput
-              style={{
-                height: 40,
-                margin: 12,
-                width: '90%',
-                backgroundColor: '#e5e5e5',
-                borderRadius: 20,
-                padding: 10,
-              }}
-              onChangeText={setLastname}
-              value={lastnname}
-              placeholder="Last Name"
-              keyboardType="default"></TextInput>
-
-            {/* {display ? <View>
-            <Text>{phone}</Text>
-            <Text>{lastnname}</Text>
-        </View> : null} */}
-
+            {usernameError && (
+              <View style={{width: '85%', marginTop: '-4%'}}>
+                <Text style={{color: 'red'}}>{usernameError}</Text>
+              </View>
+            )}
             <View
-              style={{
-                backgroundColor: '#e5e5e5',
-                height: 40,
-                width: '90%',
-                borderRadius: 20,
-                margin: 12,
-                paddingHorizontal: 8,
-              }}>
+              style={[
+                {
+                  backgroundColor: '#e5e5e5',
+                  height: 40,
+                  width: '90%',
+                  borderRadius: 20,
+                  margin: 12,
+                  paddingHorizontal: 8,
+                },
+                dateOfBirthError ? {borderColor: 'red', borderWidth: 1} : {},
+              ]}>
               {showPicker && (
                 <DateTimePicker
                   mode="date"
@@ -165,54 +210,91 @@ const EditProfile = ({navigation}) => {
                 <AntDesign name="calendar" size={25} color="black"></AntDesign>
               </Pressable>
             </View>
+            {dateOfBirthError && (
+              <View style={{width: '85%', marginTop: '-4%'}}>
+                <Text style={{color: 'red'}}>{dateOfBirthError}</Text>
+              </View>
+            )}
             <TextInput
-              style={{
-                height: 40,
-                margin: 12,
-                width: '90%',
-                backgroundColor: '#e5e5e5',
-                borderRadius: 20,
-                padding: 10,
-              }}
+              style={[
+                {
+                  height: 40,
+                  margin: 12,
+                  width: '90%',
+                  backgroundColor: '#e5e5e5',
+                  borderRadius: 20,
+                  padding: 10,
+                },
+                emailError ? {borderColor: 'red', borderWidth: 1} : {},
+              ]}
               onChangeText={text => {
                 setEmail(text);
               }}
               value={email}
               placeholder="Email"
               keyboardType="email-address"></TextInput>
+            {emailError && (
+              <View style={{width: '85%', marginTop: '-4%'}}>
+                <Text style={{color: 'red'}}>{emailError}</Text>
+              </View>
+            )}
             <TextInput
-              style={{
-                height: 40,
-                margin: 12,
-                width: '90%',
-                backgroundColor: '#e5e5e5',
-                borderRadius: 20,
-                padding: 10,
-              }}
+              style={[
+                {
+                  height: 40,
+                  margin: 12,
+                  width: '90%',
+                  backgroundColor: '#e5e5e5',
+                  borderRadius: 20,
+                  padding: 10,
+                },
+                addressError ? {borderColor: 'red', borderWidth: 1} : {},
+              ]}
               onChangeText={text => {
                 setAddress(text);
               }}
               value={address}
               placeholder="Address"
               keyboardType="default"></TextInput>
+            {addressError && (
+              <View style={{width: '85%', marginTop: '-4%'}}>
+                <Text style={{color: 'red'}}>{addressError}</Text>
+              </View>
+            )}
             <TextInput
-              style={{
-                height: 40,
-                margin: 12,
-                width: '90%',
-                backgroundColor: '#e5e5e5',
-                borderRadius: 20,
-                padding: 10,
-              }}
+              style={[
+                {
+                  height: 40,
+                  margin: 12,
+                  width: '90%',
+                  backgroundColor: '#e5e5e5',
+                  borderRadius: 20,
+                  padding: 10,
+                },
+                phoneError ? {borderColor: 'red', borderWidth: 1} : {},
+              ]}
               onChangeText={text => {
                 setPhone(text);
               }}
               value={phone}
               placeholder="Phone"
               keyboardType="numeric"></TextInput>
-            
+            {phoneError && (
+              <View style={{width: '85%', marginTop: '-4%'}}>
+                <Text style={{color: 'red'}}>{phoneError}</Text>
+              </View>
+            )}
           </View>
-          
+          <View
+            style={{
+              flexDirection: 'column',
+              alignItems: 'center',
+              marginBottom: '4%',
+            }}>
+            <View style={{width: '90%'}}>
+              <FlatButton text="Update" onPress={submitForm} />
+            </View>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
