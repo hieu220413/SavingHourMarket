@@ -1,7 +1,10 @@
 package com.fpt.capstone.savinghourmarket.config;
 
+import jakarta.servlet.DispatcherType;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -12,17 +15,26 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Configuration
+@RequiredArgsConstructor
 public class SpringSecurityConfig {
+    private final AccessDeniedHandlerCustom accessDeniedHandlerCustom;
+    private final AuthenticationEntryPointCustom authenticationEntryPointCustom;
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests((auth) -> auth
-                .requestMatchers("/swagger-ui/**").permitAll()
-                .requestMatchers("/swagger-resources/**").permitAll()
-                .requestMatchers("/v3/api-docs/**").permitAll()
-                .requestMatchers("/swagger-ui.html").permitAll());
-        http.authorizeHttpRequests((auth) -> auth
-                .anyRequest().authenticated());
-        http.oauth2ResourceServer((res) -> res.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter())));
+        http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable())
+                .authorizeHttpRequests((auth) -> {
+                    auth.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
+                        .requestMatchers("/swagger-ui/**").permitAll()
+                        .requestMatchers("/swagger-resources/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
+                        .requestMatchers("/swagger-ui.html").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/customer/registerWithEmailPassword").permitAll();
+//                        .anyRequest().permitAll();
+                    auth.anyRequest().authenticated();
+                });
+//        http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable()).authorizeHttpRequests((auth) -> auth
+//                .anyRequest().authenticated());
+        http.oauth2ResourceServer((res) -> res.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter())).accessDeniedHandler(accessDeniedHandlerCustom).authenticationEntryPoint(authenticationEntryPointCustom));
         return http.build();
     }
 
