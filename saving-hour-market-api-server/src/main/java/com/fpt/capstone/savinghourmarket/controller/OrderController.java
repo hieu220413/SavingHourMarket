@@ -78,7 +78,7 @@ public class OrderController {
     }
 
     @GetMapping("/fetchCustomerOrderByStatus")
-    public ResponseEntity<List<Order>> getCustomerOrderByStatus(@RequestHeader("Customer-email") String email, @RequestHeader(name = "Status", defaultValue = "3") Integer status) throws ResourceNotFoundException, NoSuchOrderException {
+    public ResponseEntity<List<Order>> getCustomerOrderByStatus(@RequestHeader("Customer-email") String email, @RequestHeader(name = "Status", defaultValue = "4") Integer status) throws ResourceNotFoundException, NoSuchOrderException {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchCustomerOrderByStatus(email, status));
     }
 
@@ -89,7 +89,7 @@ public class OrderController {
 
     @PutMapping ("/createOrder")
     public ResponseEntity<Order> getCustomerOrder(@RequestBody Order order) throws ResourceNotFoundException, NoSuchOrderException {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.createOrder(order));
     }
 
 }

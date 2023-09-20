@@ -25,4 +25,6 @@ public interface OrderService {
     List<Order> fetchCustomerOrderByStatus(String customerEmail, Integer status) throws ResourceNotFoundException, NoSuchOrderException;
 
     List<Order> fetchCustomerOrder(String customerEmail) throws ResourceNotFoundException, NoSuchOrderException;
+
+    Order createOrder(Order order);
 }

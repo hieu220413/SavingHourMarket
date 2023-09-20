@@ -13,11 +13,15 @@ SET @SystemMaintaining = 0;
 -- Order status:
 SET @processing = 0;
 SET @packaging = 1;
-SET @delivering = 2;
-SET @success = 3;
-SET @fail = 4;
-SET @cancel = 5;
+SET @packaged = 2;
+SET @delivering = 3;
+SET @success = 4;
+SET @fail = 5;
+SET @cancel = 6;
 
+-- Payment method: COD(0), VNPay(1)
+SET @cod = 0;
+SET @vnpay = 1;
 
 -- Product description
 SET @OmoDescription = 'Nước Giặt Omo Matic với công nghệ Màn chắn Kháng bẩn Polyshield Xanh, giúp bao bọc và phủ một lớp màn chắn vô hình lên bề mặt sợi vải, loại bỏ nhanh chóng vết bẩn cứng đầu và mùi hôi trên áo quần.
