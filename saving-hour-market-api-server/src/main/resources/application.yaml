@@ -30,4 +30,4 @@ server:
   error:
     include-stacktrace: ${TRACE_MODE:never}
 
-google-api-key: ${GOOGLE_API_KEY}
+google-api-key: AIzaSyDRQCWr-Ki4UMRh9RKl5gFO9NDZEdQtBxQ

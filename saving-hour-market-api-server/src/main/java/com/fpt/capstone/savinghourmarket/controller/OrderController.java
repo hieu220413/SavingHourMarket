@@ -10,8 +10,13 @@ import com.fpt.capstone.savinghourmarket.model.OrderCreate;
 import com.fpt.capstone.savinghourmarket.model.OrderProduct;
 import com.fpt.capstone.savinghourmarket.service.OrderGroupService;
 import com.fpt.capstone.savinghourmarket.service.OrderService;
+import com.fpt.capstone.savinghourmarket.util.Utils;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,13 +26,15 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping(value = "/order/")
+@RequestMapping(value = "/api/order/")
+@RequiredArgsConstructor
 public class OrderController {
-    @Autowired
-    private OrderService orderService;
 
-    @Autowired
-    private OrderGroupService orderGroupService;
+    private final OrderService orderService;
+
+    private final OrderGroupService orderGroupService;
+
+    private final FirebaseAuth firebaseAuth;
 
     @GetMapping("/fetchAll")
     public ResponseEntity<List<Order>> getAll() throws NoSuchOrderException {
@@ -79,12 +86,16 @@ public class OrderController {
     }
 
     @GetMapping("/fetchCustomerOrderByStatus")
-    public ResponseEntity<List<Order>> getCustomerOrderByStatus(@RequestHeader("Customer-email") String email, @RequestHeader(name = "Status", defaultValue = "4") Integer status) throws ResourceNotFoundException, NoSuchOrderException {
+    public ResponseEntity<List<Order>> getCustomerOrderByStatus(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken, @RequestHeader(name = "Status", defaultValue = "4") Integer status) throws ResourceNotFoundException, NoSuchOrderException, FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        String email = Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchCustomerOrderByStatus(email, status));
     }
 
     @GetMapping("/fetchCustomerOrder")
-    public ResponseEntity<List<Order>> getCustomerOrder(@RequestHeader("Customer-email") String email) throws ResourceNotFoundException, NoSuchOrderException {
+    public ResponseEntity<List<Order>> getCustomerOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws ResourceNotFoundException, NoSuchOrderException, FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        String email = Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchCustomerOrder(email));
     }
 
