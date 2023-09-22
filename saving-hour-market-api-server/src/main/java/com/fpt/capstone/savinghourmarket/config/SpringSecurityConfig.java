@@ -24,7 +24,8 @@ public class SpringSecurityConfig {
     private String[] allStaffAndAdmin= {StaffRole.STAFF_DLV.toString()
             , StaffRole.STAFF_MKT.toString()
             , StaffRole.STAFF_ORD.toString()
-            , StaffRole.STAFF_SLT.toString()};
+            , StaffRole.STAFF_SLT.toString()
+            , "ADMIN"};
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
