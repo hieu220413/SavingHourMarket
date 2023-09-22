@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.config;
 
+import com.fpt.capstone.savinghourmarket.common.StaffRole;
 import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -19,6 +20,13 @@ import java.util.stream.Collectors;
 public class SpringSecurityConfig {
     private final AccessDeniedHandlerCustom accessDeniedHandlerCustom;
     private final AuthenticationEntryPointCustom authenticationEntryPointCustom;
+
+    private String[] allStaffAndAdmin= {StaffRole.STAFF_DLV.toString()
+            , StaffRole.STAFF_MKT.toString()
+            , StaffRole.STAFF_ORD.toString()
+            , StaffRole.STAFF_SLT.toString()
+            , "ADMIN"};
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable())
@@ -28,8 +36,9 @@ public class SpringSecurityConfig {
                         .requestMatchers("/swagger-resources/**").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
                         .requestMatchers("/swagger-ui.html").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/customer/registerWithEmailPassword").permitAll();
-//                        .anyRequest().permitAll();
+                        .requestMatchers(HttpMethod.POST, "/api/customer/registerWithEmailPassword").permitAll()
+                        .requestMatchers("/api/product/getProductsForCustomer").permitAll()
+                        .requestMatchers("/api/product/getProductsForStaff").hasAnyRole(allStaffAndAdmin);
                     auth.anyRequest().authenticated();
                 });
 //        http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable()).authorizeHttpRequests((auth) -> auth

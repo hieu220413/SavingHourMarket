@@ -27,6 +27,7 @@ public class Order {
 
     private Integer totalPrice;
 
+    @Column(columnDefinition = "datetime(0)")
     private LocalDateTime createdTime;
 
     private Date deliveryDate;

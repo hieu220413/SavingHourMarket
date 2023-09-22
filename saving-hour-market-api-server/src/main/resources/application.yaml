@@ -12,7 +12,7 @@ spring:
     password: 123456vinh
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
-    url: jdbc:mysql://localhost/saving_hour_market
+    url: jdbc:mysql://localhost/saving_hour_market?useUnicode=true&characterEncoding=UTF-8
   sql:
     init:
       mode: always

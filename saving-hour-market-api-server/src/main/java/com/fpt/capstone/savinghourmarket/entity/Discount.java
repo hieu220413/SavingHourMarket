@@ -29,6 +29,7 @@ public class Discount {
 
     private Integer spentAmountRequired;
 
+    @Column(columnDefinition = "datetime(0)")
     private LocalDateTime expiredDate;
 
     @Column(columnDefinition = "tinyint")

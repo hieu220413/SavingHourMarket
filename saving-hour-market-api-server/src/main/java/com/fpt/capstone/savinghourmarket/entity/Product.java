@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,7 +21,7 @@ public class Product {
     @UuidGenerator
     private UUID id;
 
-    @Column(columnDefinition = "varchar(50)")
+    @Column(columnDefinition = "varchar(50) CHARACTER SET utf8 COLLATE utf8_bin")
     private String name;
 
     private Integer price;
@@ -30,6 +31,7 @@ public class Product {
     @Column(columnDefinition = "text")
     private String description;
 
+    @Column(columnDefinition = "datetime(0)")
     private LocalDateTime expiredDate;
 
     private Integer quantity;
