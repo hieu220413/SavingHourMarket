@@ -117,7 +117,7 @@ const Profile = ({navigation}) => {
         <View
           style={{
             borderBottomColor: 'black',
-            borderBottomWidth: 0.5,
+            borderBottomWidth: 1,
             width: '93%',
             alignSelf: 'center',
           }}
@@ -145,7 +145,7 @@ const Profile = ({navigation}) => {
                 fontWeight: '700',
                 color: 'black',
               }}>
-              View Profile
+              Profile
             </Text>
           </View>
           <View>
@@ -209,7 +209,7 @@ const Profile = ({navigation}) => {
         <View
           style={{
             borderBottomColor: 'black',
-            borderBottomWidth: 0.5,
+            borderBottomWidth: 1,
             width: '93%',
             alignSelf: 'center',
           }}
