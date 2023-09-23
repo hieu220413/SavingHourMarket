@@ -2,15 +2,12 @@ package com.fpt.capstone.savinghourmarket.controller;
 
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.service.ProductService;
+import com.fpt.capstone.savinghourmarket.util.Utils;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -18,7 +15,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("api/product")
 public class ProductController {
-    public final ProductService productService;
+    private final ProductService productService;
+    private final FirebaseAuth firebaseAuth;
 
     @RequestMapping(value = "/getProductsForStaff", method = RequestMethod.GET)
     public ResponseEntity<List<Product>> getProductsForStaff(@RequestParam(required = false) Boolean isExpiredShown
@@ -29,7 +27,10 @@ public class ProductController {
             , @RequestParam(defaultValue = "0") Integer page
             , @RequestParam(defaultValue = "5") Integer limit
             , @RequestParam(defaultValue = "DESC") String quantitySortType
-            , @RequestParam(defaultValue = "DESC") String expiredSortType) {
+            , @RequestParam(defaultValue = "DESC") String expiredSortType
+            , @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
         List<Product> productList = productService.getProductsForStaff(isExpiredShown
                 , name
                 , supermarketId
