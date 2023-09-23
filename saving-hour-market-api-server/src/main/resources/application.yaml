@@ -29,4 +29,15 @@ server:
   error:
     include-stacktrace: ${TRACE_MODE:never}
 
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
+
+
 google-api-key: ${GOOGLE_API_KEY}

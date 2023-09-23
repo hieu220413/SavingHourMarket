@@ -21,7 +21,7 @@ public class Discount {
     @UuidGenerator
     private UUID id;
 
-    @Column(columnDefinition = "varchar(255)")
+    @Column(columnDefinition = "varchar(255) CHARACTER SET utf8 COLLATE utf8_bin")
     private String name;
 
     @Column(columnDefinition = "tinyint")
@@ -56,6 +56,4 @@ public class Discount {
             inverseJoinColumns = @JoinColumn(name = "product_sub_category_id")
     )
     private List<ProductSubCategory> productSubCategoryList;
-
-
 }

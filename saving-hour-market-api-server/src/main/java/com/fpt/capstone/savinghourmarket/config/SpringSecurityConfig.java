@@ -32,13 +32,16 @@ public class SpringSecurityConfig {
         http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable())
                 .authorizeHttpRequests((auth) -> {
                     auth.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
-                        .requestMatchers("/swagger-ui/**").permitAll()
-                        .requestMatchers("/swagger-resources/**").permitAll()
-                        .requestMatchers("/v3/api-docs/**").permitAll()
-                        .requestMatchers("/swagger-ui.html").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/customer/registerWithEmailPassword").permitAll()
-                        .requestMatchers("/api/product/getProductsForCustomer").permitAll()
-                        .requestMatchers("/api/product/getProductsForStaff").hasAnyRole(allStaffAndAdmin);
+                            .requestMatchers("/swagger-ui/**").permitAll()
+                            .requestMatchers("/swagger-resources/**").permitAll()
+                            .requestMatchers("/v3/api-docs/**").permitAll()
+                            .requestMatchers("/swagger-ui.html").permitAll()
+                            .requestMatchers(HttpMethod.POST, "/api/customer/registerWithEmailPassword").permitAll()
+                            .requestMatchers("/api/product/getProductsForCustomer").permitAll()
+                            .requestMatchers("/api/discount/getDiscountsForCustomer").permitAll()
+                            .requestMatchers("/api/discount/getDiscountById").permitAll()
+                            .requestMatchers("/api/product/getProductsForStaff").hasAnyRole(allStaffAndAdmin)
+                            .requestMatchers("/api/discount/getDiscountsForStaff").hasAnyRole(allStaffAndAdmin);
                     auth.anyRequest().authenticated();
                 });
 //        http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable()).authorizeHttpRequests((auth) -> auth
