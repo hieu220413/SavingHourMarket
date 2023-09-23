@@ -12,7 +12,7 @@ import java.util.UUID;
 public interface PickupPointRepository extends JpaRepository<PickupPoint, UUID> {
     String HAVERSINE_FORMULA = "(6371 * acos(cos(radians(:latitude)) * cos(radians(p.latitude)) *" +
             " cos(radians(p.longitude) - radians(:longitude)) + sin(radians(:latitude)) * sin(radians(p.latitude))))";
-    @Query("SELECT p FROM PickupPoint p " +
+    @Query("SELECT p FROM PickupPoint p WHERE p.status = 1 " +
             "ORDER BY " + HAVERSINE_FORMULA)
     List<PickupPoint> getAllSortByDistance(Double latitude, Double longitude);
 }

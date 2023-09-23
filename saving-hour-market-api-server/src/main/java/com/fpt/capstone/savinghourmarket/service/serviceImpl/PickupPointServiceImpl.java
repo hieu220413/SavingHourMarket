@@ -40,8 +40,10 @@ public class PickupPointServiceImpl implements PickupPointService {
         List<PickupPointSuggestionResponseBody> pickupPointSuggestionResponseBodyList = new ArrayList<>();
         List<LatLng> latLngs = new ArrayList<>();
         for(int i = 0; i < numberOfSuggestion; i++) {
-            pickupPointSuggestionResponseBodyList.add(new PickupPointSuggestionResponseBody(pickupPoints.get(i)));
-            latLngs.add(new LatLng(pickupPoints.get(i).getLatitude(), pickupPoints.get(i).getLongitude()));
+            // using 0 because pickup point at index 0 will be deleted and next index will be 0
+            pickupPointSuggestionResponseBodyList.add(new PickupPointSuggestionResponseBody(pickupPoints.get(0)));
+            latLngs.add(new LatLng(pickupPoints.get(0).getLatitude(), pickupPoints.get(0).getLongitude()));
+            pickupPoints.remove(0);
         }
 
         DistanceMatrixApiRequest req = DistanceMatrixApi.newRequest(geoApiContext);
@@ -69,6 +71,8 @@ public class PickupPointServiceImpl implements PickupPointService {
             }
         }
         pickupPointSuggestionResponseBodyList.sort((o1, o2) -> (int) (o1.getDistanceInValue() - o2.getDistanceInValue()));
+
+
 
         PickupPointsSortWithSuggestionsResponseBody result = new PickupPointsSortWithSuggestionsResponseBody();
         result.setOtherSortedPickupPointList(pickupPoints);
