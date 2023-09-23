@@ -40,6 +40,9 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/product/getProductsForCustomer").permitAll()
                             .requestMatchers("/api/discount/getDiscountsForCustomer").permitAll()
                             .requestMatchers("/api/discount/getDiscountById").permitAll()
+                            .requestMatchers("/api/timeframe/getAll").permitAll()
+                            .requestMatchers("/api/pickupPoint/getAll").permitAll()
+                            .requestMatchers("/api/pickupPoint/getWithSortAndSuggestion").permitAll()
                             .requestMatchers("/api/product/getProductsForStaff").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/discount/getDiscountsForStaff").hasAnyRole(allStaffAndAdmin);
                     auth.anyRequest().authenticated();
