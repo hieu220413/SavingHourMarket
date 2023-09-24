@@ -27,6 +27,7 @@ const Tabs = () => {
           right: 0,
           elevation: 0,
           backgroundColor: COLORS.tabBackground,
+          opacity: 0.95,
           borderTopColor: 'transparent',
           height: 80,
         },
@@ -81,7 +82,6 @@ const Tabs = () => {
           ),
         }}
       />
-
       <Tab.Screen
         name="Profile"
         component={Profile}
