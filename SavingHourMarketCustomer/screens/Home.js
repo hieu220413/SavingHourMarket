@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 /* eslint-disable prettier/prettier */
 /* eslint-disable react/no-unstable-nested-components */
 import React, {useEffect, useState} from 'react';
@@ -211,11 +212,9 @@ const Home = ({navigation}) => {
           }}>
           Danh sách sản phẩm
         </Text>
-        <FlatList
-          data={data}
-          renderItem={({item}) => <Item data={item} />}
-          keyExtractor={item => item.id}
-        />
+        {data.map(item => (
+          <Item data={item} />
+        ))}
       </ScrollView>
     </SafeAreaView>
   );
