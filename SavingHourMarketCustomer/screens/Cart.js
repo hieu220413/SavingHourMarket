@@ -153,7 +153,6 @@ const Cart = ({navigation}) => {
           alignItems: 'center',
           justifyContent: 'space-between',
           paddingLeft: 20,
-          elevation: 8,
         }}>
         <View
           style={{

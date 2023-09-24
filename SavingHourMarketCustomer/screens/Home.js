@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react/no-unstable-nested-components */
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Text,
   View,
@@ -14,11 +14,10 @@ import {
 import SearchBar from '../components/SearchBar';
 import Categories from '../components/Categories';
 import DiscountRow from '../components/DiscountRow';
-import { COLORS, FONTS } from '../constants/theme';
-import { icons } from '../constants';
+import {COLORS, FONTS} from '../constants/theme';
+import {icons} from '../constants';
 
-const Home = () => {
-
+const Home = ({navigation}) => {
   const [percent, setPercent] = useState();
 
   const [cateList, setCateList] = useState();
@@ -47,27 +46,20 @@ const Home = () => {
     },
   ];
 
-
   useEffect(() => {
     data.map((item, index) => {
       setPercent((item.price / item.price_original) * 100);
     });
   });
 
-
   const handleBuy = () => {
     console.log('Buy');
   };
 
-
-  const Item = ({ data }) => (
+  const Item = ({data}) => (
     <View style={styles.itemContainer}>
       {/* Image Product */}
-      <TouchableOpacity
-        onPress={
-          console.log('navigate to')
-        }
-      >
+      <TouchableOpacity onPress={console.log('navigate to')}>
         <Image
           resizeMode="contain"
           source={{
@@ -77,36 +69,65 @@ const Home = () => {
         />
       </TouchableOpacity>
 
-      <View style={{ paddingTop: 10 }}>
-        <TouchableOpacity
-          onPress={
-            console.log('navigate to details')
-          }
-        >
-          <Text style={{
-            fontFamily: FONTS.fontFamily,
-            fontSize: 20,
-            fontWeight: 700,
-            maxWidth: '90%',
-            color: 'black'
-          }}>{data.name}</Text>
+      <View style={{paddingTop: 10}}>
+        <TouchableOpacity onPress={console.log('navigate to details')}>
+          <Text
+            style={{
+              fontFamily: FONTS.fontFamily,
+              fontSize: 20,
+              fontWeight: 700,
+              maxWidth: '90%',
+              color: 'black',
+            }}>
+            {data.name}
+          </Text>
         </TouchableOpacity>
 
-
-        <View style={{ flexDirection: 'row' }}>
-          <Text style={{ fontSize: 20, lineHeight: 30, color: COLORS.red, fontWeight: 600 }}>{data.price}</Text>
-          <Text style={{ fontSize: 15, lineHeight: 18, color: COLORS.red, fontWeight: 600 }}>₫</Text>
-        </View>
-
-        <View style={{ flexDirection: 'row' }}>
-          <Text style={{ fontSize: 20, lineHeight: 30, textDecorationLine: 'line-through', textDecorationStyle: 'solid', }}>{data.price_original}</Text>
-          <Text style={{ fontSize: 15, lineHeight: 18 }}>₫</Text>
-          <Text style={{ fontSize: 16, lineHeight: 30, paddingLeft: 5 }}>( - {percent}%)</Text>
-        </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View style={{flexDirection: 'row'}}>
           <Text
-            style={{ fontFamily: FONTS.fontFamily, fontSize: 16, color: '#ED8A19' }}
-          >5</Text>
+            style={{
+              fontSize: 20,
+              lineHeight: 30,
+              color: COLORS.red,
+              fontWeight: 600,
+            }}>
+            {data.price}
+          </Text>
+          <Text
+            style={{
+              fontSize: 15,
+              lineHeight: 18,
+              color: COLORS.red,
+              fontWeight: 600,
+            }}>
+            ₫
+          </Text>
+        </View>
+
+        <View style={{flexDirection: 'row'}}>
+          <Text
+            style={{
+              fontSize: 20,
+              lineHeight: 30,
+              textDecorationLine: 'line-through',
+              textDecorationStyle: 'solid',
+            }}>
+            {data.price_original}
+          </Text>
+          <Text style={{fontSize: 15, lineHeight: 18}}>₫</Text>
+          <Text style={{fontSize: 16, lineHeight: 30, paddingLeft: 5}}>
+            ( - {percent}%)
+          </Text>
+        </View>
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <Text
+            style={{
+              fontFamily: FONTS.fontFamily,
+              fontSize: 16,
+              color: '#ED8A19',
+            }}>
+            5
+          </Text>
           <Image
             resizeMode="center"
             source={icons.star}
@@ -118,17 +139,18 @@ const Home = () => {
           />
         </View>
 
-        <TouchableOpacity
-          onPress={handleBuy}
-        >
-          <Text style={{
-            maxWidth: 100,
-            padding: 5,
-            backgroundColor: COLORS.primary,
-            borderRadius: 10,
-            textAlign: 'center',
-            color: '#ffffff'
-          }}>Mua</Text>
+        <TouchableOpacity onPress={handleBuy}>
+          <Text
+            style={{
+              maxWidth: 100,
+              padding: 5,
+              backgroundColor: COLORS.primary,
+              borderRadius: 10,
+              textAlign: 'center',
+              color: '#ffffff',
+            }}>
+            Mua
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -137,14 +159,29 @@ const Home = () => {
   return (
     <SafeAreaView style={styles.container}>
       {/* Search */}
-      <SearchBar />
+      <View style={{flexDirection: 'row', gap: 10, alignItems: 'center'}}>
+        <SearchBar />
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate('Cart');
+          }}>
+          <Image
+            resizeMode="contain"
+            style={{
+              height: 40,
+              tintColor: COLORS.primary,
+              width: 35,
+            }}
+            source={icons.cart}
+          />
+        </TouchableOpacity>
+      </View>
 
       {/* Body */}
       <ScrollView
         contentContainerStyle={{
           paddingBottom: 100,
-        }}
-      >
+        }}>
         {/* Categories */}
         <Categories />
         {/* Sale, Discount */}
@@ -157,8 +194,9 @@ const Home = () => {
             fontWeight: 700,
             marginTop: 10,
             marginBottom: 10,
-          }}
-        >Khuyến Mãi Cực Sốc</Text>
+          }}>
+          Khuyến Mãi Cực Sốc
+        </Text>
         <DiscountRow />
         {/* List Product */}
         <Text
@@ -170,11 +208,12 @@ const Home = () => {
             marginLeft: 20,
             marginTop: 10,
             marginBottom: 10,
-          }}
-        >Danh sách sản phẩm</Text>
+          }}>
+          Danh sách sản phẩm
+        </Text>
         <FlatList
           data={data}
-          renderItem={({ item }) => <Item data={item} />}
+          renderItem={({item}) => <Item data={item} />}
           keyExtractor={item => item.id}
         />
       </ScrollView>

@@ -8,9 +8,9 @@ import {
   StyleSheet,
   Image,
 } from 'react-native';
-import { COLORS, FONTS } from '../constants/theme';
-import { icons } from '../constants';
-import { useState } from 'react';
+import {COLORS, FONTS} from '../constants/theme';
+import {icons} from '../constants';
+import {useState} from 'react';
 
 const SearchBar = () => {
   const [text, setText] = useState();
@@ -46,7 +46,7 @@ const SearchBar = () => {
 const style = StyleSheet.create({
   container: {
     backgroundColor: '#f5f5f5',
-    width: 350,
+    width: '80%',
     height: 45,
     borderRadius: 40,
     paddingLeft: 10,
