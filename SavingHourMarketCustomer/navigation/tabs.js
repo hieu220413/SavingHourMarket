@@ -81,15 +81,7 @@ const Tabs = () => {
           ),
         }}
       />
-      <Tab.Screen
-        name="Cart"
-        component={Cart}
-        options={{
-          tabBarIcon: ({focused}) => (
-            <TabIcon display={'Cart'} focused={focused} icon={icons.cart} />
-          ),
-        }}
-      />
+
       <Tab.Screen
         name="Profile"
         component={Profile}
