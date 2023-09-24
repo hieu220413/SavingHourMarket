@@ -9,6 +9,7 @@ import Discount from './screens/Discount';
 import Orders from './screens/Orders';
 import Cart from './screens/Cart';
 import Profile from './screens/Profile';
+import VNPayTest from './screens/VNPayTest';
 const Stack = createStackNavigator();
 export default function App() {
   return (
@@ -18,7 +19,8 @@ export default function App() {
           screenOptions={{
             headerShown: false,
           }}
-          initialRouteName={'Home'}>
+          initialRouteName={'VNPayTest'}>
+          <Stack.Screen name="VNPayTest" component={VNPayTest} />
           <Stack.Screen name="Home" component={Tabs} />
           <Stack.Screen name="Discount" component={Discount} />
           <Stack.Screen name="Orders" component={Orders} />

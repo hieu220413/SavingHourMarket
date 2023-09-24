@@ -43,6 +43,7 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/timeframe/getAll").permitAll()
                             .requestMatchers("/api/pickupPoint/getAll").permitAll()
                             .requestMatchers("/api/pickupPoint/getWithSortAndSuggestion").permitAll()
+                            .requestMatchers("/api/transaction/processPaymentResult").permitAll()
                             .requestMatchers("/api/product/getProductsForStaff").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/discount/getDiscountsForStaff").hasAnyRole(allStaffAndAdmin);
                     auth.anyRequest().authenticated();

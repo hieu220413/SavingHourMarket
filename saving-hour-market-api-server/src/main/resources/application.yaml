@@ -41,3 +41,8 @@ logging:
 
 
 google-api-key: ${GOOGLE_API_KEY}
+vnpay-hash-secret: ${VNPAY_HASH_SECRET}
+vnpay-tmn-code: ${VNPAY_TMN_CODE}
+
+base-path-android: ${BASE_PATH:#{'http://10.0.2.2:8082'}}
+
