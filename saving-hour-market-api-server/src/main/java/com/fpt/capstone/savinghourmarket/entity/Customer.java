@@ -1,5 +1,7 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
+import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
+import com.fpt.capstone.savinghourmarket.model.CustomerRegisterRequestBody;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,6 +19,18 @@ import java.util.UUID;
 @Setter
 @Getter
 public class Customer {
+
+    public Customer(CustomerRegisterRequestBody customerRegisterRequestBody) {
+        this.fullName = customerRegisterRequestBody.getFullName();
+        this.email = customerRegisterRequestBody.getEmail();
+        this.phone = customerRegisterRequestBody.getPhone();
+        this.dateOfBirth = LocalDate.parse(customerRegisterRequestBody.getDateOfBirth());
+        this.avatarUrl = customerRegisterRequestBody.getAvatarUrl();
+        this.address = customerRegisterRequestBody.getAddress();
+        this.gender = customerRegisterRequestBody.getGender();
+        this.status = EnableDisableStatus.ENABLE.ordinal();
+    }
+
     @Id
     @UuidGenerator
     private UUID id;
@@ -55,5 +69,6 @@ public class Customer {
             fetch = FetchType.LAZY
     )
     private List<FeedBack> feedBackList;
+
 
 }
