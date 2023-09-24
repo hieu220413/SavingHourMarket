@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,18 +24,11 @@ public class ProductCategory {
     @Column(columnDefinition = "varchar(50)")
     private String name;
 
-    @Column(columnDefinition = "tinyint")
-    private Integer allowableDisplayThreshold;
-
     @ManyToMany(
             mappedBy = "productCategoryList",
             fetch = FetchType.LAZY
     )
+    @JsonIgnore
     private List<Discount> discountList;
 
-    @OneToMany(
-            mappedBy = "productCategory",
-            fetch = FetchType.LAZY
-    )
-    private List<Product> productList;
 }

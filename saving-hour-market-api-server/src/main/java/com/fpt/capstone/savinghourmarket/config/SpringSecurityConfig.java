@@ -1,7 +1,11 @@
 package com.fpt.capstone.savinghourmarket.config;
 
+import com.fpt.capstone.savinghourmarket.common.StaffRole;
+import jakarta.servlet.DispatcherType;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -12,17 +16,40 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Configuration
+@RequiredArgsConstructor
 public class SpringSecurityConfig {
+    private final AccessDeniedHandlerCustom accessDeniedHandlerCustom;
+    private final AuthenticationEntryPointCustom authenticationEntryPointCustom;
+
+    private String[] allStaffAndAdmin= {StaffRole.STAFF_DLV.toString()
+            , StaffRole.STAFF_MKT.toString()
+            , StaffRole.STAFF_ORD.toString()
+            , StaffRole.STAFF_SLT.toString()
+            , "ADMIN"};
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests((auth) -> auth
-                .requestMatchers("/swagger-ui/**").permitAll()
-                .requestMatchers("/swagger-resources/**").permitAll()
-                .requestMatchers("/v3/api-docs/**").permitAll()
-                .requestMatchers("/swagger-ui.html").permitAll());
-        http.authorizeHttpRequests((auth) -> auth
-                .anyRequest().authenticated());
-        http.oauth2ResourceServer((res) -> res.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter())));
+        http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable())
+                .authorizeHttpRequests((auth) -> {
+                    auth.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
+                            .requestMatchers("/swagger-ui/**").permitAll()
+                            .requestMatchers("/swagger-resources/**").permitAll()
+                            .requestMatchers("/v3/api-docs/**").permitAll()
+                            .requestMatchers("/swagger-ui.html").permitAll()
+                            .requestMatchers(HttpMethod.POST, "/api/customer/registerWithEmailPassword").permitAll()
+                            .requestMatchers("/api/product/getProductsForCustomer").permitAll()
+                            .requestMatchers("/api/discount/getDiscountsForCustomer").permitAll()
+                            .requestMatchers("/api/discount/getDiscountById").permitAll()
+                            .requestMatchers("/api/timeframe/getAll").permitAll()
+                            .requestMatchers("/api/pickupPoint/getAll").permitAll()
+                            .requestMatchers("/api/pickupPoint/getWithSortAndSuggestion").permitAll()
+                            .requestMatchers("/api/product/getProductsForStaff").hasAnyRole(allStaffAndAdmin)
+                            .requestMatchers("/api/discount/getDiscountsForStaff").hasAnyRole(allStaffAndAdmin);
+                    auth.anyRequest().authenticated();
+                });
+//        http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable()).authorizeHttpRequests((auth) -> auth
+//                .anyRequest().authenticated());
+        http.oauth2ResourceServer((res) -> res.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter())).accessDeniedHandler(accessDeniedHandlerCustom).authenticationEntryPoint(authenticationEntryPointCustom));
         return http.build();
     }
 

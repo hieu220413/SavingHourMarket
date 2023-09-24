@@ -25,8 +25,6 @@ public class Configuration {
     @Column(columnDefinition = "tinyint")
     private Integer systemStatus;
 
-    private Integer rangeOfExpired;
-
     private Integer limitOfOrders;
 
     private Integer numberOfSuggestedPickupPoint;

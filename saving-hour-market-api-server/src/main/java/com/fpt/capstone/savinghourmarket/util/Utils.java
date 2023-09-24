@@ -13,11 +13,15 @@ public final class Utils {
 
     }
 
-    public static boolean validateIdToken(String idToken, FirebaseAuth firebaseAuth) throws FirebaseAuthException {
+    public static String validateIdToken(String idToken, FirebaseAuth firebaseAuth) throws FirebaseAuthException {
         FirebaseToken token = firebaseAuth.verifyIdToken(idToken);
         if(!token.isEmailVerified()){
             throw new UnverifiedEmailException(HttpStatusCode.valueOf(AdditionalResponseCode.UNVERIFIED_EMAIL.getCode()), AdditionalResponseCode.UNVERIFIED_EMAIL.toString());
         }
-        return true;
+        return token.getEmail();
+    }
+
+    public static String parseBearTokenToIdToken(String bearToken){
+        return bearToken.replace("Bearer ", "");
     }
 }
