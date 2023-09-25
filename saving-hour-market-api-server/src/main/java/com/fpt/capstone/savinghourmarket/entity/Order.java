@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.sql.Date;
@@ -29,6 +30,7 @@ public class Order {
 
     private Integer totalPrice;
 
+    @CreationTimestamp
     private LocalDateTime createdTime;
 
     private Date deliveryDate;
@@ -81,7 +83,6 @@ public class Order {
             fetch = FetchType.LAZY,
             mappedBy = "order"
     )
-    @JsonIgnore
     private List<Transaction> transaction;
 
     @ManyToOne(

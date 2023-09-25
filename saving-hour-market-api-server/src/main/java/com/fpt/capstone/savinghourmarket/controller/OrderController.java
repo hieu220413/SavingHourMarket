@@ -1,30 +1,26 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
 import com.fpt.capstone.savinghourmarket.entity.Order;
-import com.fpt.capstone.savinghourmarket.entity.OrderDetail;
 import com.fpt.capstone.savinghourmarket.entity.OrderGroup;
-import com.fpt.capstone.savinghourmarket.entity.Product;
+import com.fpt.capstone.savinghourmarket.exception.BadRequestException;
 import com.fpt.capstone.savinghourmarket.exception.NoSuchOrderException;
+import com.fpt.capstone.savinghourmarket.exception.OrderCancellationNotAllowedException;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.OrderCreate;
 import com.fpt.capstone.savinghourmarket.model.OrderProduct;
-import com.fpt.capstone.savinghourmarket.service.OrderGroupService;
 import com.fpt.capstone.savinghourmarket.service.OrderService;
-import com.fpt.capstone.savinghourmarket.util.Utils;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import lombok.RequiredArgsConstructor;
-import io.swagger.v3.oas.annotations.security.SecurityScheme;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/api/order/")
@@ -33,76 +29,52 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    private final OrderGroupService orderGroupService;
-
-    private final FirebaseAuth firebaseAuth;
-
-    @GetMapping("/fetchAll")
+    @GetMapping("/getAll")
     public ResponseEntity<List<Order>> getAll() throws NoSuchOrderException {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchAll());
     }
 
-    @GetMapping("/fetchAllNotInGroup")
+    @GetMapping("/getOrdersToSpecificLocations")
     public ResponseEntity<List<Order>> getListOfOrdersNotInGroup() throws NoSuchOrderException {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchAllNotInGroup());
     }
 
-    @GetMapping("/fetchAllWithGroup")
+    @GetMapping("/getGroupOfOrders")
     public ResponseEntity<List<OrderGroup>> getListOfOrdersWithGroup() throws NoSuchOrderException {
-        return ResponseEntity.status(HttpStatus.OK).body(orderGroupService.fetchAll());
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchAllWithGroup());
     }
 
-    @GetMapping("/fetchByStatus")
+    @GetMapping("/getOrdersByStatus")
     public ResponseEntity<List<Order>> getListOfOrdersByStatus(@RequestParam Integer status) throws NoSuchOrderException {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchByStatus(status));
     }
 
-    @GetMapping("/fetchOrderDetailById/{id}")
-    public ResponseEntity<List<OrderProduct>> getOrderDetailById(@RequestParam UUID id) throws ResourceNotFoundException {
-        Order order = orderService.fetchOrderDetail(id);
-        List<OrderDetail> orderDetails = order.getOrderDetailList();
-
-        List<OrderProduct> orderProducts = orderDetails.stream()
-                .map(o -> {
-                    OrderProduct orderProduct = new OrderProduct();
-                    orderProduct.setId(o.getId());
-                    orderProduct.setProductPrice(o.getProductPrice());
-                    orderProduct.setProductOriginalPrice(o.getProductOriginalPrice());
-                    orderProduct.setBoughtQuantity(o.getBoughtQuantity());
-
-                    Product product = o.getProduct();
-                    orderProduct.setName(product.getName());
-                    orderProduct.setImageUrl(product.getImageUrl());
-                    orderProduct.setDescription(product.getDescription());
-                    orderProduct.setExpiredDate(product.getExpiredDate());
-                    orderProduct.setProductSubCategory(product.getProductSubCategory().getName());
-                    orderProduct.setSupermarketName(product.getSupermarket().getName());
-                    orderProduct.setStatus(product.getStatus());
-                    return orderProduct;
-
-                })
-                .collect(Collectors.toList());
-
-        return ResponseEntity.status(HttpStatus.OK).body(orderProducts);
-    }
-
-    @GetMapping("/fetchCustomerOrderByStatus")
-    public ResponseEntity<List<Order>> getCustomerOrderByStatus(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken, @RequestHeader(name = "Status", defaultValue = "4") Integer status) throws ResourceNotFoundException, NoSuchOrderException, FirebaseAuthException {
-        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
-        String email = Utils.validateIdToken(idToken, firebaseAuth);
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchCustomerOrderByStatus(email, status));
-    }
-
-    @GetMapping("/fetchCustomerOrder")
+    @GetMapping("/getCustomerOrders")
     public ResponseEntity<List<Order>> getCustomerOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws ResourceNotFoundException, NoSuchOrderException, FirebaseAuthException {
-        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
-        String email = Utils.validateIdToken(idToken, firebaseAuth);
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchCustomerOrder(email));
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchCustomerOrder(jwtToken));
     }
 
-    @PutMapping ("/createOrder")
-    public ResponseEntity<Order> getCustomerOrder(@RequestBody OrderCreate order) throws ResourceNotFoundException, NoSuchOrderException {
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.createOrder(order));
+    @GetMapping("/getCustomerOrdersByStatus")
+    public ResponseEntity<List<Order>> getCustomerOrderByStatus(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken, @RequestHeader(name = "Status", defaultValue = "4") Integer status) throws ResourceNotFoundException, NoSuchOrderException, FirebaseAuthException {
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchCustomerOrderByStatus(jwtToken, status));
+    }
+
+    @GetMapping("/getOrderDetailById/{id}")
+    public ResponseEntity<List<OrderProduct>> getOrderDetailById(@PathVariable UUID id) throws ResourceNotFoundException {
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderDetail(id));
+    }
+
+    @PutMapping("/createOrder")
+    public ResponseEntity<String> getCustomerOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken , @Valid @RequestBody OrderCreate order, BindingResult bindingResult) throws ResourceNotFoundException, FirebaseAuthException, IOException, BadRequestException {
+        if (bindingResult.hasErrors()) {
+            throw  new BadRequestException("Validation error while creating");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.createOrder(jwtToken,order));
+    }
+
+    @PutMapping("/cancelOrder/{id}")
+    public ResponseEntity<String> cancelOrder(@PathVariable UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException {
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.cancelOrder(id));
     }
 
 }

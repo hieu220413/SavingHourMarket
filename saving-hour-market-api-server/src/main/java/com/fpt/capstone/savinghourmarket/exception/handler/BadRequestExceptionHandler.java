@@ -15,7 +15,6 @@ import java.util.List;
 
 @RestControllerAdvice
 public class BadRequestExceptionHandler {
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidationException(MethodArgumentNotValidException ex) {
         List<String> errors = new ArrayList<>();

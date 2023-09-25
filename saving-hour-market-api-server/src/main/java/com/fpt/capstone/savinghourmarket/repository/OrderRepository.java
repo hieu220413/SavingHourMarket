@@ -13,6 +13,7 @@ import java.util.UUID;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, UUID> {
+
     List<Order> findOrderByOrderGroupIsNull();
 
     List<Order> findOrderByStatus(Integer status);

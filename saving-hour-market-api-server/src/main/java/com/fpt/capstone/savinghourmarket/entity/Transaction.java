@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -36,6 +37,7 @@ public class Transaction {
             name = "order_id",
             referencedColumnName = "id"
     )
+    @JsonIgnore
     private Order order;
 
     @OneToOne

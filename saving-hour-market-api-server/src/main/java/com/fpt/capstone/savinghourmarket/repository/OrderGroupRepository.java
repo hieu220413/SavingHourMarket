@@ -11,5 +11,5 @@ import java.util.UUID;
 
 @Repository
 public interface OrderGroupRepository extends JpaRepository<OrderGroup, UUID> {
-
+    Optional<OrderGroup> findByTimeFrameIdAndPickupPointId(UUID timeFrameId, UUID pickupPointId);
 }
