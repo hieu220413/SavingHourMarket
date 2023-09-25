@@ -5,7 +5,8 @@ public enum AdditionalResponseCode {
     UNVERIFIED_EMAIL(403),
 
     EMAIL_ALREADY_EXISTS(403),
-    DISCOUNT_NOT_FOUND(404);
+    DISCOUNT_NOT_FOUND(404),
+    CUSTOMER_NOT_FOUND(404);
     private int code;
 
     AdditionalResponseCode(int code) {
