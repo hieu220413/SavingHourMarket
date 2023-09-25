@@ -14,7 +14,7 @@ public final class Utils {
     }
 
     public static String validateIdToken(String idToken, FirebaseAuth firebaseAuth) throws FirebaseAuthException {
-        FirebaseToken token = firebaseAuth.verifyIdToken(idToken);
+        FirebaseToken token = firebaseAuth.verifyIdToken(idToken, true);
         if(!token.isEmailVerified()){
             throw new UnverifiedEmailException(HttpStatusCode.valueOf(AdditionalResponseCode.UNVERIFIED_EMAIL.getCode()), AdditionalResponseCode.UNVERIFIED_EMAIL.toString());
         }

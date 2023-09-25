@@ -37,6 +37,7 @@ public class SpringSecurityConfig {
                             .requestMatchers("/v3/api-docs/**").permitAll()
                             .requestMatchers("/swagger-ui.html").permitAll()
                             .requestMatchers(HttpMethod.POST, "/api/customer/registerWithEmailPassword").permitAll()
+                            .requestMatchers("/api/customer/updateInfo").authenticated()
                             .requestMatchers("/api/product/getProductsForCustomer").permitAll()
                             .requestMatchers("/api/discount/getDiscountsForCustomer").permitAll()
                             .requestMatchers("/api/discount/getDiscountById").permitAll()
