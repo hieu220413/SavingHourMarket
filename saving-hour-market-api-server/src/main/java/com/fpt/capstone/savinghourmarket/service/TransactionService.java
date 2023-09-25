@@ -1,9 +1,12 @@
 package com.fpt.capstone.savinghourmarket.service;
 
-import com.fpt.capstone.savinghourmarket.entity.Transaction;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.web.servlet.view.RedirectView;
 
+import java.util.Map;
 import java.util.UUID;
 
 public interface TransactionService {
+    String getPaymentUrl(Integer paidAmount, UUID orderId);
+
+    RedirectView processPaymentResult(Map<String, String> allRequestParams);
 }

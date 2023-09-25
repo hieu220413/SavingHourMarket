@@ -9,6 +9,7 @@ import Discount from './screens/Discount';
 import Orders from './screens/Orders';
 import Cart from './screens/Cart';
 import Profile from './screens/Profile';
+import VNPayTest from './screens/VNPayTest';
 
 import EditProfile from './screens/EditProfile';
 import Login from './screens/Login';
@@ -33,6 +34,7 @@ export default function App() {
           }}
           initialRouteName={'Start'}>
           <Stack.Screen name="Start" component={Tabs} />
+          <Stack.Screen name="VNPayTest" component={VNPayTest} />
           <Stack.Screen name="Discount" component={Discount} />
           <Stack.Screen name="Orders" component={Orders} />
           <Stack.Screen name="Cart" component={Cart} />
