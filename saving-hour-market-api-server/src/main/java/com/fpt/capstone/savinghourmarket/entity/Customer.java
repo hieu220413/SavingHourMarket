@@ -1,5 +1,7 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.model.CustomerRegisterRequestBody;
 import jakarta.persistence.*;
@@ -62,12 +64,14 @@ public class Customer {
             mappedBy = "customer",
             fetch = FetchType.LAZY
     )
+    @JsonIgnore
     private List<Order> orderList;
 
     @OneToMany(
             mappedBy = "customer",
             fetch = FetchType.LAZY
     )
+    @JsonIgnore
     private List<FeedBack> feedBackList;
 
 

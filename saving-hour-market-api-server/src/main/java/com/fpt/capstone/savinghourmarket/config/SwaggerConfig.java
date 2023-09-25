@@ -24,6 +24,9 @@ public class SwaggerConfig {
                         .title("Saving Hour Market")
                         .version("1.0.0")
                         .description("This is swagger ui for Saving Hour Market")
-                        .license(new License().name("MIT")));
+                        .license(new License().name("MIT")))
+                .addSecurityItem(
+                        new SecurityRequirement().addList("bearer-key")
+                );
     }
 }

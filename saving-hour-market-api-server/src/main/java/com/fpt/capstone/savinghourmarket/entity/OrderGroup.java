@@ -36,8 +36,7 @@ public class OrderGroup {
     private PickupPoint pickupPoint;
 
     @OneToMany(
-            mappedBy = "orderGroup",
-            fetch = FetchType.LAZY
+            mappedBy = "orderGroup"
     )
     private List<Order> orderList;
 }
