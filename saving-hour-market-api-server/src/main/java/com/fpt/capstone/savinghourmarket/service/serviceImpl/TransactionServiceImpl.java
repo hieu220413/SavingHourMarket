@@ -58,7 +58,7 @@ public class TransactionServiceImpl implements TransactionService {
         String vnp_OrderInfo = orderId.toString();
         String vnp_OrderType = "other";
         int vnp_Amount = paidAmount*100;
-        int vnp_TxnRef = new Random().nextInt(9999999);
+        UUID vnp_TxnRef = UUID.randomUUID();
         String vnp_CreateDate = dateTimeFormatter.format(today);
         String vnp_ExpireDate = dateTimeFormatter.format(expiredDateTime);
         String vnp_HashSecret = vnpayHashSecret;
