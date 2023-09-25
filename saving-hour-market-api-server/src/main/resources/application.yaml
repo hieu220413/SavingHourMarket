@@ -13,7 +13,7 @@ spring:
     password: Dre220413@
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
-    url: jdbc:mysql://localhost/saving_hour_market
+    url: jdbc:mysql://localhost/saving_hour_market?useUnicode=true&characterEncoding=UTF-8
   sql:
     init:
       mode: always
@@ -30,4 +30,15 @@ server:
   error:
     include-stacktrace: ${TRACE_MODE:never}
 
-google-api-key: AIzaSyDRQCWr-Ki4UMRh9RKl5gFO9NDZEdQtBxQ
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
+
+
+google-api-key: ${GOOGLE_API_KEY}

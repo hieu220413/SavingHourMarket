@@ -27,8 +27,9 @@ const Tabs = () => {
           right: 0,
           elevation: 0,
           backgroundColor: COLORS.tabBackground,
+          opacity: 0.95,
           borderTopColor: 'transparent',
-          height: 100,
+          height: 80,
         },
       }}
       //   tabBarOptions={{
@@ -78,15 +79,6 @@ const Tabs = () => {
         options={{
           tabBarIcon: ({focused}) => (
             <TabIcon display={'Orders'} focused={focused} icon={icons.order} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Cart"
-        component={Cart}
-        options={{
-          tabBarIcon: ({focused}) => (
-            <TabIcon display={'Cart'} focused={focused} icon={icons.cart} />
           ),
         }}
       />

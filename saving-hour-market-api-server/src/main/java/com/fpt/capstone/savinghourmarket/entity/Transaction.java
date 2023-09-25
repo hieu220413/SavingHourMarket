@@ -24,6 +24,7 @@ public class Transaction {
     @Column(columnDefinition = "varchar(10)")
     private String paymentMethod;
 
+    @Column(columnDefinition = "datetime(0)")
     private LocalDateTime paymentTime;
 
     private Integer amountOfMoney;

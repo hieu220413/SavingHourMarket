@@ -31,6 +31,7 @@ public class Order {
     private Integer totalPrice;
 
     @CreationTimestamp
+    @Column(columnDefinition = "datetime(0)")
     private LocalDateTime createdTime;
 
     private Date deliveryDate;
