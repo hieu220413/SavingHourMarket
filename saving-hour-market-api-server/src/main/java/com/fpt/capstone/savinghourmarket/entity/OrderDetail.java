@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -33,6 +34,7 @@ public class OrderDetail {
             name = "order_id",
             referencedColumnName = "id"
     )
+    @JsonIgnore
     private Order order;
 
     @ManyToOne

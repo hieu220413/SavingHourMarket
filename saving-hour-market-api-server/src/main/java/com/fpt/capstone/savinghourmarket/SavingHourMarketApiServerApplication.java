@@ -9,7 +9,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 @EnableWebSecurity
 @EnableMethodSecurity(securedEnabled = true)
 public class SavingHourMarketApiServerApplication {
-
 	public static void main(String[] args) {
 		SpringApplication.run(SavingHourMarketApiServerApplication.class, args);
 	}
