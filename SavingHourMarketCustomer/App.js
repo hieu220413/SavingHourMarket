@@ -14,12 +14,12 @@ import EditProfile from './screens/EditProfile';
 import Login from './screens/Login';
 import Signup from './screens/Signup';
 
-
 import Payment from './screens/Payment';
 import SelectPickupPoint from './screens/SelectPickupPoint';
 import SelectTimeFrame from './screens/SelectTimeFrame';
 import SelectPaymentMethod from './screens/SelectPaymentMethod';
 import SelectVoucher from './screens/SelectVoucher';
+import SelectCustomerLocation from './screens/SelectCustomerLocation';
 import EditCustomerLocation from './screens/EditCustomerLocation';
 
 const Stack = createStackNavigator();
@@ -54,10 +54,13 @@ export default function App() {
           />
           <Stack.Screen name="Select voucher" component={SelectVoucher} />
           <Stack.Screen
+            name="Select customer location"
+            component={SelectCustomerLocation}
+          />
+          <Stack.Screen
             name="Edit customer location"
             component={EditCustomerLocation}
           />
-
         </Stack.Navigator>
       </NavigationContainer>
     </>
