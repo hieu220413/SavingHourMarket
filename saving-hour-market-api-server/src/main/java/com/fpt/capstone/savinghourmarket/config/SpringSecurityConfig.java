@@ -37,12 +37,14 @@ public class SpringSecurityConfig {
                             .requestMatchers("/v3/api-docs/**").permitAll()
                             .requestMatchers("/swagger-ui.html").permitAll()
                             .requestMatchers(HttpMethod.POST, "/api/customer/registerWithEmailPassword").permitAll()
+                            .requestMatchers("/api/customer/updateInfo").authenticated()
                             .requestMatchers("/api/product/getProductsForCustomer").permitAll()
                             .requestMatchers("/api/discount/getDiscountsForCustomer").permitAll()
                             .requestMatchers("/api/discount/getDiscountById").permitAll()
                             .requestMatchers("/api/timeframe/getAll").permitAll()
                             .requestMatchers("/api/pickupPoint/getAll").permitAll()
                             .requestMatchers("/api/pickupPoint/getWithSortAndSuggestion").permitAll()
+                            .requestMatchers("/api/transaction/processPaymentResult").permitAll()
                             .requestMatchers("/api/product/getProductsForStaff").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/discount/getDiscountsForStaff").hasAnyRole(allStaffAndAdmin);
                     auth.anyRequest().authenticated();

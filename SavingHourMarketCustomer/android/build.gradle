@@ -19,3 +19,13 @@ buildscript {
         classpath("com.facebook.react:react-native-gradle-plugin")
     }
 }
+
+allprojects {
+    repositories {
+        maven {
+                url("$rootDir/../node_modules/react-native-vnpay-merchant/android/repo")
+        }
+        google()
+        mavenCentral()
+    }
+}

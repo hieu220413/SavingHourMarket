@@ -1,10 +1,13 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.sql.Date;
@@ -27,6 +30,7 @@ public class Order {
 
     private Integer totalPrice;
 
+    @CreationTimestamp
     @Column(columnDefinition = "datetime(0)")
     private LocalDateTime createdTime;
 
@@ -44,27 +48,21 @@ public class Order {
     @Column(columnDefinition = "varchar(255)")
     private String addressDeliver;
 
-    @ManyToOne(
-            fetch = FetchType.LAZY
-    )
+    @ManyToOne()
     @JoinColumn(
             name = "packager_id",
             referencedColumnName = "id"
     )
     private Staff packager;
 
-    @ManyToOne(
-            fetch = FetchType.LAZY
-    )
+    @ManyToOne()
     @JoinColumn(
             name = "deliverer_id",
             referencedColumnName = "id"
     )
     private Staff deliverer;
 
-    @ManyToOne(
-            fetch = FetchType.LAZY
-    )
+    @ManyToOne()
     @JoinColumn(
             name = "customer_id",
             referencedColumnName = "id"
@@ -78,10 +76,10 @@ public class Order {
             name = "discount_id",
             referencedColumnName = "id"
     )
+    @JsonIgnore
     private Discount discount;
 
     @OneToMany(
-            fetch = FetchType.LAZY,
             mappedBy = "order"
     )
     private List<Transaction> transaction;
@@ -93,11 +91,13 @@ public class Order {
             name = "order_group_id",
             referencedColumnName = "id"
     )
+    @JsonIgnore
     private OrderGroup orderGroup;
 
     @OneToMany(
             fetch = FetchType.LAZY,
             mappedBy = "order"
     )
+    @JsonIgnore
     private List<OrderDetail> orderDetailList;
 }

@@ -1,11 +1,16 @@
 package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
+import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.exception.InvalidUserInputException;
+import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
+import com.fpt.capstone.savinghourmarket.model.CustomerPasswordRequestBody;
 import com.fpt.capstone.savinghourmarket.model.CustomerRegisterRequestBody;
+import com.fpt.capstone.savinghourmarket.model.CustomerUpdateRequestBody;
 import com.fpt.capstone.savinghourmarket.repository.CustomerRepository;
 import com.fpt.capstone.savinghourmarket.service.CustomerService;
+import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserInfo;
@@ -13,7 +18,11 @@ import com.google.firebase.auth.UserRecord;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Optional;
@@ -28,12 +37,11 @@ public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepository;
 
-    private HashMap errorFields = new HashMap<>();
-
     @Override
-    public Customer register(CustomerRegisterRequestBody customerRegisterRequestBody) throws FirebaseAuthException {
+    public Customer register(CustomerRegisterRequestBody customerRegisterRequestBody) throws FirebaseAuthException, UnsupportedEncodingException {
         Pattern pattern;
         Matcher matcher;
+        HashMap errorFields = new HashMap<>();
 
         // email format validate
         pattern = Pattern.compile("^[\\w!#$%&amp;'*+/=?`{|}~^-]+(?:\\.[\\w!#$%&amp;'*+/=?`{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$");
@@ -42,6 +50,7 @@ public class CustomerServiceImpl implements CustomerService {
             errorFields.put("emailError", "Invalid email format");
         }
 
+        // password validate
         pattern = Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,20}$");
         matcher = pattern.matcher(customerRegisterRequestBody.getPassword());
 
@@ -55,32 +64,32 @@ public class CustomerServiceImpl implements CustomerService {
         }
 
         //phone format validate
-        pattern = Pattern.compile("^(0|84)(2(0[3-9]|1[0-6|8|9]|2[0-2|5-9]|3[2-9]|4[0-9]|5[1|2|4-9]|6[0-3|9]|7[0-7]|8[0-9]|9[0-4|6|7|9])|3[2-9]|5[5|6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])([0-9]{7})$");
-        matcher = pattern.matcher(customerRegisterRequestBody.getPhone());
-        if(!matcher.matches()){
-            errorFields.put("phoneError", "Invalid phone number format");
-        }
+//        pattern = Pattern.compile("^(0|84)(2(0[3-9]|1[0-6|8|9]|2[0-2|5-9]|3[2-9]|4[0-9]|5[1|2|4-9]|6[0-3|9]|7[0-7]|8[0-9]|9[0-4|6|7|9])|3[2-9]|5[5|6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])([0-9]{7})$");
+//        matcher = pattern.matcher(customerRegisterRequestBody.getPhone());
+//        if(!matcher.matches()){
+//            errorFields.put("phoneError", "Invalid phone number format");
+//        }
 
         //full name validate
-        pattern = Pattern.compile("^[A-Za-z\s]{2,50}$");
-        matcher = pattern.matcher(customerRegisterRequestBody.getFullName());
-        if(!matcher.matches()){
-            errorFields.put("fullNameError", "Contain only alphabet and space. Minimum characters is 2 and maximum is 50");
-        }
+//        pattern = Pattern.compile("^[a-zA-Z_ÀÁÂÃÈÉÊẾÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêếìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹ\s]{2,50}$");
+//        matcher = pattern.matcher(customerRegisterRequestBody.getFullName());
+//        if(!matcher.matches()){
+//            errorFields.put("fullNameError", "Contain only alphabet en/vn and space. Minimum characters is 2 and maximum is 50");
+//        }
 
-        if(customerRegisterRequestBody.getAddress().length() > 255){
-            errorFields.put("addressError", "Maximum character is 255");
-        }
+//        if(customerRegisterRequestBody.getAddress().length() > 255){
+//            errorFields.put("addressError", "Maximum character is 255");
+//        }
 
-        if(customerRegisterRequestBody.getGender() != 1 && customerRegisterRequestBody.getGender() != 0) {
-            errorFields.put("genderError", "Accept only 1 (Female) and 0 (Male)");
-        }
+//        if(customerRegisterRequestBody.getGender() != 1 && customerRegisterRequestBody.getGender() != 0) {
+//            errorFields.put("genderError", "Accept only 1 (Female) and 0 (Male)");
+//        }
 
-        try {
-            LocalDate localDate = LocalDate.parse(customerRegisterRequestBody.getDateOfBirth());
-        } catch (Exception e) {
-            errorFields.put("dateOfBirthError", "Invalid date or date format");
-        }
+//        try {
+//            LocalDate localDate = LocalDate.parse(customerRegisterRequestBody.getDateOfBirth());
+//        } catch (Exception e) {
+//            errorFields.put("dateOfBirthError", "Invalid date or date format");
+//        }
 
         if(errorFields.size() > 0){
             throw new InvalidUserInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
@@ -93,7 +102,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         firebaseAuth.createUser(request);
 
-        if(customerRegisterRequestBody.getAvatarUrl() == null) customerRegisterRequestBody.setAvatarUrl("");
+//        if(customerRegisterRequestBody.getAvatarUrl() == null) customerRegisterRequestBody.setAvatarUrl("");
 
         Customer customerEntity = new Customer(customerRegisterRequestBody);
 
@@ -120,5 +129,108 @@ public class CustomerServiceImpl implements CustomerService {
     public Customer getInfo(String email) {
         Optional<Customer> customer = customerRepository.getCustomerByEmail(email);
         return customer.get();
+    }
+
+    @Override
+    @Transactional
+    public Customer updateInfo(CustomerUpdateRequestBody customerUpdateRequestBody, String email, MultipartFile imageFile) throws IOException {
+        Pattern pattern;
+        Matcher matcher;
+        HashMap errorFields = new HashMap<>();
+//        Customer newCustomerField = new Customer();
+        Optional<Customer> targetedCustomer = customerRepository.getCustomerByEmail(email);
+
+        if(!targetedCustomer.isPresent()) {
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.CUSTOMER_NOT_FOUND.getCode()), AdditionalResponseCode.CUSTOMER_NOT_FOUND.toString());
+        }
+
+        //phone format validate
+        if(customerUpdateRequestBody.getPhone()!=null && !customerUpdateRequestBody.getPhone().isBlank()) {
+            pattern = Pattern.compile("^(0|84)(2(0[3-9]|1[0-6|8|9]|2[0-2|5-9]|3[2-9]|4[0-9]|5[1|2|4-9]|6[0-3|9]|7[0-7]|8[0-9]|9[0-4|6|7|9])|3[2-9]|5[5|6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])([0-9]{7})$");
+            matcher = pattern.matcher(customerUpdateRequestBody.getPhone());
+            if(!matcher.matches()){
+                errorFields.put("phoneError", "Invalid phone number format");
+            } else {
+                targetedCustomer.get().setPhone(customerUpdateRequestBody.getPhone());
+            }
+        }
+
+
+        //full name validate
+        if(customerUpdateRequestBody.getFullName()!=null && !customerUpdateRequestBody.getFullName().isBlank()) {
+            pattern = Pattern.compile("^[a-zA-Z_ÀÁÂÃÈÉÊẾÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêếìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹ\s]{2,50}$");
+            matcher = pattern.matcher(customerUpdateRequestBody.getFullName());
+            if(!matcher.matches()){
+                errorFields.put("fullNameError", "Contain only alphabet en/vn and space. Minimum characters is 2 and maximum is 50");
+            } else {
+                targetedCustomer.get().setFullName(customerUpdateRequestBody.getFullName());
+            }
+
+        }
+
+        if(customerUpdateRequestBody.getAddress()!=null && !customerUpdateRequestBody.getAddress().isBlank()){
+            if(customerUpdateRequestBody.getAddress().length() > 255){
+                errorFields.put("addressError", "Maximum character is 255");
+            } else {
+                targetedCustomer.get().setAddress(customerUpdateRequestBody.getAddress());
+            }
+        }
+
+        if(customerUpdateRequestBody.getGender()!=null) {
+            if(customerUpdateRequestBody.getGender() != 1 && customerUpdateRequestBody.getGender() != 0){
+                errorFields.put("genderError", "Accept only 1 (Female) and 0 (Male)");
+            } else {
+                targetedCustomer.get().setGender(customerUpdateRequestBody.getGender());
+            }
+
+        }
+
+
+        if(customerUpdateRequestBody.getDateOfBirth()!=null){
+            try {
+                LocalDate localDate = LocalDate.parse(customerUpdateRequestBody.getDateOfBirth());
+                targetedCustomer.get().setDateOfBirth(localDate);
+            } catch (Exception e) {
+                errorFields.put("dateOfBirthError", "Invalid date or date format");
+            }
+        }
+
+        if(errorFields.size() > 0){
+            throw new InvalidUserInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
+        }
+
+        if(imageFile != null && !imageFile.isEmpty()){
+            String imageUrl = Utils.uploadPublicFileToFirebaseStorage(imageFile);
+            targetedCustomer.get().setAvatarUrl(imageUrl);
+        }
+
+//        Customer result = customerRepository.save(targetedCustomer.get());
+
+        return targetedCustomer.get();
+    }
+
+    @Override
+    public void updatePassword(CustomerPasswordRequestBody customerPasswordRequestBody, String email) throws FirebaseAuthException {
+        Pattern pattern;
+        Matcher matcher;
+        HashMap errorFields = new HashMap<>();
+
+        // password validate
+        pattern = Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,20}$");
+        matcher = pattern.matcher(customerPasswordRequestBody.getPassword());
+
+        if(!matcher.matches()){
+            errorFields.put("passwordError", "At least 8 characters, 1 digit, 1 uppercase and lowercase letter");
+        }
+
+        if(errorFields.size() > 0){
+            throw new InvalidUserInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
+        }
+
+        String uid = firebaseAuth.getUserByEmail(email).getUid();
+        UserRecord.UpdateRequest request = new UserRecord.UpdateRequest(uid)
+                .setPassword(customerPasswordRequestBody.getPassword());
+        firebaseAuth.updateUser(request);
+        firebaseAuth.revokeRefreshTokens(uid);
     }
 }

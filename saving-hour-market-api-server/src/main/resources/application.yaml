@@ -1,5 +1,6 @@
 spring:
   jpa:
+    show-sql: true
     properties:
       hibernate:
         dialect:
@@ -9,7 +10,7 @@ spring:
     hibernate:
       ddl-auto: create-drop
   datasource:
-    password: 123456vinh
+    password: ${PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     url: jdbc:mysql://localhost/saving_hour_market?useUnicode=true&characterEncoding=UTF-8
@@ -21,6 +22,10 @@ spring:
       resourceserver:
         jwt:
           jwk-set-uri: 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken%40system.gserviceaccount.com'
+  servlet:
+    multipart:
+      max-request-size: 10MB
+      max-file-size: 10MB
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
@@ -41,3 +46,8 @@ logging:
 
 
 google-api-key: ${GOOGLE_API_KEY}
+vnpay-hash-secret: ${VNPAY_HASH_SECRET}
+vnpay-tmn-code: ${VNPAY_TMN_CODE}
+
+base-path-android: ${BASE_PATH:#{'http://10.0.2.2:8082'}}
+
