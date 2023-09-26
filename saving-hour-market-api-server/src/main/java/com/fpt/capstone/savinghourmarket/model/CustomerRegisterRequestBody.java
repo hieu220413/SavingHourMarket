@@ -15,8 +15,8 @@ import java.time.LocalDate;
 @Validated
 public class CustomerRegisterRequestBody {
 
-    @NotNull
-    private String fullName;
+//    @NotNull
+//    private String fullName;
 
     @NotNull
     private String password;
@@ -24,18 +24,18 @@ public class CustomerRegisterRequestBody {
     @NotNull
     private String email;
 
-    @NotNull
-    private String phone;
-
-    @NotNull
-    private String dateOfBirth;
-
-    private String avatarUrl;
-
-    @NotNull
-    private String address;
-
-    @NotNull
-    private Integer gender;
+//    @NotNull
+//    private String phone;
+//
+//    @NotNull
+//    private String dateOfBirth;
+//
+//    private String avatarUrl;
+//
+//    @NotNull
+//    private String address;
+//
+//    @NotNull
+//    private Integer gender;
 
 }
