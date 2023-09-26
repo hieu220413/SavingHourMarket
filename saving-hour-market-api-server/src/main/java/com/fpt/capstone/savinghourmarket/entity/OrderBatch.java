@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,26 +17,14 @@ import java.util.UUID;
 @NoArgsConstructor
 @Setter
 @Getter
-@Table(name = "order_group")
-public class OrderGroup {
+public class OrderBatch {
     @Id
     @UuidGenerator
     private UUID id;
 
-    @ManyToOne
-    @JoinColumn(
-            name = "time_frame_id",
-            referencedColumnName = "id"
-    )
-    private TimeFrame timeFrame;
+    private String district;
 
-    @ManyToOne
-    @JoinColumn(
-            name = "pickup_point_id",
-            referencedColumnName = "id"
-    )
-    private PickupPoint pickupPoint;
-
+    private LocalDate deliverDate;
 
     @ManyToOne(
             fetch = FetchType.LAZY
@@ -44,11 +33,12 @@ public class OrderGroup {
             name = "deliverer_id",
             referencedColumnName = "id"
     )
+    @JsonIgnore
     private Staff deliverer;
 
     @OneToMany(
             fetch = FetchType.LAZY,
-            mappedBy = "orderGroup"
+            mappedBy = "orderBatch"
     )
     @JsonIgnore
     private List<Order> orderList;
