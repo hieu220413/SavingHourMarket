@@ -20,6 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.glxn.qrgen.QRCode;
 import net.glxn.qrgen.image.ImageType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.stereotype.Service;
 
 
@@ -52,6 +54,8 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private CustomerRepository customerRepository;
 
+    @Autowired
+    private StaffRepository staffRepository;
 
     @Autowired
     private DiscountRepository discountRepository;
@@ -73,6 +77,29 @@ public class OrderServiceImpl implements OrderService {
             throw new NoSuchOrderException("No such order group left on system");
         }
         return orderGroups;
+    }
+
+    @Override
+    public List<Order> fetchOrdersForStaff(String jwtToken,
+                                           String totalPriceSortType,
+                                           String createdTimeSortType,
+                                           String deliveryDateSortType,
+                                           OrderStatus orderStatus,
+                                           UUID packagerId,
+                                           UUID delivererId,
+                                           Boolean isPaid,
+                                           Boolean isGrouped) throws NoSuchOrderException, FirebaseAuthException, ResourceNotFoundException {
+        String email = Utils.getCustomerEmail(jwtToken,firebaseAuth);
+        Staff staff = staffRepository.findByEmail(email).orElseThrow(() -> new AuthorizationServiceException("Access denied with this staff's account: " + email));
+        Sort sortable;
+        if(totalPriceSortType.equals("ASC")){
+            sortable = Sort.by("totalPrice").descending();
+        }else if (createdTimeSortType.equals("DESC")) {
+            sortable = Sort.by("createdTime").ascending();
+        }else if (deliveryDateSortType.equals("ASC")){
+            sortable = Sort.by("deliveryDate").ascending();
+        }
+        return null;
     }
 
     @Override
@@ -200,10 +227,10 @@ public class OrderServiceImpl implements OrderService {
                     .orElseThrow(() -> new ResourceNotFoundException("No Product found with this id " + orderProduct.getId()));
             if(product.getQuantity() > orderProduct.getBoughtQuantity()){
                 product.setQuantity(product.getQuantity() - orderProduct.getBoughtQuantity());
+                productRepository.save(product);
             }else {
                 throw new OutOfProductQuantityException("Product don't have enough quantity" );
             }
-            productRepository.save(product);
             orderDetail.setProduct(product);
             orderDetail.setProductPrice(orderProduct.getProductPrice());
             orderDetail.setProductOriginalPrice(orderProduct.getProductOriginalPrice());

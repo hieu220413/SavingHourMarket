@@ -60,10 +60,10 @@ public class OrderController {
 
     @Transactional
     @PutMapping("/createOrder")
-    public ResponseEntity<String> getCustomerOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken , @Valid @RequestBody OrderCreate order, BindingResult bindingResult) throws ResourceNotFoundException, FirebaseAuthException, IOException, BadRequestException, OutOfProductQuantityException {
-        if (bindingResult.hasErrors()) {
-            throw  new BadRequestException("Validation error while creating");
-        }
+    public ResponseEntity<String> getCustomerOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken ,@RequestBody OrderCreate order) throws ResourceNotFoundException, FirebaseAuthException, IOException, BadRequestException, OutOfProductQuantityException {
+//        if (bindingResult.hasErrors()) {
+//            throw  new BadRequestException("Validation error while creating");
+//        }
         return ResponseEntity.status(HttpStatus.OK).body(orderService.createOrder(jwtToken,order));
     }
 

@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.service;
 
+import com.fpt.capstone.savinghourmarket.common.OrderStatus;
 import com.fpt.capstone.savinghourmarket.entity.Order;
 import com.fpt.capstone.savinghourmarket.entity.OrderGroup;
 import com.fpt.capstone.savinghourmarket.exception.NoSuchOrderException;
@@ -19,6 +20,8 @@ public interface OrderService {
     List<Order> fetchAll() throws NoSuchOrderException;
     List<Order> fetchAllNotInGroup() throws NoSuchOrderException;
     List<OrderGroup> fetchAllWithGroup() throws NoSuchOrderException;
+
+    List<Order> fetchOrdersForStaff(String jwtToken, String totalPriceSortType , String createdTimeSortType, String deliveryDateSortType, OrderStatus orderStatus, UUID packagerId, UUID delivererId , Boolean isPaid, Boolean isGrouped) throws NoSuchOrderException, FirebaseAuthException, ResourceNotFoundException;
     List<Order> fetchByStatus(Integer status) throws NoSuchOrderException;
     List<Order> fetchCustomerOrders(String jwtToken, Integer status) throws ResourceNotFoundException, NoSuchOrderException, FirebaseAuthException;
     List<OrderProduct> fetchOrderDetail(UUID id) throws ResourceNotFoundException;

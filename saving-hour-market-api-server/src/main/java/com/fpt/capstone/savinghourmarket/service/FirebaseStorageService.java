@@ -1,8 +1,6 @@
 package com.fpt.capstone.savinghourmarket.service;
 
-import com.google.cloud.storage.Bucket;
-import com.google.cloud.storage.Storage;
-import com.google.cloud.storage.StorageOptions;
+import com.google.cloud.storage.*;
 import com.google.firebase.cloud.StorageClient;
 
 
@@ -13,15 +11,23 @@ public interface FirebaseStorageService {
 
     static String uploadQRCodeToStorage(ByteArrayOutputStream qrCodeStream, UUID orderId) {
         try {
-            Storage storage = StorageOptions.getDefaultInstance().getService();
+            Storage storage = StorageOptions.newBuilder().setProjectId("capstone-project-398104").build().getService();
             Bucket bucket = StorageClient.getInstance().bucket();
 
             byte[] qrCodeBytes = qrCodeStream.toByteArray();
             String objectName = "Order_QR_code/" + orderId + ".png"; // Set the desired object name
 
-            bucket.create(objectName, qrCodeBytes);
+//            bucket.create(objectName, qrCodeBytes);
+            // Create a BlobId
+            BlobId blobId = BlobId.of(bucket.getName(), objectName);
 
-            // Generate the public URL for the uploaded QR code
+            // Define BlobInfo and upload the byte array
+            BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
+            Blob blob = storage.create(blobInfo, qrCodeBytes);
+
+            // Get the public URL of the uploaded QR code
+            String publicUrl = blob.getMediaLink();
+
             return objectName;
         } catch (Exception e) {
             e.printStackTrace();
