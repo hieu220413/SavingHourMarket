@@ -4,6 +4,7 @@ import com.fpt.capstone.savinghourmarket.entity.Order;
 import com.fpt.capstone.savinghourmarket.entity.OrderGroup;
 import com.fpt.capstone.savinghourmarket.exception.NoSuchOrderException;
 import com.fpt.capstone.savinghourmarket.exception.OrderCancellationNotAllowedException;
+import com.fpt.capstone.savinghourmarket.exception.OutOfProductQuantityException;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.OrderCreate;
 import com.fpt.capstone.savinghourmarket.model.OrderProduct;
@@ -19,9 +20,8 @@ public interface OrderService {
     List<Order> fetchAllNotInGroup() throws NoSuchOrderException;
     List<OrderGroup> fetchAllWithGroup() throws NoSuchOrderException;
     List<Order> fetchByStatus(Integer status) throws NoSuchOrderException;
-    List<Order> fetchCustomerOrderByStatus(String jwtToken, Integer status) throws ResourceNotFoundException, NoSuchOrderException, FirebaseAuthException;
-    List<Order> fetchCustomerOrder(String jwtToken) throws ResourceNotFoundException, NoSuchOrderException, FirebaseAuthException;
+    List<Order> fetchCustomerOrders(String jwtToken, Integer status) throws ResourceNotFoundException, NoSuchOrderException, FirebaseAuthException;
     List<OrderProduct> fetchOrderDetail(UUID id) throws ResourceNotFoundException;
-    String createOrder(String jwtToken, OrderCreate orderCreate) throws ResourceNotFoundException, IOException, FirebaseAuthException;
+    String createOrder(String jwtToken, OrderCreate orderCreate) throws ResourceNotFoundException, IOException, FirebaseAuthException, OutOfProductQuantityException;
     String cancelOrder(UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException;
 }

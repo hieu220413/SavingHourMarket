@@ -10,7 +10,7 @@ spring:
     hibernate:
       ddl-auto: create-drop
   datasource:
-    password: Dre220413@
+    password: ${MySQL_PW}
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     url: jdbc:mysql://localhost/saving_hour_market?useUnicode=true&characterEncoding=UTF-8

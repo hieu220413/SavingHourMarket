@@ -67,7 +67,6 @@ public class Order {
             name = "customer_id",
             referencedColumnName = "id"
     )
-    @JsonBackReference
     private Customer customer;
 
     @ManyToOne(
@@ -81,7 +80,6 @@ public class Order {
     private Discount discount;
 
     @OneToMany(
-            fetch = FetchType.LAZY,
             mappedBy = "order"
     )
     private List<Transaction> transaction;

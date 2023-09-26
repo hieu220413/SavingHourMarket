@@ -2,14 +2,12 @@ package com.fpt.capstone.savinghourmarket.controller;
 
 import com.fpt.capstone.savinghourmarket.entity.Order;
 import com.fpt.capstone.savinghourmarket.entity.OrderGroup;
-import com.fpt.capstone.savinghourmarket.exception.BadRequestException;
-import com.fpt.capstone.savinghourmarket.exception.NoSuchOrderException;
-import com.fpt.capstone.savinghourmarket.exception.OrderCancellationNotAllowedException;
-import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
+import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.OrderCreate;
 import com.fpt.capstone.savinghourmarket.model.OrderProduct;
 import com.fpt.capstone.savinghourmarket.service.OrderService;
 import com.google.firebase.auth.FirebaseAuthException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -39,7 +37,7 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchAllNotInGroup());
     }
 
-    @GetMapping("/getGroupOfOrders")
+    @GetMapping("/getOrderGroup")
     public ResponseEntity<List<OrderGroup>> getListOfOrdersWithGroup() throws NoSuchOrderException {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchAllWithGroup());
     }
@@ -49,23 +47,20 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchByStatus(status));
     }
 
+
     @GetMapping("/getCustomerOrders")
-    public ResponseEntity<List<Order>> getCustomerOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws ResourceNotFoundException, NoSuchOrderException, FirebaseAuthException {
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchCustomerOrder(jwtToken));
-    }
-
-    @GetMapping("/getCustomerOrdersByStatus")
     public ResponseEntity<List<Order>> getCustomerOrderByStatus(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken, @RequestHeader(name = "Status", defaultValue = "4") Integer status) throws ResourceNotFoundException, NoSuchOrderException, FirebaseAuthException {
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchCustomerOrderByStatus(jwtToken, status));
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchCustomerOrders(jwtToken, status));
     }
 
-    @GetMapping("/getOrderDetailById/{id}")
+    @GetMapping("/getOrderDetail/{id}")
     public ResponseEntity<List<OrderProduct>> getOrderDetailById(@PathVariable UUID id) throws ResourceNotFoundException {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderDetail(id));
     }
 
+    @Transactional
     @PutMapping("/createOrder")
-    public ResponseEntity<String> getCustomerOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken , @Valid @RequestBody OrderCreate order, BindingResult bindingResult) throws ResourceNotFoundException, FirebaseAuthException, IOException, BadRequestException {
+    public ResponseEntity<String> getCustomerOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken , @Valid @RequestBody OrderCreate order, BindingResult bindingResult) throws ResourceNotFoundException, FirebaseAuthException, IOException, BadRequestException, OutOfProductQuantityException {
         if (bindingResult.hasErrors()) {
             throw  new BadRequestException("Validation error while creating");
         }

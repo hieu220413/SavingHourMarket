@@ -4,6 +4,7 @@ import com.fpt.capstone.savinghourmarket.common.OrderStatus;
 import com.fpt.capstone.savinghourmarket.entity.*;
 import com.fpt.capstone.savinghourmarket.exception.NoSuchOrderException;
 import com.fpt.capstone.savinghourmarket.exception.OrderCancellationNotAllowedException;
+import com.fpt.capstone.savinghourmarket.exception.OutOfProductQuantityException;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.OrderCreate;
 import com.fpt.capstone.savinghourmarket.model.OrderProduct;
@@ -13,6 +14,7 @@ import com.fpt.capstone.savinghourmarket.service.OrderService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.glxn.qrgen.QRCode;
@@ -49,6 +51,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private CustomerRepository customerRepository;
+
 
     @Autowired
     private DiscountRepository discountRepository;
@@ -123,7 +126,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<Order> fetchCustomerOrderByStatus(String jwtToken, Integer status) throws ResourceNotFoundException, NoSuchOrderException, FirebaseAuthException {
+    public List<Order> fetchCustomerOrders(String jwtToken, Integer status) throws ResourceNotFoundException, NoSuchOrderException, FirebaseAuthException {
         String email = Utils.getCustomerEmail(jwtToken,firebaseAuth);
         log.info("Fetching customer order with email "+email+" by status " + status);
         Customer customer = customerRepository.findByEmail(email)
@@ -135,20 +138,10 @@ public class OrderServiceImpl implements OrderService {
         return orders;
     }
 
-    @Override
-    public List<Order> fetchCustomerOrder(String jwtToken) throws ResourceNotFoundException, NoSuchOrderException, FirebaseAuthException {
-        log.info("Fetching all customer's orders");
-        String email = Utils.getCustomerEmail(jwtToken,firebaseAuth);
-        Customer customer = customerRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("There is no customer with email " + email));
-        List<Order> orders = repository.findOrderByCustomer(customer);
-        if (orders.isEmpty()) {
-            throw new NoSuchOrderException("No order left for this customer");
-        }
-        return orders;
-    }
 
     @Override
-    public String createOrder(String jwtToken,OrderCreate orderCreate) throws ResourceNotFoundException, IOException, FirebaseAuthException {
+    @Transactional
+    public String createOrder(String jwtToken,OrderCreate orderCreate) throws ResourceNotFoundException, IOException, FirebaseAuthException, OutOfProductQuantityException {
         log.info("Creating new order");
 
         //Mapping orderCreate model to order entity
@@ -205,6 +198,12 @@ public class OrderServiceImpl implements OrderService {
             orderDetail.setOrder(orderSavedSuccess);
             Product product = productRepository.findById(orderProduct.getId())
                     .orElseThrow(() -> new ResourceNotFoundException("No Product found with this id " + orderProduct.getId()));
+            if(product.getQuantity() > orderProduct.getBoughtQuantity()){
+                product.setQuantity(product.getQuantity() - orderProduct.getBoughtQuantity());
+            }else {
+                throw new OutOfProductQuantityException("Product don't have enough quantity" );
+            }
+            productRepository.save(product);
             orderDetail.setProduct(product);
             orderDetail.setProductPrice(orderProduct.getProductPrice());
             orderDetail.setProductOriginalPrice(orderProduct.getProductOriginalPrice());
