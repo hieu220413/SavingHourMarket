@@ -389,7 +389,7 @@ const Payment = ({navigation}) => {
               {/* Manage customer location */}
               <TouchableOpacity
                 onPress={() => {
-                  navigation.navigate('Edit customer location');
+                  navigation.navigate('Select customer location');
                 }}>
                 <View
                   style={{

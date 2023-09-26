@@ -5,13 +5,13 @@ import {View, Image, Text} from 'react-native';
 import {ScrollView, TouchableOpacity} from 'react-native-gesture-handler';
 import {icons} from '../constants';
 import {COLORS} from '../constants/theme';
+import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
 
 const EditCustomerLocation = ({navigation}) => {
   return (
-    <ScrollView>
+    <>
       <View
         style={{
-          flex: 1,
           alignItems: 'center',
           flexDirection: 'row',
           gap: 20,
@@ -35,64 +35,27 @@ const EditCustomerLocation = ({navigation}) => {
             fontWeight: 'bold',
             fontFamily: 'Roboto',
           }}>
-          Customer location
+          Location
         </Text>
       </View>
       <View style={{backgroundColor: 'white', marginTop: 20}}>
-        {/* Manage customer location */}
-
-        <View
-          onPress={() => {
-            navigation.navigate('Select customer location');
-          }}>
-          <View
-            style={{
-              padding: 20,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}>
-            <View style={{flex: 9}}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  gap: 10,
-                  alignItems: 'center',
-                }}>
-                <View>
-                  <Text
-                    style={{
-                      fontSize: 18,
-                      fontFamily: 'Roboto',
-                      color: 'black',
-                    }}>
-                    Số 121, Trần Văn Dư
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: 18,
-                      fontFamily: 'Roboto',
-                      color: 'black',
-                    }}>
-                    Phường 13, Quận Tân Bình, TP.HCM
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            <Image
-              resizeMode="contain"
-              style={{
-                width: 25,
-                height: 25,
-                flex: 1,
-              }}
-              source={icons.rightArrow}
-            />
-          </View>
-        </View>
+        <GooglePlacesAutocomplete
+          placeholder="Type a place"
+          query={{
+            key: 'AIzaSyAS9g-YaD4h7Yrp3A4Myf8GhxLJCdpLC4M',
+            language: 'en',
+          }}
+          fetchDetails={true}
+          onPress={(data, details = null) => console.log(data, details)}
+          onFail={error => console.log(error)}
+          onNotFound={() => console.log('no results')}
+          GooglePlacesDetailsQuery={{
+            fields: ['formatted_address', 'geometry'],
+          }}
+          debounce={500}
+        />
       </View>
-    </ScrollView>
+    </>
   );
 };
 
