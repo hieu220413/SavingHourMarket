@@ -1,33 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import "./SideMenu.scss";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faBarsProgress,
-  faGear,
-  faUser,
-} from "@fortawesome/free-solid-svg-icons";
+
 import { useLocation, useNavigate } from "react-router";
 
-const SideMenu = () => {
+const SideMenu = ({ menuTabs }) => {
   const { pathname } = useLocation();
-  const menuTabs = [
-    {
-      icon: faUser,
-      display: "Profile",
-      to: "/",
-    },
-    {
-      icon: faBarsProgress,
-      display: "Management",
-      to: "/usermanagement",
-    },
-    {
-      icon: faGear,
-      display: "Configuration",
-      to: "/config",
-    },
-  ];
 
   const navigate = useNavigate();
 

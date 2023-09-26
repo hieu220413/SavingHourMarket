@@ -2,26 +2,7 @@ import React from "react";
 import "./ManagementMenu.scss";
 import { Link, useLocation } from "react-router-dom";
 
-const ManagementMenu = () => {
-  const menuTabs = [
-    {
-      display: "User",
-      to: "/usermanagement",
-    },
-    {
-      display: "Feedback",
-      to: "/feedbackmanagement",
-    },
-    {
-      display: "Pickup Point",
-      to: "/pickuppointmanagement",
-    },
-    {
-      display: "Transaction",
-      to: "/transactionmanagement",
-    },
-  ];
-
+const ManagementMenu = ({ menuTabs }) => {
   const { pathname } = useLocation();
   const active = menuTabs.findIndex((e) => e.to === pathname);
 
