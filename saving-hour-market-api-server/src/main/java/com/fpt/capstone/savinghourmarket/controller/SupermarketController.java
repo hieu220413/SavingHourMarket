@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
+import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.entity.Supermarket;
 import com.fpt.capstone.savinghourmarket.model.SupermarketCreateRequestBody;
 import com.fpt.capstone.savinghourmarket.model.SupermarketUpdateRequestBody;
@@ -38,6 +39,14 @@ public class SupermarketController {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
         Supermarket supermarket = supermarketService.update(supermarketUpdateRequestBody, supermarketId);
+        return ResponseEntity.status(HttpStatus.OK).body(supermarket);
+    }
+
+    @RequestMapping(value = "/changeStatus", method = RequestMethod.PUT)
+    public ResponseEntity<Supermarket> changeStatus(@RequestParam EnableDisableStatus status, @RequestParam UUID supermarketId, @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        Supermarket supermarket = supermarketService.changeStatus(supermarketId, status);
         return ResponseEntity.status(HttpStatus.OK).body(supermarket);
     }
 }

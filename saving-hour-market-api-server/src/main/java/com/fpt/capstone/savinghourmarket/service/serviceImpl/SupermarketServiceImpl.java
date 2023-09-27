@@ -1,14 +1,19 @@
 package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
 import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
+import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
+import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.Supermarket;
+import com.fpt.capstone.savinghourmarket.exception.DisableSupermarketForbidden;
 import com.fpt.capstone.savinghourmarket.exception.InvalidUserInputException;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.SupermarketCreateRequestBody;
 import com.fpt.capstone.savinghourmarket.model.SupermarketUpdateRequestBody;
+import com.fpt.capstone.savinghourmarket.repository.ProductRepository;
 import com.fpt.capstone.savinghourmarket.repository.SupermarketRepository;
 import com.fpt.capstone.savinghourmarket.service.SupermarketService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +29,8 @@ import java.util.regex.Pattern;
 public class SupermarketServiceImpl implements SupermarketService {
 
     private final SupermarketRepository supermarketRepository;
+
+    private final ProductRepository productRepository;
 
     @Override
     public Supermarket create(SupermarketCreateRequestBody supermarketCreateRequestBody) {
@@ -115,6 +122,27 @@ public class SupermarketServiceImpl implements SupermarketService {
         }
 
 
+        return supermarket.get();
+    }
+
+    @Override
+    public Supermarket changeStatus(UUID supermarketId, EnableDisableStatus status) {
+        Optional<Supermarket> supermarket = supermarketRepository.findById(supermarketId);
+
+        if(!supermarket.isPresent()){
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.SUPERMARKET_NOT_FOUND.getCode()), AdditionalResponseCode.SUPERMARKET_NOT_FOUND.toString());
+        }
+
+        if(status.toString().equals(EnableDisableStatus.ENABLE.toString())){
+            supermarket.get().setStatus(status.ordinal());
+        }
+        if(status.toString().equals(EnableDisableStatus.DISABLE.toString())){
+            Product product = productRepository.getProductByActiveAndSupermarketId(supermarketId, PageRequest.of(0,1));
+            if(product!=null){
+                throw new DisableSupermarketForbidden(HttpStatus.valueOf(AdditionalResponseCode.DISABLE_SUPERMARKET_FORBIDDEN.getCode()), AdditionalResponseCode.DISABLE_SUPERMARKET_FORBIDDEN.toString());
+            }
+            supermarket.get().setStatus(status.ordinal());
+        }
         return supermarket.get();
     }
 }
