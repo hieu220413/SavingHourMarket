@@ -29,9 +29,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -52,6 +50,12 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private OrderGroupRepository orderGroupRepository;
+
+    @Autowired
+    private TimeFrameRepository timeFrameRepository;
+
+    @Autowired
+    private PickupPointRepository pickupPointRepository;
 
     @Autowired
     private CustomerRepository customerRepository;
@@ -118,7 +122,7 @@ public class OrderServiceImpl implements OrderService {
 
 
         List<Order> orders = repository.findOrderForStaff(packagerId,
-                orderStatus == null ? null: orderStatus.ordinal(),
+                orderStatus == null ? null : orderStatus.ordinal(),
                 isGrouped,
                 isPaid,
                 pageableWithSort);
@@ -212,26 +216,37 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with email" + email));
         order.setCustomer(customer);
 
-        UUID discountId = orderCreate.getDiscountId();
-        if (discountId != null && !discountId.equals("")) {
-            Discount discount = discountRepository
-                    .findById(orderCreate.getDiscountId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Discount not found with id" + orderCreate.getDiscountId()));
-            Integer quantity = discount.getQuantity();
-            discount.setQuantity(quantity - 1);
-            discountRepository.save(discount);
-//            order.setDiscount(discount);
+        List<UUID> discountIds = orderCreate.getDiscountID();
+        order.setDiscountList(new ArrayList<>());
+        if (discountIds.size() > 0) {
+            for (UUID discountId : discountIds) {
+                Discount discount = discountRepository
+                        .findById(discountId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Discount not found with id" + discountId));
+                Integer quantity = discount.getQuantity();
+                discount.setQuantity(quantity - 1);
+                discountRepository.save(discount);
+                order.getDiscountList().add(discount);
+            }
         }
 
         List<Transaction> transactions = new ArrayList<>();
         transactions.add(orderCreate.getTransaction());
         order.setTransaction(transactions);
 
-        if (orderCreate.getPickupPointId() != null && !orderCreate.getPickupPointId().equals("")) {
-            OrderGroup orderGroup = orderGroupRepository
-                    .findByTimeFrameIdAndPickupPointId(orderCreate.getTimeFrameId(), orderCreate.getPickupPointId())
-                    .orElseThrow(() -> new ResourceNotFoundException("OrderGroup not found with this time_frame_id " + orderCreate.getTimeFrameId() + " and pickup_point_id " + orderCreate.getPickupPointId()));
-            order.setOrderGroup(orderGroup);
+        if (orderCreate.getPickupPointId() != null && !orderCreate.getPickupPointId().equals("") && orderCreate.getTimeFrameId() != null && !orderCreate.getTimeFrameId().equals("")) {
+            Optional<OrderGroup> orderGroup = orderGroupRepository
+                    .findByTimeFrameIdAndPickupPointId(orderCreate.getTimeFrameId(), orderCreate.getPickupPointId());
+            if(orderGroup.isPresent()){
+                order.setOrderGroup(orderGroup.get());
+            }else{
+                OrderGroup orderGroupNew = new OrderGroup();
+                orderGroupNew.setTimeFrame(timeFrameRepository.findById(orderCreate.getTimeFrameId())
+                        .orElseThrow(()-> new NoSuchElementException("No time-frame found with id " + orderCreate.getTimeFrameId())));
+                orderGroupNew.setPickupPoint(pickupPointRepository.findById(orderCreate.getPickupPointId())
+                        .orElseThrow(()-> new NoSuchElementException("No time-frame found with id " + orderCreate.getPickupPointId())));
+                order.setOrderGroup(orderGroupRepository.save(orderGroupNew));
+            }
         }
 
         Order orderSavedSuccessWithoutQrcodeUrl = repository.save(order);

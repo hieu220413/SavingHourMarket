@@ -44,7 +44,7 @@ public class OrderCreate {
 
     private String addressDeliver;
 
-    private UUID discountId;
+    private List<UUID> discountID;
 
     Transaction transaction;
 

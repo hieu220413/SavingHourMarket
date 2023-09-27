@@ -2,10 +2,7 @@ package com.fpt.capstone.savinghourmarket.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.util.List;
@@ -14,6 +11,7 @@ import java.util.UUID;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
+@RequiredArgsConstructor
 @Setter
 @Getter
 @Table(name = "order_group")
