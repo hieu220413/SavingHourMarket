@@ -51,7 +51,8 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/transaction/processPaymentResult").permitAll()
                             .requestMatchers("/api/product/getProductsForStaff").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/discount/getDiscountsForStaff").hasAnyRole(allStaffAndAdmin)
-                            .requestMatchers("/api/supermarket/create").hasAnyRole(selectionStaffAndAdmin);
+                            .requestMatchers("/api/supermarket/create").hasAnyRole(selectionStaffAndAdmin)
+                            .requestMatchers("/api/supermarket/updateInfo").hasAnyRole(selectionStaffAndAdmin);
                     auth.anyRequest().authenticated();
                 });
 //        http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable()).authorizeHttpRequests((auth) -> auth
