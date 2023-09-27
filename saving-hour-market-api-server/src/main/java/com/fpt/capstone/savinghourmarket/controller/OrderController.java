@@ -9,6 +9,7 @@ import com.fpt.capstone.savinghourmarket.model.OrderCreate;
 import com.fpt.capstone.savinghourmarket.model.OrderProduct;
 import com.fpt.capstone.savinghourmarket.service.OrderService;
 import com.google.firebase.auth.FirebaseAuthException;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -61,7 +62,7 @@ public class OrderController {
     }
 
     @GetMapping("/getOrderForStaff")
-    public ResponseEntity<List<Order>> getOrderForStaff(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken,
+    public ResponseEntity<List<Order>> getOrderForStaff(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
                                                         @RequestParam(required = false) SortType totalPriceSortType,
                                                         @RequestParam(required = false) SortType createdTimeSortType,
                                                         @RequestParam(required = false) SortType deliveryDateSortType,
