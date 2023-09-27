@@ -4,6 +4,7 @@ import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.entity.Order;
 import com.fpt.capstone.savinghourmarket.entity.OrderGroup;
 import io.lettuce.core.dynamic.annotation.Param;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,26 +27,22 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     List<Order> findOrderByCustomerAndStatus(@Param("customer") Customer customer, @Param("status") Integer status);
 
     @Query("SELECT o FROM Order o " +
-            "WHERE (:packageId IS NULL OR o.packager.id = :packageId) " +
+            "WHERE " +
+            "((:packageId IS NULL) OR (o.packager.id = :packageId)) " +
             "AND " +
-            "(:delivererId IS NULL OR o.deliverer.id = :delivererId) " +
+            "((:status IS NULL) OR (o.status = :status)) " +
             "AND " +
-            "(:status IS NULL OR o.status = :status) " +
-            "AND " +
-            "(:customerId IS NULL OR o.customer.id = :customerId) " +
-            "AND " +
-            "(:isGrouped IS NULL OR :isGrouped = FALSE) " +
+            "((:isGrouped IS NULL) OR (:isGrouped = FALSE)) " +
             "OR " +
-            "(:isGrouped = TRUE OR o.orderGroup IS NOT NULL) " +
+            "((:isGrouped = TRUE) OR (o.orderGroup IS NOT NULL)) " +
             "AND " +
-            "(:isPaid IS NULL OR :isPaid = FALSE) " +
+            "((:isPaid IS NULL) OR (:isPaid = FALSE)) " +
             "OR " +
-            "(:isPaid = TRUE OR SIZE(o.transaction) = 0)")
-    List<Order> findOrderForStaff(@Param("packageId") String packageId,
-                                  @Param("delivererId") String delivererId,
-                                  @Param("status") Integer status,
-                                  @Param("customerId") String customerId,
-                                  @Param("isGrouped") Boolean isGrouped,
-                                  @Param("isPaid") Boolean isPaid);
+            "((:isPaid = TRUE) OR (SIZE(o.transaction) > 0))")
+    List<Order> findOrderForStaff(UUID packageId,
+                                  Integer status,
+                                  Boolean isGrouped,
+                                  Boolean isPaid,
+                                  Pageable pageable);
 
 }

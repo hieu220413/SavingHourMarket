@@ -1,5 +1,7 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
+import com.fpt.capstone.savinghourmarket.common.OrderStatus;
+import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Order;
 import com.fpt.capstone.savinghourmarket.entity.OrderGroup;
 import com.fpt.capstone.savinghourmarket.exception.*;
@@ -58,13 +60,33 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderDetail(id));
     }
 
+    @GetMapping("/getOrderForStaff")
+    public ResponseEntity<List<Order>> getOrderForStaff(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken,
+                                                        @RequestParam(required = false) SortType totalPriceSortType,
+                                                        @RequestParam(required = false) SortType createdTimeSortType,
+                                                        @RequestParam(required = false) SortType deliveryDateSortType,
+                                                        @RequestParam(required = false) OrderStatus orderStatus,
+                                                        @RequestParam(required = false) UUID packagerId,
+                                                        @RequestParam(required = false) Boolean isPaid,
+                                                        @RequestParam(required = false) Boolean isGrouped,
+                                                        @RequestParam(defaultValue = "0")  Integer page,
+                                                        @RequestParam(defaultValue = "10") Integer limit) throws ResourceNotFoundException, NoSuchOrderException, FirebaseAuthException {
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrdersForStaff(jwtToken,
+                totalPriceSortType == null ? null : totalPriceSortType.name(),
+                createdTimeSortType == null ? null : createdTimeSortType.name(),
+                deliveryDateSortType == null ? null : deliveryDateSortType.name(),
+                orderStatus,
+                packagerId,
+                isPaid,
+                isGrouped,
+                page,
+                limit));
+    }
+
     @Transactional
     @PutMapping("/createOrder")
-    public ResponseEntity<String> getCustomerOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken ,@RequestBody OrderCreate order) throws ResourceNotFoundException, FirebaseAuthException, IOException, BadRequestException, OutOfProductQuantityException {
-//        if (bindingResult.hasErrors()) {
-//            throw  new BadRequestException("Validation error while creating");
-//        }
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.createOrder(jwtToken,order));
+    public ResponseEntity<String> getCustomerOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken, @RequestBody OrderCreate order) throws ResourceNotFoundException, FirebaseAuthException, IOException, OutOfProductQuantityException {
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.createOrder(jwtToken, order));
     }
 
     @PutMapping("/cancelOrder/{id}")

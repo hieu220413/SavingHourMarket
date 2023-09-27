@@ -21,7 +21,16 @@ public interface OrderService {
     List<Order> fetchAllNotInGroup() throws NoSuchOrderException;
     List<OrderGroup> fetchAllWithGroup() throws NoSuchOrderException;
 
-    List<Order> fetchOrdersForStaff(String jwtToken, String totalPriceSortType , String createdTimeSortType, String deliveryDateSortType, OrderStatus orderStatus, UUID packagerId, UUID delivererId , Boolean isPaid, Boolean isGrouped) throws NoSuchOrderException, FirebaseAuthException, ResourceNotFoundException;
+    List<Order> fetchOrdersForStaff(String jwtToken,
+                                    String totalPriceSortType,
+                                    String createdTimeSortType,
+                                    String deliveryDateSortType,
+                                    OrderStatus orderStatus,
+                                    UUID packagerId,
+                                    Boolean isPaid,
+                                    Boolean isGrouped,
+                                    int page,
+                                    int limit) throws NoSuchOrderException, FirebaseAuthException, ResourceNotFoundException;
     List<Order> fetchByStatus(Integer status) throws NoSuchOrderException;
     List<Order> fetchCustomerOrders(String jwtToken, Integer status) throws ResourceNotFoundException, NoSuchOrderException, FirebaseAuthException;
     List<OrderProduct> fetchOrderDetail(UUID id) throws ResourceNotFoundException;

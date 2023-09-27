@@ -17,16 +17,7 @@ public interface FirebaseStorageService {
             byte[] qrCodeBytes = qrCodeStream.toByteArray();
             String objectName = "Order_QR_code/" + orderId + ".png"; // Set the desired object name
 
-//            bucket.create(objectName, qrCodeBytes);
-            // Create a BlobId
-            BlobId blobId = BlobId.of(bucket.getName(), objectName);
-
-            // Define BlobInfo and upload the byte array
-            BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
-            Blob blob = storage.create(blobInfo, qrCodeBytes);
-
-            // Get the public URL of the uploaded QR code
-            String publicUrl = blob.getMediaLink();
+            bucket.create(objectName, qrCodeBytes,"image/png");
 
             return objectName;
         } catch (Exception e) {

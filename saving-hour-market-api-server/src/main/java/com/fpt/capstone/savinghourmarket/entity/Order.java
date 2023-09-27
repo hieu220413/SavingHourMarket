@@ -70,7 +70,6 @@ public class Order {
     private Customer customer;
 
     @ManyToOne(
-            fetch = FetchType.LAZY
     )
     @JoinColumn(
             name = "discount_id",
@@ -85,7 +84,6 @@ public class Order {
     private List<Transaction> transaction;
 
     @ManyToOne(
-            fetch = FetchType.LAZY
     )
     @JoinColumn(
             name = "order_group_id",
@@ -95,7 +93,6 @@ public class Order {
     private OrderGroup orderGroup;
 
     @OneToMany(
-            fetch = FetchType.LAZY,
             mappedBy = "order"
     )
     @JsonIgnore
