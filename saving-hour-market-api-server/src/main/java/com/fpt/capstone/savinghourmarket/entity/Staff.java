@@ -30,7 +30,7 @@ public class Staff {
     @Column(columnDefinition = "text")
     private String avatarUrl;
 
-    @Column(columnDefinition = "varchar(10)")
+    @Column(columnDefinition = "varchar(15)")
     private String role;
 
     @Column(columnDefinition = "tinyint")
