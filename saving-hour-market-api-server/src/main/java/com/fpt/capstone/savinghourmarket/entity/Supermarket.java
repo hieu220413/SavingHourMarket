@@ -1,6 +1,8 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
+import com.fpt.capstone.savinghourmarket.model.SupermarketCreateRequestBody;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -39,4 +41,11 @@ public class Supermarket {
     )
     @JsonIgnore
     private List<Product> productList;
+
+    public Supermarket(SupermarketCreateRequestBody supermarketCreateRequestBody) {
+        this.name = supermarketCreateRequestBody.getName();
+        this.address = supermarketCreateRequestBody.getAddress();
+        this.phone = supermarketCreateRequestBody.getPhone();
+        this.status = EnableDisableStatus.ENABLE.ordinal();
+    }
 }
