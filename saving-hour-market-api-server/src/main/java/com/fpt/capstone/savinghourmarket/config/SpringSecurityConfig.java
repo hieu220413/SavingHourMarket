@@ -21,7 +21,8 @@ public class SpringSecurityConfig {
     private final AccessDeniedHandlerCustom accessDeniedHandlerCustom;
     private final AuthenticationEntryPointCustom authenticationEntryPointCustom;
 
-    private String[] allStaffAndAdmin= {StaffRole.STAFF_DLV.toString()
+    private String[] allStaffAndAdmin= {StaffRole.STAFF_DLV_0.toString()
+            , StaffRole.STAFF_DLV_1.toString()
             , StaffRole.STAFF_MKT.toString()
             , StaffRole.STAFF_ORD.toString()
             , StaffRole.STAFF_SLT.toString()

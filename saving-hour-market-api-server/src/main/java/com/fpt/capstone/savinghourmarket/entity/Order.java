@@ -48,6 +48,9 @@ public class Order {
     @Column(columnDefinition = "varchar(255)")
     private String addressDeliver;
 
+    @Column(columnDefinition = "tinyint")
+    private Integer paymentStatus;
+
     @ManyToOne()
     @JoinColumn(
             name = "packager_id",
@@ -55,12 +58,12 @@ public class Order {
     )
     private Staff packager;
 
-    @ManyToOne()
-    @JoinColumn(
-            name = "deliverer_id",
-            referencedColumnName = "id"
-    )
-    private Staff deliverer;
+//    @ManyToOne()
+//    @JoinColumn(
+//            name = "deliverer_id",
+//            referencedColumnName = "id"
+//    )
+//    private Staff deliverer;
 
     @ManyToOne()
     @JoinColumn(
@@ -69,15 +72,16 @@ public class Order {
     )
     private Customer customer;
 
-    @ManyToOne(
+    @ManyToMany(
             fetch = FetchType.LAZY
     )
-    @JoinColumn(
-            name = "discount_id",
-            referencedColumnName = "id"
+    @JoinTable(
+            name = "discount_order",
+            joinColumns = @JoinColumn(name = "order_id"),
+            inverseJoinColumns = @JoinColumn(name = "discount_id")
     )
     @JsonIgnore
-    private Discount discount;
+    private List<Discount> discountList;
 
     @OneToMany(
             mappedBy = "order"
@@ -93,6 +97,16 @@ public class Order {
     )
     @JsonIgnore
     private OrderGroup orderGroup;
+
+    @ManyToOne(
+            fetch = FetchType.LAZY
+    )
+    @JoinColumn(
+            name = "order_batch_id",
+            referencedColumnName = "id"
+    )
+    @JsonIgnore
+    private OrderBatch orderBatch;
 
     @OneToMany(
             fetch = FetchType.LAZY,

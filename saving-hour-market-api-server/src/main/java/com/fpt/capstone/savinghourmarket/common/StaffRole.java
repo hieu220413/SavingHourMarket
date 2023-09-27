@@ -5,5 +5,6 @@ public enum StaffRole {
     STAFF_SLT,
     STAFF_ORD,
     STAFF_MKT,
-    STAFF_DLV
+    STAFF_DLV_0,
+    STAFF_DLV_1,
 }

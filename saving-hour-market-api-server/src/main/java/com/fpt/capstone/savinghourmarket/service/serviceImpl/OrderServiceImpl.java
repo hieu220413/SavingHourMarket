@@ -167,7 +167,7 @@ public class OrderServiceImpl implements OrderService {
             Integer quantity = discount.getQuantity();
             discount.setQuantity(quantity - 1);
             discountRepository.save(discount);
-            order.setDiscount(discount);
+//            order.setDiscount(discount);
         }
 
         List<Transaction> transactions = new ArrayList<>();
