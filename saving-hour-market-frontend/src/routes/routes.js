@@ -3,11 +3,15 @@ import DefaultLayout from "../layouts/DefaultLayout/DefaultLayout";
 import HeaderOnly from "../layouts/HeaderOnly/HeaderOnly";
 import Login from "../screens/Login/Login";
 import ForgetPassword from "../screens/ForgetPassword/ForgetPassword";
-import UserManagement from "../screens/Management/UserManagement/UserManagement";
-import Configuration from "../screens/Configuration/Configuration";
-import FeedbackManagement from "../screens/Management/FeedbackManagement/FeedbackManagement";
-import PickuppointManagement from "../screens/Management/PickuppointManagement/PickuppointManagement";
-import TransactionManagement from "../screens/Management/TransactionManagement/TransactionManagement";
+
+import Configuration from "../screens/Admin/Configuration/Configuration";
+import UserManagement from "../screens/Admin/Management/UserManagement/UserManagement";
+import FeedbackManagement from "../screens/Admin/Management/FeedbackManagement/FeedbackManagement";
+import PickuppointManagement from "../screens/Admin/Management/PickuppointManagement/PickuppointManagement";
+import TransactionManagement from "../screens/Admin/Management/TransactionManagement/TransactionManagement";
+import SuperMarketManagement from "../screens/ProductSelection/Management/SuperMarketManagement/SuperMarketManagement";
+import ProductManagement from "../screens/ProductSelection/Management/ProductManagement/ProductManagement";
+import Report from "../screens/ProductSelection/Report/Report";
 
 export const routes = [
   { path: "/", component: Profile, layout: DefaultLayout },
@@ -25,6 +29,21 @@ export const routes = [
   {
     path: "/transactionmanagement",
     component: TransactionManagement,
+    layout: DefaultLayout,
+  },
+  {
+    path: "/supermarketmanagement",
+    component: SuperMarketManagement,
+    layout: DefaultLayout,
+  },
+  {
+    path: "/productmanagement",
+    component: ProductManagement,
+    layout: DefaultLayout,
+  },
+  {
+    path: "/productselectionreport",
+    component: Report,
     layout: DefaultLayout,
   },
   { path: "/config", component: Configuration, layout: DefaultLayout },
