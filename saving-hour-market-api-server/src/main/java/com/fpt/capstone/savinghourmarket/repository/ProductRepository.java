@@ -1,6 +1,7 @@
 package com.fpt.capstone.savinghourmarket.repository;
 
 import com.fpt.capstone.savinghourmarket.entity.Product;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -48,6 +49,10 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "AND p.status = 1")
 
     List<Product> getProductsForCustomer(UUID supermarketId, String name, UUID productCategoryId, UUID productSubCategoryId, Pageable pageable);
+
+    @Query("SELECT p FROM Product p " +
+            "WHERE p.status = 1 AND p.supermarket.id = :supermarketId ")
+    Product getProductByActiveAndSupermarketId(UUID supermarketId, PageRequest of);
 
 
 //    @Query(value = "SELECT * FROM product p " +
