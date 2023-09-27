@@ -9,13 +9,19 @@ import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 @RestController
 @RequestMapping("/api/customer")
@@ -27,7 +33,7 @@ public class CustomerController {
     private final FirebaseAuth firebaseAuth;
 
     @RequestMapping(value = "/registerWithEmailPassword", method = RequestMethod.POST , consumes = {"application/json"}, produces = {"application/json"})
-    public ResponseEntity<Customer> register(@Valid @RequestBody CustomerRegisterRequestBody customerRegisterRequestBody) throws FirebaseAuthException {
+    public ResponseEntity<Customer> register(@Valid @RequestBody CustomerRegisterRequestBody customerRegisterRequestBody) throws FirebaseAuthException, UnsupportedEncodingException {
         Customer customer = customerService.register(customerRegisterRequestBody);
         return ResponseEntity.status(HttpStatus.OK).body(customer);
     }
@@ -48,11 +54,11 @@ public class CustomerController {
         return ResponseEntity.status(HttpStatus.OK).body(customer);
     }
 
-    @RequestMapping(value = "/updateInfo", method = RequestMethod.PUT , consumes = {"application/json"}, produces = {"application/json"})
-    public ResponseEntity<Customer> updateInfo(@RequestBody CustomerUpdateRequestBody customerUpdateRequestBody, @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
+    @RequestMapping(value = "/updateInfo", method = RequestMethod.PUT , consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<Customer> updateInfo(@RequestPart CustomerUpdateRequestBody customerUpdateRequestBody, @RequestPart(required = false)  MultipartFile imageFile, @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException, IOException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         String email = Utils.validateIdToken(idToken, firebaseAuth);
-        Customer customer = customerService.updateInfo(customerUpdateRequestBody, email);
+        Customer customer = customerService.updateInfo(customerUpdateRequestBody, email, imageFile);
         return ResponseEntity.status(HttpStatus.OK).body(customer);
     }
 

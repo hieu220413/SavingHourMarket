@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -35,8 +36,20 @@ public class OrderGroup {
     )
     private PickupPoint pickupPoint;
 
+
+    @ManyToOne(
+            fetch = FetchType.LAZY
+    )
+    @JoinColumn(
+            name = "deliverer_id",
+            referencedColumnName = "id"
+    )
+    private Staff deliverer;
+
     @OneToMany(
+            fetch = FetchType.LAZY,
             mappedBy = "orderGroup"
     )
+    @JsonIgnore
     private List<Order> orderList;
 }

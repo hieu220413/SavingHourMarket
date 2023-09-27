@@ -38,6 +38,12 @@ public class Discount {
     private Integer quantity;
 
     @ManyToMany(
+            fetch = FetchType.LAZY,
+            mappedBy = "discountList"
+    )
+    private List<Order> orderList;
+
+    @ManyToMany(
             fetch = FetchType.LAZY
     )
     @JoinTable(

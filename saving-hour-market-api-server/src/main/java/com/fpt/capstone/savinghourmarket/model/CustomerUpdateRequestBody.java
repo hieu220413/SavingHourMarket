@@ -14,7 +14,6 @@ public class CustomerUpdateRequestBody {
     private String fullName;
     private String phone;
     private String dateOfBirth;
-    private String avatarUrl;
     private String address;
     private Integer gender;
 

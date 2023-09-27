@@ -1,0 +1,43 @@
+.sidemenu-wrapper {
+  min-height: 1000px;
+  display: flex;
+  flex-direction: column;
+  width: 150px;
+  align-items: center;
+  gap: 3.5rem;
+  padding-top: 40px;
+}
+
+.sidemenu-tab {
+  text-align: center;
+  color: rgba(80, 36, 143, 0.5);
+  cursor: pointer;
+  width: 110px;
+  padding: 20px 0;
+
+  &-icon {
+    width: 40px;
+    height: 40px;
+
+    margin-bottom: 10px;
+  }
+
+  &-display {
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 24px;
+  }
+
+  &:hover {
+    background-color: var(--tab-background);
+    border-radius: 5%;
+    color: var(--primary);
+  }
+}
+
+.sidemenu-tab.active {
+  background-color: var(--tab-background);
+  border-radius: 5%;
+  color: var(--primary);
+}

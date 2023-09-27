@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.model.CustomerRegisterRequestBody;
+import com.fpt.capstone.savinghourmarket.util.Utils;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -22,14 +24,15 @@ import java.util.UUID;
 @Getter
 public class Customer {
 
-    public Customer(CustomerRegisterRequestBody customerRegisterRequestBody) {
-        this.fullName = customerRegisterRequestBody.getFullName();
+    public Customer(CustomerRegisterRequestBody customerRegisterRequestBody) throws UnsupportedEncodingException {
+//        this.fullName = customerRegisterRequestBody.getFullName();
         this.email = customerRegisterRequestBody.getEmail();
-        this.phone = customerRegisterRequestBody.getPhone();
-        this.dateOfBirth = LocalDate.parse(customerRegisterRequestBody.getDateOfBirth());
-        this.avatarUrl = customerRegisterRequestBody.getAvatarUrl();
-        this.address = customerRegisterRequestBody.getAddress();
-        this.gender = customerRegisterRequestBody.getGender();
+//        this.phone = customerRegisterRequestBody.getPhone();
+//        this.dateOfBirth = LocalDate.parse(customerRegisterRequestBody.getDateOfBirth());
+//        this.avatarUrl = customerRegisterRequestBody.getAvatarUrl();
+//        this.address = customerRegisterRequestBody.getAddress();
+//        this.gender = customerRegisterRequestBody.getGender();
+        this.email = Utils.generatePublicImageUrlFirebaseStorage("public/default-avatar.jpg");
         this.status = EnableDisableStatus.ENABLE.ordinal();
     }
 

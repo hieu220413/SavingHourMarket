@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 const home = require('../assets/icons/home.png');
 const discount = require('../assets/icons/discount.png');
 const order = require('../assets/icons/order.png');
@@ -17,7 +18,7 @@ const calendar = require('../assets/icons/calendar.png');
 const time = require('../assets/icons/time.png');
 const cash = require('../assets/icons/cash.png');
 const creditCard = require('../assets/icons/credit-card.png');
-
+const plusCircle = require('../assets/icons/plus-circle.png');
 
 export default {
   home,
@@ -39,5 +40,5 @@ export default {
   time,
   cash,
   creditCard,
-
+  plusCircle,
 };

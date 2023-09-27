@@ -180,6 +180,7 @@ const Home = ({navigation}) => {
 
       {/* Body */}
       <ScrollView
+        keyboardShouldPersistTaps="always"
         contentContainerStyle={{
           paddingBottom: 100,
         }}>
