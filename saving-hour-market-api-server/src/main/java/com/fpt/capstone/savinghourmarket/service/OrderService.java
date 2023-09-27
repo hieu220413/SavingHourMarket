@@ -11,15 +11,12 @@ import com.fpt.capstone.savinghourmarket.model.OrderCreate;
 import com.fpt.capstone.savinghourmarket.model.OrderProduct;
 import com.google.firebase.auth.FirebaseAuthException;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
 public interface OrderService {
-    List<Order> fetchAll() throws NoSuchOrderException;
-    List<Order> fetchAllNotInGroup() throws NoSuchOrderException;
-    List<OrderGroup> fetchAllWithGroup() throws NoSuchOrderException;
+    List<OrderGroup> fetchAllWithGroup(String jwtToken) throws NoSuchOrderException, FirebaseAuthException;
 
     List<Order> fetchOrdersForStaff(String jwtToken,
                                     String totalPriceSortType,
@@ -31,9 +28,15 @@ public interface OrderService {
                                     Boolean isGrouped,
                                     int page,
                                     int limit) throws NoSuchOrderException, FirebaseAuthException, ResourceNotFoundException;
-    List<Order> fetchByStatus(Integer status) throws NoSuchOrderException;
-    List<Order> fetchCustomerOrders(String jwtToken, Integer status) throws ResourceNotFoundException, NoSuchOrderException, FirebaseAuthException;
     List<OrderProduct> fetchOrderDetail(UUID id) throws ResourceNotFoundException;
     String createOrder(String jwtToken, OrderCreate orderCreate) throws ResourceNotFoundException, IOException, FirebaseAuthException, OutOfProductQuantityException;
-    String cancelOrder(UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException;
+    String cancelOrder(String jwtToken, UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException, FirebaseAuthException;
+    List<Order> fetchOrdersForCustomer(String jwtToken,
+                                       String totalPriceSortType,
+                                       String createdTimeSortType,
+                                       String deliveryDateSortType,
+                                       OrderStatus orderStatus,
+                                       Boolean isPaid,
+                                       int page,
+                                       int limit) throws NoSuchOrderException, FirebaseAuthException, ResourceNotFoundException;;
 }

@@ -49,5 +49,5 @@ public class OrderCreate {
     Transaction transaction;
 
     @NotEmpty
-    private List<OrderProduct> orderDetailList;
+    private List<OrderProductCreate> orderDetailList;
 }

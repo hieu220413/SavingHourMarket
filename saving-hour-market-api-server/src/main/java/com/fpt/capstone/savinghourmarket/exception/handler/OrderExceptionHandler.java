@@ -35,7 +35,7 @@ public class OrderExceptionHandler {
 
 
     @ExceptionHandler(OutOfProductQuantityException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ResponseStatus(HttpStatus.CONFLICT)
     public ResponseEntity<ApiError> handleOrderOutOfProductQuantityException (Exception e){
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiError(LocalDateTime.now().toString(), HttpStatus.CONFLICT.value(),e.getMessage()));
     }

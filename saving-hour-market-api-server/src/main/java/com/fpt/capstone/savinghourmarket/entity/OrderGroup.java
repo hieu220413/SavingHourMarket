@@ -11,7 +11,6 @@ import java.util.UUID;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@RequiredArgsConstructor
 @Setter
 @Getter
 @Table(name = "order_group")
@@ -45,9 +44,8 @@ public class OrderGroup {
     private Staff deliverer;
 
     @OneToMany(
-            fetch = FetchType.LAZY,
+            fetch = FetchType.EAGER,
             mappedBy = "orderGroup"
     )
-    @JsonIgnore
     private List<Order> orderList;
 }

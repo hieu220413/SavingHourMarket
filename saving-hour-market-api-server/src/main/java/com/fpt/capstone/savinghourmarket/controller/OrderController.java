@@ -30,39 +30,37 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    @GetMapping("/getAll")
-    public ResponseEntity<List<Order>> getAll() throws NoSuchOrderException {
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchAll());
-    }
-
-    @GetMapping("/getOrdersToSpecificLocations")
-    public ResponseEntity<List<Order>> getListOfOrdersNotInGroup() throws NoSuchOrderException {
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchAllNotInGroup());
-    }
-
-    @GetMapping("/getOrderGroup")
-    public ResponseEntity<List<OrderGroup>> getListOfOrdersWithGroup() throws NoSuchOrderException {
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchAllWithGroup());
-    }
-
-    @GetMapping("/getOrdersByStatus")
-    public ResponseEntity<List<Order>> getListOfOrdersByStatus(@RequestParam Integer status) throws NoSuchOrderException {
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchByStatus(status));
-    }
-
-
-    @GetMapping("/getCustomerOrders")
-    public ResponseEntity<List<Order>> getCustomerOrderByStatus(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken, @RequestHeader(name = "Status", defaultValue = "4") Integer status) throws ResourceNotFoundException, NoSuchOrderException, FirebaseAuthException {
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchCustomerOrders(jwtToken, status));
+    @GetMapping("/getOrderGroupForStaff")
+    public ResponseEntity<List<OrderGroup>> getListOfOrdersWithGroup(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken) throws NoSuchOrderException {
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchAllWithGroup(jwtToken));
     }
 
     @GetMapping("/getOrderDetail/{id}")
     public ResponseEntity<List<OrderProduct>> getOrderDetailById(@PathVariable UUID id) throws ResourceNotFoundException {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderDetail(id));
     }
+    @GetMapping("/getOrdersForCustomer")
+    public ResponseEntity<List<Order>> getOrdersForCustomer(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
+                                                        @RequestParam(required = false) SortType totalPriceSortType,
+                                                        @RequestParam(required = false) SortType createdTimeSortType,
+                                                        @RequestParam(required = false) SortType deliveryDateSortType,
+                                                        @RequestParam(required = false) OrderStatus orderStatus,
+                                                        @RequestParam(required = false) Boolean isPaid,
+                                                        @RequestParam(defaultValue = "0")  Integer page,
+                                                        @RequestParam(defaultValue = "10") Integer size)
+            throws ResourceNotFoundException, NoSuchOrderException, FirebaseAuthException {
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrdersForCustomer(jwtToken,
+                totalPriceSortType == null ? null : totalPriceSortType.name(),
+                createdTimeSortType == null ? null : createdTimeSortType.name(),
+                deliveryDateSortType == null ? null : deliveryDateSortType.name(),
+                orderStatus,
+                isPaid,
+                page,
+                size));
+    }
 
-    @GetMapping("/getOrderForStaff")
-    public ResponseEntity<List<Order>> getOrderForStaff(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
+    @GetMapping("/getOrdersForStaff")
+    public ResponseEntity<List<Order>> getOrdersForStaff(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
                                                         @RequestParam(required = false) SortType totalPriceSortType,
                                                         @RequestParam(required = false) SortType createdTimeSortType,
                                                         @RequestParam(required = false) SortType deliveryDateSortType,
@@ -71,7 +69,7 @@ public class OrderController {
                                                         @RequestParam(required = false) Boolean isPaid,
                                                         @RequestParam(required = false) Boolean isGrouped,
                                                         @RequestParam(defaultValue = "0")  Integer page,
-                                                        @RequestParam(defaultValue = "10") Integer limit) throws ResourceNotFoundException, NoSuchOrderException, FirebaseAuthException {
+                                                        @RequestParam(defaultValue = "10") Integer size) throws ResourceNotFoundException, NoSuchOrderException, FirebaseAuthException {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrdersForStaff(jwtToken,
                 totalPriceSortType == null ? null : totalPriceSortType.name(),
                 createdTimeSortType == null ? null : createdTimeSortType.name(),
@@ -81,18 +79,18 @@ public class OrderController {
                 isPaid,
                 isGrouped,
                 page,
-                limit));
+                size));
     }
 
     @Transactional
     @PutMapping("/createOrder")
-    public ResponseEntity<String> getCustomerOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken, @RequestBody OrderCreate order) throws ResourceNotFoundException, FirebaseAuthException, IOException, OutOfProductQuantityException {
+    public ResponseEntity<String> getCustomerOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken, @RequestBody OrderCreate order) throws ResourceNotFoundException, FirebaseAuthException, IOException, OutOfProductQuantityException {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.createOrder(jwtToken, order));
     }
 
     @PutMapping("/cancelOrder/{id}")
-    public ResponseEntity<String> cancelOrder(@PathVariable UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException {
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.cancelOrder(id));
+    public ResponseEntity<String> cancelOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken, @PathVariable UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException, FirebaseAuthException {
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.cancelOrder(jwtToken,id));
     }
 
 }
