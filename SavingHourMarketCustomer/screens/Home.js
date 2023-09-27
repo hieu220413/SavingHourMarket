@@ -17,6 +17,7 @@ import Categories from '../components/Categories';
 import DiscountRow from '../components/DiscountRow';
 import {COLORS, FONTS} from '../constants/theme';
 import {icons} from '../constants';
+import {LocalNotification} from '../src/services/LocalPushController';
 
 const Home = ({navigation}) => {
   const [percent, setPercent] = useState();
@@ -54,7 +55,7 @@ const Home = ({navigation}) => {
   });
 
   const handleBuy = () => {
-    console.log('Buy');
+    LocalNotification();
   };
 
   const Item = ({data}) => (
@@ -140,7 +141,7 @@ const Home = ({navigation}) => {
           />
         </View>
 
-        <TouchableOpacity onPress={handleBuy}>
+        <TouchableOpacity title={'Local Push Notification'} onPress={handleBuy}>
           <Text
             style={{
               maxWidth: 100,

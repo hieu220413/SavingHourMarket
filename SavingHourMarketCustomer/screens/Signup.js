@@ -7,6 +7,8 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   ImageBackground,
+  KeyboardAvoidingView,
+  ScrollView,
 } from 'react-native';
 import React from 'react';
 import {COLORS} from '../constants/theme';
@@ -22,23 +24,71 @@ export default class Signup extends React.Component {
     this.state = {
       check_textInputChange: false,
       password: '',
+      passwordError: '',
       password_confirm: '',
+      password_confirmError: '',
       secureTextEntry: true,
       secureTextEntry_confirm: true,
+      email: '',
+      emailError: '',
     };
   }
-  textInputChange(value) {
-    if (value.length !== 0) {
+  // textInputChange(value) {
+  //   if (value.length !== 0) {
+  //     this.setState({
+  //       check_textInputChange: true,
+  //     });
+  //   } else {
+  //     this.setState({
+  //       check_textInputChange: false,
+  //     });
+  //   }
+  // }
+  emailValidator() {
+    if (this.state.email === '') {
       this.setState({
-        check_textInputChange: true,
+        emailError: 'email field cannot be empty',
+      });
+    } else if (!this.isValidEmail(this.state.email)) {
+      this.setState({
+        emailError: 'Invalid email !',
       });
     } else {
       this.setState({
-        check_textInputChange: false,
+        emailError: '',
+        check_textInputChange: true,
       });
     }
   }
+  passwordValidation() {
+    if (this.state.password.length < 8) {
+      this.setState({
+        passwordError: 'Password must be more than 8 characters!',
+      });
+    } else {
+      this.setState({
+        passwordError: '',
+      });
+    }
+  }
+  ConfirmPasswordValidation() {
+    if (this.state.password_confirm.length < 8) {
+      this.setState({
+        password_confirmError:
+          'Confirm password must be more than 8 characters!',
+      });
+    } else {
+      this.setState({
+        password_confirmError: '',
+      });
+    }
+  }
+  isValidEmail(email) {
+    const regex = /^([A-Za-z0-9_\-\.])+@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
+    return regex.test(email);
+  }
   secureTextEntry() {
+    console.log(this.state);
     this.setState({
       secureTextEntry: !this.state.secureTextEntry,
     });
@@ -64,114 +114,179 @@ export default class Signup extends React.Component {
               </Text>
             </Animatable.View>
             <Animatable.View animation="fadeInUpBig" style={styles.footer}>
-              <Text style={styles.text_footer}>E-MAIL</Text>
-              <View style={styles.action}>
-                <FontAwesome name="user-o" color={COLORS.primary} size={20} />
-                <TextInput
-                  placeholder="Your email ..."
-                  style={styles.textInput}
-                  onChangeText={text => this.textInputChange(text)}
-                />
-                {this.state.check_textInputChange ? (
-                  <Animatable.View animation="bounceInRight">
-                    <Feather
-                      name="check-circle"
+              <KeyboardAvoidingView
+                enabled
+                style={{flex: 1}}
+                behavior={Platform.OS === 'ios' ? 'padding' : null}>
+                <ScrollView>
+                  <Text style={styles.text_footer}>E-MAIL</Text>
+                  <View style={styles.action}>
+                    <FontAwesome
+                      name="user-o"
                       color={COLORS.primary}
                       size={20}
                     />
-                  </Animatable.View>
-                ) : null}
-              </View>
-              <Text style={[styles.text_footer, {marginTop: "8%"}]}>
-                Password
-              </Text>
-              <View style={styles.action}>
-                <Feather name="lock" color={COLORS.primary} size={20} />
-                {this.state.secureTextEntry ? (
-                  <TextInput
-                    placeholder="Your password ..."
-                    style={styles.textInput}
-                    secureTextEntry={true}
-                    value={this.state.password}
-                    onChangeText={text => this.setState({password: text})}
-                  />
-                ) : (
-                  <TextInput
-                    placeholder="Your password ..."
-                    style={styles.textInput}
-                    secureTextEntry={false}
-                    value={this.state.password}
-                    onChangeText={text => this.setState({password: text})}
-                  />
-                )}
-                <TouchableOpacity
-                  onPress={() => {
-                    this.secureTextEntry();
-                  }}>
-                  {this.state.secureTextEntry ? (
-                    <Feather name="eye-off" color="grey" size={20} />
-                  ) : (
-                    <Feather name="eye" color="grey" size={20} />
+                    <TextInput
+                      onBlur={() => {
+                        this.emailValidator();
+                      }}
+                      placeholder="Your email ..."
+                      style={styles.textInput}
+                      value={this.state.email}
+                      onChangeText={text => this.setState({email: text})}
+                    />
+                    {this.state.check_textInputChange ? (
+                      <Animatable.View animation="bounceIn">
+                        <Feather
+                          name="check-circle"
+                          color={COLORS.primary}
+                          size={20}
+                        />
+                      </Animatable.View>
+                    ) : null}
+                  </View>
+                  {this.state.emailError && (
+                    <View
+                      style={{
+                        width: '85%',
+                        marginTop: '1%',
+                        marginBottom: '-4%',
+                      }}>
+                      <Text style={{color: 'red'}}>
+                        {this.state.emailError}
+                      </Text>
+                    </View>
                   )}
-                </TouchableOpacity>
-              </View>
-              <Text style={[styles.text_footer, {marginTop: "8%"}]}>
-                Confirm Password
-              </Text>
-              <View style={styles.action}>
-                <Feather name="lock" color={COLORS.primary} size={20} />
-                {this.state.secureTextEntry_confirm ? (
-                  <TextInput
-                    placeholder="Confirm password ..."
-                    style={styles.textInput}
-                    secureTextEntry={true}
-                    value={this.state.password_confirm}
-                    onChangeText={text =>
-                      this.setState({password_confirm: text})
-                    }
-                  />
-                ) : (
-                  <TextInput
-                    placeholder="Your password ..."
-                    style={styles.textInput}
-                    secureTextEntry={false}
-                    value={this.state.password_confirm}
-                    onChangeText={text =>
-                      this.setState({password_confirm: text})
-                    }
-                  />
-                )}
-                <TouchableOpacity
-                  onPress={() => {
-                    this.secureTextEntry_confirm();
-                  }}>
-                  {this.state.secureTextEntry_confirm ? (
-                    <Feather name="eye-off" color="grey" size={20} />
-                  ) : (
-                    <Feather name="eye" color="grey" size={20} />
-                  )}
-                </TouchableOpacity>
-              </View>
-              <View style={styles.textPrivate}>
-                <Text style={styles.color_textPrivate}>
-                  By signing up you agree to our
-                </Text>
-                <Text style={[styles.color_textPrivate, {fontWeight: 'bold'}]}>
-                  {' '}
-                  Term of Service
-                </Text>
-                <Text style={styles.color_textPrivate}> and</Text>
-                <Text style={[styles.color_textPrivate, {fontWeight: 'bold'}]}>Privacy Policy</Text>
-              </View>
-              <View style={styles.button}>
-                <LinearGradient
-                  colors={['#66CC66', '#66CC99']}
-                  style={styles.login}>
-                  <Text style={[styles.textSign, {color: 'white'}]}>
-                    Sign Up
+                  <Text style={[styles.text_footer, {marginTop: '8%'}]}>
+                    Password
                   </Text>
-                </LinearGradient>
-                {/* <TouchableOpacity
+                  <View style={styles.action}>
+                    <Feather name="lock" color={COLORS.primary} size={20} />
+                    {this.state.secureTextEntry ? (
+                      <TextInput
+                        placeholder="Your password ..."
+                        onBlur={() => {
+                          this.passwordValidation();
+                        }}
+                        style={styles.textInput}
+                        secureTextEntry={true}
+                        value={this.state.password}
+                        onChangeText={text => this.setState({password: text})}
+                      />
+                    ) : (
+                      <TextInput
+                        placeholder="Your password ..."
+                        style={styles.textInput}
+                        onBlur={() => {
+                          this.passwordValidation();
+                        }}
+                        secureTextEntry={false}
+                        value={this.state.password}
+                        onChangeText={text => this.setState({password: text})}
+                      />
+                    )}
+                    <TouchableOpacity
+                      onPress={() => {
+                        this.secureTextEntry();
+                      }}>
+                      {this.state.secureTextEntry ? (
+                        <Feather name="eye-off" color="grey" size={20} />
+                      ) : (
+                        <Feather name="eye" color="grey" size={20} />
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                  {this.state.passwordError && (
+                    <View
+                      style={{
+                        width: '85%',
+                        marginTop: '1%',
+                        marginBottom: '-4%',
+                      }}>
+                      <Text style={{color: 'red'}}>
+                        {this.state.passwordError}
+                      </Text>
+                    </View>
+                  )}
+                  <Text style={[styles.text_footer, {marginTop: '8%'}]}>
+                    Confirm Password
+                  </Text>
+                  <View style={styles.action}>
+                    <Feather name="lock" color={COLORS.primary} size={20} />
+                    {this.state.secureTextEntry_confirm ? (
+                      <TextInput
+                        placeholder="Confirm password ..."
+                        style={styles.textInput}
+                        secureTextEntry={true}
+                        onBlur={() => {
+                          this.ConfirmPasswordValidation();
+                        }}
+                        value={this.state.password_confirm}
+                        onChangeText={text =>
+                          this.setState({password_confirm: text})
+                        }
+                      />
+                    ) : (
+                      <TextInput
+                        placeholder="Confirm password ..."
+                        style={styles.textInput}
+                        secureTextEntry={false}
+                        onBlur={() => {
+                          this.ConfirmPasswordValidation();
+                        }}
+                        value={this.state.password_confirm}
+                        onChangeText={text =>
+                          this.setState({password_confirm: text})
+                        }
+                      />
+                    )}
+                    <TouchableOpacity
+                      onPress={() => {
+                        this.secureTextEntry_confirm();
+                      }}>
+                      {this.state.secureTextEntry_confirm ? (
+                        <Feather name="eye-off" color="grey" size={20} />
+                      ) : (
+                        <Feather name="eye" color="grey" size={20} />
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                  {this.state.password_confirmError && (
+                    <View
+                      style={{
+                        width: '90%',
+                        marginTop: '1%',
+                        marginBottom: '-4%',
+                      }}>
+                      <Text style={{color: 'red'}}>
+                        {this.state.password_confirmError}
+                      </Text>
+                    </View>
+                  )}
+                  <View style={styles.textPrivate}>
+                    <Text style={styles.color_textPrivate}>
+                      By signing up you agree to our
+                    </Text>
+                    <Text
+                      style={[styles.color_textPrivate, {fontWeight: 'bold'}]}>
+                      {' '}
+                      Term of Service
+                    </Text>
+                    <Text style={styles.color_textPrivate}> and</Text>
+                    <Text
+                      style={[styles.color_textPrivate, {fontWeight: 'bold'}]}>
+                      Privacy Policy
+                    </Text>
+                  </View>
+                  <View style={styles.button}>
+                    <LinearGradient
+                      colors={['#66CC66', '#66CC99']}
+                      style={styles.login}>
+                      <Text style={[styles.textSign, {color: 'white'}]}>
+                        Sign Up
+                      </Text>
+                    </LinearGradient>
+                    {/* <TouchableOpacity
                   style={[
                     styles.login,
                     {borderColor: '#66CC66', borderWidth: 1, marginTop: 15},
@@ -183,7 +298,9 @@ export default class Signup extends React.Component {
                     Sign Up
                   </Text>
                 </TouchableOpacity> */}
-              </View>
+                  </View>
+                </ScrollView>
+              </KeyboardAvoidingView>
             </Animatable.View>
           </ImageBackground>
         </View>
@@ -209,7 +326,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     paddingHorizontal: 20,
-    paddingVertical: '4%',
+    paddingVertical: '3%',
   },
   text_header: {
     color: 'white',

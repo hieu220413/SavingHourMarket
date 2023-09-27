@@ -1,9 +1,9 @@
 /* eslint-disable prettier/prettier */
-import React from 'react';
+import React, {useEffect} from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 import {NavigationContainer} from '@react-navigation/native';
 import 'react-native-gesture-handler';
-
+import {Alert} from 'react-native';
 import Tabs from './navigation/tabs';
 import Discount from './screens/Discount';
 import Orders from './screens/Orders';
@@ -22,9 +22,28 @@ import SelectPaymentMethod from './screens/SelectPaymentMethod';
 import SelectVoucher from './screens/SelectVoucher';
 import SelectCustomerLocation from './screens/SelectCustomerLocation';
 import EditCustomerLocation from './screens/EditCustomerLocation';
+import messaging from '@react-native-firebase/messaging';
+import {
+  getToken,
+  notificationListener,
+  requestUserPermission,
+} from './src/utils/commonUtils';
 
 const Stack = createStackNavigator();
 export default function App() {
+  useEffect(() => {
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
+    });
+
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    requestUserPermission();
+    notificationListener();
+    getToken();
+  }, []);
   return (
     <>
       <NavigationContainer>

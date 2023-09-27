@@ -22,19 +22,53 @@ export default class Login extends React.Component {
     this.state = {
       check_textInputChange: false,
       password: '',
+      passwordError: '',
       secureTextEntry: true,
+      email: '',
+      emailError: '',
     };
   }
-  textInputChange(value) {
-    if (value.length !== 0) {
+  // textInputChange(value) {
+  //   if (value.length !== 0) {
+  //     this.setState({
+  //       check_textInputChange: true,
+  //     });
+  //   } else {
+  //     this.setState({
+  //       check_textInputChange: false,
+  //     });
+  //   }
+  // }
+  emailValidator() {
+    if (this.state.email == '') {
       this.setState({
-        check_textInputChange: true,
+        emailError: 'email field cannot be empty',
+      });
+    } else if (!this.isValidEmail(this.state.email)) {
+      this.setState({
+        emailError: 'Invalid email !',
       });
     } else {
       this.setState({
-        check_textInputChange: false,
+        emailError: '',
+        check_textInputChange: true,
       });
     }
+  }
+  passwordValidation() {
+    if (this.state.password === '') {
+      this.setState({
+        passwordError: 'Enter your password!',
+      });
+    } else {
+      this.setState({
+        passwordError: '',
+      });
+    }
+  }
+  isValidEmail(email) {
+    const regex = /^([A-Za-z0-9_\-\.])+@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
+    return regex.test(email);
   }
   secureTextEntry() {
     this.setState({
@@ -63,7 +97,10 @@ export default class Login extends React.Component {
                 <TextInput
                   placeholder="Your email ..."
                   style={styles.textInput}
-                  onChangeText={text => this.textInputChange(text)}
+                  onBlur={() => {
+                    this.emailValidator();
+                  }}
+                  onChangeText={text => this.setState({email: text})}
                 />
                 {this.state.check_textInputChange ? (
                   <Animatable.View animation="bounceInRight">
@@ -75,6 +112,12 @@ export default class Login extends React.Component {
                   </Animatable.View>
                 ) : null}
               </View>
+              {this.state.emailError && (
+                <View
+                  style={{width: '85%', marginTop: '1%', marginBottom: '-4%'}}>
+                  <Text style={{color: 'red'}}>{this.state.emailError}</Text>
+                </View>
+              )}
               <Text style={[styles.text_footer, {marginTop: 35}]}>
                 Password
               </Text>
@@ -83,6 +126,9 @@ export default class Login extends React.Component {
                 {this.state.secureTextEntry ? (
                   <TextInput
                     placeholder="Your password ..."
+                    onBlur={() => {
+                      this.passwordValidation();
+                    }}
                     style={styles.textInput}
                     secureTextEntry={true}
                     value={this.state.password}
@@ -91,6 +137,9 @@ export default class Login extends React.Component {
                 ) : (
                   <TextInput
                     placeholder="Your password ..."
+                    onBlur={() => {
+                      this.passwordValidation();
+                    }}
                     style={styles.textInput}
                     secureTextEntry={false}
                     value={this.state.password}
@@ -108,6 +157,12 @@ export default class Login extends React.Component {
                   )}
                 </TouchableOpacity>
               </View>
+              {this.state.passwordError && (
+                <View
+                  style={{width: '85%', marginTop: '1%', marginBottom: '-4%'}}>
+                  <Text style={{color: 'red'}}>{this.state.passwordError}</Text>
+                </View>
+              )}
               <Text style={{color: COLORS.secondary, marginTop: 15}}>
                 Forgot password?
               </Text>

@@ -291,7 +291,7 @@ const Profile = ({navigation}) => {
           </View>
           <AntDesign name="right" size={20} color="black"></AntDesign>
         </TouchableOpacity>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -313,6 +313,31 @@ const Profile = ({navigation}) => {
                 color: 'red',
               }}>
               Log out
+            </Text>
+          </View>
+        </TouchableOpacity> */}
+        <TouchableOpacity
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginHorizontal: '3%',
+            justifyContent: 'space-between',
+          }}
+          activeOpacity={0.8}
+          onPress={() => {
+            navigation.navigate('Login');
+          }}>
+          <View
+            style={{flexDirection: 'row', columnGap: 15, alignItems: 'center'}}>
+            <AntDesign name="login" size={30} color="black"></AntDesign>
+            <Text
+              style={{
+                fontFamily: 'Roboto',
+                fontSize: 16,
+                fontWeight: '700',
+                color: 'black',
+              }}>
+              Log In
             </Text>
           </View>
         </TouchableOpacity>
