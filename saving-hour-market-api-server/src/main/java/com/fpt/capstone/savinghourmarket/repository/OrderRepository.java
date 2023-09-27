@@ -2,16 +2,13 @@ package com.fpt.capstone.savinghourmarket.repository;
 
 import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.entity.Order;
-import com.fpt.capstone.savinghourmarket.entity.OrderGroup;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -32,13 +29,14 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "AND " +
             "((:status IS NULL) OR (o.status = :status)) " +
             "AND " +
-            "((:isGrouped IS NULL) OR (:isGrouped = FALSE)) " +
+            "(((:isGrouped IS NULL) OR (:isGrouped = FALSE)) " +
             "OR " +
-            "((:isGrouped = TRUE) OR (o.orderGroup IS NOT NULL)) " +
+            "((:isGrouped = TRUE) AND (o.orderGroup IS NOT NULL))) " +
             "AND " +
-            "((:isPaid IS NULL) OR (:isPaid = FALSE)) " +
+            "(((:isPaid IS NULL) OR (:isPaid = FALSE)) " +
             "OR " +
-            "((:isPaid = TRUE) OR (SIZE(o.transaction) > 0))")
+            "((:isPaid = TRUE) AND (SIZE(o.transaction) > 0)))"
+    )
     List<Order> findOrderForStaff(UUID packageId,
                                   Integer status,
                                   Boolean isGrouped,
