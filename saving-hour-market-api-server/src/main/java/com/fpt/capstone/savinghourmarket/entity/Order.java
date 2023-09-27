@@ -74,8 +74,8 @@ public class Order {
     )
     @JoinTable(
             name = "discount_order",
-            joinColumns = @JoinColumn(name = "discount_id"),
-            inverseJoinColumns = @JoinColumn(name = "order_id")
+            joinColumns = @JoinColumn(name = "order_id"),
+            inverseJoinColumns = @JoinColumn(name = "discount_id")
     )
     @JsonIgnore
     private List<Discount> discountList;
