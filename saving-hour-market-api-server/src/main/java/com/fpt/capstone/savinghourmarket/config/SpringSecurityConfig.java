@@ -41,7 +41,7 @@ public class SpringSecurityConfig {
                             .requestMatchers("/v3/api-docs/**").permitAll()
                             .requestMatchers("/swagger-ui.html").permitAll()
                             .requestMatchers(HttpMethod.POST, "/api/customer/registerWithEmailPassword").permitAll()
-                            .requestMatchers("/api/customer/updateInfo").authenticated()
+//                            .requestMatchers("/api/customer/updateInfo").authenticated()
                             .requestMatchers("/api/product/getProductsForCustomer").permitAll()
                             .requestMatchers("/api/discount/getDiscountsForCustomer").permitAll()
                             .requestMatchers("/api/discount/getDiscountById").permitAll()
@@ -51,7 +51,9 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/transaction/processPaymentResult").permitAll()
                             .requestMatchers("/api/product/getProductsForStaff").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/discount/getDiscountsForStaff").hasAnyRole(allStaffAndAdmin)
-                            .requestMatchers("/api/supermarket/create").hasAnyRole(selectionStaffAndAdmin);
+                            .requestMatchers("/api/supermarket/create").hasAnyRole(selectionStaffAndAdmin)
+                            .requestMatchers("/api/supermarket/changeStatus").hasAnyRole(selectionStaffAndAdmin)
+                            .requestMatchers("/api/supermarket/updateInfo").hasAnyRole(selectionStaffAndAdmin);
                     auth.anyRequest().authenticated();
                 });
 //        http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable()).authorizeHttpRequests((auth) -> auth

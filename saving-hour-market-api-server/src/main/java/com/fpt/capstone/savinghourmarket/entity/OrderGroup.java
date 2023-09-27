@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,6 +20,8 @@ public class OrderGroup {
     @UuidGenerator
     private UUID id;
 
+    private LocalDate deliverDate;
+
     @ManyToOne
     @JoinColumn(
             name = "time_frame_id",
@@ -32,7 +35,6 @@ public class OrderGroup {
             referencedColumnName = "id"
     )
     private PickupPoint pickupPoint;
-
 
     @ManyToOne(
             fetch = FetchType.LAZY

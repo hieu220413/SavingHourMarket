@@ -10,14 +10,11 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class SupermarketCreateRequestBody {
+public class SupermarketUpdateRequestBody {
 
-    @NotNull
     private String name;
 
-    @NotNull
     private String address;
 
-    @NotNull
     private String phone;
 }
