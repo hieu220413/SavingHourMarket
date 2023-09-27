@@ -48,6 +48,9 @@ public class Order {
     @Column(columnDefinition = "varchar(255)")
     private String addressDeliver;
 
+    @Column(columnDefinition = "tinyint")
+    private Integer paymentStatus;
+
     @ManyToOne()
     @JoinColumn(
             name = "packager_id",
