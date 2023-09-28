@@ -15,6 +15,10 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import Feather from 'react-native-vector-icons/Feather';
 import LinearGradient from 'react-native-linear-gradient';
 import * as Animatable from 'react-native-animatable';
+import {
+  GoogleSignin,
+  GoogleSigninButton,
+} from '@react-native-google-signin/google-signin';
 
 export default class Login extends React.Component {
   constructor(props) {
@@ -42,11 +46,13 @@ export default class Login extends React.Component {
   emailValidator() {
     if (this.state.email == '') {
       this.setState({
-        emailError: 'email field cannot be empty',
+        emailError: 'Email field cannot be empty',
+        check_textInputChange: false,
       });
     } else if (!this.isValidEmail(this.state.email)) {
       this.setState({
         emailError: 'Invalid email !',
+        check_textInputChange: false,
       });
     } else {
       this.setState({
@@ -96,6 +102,7 @@ export default class Login extends React.Component {
                 <FontAwesome name="user-o" color={COLORS.primary} size={20} />
                 <TextInput
                   placeholder="Your email ..."
+                  keyboardType="email-address"
                   style={styles.textInput}
                   onBlur={() => {
                     this.emailValidator();
@@ -163,17 +170,34 @@ export default class Login extends React.Component {
                   <Text style={{color: 'red'}}>{this.state.passwordError}</Text>
                 </View>
               )}
-              <Text style={{color: COLORS.secondary, marginTop: 15}}>
+              <Text
+                onPress={() => {
+                  this.props.navigation.navigate('Forgot password');
+                }}
+                style={{color: COLORS.secondary, marginTop: 15}}>
                 Forgot password?
               </Text>
               <View style={styles.button}>
-                <LinearGradient
-                  colors={['#66CC66', '#66CC99']}
-                  style={styles.login}>
-                  <Text style={[styles.textSign, {color: 'white'}]}>
-                    Sign In
-                  </Text>
-                </LinearGradient>
+                <GoogleSigninButton
+                  style={[styles.login, {width:'50%'}]}
+                  size={GoogleSigninButton.Size.Wide}
+                  color={GoogleSigninButton.Color.Light}
+                  // onPress={this._signIn}
+                  // disabled={this.state.isSigninInProgress}
+                />
+                <TouchableOpacity
+                  style={{width: '100%', marginTop: 15}}
+                  onPress={() => {
+                    console.log('sign in');
+                  }}>
+                  <LinearGradient
+                    colors={['#66CC66', '#66CC99']}
+                    style={styles.login}>
+                    <Text style={[styles.textSign, {color: 'white'}]}>
+                      Sign In
+                    </Text>
+                  </LinearGradient>
+                </TouchableOpacity>
                 <TouchableOpacity
                   style={[
                     styles.login,
@@ -240,7 +264,7 @@ const styles = StyleSheet.create({
   },
   button: {
     alignItems: 'center',
-    marginTop: '25%',
+    marginTop: '10%',
   },
   login: {
     width: '100%',

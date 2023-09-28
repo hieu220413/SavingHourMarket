@@ -47,11 +47,13 @@ export default class Signup extends React.Component {
   emailValidator() {
     if (this.state.email === '') {
       this.setState({
-        emailError: 'email field cannot be empty',
+        emailError: 'Email field cannot be empty',
+        check_textInputChange: false,
       });
     } else if (!this.isValidEmail(this.state.email)) {
       this.setState({
         emailError: 'Invalid email !',
+        check_textInputChange: false,
       });
     } else {
       this.setState({
@@ -88,7 +90,6 @@ export default class Signup extends React.Component {
     return regex.test(email);
   }
   secureTextEntry() {
-    console.log(this.state);
     this.setState({
       secureTextEntry: !this.state.secureTextEntry,
     });
@@ -132,6 +133,7 @@ export default class Signup extends React.Component {
                       }}
                       placeholder="Your email ..."
                       style={styles.textInput}
+                      keyboardType="email-address"
                       value={this.state.email}
                       onChangeText={text => this.setState({email: text})}
                     />
@@ -279,13 +281,19 @@ export default class Signup extends React.Component {
                     </Text>
                   </View>
                   <View style={styles.button}>
-                    <LinearGradient
-                      colors={['#66CC66', '#66CC99']}
-                      style={styles.login}>
-                      <Text style={[styles.textSign, {color: 'white'}]}>
-                        Sign Up
-                      </Text>
-                    </LinearGradient>
+                    <TouchableOpacity
+                      style={{width: '100%'}}
+                      onPress={() => {
+                        console.log('sign up');
+                      }}>
+                      <LinearGradient
+                        colors={['#66CC66', '#66CC99']}
+                        style={styles.login}>
+                        <Text style={[styles.textSign, {color: 'white'}]}>
+                          Sign Up
+                        </Text>
+                      </LinearGradient>
+                    </TouchableOpacity>
                     {/* <TouchableOpacity
                   style={[
                     styles.login,
@@ -341,7 +349,7 @@ const styles = StyleSheet.create({
   },
   action: {
     flexDirection: 'row',
-    marginTop: '3%',
+    marginTop: '2%',
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: '#f2f2f2',

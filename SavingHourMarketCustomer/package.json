@@ -15,6 +15,7 @@
     "@react-native-community/masked-view": "^0.1.11",
     "@react-native-firebase/app": "^18.5.0",
     "@react-native-firebase/messaging": "^18.5.0",
+    "@react-native-google-signin/google-signin": "^10.0.1",
     "@react-navigation/bottom-tabs": "^6.5.8",
     "@react-navigation/native": "^6.1.7",
     "@react-navigation/stack": "^6.3.17",
@@ -33,7 +34,8 @@
     "react-native-screens": "^3.25.0",
     "react-native-swipe-list-view": "^3.2.9",
     "react-native-vector-icons": "^10.0.0",
-    "react-native-vnpay-merchant": "file:react-native-vnpay-merchant"
+    "react-native-vnpay-merchant": "file:react-native-vnpay-merchant",
+    "styled-components": "^6.0.8"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
