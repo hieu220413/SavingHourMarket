@@ -43,7 +43,7 @@ public class Order {
     private Integer status;
 
     @Column(columnDefinition = "tinyint")
-    private Integer payment_method;
+    private Integer paymentMethod;
 
     @Column(columnDefinition = "varchar(255)")
     private String addressDeliver;
