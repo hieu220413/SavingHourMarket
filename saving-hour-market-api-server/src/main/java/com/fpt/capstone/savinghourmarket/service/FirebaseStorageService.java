@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.service;
 
+import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.cloud.storage.*;
 import com.google.firebase.cloud.StorageClient;
 
@@ -19,7 +20,7 @@ public interface FirebaseStorageService {
 
             bucket.create(objectName, qrCodeBytes,"image/png");
 
-            return objectName;
+            return Utils.generatePublicImageUrlFirebaseStorage(objectName);
         } catch (Exception e) {
             e.printStackTrace();
             return null;

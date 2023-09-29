@@ -53,7 +53,9 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/discount/getDiscountsForStaff").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/supermarket/create").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/supermarket/changeStatus").hasAnyRole(selectionStaffAndAdmin)
-                            .requestMatchers("/api/supermarket/updateInfo").hasAnyRole(selectionStaffAndAdmin);
+                            .requestMatchers("/api/supermarket/updateInfo").hasAnyRole(selectionStaffAndAdmin)
+                            .requestMatchers("/api/order/getOrdersForStaff").hasAnyRole(allStaffAndAdmin)
+                            .requestMatchers("/api/order/getOrderGroupForStaff").hasAnyRole(allStaffAndAdmin);
                     auth.anyRequest().authenticated();
                 });
 //        http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable()).authorizeHttpRequests((auth) -> auth

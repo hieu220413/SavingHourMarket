@@ -6,10 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.UuidGenerator;
 
-import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -17,27 +14,21 @@ import java.util.UUID;
 @NoArgsConstructor
 @Setter
 @Getter
-public class OrderBatch {
+public class FeedBackImage {
+
     @Id
-    @UuidGenerator
     private UUID id;
 
-    private String district;
-
-    private LocalDate deliverDate;
+    @Column(columnDefinition = "text")
+    private String url;
 
     @ManyToOne(
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
     )
     @JoinColumn(
-            name = "deliverer_id",
+            name = "feed_back_id",
             referencedColumnName = "id"
     )
-    private Staff deliverer;
-
-    @OneToMany(
-            fetch = FetchType.EAGER,
-            mappedBy = "orderBatch"
-    )
-    private List<Order> orderList;
+    @JsonIgnore
+    private FeedBack feedBack;
 }

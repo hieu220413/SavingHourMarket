@@ -1,9 +1,12 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
+import com.fpt.capstone.savinghourmarket.common.District;
 import com.fpt.capstone.savinghourmarket.common.OrderStatus;
 import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Order;
+import com.fpt.capstone.savinghourmarket.entity.OrderBatch;
 import com.fpt.capstone.savinghourmarket.entity.OrderGroup;
+import com.fpt.capstone.savinghourmarket.entity.TimeFrame;
 import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.OrderCreate;
 import com.fpt.capstone.savinghourmarket.model.OrderProduct;
@@ -15,11 +18,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,15 +32,6 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    @GetMapping("/getOrderGroupForStaff")
-    public ResponseEntity<List<OrderGroup>> getListOfOrdersWithGroup(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken) throws NoSuchOrderException {
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchAllWithGroup(jwtToken));
-    }
-
-    @GetMapping("/getOrderDetail/{id}")
-    public ResponseEntity<List<OrderProduct>> getOrderDetailById(@PathVariable UUID id) throws ResourceNotFoundException {
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderDetail(id));
-    }
     @GetMapping("/getOrdersForCustomer")
     public ResponseEntity<List<Order>> getOrdersForCustomer(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
                                                         @RequestParam(required = false) SortType totalPriceSortType,
@@ -82,9 +75,28 @@ public class OrderController {
                 size));
     }
 
+    @GetMapping("/getOrderGroupForStaff")
+    public ResponseEntity<List<OrderGroup>> getOrderGroupForStaff(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
+                                                                  @RequestParam(required = false) LocalDate deliverDate,
+                                                                  @RequestParam(required = false) UUID timeFrameId,
+                                                                  @RequestParam(required = false) UUID pickupPointId,
+                                                                  @RequestParam(required = false) UUID delivererId ) throws NoSuchOrderException, FirebaseAuthException {
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderGroups(jwtToken,deliverDate,timeFrameId,pickupPointId,delivererId));
+    }
+
+    @GetMapping("/getOrderBatchForStaff")
+    public ResponseEntity<List<OrderBatch>> getOrderBatchForStaff(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken, @RequestParam(required = false) District district, @RequestParam(required = false) LocalDate deliveryDate) throws NoSuchOrderException, FirebaseAuthException {
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderBatches(jwtToken,district,deliveryDate));
+    }
+
+    @GetMapping("/getOrderDetail/{id}")
+    public ResponseEntity<List<OrderProduct>> getOrderDetail(@PathVariable UUID id) throws ResourceNotFoundException {
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderDetail(id));
+    }
+
     @Transactional
     @PutMapping("/createOrder")
-    public ResponseEntity<String> getCustomerOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken, @RequestBody OrderCreate order) throws ResourceNotFoundException, FirebaseAuthException, IOException, OutOfProductQuantityException {
+    public ResponseEntity<String> createOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,@Valid @RequestBody OrderCreate order) throws Exception, OutOfProductQuantityException {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.createOrder(jwtToken, order));
     }
 

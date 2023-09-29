@@ -30,6 +30,8 @@ public class Order {
 
     private Integer totalPrice;
 
+    private Integer totalDiscountPrice;
+
     @CreationTimestamp
     @Column(columnDefinition = "datetime(0)")
     private LocalDateTime createdTime;

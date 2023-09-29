@@ -37,7 +37,7 @@ public class OrderGroup {
     private PickupPoint pickupPoint;
 
     @ManyToOne(
-            fetch = FetchType.LAZY
+            fetch = FetchType.EAGER
     )
     @JoinColumn(
             name = "deliverer_id",

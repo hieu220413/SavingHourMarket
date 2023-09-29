@@ -1,8 +1,6 @@
 package com.fpt.capstone.savinghourmarket.repository;
 
-import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.entity.Order;
-import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -50,5 +48,9 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
                                      Integer status,
                                      Boolean isPaid,
                                      Pageable pageable);
+
+    @Query("SELECT o FROM Order o " +
+            "WHERE o.status = 0")
+    List<Order> getOrdersProcessing(String customerEmail);
 
 }
