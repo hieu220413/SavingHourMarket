@@ -272,6 +272,9 @@ const Profile = ({navigation}) => {
             marginHorizontal: '3%',
             justifyContent: 'space-between',
           }}
+          onPress={() => {
+            navigation.navigate('Feedback');
+          }}
           activeOpacity={0.8}>
           <View
             style={{flexDirection: 'row', columnGap: 15, alignItems: 'center'}}>
@@ -286,7 +289,7 @@ const Profile = ({navigation}) => {
                 fontWeight: '700',
                 color: 'black',
               }}>
-              Help
+              Feedback
             </Text>
           </View>
           <AntDesign name="right" size={20} color="black"></AntDesign>

@@ -31,6 +31,7 @@ import {
 import ForgetPassword from './screens/ForgetPassword';
 import CodeReset from './screens/CodeReset';
 import ResetPassword from './screens/ResetPassword';
+import Feedback from './screens/Feedback';
 
 const Stack = createStackNavigator();
 export default function App() {
@@ -88,6 +89,7 @@ export default function App() {
           <Stack.Screen name="Forgot password" component={ForgetPassword} />
           <Stack.Screen name="Code reset" component={CodeReset} />
           <Stack.Screen name="Reset password" component={ResetPassword} />
+          <Stack.Screen name="Feedback" component={Feedback} />
         </Stack.Navigator>
       </NavigationContainer>
     </>
