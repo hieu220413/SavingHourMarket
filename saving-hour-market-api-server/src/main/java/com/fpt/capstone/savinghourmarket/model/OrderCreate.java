@@ -40,7 +40,7 @@ public class OrderCreate {
     private Integer status;
 
     @NotNull
-    private Integer payment_method;
+    private Integer paymentMethod;
 
     private String addressDeliver;
 

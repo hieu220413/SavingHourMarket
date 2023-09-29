@@ -21,15 +21,16 @@ public class Transaction {
     @UuidGenerator
     private UUID id;
 
-    @Column(columnDefinition = "varchar(10)")
-    private String paymentMethod;
+    @Column(columnDefinition = "tinyint")
+    private Integer paymentMethod;
 
     @Column(columnDefinition = "datetime(0)")
     private LocalDateTime paymentTime;
 
     private Integer amountOfMoney;
 
-    private Long transactionNo;
+    @Column(columnDefinition = "varchar(15)")
+    private String transactionNo;
 
     @ManyToOne(
             fetch = FetchType.LAZY
