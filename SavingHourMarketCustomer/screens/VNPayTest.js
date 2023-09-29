@@ -102,9 +102,8 @@ const VNPayTest = () => {
             beginColor: '#ffffff',
             endColor: '#ffffff',
             iconBackName: 'close',
-            tmn_code: 'GOGREEN1',
             paymentUrl:
-              'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Amount=1111100&vnp_Command=pay&vnp_CreateDate=20230924190049&vnp_CurrCode=VND&vnp_ExpireDate=20230924200049&vnp_IpAddr=127.0.0.1&vnp_Locale=vn&vnp_OrderInfo=accf7b01-5541-11ee-8a50-a85e45c41921&vnp_OrderType=other&vnp_ReturnUrl=http%3A%2F%2F10.0.2.2%3A8082%2Fapi%2Ftransaction%2FprocessPaymentResult&vnp_TmnCode=MNWQOE3L&vnp_TxnRef=9751370&vnp_Version=2.1.0&vnp_SecureHash=3e6dcb70e9e1bc2b5466df173cd184933770fa556e2b242bd032ab17168ded80d5d35b2fe5b94d2d22ace7033d76c1422b5f12369bac24bf032445e8ed5d7d38',
+              'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Amount=11111100&vnp_Command=pay&vnp_CreateDate=20230929074953&vnp_CurrCode=VND&vnp_ExpireDate=20230929084953&vnp_IpAddr=127.0.0.1&vnp_Locale=vn&vnp_OrderInfo=ec5dcac6-56dc-11ee-8a50-a85e45c41921&vnp_OrderType=other&vnp_ReturnUrl=http%3A%2F%2F10.0.2.2%3A8082%2Fapi%2Ftransaction%2FprocessPaymentResult&vnp_TmnCode=MNWQOE3L&vnp_TxnRef=d59c1fd4-ff0e-4c94-b3ae-010bf61944f1&vnp_Version=2.1.0&vnp_SecureHash=16ad32cb765bdc1412010e41c561797a4ebc144ebbc05e8e8f880cf60638f837cf442a8a20e9ca79fe17b736031f18998767f0fb6c43579948d4f9a874e931cd',
           });
 
           console.log('Sdk opened');

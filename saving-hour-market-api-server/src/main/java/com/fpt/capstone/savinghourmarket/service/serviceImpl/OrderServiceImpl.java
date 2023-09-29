@@ -150,7 +150,7 @@ public class OrderServiceImpl implements OrderService {
         order.setTotalPrice(orderCreate.getTotalPrice());
         order.setDeliveryDate(orderCreate.getDeliveryDate());
         order.setStatus(OrderStatus.PROCESSING.ordinal());
-        order.setPayment_method(orderCreate.getPayment_method());
+        order.setPaymentMethod(orderCreate.getPaymentMethod());
         order.setAddressDeliver(orderCreate.getAddressDeliver());
 
         String email = Utils.getCustomerEmail(jwtToken,firebaseAuth);

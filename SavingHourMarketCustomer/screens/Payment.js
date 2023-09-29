@@ -1,23 +1,134 @@
+/* eslint-disable no-undef */
 /* eslint-disable prettier/prettier */
 /* eslint-disable no-shadow */
 /* eslint-disable react/self-closing-comp */
 /* eslint-disable react-native/no-inline-styles */
 
-import React, {useState} from 'react';
-import {Image, Text, TouchableOpacity, View} from 'react-native';
+import React, {useRef, useState} from 'react';
+import {
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+  LogBox,
+  NativeEventEmitter,
+  Alert,
+} from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import {icons} from '../constants';
 import {COLORS} from '../constants/theme';
 import CheckBox from 'react-native-check-box';
 import DatePicker from 'react-native-date-picker';
 import {format} from 'date-fns';
-
+import VnpayMerchant, {
+  VnpayMerchantModule,
+} from '../react-native-vnpay-merchant';
+LogBox.ignoreLogs(['new NativeEventEmitter']);
+const eventEmitter = new NativeEventEmitter(VnpayMerchantModule);
 const Payment = ({navigation}) => {
   const [customerLocationIsChecked, setCustomerLocationIsChecked] =
     useState(false);
   const [pickUpPointIsChecked, setpickUpPointIsChecked] = useState(true);
   const [date, setDate] = useState(null);
   const [open, setOpen] = useState(false);
+  //VNPAY function/param
+  const orderIdDummy = useRef('ec5de351-56dc-11ee-8a50-a85e45c41921');
+  const totalPriceDummy = useRef(111111);
+  const [isCODPayment, setIsCODPayment] = useState(false);
+  const processVNPay = async (totalPrice, orderId, idToken) => {
+    console.log('is in process');
+    // lay payment url
+    const getPaymentResponse = await fetch(
+      `http://10.0.2.2:8082/api/transaction/getPaymentUrl?paidAmount=${totalPrice}&orderId=${orderId}`,
+      {
+        method: 'GET',
+        withCredentials: true,
+        credentials: 'include',
+        // truyen idToken vao
+        headers: {
+          Authorization: idToken,
+        },
+      },
+    )
+      .then(res => res)
+      .catch(e => {
+        console.log(e);
+        return null;
+      });
+
+    if (!getPaymentResponse) {
+      //Handle internal error
+      Alert.alert('Unexpected error happened');
+      return;
+    }
+
+    if (getPaymentResponse.status === 401) {
+      //Handle Unauthorized (chuyen ve log in hay sao do)
+      Alert.alert('Unauthorized');
+      return;
+    }
+
+    if (getPaymentResponse.status === 404) {
+      Alert.alert('Order not found');
+    }
+
+    if (getPaymentResponse.status === 403) {
+      const responseBody = await getPaymentResponse.json();
+      if (responseBody.message === 'ORDER_IS_PAID') {
+        Alert.alert('This Order has already been paid');
+      }
+
+      if (responseBody.message === 'REQUIRED_E_PAYMENT') {
+        Alert.alert('This order payment method is COD');
+      }
+      return;
+    }
+
+    if (getPaymentResponse.status === 200) {
+      const paymentUrl = await getPaymentResponse.text();
+      console.log(paymentUrl);
+      if (!paymentUrl) {
+        return;
+      }
+      // mở sdk
+      eventEmitter.addListener('PaymentBack', e => {
+        console.log('Sdk back!');
+        if (e) {
+          console.log('e.resultCode = ' + e.resultCode);
+          switch (e.resultCode) {
+            case -1:
+              // Khi nguoi dung nhan nut back tu device (Khong phai nhan nut back tu VNPAY UI)
+              console.log('nguoi dung nhan nut back tu device');
+              break;
+            case 97:
+              // Giao dich thanh cong.
+              console.log('Giao dich thanh cong');
+              break;
+            case 98:
+              // Giao dich khong thanh cong. (bao gom case nguoi dung an nut back tu VNPAY UI)
+              console.log('Giao dich khong thanh cong');
+              break;
+          }
+
+          //   khi tắt sdk
+          eventEmitter.removeAllListeners('PaymentBack');
+        }
+      });
+
+      VnpayMerchant.show({
+        isSandbox: true,
+        scheme: 'savingHourMarket',
+        title: 'Thanh toán VNPAY',
+        titleColor: '#333333',
+        beginColor: '#ffffff',
+        endColor: '#ffffff',
+        iconBackName: 'close',
+        paymentUrl: paymentUrl,
+      });
+
+      console.log('Sdk opened');
+    }
+  };
   return (
     <>
       <ScrollView>
@@ -732,9 +843,17 @@ const Payment = ({navigation}) => {
             633.700 VNĐ
           </Text>
         </View>
+        {/* process vnpay button */}
         <TouchableOpacity
           onPress={() => {
-            navigation.navigate('Payment');
+            if (!isCODPayment) {
+              processVNPay(
+                totalPriceDummy.current,
+                orderIdDummy.current,
+                'Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6ImFkNWM1ZTlmNTdjOWI2NDYzYzg1ODQ1YTA4OTlhOWQ0MTI5MmM4YzMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vY2Fwc3RvbmUtcHJvamVjdC0zOTgxMDQiLCJhdWQiOiJjYXBzdG9uZS1wcm9qZWN0LTM5ODEwNCIsImF1dGhfdGltZSI6MTY5NTk3NzU3NywidXNlcl9pZCI6InROcU10SHNjdTRTVVFGd0R0VnZGY0Y3VjBJZzIiLCJzdWIiOiJ0TnFNdEhzY3U0U1VRRndEdFZ2RmNGN1YwSWcyIiwiaWF0IjoxNjk1OTc3NTc3LCJleHAiOjE2OTU5ODExNzcsImVtYWlsIjoibHV1Z2lhdmluaDBAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZW1haWwiOlsibHV1Z2lhdmluaDBAZ21haWwuY29tIl19LCJzaWduX2luX3Byb3ZpZGVyIjoicGFzc3dvcmQifX0.stIJwr98hY1WtHs9CAhiQBx83ykjbQMwUPeqvZ7I4b8uuNlSyK_Cj2WgcdJlYd7E9roStbYpBd0KtklKdAySZLTMElRtk02g3D_NbhoNfHq2egu6hYFLm3SIiLzuEALpYuotB5urGYg9WGToClAKUID9Lq18zxIAi4UxE99Jn5rQRXMDYmH87KfD6oN9Ue8-VKEVgNzVv0zqzW5_KJ854kkGhF0K3IRNLig4zZt34W7NNBbhanzR2BrXw9eIRM4cRffs_pvOXv0cu-rqQY76rQMK32jISdMW069MfDfzvx0Ro3o_s0DC1rLSfgNdFcpZdhM16YvqKP_FKwjh8hw6sw',
+              );
+            }
+            // navigation.navigate('Payment');
           }}
           style={{
             height: '100%',

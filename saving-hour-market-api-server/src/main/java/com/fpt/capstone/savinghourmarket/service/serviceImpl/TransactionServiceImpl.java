@@ -152,6 +152,9 @@ public class TransactionServiceImpl implements TransactionService {
                 return  new RedirectView("http://success.sdk.merchantbackapp/");
             }
         }
+        if("99".equals(allRequestParams.get("vnp_ResponseCode"))){
+            return new RedirectView("http://cancel.sdk.merchantbackapp/");
+        }
         return  new RedirectView("http://fail.sdk.merchantbackapp/");
     }
 }
