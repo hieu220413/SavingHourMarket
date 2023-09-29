@@ -21,14 +21,14 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<Product> getProductsForStaff(Boolean isExpiredShown, String name, String supermarketId, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, String quantitySortType, String expiredSortType) {
         Sort sortable;
-        if(quantitySortType.equals("ASC")  && expiredSortType.equals("DESC")){
-            sortable = Sort.by("expiredDate").descending().and(Sort.by("quantity").ascending());
-        }else if (quantitySortType.equals("DESC")  && expiredSortType.equals("ASC")) {
-            sortable = Sort.by("expiredDate").ascending().and(Sort.by("quantity").descending());
-        }else if (quantitySortType.equals("ASC") && expiredSortType.equals("ASC")){
-            sortable = Sort.by("expiredDate").ascending().and(Sort.by("quantity").ascending());
+        if(quantitySortType.equals("ASC") ){
+            sortable = Sort.by("expiredDate").ascending();
+        }else if (quantitySortType.equals("DESC")) {
+            sortable = Sort.by("expiredDate").ascending();
+        }else if (quantitySortType.equals("ASC")){
+            sortable = Sort.by("expiredDate").ascending();
         }else {
-            sortable = Sort.by("expiredDate").descending().and(Sort.by("quantity").descending());
+            sortable = Sort.by("expiredDate").descending();
         }
 
         Pageable pageableWithSort = PageRequest.of(page, limit, sortable);

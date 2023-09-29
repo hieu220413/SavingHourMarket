@@ -24,6 +24,7 @@ public class FireBaseConfig {
         var credential = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount.getInputStream()))
                 .setStorageBucket(bucketName +".appspot.com")
+                .setDatabaseUrl("https://capstone-project-398104-default-rtdb.asia-southeast1.firebasedatabase.app")
                 .build();
         var firebaseApp = FirebaseApp.initializeApp(credential);
         return FirebaseAuth.getInstance(firebaseApp);

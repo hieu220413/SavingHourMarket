@@ -36,10 +36,10 @@ import java.util.UUID;
 @Getter
 public class TransactionServiceImpl implements TransactionService {
 
-    @Value("${VNPAY_TMN_CODE}")
+    @Value("CZQRWKJUMKNIUPGECAIOTTBLXOJAIMFM")
     private String vnpayTmnCode;
 
-    @Value("${VNPAY_HASH_SECRET}")
+    @Value("MNWQOE3L")
     private String vnpayHashSecret;
 
     @Value("${base-path-android}")

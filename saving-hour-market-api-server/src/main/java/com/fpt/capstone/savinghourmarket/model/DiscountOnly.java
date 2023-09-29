@@ -18,4 +18,5 @@ public interface DiscountOnly {
     Integer getStatus();
 
     Integer getQuantity();
+
 }

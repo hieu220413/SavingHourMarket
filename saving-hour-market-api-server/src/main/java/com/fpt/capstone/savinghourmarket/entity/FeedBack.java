@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -27,6 +28,11 @@ public class FeedBack {
 
     @Column(columnDefinition = "tinyint")
     private Integer status;
+
+    @OneToMany(
+            mappedBy = "feedBack"
+    )
+    private List<FeedBackImage> imageUrls;
 
     @Column(columnDefinition = "varchar(255)")
     private String object;

@@ -2,10 +2,7 @@ package com.fpt.capstone.savinghourmarket.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDate;
@@ -40,7 +37,7 @@ public class OrderGroup {
     private PickupPoint pickupPoint;
 
     @ManyToOne(
-            fetch = FetchType.LAZY
+            fetch = FetchType.EAGER
     )
     @JoinColumn(
             name = "deliverer_id",
@@ -49,9 +46,8 @@ public class OrderGroup {
     private Staff deliverer;
 
     @OneToMany(
-            fetch = FetchType.LAZY,
+            fetch = FetchType.EAGER,
             mappedBy = "orderGroup"
     )
-    @JsonIgnore
     private List<Order> orderList;
 }

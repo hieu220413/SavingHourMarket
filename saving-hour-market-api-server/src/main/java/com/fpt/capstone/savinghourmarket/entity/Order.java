@@ -30,6 +30,8 @@ public class Order {
 
     private Integer totalPrice;
 
+    private Integer totalDiscountPrice;
+
     @CreationTimestamp
     @Column(columnDefinition = "datetime(0)")
     private LocalDateTime createdTime;
@@ -89,7 +91,6 @@ public class Order {
     private List<Transaction> transaction;
 
     @ManyToOne(
-            fetch = FetchType.LAZY
     )
     @JoinColumn(
             name = "order_group_id",
@@ -109,7 +110,6 @@ public class Order {
     private OrderBatch orderBatch;
 
     @OneToMany(
-            fetch = FetchType.LAZY,
             mappedBy = "order"
     )
     @JsonIgnore
