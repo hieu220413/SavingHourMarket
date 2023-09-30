@@ -39,12 +39,15 @@ const Login = ({navigation}) => {
       setInitializing(false);
     }
     if (userInfo) {
+      console.log('user is logged in');
       const userTokenId = await userInfo.getIdToken().then(token => token);
       setTokenId(userTokenId);
       const userIdTokenPayload = await userInfo
         .getIdTokenResult()
         .then(payload => payload);
       setIdTokenResultPayload(userIdTokenPayload);
+    }else {
+      console.log('user is not logged in');
     }
   };
 
