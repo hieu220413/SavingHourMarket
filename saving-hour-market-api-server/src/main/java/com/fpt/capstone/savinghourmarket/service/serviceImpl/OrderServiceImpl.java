@@ -285,7 +285,7 @@ public class OrderServiceImpl implements OrderService {
         order.setDeliveryDate(Date.valueOf(orderCreate.getDeliveryDate()));
         order.setPaymentStatus(orderCreate.getPaymentStatus().ordinal());
         order.setStatus(OrderStatus.PROCESSING.ordinal());
-        order.setPayment_method(orderCreate.getPayment_method());
+        order.setPaymentMethod(orderCreate.getPaymentMethod());
         order.setAddressDeliver(orderCreate.getAddressDeliver());
         order.setCreatedTime(LocalDateTime.now());
         mapDiscountsToOrder(order, orderCreate.getDiscountID());
