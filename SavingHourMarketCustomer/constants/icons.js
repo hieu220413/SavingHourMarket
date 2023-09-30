@@ -19,6 +19,9 @@ const time = require('../assets/icons/time.png');
 const cash = require('../assets/icons/cash.png');
 const creditCard = require('../assets/icons/credit-card.png');
 const plusCircle = require('../assets/icons/plus-circle.png');
+const phone = require('../assets/icons/phone.png');
+const trashBin = require('../assets/icons/trashbin.png');
+const cross = require('../assets/icons/cross.png');
 
 export default {
   home,
@@ -41,4 +44,7 @@ export default {
   cash,
   creditCard,
   plusCircle,
+  phone,
+  trashBin,
+  cross,
 };

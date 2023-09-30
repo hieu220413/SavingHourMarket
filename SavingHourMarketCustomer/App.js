@@ -14,7 +14,7 @@ import VNPayTest from './screens/VNPayTest';
 import EditProfile from './screens/EditProfile';
 import Login from './screens/Login';
 import Signup from './screens/Signup';
-
+import {ModalPortal} from 'react-native-modals';
 import Payment from './screens/Payment';
 import SelectPickupPoint from './screens/SelectPickupPoint';
 import SelectTimeFrame from './screens/SelectTimeFrame';
@@ -22,6 +22,19 @@ import SelectPaymentMethod from './screens/SelectPaymentMethod';
 import SelectVoucher from './screens/SelectVoucher';
 import SelectCustomerLocation from './screens/SelectCustomerLocation';
 import EditCustomerLocation from './screens/EditCustomerLocation';
+import OrderDetail from './screens/OrderDetail';
+
+import {LogBox} from 'react-native';
+import Geolocation from '@react-native-community/geolocation';
+
+Geolocation.setRNConfiguration({
+  skipPermissionRequests: false,
+  locationProvider: 'playServices',
+});
+
+LogBox.ignoreLogs([
+  'Non-serializable values were found in the navigation state',
+]);
 
 const Stack = createStackNavigator();
 export default function App() {
@@ -39,6 +52,7 @@ export default function App() {
           <Stack.Screen name="Orders" component={Orders} />
           <Stack.Screen name="Cart" component={Cart} />
           <Stack.Screen name="Profile" component={Profile} />
+          <Stack.Screen name="OrderDetail" component={OrderDetail} />
 
           <Stack.Screen name="Edit Profile" component={EditProfile} />
           <Stack.Screen name="Login" component={Login} />
@@ -65,6 +79,7 @@ export default function App() {
           />
         </Stack.Navigator>
       </NavigationContainer>
+      <ModalPortal />
     </>
   );
 }

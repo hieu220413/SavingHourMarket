@@ -1,13 +1,27 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
 
-import React from 'react';
+import React, {useCallback, useState} from 'react';
 import {View, TouchableOpacity, Image, Text} from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import {icons} from '../constants';
 import {COLORS} from '../constants/theme';
+import {useFocusEffect} from '@react-navigation/native';
+import {API} from '../constants/api';
 
-const SelectTimeFrame = ({navigation}) => {
+const SelectTimeFrame = ({navigation, route}) => {
+  const [timeFrameList, setTimeFrameList] = useState([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetch(`${API.baseURL}/timeframe/getAll`)
+        .then(res => res.json())
+        .then(response => {
+          setTimeFrameList(response);
+        })
+        .catch(err => console.log(err));
+    }, []),
+  );
   return (
     <ScrollView>
       <View
@@ -51,117 +65,45 @@ const SelectTimeFrame = ({navigation}) => {
           Time frames
         </Text>
         {/* Time Frames */}
-        <TouchableOpacity
-          onPress={() => {
-            navigation.navigate('Payment');
-          }}
-          style={{
-            paddingVertical: 15,
-            borderTopColor: '#decbcb',
-            borderTopWidth: 0.75,
-            borderBottomColor: '#decbcb',
-            borderBottomWidth: 0.75,
-          }}>
-          <View
+        {timeFrameList.map(item => (
+          <TouchableOpacity
+            key={item.id}
+            onPress={() => {
+              route.params.setTimeFrame(item);
+              navigation.navigate('Payment');
+            }}
             style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 15,
-              flex: 1,
-              justifyContent: 'space-between',
+              paddingVertical: 15,
+              borderTopColor: '#decbcb',
+              borderTopWidth: 0.75,
             }}>
-            <Text
+            <View
               style={{
-                fontSize: 17,
-                color: 'black',
-                fontFamily: 'Roboto',
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 15,
+                flex: 1,
+                justifyContent: 'space-between',
               }}>
-              07:00 PM to 09:00 PM
-            </Text>
-            <Text
-              style={{
-                fontSize: 17,
-                color: 'black',
-                fontFamily: 'Roboto',
-              }}>
-              Everyday
-            </Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => {
-            navigation.navigate('Payment');
-          }}
-          style={{
-            paddingVertical: 15,
-            borderTopColor: '#decbcb',
-            borderTopWidth: 0.75,
-            borderBottomColor: '#decbcb',
-            borderBottomWidth: 0.75,
-          }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 15,
-              flex: 1,
-              justifyContent: 'space-between',
-            }}>
-            <Text
-              style={{
-                fontSize: 17,
-                color: 'black',
-                fontFamily: 'Roboto',
-              }}>
-              07:00 PM to 09:00 PM
-            </Text>
-            <Text
-              style={{
-                fontSize: 17,
-                color: 'black',
-                fontFamily: 'Roboto',
-              }}>
-              Everyday
-            </Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => {
-            navigation.navigate('Payment');
-          }}
-          style={{
-            paddingVertical: 15,
-            borderTopColor: '#decbcb',
-            borderTopWidth: 0.75,
-            borderBottomColor: '#decbcb',
-            borderBottomWidth: 0.75,
-          }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 15,
-              flex: 1,
-              justifyContent: 'space-between',
-            }}>
-            <Text
-              style={{
-                fontSize: 17,
-                color: 'black',
-                fontFamily: 'Roboto',
-              }}>
-              07:00 PM to 09:00 PM
-            </Text>
-            <Text
-              style={{
-                fontSize: 17,
-                color: 'black',
-                fontFamily: 'Roboto',
-              }}>
-              Everyday
-            </Text>
-          </View>
-        </TouchableOpacity>
+              <Text
+                style={{
+                  fontSize: 17,
+                  color: 'black',
+                  fontFamily: 'Roboto',
+                }}>
+                {item.fromHour.slice(0, 5)} đến {item.toHour.slice(0, 5)}
+              </Text>
+              <Text
+                style={{
+                  fontSize: 17,
+                  color: 'black',
+                  fontFamily: 'Roboto',
+                }}>
+                {item.dayOfWeek === 0 && 'Mỗi ngày'}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        ))}
       </View>
     </ScrollView>
   );

@@ -1,13 +1,79 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
 
-import React from 'react';
+import React, {useCallback, useState} from 'react';
 import {View, Image, Text} from 'react-native';
 import {ScrollView, TouchableOpacity} from 'react-native-gesture-handler';
 import {icons} from '../constants';
 import {COLORS} from '../constants/theme';
+import {useFocusEffect} from '@react-navigation/native';
+import Geolocation from '@react-native-community/geolocation';
+import GetLocation from 'react-native-get-location';
+import {API} from '../constants/api';
 
-const SelectPickupPoint = ({navigation}) => {
+const SelectPickupPoint = ({navigation, route}) => {
+  const [currentLocation, setCurrentLocation] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [pickupPointSuggestionList, setPickupPointSuggestionList] = useState(
+    [],
+  );
+  const [otherPickupPointList, setOtherPickupPointList] = useState([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      // Geolocation.getCurrentPosition(
+      //   position => {
+      //     console.log(position.coords.longitude);
+      //     console.log(position.coords.latitude);
+      //     const currentLongtitude = position.coords.longitude;
+      //     const currentLatitude = position.coords.latitude;
+      //     // console.log(currentLongtitude);
+      //     // console.log(currentLatitude);
+      //     // reverse geolocation
+      //     // fetch(
+      //     //   `https://maps.googleapis.com/maps/api/geocode/json?latlng=21.028280,105.853882&country=vn&key=AIzaSyA9ZGqIsMJKMcpqjgGZXKW2QBNMmgXCX2g`,
+      //     // )
+      //     //   .then(res => res.json())
+      //     //   .then(response => {
+      //     //     console.log(response.results[0]?.formatted_address);
+      //     //     console.log(response);
+      //     //   })
+      //     //   .catch(err => console.log(err));
+      //     //  ***********************************
+      //     // get pickuppoint
+      //     // fetch(
+      //     //   `http://saving-hour-market.ap-southeast-2.elasticbeanstalk.com/api/pickupPoint/getWithSortAndSuggestion?latitude=${currentLatitude}&longitude=${currentLongtitude}`,
+      //     // )
+      //     //   .then(res => res.json())
+      //     //   .then(response => {
+      //     //     console.log(response);
+      //     //   })
+      //     //   .catch(err => console.log(err));
+      //     // *********************
+      //   },
+      //   error => {
+      //     console.log(error.message);
+      //   },
+      //   {
+      //     enableHighAccuracy: true,
+      //   },
+      // );
+      const longitude = 106.644295;
+      const latitude = 10.8022319;
+      fetch(
+        `${API.baseURL}/pickupPoint/getWithSortAndSuggestion?latitude=${latitude}&longitude=${longitude}`,
+      )
+        .then(res => res.json())
+        .then(response => {
+          setPickupPointSuggestionList(
+            response.sortedPickupPointSuggestionList,
+          );
+          setOtherPickupPointList(response.otherSortedPickupPointList);
+        })
+        .catch(err => console.log(err));
+    }, []),
+  );
+
   return (
     <ScrollView>
       <View
@@ -48,112 +114,49 @@ const SelectPickupPoint = ({navigation}) => {
             fontWeight: 'bold',
             marginBottom: 20,
           }}>
-          Suggest by your current location
+          Điểm giao hàng gần nhất
         </Text>
         {/* Suggest Pickup point */}
-        <TouchableOpacity
-          onPress={() => {
-            navigation.navigate('Payment');
-          }}
-          style={{
-            paddingVertical: 15,
-            borderTopColor: '#decbcb',
-            borderTopWidth: 0.75,
-            borderBottomColor: '#decbcb',
-            borderBottomWidth: 0.75,
-          }}>
-          <View
+        {pickupPointSuggestionList.map(item => (
+          <TouchableOpacity
+            key={item.id}
+            onPress={() => {
+              route.params.setPickupPoint(item);
+              navigation.navigate('Payment');
+            }}
             style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 15,
-              flex: 1,
+              paddingVertical: 15,
+              borderTopColor: '#decbcb',
+              borderTopWidth: 0.75,
+              borderBottomColor: '#decbcb',
+              borderBottomWidth: 0.75,
             }}>
-            <Image
-              resizeMode="contain"
-              style={{width: 25, height: 25}}
-              source={icons.location}
-            />
-            <Text
+            <View
               style={{
-                fontSize: 17,
-                color: 'black',
-                fontFamily: 'Roboto',
-                flex: 0.9,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 15,
+                flex: 1,
               }}>
-              121 Tran Van Du , Phường 13, Quận Tân Bình, TP HCM
-            </Text>
-          </View>
-        </TouchableOpacity>
+              <Image
+                resizeMode="contain"
+                style={{width: 25, height: 25}}
+                source={icons.location}
+              />
+              <Text
+                style={{
+                  fontSize: 17,
+                  color: 'black',
+                  fontFamily: 'Roboto',
+                  width: '75%',
+                }}>
+                {item.address}
+              </Text>
+              <Text style={{fontSize: 14}}>{item.distance}</Text>
+            </View>
+          </TouchableOpacity>
+        ))}
 
-        <TouchableOpacity
-          onPress={() => {
-            navigation.navigate('Payment');
-          }}
-          style={{
-            paddingVertical: 15,
-            borderTopColor: '#decbcb',
-            borderTopWidth: 0.75,
-            borderBottomColor: '#decbcb',
-            borderBottomWidth: 0.75,
-          }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 15,
-              flex: 1,
-            }}>
-            <Image
-              resizeMode="contain"
-              style={{width: 25, height: 25}}
-              source={icons.location}
-            />
-            <Text
-              style={{
-                fontSize: 17,
-                color: 'black',
-                fontFamily: 'Roboto',
-                flex: 0.9,
-              }}>
-              121 Tran Van Du , Phường 13, Quận Tân Bình, TP HCM
-            </Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => {
-            navigation.navigate('Payment');
-          }}
-          style={{
-            paddingVertical: 15,
-            borderTopColor: '#decbcb',
-            borderTopWidth: 0.75,
-            borderBottomColor: '#decbcb',
-            borderBottomWidth: 0.75,
-          }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 15,
-              flex: 1,
-            }}>
-            <Image
-              resizeMode="contain"
-              style={{width: 25, height: 25}}
-              source={icons.location}
-            />
-            <Text
-              style={{
-                fontSize: 17,
-                color: 'black',
-                fontFamily: 'Roboto',
-                flex: 0.9,
-              }}>
-              121 Tran Van Du , Phường 13, Quận Tân Bình, TP HCM
-            </Text>
-          </View>
-        </TouchableOpacity>
         {/* ******* */}
         <Text
           style={{
@@ -164,133 +167,47 @@ const SelectPickupPoint = ({navigation}) => {
             marginBottom: 20,
             marginTop: 20,
           }}>
-          Order pickup point
+          Khác
         </Text>
         {/* Order pickup point */}
-        <TouchableOpacity
-          style={{
-            paddingVertical: 15,
-            borderTopColor: '#decbcb',
-            borderTopWidth: 0.75,
-            borderBottomColor: '#decbcb',
-            borderBottomWidth: 0.75,
-          }}>
-          <View
+        {otherPickupPointList.map(item => (
+          <TouchableOpacity
+            key={item.id}
+            onPress={() => {
+              route.params.setPickupPoint(item);
+              navigation.navigate('Payment');
+            }}
             style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 15,
-              flex: 1,
+              paddingVertical: 15,
+              borderTopColor: '#decbcb',
+              borderTopWidth: 0.75,
+              borderBottomColor: '#decbcb',
+              borderBottomWidth: 0.75,
             }}>
-            <Image
-              resizeMode="contain"
-              style={{width: 25, height: 25}}
-              source={icons.location}
-            />
-            <Text
+            <View
               style={{
-                fontSize: 17,
-                color: 'black',
-                fontFamily: 'Roboto',
-                flex: 0.9,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 15,
+                flex: 1,
               }}>
-              121 Tran Van Du , Phường 13, Quận Tân Bình, TP HCM
-            </Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{
-            paddingVertical: 15,
-            borderTopColor: '#decbcb',
-            borderTopWidth: 0.75,
-            borderBottomColor: '#decbcb',
-            borderBottomWidth: 0.75,
-          }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 15,
-              flex: 1,
-            }}>
-            <Image
-              resizeMode="contain"
-              style={{width: 25, height: 25}}
-              source={icons.location}
-            />
-            <Text
-              style={{
-                fontSize: 17,
-                color: 'black',
-                fontFamily: 'Roboto',
-                flex: 0.9,
-              }}>
-              121 Tran Van Du , Phường 13, Quận Tân Bình, TP HCM
-            </Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{
-            paddingVertical: 15,
-            borderTopColor: '#decbcb',
-            borderTopWidth: 0.75,
-            borderBottomColor: '#decbcb',
-            borderBottomWidth: 0.75,
-          }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 15,
-              flex: 1,
-            }}>
-            <Image
-              resizeMode="contain"
-              style={{width: 25, height: 25}}
-              source={icons.location}
-            />
-            <Text
-              style={{
-                fontSize: 17,
-                color: 'black',
-                fontFamily: 'Roboto',
-                flex: 0.9,
-              }}>
-              121 Tran Van Du , Phường 13, Quận Tân Bình, TP HCM
-            </Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{
-            paddingVertical: 15,
-            borderTopColor: '#decbcb',
-            borderTopWidth: 0.75,
-            borderBottomColor: '#decbcb',
-            borderBottomWidth: 0.75,
-          }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 15,
-              flex: 1,
-            }}>
-            <Image
-              resizeMode="contain"
-              style={{width: 25, height: 25}}
-              source={icons.location}
-            />
-            <Text
-              style={{
-                fontSize: 17,
-                color: 'black',
-                fontFamily: 'Roboto',
-                flex: 0.9,
-              }}>
-              121 Tran Van Du , Phường 13, Quận Tân Bình, TP HCM
-            </Text>
-          </View>
-        </TouchableOpacity>
+              <Image
+                resizeMode="contain"
+                style={{width: 25, height: 25}}
+                source={icons.location}
+              />
+              <Text
+                style={{
+                  fontSize: 17,
+                  color: 'black',
+                  fontFamily: 'Roboto',
+                  flex: 0.9,
+                }}>
+                {item.address}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        ))}
 
         {/* *************************** */}
       </View>
