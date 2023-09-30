@@ -22,6 +22,7 @@ const plusCircle = require('../assets/icons/plus-circle.png');
 const phone = require('../assets/icons/phone.png');
 const trashBin = require('../assets/icons/trashbin.png');
 const cross = require('../assets/icons/cross.png');
+const close = require('../assets/icons/close.png');
 
 export default {
   home,
@@ -47,4 +48,5 @@ export default {
   phone,
   trashBin,
   cross,
+  close,
 };

@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import React from 'react';
-import {createStackNavigator} from '@react-navigation/stack';
-import {NavigationContainer} from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { NavigationContainer } from '@react-navigation/native';
 import 'react-native-gesture-handler';
 
 import Tabs from './navigation/tabs';
@@ -35,6 +35,8 @@ Geolocation.setRNConfiguration({
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
 ]);
+import ProductDetails from './screens/ProductDetails';
+import DiscountForCategories from './screens/DiscountForCategories';
 
 const Stack = createStackNavigator();
 export default function App() {
@@ -59,6 +61,8 @@ export default function App() {
           <Stack.Screen name="Sign Up" component={Signup} />
 
           <Stack.Screen name="Payment" component={Payment} />
+          <Stack.Screen name="ProductDetails" component={ProductDetails} />
+          <Stack.Screen name="DiscountForCategories" component={DiscountForCategories} />
           <Stack.Screen
             name="Select pickup point"
             component={SelectPickupPoint}
