@@ -24,8 +24,7 @@ const EditCustomerLocation = ({navigation, route}) => {
   useEffect(() => {
     const cleanUp = setTimeout(() => {
       setShouldSetDefaultValue(false);
-    }, 1000);
-    // return () => cleanUp();
+    }, 300);
   }, []);
 
   return (
