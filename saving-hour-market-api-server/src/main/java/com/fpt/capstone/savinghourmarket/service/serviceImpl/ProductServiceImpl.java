@@ -1,15 +1,20 @@
 package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
+import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
 import com.fpt.capstone.savinghourmarket.entity.Product;
+import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.repository.ProductRepository;
 import com.fpt.capstone.savinghourmarket.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -62,5 +67,15 @@ public class ProductServiceImpl implements ProductService {
                 , productSubCategoryId == null ? null : UUID.fromString(productSubCategoryId)
                 , pageableWithSort);
         return productList;
+    }
+
+    @Override
+    @Transactional
+    public Product getById(UUID id) {
+        Optional<Product> product = productRepository.findByIdCustom(id);
+        if(!product.isPresent()){
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.PRODUCT_NOT_FOUND.getCode()), AdditionalResponseCode.PRODUCT_NOT_FOUND.toString());
+        }
+        return product.get();
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -62,5 +63,11 @@ public class ProductController {
                 , quantitySortType
                 , expiredSortType);
         return ResponseEntity.status(HttpStatus.OK).body(productList);
+    }
+
+    @RequestMapping(value = "/getById", method = RequestMethod.GET)
+    public ResponseEntity<Product> getById(@RequestParam UUID id){
+        Product product = productService.getById(id);
+        return ResponseEntity.status(HttpStatus.OK).body(product);
     }
 }

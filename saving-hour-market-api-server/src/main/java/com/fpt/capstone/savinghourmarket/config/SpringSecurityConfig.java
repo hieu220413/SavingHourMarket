@@ -43,6 +43,7 @@ public class SpringSecurityConfig {
                             .requestMatchers(HttpMethod.POST, "/api/customer/registerWithEmailPassword").permitAll()
 //                            .requestMatchers("/api/customer/updateInfo").authenticated()
                             .requestMatchers("/api/product/getProductsForCustomer").permitAll()
+                            .requestMatchers("/api/product/getById").permitAll()
                             .requestMatchers("/api/discount/getDiscountsForCustomer").permitAll()
                             .requestMatchers("/api/discount/getDiscountById").permitAll()
                             .requestMatchers("/api/timeframe/getAll").permitAll()
