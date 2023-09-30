@@ -19,6 +19,7 @@ const time = require('../assets/icons/time.png');
 const cash = require('../assets/icons/cash.png');
 const creditCard = require('../assets/icons/credit-card.png');
 const plusCircle = require('../assets/icons/plus-circle.png');
+const close = require('../assets/icons/close.png');
 
 export default {
   home,
@@ -41,4 +42,5 @@ export default {
   cash,
   creditCard,
   plusCircle,
+  close,
 };
