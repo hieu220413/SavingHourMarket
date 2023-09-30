@@ -55,7 +55,7 @@ const Home = ({navigation}) => {
   });
 
   const handleBuy = () => {
-    LocalNotification();
+    console.log('Buy');
   };
 
   const Item = ({data}) => (

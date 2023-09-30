@@ -30,6 +30,68 @@ const Login = ({navigation}) => {
   const [check_textInputChange, setCheck_textInputChange] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState();
+  const [tokenId, setTokenId] = useState('');
+  const [idTokenResultPayload, setIdTokenResultPayload] = useState('');
+
+  const onAuthStateChange = async userInfo => {
+    setUser(userInfo);
+    if (initializing) {
+      setInitializing(false);
+    }
+    if (userInfo) {
+      const userTokenId = await userInfo.getIdToken().then(token => token);
+      setTokenId(userTokenId);
+      const userIdTokenPayload = await userInfo
+        .getIdTokenResult()
+        .then(payload => payload);
+      setIdTokenResultPayload(userIdTokenPayload);
+    }
+  };
+
+  const login = () => {
+    auth()
+      .signInWithEmailAndPassword(email, password)
+      .then(() => {
+        console.log('User singed in successfully with email and password');
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  };
+
+  const loginGoogel = async () => {
+    await GoogleSignin.hasPlayServices({showPlayServicesUpdateDialog: true});
+    const {idToken} = await GoogleSignin.signIn();
+
+    const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+
+    return auth()
+      .signInWithCredential(googleCredential)
+      .then(() => {
+        console.log('User signed in successfully with google account');
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  };
+
+  const logout = () => {
+    auth()
+      .signOut()
+      .then(() => console.log('Signed out successfully!'));
+  };
+
+  useEffect(() => {
+    const subscriber = auth().onAuthStateChanged(
+      async userInfo => await onAuthStateChange(userInfo),
+    );
+    GoogleSignin.configure({
+      webClientId:
+        '857253936194-dmrh0nls647fpqbuou6mte9c7e4o6e6h.apps.googleusercontent.com',
+    });
+    return subscriber;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const emailValidator = () => {
     if (email == '') {
@@ -155,13 +217,15 @@ const Login = ({navigation}) => {
                 style={[styles.login, {width: '50%'}]}
                 size={GoogleSigninButton.Size.Wide}
                 color={GoogleSigninButton.Color.Light}
-                // onPress={loginGoogel}
+                onPress={() => {
+                  loginGoogel();
+                }}
                 // disabled={this.state.isSigninInProgress}
               />
               <TouchableOpacity
                 style={{width: '100%', marginTop: 15}}
                 onPress={() => {
-                  console.log('sign in');
+                  login();
                 }}>
                 <LinearGradient
                   colors={['#66CC66', '#66CC99']}
@@ -178,6 +242,7 @@ const Login = ({navigation}) => {
                 ]}
                 onPress={() => {
                   navigation.navigate('Sign Up');
+                  // logout();
                 }}>
                 <Text style={[styles.textSign, {color: '#66CC66'}]}>
                   Sign Up

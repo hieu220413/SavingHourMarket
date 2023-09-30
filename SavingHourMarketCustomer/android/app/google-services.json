@@ -52,6 +52,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "857253936194-ltit9q7c7hg2ejnti8k7uif1rmrsfm0q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.savinghourmarketcustomer",
+            "certificate_hash": "2d24b110734207bacec9c61d671f103b894aa5ea"
+          }
+        },
+        {
           "client_id": "857253936194-dmrh0nls647fpqbuou6mte9c7e4o6e6h.apps.googleusercontent.com",
           "client_type": 3
         }
