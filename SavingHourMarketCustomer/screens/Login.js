@@ -382,8 +382,8 @@ const Login = ({navigation}) => {
                   {borderColor: '#66CC66', borderWidth: 1, marginTop: 15},
                 ]}
                 onPress={() => {
-                  // navigation.navigate('Sign Up');
-                  logout();
+                  navigation.navigate('Sign Up');
+                  // logout();
                 }}>
                 <Text style={[styles.textSign, {color: '#66CC66'}]}>
                   Sign Up
