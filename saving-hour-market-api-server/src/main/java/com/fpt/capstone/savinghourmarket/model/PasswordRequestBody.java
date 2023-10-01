@@ -12,7 +12,7 @@ import org.springframework.validation.annotation.Validated;
 @AllArgsConstructor
 @NoArgsConstructor
 @Validated
-public class CustomerPasswordRequestBody {
+public class PasswordRequestBody {
     @NotNull
     private String password;
 }

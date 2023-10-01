@@ -5,10 +5,11 @@ import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.exception.InvalidUserInputException;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
-import com.fpt.capstone.savinghourmarket.model.CustomerPasswordRequestBody;
+import com.fpt.capstone.savinghourmarket.model.PasswordRequestBody;
 import com.fpt.capstone.savinghourmarket.model.CustomerRegisterRequestBody;
 import com.fpt.capstone.savinghourmarket.model.CustomerUpdateRequestBody;
 import com.fpt.capstone.savinghourmarket.repository.CustomerRepository;
+import com.fpt.capstone.savinghourmarket.repository.StaffRepository;
 import com.fpt.capstone.savinghourmarket.service.CustomerService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
@@ -37,6 +38,8 @@ public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepository;
 
+    private final StaffRepository staffRepository;
+
     @Override
     public Customer register(CustomerRegisterRequestBody customerRegisterRequestBody) throws FirebaseAuthException, UnsupportedEncodingException {
         Pattern pattern;
@@ -59,7 +62,7 @@ public class CustomerServiceImpl implements CustomerService {
         }
 
         // email duplicate validate
-        if(customerRepository.getCustomerByEmail(customerRegisterRequestBody.getEmail().trim()).isPresent()){
+        if(customerRepository.getCustomerByEmail(customerRegisterRequestBody.getEmail().trim()).isPresent() || staffRepository.findByEmail(customerRegisterRequestBody.getEmail().trim()).isPresent()){
             errorFields.put("emailError", "This email has already been registered");
         }
 
@@ -210,14 +213,14 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public void updatePassword(CustomerPasswordRequestBody customerPasswordRequestBody, String email) throws FirebaseAuthException {
+    public void updatePassword(PasswordRequestBody passwordRequestBody, String email) throws FirebaseAuthException {
         Pattern pattern;
         Matcher matcher;
         HashMap errorFields = new HashMap<>();
 
         // password validate
         pattern = Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,20}$");
-        matcher = pattern.matcher(customerPasswordRequestBody.getPassword());
+        matcher = pattern.matcher(passwordRequestBody.getPassword());
 
         if(!matcher.matches()){
             errorFields.put("passwordError", "At least 8 characters, 1 digit, 1 uppercase and lowercase letter");
@@ -229,7 +232,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         String uid = firebaseAuth.getUserByEmail(email).getUid();
         UserRecord.UpdateRequest request = new UserRecord.UpdateRequest(uid)
-                .setPassword(customerPasswordRequestBody.getPassword());
+                .setPassword(passwordRequestBody.getPassword());
         firebaseAuth.updateUser(request);
         firebaseAuth.revokeRefreshTokens(uid);
     }
