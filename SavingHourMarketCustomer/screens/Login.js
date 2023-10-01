@@ -7,6 +7,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   ImageBackground,
+  Alert,
 } from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
 import {COLORS} from '../constants/theme';
@@ -20,6 +21,7 @@ import {
   GoogleSigninButton,
 } from '@react-native-google-signin/google-signin';
 import auth from '@react-native-firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Login = ({navigation}) => {
   const [password, setPassword] = useState('');
@@ -29,24 +31,143 @@ const Login = ({navigation}) => {
   const [secureTextEntry, setSecureTextEntry] = useState(true);
   const [check_textInputChange, setCheck_textInputChange] = useState(false);
   const [initializing, setInitializing] = useState(true);
-  const [user, setUser] = useState();
-  const [tokenId, setTokenId] = useState('');
-  const [idTokenResultPayload, setIdTokenResultPayload] = useState('');
+  const loginMode = useRef('');
+  // const [user, setUser] = useState();
+  // const [tokenId, setTokenId] = useState('');
+  // const [idTokenResultPayload, setIdTokenResultPayload] = useState('');
 
   const onAuthStateChange = async userInfo => {
-    setUser(userInfo);
+    // setUser(userInfo);
     if (initializing) {
       setInitializing(false);
     }
     if (userInfo) {
+      // check if user sessions is still available. If yes => redirect to another screen
+      if (loginMode.current.length === 0) {
+        const userTokenId = await userInfo
+          .getIdToken(true)
+          .then(token => token)
+          .catch(async e => {
+            // sessions end. (revoke refresh token like password change, disable account, ....)
+            console.log(e);
+            Alert.alert('Session ended. Required re-authenticate');
+            await AsyncStorage.removeItem('userInfo')
+            return null;
+          });
+        if (userTokenId) {
+          // session van con. redirect qua trang khac
+          Alert.alert('User session van con. Redirect qua screen nao do di');
+          return;
+        }
+        return;
+      }
+      // login with google
+      if (loginMode.current === 'GOOGLE') {
+        const userTokenId = await userInfo
+          .getIdToken()
+          .then(token => token)
+          .catch(e => console.log(e));
+        const userInfoAfterGooleLoginRequest = await fetch(
+          'http://10.0.2.2:8082/api/customer/getInfoAfterGoogleLogged',
+          {
+            method: 'get',
+            headers: {Authorization: `Bearer ${userTokenId}`},
+          },
+        ).catch(e => {
+          console.log(e);
+          return null;
+        });
+        // internal error handle
+        if (!userInfoAfterGooleLoginRequest) {
+          await logout();
+          Alert.alert(
+            'internal error happened in fetching user info with google',
+          );
+          return;
+        }
+        // staff account access to customer application handle
+        if (userInfoAfterGooleLoginRequest.status === 403) {
+          const responseBody = await userInfoAfterGooleLoginRequest.json();
+          if (responseBody.message === 'STAFF_ACCESS_FORBIDDEN') {
+            await logout();
+            Alert.alert('Staff account can not access to customer application');
+            return;
+          }
+        }
+        // fetch success
+        if (userInfoAfterGooleLoginRequest.status === 200) {
+          const userInfoResult = await userInfoAfterGooleLoginRequest.json();
+          // add user info to storage
+          await AsyncStorage.setItem(
+            'userInfo',
+            JSON.stringify(userInfoResult),
+          );
+          Alert.alert(
+            'Login thanh cong, da save user. Redirect qua screen nao do di',
+          );
+        }
+      }
+
+      // login with email password
+      if (loginMode.current === 'EMAIL_PASSWORD') {
+        const userTokenId = await userInfo
+          .getIdToken()
+          .then(token => token)
+          .catch(e => console.log(e));
+        const userInfoAfterEmailPasswordLoginRequest = await fetch(
+          'http://10.0.2.2:8082/api/customer/getInfo',
+          {
+            method: 'get',
+            credentials: 'include',
+            mode: 'no-cors',
+            headers: {Authorization: `Bearer ${userTokenId}`},
+          },
+        ).catch(e => {
+          console.log(e);
+          return null;
+        });
+
+        // internal error handle
+        if (!userInfoAfterEmailPasswordLoginRequest) {
+          await logout();
+          Alert.alert(
+            'internal error happened in fetching user info with google',
+          );
+          return;
+        }
+        // no user found
+        if (userInfoAfterEmailPasswordLoginRequest.status === 403) {
+          const responseBody =
+            await userInfoAfterEmailPasswordLoginRequest.json();
+          if (responseBody.message === 'STAFF_ACCESS_FORBIDDEN') {
+            await logout();
+            Alert.alert('Staff account can not access to customer application');
+            return;
+          }
+        }
+        // fetch success
+        if (userInfoAfterEmailPasswordLoginRequest.status === 200) {
+          const userInfoResult =
+            await userInfoAfterEmailPasswordLoginRequest.json();
+          // add user info to storage
+          await AsyncStorage.setItem(
+            'userInfo',
+            JSON.stringify(userInfoResult),
+          );
+          // login thanh cong roi => redirect di dau do di
+          Alert.alert(
+            'Login thanh cong, da save user. Redirect qua screen nao do di',
+          );
+        }
+      }
+
+      // setTokenId(userTokenId);
+      // const userIdTokenPayload = await userInfo
+      //   .getIdTokenResult()
+      //   .then(payload => payload);
+      // setIdTokenResultPayload(userIdTokenPayload);
       console.log('user is logged in');
-      const userTokenId = await userInfo.getIdToken().then(token => token);
-      setTokenId(userTokenId);
-      const userIdTokenPayload = await userInfo
-        .getIdTokenResult()
-        .then(payload => payload);
-      setIdTokenResultPayload(userIdTokenPayload);
-    }else {
+    } else {
       console.log('user is not logged in');
     }
   };
@@ -58,33 +179,48 @@ const Login = ({navigation}) => {
         console.log('User singed in successfully with email and password');
       })
       .catch(error => {
+        // handle wrong password or email
+        Alert.alert('Wrong password or email');
         console.log(error);
       });
   };
 
   const loginGoogel = async () => {
     await GoogleSignin.hasPlayServices({showPlayServicesUpdateDialog: true});
-    const {idToken} = await GoogleSignin.signIn();
+    const googleSignInResponse = await GoogleSignin.signIn().catch(e => {
+      console.log(e);
+      return null;
+    });
 
-    const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-
-    return auth()
-      .signInWithCredential(googleCredential)
-      .then(() => {
-        console.log('User signed in successfully with google account');
-      })
-      .catch(error => {
-        console.log(error);
-      });
+    if (googleSignInResponse) {
+      const googleCredential = auth.GoogleAuthProvider.credential(
+        googleSignInResponse.idToken,
+      );
+      return auth()
+        .signInWithCredential(googleCredential)
+        .then(() => {
+          console.log('User signed in successfully with google account');
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await GoogleSignin.signOut();
     auth()
       .signOut()
       .then(() => console.log('Signed out successfully!'));
   };
 
+  // useEffect(() => {
+  //   console.log(tokenId)
+  //   console.log(idTokenResultPayload)
+  // }, [setTokenId, setIdTokenResultPayload]);
+
   useEffect(() => {
+    // auth().currentUser.reload()
     const subscriber = auth().onAuthStateChanged(
       async userInfo => await onAuthStateChange(userInfo),
     );
@@ -221,6 +357,7 @@ const Login = ({navigation}) => {
                 size={GoogleSigninButton.Size.Wide}
                 color={GoogleSigninButton.Color.Light}
                 onPress={() => {
+                  loginMode.current = 'GOOGLE';
                   loginGoogel();
                 }}
                 // disabled={this.state.isSigninInProgress}
@@ -228,6 +365,7 @@ const Login = ({navigation}) => {
               <TouchableOpacity
                 style={{width: '100%', marginTop: 15}}
                 onPress={() => {
+                  loginMode.current = 'EMAIL_PASSWORD';
                   login();
                 }}>
                 <LinearGradient
@@ -244,8 +382,8 @@ const Login = ({navigation}) => {
                   {borderColor: '#66CC66', borderWidth: 1, marginTop: 15},
                 ]}
                 onPress={() => {
-                  navigation.navigate('Sign Up');
-                  // logout();
+                  // navigation.navigate('Sign Up');
+                  logout();
                 }}>
                 <Text style={[styles.textSign, {color: '#66CC66'}]}>
                   Sign Up
