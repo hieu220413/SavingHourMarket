@@ -94,9 +94,9 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderDetail(id));
     }
 
-    @Transactional
+
     @PutMapping("/createOrder")
-    public ResponseEntity<String> createOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,@Valid @RequestBody OrderCreate order) throws Exception, OutOfProductQuantityException {
+    public ResponseEntity<String> createOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,@Valid @RequestBody OrderCreate order) throws Exception {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.createOrder(jwtToken, order));
     }
 

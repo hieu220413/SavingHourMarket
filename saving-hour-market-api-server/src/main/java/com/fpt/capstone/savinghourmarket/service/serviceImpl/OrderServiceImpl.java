@@ -217,9 +217,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Transactional(rollbackFor = {ResourceNotFoundException.class, IOException.class, OutOfProductQuantityException.class, Exception.class, InterruptedException.class},
-            propagation = Propagation.REQUIRES_NEW)
-    public String createOrder(String jwtToken, OrderCreate orderCreate) throws Exception, OutOfProductQuantityException {
+    public String createOrder(String jwtToken, OrderCreate orderCreate) throws Exception {
         log.info("Creating new order");
         String email = Utils.getCustomerEmail(jwtToken, firebaseAuth);
         Customer customer = customerRepository
@@ -227,10 +225,23 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new AuthorizationServiceException("Access denied with this account: " + email));
         saveCustomerInfoIfNeeded(customer, orderCreate);
 
-//        if (repository.getOrdersProcessing(customer.getEmail()).size() > 3) {
-//            throw new Exception("Customer already has 3 PROCESSING orders");
-//        }
+        if (repository.getOrdersProcessing(customer.getEmail()).size() > 3) {
+            throw new Exception("Customer already has 3 PROCESSING orders");
+        }
 
+        RLock rLock = redissonClient.getLock("createOrderLock");
+        String result;
+        try {
+            rLock.lock();
+            result = createOrderTransact(orderCreate, customer);
+        } finally {
+            rLock.unlock();
+        }
+        return result;
+    }
+
+    @Transactional(rollbackFor = {ResourceNotFoundException.class, InterruptedException.class, IOException.class, OutOfProductQuantityException.class})
+    String createOrderTransact(OrderCreate orderCreate, Customer customer) throws ResourceNotFoundException, InterruptedException, IOException, OutOfProductQuantityException {
         Order order = setOrderData(orderCreate, customer);
 
         if (orderCreateHasPickupPointAndTimeFrame(orderCreate)) {
@@ -262,15 +273,15 @@ public class OrderServiceImpl implements OrderService {
         customerService.updateInfo(customerUpdateRequestBody, customer.getEmail(), null);
     }
 
-    private void batchingOrder(Order order, OrderCreate orderCreate) throws ResourceNotFoundException {
+    private void batchingOrder(Order order, OrderCreate orderCreate) throws ResourceNotFoundException, InterruptedException {
         String district = extractDistrict(orderCreate.getAddressDeliver());
         if (district != null) {
             log.debug(district);
         } else {
             throw new ResourceNotFoundException("District not found");
         }
+        OrderBatch batch = null;
         Optional<OrderBatch> orderBatch = orderBatchRepository.findByDistrictAndDeliverDate(district, orderCreate.getDeliveryDate());
-        OrderBatch batch;
         if (orderBatch.isPresent()) {
             batch = orderBatch.get();
         } else {
@@ -304,7 +315,8 @@ public class OrderServiceImpl implements OrderService {
                 && orderCreate.getTimeFrameId() != null && !orderCreate.getTimeFrameId().toString().isEmpty();
     }
 
-    private void groupingOrder(Order order, OrderCreate orderCreate) {
+    private void groupingOrder(Order order, OrderCreate orderCreate) throws InterruptedException {
+        OrderGroup group = null;
         Optional<OrderGroup> orderGroup = orderGroupRepository
                 .findByTimeFrameIdAndPickupPointIdAndDeliverDate(
                         orderCreate.getTimeFrameId(),
@@ -312,11 +324,12 @@ public class OrderServiceImpl implements OrderService {
                         orderCreate.getDeliveryDate()
                 );
         if (orderGroup.isPresent()) {
-            order.setOrderGroup(orderGroup.get());
+            group = orderGroup.get();
         } else {
             OrderGroup orderGroupNew = createNewOrderGroup(orderCreate);
-            order.setOrderGroup(orderGroupRepository.save(orderGroupNew));
+            group = orderGroupRepository.save(orderGroupNew);
         }
+        order.setOrderGroup(group);
     }
 
     private OrderGroup createNewOrderGroup(OrderCreate orderCreate) {
@@ -343,19 +356,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private void decrementDiscountQuantity(Discount discount) throws InterruptedException {
-        String discountLockId = discount.getId().toString();
-        RLock rLock = redissonClient.getLock(discountLockId);
-        boolean res = rLock.tryLock(100, 10, TimeUnit.SECONDS);
-        if (res) {
-            try {
-                rLock.lock();
-                Integer quantity = discount.getQuantity();
-                discount.setQuantity(quantity - 1);
-                discountRepository.save(discount);
-            } finally {
-                rLock.unlock();
-            }
-        }
+        Integer quantity = discount.getQuantity();
+        discount.setQuantity(quantity - 1);
+        discountRepository.save(discount);
     }
 
     private String generateAndUploadQRCode(Order order) throws IOException {
@@ -398,21 +401,11 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private void updateProductQuantity(Product product, Integer boughtQuantity) throws OutOfProductQuantityException, InterruptedException {
-        String productLockId = product.getId().toString();
-        RLock rLock = redissonClient.getLock(productLockId);
-        boolean res = rLock.tryLock(100, 10, TimeUnit.SECONDS);
-        if (res) {
-            try {
-                rLock.lock();
-                if (product.getQuantity() >= boughtQuantity) {
-                    product.setQuantity(product.getQuantity() - boughtQuantity);
-                    productRepository.save(product);
-                } else {
-                    throw new OutOfProductQuantityException("Product don't have enough quantity");
-                }
-            } finally {
-                rLock.unlock();
-            }
+        if (product.getQuantity() >= boughtQuantity) {
+            product.setQuantity(product.getQuantity() - boughtQuantity);
+            productRepository.save(product);
+        } else {
+            throw new OutOfProductQuantityException("Product don't have enough quantity");
         }
     }
 
