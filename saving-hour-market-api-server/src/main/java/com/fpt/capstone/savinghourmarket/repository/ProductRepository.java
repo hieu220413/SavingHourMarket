@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -53,6 +54,13 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
     @Query("SELECT p FROM Product p " +
             "WHERE p.status = 1 AND p.supermarket.id = :supermarketId ")
     Product getProductByActiveAndSupermarketId(UUID supermarketId, PageRequest of);
+
+    @Query("SELECT p FROM Product p " +
+            "JOIN FETCH p.productSubCategory " +
+            "JOIN FETCH p.productSubCategory.productCategory " +
+            "JOIN FETCH p.supermarket " +
+            "WHERE p.id = :id AND p.status = 1")
+    Optional<Product> findByIdCustom(UUID id);
 
 
 //    @Query(value = "SELECT * FROM product p " +

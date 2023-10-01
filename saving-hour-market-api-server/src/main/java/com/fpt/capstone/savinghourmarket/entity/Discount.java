@@ -32,6 +32,9 @@ public class Discount {
     @Column(columnDefinition = "datetime(0)")
     private LocalDateTime expiredDate;
 
+    @Column(columnDefinition = "text")
+    private String imageUrl;
+
     @Column(columnDefinition = "tinyint")
     private Integer status;
 

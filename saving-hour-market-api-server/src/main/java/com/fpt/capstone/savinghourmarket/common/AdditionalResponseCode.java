@@ -10,6 +10,7 @@ public enum AdditionalResponseCode {
     DISABLE_SUPERMARKET_FORBIDDEN(403),
     SUPERMARKET_NOT_FOUND(404),
     REQUIRED_E_PAYMENT(403),
+    PRODUCT_NOT_FOUND(404),
     ORDER_IS_PAID(403);
 
     private int code;
