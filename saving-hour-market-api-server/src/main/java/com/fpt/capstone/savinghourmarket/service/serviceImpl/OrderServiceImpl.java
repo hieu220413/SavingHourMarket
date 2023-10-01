@@ -3,10 +3,7 @@ package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 import com.fpt.capstone.savinghourmarket.common.District;
 import com.fpt.capstone.savinghourmarket.common.OrderStatus;
 import com.fpt.capstone.savinghourmarket.entity.*;
-import com.fpt.capstone.savinghourmarket.exception.NoSuchOrderException;
-import com.fpt.capstone.savinghourmarket.exception.OrderCancellationNotAllowedException;
-import com.fpt.capstone.savinghourmarket.exception.OutOfProductQuantityException;
-import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
+import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.CustomerUpdateRequestBody;
 import com.fpt.capstone.savinghourmarket.model.OrderCreate;
 import com.fpt.capstone.savinghourmarket.model.OrderProduct;
@@ -226,7 +223,7 @@ public class OrderServiceImpl implements OrderService {
         saveCustomerInfoIfNeeded(customer, orderCreate);
 
         if (repository.getOrdersProcessing(customer.getEmail()).size() > 3) {
-            throw new Exception("Customer already has 3 PROCESSING orders");
+            throw new CustomerLimitOrderProcessingException("Customer already has 3 PROCESSING orders");
         }
 
         RLock rLock = redissonClient.getLock("createOrderLock");
@@ -258,7 +255,7 @@ public class OrderServiceImpl implements OrderService {
 
         saveOrderDetails(orderSavedSuccess, orderCreate);
 
-        return orderSavedSuccess.getQrCodeUrl();
+        return orderSavedSuccess.getId().toString();
     }
 
     private void saveCustomerInfoIfNeeded(Customer customer, OrderCreate orderCreate) throws IOException {
@@ -273,7 +270,7 @@ public class OrderServiceImpl implements OrderService {
         customerService.updateInfo(customerUpdateRequestBody, customer.getEmail(), null);
     }
 
-    private void batchingOrder(Order order, OrderCreate orderCreate) throws ResourceNotFoundException, InterruptedException {
+    private void batchingOrder(Order order, OrderCreate orderCreate) throws ResourceNotFoundException {
         String district = extractDistrict(orderCreate.getAddressDeliver());
         if (district != null) {
             log.debug(district);
@@ -315,7 +312,7 @@ public class OrderServiceImpl implements OrderService {
                 && orderCreate.getTimeFrameId() != null && !orderCreate.getTimeFrameId().toString().isEmpty();
     }
 
-    private void groupingOrder(Order order, OrderCreate orderCreate) throws InterruptedException {
+    private void groupingOrder(Order order, OrderCreate orderCreate) {
         OrderGroup group = null;
         Optional<OrderGroup> orderGroup = orderGroupRepository
                 .findByTimeFrameIdAndPickupPointIdAndDeliverDate(
@@ -355,7 +352,7 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-    private void decrementDiscountQuantity(Discount discount) throws InterruptedException {
+    private void decrementDiscountQuantity(Discount discount) {
         Integer quantity = discount.getQuantity();
         discount.setQuantity(quantity - 1);
         discountRepository.save(discount);
@@ -400,7 +397,7 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("No Product found with this id " + productId));
     }
 
-    private void updateProductQuantity(Product product, Integer boughtQuantity) throws OutOfProductQuantityException, InterruptedException {
+    private void updateProductQuantity(Product product, Integer boughtQuantity) throws OutOfProductQuantityException {
         if (product.getQuantity() >= boughtQuantity) {
             product.setQuantity(product.getQuantity() - boughtQuantity);
             productRepository.save(product);

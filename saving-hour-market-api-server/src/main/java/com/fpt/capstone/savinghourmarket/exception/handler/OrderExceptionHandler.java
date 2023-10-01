@@ -1,9 +1,6 @@
 package com.fpt.capstone.savinghourmarket.exception.handler;
 
-import com.fpt.capstone.savinghourmarket.exception.NoSuchOrderException;
-import com.fpt.capstone.savinghourmarket.exception.OrderCancellationNotAllowedException;
-import com.fpt.capstone.savinghourmarket.exception.OutOfProductQuantityException;
-import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
+import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.ApiError;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +34,13 @@ public class OrderExceptionHandler {
     @ExceptionHandler(OutOfProductQuantityException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ResponseEntity<ApiError> handleOrderOutOfProductQuantityException (Exception e){
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiError(LocalDateTime.now().toString(), HttpStatus.CONFLICT.value(),e.getMessage()));
+    }
+
+
+    @ExceptionHandler(CustomerLimitOrderProcessingException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ResponseEntity<ApiError> handleCustomerLimitOrderProcessingException (Exception e){
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiError(LocalDateTime.now().toString(), HttpStatus.CONFLICT.value(),e.getMessage()));
     }
 
