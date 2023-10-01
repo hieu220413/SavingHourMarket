@@ -1,7 +1,7 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
 import com.fpt.capstone.savinghourmarket.entity.Customer;
-import com.fpt.capstone.savinghourmarket.model.CustomerPasswordRequestBody;
+import com.fpt.capstone.savinghourmarket.model.PasswordRequestBody;
 import com.fpt.capstone.savinghourmarket.model.CustomerRegisterRequestBody;
 import com.fpt.capstone.savinghourmarket.model.CustomerUpdateRequestBody;
 import com.fpt.capstone.savinghourmarket.service.CustomerService;
@@ -9,10 +9,8 @@ import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -63,10 +61,10 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/updatePassword", method = RequestMethod.PUT)
-    public ResponseEntity<Void> updatePassword(@RequestBody CustomerPasswordRequestBody customerPasswordRequestBody, @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
+    public ResponseEntity<Void> updatePassword(@RequestBody PasswordRequestBody passwordRequestBody, @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         String email = Utils.validateIdToken(idToken, firebaseAuth);
-        customerService.updatePassword(customerPasswordRequestBody, email);
+        customerService.updatePassword(passwordRequestBody, email);
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
