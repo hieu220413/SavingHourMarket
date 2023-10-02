@@ -1,9 +1,9 @@
 /* eslint-disable prettier/prettier */
-import React from 'react';
+import React, {useEffect} from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 import {NavigationContainer} from '@react-navigation/native';
 import 'react-native-gesture-handler';
-
+import {Alert} from 'react-native';
 import Tabs from './navigation/tabs';
 import Discount from './screens/Discount';
 import Orders from './screens/Orders';
@@ -38,9 +38,32 @@ LogBox.ignoreLogs([
 import ProductDetails from './screens/ProductDetails';
 import DiscountForCategories from './screens/DiscountForCategories';
 import OrderSuccess from './screens/OrderSuccess';
+import messaging from '@react-native-firebase/messaging';
+import {
+  getToken,
+  notificationListener,
+  requestUserPermission,
+} from './src/utils/commonUtils';
+import ForgetPassword from './screens/ForgetPassword';
+import CodeReset from './screens/CodeReset';
+import ResetPassword from './screens/ResetPassword';
+import Feedback from './screens/Feedback';
 
 const Stack = createStackNavigator();
 export default function App() {
+  useEffect(() => {
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
+    });
+
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    requestUserPermission();
+    notificationListener();
+    getToken();
+  }, []);
   return (
     <>
       <NavigationContainer>
@@ -86,6 +109,10 @@ export default function App() {
             component={EditCustomerLocation}
           />
           <Stack.Screen name="Order success" component={OrderSuccess} />
+          <Stack.Screen name="Forgot password" component={ForgetPassword} />
+          <Stack.Screen name="Code reset" component={CodeReset} />
+          <Stack.Screen name="Reset password" component={ResetPassword} />
+          <Stack.Screen name="Feedback" component={Feedback} />
         </Stack.Navigator>
       </NavigationContainer>
       <ModalPortal />
