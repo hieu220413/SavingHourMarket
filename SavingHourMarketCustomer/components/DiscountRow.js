@@ -14,9 +14,9 @@ const DiscountRow = () => {
             showsHorizontalScrollIndicator={false}
         >
             {/* DiscountCard */}
-            <DiscountCard imgUrl='https://links.papareact.com/wru' />
-            <DiscountCard imgUrl='https://links.papareact.com/wru' />
-            <DiscountCard imgUrl='https://links.papareact.com/wru' />
+            <DiscountCard />
+            <DiscountCard />
+            <DiscountCard />
         </ScrollView>
     )
 }

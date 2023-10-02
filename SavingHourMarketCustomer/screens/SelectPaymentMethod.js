@@ -7,7 +7,7 @@ import {icons} from '../constants';
 import {COLORS} from '../constants/theme';
 import {ScrollView} from 'react-native-gesture-handler';
 
-const SelectPaymentMethod = ({navigation}) => {
+const SelectPaymentMethod = ({navigation, route}) => {
   return (
     <ScrollView>
       <View
@@ -43,6 +43,7 @@ const SelectPaymentMethod = ({navigation}) => {
         {/* Payment method */}
         <TouchableOpacity
           onPress={() => {
+            route.params.setPaymentMethod({id: 0, display: 'COD'});
             navigation.navigate('Payment');
           }}
           style={{
@@ -74,6 +75,7 @@ const SelectPaymentMethod = ({navigation}) => {
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => {
+            route.params.setPaymentMethod({id: 1, display: 'VN Pay'});
             navigation.navigate('Payment');
           }}
           style={{

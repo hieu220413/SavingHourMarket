@@ -3,8 +3,11 @@ package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.entity.Customer;
+import com.fpt.capstone.savinghourmarket.entity.Staff;
 import com.fpt.capstone.savinghourmarket.exception.InvalidUserInputException;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
+import com.fpt.capstone.savinghourmarket.exception.StaffAccessForbiddenException;
+import com.fpt.capstone.savinghourmarket.model.CustomerPasswordRequestBody;
 import com.fpt.capstone.savinghourmarket.model.PasswordRequestBody;
 import com.fpt.capstone.savinghourmarket.model.CustomerRegisterRequestBody;
 import com.fpt.capstone.savinghourmarket.model.CustomerUpdateRequestBody;
@@ -116,6 +119,10 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Customer getInfoGoogleLogged(String email) throws FirebaseAuthException {
         Optional<Customer> customer = customerRepository.getCustomerByEmail(email);
+        Optional<Staff> staff = staffRepository.getStaffByEmail(email);
+        if(staff.isPresent()){
+            throw new StaffAccessForbiddenException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_ACCESS_FORBIDDEN.getCode()), AdditionalResponseCode.STAFF_ACCESS_FORBIDDEN.toString());
+        }
         if(!customer.isPresent()){
             UserInfo userInfo = firebaseAuth.getUserByEmail(email);
             Customer newCustomer = new Customer();
@@ -130,6 +137,10 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Customer getInfo(String email) {
+        Optional<Staff> staff = staffRepository.getStaffByEmail(email);
+        if(staff.isPresent()) {
+            throw new StaffAccessForbiddenException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_ACCESS_FORBIDDEN.getCode()), AdditionalResponseCode.STAFF_ACCESS_FORBIDDEN.toString());
+        }
         Optional<Customer> customer = customerRepository.getCustomerByEmail(email);
         return customer.get();
     }

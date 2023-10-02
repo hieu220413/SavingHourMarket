@@ -1,0 +1,93 @@
+{
+  "project_info": {
+    "project_number": "857253936194",
+    "firebase_url": "https://capstone-project-398104-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "capstone-project-398104",
+    "storage_bucket": "capstone-project-398104.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:857253936194:android:c2e110947d6f3c567501db",
+        "android_client_info": {
+          "package_name": "com.firebaseauthenticationtesting"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "857253936194-c5fka88eqnd9r33ob89lcgtsvkjls850.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.firebaseauthenticationtesting",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "857253936194-dmrh0nls647fpqbuou6mte9c7e4o6e6h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALrNLtSSf2gQFYkQtvQoyx4VqqMAQEgJU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "857253936194-dmrh0nls647fpqbuou6mte9c7e4o6e6h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:857253936194:android:819500e83c7beb497501db",
+        "android_client_info": {
+          "package_name": "com.savinghourmarketcustomer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "857253936194-baphh53tna6lh99o402km30v74k8pvoj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.savinghourmarketcustomer",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "857253936194-ltit9q7c7hg2ejnti8k7uif1rmrsfm0q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.savinghourmarketcustomer",
+            "certificate_hash": "2d24b110734207bacec9c61d671f103b894aa5ea"
+          }
+        },
+        {
+          "client_id": "857253936194-dmrh0nls647fpqbuou6mte9c7e4o6e6h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALrNLtSSf2gQFYkQtvQoyx4VqqMAQEgJU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "857253936194-dmrh0nls647fpqbuou6mte9c7e4o6e6h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

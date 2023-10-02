@@ -1,7 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable prettier/prettier */
 /* eslint-disable react/no-unstable-nested-components */
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   Text,
   View,
@@ -17,145 +17,146 @@ import Categories from '../components/Categories';
 import DiscountRow from '../components/DiscountRow';
 import {COLORS, FONTS} from '../constants/theme';
 import {icons} from '../constants';
+import dayjs from 'dayjs';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {API} from '../constants/api';
+import {useFocusEffect} from '@react-navigation/native';
 
 const Home = ({navigation}) => {
-  const [percent, setPercent] = useState();
-
   const [cateList, setCateList] = useState();
+  const [products, setProducts] = useState([]);
+  const [cartList, setCartList] = useState([]);
 
-  const data = [
-    {
-      id: 1,
-      name: 'Meat',
-      price: 500,
-      price_original: 1000,
-      quantity: 5,
-      expired_date: '30/09/2023',
-      image_url:
-        'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Ficons%2Fmeat&psig=AOvVaw3YdQ5XfFZ6uO5exMKI8IUQ&ust=1695304446762000&source=images&cd=vfe&opi=89978449&ved=0CBAQjRxqFwoTCMC23ayruYEDFQAAAAAdAAAAABAS',
-    },
-
-    {
-      id: 2,
-      name: 'Beef',
-      price: 1000,
-      price_original: 2000,
-      quantity: 5,
-      expired_date: '30/09/2023',
-      image_url:
-        'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Ficons%2Fmeat&psig=AOvVaw3YdQ5XfFZ6uO5exMKI8IUQ&ust=1695304446762000&source=images&cd=vfe&opi=89978449&ved=0CBAQjRxqFwoTCMC23ayruYEDFQAAAAAdAAAAABAS',
-    },
-  ];
+  useFocusEffect(
+    useCallback(() => {
+      (async () => {
+        try {
+          const cartList = await AsyncStorage.getItem('CartList');
+          setCartList(cartList ? JSON.parse(cartList) : []);
+        } catch (err) {
+          console.log(err);
+        }
+      })();
+    }, []),
+  );
 
   useEffect(() => {
-    data.map((item, index) => {
-      setPercent((item.price / item.price_original) * 100);
-    });
-  });
+    fetch(
+      `${API.baseURL}/api/product/getProductsForCustomer?page=0&quantitySortType=DESC&expiredSortType=DESC`,
+    )
+      .then(res => res.json())
+      .then(data => {
+        setProducts(data);
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  }, []);
 
-  const handleBuy = () => {
-    console.log('Buy');
+  const handleAddToCart = async data => {
+    try {
+      const jsonValue = await AsyncStorage.getItem('CartList');
+      let newCartList = jsonValue ? JSON.parse(jsonValue) : [];
+      const itemExisted = newCartList.some(item => item.id === data.id);
+      if (itemExisted) {
+        const index = newCartList.findIndex(item => item.id === data.id);
+        newCartList[index].cartQuantity = newCartList[index].cartQuantity + 1;
+        setCartList(newCartList);
+        await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
+        return;
+      }
+
+      const cartData = {...data, isChecked: false, cartQuantity: 1};
+      newCartList = [...newCartList, cartData];
+      setCartList(newCartList);
+      await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const Item = ({data}) => (
-    <View style={styles.itemContainer}>
-      {/* Image Product */}
-      <TouchableOpacity onPress={console.log('navigate to')}>
-        <Image
-          resizeMode="contain"
-          source={{
-            uri: data.image_url,
-          }}
-          style={styles.itemImage}
-        />
-      </TouchableOpacity>
-
-      <View style={{paddingTop: 10}}>
-        <TouchableOpacity onPress={console.log('navigate to details')}>
-          <Text
-            style={{
-              fontFamily: FONTS.fontFamily,
-              fontSize: 20,
-              fontWeight: 700,
-              maxWidth: '90%',
-              color: 'black',
-            }}>
-            {data.name}
-          </Text>
-        </TouchableOpacity>
-
-        <View style={{flexDirection: 'row'}}>
-          <Text
-            style={{
-              fontSize: 20,
-              lineHeight: 30,
-              color: COLORS.red,
-              fontWeight: 600,
-            }}>
-            {data.price}
-          </Text>
-          <Text
-            style={{
-              fontSize: 15,
-              lineHeight: 18,
-              color: COLORS.red,
-              fontWeight: 600,
-            }}>
-            ₫
-          </Text>
-        </View>
-
-        <View style={{flexDirection: 'row'}}>
-          <Text
-            style={{
-              fontSize: 20,
-              lineHeight: 30,
-              textDecorationLine: 'line-through',
-              textDecorationStyle: 'solid',
-            }}>
-            {data.price_original}
-          </Text>
-          <Text style={{fontSize: 15, lineHeight: 18}}>₫</Text>
-          <Text style={{fontSize: 16, lineHeight: 30, paddingLeft: 5}}>
-            ( - {percent}%)
-          </Text>
-        </View>
-        <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          <Text
-            style={{
-              fontFamily: FONTS.fontFamily,
-              fontSize: 16,
-              color: '#ED8A19',
-            }}>
-            5
-          </Text>
+  const Item = ({data}) => {
+    return (
+      <TouchableOpacity
+        key={data.id}
+        onPress={() => {
+          navigation.navigate('ProductDetails', {
+            product: data,
+          });
+        }}>
+        <View style={styles.itemContainer}>
+          {/* Image Product */}
           <Image
-            resizeMode="center"
-            source={icons.star}
-            style={{
-              width: 15,
-              height: 15,
-              marginLeft: 5,
+            resizeMode="contain"
+            source={{
+              uri: data.imageUrl,
             }}
+            style={styles.itemImage}
           />
-        </View>
 
-        <TouchableOpacity onPress={handleBuy}>
-          <Text
-            style={{
-              maxWidth: 100,
-              padding: 5,
-              backgroundColor: COLORS.primary,
-              borderRadius: 10,
-              textAlign: 'center',
-              color: '#ffffff',
-            }}>
-            Mua
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+          <View style={{justifyContent: 'center', flex: 1, marginRight: 10}}>
+            <Text
+              numberOfLines={1}
+              style={{
+                fontFamily: FONTS.fontFamily,
+                fontSize: 18,
+                fontWeight: 700,
+                maxWidth: '95%',
+                color: 'black',
+              }}>
+              {data.name}
+            </Text>
+
+            <View style={{flexDirection: 'row'}}>
+              <Text
+                style={{
+                  maxWidth: '70%',
+                  fontSize: 18,
+                  lineHeight: 30,
+                  color: COLORS.secondary,
+                  fontWeight: 600,
+                }}>
+                {data.price.toLocaleString('vi-VN', {
+                  currency: 'VND',
+                })}
+              </Text>
+              <Text
+                style={{
+                  fontSize: 12,
+                  lineHeight: 18,
+                  color: COLORS.secondary,
+                  fontWeight: 600,
+                }}>
+                ₫
+              </Text>
+            </View>
+
+            <Text
+              style={{
+                fontFamily: FONTS.fontFamily,
+                fontSize: 18,
+                marginBottom: 10,
+              }}>
+              HSD: {dayjs(data.expiredDate).format('DD/MM/YYYY')}
+            </Text>
+            {/* Button buy */}
+            <TouchableOpacity onPress={() => handleAddToCart(data)}>
+              <Text
+                style={{
+                  padding: 10,
+                  backgroundColor: COLORS.primary,
+                  borderRadius: 10,
+                  textAlign: 'center',
+                  color: '#ffffff',
+                }}>
+                Thêm vào giỏ hàng
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -175,6 +176,25 @@ const Home = ({navigation}) => {
             }}
             source={icons.cart}
           />
+          {cartList.lenght !== 0 && (
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                right: -10,
+                backgroundColor: COLORS.primary,
+                borderRadius: 50,
+                width: 20,
+                height: 20,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <Text
+                style={{fontSize: 12, color: 'white', fontFamily: 'Roboto'}}>
+                {cartList.length}
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -192,9 +212,9 @@ const Home = ({navigation}) => {
             fontFamily: FONTS.fontFamily,
             fontSize: 22,
             marginLeft: 20,
-            color: COLORS.red,
+            color: 'black',
             fontWeight: 700,
-            marginTop: 10,
+            marginTop: '5%',
             marginBottom: 10,
           }}>
           Khuyến Mãi Cực Sốc
@@ -208,12 +228,12 @@ const Home = ({navigation}) => {
             color: COLORS.secondary,
             fontWeight: 700,
             marginLeft: 20,
-            marginTop: 10,
+            marginTop: '5%',
             marginBottom: 10,
           }}>
           Danh sách sản phẩm
         </Text>
-        {data.map(item => (
+        {products.map(item => (
           <Item data={item} />
         ))}
       </ScrollView>
@@ -230,17 +250,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
     maxWidth: '90%',
     borderRadius: 20,
-    marginLeft: 10,
-    marginBottom: 10,
+    marginHorizontal: '5%',
+    marginBottom: 20,
     flexDirection: 'row',
   },
   itemImage: {
-    width: 140,
-    height: 140,
+    width: 130,
+    height: 130,
     borderRadius: 20,
-    backgroundColor: 'blue',
-    padding: 5,
-    margin: 10,
+    padding: 10,
+    margin: 15,
   },
   itemText: {
     fontFamily: FONTS.fontFamily,

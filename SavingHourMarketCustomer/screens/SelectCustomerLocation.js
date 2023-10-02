@@ -6,7 +6,8 @@ import {ScrollView, TouchableOpacity} from 'react-native-gesture-handler';
 import {icons} from '../constants';
 import {COLORS} from '../constants/theme';
 
-const SelectCustomerLocation = ({navigation}) => {
+const SelectCustomerLocation = ({navigation, route}) => {
+  const {setCustomerLocation, customerLocation} = route.params;
   return (
     <ScrollView>
       <View
@@ -81,7 +82,10 @@ const SelectCustomerLocation = ({navigation}) => {
 
             <TouchableOpacity
               onPress={() => {
-                navigation.navigate('Edit customer location');
+                navigation.navigate('Edit customer location', {
+                  setCustomerLocation,
+                  customerLocation,
+                });
               }}
               style={{flex: 3}}>
               <Text
@@ -90,7 +94,7 @@ const SelectCustomerLocation = ({navigation}) => {
                   fontFamily: 'Roboto',
                   color: COLORS.primary,
                 }}>
-                Edit
+                Sửa
               </Text>
             </TouchableOpacity>
           </View>
@@ -105,14 +109,9 @@ const SelectCustomerLocation = ({navigation}) => {
             gap: 10,
             paddingVertical: 15,
           }}>
-          <Image
-            style={{width: 30, height: 30, tintColor: COLORS.primary}}
-            resizeMode="contain"
-            source={icons.plusCircle}
-          />
           <Text
             style={{fontSize: 20, fontFamily: 'Roboto', color: COLORS.primary}}>
-            Add new address
+            Hoàn tất
           </Text>
         </TouchableOpacity>
       </View>
