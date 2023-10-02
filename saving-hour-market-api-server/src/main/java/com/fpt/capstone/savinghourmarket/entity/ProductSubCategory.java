@@ -24,6 +24,9 @@ public class ProductSubCategory {
     @Column(columnDefinition = "varchar(50)")
     private String name;
 
+    @Column(columnDefinition = "text")
+    private String imageUrl;
+
     @Column(columnDefinition = "tinyint")
     private Integer allowableDisplayThreshold;
 
@@ -49,5 +52,4 @@ public class ProductSubCategory {
     )
     @JsonIgnore
     private List<Discount> discountList;
-
 }

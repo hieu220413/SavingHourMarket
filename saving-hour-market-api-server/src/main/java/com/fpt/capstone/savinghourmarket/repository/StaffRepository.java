@@ -4,10 +4,12 @@ import com.fpt.capstone.savinghourmarket.entity.Staff;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import javax.swing.text.html.Option;
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface StaffRepository extends JpaRepository<Staff, UUID> {
+    Optional<Staff> getStaffByEmail(String email);
     Optional<Staff> findByEmail(String email);
 }

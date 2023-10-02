@@ -31,4 +31,11 @@ public class ProductCategory {
     @JsonIgnore
     private List<Discount> discountList;
 
+    @OneToMany(
+            mappedBy = "productCategory",
+            fetch = FetchType.LAZY
+    )
+    @JsonIgnore
+    private List<ProductSubCategory> productSubCategories;
+
 }

@@ -1,6 +1,10 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
 import com.fpt.capstone.savinghourmarket.entity.Product;
+import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
+import com.fpt.capstone.savinghourmarket.model.ProductCateWithSubCate;
+import com.fpt.capstone.savinghourmarket.model.ProductSubCateOnly;
+import com.fpt.capstone.savinghourmarket.service.ProductCategoryService;
 import com.fpt.capstone.savinghourmarket.service.ProductService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
@@ -69,5 +73,17 @@ public class ProductController {
     public ResponseEntity<Product> getById(@RequestParam UUID id){
         Product product = productService.getById(id);
         return ResponseEntity.status(HttpStatus.OK).body(product);
+    }
+
+    @RequestMapping(value = "/getAllCategory", method = RequestMethod.GET)
+    public ResponseEntity<List<ProductCateWithSubCate>> getAllCategory() {
+        List<ProductCateWithSubCate> productCategoryList = productService.getAllCategory();
+        return ResponseEntity.status(HttpStatus.OK).body(productCategoryList);
+    }
+
+    @RequestMapping(value = "/getAllSubCategory", method = RequestMethod.GET)
+    public ResponseEntity<List<ProductSubCateOnly>> getAllSubCategory() {
+        List<ProductSubCateOnly> productSubCateOnlyList = productService.getAllSubCategory();
+        return ResponseEntity.status(HttpStatus.OK).body(productSubCateOnlyList);
     }
 }

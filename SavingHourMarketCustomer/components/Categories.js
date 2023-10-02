@@ -1,9 +1,12 @@
 /* eslint-disable prettier/prettier */
 import { View, Text, ScrollView } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import CategoryCard from '../components/CategoryCard';
 
 const Categories = () => {
+
+    const [category, setCategory] = useState("");
+
     return (
         <ScrollView
             contentContainerStyle={{
@@ -14,13 +17,13 @@ const Categories = () => {
             showsHorizontalScrollIndicator={false}
         >
             {/* Category */}
-            <CategoryCard imgUrl='https://links.papareact.com/wru' title='category 1' />
-            <CategoryCard imgUrl='https://links.papareact.com/wru' title='category 2' />
-            <CategoryCard imgUrl='https://links.papareact.com/wru' title='category 3' />
-            <CategoryCard imgUrl='https://links.papareact.com/wru' title='category 3' />
-            <CategoryCard imgUrl='https://links.papareact.com/wru' title='category 3' />
-            <CategoryCard imgUrl='https://links.papareact.com/wru' title='category 3' />
-            <CategoryCard imgUrl='https://links.papareact.com/wru' title='category 3' />
+            <CategoryCard title='Thịt heo' />
+            <CategoryCard title='Cá' />
+            <CategoryCard title='Thịt bò' />
+            <CategoryCard title='Trứng' />
+            <CategoryCard title='Sữa' />
+            <CategoryCard title='Rau' />
+            <CategoryCard title='Mĩ phẩm' />
         </ScrollView>
     );
 };
