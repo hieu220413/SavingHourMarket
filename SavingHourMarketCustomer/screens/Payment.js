@@ -20,6 +20,7 @@ import Modal, {
 } from 'react-native-modals';
 import {useFocusEffect} from '@react-navigation/native';
 import {API} from '../constants/api';
+import auth from '@react-native-firebase/auth';
 
 const Payment = ({navigation, route}) => {
   const [customerLocationIsChecked, setCustomerLocationIsChecked] =
@@ -50,6 +51,8 @@ const Payment = ({navigation, route}) => {
 
   const [cannotChangeDate, setCannotChangeDate] = useState(false);
 
+  const [initializing, setInitializing] = useState(true);
+
   const [customerLocation, setCustomerLocation] = useState({
     address: 'Số 121, Trần Văn Dư, Phường 13, Quận Tân Bình,TP.HCM',
     long: 106.644295,
@@ -66,6 +69,44 @@ const Payment = ({navigation, route}) => {
       Keyboard.removeAllListeners('keyboardDidShow', _keyboardDidShow);
       Keyboard.removeAllListeners('keyboardDidHide', _keyboardDidHide);
     };
+  }, []);
+
+  //authen check
+  const onAuthStateChange = async userInfo => {
+    // console.log(userInfo);
+    if (initializing) {
+      setInitializing(false);
+    }
+    if (userInfo) {
+      // check if user sessions is still available. If yes => redirect to another screen
+      const userTokenId = await userInfo
+        .getIdToken(true)
+        .then(token => token)
+        .catch(async e => {
+          console.log(e);
+          return null;
+        });
+      if (!userTokenId) {
+        // sessions end. (revoke refresh token like password change, disable account, ....)
+        await AsyncStorage.removeItem('userInfo');
+        return;
+      }
+
+      console.log('user is logged in');
+      console.log(await AsyncStorage.getItem('userInfo'));
+    } else {
+      // no sessions found.
+      console.log('user is not logged in');
+    }
+  };
+
+  useEffect(() => {
+    // auth().currentUser.reload()
+    const subscriber = auth().onAuthStateChanged(
+      async userInfo => await onAuthStateChange(userInfo),
+    );
+    return subscriber;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const _keyboardDidShow = () => {
@@ -280,8 +321,7 @@ const Payment = ({navigation, route}) => {
       };
     }
 
-    const token =
-      'eyJhbGciOiJSUzI1NiIsImtpZCI6ImFkNWM1ZTlmNTdjOWI2NDYzYzg1ODQ1YTA4OTlhOWQ0MTI5MmM4YzMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vY2Fwc3RvbmUtcHJvamVjdC0zOTgxMDQiLCJhdWQiOiJjYXBzdG9uZS1wcm9qZWN0LTM5ODEwNCIsImF1dGhfdGltZSI6MTY5NjE3MDgyNiwidXNlcl9pZCI6InROcU10SHNjdTRTVVFGd0R0VnZGY0Y3VjBJZzIiLCJzdWIiOiJ0TnFNdEhzY3U0U1VRRndEdFZ2RmNGN1YwSWcyIiwiaWF0IjoxNjk2MTcwODI2LCJleHAiOjE2OTYxNzQ0MjYsImVtYWlsIjoibHV1Z2lhdmluaDBAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZW1haWwiOlsibHV1Z2lhdmluaDBAZ21haWwuY29tIl19LCJzaWduX2luX3Byb3ZpZGVyIjoicGFzc3dvcmQifX0.iHe7t5CnJvvQF9sIC1k0Ru8oDx0w6RdbI2I90druAvfZ-tdB8DSQYOjXTElMfq2dSdW4WWoPkoEZ2fkMUV-wb-ZOzcrftGAv3h7A5PUYtjWTr7NKBlNZBanyJWgnn-RH57QjI0bXegkjWFGOKgVSx4twVhp8S15Sp2YSN0mt5y_56KyCZBF8fzANDmw3pUjRA2tEx_wbI3JMezg4IvAe_R_XYZ_e3Q3NG4oY94zU9ItpEMb9wYKG3J4tGknMlqEMkEsxK3I6xTHCTHTFdjQRUYjMlPPt2ro-vmlOc_AnSAbv0RquVXsuTZwrUc6im6Yhjj4YsTUYhgdmY9O9OnIQnw';
+    const token = auth().currentUser.getIdToken;
 
     console.log(submitOrder);
 

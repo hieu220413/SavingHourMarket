@@ -1,12 +1,14 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
-import React, {useState, useCallback} from 'react';
+import React, {useState, useCallback, useEffect} from 'react';
 import {View, Image, Text} from 'react-native';
 import {ScrollView, TouchableOpacity} from 'react-native-gesture-handler';
 import {icons} from '../constants';
 import {COLORS} from '../constants/theme';
 import {useFocusEffect} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import auth from '@react-native-firebase/auth';
+
 
 const Orders = ({navigation}) => {
   const orderStatus = [
@@ -19,6 +21,45 @@ const Orders = ({navigation}) => {
   ];
   const [currentStatus, setCurrentStatus] = useState('Chờ xác nhận');
   const [cartList, setCartList] = useState([]);
+  const [initializing, setInitializing] = useState(true);
+
+  //authen check
+  const onAuthStateChange = async userInfo => {
+    // console.log(userInfo);
+    if (initializing) {
+      setInitializing(false);
+    }
+    if (userInfo) {
+      // check if user sessions is still available. If yes => redirect to another screen
+      const userTokenId = await userInfo
+        .getIdToken(true)
+        .then(token => token)
+        .catch(async e => {
+          console.log(e);
+          return null;
+        });
+      if (!userTokenId) {
+        // sessions end. (revoke refresh token like password change, disable account, ....)
+        await AsyncStorage.removeItem('userInfo');
+        return;
+      }
+
+      console.log('user is logged in');
+      console.log(await AsyncStorage.getItem('userInfo'));
+    } else {
+      // no sessions found.
+      console.log('user is not logged in');
+    }
+  };
+
+  useEffect(() => {
+    // auth().currentUser.reload()
+    const subscriber = auth().onAuthStateChanged(
+      async userInfo => await onAuthStateChange(userInfo),
+    );
+    return subscriber;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
