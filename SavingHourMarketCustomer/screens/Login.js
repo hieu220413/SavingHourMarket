@@ -37,7 +37,7 @@ const Login = ({navigation}) => {
   // const [idTokenResultPayload, setIdTokenResultPayload] = useState('');
 
   const onAuthStateChange = async userInfo => {
-    // setUser(userInfo);
+    // console.log(userInfo);
     if (initializing) {
       setInitializing(false);
     }
@@ -51,7 +51,7 @@ const Login = ({navigation}) => {
             // sessions end. (revoke refresh token like password change, disable account, ....)
             console.log(e);
             Alert.alert('Session ended. Required re-authenticate');
-            await AsyncStorage.removeItem('userInfo')
+            await AsyncStorage.removeItem('userInfo');
             return null;
           });
         if (userTokenId) {
@@ -68,7 +68,7 @@ const Login = ({navigation}) => {
           .then(token => token)
           .catch(e => console.log(e));
         const userInfoAfterGooleLoginRequest = await fetch(
-          'http://10.0.2.2:8082/api/customer/getInfoAfterGoogleLogged',
+          'http://saving-hour-market.ap-southeast-2.elasticbeanstalk.com/api/customer/getInfoAfterGoogleLogged',
           {
             method: 'get',
             headers: {Authorization: `Bearer ${userTokenId}`},
@@ -115,7 +115,7 @@ const Login = ({navigation}) => {
           .then(token => token)
           .catch(e => console.log(e));
         const userInfoAfterEmailPasswordLoginRequest = await fetch(
-          'http://10.0.2.2:8082/api/customer/getInfo',
+          'http://saving-hour-market.ap-southeast-2.elasticbeanstalk.com/api/customer/getInfo',
           {
             method: 'get',
             credentials: 'include',
@@ -167,6 +167,7 @@ const Login = ({navigation}) => {
       //   .then(payload => payload);
       // setIdTokenResultPayload(userIdTokenPayload);
       console.log('user is logged in');
+      console.log(await AsyncStorage.getItem('userInfo'));
     } else {
       console.log('user is not logged in');
     }
@@ -382,8 +383,8 @@ const Login = ({navigation}) => {
                   {borderColor: '#66CC66', borderWidth: 1, marginTop: 15},
                 ]}
                 onPress={() => {
-                  navigation.navigate('Sign Up');
-                  // logout();
+                  // navigation.navigate('Sign Up');
+                  logout();
                 }}>
                 <Text style={[styles.textSign, {color: '#66CC66'}]}>
                   Sign Up
