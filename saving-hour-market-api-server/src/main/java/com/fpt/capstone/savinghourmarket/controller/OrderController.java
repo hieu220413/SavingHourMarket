@@ -10,6 +10,7 @@ import com.fpt.capstone.savinghourmarket.entity.TimeFrame;
 import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.OrderCreate;
 import com.fpt.capstone.savinghourmarket.model.OrderProduct;
+import com.fpt.capstone.savinghourmarket.model.OrderWithDetails;
 import com.fpt.capstone.savinghourmarket.service.OrderService;
 import com.google.firebase.auth.FirebaseAuthException;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -89,7 +90,7 @@ public class OrderController {
     }
 
     @GetMapping("/getOrderDetail/{id}")
-    public ResponseEntity<List<OrderProduct>> getOrderDetail(@PathVariable UUID id) throws ResourceNotFoundException {
+    public ResponseEntity<OrderWithDetails> getOrderDetail(@PathVariable UUID id) throws ResourceNotFoundException {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderDetail(id));
     }
 

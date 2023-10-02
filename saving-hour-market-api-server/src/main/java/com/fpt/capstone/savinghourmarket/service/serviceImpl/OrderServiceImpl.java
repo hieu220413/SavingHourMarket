@@ -5,10 +5,7 @@ import com.fpt.capstone.savinghourmarket.common.OrderStatus;
 import com.fpt.capstone.savinghourmarket.common.StaffRole;
 import com.fpt.capstone.savinghourmarket.entity.*;
 import com.fpt.capstone.savinghourmarket.exception.*;
-import com.fpt.capstone.savinghourmarket.model.CustomerUpdateRequestBody;
-import com.fpt.capstone.savinghourmarket.model.OrderCreate;
-import com.fpt.capstone.savinghourmarket.model.OrderProduct;
-import com.fpt.capstone.savinghourmarket.model.OrderProductCreate;
+import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.repository.*;
 import com.fpt.capstone.savinghourmarket.service.CustomerService;
 import com.fpt.capstone.savinghourmarket.service.FirebaseStorageService;
@@ -28,9 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -38,10 +33,8 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -178,12 +171,30 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderProduct> fetchOrderDetail(UUID id) throws ResourceNotFoundException {
+    public OrderWithDetails fetchOrderDetail(UUID id) throws ResourceNotFoundException {
         log.info("Fetching order detail of order_id " + id);
         Order order = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
+        OrderWithDetails orderWithDetails = new OrderWithDetails();
+        orderWithDetails.setId(order.getId());
+        orderWithDetails.setQrCodeUrl(order.getQrCodeUrl());
+        orderWithDetails.setTotalPrice(order.getTotalPrice());
+        orderWithDetails.setCreatedTime(order.getCreatedTime());
+        orderWithDetails.setAddressDeliver(order.getAddressDeliver());
+        orderWithDetails.setTotalDiscountPrice(order.getTotalDiscountPrice());
+        orderWithDetails.setDeliveryDate(order.getDeliveryDate());
+        orderWithDetails.setCustomer(order.getCustomer());
+        orderWithDetails.setPaymentStatus(order.getPaymentStatus());
+        orderWithDetails.setPaymentMethod(order.getPaymentMethod());
+        orderWithDetails.setShippingFee(order.getShippingFee());
+        orderWithDetails.setStatus(order.getStatus());
+        orderWithDetails.setTransaction(order.getTransaction());
+        if(order.getOrderGroup() != null){
+            orderWithDetails.setTimeFrame(order.getOrderGroup().getTimeFrame());
+            orderWithDetails.setPickupPoint(order.getOrderGroup().getPickupPoint());
+        }
         List<OrderDetail> orderDetails = order.getOrderDetailList();
-        return orderDetails.stream()
+        List<OrderProduct> orderProducts = orderDetails.stream()
                 .map(o -> {
                     //Map product to model orderProduct
                     OrderProduct orderProduct = new OrderProduct();
@@ -203,8 +214,9 @@ public class OrderServiceImpl implements OrderService {
 
                     return orderProduct;
 
-                })
-                .collect(Collectors.toList());
+                }).toList();
+        orderWithDetails.setOrderDetailList(orderProducts);
+        return orderWithDetails;
     }
 
     @Override

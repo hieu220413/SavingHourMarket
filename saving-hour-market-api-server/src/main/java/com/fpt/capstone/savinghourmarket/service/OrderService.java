@@ -8,6 +8,7 @@ import com.fpt.capstone.savinghourmarket.entity.OrderGroup;
 import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.OrderCreate;
 import com.fpt.capstone.savinghourmarket.model.OrderProduct;
+import com.fpt.capstone.savinghourmarket.model.OrderWithDetails;
 import com.google.firebase.auth.FirebaseAuthException;
 
 import java.time.LocalDate;
@@ -26,7 +27,7 @@ public interface OrderService {
                                     Boolean isGrouped,
                                     int page,
                                     int limit) throws NoSuchOrderException, FirebaseAuthException, ResourceNotFoundException;
-    List<OrderProduct> fetchOrderDetail(UUID id) throws ResourceNotFoundException;
+    OrderWithDetails fetchOrderDetail(UUID id) throws ResourceNotFoundException;
     Order createOrder(String jwtToken, OrderCreate orderCreate) throws Exception;
     String cancelOrder(String jwtToken, UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException, FirebaseAuthException;
     List<Order> fetchOrdersForCustomer(String jwtToken,
