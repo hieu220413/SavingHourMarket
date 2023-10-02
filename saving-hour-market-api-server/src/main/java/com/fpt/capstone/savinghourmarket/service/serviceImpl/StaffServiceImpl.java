@@ -1,11 +1,14 @@
 package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
+import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.entity.Staff;
 import com.fpt.capstone.savinghourmarket.exception.InvalidUserInputException;
+import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.PasswordRequestBody;
 import com.fpt.capstone.savinghourmarket.model.StaffUpdateRequestBody;
+import com.fpt.capstone.savinghourmarket.repository.CustomerRepository;
 import com.fpt.capstone.savinghourmarket.repository.StaffRepository;
 import com.fpt.capstone.savinghourmarket.service.StaffService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
@@ -30,28 +33,31 @@ public class StaffServiceImpl implements StaffService {
 
     private final StaffRepository staffRepository;
 
+    private final CustomerRepository customerRepository;
+
     private final FirebaseAuth firebaseAuth;
 
-    @Override
-    public Staff getInfoGoogleLogged(String email) throws FirebaseAuthException {
-        Optional<Staff> staff = staffRepository.findByEmail(email);
-        if(!staff.isPresent()){
-            UserInfo userInfo = firebaseAuth.getUserByEmail(email);
-            Staff newStaff = new Staff();
-            newStaff.setEmail(userInfo.getEmail());
-            newStaff.setAvatarUrl(userInfo.getPhotoUrl());
-            newStaff.setFullName(userInfo.getDisplayName());
-            newStaff.setStatus(EnableDisableStatus.ENABLE.ordinal());
-            return staffRepository.save(newStaff);
-        }
-        return staff.get();
-    }
+//    @Override
+//    public Staff getInfoGoogleLogged(String email) throws FirebaseAuthException {
+//        Optional<Staff> staff = staffRepository.findByEmail(email);
+//        if(!staff.isPresent()){
+//            UserInfo userInfo = firebaseAuth.getUserByEmail(email);
+//            Staff newStaff = new Staff();
+//            newStaff.setEmail(userInfo.getEmail());
+//            newStaff.setAvatarUrl(userInfo.getPhotoUrl());
+//            newStaff.setFullName(userInfo.getDisplayName());
+//            newStaff.setStatus(EnableDisableStatus.ENABLE.ordinal());
+//            return staffRepository.save(newStaff);
+//        }
+//        return staff.get();
+//    }
 
     @Override
     public Staff getInfo(String email) {
         Optional<Staff> staff = staffRepository.findByEmail(email);
         return staff.get();
     }
+
 
     @Override
     @Transactional
@@ -85,5 +91,15 @@ public class StaffServiceImpl implements StaffService {
 
         return targetedStaff.get();
     }
+
+    @Override
+    public Customer getCustomerDetailByEmail(String email) {
+        Optional<Customer> customer = customerRepository.getCustomerByEmail(email);
+        if(!customer.isPresent()){
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.CUSTOMER_NOT_FOUND.getCode()), AdditionalResponseCode.CUSTOMER_NOT_FOUND.toString());
+        }
+        return customer.get();
+    }
+
 
 }

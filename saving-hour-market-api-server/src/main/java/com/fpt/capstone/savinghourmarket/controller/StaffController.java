@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
+import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.entity.Staff;
 import com.fpt.capstone.savinghourmarket.model.PasswordRequestBody;
 import com.fpt.capstone.savinghourmarket.model.StaffUpdateRequestBody;
@@ -27,13 +28,13 @@ public class StaffController {
 
     private final FirebaseAuth firebaseAuth;
 
-    @RequestMapping(value = "/getInfoAfterGoogleLogged", method = RequestMethod.GET)
-    public ResponseEntity<Staff> getInfoGoogleLogged(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
-        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
-        String email = Utils.validateIdToken(idToken, firebaseAuth);
-        Staff staff = staffService.getInfoGoogleLogged(email);
-        return ResponseEntity.status(HttpStatus.OK).body(staff);
-    }
+//    @RequestMapping(value = "/getInfoAfterGoogleLogged", method = RequestMethod.GET)
+//    public ResponseEntity<Staff> getInfoGoogleLogged(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
+//        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+//        String email = Utils.validateIdToken(idToken, firebaseAuth);
+//        Staff staff = staffService.getInfoGoogleLogged(email);
+//        return ResponseEntity.status(HttpStatus.OK).body(staff);
+//    }
 
     @RequestMapping(value = "getInfo", method = RequestMethod.GET)
     public ResponseEntity<Staff> getInfo(@Parameter(hidden = true)  @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
@@ -41,6 +42,14 @@ public class StaffController {
         String email = Utils.validateIdToken(idToken, firebaseAuth);
         Staff staff = staffService.getInfo(email);
         return ResponseEntity.status(HttpStatus.OK).body(staff);
+    }
+
+    @RequestMapping(value = "getCustomerDetailByEmail", method = RequestMethod.GET)
+    public ResponseEntity<Customer> getCustomerDetailByEmail(@Parameter(hidden = true)  @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken, @RequestParam String email) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        Customer customer = staffService.getCustomerDetailByEmail(email);
+        return ResponseEntity.status(HttpStatus.OK).body(customer);
     }
 
     @RequestMapping(value = "/updateInfo", method = RequestMethod.PUT , consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
