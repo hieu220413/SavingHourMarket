@@ -60,17 +60,29 @@ const SelectPickupPoint = ({navigation, route}) => {
       // );
       const longitude = 106.644295;
       const latitude = 10.8022319;
-      fetch(
-        `${API.baseURL}/pickupPoint/getWithSortAndSuggestion?latitude=${latitude}&longitude=${longitude}`,
-      )
+
+      // get suggest pickup point
+      // fetch(
+      //   `${API.baseURL}/api/pickupPoint/getWithSortAndSuggestion?latitude=${latitude}&longitude=${longitude}`,
+      // )
+      //   .then(res => res.json())
+      //   .then(response => {
+      //     setPickupPointSuggestionList(
+      //       response.sortedPickupPointSuggestionList,
+      //     );
+      //     setOtherPickupPointList(response.otherSortedPickupPointList);
+      //   })
+      //   .catch(err => console.log(err));
+      // *************************
+
+      // Xài đỡ cái này
+      fetch(`${API.baseURL}/api/pickupPoint/getAll`)
         .then(res => res.json())
         .then(response => {
-          setPickupPointSuggestionList(
-            response.sortedPickupPointSuggestionList,
-          );
-          setOtherPickupPointList(response.otherSortedPickupPointList);
+          setOtherPickupPointList(response);
         })
         .catch(err => console.log(err));
+      // ****************
     }, []),
   );
 

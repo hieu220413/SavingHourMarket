@@ -1,10 +1,12 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
-import React, {useState} from 'react';
+import React, {useState, useCallback} from 'react';
 import {View, Image, Text} from 'react-native';
 import {ScrollView, TouchableOpacity} from 'react-native-gesture-handler';
 import {icons} from '../constants';
 import {COLORS} from '../constants/theme';
+import {useFocusEffect} from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Orders = ({navigation}) => {
   const orderStatus = [
@@ -16,6 +18,20 @@ const Orders = ({navigation}) => {
     {display: 'Đã hủy'},
   ];
   const [currentStatus, setCurrentStatus] = useState('Chờ xác nhận');
+  const [cartList, setCartList] = useState([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      (async () => {
+        try {
+          const cartList = await AsyncStorage.getItem('CartList');
+          setCartList(cartList ? JSON.parse(cartList) : []);
+        } catch (err) {
+          console.log(err);
+        }
+      })();
+    }, []),
+  );
   return (
     <>
       <View
@@ -62,6 +78,25 @@ const Orders = ({navigation}) => {
               }}
               source={icons.cart}
             />
+            {cartList.lenght !== 0 && (
+              <View
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  right: -10,
+                  backgroundColor: COLORS.primary,
+                  borderRadius: 50,
+                  width: 20,
+                  height: 20,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                <Text
+                  style={{fontSize: 12, color: 'white', fontFamily: 'Roboto'}}>
+                  {cartList.length}
+                </Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
         <ScrollView

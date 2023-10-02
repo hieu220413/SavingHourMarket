@@ -67,19 +67,21 @@ const EditCustomerLocation = ({navigation, route}) => {
             }
 
             if (
-              !locationPicked.address.includes('Ho Chi Minh') ||
-              !locationPicked.address.includes('HCM')
+              locationPicked.address.includes('Ho Chi Minh') ||
+              locationPicked.address.includes('Hồ Chí Minh') ||
+              locationPicked.address.includes('HCM')
             ) {
+              setCustomerLocation(
+                locationPicked ? locationPicked : customerLocation,
+              );
+              navigation.navigate('Payment');
+            } else {
               setValidateMessage(
                 'Chúng tôi chỉ giao hàng trong khu vực TP.HCM',
               );
               setOpenValidateDialog(true);
               return;
             }
-            setCustomerLocation(
-              locationPicked ? locationPicked : customerLocation,
-            );
-            navigation.navigate('Payment');
           }}>
           <Text
             style={{

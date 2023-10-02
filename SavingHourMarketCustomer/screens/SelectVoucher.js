@@ -32,7 +32,7 @@ const SelectVoucher = ({navigation, route}) => {
   useFocusEffect(
     useCallback(() => {
       fetch(
-        `${API.baseURL}/discount/getDiscountsForCustomer?fromPercentage=0&toPercentage=100&page=0&limit=5&productCategoryId=${categoryId}&expiredSortType=DESC`,
+        `${API.baseURL}/api/discount/getDiscountsForCustomer?fromPercentage=0&toPercentage=100&page=0&limit=5&productCategoryId=${categoryId}&expiredSortType=DESC`,
       )
         .then(res => res.json())
         .then(response => {

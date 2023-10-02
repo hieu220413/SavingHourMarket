@@ -14,7 +14,7 @@ const SelectTimeFrame = ({navigation, route}) => {
 
   useFocusEffect(
     useCallback(() => {
-      fetch(`${API.baseURL}/timeframe/getAll`)
+      fetch(`${API.baseURL}/api/timeframe/getAll`)
         .then(res => res.json())
         .then(response => {
           setTimeFrameList(response);

@@ -1,7 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable prettier/prettier */
 /* eslint-disable react/no-unstable-nested-components */
-import React, { useEffect, useState } from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   Text,
   View,
@@ -15,112 +15,153 @@ import {
 import SearchBar from '../components/SearchBar';
 import Categories from '../components/Categories';
 import DiscountRow from '../components/DiscountRow';
-import { COLORS, FONTS } from '../constants/theme';
-import { icons } from '../constants';
+import {COLORS, FONTS} from '../constants/theme';
+import {icons} from '../constants';
 import dayjs from 'dayjs';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {API} from '../constants/api';
+import {useFocusEffect} from '@react-navigation/native';
 
-const Home = ({ navigation }) => {
+const Home = ({navigation}) => {
   const [cateList, setCateList] = useState();
   const [products, setProducts] = useState([]);
+  const [cartList, setCartList] = useState([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      (async () => {
+        try {
+          const cartList = await AsyncStorage.getItem('CartList');
+          setCartList(cartList ? JSON.parse(cartList) : []);
+        } catch (err) {
+          console.log(err);
+        }
+      })();
+    }, []),
+  );
 
   useEffect(() => {
-    fetch('http://saving-hour-market.ap-southeast-2.elasticbeanstalk.com/api/product/getProductsForCustomer?page=0&quantitySortType=DESC&expiredSortType=DESC')
-      .then((res) => res.json())
-      .then((data) => {
+    fetch(
+      `${API.baseURL}/api/product/getProductsForCustomer?page=0&quantitySortType=DESC&expiredSortType=DESC`,
+    )
+      .then(res => res.json())
+      .then(data => {
         setProducts(data);
       })
-      .catch((err) => {
+      .catch(err => {
         console.log(err);
       });
   }, []);
 
-  const handleBuy = () => {
-    console.log('Buy');
+  const handleAddToCart = async data => {
+    try {
+      const jsonValue = await AsyncStorage.getItem('CartList');
+      let newCartList = jsonValue ? JSON.parse(jsonValue) : [];
+      const itemExisted = newCartList.some(item => item.id === data.id);
+      if (itemExisted) {
+        const index = newCartList.findIndex(item => item.id === data.id);
+        newCartList[index].cartQuantity = newCartList[index].cartQuantity + 1;
+        setCartList(newCartList);
+        await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
+        return;
+      }
+
+      const cartData = {...data, isChecked: false, cartQuantity: 1};
+      newCartList = [...newCartList, cartData];
+      setCartList(newCartList);
+      await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const Item = ({ data }) => (
-    <TouchableOpacity onPress={() => {
-      navigation.navigate('ProductDetails', {
-        product: data,
-      });
-    }}>
-      <View style={styles.itemContainer}>
-        {/* Image Product */}
-        <Image
-          resizeMode="contain"
-          source={{
-            uri: data.imageUrl,
-          }}
-          style={styles.itemImage}
-        />
+  const Item = ({data}) => {
+    return (
+      <TouchableOpacity
+        key={data.id}
+        onPress={() => {
+          navigation.navigate('ProductDetails', {
+            product: data,
+          });
+        }}>
+        <View style={styles.itemContainer}>
+          {/* Image Product */}
+          <Image
+            resizeMode="contain"
+            source={{
+              uri: data.imageUrl,
+            }}
+            style={styles.itemImage}
+          />
 
-        <View style={{ justifyContent: 'center', flex: 1, marginRight: 10 }}>
-          <Text
-            numberOfLines={1}
-            style={{
-              fontFamily: FONTS.fontFamily,
-              fontSize: 18,
-              fontWeight: 700,
-              maxWidth: '95%',
-              color: 'black',
-            }}>
-            {data.name}
-          </Text>
-
-          <View style={{ flexDirection: 'row' }}>
+          <View style={{justifyContent: 'center', flex: 1, marginRight: 10}}>
             <Text
+              numberOfLines={1}
               style={{
-                maxWidth: '70%',
+                fontFamily: FONTS.fontFamily,
                 fontSize: 18,
-                lineHeight: 30,
-                color: COLORS.secondary,
-                fontWeight: 600,
+                fontWeight: 700,
+                maxWidth: '95%',
+                color: 'black',
               }}>
-              {data.price.toLocaleString("vi-VN", {
-                currency: "VND",
-              })}
+              {data.name}
             </Text>
-            <Text
-              style={{
-                fontSize: 12,
-                lineHeight: 18,
-                color: COLORS.secondary,
-                fontWeight: 600,
-              }}>
-              ₫
-            </Text>
-          </View>
 
-          <Text
-            style={{
-              fontFamily: FONTS.fontFamily,
-              fontSize: 18,
-              marginBottom: 10,
-            }}>
-            HSD: {dayjs(data.expiredDate).format('DD/MM/YYYY')}
-          </Text>
-          {/* Button buy */}
-          <TouchableOpacity onPress={handleBuy}>
+            <View style={{flexDirection: 'row'}}>
+              <Text
+                style={{
+                  maxWidth: '70%',
+                  fontSize: 18,
+                  lineHeight: 30,
+                  color: COLORS.secondary,
+                  fontWeight: 600,
+                }}>
+                {data.price.toLocaleString('vi-VN', {
+                  currency: 'VND',
+                })}
+              </Text>
+              <Text
+                style={{
+                  fontSize: 12,
+                  lineHeight: 18,
+                  color: COLORS.secondary,
+                  fontWeight: 600,
+                }}>
+                ₫
+              </Text>
+            </View>
+
             <Text
               style={{
-                padding: 10,
-                backgroundColor: COLORS.primary,
-                borderRadius: 10,
-                textAlign: 'center',
-                color: '#ffffff',
+                fontFamily: FONTS.fontFamily,
+                fontSize: 18,
+                marginBottom: 10,
               }}>
-              Thêm vào giỏ hàng
+              HSD: {dayjs(data.expiredDate).format('DD/MM/YYYY')}
             </Text>
-          </TouchableOpacity>
+            {/* Button buy */}
+            <TouchableOpacity onPress={() => handleAddToCart(data)}>
+              <Text
+                style={{
+                  padding: 10,
+                  backgroundColor: COLORS.primary,
+                  borderRadius: 10,
+                  textAlign: 'center',
+                  color: '#ffffff',
+                }}>
+                Thêm vào giỏ hàng
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       {/* Search */}
-      <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+      <View style={{flexDirection: 'row', gap: 10, alignItems: 'center'}}>
         <SearchBar />
         <TouchableOpacity
           onPress={() => {
@@ -135,6 +176,25 @@ const Home = ({ navigation }) => {
             }}
             source={icons.cart}
           />
+          {cartList.lenght !== 0 && (
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                right: -10,
+                backgroundColor: COLORS.primary,
+                borderRadius: 50,
+                width: 20,
+                height: 20,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <Text
+                style={{fontSize: 12, color: 'white', fontFamily: 'Roboto'}}>
+                {cartList.length}
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
