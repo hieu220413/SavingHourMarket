@@ -9,5 +9,7 @@ public interface ProductSubCateOnly {
 
     String getName();
 
+    String getImageUrl();
+
     Integer getAllowableDisplayThreshold();
 }
