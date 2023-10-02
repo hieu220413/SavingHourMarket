@@ -116,31 +116,6 @@ const Payment = ({navigation, route}) => {
     return maxDate;
   };
 
-  // useEffect(() => {
-  //   const minExpDateOrderItems = new Date(
-  //     Math.min(...orderItems.map(item => item.expiredDate)),
-  //   );
-  //   if (dayDiffFromToday(minExpDateOrderItems) > 3) {
-  //     setMinDate(getDateAfterToday(2));
-  //     setMaxDate(getMaxDate(minExpDateOrderItems));
-  //   }
-  //   if (
-  //     dayDiffFromToday(minExpDateOrderItems) == 1 ||
-  //     dayDiffFromToday(minExpDateOrderItems) == 2
-  //   ) {
-  //     setMinDate(getDateAfterToday(1));
-  //     setMaxDate(getDateAfterToday(1));
-  //     setDate(getDateAfterToday(1));
-  //     setCannotChangeDate(true);
-  //   }
-  //   if (dayDiffFromToday(minExpDateOrderItems) == 3) {
-  //     setMinDate(getDateAfterToday(2));
-  //     setMaxDate(getDateAfterToday(2));
-  //     setDate(getDateAfterToday(2));
-  //     setCannotChangeDate(true);
-  //   }
-  // }, []);
-
   useFocusEffect(
     useCallback(() => {
       const minExpDateOrderItems = new Date(
@@ -208,18 +183,18 @@ const Payment = ({navigation, route}) => {
     if (totalProductPrice - totalDiscountPrice > 2000000) {
       setValidateMessage('Đơn hàng của bạn không thể vượt quá 2.000.000 VNĐ');
       setOpenValidateDialog(true);
-      return;
+      return false;
     }
     if (pickUpPointIsChecked) {
       if (!pickupPoint) {
         setValidateMessage('Vui lòng chọn địa điểm giao hàng');
         setOpenValidateDialog(true);
-        return;
+        return false;
       }
       if (!timeFrame) {
         setValidateMessage('Vui lòng chọn khung giờ');
         setOpenValidateDialog(true);
-        return;
+        return false;
       }
     }
 
@@ -227,34 +202,37 @@ const Payment = ({navigation, route}) => {
       if (!customerLocation) {
         setValidateMessage('Vui lòng chọn địa chỉ giao hàng');
         setOpenValidateDialog(true);
-        return;
+        return false;
       }
     }
     if (!date) {
       setValidateMessage('Vui lòng chọn ngày giao hàng');
       setOpenValidateDialog(true);
-      return;
+      return false;
     }
     if (!paymentMethod) {
       setValidateMessage('Vui lòng chọn phương thức thanh toán');
       setOpenValidateDialog(true);
-      return;
+      return false;
     }
     if (!name || !phone) {
       setValidateMessage('Vui lòng điền đầy đủ thông tin liên lạc');
       setOpenValidateDialog(true);
-      return;
+      return false;
     }
 
     if (!validatePhoneNumber()) {
       setValidateMessage('Số điện thoại không hợp lệ');
       setOpenValidateDialog(true);
-      return;
+      return false;
     }
+    return true;
   };
 
   const handleOrder = () => {
-    validate();
+    if (!validate()) {
+      return;
+    }
     let submitOrder = {};
     const voucherListId = voucherList.map(item => {
       return item.id;
