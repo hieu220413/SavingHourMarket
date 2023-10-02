@@ -27,7 +27,7 @@ public interface OrderService {
                                     int page,
                                     int limit) throws NoSuchOrderException, FirebaseAuthException, ResourceNotFoundException;
     List<OrderProduct> fetchOrderDetail(UUID id) throws ResourceNotFoundException;
-    String createOrder(String jwtToken, OrderCreate orderCreate) throws Exception, OutOfProductQuantityException;
+    Order createOrder(String jwtToken, OrderCreate orderCreate) throws Exception;
     String cancelOrder(String jwtToken, UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException, FirebaseAuthException;
     List<Order> fetchOrdersForCustomer(String jwtToken,
                                        String totalPriceSortType,

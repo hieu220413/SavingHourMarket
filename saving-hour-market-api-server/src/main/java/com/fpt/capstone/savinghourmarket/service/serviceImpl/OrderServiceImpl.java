@@ -109,18 +109,12 @@ public class OrderServiceImpl implements OrderService {
                 orderStatus == null ? null : orderStatus.ordinal(),
                 isPaid,
                 getPageableWithSort(totalPriceSortType, createdTimeSortType, deliveryDateSortType, page, limit));
-        if (orders.size() == 0) {
-            throw new NoSuchOrderException("No orders found");
-        }
         return orders;
     }
 
     @Override
     public List<OrderBatch> fetchOrderBatches(District district, LocalDate deliveryDate) throws NoSuchOrderException {
         List<OrderBatch> orderBatches = orderBatchRepository.findByDistrictOrDeliverDate(district != null ? district.getDistrictName() : null, deliveryDate);
-        if (orderBatches.size() == 0) {
-            throw new NoSuchOrderException("No order batch found");
-        }
         return orderBatches;
     }
 
@@ -180,9 +174,6 @@ public class OrderServiceImpl implements OrderService {
                         page,
                         limit)
         );
-        if (orders.size() == 0) {
-            throw new NoSuchOrderException("No orders found");
-        }
         return orders;
     }
 
@@ -237,7 +228,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public String createOrder(String jwtToken, OrderCreate orderCreate) throws Exception {
+    public Order createOrder(String jwtToken, OrderCreate orderCreate) throws Exception {
         log.info("Creating new order");
         String email = Utils.getCustomerEmail(jwtToken, firebaseAuth);
         Customer customer = customerRepository
@@ -250,18 +241,18 @@ public class OrderServiceImpl implements OrderService {
         }
 
         RLock rLock = redissonClient.getLock("createOrderLock");
-        String result;
+        Order order = null;
         try {
             rLock.lock();
-            result = createOrderTransact(orderCreate, customer);
+            order = createOrderTransact(orderCreate, customer);
         } finally {
             rLock.unlock();
         }
-        return result;
+        return order;
     }
 
     @Transactional(rollbackFor = {ResourceNotFoundException.class, InterruptedException.class, IOException.class, OutOfProductQuantityException.class})
-    String createOrderTransact(OrderCreate orderCreate, Customer customer) throws ResourceNotFoundException, InterruptedException, IOException, OutOfProductQuantityException {
+    Order createOrderTransact(OrderCreate orderCreate, Customer customer) throws ResourceNotFoundException, InterruptedException, IOException, OutOfProductQuantityException {
         Order order = setOrderData(orderCreate, customer);
 
         if (orderCreateHasPickupPointAndTimeFrame(orderCreate)) {
@@ -278,7 +269,7 @@ public class OrderServiceImpl implements OrderService {
 
         saveOrderDetails(orderSavedSuccess, orderCreate);
 
-        return orderSavedSuccess.getId().toString();
+        return orderSavedSuccess;
     }
 
     private void saveCustomerInfoIfNeeded(Customer customer, OrderCreate orderCreate) throws IOException {
