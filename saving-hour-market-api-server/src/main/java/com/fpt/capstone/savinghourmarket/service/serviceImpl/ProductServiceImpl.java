@@ -2,8 +2,13 @@ package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
 import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
 import com.fpt.capstone.savinghourmarket.entity.Product;
+import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
+import com.fpt.capstone.savinghourmarket.model.ProductCateWithSubCate;
+import com.fpt.capstone.savinghourmarket.model.ProductSubCateOnly;
+import com.fpt.capstone.savinghourmarket.repository.ProductCategoryRepository;
 import com.fpt.capstone.savinghourmarket.repository.ProductRepository;
+import com.fpt.capstone.savinghourmarket.repository.ProductSubCategoryRepository;
 import com.fpt.capstone.savinghourmarket.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +27,9 @@ import java.util.UUID;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+
+    private final ProductCategoryRepository productCategoryRepository;
+    private final ProductSubCategoryRepository productSubCategoryRepository;
 
     @Override
     public List<Product> getProductsForStaff(Boolean isExpiredShown, String name, String supermarketId, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, String quantitySortType, String expiredSortType) {
@@ -77,5 +85,17 @@ public class ProductServiceImpl implements ProductService {
             throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.PRODUCT_NOT_FOUND.getCode()), AdditionalResponseCode.PRODUCT_NOT_FOUND.toString());
         }
         return product.get();
+    }
+
+    @Override
+    public List<ProductCateWithSubCate> getAllCategory() {
+        List<ProductCateWithSubCate> productCategoryList = productCategoryRepository.getAllProductCategoryWithSubCate();
+        return productCategoryList;
+    }
+
+    @Override
+    public List<ProductSubCateOnly> getAllSubCategory() {
+        List<ProductSubCateOnly> productSubCateOnlyList = productSubCategoryRepository.findAllSubCategoryOnly();
+        return productSubCateOnlyList;
     }
 }

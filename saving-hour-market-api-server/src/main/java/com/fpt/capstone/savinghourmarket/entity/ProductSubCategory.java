@@ -49,5 +49,4 @@ public class ProductSubCategory {
     )
     @JsonIgnore
     private List<Discount> discountList;
-
 }

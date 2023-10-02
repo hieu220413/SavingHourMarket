@@ -44,6 +44,8 @@ public class SpringSecurityConfig {
 //                            .requestMatchers("/api/customer/updateInfo").authenticated()
                             .requestMatchers("/api/product/getProductsForCustomer").permitAll()
                             .requestMatchers("/api/product/getById").permitAll()
+                            .requestMatchers("/api/product/getAllCategory").permitAll()
+                            .requestMatchers("/api/product/getAllSubCategory").permitAll()
                             .requestMatchers("/api/discount/getDiscountsForCustomer").permitAll()
                             .requestMatchers("/api/discount/getDiscountById").permitAll()
                             .requestMatchers("/api/timeframe/getAll").permitAll()

@@ -7,7 +7,6 @@ import com.fpt.capstone.savinghourmarket.entity.Staff;
 import com.fpt.capstone.savinghourmarket.exception.InvalidUserInputException;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.exception.StaffAccessForbiddenException;
-import com.fpt.capstone.savinghourmarket.model.CustomerPasswordRequestBody;
 import com.fpt.capstone.savinghourmarket.model.PasswordRequestBody;
 import com.fpt.capstone.savinghourmarket.model.CustomerRegisterRequestBody;
 import com.fpt.capstone.savinghourmarket.model.CustomerUpdateRequestBody;
