@@ -21,10 +21,14 @@ public class SpringSecurityConfig {
     private final AccessDeniedHandlerCustom accessDeniedHandlerCustom;
     private final AuthenticationEntryPointCustom authenticationEntryPointCustom;
 
-    private String[] allStaffAndAdmin= {StaffRole.STAFF_DLV.toString()
+    private String[] allStaffAndAdmin= {StaffRole.STAFF_DLV_0.toString()
+            , StaffRole.STAFF_DLV_1.toString()
             , StaffRole.STAFF_MKT.toString()
             , StaffRole.STAFF_ORD.toString()
             , StaffRole.STAFF_SLT.toString()
+            , "ADMIN"};
+
+    private String[] selectionStaffAndAdmin= {StaffRole.STAFF_SLT.toString()
             , "ADMIN"};
 
     @Bean
@@ -37,16 +41,26 @@ public class SpringSecurityConfig {
                             .requestMatchers("/v3/api-docs/**").permitAll()
                             .requestMatchers("/swagger-ui.html").permitAll()
                             .requestMatchers(HttpMethod.POST, "/api/customer/registerWithEmailPassword").permitAll()
-                            .requestMatchers("/api/customer/updateInfo").authenticated()
+//                            .requestMatchers("/api/customer/updateInfo").authenticated()
                             .requestMatchers("/api/product/getProductsForCustomer").permitAll()
+                            .requestMatchers("/api/product/getById").permitAll()
                             .requestMatchers("/api/discount/getDiscountsForCustomer").permitAll()
                             .requestMatchers("/api/discount/getDiscountById").permitAll()
                             .requestMatchers("/api/timeframe/getAll").permitAll()
                             .requestMatchers("/api/pickupPoint/getAll").permitAll()
                             .requestMatchers("/api/pickupPoint/getWithSortAndSuggestion").permitAll()
                             .requestMatchers("/api/transaction/processPaymentResult").permitAll()
+//                            .requestMatchers("/api/staff/getInfoAfterGoogleLogged").hasAnyRole(allStaffAndAdmin)
+                            .requestMatchers("/api/staff/getInfo").hasAnyRole(allStaffAndAdmin)
+                            .requestMatchers("/api/staff/updateInfo").hasAnyRole(allStaffAndAdmin)
+                            .requestMatchers("/api/staff/getCustomerDetailByEmail").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/product/getProductsForStaff").hasAnyRole(allStaffAndAdmin)
-                            .requestMatchers("/api/discount/getDiscountsForStaff").hasAnyRole(allStaffAndAdmin);
+                            .requestMatchers("/api/discount/getDiscountsForStaff").hasAnyRole(allStaffAndAdmin)
+                            .requestMatchers("/api/supermarket/create").hasAnyRole(selectionStaffAndAdmin)
+                            .requestMatchers("/api/supermarket/changeStatus").hasAnyRole(selectionStaffAndAdmin)
+                            .requestMatchers("/api/supermarket/updateInfo").hasAnyRole(selectionStaffAndAdmin)
+                            .requestMatchers("/api/order/getOrdersForStaff").hasAnyRole(allStaffAndAdmin)
+                            .requestMatchers("/api/order/getOrderGroupForStaff").hasAnyRole(allStaffAndAdmin);
                     auth.anyRequest().authenticated();
                 });
 //        http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable()).authorizeHttpRequests((auth) -> auth

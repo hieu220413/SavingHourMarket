@@ -46,10 +46,6 @@ public final class Utils {
         StorageClient storageClient = StorageClient.getInstance();
         Bucket bucket = storageClient.bucket();
         String imgName = "public/"+ UUID.randomUUID() + "." + StringUtils.getFilenameExtension(file.getOriginalFilename());
-//        BlobId  blobId = BlobId.of(bucket.getName(), imgName);
-//        BlobInfo blobInfo = BlobInfo.newBuilder()
-//                .setContentType(file.getContentType())
-//                .build();
         bucket.create(imgName, file.getInputStream(), file.getContentType());
 
         return generatePublicImageUrlFirebaseStorage(imgName);

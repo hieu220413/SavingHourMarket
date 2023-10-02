@@ -1,15 +1,24 @@
 package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
 import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
+import com.fpt.capstone.savinghourmarket.common.PaymentMethod;
+import com.fpt.capstone.savinghourmarket.common.PaymentStatus;
+import com.fpt.capstone.savinghourmarket.entity.Order;
+import com.fpt.capstone.savinghourmarket.entity.Transaction;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
+import com.fpt.capstone.savinghourmarket.exception.OrderIsPaidException;
+import com.fpt.capstone.savinghourmarket.exception.RequiredEPaymentException;
 import com.fpt.capstone.savinghourmarket.repository.OrderRepository;
+import com.fpt.capstone.savinghourmarket.repository.TransactionRepository;
 import com.fpt.capstone.savinghourmarket.service.TransactionService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.view.RedirectView;
 
 import java.io.UnsupportedEncodingException;
@@ -27,10 +36,10 @@ import java.util.UUID;
 @Getter
 public class TransactionServiceImpl implements TransactionService {
 
-    @Value("${VNPAY_TMN_CODE}")
+    @Value("CZQRWKJUMKNIUPGECAIOTTBLXOJAIMFM")
     private String vnpayTmnCode;
 
-    @Value("${VNPAY_HASH_SECRET}")
+    @Value("MNWQOE3L")
     private String vnpayHashSecret;
 
     @Value("${base-path-android}")
@@ -38,11 +47,23 @@ public class TransactionServiceImpl implements TransactionService {
 
     private final OrderRepository orderRepository;
 
+    private final TransactionRepository transactionRepository;
+
     @Override
     public String getPaymentUrl(Integer paidAmount, UUID orderId) {
 
-        if(!orderRepository.findById(orderId).isPresent()){
+        Optional<Order> order = orderRepository.findById(orderId);
+
+        if(!order.isPresent()){
             throw new ItemNotFoundException(HttpStatusCode.valueOf(AdditionalResponseCode.ORDER_NOT_FOUND.getCode()), AdditionalResponseCode.ORDER_NOT_FOUND.toString());
+        }
+
+        if(order.get().getPaymentMethod() == PaymentMethod.COD.ordinal()){
+            throw new RequiredEPaymentException(HttpStatus.valueOf(AdditionalResponseCode.REQUIRED_E_PAYMENT.getCode()), AdditionalResponseCode.REQUIRED_E_PAYMENT.toString());
+        }
+
+        if(order.get().getPaymentStatus() == PaymentStatus.PAID.ordinal()){
+            throw new OrderIsPaidException(HttpStatusCode.valueOf(AdditionalResponseCode.ORDER_IS_PAID.getCode()), AdditionalResponseCode.ORDER_IS_PAID.toString());
         }
 
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("YYYYMMddHHmmss");
@@ -85,6 +106,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    @Transactional
     public RedirectView processPaymentResult(Map<String, String> allRequestParams) {
         String vnp_SecureHash = "";
         if (allRequestParams.containsKey("vnp_SecureHashType")) {
@@ -99,8 +121,39 @@ public class TransactionServiceImpl implements TransactionService {
 
         if (signValue.equals(vnp_SecureHash)) {
             if ("00".equals(allRequestParams.get("vnp_ResponseCode"))) {
+                String orderId = allRequestParams.get("vnp_OrderInfo");
+                String transactionNo = allRequestParams.get("vnp_TransactionNo");
+                String transactionDateTime = allRequestParams.get("vnp_PayDate");
+                String price  = allRequestParams.get("vnp_Amount");
+
+                String year = transactionDateTime.substring(0,4);
+                String month = transactionDateTime.substring(4,6);
+                String date = transactionDateTime.substring(6,8);
+                String hour = transactionDateTime.substring(8,10);
+                String minute = transactionDateTime.substring(10,12);
+                String second = transactionDateTime.substring(12,14);
+                LocalDateTime transactionLocalDateTime = LocalDateTime.parse(""+ year + "-" + month + "-" + date + "T" + hour + ":" + minute + ":" + second );
+
+                Transaction transaction = new Transaction();
+                transaction.setTransactionNo(transactionNo);
+                transaction.setPaymentTime(transactionLocalDateTime);
+                transaction.setAmountOfMoney(Integer.valueOf(price));
+                transaction.setPaymentMethod(PaymentMethod.VNPAY.ordinal());
+
+                //should perform lock from this part
+                Order order = orderRepository.findById(UUID.fromString(orderId)).get();
+                if(order.getPaymentStatus() == PaymentStatus.PAID.ordinal()){
+                    throw new OrderIsPaidException(HttpStatusCode.valueOf(AdditionalResponseCode.ORDER_IS_PAID.getCode()), AdditionalResponseCode.ORDER_IS_PAID.toString());
+                }
+                order.setPaymentStatus(PaymentStatus.PAID.ordinal());
+                transaction.setOrder(order);
+                transactionRepository.save(transaction);
+                // to this part
                 return  new RedirectView("http://success.sdk.merchantbackapp/");
             }
+        }
+        if("99".equals(allRequestParams.get("vnp_ResponseCode"))){
+            return new RedirectView("http://cancel.sdk.merchantbackapp/");
         }
         return  new RedirectView("http://fail.sdk.merchantbackapp/");
     }

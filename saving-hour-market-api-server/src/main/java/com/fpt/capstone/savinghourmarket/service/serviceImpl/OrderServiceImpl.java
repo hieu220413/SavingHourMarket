@@ -1,33 +1,45 @@
 package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
+import com.fpt.capstone.savinghourmarket.common.District;
 import com.fpt.capstone.savinghourmarket.common.OrderStatus;
 import com.fpt.capstone.savinghourmarket.entity.*;
 import com.fpt.capstone.savinghourmarket.exception.NoSuchOrderException;
 import com.fpt.capstone.savinghourmarket.exception.OrderCancellationNotAllowedException;
 import com.fpt.capstone.savinghourmarket.exception.OutOfProductQuantityException;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
+import com.fpt.capstone.savinghourmarket.model.CustomerUpdateRequestBody;
 import com.fpt.capstone.savinghourmarket.model.OrderCreate;
 import com.fpt.capstone.savinghourmarket.model.OrderProduct;
+import com.fpt.capstone.savinghourmarket.model.OrderProductCreate;
 import com.fpt.capstone.savinghourmarket.repository.*;
+import com.fpt.capstone.savinghourmarket.service.CustomerService;
 import com.fpt.capstone.savinghourmarket.service.FirebaseStorageService;
 import com.fpt.capstone.savinghourmarket.service.OrderService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.glxn.qrgen.QRCode;
 import net.glxn.qrgen.image.ImageType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.sql.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,39 +62,102 @@ public class OrderServiceImpl implements OrderService {
     private OrderGroupRepository orderGroupRepository;
 
     @Autowired
+    private OrderBatchRepository orderBatchRepository;
+
+    @Autowired
+    private TimeFrameRepository timeFrameRepository;
+
+    @Autowired
+    private PickupPointRepository pickupPointRepository;
+
+    @Autowired
     private CustomerRepository customerRepository;
 
+    @Autowired
+    private CustomerService customerService;
+
+    @Autowired
+    private StaffRepository staffRepository;
 
     @Autowired
     private DiscountRepository discountRepository;
 
+
     @Override
-    public List<Order> fetchAllNotInGroup() throws NoSuchOrderException {
-        log.info("Fetching all orders not in group");
-        List<Order> orderList = repository.findOrderByOrderGroupIsNull();
-        if (orderList.isEmpty()) {
-            throw new NoSuchOrderException("No order left on the system");
+    public List<OrderGroup> fetchOrderGroups(String jwtToken, LocalDate deliverDate, UUID timeFrameId, UUID pickupPointId, UUID delivererId) throws NoSuchOrderException, FirebaseAuthException {
+        if (Authorization(jwtToken).equalsIgnoreCase("STAFF")) {
+            List<OrderGroup> orderGroups = orderGroupRepository.findByTimeFrameOrPickupPointOrDeliverDate(timeFrameId, pickupPointId, delivererId, deliverDate);
+            if (orderGroups.isEmpty()) {
+                throw new NoSuchOrderException("No such order group left on system");
+            }
+            return orderGroups;
+        } else {
+            throw new AuthorizationServiceException("Access denied with this email");
         }
-        return orderList;
     }
 
     @Override
-    public List<OrderGroup> fetchAllWithGroup() throws NoSuchOrderException {
-        List<OrderGroup> orderGroups = orderGroupRepository.findAll();
-        if(orderGroups.isEmpty()){
-            throw new NoSuchOrderException("No such order group left on system");
+    public List<Order> fetchOrdersForCustomer(String jwtToken,
+                                              String totalPriceSortType,
+                                              String createdTimeSortType,
+                                              String deliveryDateSortType,
+                                              OrderStatus orderStatus,
+                                              Boolean isPaid,
+                                              int page,
+                                              int limit) throws NoSuchOrderException, FirebaseAuthException {
+        if (Authorization(jwtToken).equalsIgnoreCase("CUSTOMER")) {
+            List<Order> orders = repository.findOrderForCustomer(Utils.getCustomerEmail(jwtToken, firebaseAuth),
+                    orderStatus == null ? null : orderStatus.ordinal(),
+                    isPaid,
+                    getPageableWithSort(totalPriceSortType, createdTimeSortType, deliveryDateSortType, page, limit));
+            if (orders.size() == 0) {
+                throw new NoSuchOrderException("No orders found");
+            }
+            return orders;
+        } else {
+            throw new AuthorizationServiceException("Access denied with this email");
         }
-        return orderGroups;
+
     }
 
     @Override
-    public List<Order> fetchByStatus(Integer status) throws NoSuchOrderException {
-        log.info("Fetching orders with status" + status);
-        List<Order> orders = repository.findOrderByStatus(status);
-        if (orders.isEmpty()) {
-            throw new NoSuchOrderException("No such order with status" + status);
+    public List<OrderBatch> fetchOrderBatches(String jwtToken, District district, LocalDate deliveryDate) throws NoSuchOrderException {
+        List<OrderBatch> orderBatches = orderBatchRepository.findByDistrictOrDeliverDate(district != null ? district.getDistrictName() : null, deliveryDate);
+        if (orderBatches.size() == 0) {
+            throw new NoSuchOrderException("No order batch found");
         }
-        return orders;
+        return orderBatches;
+    }
+
+    @Override
+    public List<Order> fetchOrdersForStaff(String jwtToken,
+                                           String totalPriceSortType,
+                                           String createdTimeSortType,
+                                           String deliveryDateSortType,
+                                           OrderStatus orderStatus,
+                                           UUID packagerId,
+                                           Boolean isPaid,
+                                           Boolean isGrouped,
+                                           int page,
+                                           int limit) throws NoSuchOrderException, FirebaseAuthException {
+        if (Authorization(jwtToken).equalsIgnoreCase("STAFF")) {
+            List<Order> orders = repository.findOrderForStaff(packagerId,
+                    orderStatus == null ? null : orderStatus.ordinal(),
+                    isGrouped,
+                    isPaid,
+                    getPageableWithSort(totalPriceSortType,
+                            createdTimeSortType,
+                            deliveryDateSortType,
+                            page,
+                            limit)
+            );
+            if (orders.size() == 0) {
+                throw new NoSuchOrderException("No orders found");
+            }
+            return orders;
+        } else {
+            throw new AuthorizationServiceException("Access denied with this email");
+        }
     }
 
     @Override
@@ -116,120 +191,240 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<Order> fetchAll() throws NoSuchOrderException {
-        log.info("Fetching all");
-        List<Order> orders = repository.findAll();
-        if (orders.isEmpty()) {
-            throw new NoSuchOrderException("No order left");
-        }
-        return orders;
-    }
-
-    @Override
-    public List<Order> fetchCustomerOrders(String jwtToken, Integer status) throws ResourceNotFoundException, NoSuchOrderException, FirebaseAuthException {
-        String email = Utils.getCustomerEmail(jwtToken,firebaseAuth);
-        log.info("Fetching customer order with email "+email+" by status " + status);
-        Customer customer = customerRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("There is no customer with email " + email));
-        List<Order> orders = repository.findOrderByCustomerAndStatus(customer, status);
-        if (orders.isEmpty()) {
-            throw new NoSuchOrderException("No order left for this customer");
-        }
-        return orders;
-    }
-
-
-    @Override
-    @Transactional
-    public String createOrder(String jwtToken,OrderCreate orderCreate) throws ResourceNotFoundException, IOException, FirebaseAuthException, OutOfProductQuantityException {
-        log.info("Creating new order");
-
-        //Mapping orderCreate model to order entity
-        Order order = new Order();
-        order.setShippingFee(orderCreate.getShippingFee());
-        order.setTotalPrice(orderCreate.getTotalPrice());
-        order.setDeliveryDate(orderCreate.getDeliveryDate());
-        order.setStatus(OrderStatus.PROCESSING.ordinal());
-        order.setPayment_method(orderCreate.getPayment_method());
-        order.setAddressDeliver(orderCreate.getAddressDeliver());
-
-        String email = Utils.getCustomerEmail(jwtToken,firebaseAuth);
+    public String cancelOrder(String jwtToken, UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException, FirebaseAuthException {
+        String email = Utils.getCustomerEmail(jwtToken, firebaseAuth);
         Customer customer = customerRepository
                 .findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with email" + email));
-        order.setCustomer(customer);
+                .orElseThrow(() -> new AuthorizationServiceException("Access denied with this account: " + email));
+        if (customer == null) {
+            return "Fail to canceled order " + id;
+        }
+        Order order = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
+        if (order.getStatus() == OrderStatus.PROCESSING.ordinal()) {
+            order.setStatus(OrderStatus.CANCEL.ordinal());
+        } else {
+            throw new OrderCancellationNotAllowedException("Order with id " + id + " is already in " + order.getStatus().toString() + " process");
+        }
+        repository.save(order);
+        return "Successfully canceled order " + id;
+    }
 
-        UUID discountId = orderCreate.getDiscountId();
-        if(discountId != null && !discountId.equals("")) {
-            Discount discount = discountRepository
-                    .findById(orderCreate.getDiscountId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Discount not found with id" + orderCreate.getDiscountId()));
-            Integer quantity = discount.getQuantity();
-            discount.setQuantity(quantity - 1);
-            discountRepository.save(discount);
-            order.setDiscount(discount);
+    @Override
+    @Transactional(rollbackFor = {ResourceNotFoundException.class, IOException.class, OutOfProductQuantityException.class, Exception.class},
+            propagation = Propagation.REQUIRES_NEW)
+    public String createOrder(String jwtToken, OrderCreate orderCreate) throws Exception, OutOfProductQuantityException {
+        log.info("Creating new order");
+        String email = Utils.getCustomerEmail(jwtToken, firebaseAuth);
+        Customer customer = customerRepository
+                .findByEmail(email)
+                .orElseThrow(() -> new AuthorizationServiceException("Access denied with this account: " + email));
+        saveCustomerInfoIfNeeded(customer, orderCreate);
+
+        if (repository.getOrdersProcessing(customer.getEmail()).size() > 3) {
+            throw new Exception("Customer already has 3 PROCESSING orders");
         }
 
-        List<Transaction> transactions = new ArrayList<>();
-        transactions.add(orderCreate.getTransaction());
-        order.setTransaction(transactions);
+        Order order = setOrderData(orderCreate, customer);
 
-        if(orderCreate.getPickupPointId() != null && !orderCreate.getPickupPointId().equals("")) {
-            OrderGroup orderGroup = orderGroupRepository
-                    .findByTimeFrameIdAndPickupPointId(orderCreate.getTimeFrameId(), orderCreate.getPickupPointId())
-                    .orElseThrow(() -> new ResourceNotFoundException("OrderGroup not found with this time_frame_id " + orderCreate.getTimeFrameId() + " and pickup_point_id " + orderCreate.getPickupPointId()));
-            order.setOrderGroup(orderGroup);
+        if (orderCreateHasPickupPointAndTimeFrame(orderCreate)) {
+            groupingOrder(order, orderCreate);
+        } else {
+            batchingOrder(order, orderCreate);
         }
 
-        Order orderSavedSuccessWithoutQrcodeUrl = repository.save(order);
+        Order orderSavedSuccessWithoutQrCodeUrl = repository.save(order);
+        String qrCodeUrl = generateAndUploadQRCode(orderSavedSuccessWithoutQrCodeUrl);
+        orderSavedSuccessWithoutQrCodeUrl.setQrCodeUrl(qrCodeUrl);
 
-        //Generate QR Code of order then save it to Firebase Storage
-        ByteArrayOutputStream QrCode = generateQRCodeImage(orderSavedSuccessWithoutQrcodeUrl.getId());
-        String qrCodeUrl = FirebaseStorageService.uploadQRCodeToStorage(QrCode,order.getId());
-        orderSavedSuccessWithoutQrcodeUrl.setQrCodeUrl(qrCodeUrl);
+        Order orderSavedSuccess = repository.save(orderSavedSuccessWithoutQrCodeUrl);
 
-        Order orderSavedSuccess = repository.save(orderSavedSuccessWithoutQrcodeUrl);
-
-        //Save order's details including list of order's products
-        List<OrderDetail> orderDetailsSaved = new ArrayList<>();
-        List<OrderProduct> orderProducts = orderCreate.getOrderDetailList();
-        for (OrderProduct orderProduct : orderProducts) {
-            OrderDetail orderDetail = new OrderDetail();
-            orderDetail.setOrder(orderSavedSuccess);
-            Product product = productRepository.findById(orderProduct.getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("No Product found with this id " + orderProduct.getId()));
-            if(product.getQuantity() > orderProduct.getBoughtQuantity()){
-                product.setQuantity(product.getQuantity() - orderProduct.getBoughtQuantity());
-            }else {
-                throw new OutOfProductQuantityException("Product don't have enough quantity" );
-            }
-            productRepository.save(product);
-            orderDetail.setProduct(product);
-            orderDetail.setProductPrice(orderProduct.getProductPrice());
-            orderDetail.setProductOriginalPrice(orderProduct.getProductOriginalPrice());
-            orderDetail.setBoughtQuantity(orderProduct.getBoughtQuantity());
-
-            orderDetailsSaved.add(orderDetailRepository.save(orderDetail));
-        }
-
-        if (!orderDetailsSaved.isEmpty() && orderDetailsSaved.size() == orderProducts.size()) {
-            log.info("Created order: %s with details saved: %s".formatted(orderSavedSuccess.getId(), orderDetailsSaved.get(0).toString()));
-        }
+        saveOrderDetails(orderSavedSuccess, orderCreate);
 
         return orderSavedSuccess.getQrCodeUrl();
     }
 
-    @Override
-    public String cancelOrder(UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException {
-        Order order = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
-        if (order.getStatus() == OrderStatus.PROCESSING.ordinal()){
-            order.setStatus(OrderStatus.CANCEL.ordinal());
-        }else {
-            throw new OrderCancellationNotAllowedException("Order with id " + id + " is already in "+order.getStatus().toString()+" process");
+    private void saveCustomerInfoIfNeeded(Customer customer, OrderCreate orderCreate) throws IOException {
+        CustomerUpdateRequestBody customerUpdateRequestBody = new CustomerUpdateRequestBody();
+        if (customer.getAddress() == null || customer.getAddress().isEmpty() || customer.getAddress().isBlank()) {
+            customerUpdateRequestBody.setAddress(orderCreate.getAddressDeliver());
+        } else if (customer.getFullName() == null || customer.getFullName().isEmpty() || customer.getFullName().isBlank()) {
+            customerUpdateRequestBody.setFullName(orderCreate.getCustomerName());
+        } else if (customer.getPhone() == null || customer.getPhone().isEmpty() || customer.getPhone().isBlank()) {
+            customerUpdateRequestBody.setPhone(orderCreate.getPhone());
         }
-        repository.save(order);
-        return "Successfully canceled order " + id;
+        customerService.updateInfo(customerUpdateRequestBody, customer.getEmail(), null);
+    }
+
+    private void batchingOrder(Order order, OrderCreate orderCreate) throws ResourceNotFoundException {
+        String district = extractDistrict(orderCreate.getAddressDeliver());
+        if (district != null) {
+            log.debug(district);
+        } else {
+            throw new ResourceNotFoundException("District not found");
+        }
+        Optional<OrderBatch> orderBatch = orderBatchRepository.findByDistrictAndDeliverDate(district, orderCreate.getDeliveryDate());
+        OrderBatch batch;
+        if (orderBatch.isPresent()) {
+            batch = orderBatch.get();
+        } else {
+            batch = new OrderBatch();
+            batch.setDeliverDate(orderCreate.getDeliveryDate());
+            batch.setDistrict(district);
+            orderBatchRepository.save(batch);
+        }
+        order.setOrderBatch(batch);
+    }
+
+    private Order setOrderData(OrderCreate orderCreate, Customer customer) throws ResourceNotFoundException {
+        Order order = new Order();
+        order.setCustomer(customer);
+        order.setShippingFee(orderCreate.getShippingFee());
+        order.setTotalPrice(orderCreate.getTotalPrice());
+        order.setTotalDiscountPrice(orderCreate.getTotalDiscountPrice());
+        order.setDeliveryDate(Date.valueOf(orderCreate.getDeliveryDate()));
+        order.setPaymentStatus(orderCreate.getPaymentStatus().ordinal());
+        order.setStatus(OrderStatus.PROCESSING.ordinal());
+        order.setPaymentMethod(orderCreate.getPaymentMethod());
+        order.setAddressDeliver(orderCreate.getAddressDeliver());
+        order.setCreatedTime(LocalDateTime.now());
+        mapDiscountsToOrder(order, orderCreate.getDiscountID());
+        mapTransactionToOrder(order, orderCreate.getTransaction());
+        return order;
+    }
+
+    private boolean orderCreateHasPickupPointAndTimeFrame(OrderCreate orderCreate) {
+        return orderCreate.getPickupPointId() != null && !orderCreate.getPickupPointId().toString().isEmpty()
+                && orderCreate.getTimeFrameId() != null && !orderCreate.getTimeFrameId().toString().isEmpty();
+    }
+
+    private void groupingOrder(Order order, OrderCreate orderCreate) {
+        Optional<OrderGroup> orderGroup = orderGroupRepository
+                .findByTimeFrameIdAndPickupPointIdAndDeliverDate(
+                        orderCreate.getTimeFrameId(),
+                        orderCreate.getPickupPointId(),
+                        orderCreate.getDeliveryDate()
+                );
+        if (orderGroup.isPresent()) {
+            order.setOrderGroup(orderGroup.get());
+        } else {
+            OrderGroup orderGroupNew = createNewOrderGroup(orderCreate);
+            order.setOrderGroup(orderGroupRepository.save(orderGroupNew));
+        }
+    }
+
+    private OrderGroup createNewOrderGroup(OrderCreate orderCreate) {
+        OrderGroup orderGroupNew = new OrderGroup();
+        orderGroupNew.setTimeFrame(timeFrameRepository.findById(orderCreate.getTimeFrameId())
+                .orElseThrow(() -> new NoSuchElementException("No time-frame found with id " + orderCreate.getTimeFrameId())));
+        orderGroupNew.setPickupPoint(pickupPointRepository.findById(orderCreate.getPickupPointId())
+                .orElseThrow(() -> new NoSuchElementException("No pick-up point found with id " + orderCreate.getPickupPointId())));
+        orderGroupNew.setDeliverDate(orderCreate.getDeliveryDate());
+        return orderGroupNew;
+    }
+
+    private void mapDiscountsToOrder(Order order, List<UUID> discountIds) throws ResourceNotFoundException {
+        if (!discountIds.isEmpty()) {
+            order.setDiscountList(new ArrayList<>());
+            for (UUID discountId : discountIds) {
+                Discount discount = discountRepository
+                        .findById(discountId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Discount not found with id" + discountId));
+                decrementDiscountQuantity(discount);
+                order.getDiscountList().add(discount);
+            }
+        }
+    }
+
+    private void decrementDiscountQuantity(Discount discount) {
+        Integer quantity = discount.getQuantity();
+        discount.setQuantity(quantity - 1);
+        discountRepository.save(discount);
+    }
+
+    private String generateAndUploadQRCode(Order order) throws IOException {
+        ByteArrayOutputStream qrCode = generateQRCodeImage(order.getId());
+        return FirebaseStorageService.uploadQRCodeToStorage(qrCode, order.getId());
+    }
+
+    private void mapTransactionToOrder(Order order, Transaction transaction) {
+        List<Transaction> transactions = new ArrayList<>();
+        transactions.add(transaction);
+        order.setTransaction(transactions);
+    }
+
+    private void saveOrderDetails(Order order, OrderCreate orderCreate) throws OutOfProductQuantityException, ResourceNotFoundException {
+        List<OrderDetail> orderDetailsSaved = new ArrayList<>();
+        for (OrderProductCreate orderProductCreate : orderCreate.getOrderDetailList()) {
+            OrderDetail orderDetail = mapOrderProductCreateToOrderDetail(order, orderProductCreate);
+            orderDetailsSaved.add(orderDetailRepository.save(orderDetail));
+        }
+        if (!orderDetailsSaved.isEmpty() && orderDetailsSaved.size() == orderCreate.getOrderDetailList().size()) {
+            log.info("Created order: %s with details saved: %s".formatted(order.getId(), orderDetailsSaved.get(0).toString()));
+        }
+    }
+
+    private OrderDetail mapOrderProductCreateToOrderDetail(Order order, OrderProductCreate orderProductCreate) throws OutOfProductQuantityException, ResourceNotFoundException {
+        OrderDetail orderDetail = new OrderDetail();
+        orderDetail.setOrder(order);
+        Product product = getProductById(orderProductCreate.getId());
+        updateProductQuantity(product, orderProductCreate.getBoughtQuantity());
+        orderDetail.setProduct(product);
+        orderDetail.setProductPrice(orderProductCreate.getProductPrice());
+        orderDetail.setProductOriginalPrice(orderProductCreate.getProductOriginalPrice());
+        orderDetail.setBoughtQuantity(orderProductCreate.getBoughtQuantity());
+        return orderDetail;
+    }
+
+    private Product getProductById(UUID productId) throws ResourceNotFoundException {
+        return productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("No Product found with this id " + productId));
+    }
+
+    private void updateProductQuantity(Product product, Integer boughtQuantity) throws OutOfProductQuantityException {
+        if (product.getQuantity() >= boughtQuantity) {
+            product.setQuantity(product.getQuantity() - boughtQuantity);
+            productRepository.save(product);
+        } else {
+            throw new OutOfProductQuantityException("Product don't have enough quantity");
+        }
+    }
+
+    private Pageable getPageableWithSort(String totalPriceSortType, String createdTimeSortType, String deliveryDateSortType, int page, int limit) {
+        Sort sortable = null;
+        if (totalPriceSortType != null && totalPriceSortType.equals("ASC")) {
+            sortable = Sort.by("totalPrice").ascending();
+        } else if (totalPriceSortType != null && totalPriceSortType.equals("DESC")) {
+            sortable = Sort.by("totalPrice").descending();
+        } else if (createdTimeSortType != null && createdTimeSortType.equals("ASC")) {
+            sortable = Sort.by("createdTime").ascending();
+        } else if (createdTimeSortType != null && createdTimeSortType.equals("DESC")) {
+            sortable = Sort.by("createdTime").descending();
+        } else if (deliveryDateSortType != null && deliveryDateSortType.equals("ASC")) {
+            sortable = Sort.by("deliveryDate").ascending();
+        } else if (deliveryDateSortType != null && deliveryDateSortType.equals("DESC")) {
+            sortable = Sort.by("deliveryDate").descending();
+        }
+        Pageable pageableWithSort;
+        if (sortable != null) {
+            pageableWithSort = PageRequest.of(page, limit, sortable);
+        } else {
+            pageableWithSort = PageRequest.of(page, limit);
+        }
+
+        return pageableWithSort;
+    }
+
+    private String Authorization(String jwtToken) throws FirebaseAuthException {
+        String email = Utils.getCustomerEmail(jwtToken, firebaseAuth);
+
+        if (staffRepository.findByEmail(email).isPresent()) {
+            return "STAFF";
+        } else if (customerRepository.findByEmail(email).isPresent()) {
+            return "CUSTOMER";
+        } else {
+            return "ACCESS DENIED";
+        }
     }
 
     private ByteArrayOutputStream generateQRCodeImage(UUID orderId) throws IOException {
@@ -241,6 +436,53 @@ public class OrderServiceImpl implements OrderService {
         } catch (Exception e) {
             e.printStackTrace();
             throw new IOException("Error generating QR code");
+        }
+    }
+
+    private String extractDistrict(String address) {
+        // Define a list of common district names in HCMC (you can expand this list).
+        String[] districtNames = {
+                "District 1",
+                "District 2",
+                "District 3",
+                "District 4",
+                "District 5",
+                "District 6",
+                "District 7",
+                "District 8",
+                "District 9",
+                "District 10",
+                "District 11",
+                "District 12",
+                "Bình Tân",
+                "Bình Thạnh",
+                "Gò Vấp",
+                "Phú Nhuận",
+                "Tân Bình",
+                "Tân Phú",
+                "Thủ Đức",
+                "Bình Chánh",
+                "Cần Giờ",
+                "Củ Chi",
+                "Hóc Môn",
+                "Nhà Bè"
+                /* Add more districts as needed */
+        };
+
+        // Create a regular expression pattern to match district names.
+        String pattern = "\\b(" + String.join("|", districtNames) + ")\\b";
+
+        // Compile the pattern.
+        Pattern districtPattern = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+
+        // Create a Matcher to find the district name in the address.
+        Matcher matcher = districtPattern.matcher(address);
+
+        // Find the first matching district name.
+        if (matcher.find()) {
+            return matcher.group(0);
+        } else {
+            return null;
         }
     }
 }

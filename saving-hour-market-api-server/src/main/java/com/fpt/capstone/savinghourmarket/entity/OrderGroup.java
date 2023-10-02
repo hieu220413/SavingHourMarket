@@ -1,12 +1,11 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,6 +19,8 @@ public class OrderGroup {
     @Id
     @UuidGenerator
     private UUID id;
+
+    private LocalDate deliverDate;
 
     @ManyToOne
     @JoinColumn(
@@ -35,7 +36,17 @@ public class OrderGroup {
     )
     private PickupPoint pickupPoint;
 
+    @ManyToOne(
+            fetch = FetchType.EAGER
+    )
+    @JoinColumn(
+            name = "deliverer_id",
+            referencedColumnName = "id"
+    )
+    private Staff deliverer;
+
     @OneToMany(
+            fetch = FetchType.EAGER,
             mappedBy = "orderGroup"
     )
     private List<Order> orderList;

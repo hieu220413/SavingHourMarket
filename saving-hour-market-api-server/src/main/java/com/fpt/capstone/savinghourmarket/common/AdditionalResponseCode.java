@@ -7,7 +7,13 @@ public enum AdditionalResponseCode {
     STAFF_ACCESS_FORBIDDEN(403),
     DISCOUNT_NOT_FOUND(404),
     ORDER_NOT_FOUND(404),
-    CUSTOMER_NOT_FOUND(404);
+    CUSTOMER_NOT_FOUND(404),
+    DISABLE_SUPERMARKET_FORBIDDEN(403),
+    SUPERMARKET_NOT_FOUND(404),
+    REQUIRED_E_PAYMENT(403),
+    PRODUCT_NOT_FOUND(404),
+    ORDER_IS_PAID(403);
+
     private int code;
 
     AdditionalResponseCode(int code) {

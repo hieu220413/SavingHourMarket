@@ -1,7 +1,7 @@
 package com.fpt.capstone.savinghourmarket.service;
 
 import com.fpt.capstone.savinghourmarket.entity.Customer;
-import com.fpt.capstone.savinghourmarket.model.CustomerPasswordRequestBody;
+import com.fpt.capstone.savinghourmarket.model.PasswordRequestBody;
 import com.fpt.capstone.savinghourmarket.model.CustomerRegisterRequestBody;
 import com.fpt.capstone.savinghourmarket.model.CustomerUpdateRequestBody;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -19,5 +19,5 @@ public interface CustomerService {
 
     Customer updateInfo(CustomerUpdateRequestBody customerUpdateRequestBody, String email, MultipartFile imageFile) throws IOException;
 
-    void updatePassword(CustomerPasswordRequestBody customerPasswordRequestBody, String email) throws FirebaseAuthException;
+    void updatePassword(PasswordRequestBody passwordRequestBody, String email) throws FirebaseAuthException;
 }

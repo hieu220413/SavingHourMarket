@@ -9,6 +9,8 @@ public interface DiscountOnly {
 
     String getName();
 
+    String getImageUrl();
+
     Integer getPercentage();
 
     Integer getSpentAmountRequired();
@@ -18,4 +20,5 @@ public interface DiscountOnly {
     Integer getStatus();
 
     Integer getQuantity();
+
 }
