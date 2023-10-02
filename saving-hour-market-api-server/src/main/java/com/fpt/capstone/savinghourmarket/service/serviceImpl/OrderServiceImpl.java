@@ -2,6 +2,7 @@ package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
 import com.fpt.capstone.savinghourmarket.common.District;
 import com.fpt.capstone.savinghourmarket.common.OrderStatus;
+import com.fpt.capstone.savinghourmarket.common.StaffRole;
 import com.fpt.capstone.savinghourmarket.entity.*;
 import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.CustomerUpdateRequestBody;
@@ -87,16 +88,12 @@ public class OrderServiceImpl implements OrderService {
 
 
     @Override
-    public List<OrderGroup> fetchOrderGroups(String jwtToken, LocalDate deliverDate, UUID timeFrameId, UUID pickupPointId, UUID delivererId) throws NoSuchOrderException, FirebaseAuthException {
-        if (Authorization(jwtToken).equalsIgnoreCase("STAFF")) {
-            List<OrderGroup> orderGroups = orderGroupRepository.findByTimeFrameOrPickupPointOrDeliverDate(timeFrameId, pickupPointId, delivererId, deliverDate);
-            if (orderGroups.isEmpty()) {
-                throw new NoSuchOrderException("No such order group left on system");
-            }
-            return orderGroups;
-        } else {
-            throw new AuthorizationServiceException("Access denied with this email");
+    public List<OrderGroup> fetchOrderGroups(LocalDate deliverDate, UUID timeFrameId, UUID pickupPointId, UUID delivererId) throws NoSuchOrderException, FirebaseAuthException {
+        List<OrderGroup> orderGroups = orderGroupRepository.findByTimeFrameOrPickupPointOrDeliverDate(timeFrameId, pickupPointId, delivererId, deliverDate);
+        if (orderGroups.isEmpty()) {
+            throw new NoSuchOrderException("No such order group left on system");
         }
+        return orderGroups;
     }
 
     @Override
@@ -108,23 +105,18 @@ public class OrderServiceImpl implements OrderService {
                                               Boolean isPaid,
                                               int page,
                                               int limit) throws NoSuchOrderException, FirebaseAuthException {
-        if (Authorization(jwtToken).equalsIgnoreCase("CUSTOMER")) {
-            List<Order> orders = repository.findOrderForCustomer(Utils.getCustomerEmail(jwtToken, firebaseAuth),
-                    orderStatus == null ? null : orderStatus.ordinal(),
-                    isPaid,
-                    getPageableWithSort(totalPriceSortType, createdTimeSortType, deliveryDateSortType, page, limit));
-            if (orders.size() == 0) {
-                throw new NoSuchOrderException("No orders found");
-            }
-            return orders;
-        } else {
-            throw new AuthorizationServiceException("Access denied with this email");
+        List<Order> orders = repository.findOrderForCustomer(Utils.getCustomerEmail(jwtToken, firebaseAuth),
+                orderStatus == null ? null : orderStatus.ordinal(),
+                isPaid,
+                getPageableWithSort(totalPriceSortType, createdTimeSortType, deliveryDateSortType, page, limit));
+        if (orders.size() == 0) {
+            throw new NoSuchOrderException("No orders found");
         }
-
+        return orders;
     }
 
     @Override
-    public List<OrderBatch> fetchOrderBatches(String jwtToken, District district, LocalDate deliveryDate) throws NoSuchOrderException {
+    public List<OrderBatch> fetchOrderBatches(District district, LocalDate deliveryDate) throws NoSuchOrderException {
         List<OrderBatch> orderBatches = orderBatchRepository.findByDistrictOrDeliverDate(district != null ? district.getDistrictName() : null, deliveryDate);
         if (orderBatches.size() == 0) {
             throw new NoSuchOrderException("No order batch found");
@@ -133,8 +125,43 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<Order> fetchOrdersForStaff(String jwtToken,
-                                           String totalPriceSortType,
+    @Transactional
+    public String assignPackager(UUID orderId, UUID staffId) throws NoSuchOrderException {
+        Order order = repository.findById(orderId)
+                .orElseThrow(() -> new NoSuchOrderException("No order found with this id " + orderId));
+        Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new NoSuchElementException("No staff found with this id " + staffId));
+        if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_ORD.toString())) {
+            order.setPackager(staff);
+        } else {
+            return "Staff with id" + staffId + "is not PACKAGER";
+        }
+        return "Packager with id" + staffId + "set to order" + order.getId().toString() + "successfully";
+    }
+
+    @Override
+    public String assignDeliverToOrderGroupOrBatch(UUID orderGroupId, UUID orderBatchId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException {
+        Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new NoSuchElementException("No staff found with this id " + staffId));
+        if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_DLV_0.toString())) {
+            if (orderGroupId != null && orderBatchId == null) {
+                OrderGroup orderGroup = orderGroupRepository.findById(orderGroupId)
+                        .orElseThrow(() -> new NoSuchOrderException("No group found with this group id " + orderGroupId));
+                orderGroup.setDeliverer(staff);
+            }else if(orderGroupId == null && orderBatchId != null){
+                OrderBatch orderBatch = orderBatchRepository.findById(orderBatchId)
+                        .orElseThrow(() -> new NoSuchOrderException("No batch found with this batch id " + orderBatchId));
+                orderBatch.setDeliverer(staff);
+            }else {
+                throw new ConflictGroupAndBatchException("Group or batch must be specified");
+            }
+        } else {
+            return "Staff with id" + staffId + "is not DELIVERER LEVEL 0";
+        }
+
+        return "Staff with id" + staffId + "set successfully";
+    }
+
+    @Override
+    public List<Order> fetchOrdersForStaff(String totalPriceSortType,
                                            String createdTimeSortType,
                                            String deliveryDateSortType,
                                            OrderStatus orderStatus,
@@ -143,24 +170,20 @@ public class OrderServiceImpl implements OrderService {
                                            Boolean isGrouped,
                                            int page,
                                            int limit) throws NoSuchOrderException, FirebaseAuthException {
-        if (Authorization(jwtToken).equalsIgnoreCase("STAFF")) {
-            List<Order> orders = repository.findOrderForStaff(packagerId,
-                    orderStatus == null ? null : orderStatus.ordinal(),
-                    isGrouped,
-                    isPaid,
-                    getPageableWithSort(totalPriceSortType,
-                            createdTimeSortType,
-                            deliveryDateSortType,
-                            page,
-                            limit)
-            );
-            if (orders.size() == 0) {
-                throw new NoSuchOrderException("No orders found");
-            }
-            return orders;
-        } else {
-            throw new AuthorizationServiceException("Access denied with this email");
+        List<Order> orders = repository.findOrderForStaff(packagerId,
+                orderStatus == null ? null : orderStatus.ordinal(),
+                isGrouped,
+                isPaid,
+                getPageableWithSort(totalPriceSortType,
+                        createdTimeSortType,
+                        deliveryDateSortType,
+                        page,
+                        limit)
+        );
+        if (orders.size() == 0) {
+            throw new NoSuchOrderException("No orders found");
         }
+        return orders;
     }
 
     @Override
@@ -429,18 +452,6 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return pageableWithSort;
-    }
-
-    private String Authorization(String jwtToken) throws FirebaseAuthException {
-        String email = Utils.getCustomerEmail(jwtToken, firebaseAuth);
-
-        if (staffRepository.findByEmail(email).isPresent()) {
-            return "STAFF";
-        } else if (customerRepository.findByEmail(email).isPresent()) {
-            return "CUSTOMER";
-        } else {
-            return "ACCESS DENIED";
-        }
     }
 
     private ByteArrayOutputStream generateQRCodeImage(UUID orderId) throws IOException {
