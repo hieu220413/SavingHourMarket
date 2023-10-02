@@ -8,20 +8,26 @@ import {COLORS} from '../constants/theme';
 import {useFocusEffect} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
-
+import {API} from '../constants/api';
+import {format} from 'date-fns';
 
 const Orders = ({navigation}) => {
   const orderStatus = [
-    {display: 'Chờ xác nhận'},
-    {display: 'Đóng gói'},
-    {display: 'Giao hàng'},
-    {display: 'Đã giao'},
-    {display: 'Đơn thất bại'},
-    {display: 'Đã hủy'},
+    {display: 'Chờ xác nhận', value: 'PROCESSING'},
+    {display: 'Đóng gói', value: 'PACKAGING'},
+    {display: 'Giao hàng', value: 'DELIVERING'},
+    {display: 'Đã giao', value: 'SUCCESS'},
+    {display: 'Đơn thất bại', value: 'FAIL'},
+    {display: 'Đã hủy', value: 'CANCEL'},
   ];
-  const [currentStatus, setCurrentStatus] = useState('Chờ xác nhận');
+  const [currentStatus, setCurrentStatus] = useState({
+    display: 'Chờ xác nhận',
+    value: 'PROCESSING',
+  });
   const [cartList, setCartList] = useState([]);
   const [initializing, setInitializing] = useState(true);
+  const [tokenId, setTokenId] = useState(null);
+  const [orderList, setOrderList] = useState([]);
 
   //authen check
   const onAuthStateChange = async userInfo => {
@@ -44,8 +50,8 @@ const Orders = ({navigation}) => {
         return;
       }
 
-      console.log('user is logged in');
-      console.log(await AsyncStorage.getItem('userInfo'));
+      const token = await auth().currentUser.getIdToken();
+      setTokenId(token);
     } else {
       // no sessions found.
       console.log('user is not logged in');
@@ -60,6 +66,71 @@ const Orders = ({navigation}) => {
     return subscriber;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (tokenId) {
+        if (currentStatus.display !== 'Đóng gói') {
+          fetch(
+            `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=${currentStatus.value}`,
+            {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
+              },
+            },
+          )
+            .then(res => res.json())
+            .then(respond => {
+              console.log(respond);
+              setOrderList(respond);
+            })
+            .catch(err => {
+              console.log(err);
+            });
+        } else {
+          fetch(
+            `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGING`,
+            {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
+              },
+            },
+          )
+            .then(res => res.json())
+            .then(respond => {
+              console.log(respond);
+              setOrderList(respond);
+              fetch(
+                `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGED`,
+                {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${tokenId}`,
+                  },
+                },
+              )
+                .then(res => res.json())
+                .then(respond => {
+                  if (respond.length !== 0) {
+                    setOrderList([...orderList, respond]);
+                  }
+                })
+                .catch(err => {
+                  console.log(err);
+                });
+            })
+            .catch(err => {
+              console.log(err);
+            });
+        }
+      }
+    }, [tokenId, currentStatus]),
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -148,7 +219,7 @@ const Orders = ({navigation}) => {
             <TouchableOpacity
               key={index}
               onPress={() => {
-                setCurrentStatus(item.display);
+                setCurrentStatus(item);
               }}>
               <View
                 style={[
@@ -156,7 +227,7 @@ const Orders = ({navigation}) => {
                     paddingHorizontal: 15,
                     paddingBottom: 15,
                   },
-                  currentStatus === item.display && {
+                  currentStatus.display === item.display && {
                     borderBottomColor: COLORS.primary,
                     borderBottomWidth: 2,
                   },
@@ -166,7 +237,9 @@ const Orders = ({navigation}) => {
                     fontFamily: 'Roboto',
                     fontSize: 16,
                     color:
-                      currentStatus === item.display ? COLORS.primary : 'black',
+                      currentStatus.display === item.display
+                        ? COLORS.primary
+                        : 'black',
                   }}>
                   {item.display}
                 </Text>
@@ -178,99 +251,113 @@ const Orders = ({navigation}) => {
       <ScrollView contentContainerStyle={{marginTop: 20}}>
         <View style={{marginBottom: 100}}>
           {/* Order list */}
-
-          <View style={{backgroundColor: 'white', marginBottom: 20}}>
-            {/* Order detail */}
-            <TouchableOpacity
-              onPress={() => {
-                navigation.navigate('OrderDetail');
-              }}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: 20,
+          {orderList.map(item => (
+            <View style={{backgroundColor: 'white', marginBottom: 20}}>
+              {/* Order detail */}
+              <TouchableOpacity
+                onPress={() => {
+                  navigation.navigate('OrderDetail');
                 }}>
-                <View style={{flexDirection: 'column', gap: 8}}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: 20,
+                  }}>
+                  <View style={{flexDirection: 'column', gap: 8}}>
+                    <Text
+                      style={{
+                        fontSize: 20,
+                        fontWeight: 'bold',
+                        fontFamily: 'Roboto',
+                        color: COLORS.primary,
+                      }}>
+                      {item?.status === 'PROCESSING' && 'Chờ xác nhận'}
+                      {item?.status === 'PACKAGING' && 'Đang đóng gói'}
+                      {item?.status === 'PACKAGED' && 'Đã đóng gói'}
+                      {item?.status === 'DELIVERING' && 'Đang giao hàng'}
+                      {item?.status === 'SUCCESS' && 'Thành công'}
+                      {item?.status === 'FAIL' && 'Đơn thất bại'}
+                      {item?.status === 'CANCEL' && 'Đã hủy'}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 17,
+                        fontWeight: 'bold',
+                        fontFamily: 'Roboto',
+                        color: 'black',
+                      }}>
+                      Ngày đặt :{' '}
+                      {format(Date.parse(item?.createdTime), 'dd/MM/yyyy')}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 17,
+                        fontWeight: 'bold',
+                        fontFamily: 'Roboto',
+                        color: 'black',
+                      }}>
+                      Ngày giao :{' '}
+                      {format(Date.parse(item?.deliveryDate), 'dd/MM/yyyy')}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 17,
+                        fontWeight: 'bold',
+                        fontFamily: 'Roboto',
+                        color: 'black',
+                      }}>
+                      Tổng tiền:{' '}
+                      {item?.totalPrice?.toLocaleString('vi-VN', {
+                        style: 'currency',
+                        currency: 'VND',
+                      })}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 17,
+                        fontWeight: 'bold',
+                        fontFamily: 'Roboto',
+                        color: 'black',
+                      }}>
+                      Phương thức thanh toán:{' '}
+                      {item?.paymentMethod === 0 ? 'COD' : 'VN Pay'}
+                    </Text>
+                  </View>
+                  <Image
+                    resizeMode="contain"
+                    style={{width: 30, height: 30, tintColor: COLORS.primary}}
+                    source={icons.rightArrow}
+                  />
+                </View>
+              </TouchableOpacity>
+              {/* *********************** */}
+
+              {/* Order again */}
+              {/* <TouchableOpacity>
+                <View
+                  style={{
+                    borderTopColor: '#decbcb',
+                    borderTopWidth: 1,
+                    paddingVertical: 15,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
                   <Text
                     style={{
-                      fontSize: 20,
-                      fontWeight: 'bold',
-                      fontFamily: 'Roboto',
+                      fontSize: 18,
                       color: COLORS.primary,
-                    }}>
-                    {currentStatus}
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: 17,
-                      fontWeight: 'bold',
                       fontFamily: 'Roboto',
-                      color: 'black',
                     }}>
-                    Ngày đặt : 03-05-2023
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: 17,
-                      fontWeight: 'bold',
-                      fontFamily: 'Roboto',
-                      color: 'black',
-                    }}>
-                    Ngày giao : 05-05-2023
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: 17,
-                      fontWeight: 'bold',
-                      fontFamily: 'Roboto',
-                      color: 'black',
-                    }}>
-                    Tổng tiền: 130.000 VNĐ
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: 17,
-                      fontWeight: 'bold',
-                      fontFamily: 'Roboto',
-                      color: 'black',
-                    }}>
-                    Phương thức thanh toán: COD
+                    Đặt lại
                   </Text>
                 </View>
-                <Image
-                  resizeMode="contain"
-                  style={{width: 30, height: 30, tintColor: COLORS.primary}}
-                  source={icons.rightArrow}
-                />
-              </View>
-            </TouchableOpacity>
-            {/* *********************** */}
+              </TouchableOpacity> */}
 
-            {/* Order again */}
-            <TouchableOpacity>
-              <View
-                style={{
-                  borderTopColor: '#decbcb',
-                  borderTopWidth: 1,
-                  paddingVertical: 15,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                <Text
-                  style={{
-                    fontSize: 18,
-                    color: COLORS.primary,
-                    fontFamily: 'Roboto',
-                  }}>
-                  Đặt lại
-                </Text>
-              </View>
-            </TouchableOpacity>
-
-            {/* ******************** */}
-          </View>
+              {/* ******************** */}
+            </View>
+          ))}
 
           {/* ************************ */}
         </View>
