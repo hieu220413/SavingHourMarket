@@ -91,7 +91,7 @@ const Payment = ({navigation, route}) => {
         credentials: 'include',
         // truyen idToken vao
         headers: {
-          Authorization: idToken,
+          Authorization: `Bearer ${idToken}`,
         },
       },
     )
@@ -461,15 +461,19 @@ const Payment = ({navigation, route}) => {
     if (createOrderRequest) {
       // handle vnpay payment method
       if (paymentMethod.id === 1 && createOrderRequest.status === 200) {
-        const createdOrderBody = createOrderRequest.json();
+        const createdOrderBody = await createOrderRequest.json();
         const createdOrderId = createdOrderBody.id;
         const createdOrderTotalPrice = createdOrderBody.totalPrice;
+        const idToken = await auth().currentUser.getIdToken();
+        console.log('processing vnpay')
         await processVNPay(
           createdOrderTotalPrice,
           createdOrderId,
-          auth().currentUser.getIdToken(),
+          idToken
         );
+        return;
       }
+      console.log(await createOrderRequest.json())
       // Handle other request status
     }
   };
