@@ -56,6 +56,10 @@ const Profile = ({navigation}) => {
       const subscriber = auth().onAuthStateChanged(
         async userInfo => await onAuthStateChange(userInfo),
       );
+      GoogleSignin.configure({
+        webClientId:
+          '857253936194-dmrh0nls647fpqbuou6mte9c7e4o6e6h.apps.googleusercontent.com',
+      });
       return subscriber;
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []),
@@ -63,12 +67,13 @@ const Profile = ({navigation}) => {
 
   const logout = async () => {
     console.log('a');
-    await GoogleSignin.signOut();
+    await GoogleSignin.signOut().catch(e => console.log(e));
     console.log('b');
     await AsyncStorage.removeItem('userInfo');
     auth()
       .signOut()
-      .then(() => setUser(null), console.log('Signed out successfully!'));
+      .then(() => setUser(null), console.log('Signed out successfully!'))
+      .catch(e => console.log(e));
   };
   // let userInfo;
   // try {
