@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.model;
 
+import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,6 +32,8 @@ public class OrderProduct {
     private String imageUrl;
 
     private Integer status;
+
+    private String productCategory;
 
     private String productSubCategory;
 

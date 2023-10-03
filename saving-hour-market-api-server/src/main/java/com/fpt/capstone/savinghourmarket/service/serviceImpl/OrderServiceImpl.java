@@ -175,8 +175,11 @@ public class OrderServiceImpl implements OrderService {
         log.info("Fetching order detail of order_id " + id);
         Order order = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
+
         OrderWithDetails orderWithDetails = new OrderWithDetails();
         orderWithDetails.setId(order.getId());
+        orderWithDetails.setReceiverName(order.getReceiverName());
+        orderWithDetails.setReceiverPhone(order.getReceiverPhone());
         orderWithDetails.setQrCodeUrl(order.getQrCodeUrl());
         orderWithDetails.setTotalPrice(order.getTotalPrice());
         orderWithDetails.setCreatedTime(order.getCreatedTime());
@@ -189,10 +192,12 @@ public class OrderServiceImpl implements OrderService {
         orderWithDetails.setShippingFee(order.getShippingFee());
         orderWithDetails.setStatus(order.getStatus());
         orderWithDetails.setTransaction(order.getTransaction());
+
         if(order.getOrderGroup() != null){
             orderWithDetails.setTimeFrame(order.getOrderGroup().getTimeFrame());
             orderWithDetails.setPickupPoint(order.getOrderGroup().getPickupPoint());
         }
+
         List<OrderDetail> orderDetails = order.getOrderDetailList();
         List<OrderProduct> orderProducts = orderDetails.stream()
                 .map(o -> {
@@ -211,6 +216,7 @@ public class OrderServiceImpl implements OrderService {
                     orderProduct.setProductSubCategory(product.getProductSubCategory().getName());
                     orderProduct.setSupermarketName(product.getSupermarket().getName());
                     orderProduct.setStatus(product.getStatus());
+                    orderProduct.setProductCategory(product.getProductSubCategory().getProductCategory().getName());
 
                     return orderProduct;
 

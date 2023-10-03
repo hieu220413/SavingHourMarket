@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
+import javax.validation.constraints.NotNull;
 import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,6 +18,10 @@ import java.util.UUID;
 @Setter
 public class OrderWithDetails {
     private UUID id;
+
+    private String receiverPhone;
+
+    private String receiverName;
 
     private Integer shippingFee;
 
