@@ -43,7 +43,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final StaffRepository staffRepository;
 
     @Override
-    public Customer register(CustomerRegisterRequestBody customerRegisterRequestBody) throws FirebaseAuthException, UnsupportedEncodingException {
+    public String register(CustomerRegisterRequestBody customerRegisterRequestBody) throws FirebaseAuthException, UnsupportedEncodingException {
         Pattern pattern;
         Matcher matcher;
         HashMap errorFields = new HashMap<>();
@@ -105,13 +105,17 @@ public class CustomerServiceImpl implements CustomerService {
                 .setEmailVerified(false)
                 .setPassword(customerRegisterRequestBody.getPassword());
 
-        firebaseAuth.createUser(request);
+        UserRecord userRecord = firebaseAuth.createUser(request);
+
+        String customToken = firebaseAuth.createCustomToken(userRecord.getUid());
 
 //        if(customerRegisterRequestBody.getAvatarUrl() == null) customerRegisterRequestBody.setAvatarUrl("");
 
         Customer customerEntity = new Customer(customerRegisterRequestBody);
 
-        return customerRepository.save(customerEntity);
+        customerRepository.save(customerEntity);
+
+        return customToken;
 
     }
 
