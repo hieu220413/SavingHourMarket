@@ -338,10 +338,11 @@ const Payment = ({navigation, route}) => {
       body: JSON.stringify(submitOrder),
     })
       .then(res => {
-        console.log(res);
         return res.json();
       })
-      .then(respond => console.log(respond))
+      .then(respond => {
+        console.log(respond);
+      })
       .catch(err => console.log(err));
   };
 
@@ -962,7 +963,9 @@ const Payment = ({navigation, route}) => {
                   modal
                   mode="date"
                   open={open}
-                  date={date ? date : new Date()}
+                  date={date ? date : minDate}
+                  minimumDate={minDate}
+                  maximumDate={maxDate}
                   onConfirm={date => {
                     setOpen(false);
                     setDate(date);
