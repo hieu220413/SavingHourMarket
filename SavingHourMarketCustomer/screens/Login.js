@@ -97,14 +97,16 @@ const Login = ({navigation}) => {
         // fetch success
         if (userInfoAfterGooleLoginRequest.status === 200) {
           const userInfoResult = await userInfoAfterGooleLoginRequest.json();
+          // console.log('result: ' + JSON.stringify(userInfoResult));
           // add user info to storage
           await AsyncStorage.setItem(
             'userInfo',
             JSON.stringify(userInfoResult),
           );
-          Alert.alert(
-            'Login thanh cong, da save user. Redirect qua screen nao do di',
-          );
+          // Alert.alert(
+          //   'Login thanh cong, da save user. Redirect qua screen nao do di',
+          // );
+          navigation.navigate('Profile');
         }
       }
 
@@ -155,9 +157,12 @@ const Login = ({navigation}) => {
             JSON.stringify(userInfoResult),
           );
           // login thanh cong roi => redirect di dau do di
-          Alert.alert(
-            'Login thanh cong, da save user. Redirect qua screen nao do di',
-          );
+          // Alert.alert(
+          //   'Login thanh cong, da save user. Redirect qua screen nao do di',
+          // );
+          () => {
+            navigation.navigate('Profile');
+          };
         }
       }
 
@@ -167,7 +172,7 @@ const Login = ({navigation}) => {
       //   .then(payload => payload);
       // setIdTokenResultPayload(userIdTokenPayload);
       console.log('user is logged in');
-      console.log(await AsyncStorage.getItem('userInfo'));
+      // console.log('info login: ' + (await AsyncStorage.getItem('userInfo')));
     } else {
       console.log('user is not logged in');
     }
@@ -210,6 +215,7 @@ const Login = ({navigation}) => {
 
   const logout = async () => {
     await GoogleSignin.signOut();
+    await AsyncStorage.removeItem('userInfo');
     auth()
       .signOut()
       .then(() => console.log('Signed out successfully!'));

@@ -74,14 +74,14 @@ export default function App() {
           initialRouteName={'Start'}>
           <Stack.Screen name="Start" component={Tabs} />
           <Stack.Screen name="VNPayTest" component={VNPayTest} />
-          <Stack.Screen name="Discount" component={Discount} />
-          <Stack.Screen name="Orders" component={Orders} />
+          {/* <Stack.Screen name="Discount" component={Discount} /> */}
+          {/* <Stack.Screen name="Orders" component={Orders} /> */}
+          <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="Cart" component={Cart} />
-          <Stack.Screen name="Profile" component={Profile} />
+          {/* <Stack.Screen name="Profile" component={Profile} /> */}
           <Stack.Screen name="OrderDetail" component={OrderDetail} />
 
           <Stack.Screen name="Edit Profile" component={EditProfile} />
-          <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="Sign Up" component={Signup} />
 
           <Stack.Screen name="Payment" component={Payment} />
