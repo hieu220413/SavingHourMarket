@@ -9,6 +9,7 @@ import {
   ImageBackground,
   KeyboardAvoidingView,
   ScrollView,
+  Alert,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import {COLORS} from '../constants/theme';
@@ -43,8 +44,10 @@ const Signup = ({navigation}) => {
   };
 
   const passwordValidation = () => {
-    if (password.length < 8) {
-      setPasswordError('At least 8 characters, 1 digit, 1 uppercase and lowercase letter');
+    if (!isValidPassword(password)) {
+      setPasswordError(
+        'At least 8 characters, 1 digit, 1 uppercase and lowercase letter',
+      );
     } else {
       setPasswordError('');
     }
@@ -59,9 +62,21 @@ const Signup = ({navigation}) => {
   //   }
   // };
 
+  const isValidPassword = password => {
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+    return regex.test(password);
+  };
+
   const isValidEmail = email => {
     const regex = /^([A-Za-z0-9_\-\.])+@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
     return regex.test(email);
+  };
+
+  const isValidForm = () => {
+    if (!isValidEmail(email) || !isValidPassword(password)) {
+      return;
+    }
+    return true;
   };
 
   const isSecureTextEntry = () => {
@@ -72,6 +87,13 @@ const Signup = ({navigation}) => {
     setSecureTextEntry_confirm(!secureTextEntry_confirm);
   };
 
+  const handleSubmit = () => {
+    if (!isValidForm()) {
+      Alert.alert('fail');
+      return;
+    }
+    console.log('success');
+  };
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={styles.container}>
@@ -242,7 +264,7 @@ const Signup = ({navigation}) => {
                   <TouchableOpacity
                     style={{width: '100%'}}
                     onPress={() => {
-                      console.log('sign up');
+                      handleSubmit();
                     }}>
                     <LinearGradient
                       colors={['#66CC66', '#66CC99']}
