@@ -40,10 +40,10 @@ public class OrderCreate {
     private LocalDate deliveryDate;
 
     @NotNull
-    private String customerName;
+    private String receiverPhone;
 
     @NotNull
-    private String phone;
+    private String receiverName;
 
     private UUID pickupPointId;
 
