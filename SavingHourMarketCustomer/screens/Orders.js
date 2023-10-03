@@ -10,6 +10,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
 import {API} from '../constants/api';
 import {format} from 'date-fns';
+import CartEmpty from '../assets/image/search-empty.png';
+import Modal, {
+  ModalFooter,
+  ModalButton,
+  ScaleAnimation,
+} from 'react-native-modals';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 
 const Orders = ({navigation}) => {
@@ -27,8 +33,8 @@ const Orders = ({navigation}) => {
   });
   const [cartList, setCartList] = useState([]);
   const [initializing, setInitializing] = useState(true);
-  const [tokenId, setTokenId] = useState(null);
   const [orderList, setOrderList] = useState([]);
+  const [openAuthModal, setOpenAuthModal] = useState(false);
 
   //authen check
   const onAuthStateChange = async userInfo => {
@@ -48,14 +54,16 @@ const Orders = ({navigation}) => {
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
         await AsyncStorage.removeItem('userInfo');
+        await AsyncStorage.removeItem('CartList');
+        setOpenAuthModal(true);
         return;
       }
-
-      const token = await auth().currentUser.getIdToken();
-      setTokenId(token);
     } else {
       // no sessions found.
       console.log('user is not logged in');
+      await AsyncStorage.removeItem('userInfo');
+      await AsyncStorage.removeItem('CartList');
+      setOpenAuthModal(true);
     }
   };
 
@@ -76,75 +84,78 @@ const Orders = ({navigation}) => {
 
   useFocusEffect(
     useCallback(() => {
-      if (tokenId) {
-        if (currentStatus.display !== 'Đóng gói') {
-          fetch(
-            `${API.baseURL}/api/order/getOrdersForCustomer?orderStatus=${currentStatus.value}`,
-            {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${tokenId}`,
-              },
-            },
-          )
-            .then(res => res.json())
-            .then(respond => {
-              console.log(respond);
-              if (respond.error) {
-                return;
-              }
-              setOrderList(respond);
-            })
-            .catch(err => {
-              console.log(err);
-            });
-        } else {
-          fetch(
-            `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGING`,
-            {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${tokenId}`,
-              },
-            },
-          )
-            .then(res => res.json())
-            .then(respond => {
-              if (respond.error) {
-                return;
-              }
-              setOrderList(respond);
-              fetch(
-                `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGED`,
-                {
-                  method: 'GET',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${tokenId}`,
-                  },
+      const fetchData = async () => {
+        const tokenId = await auth().currentUser.getIdToken();
+        if (tokenId) {
+          if (currentStatus.display !== 'Đóng gói') {
+            fetch(
+              `${API.baseURL}/api/order/getOrdersForCustomer?orderStatus=${currentStatus.value}`,
+              {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${tokenId}`,
                 },
-              )
-                .then(res => res.json())
-                .then(respond => {
-                  if (respond.error) {
-                    return;
-                  }
-                  if (respond.length !== 0) {
-                    setOrderList([...orderList, respond]);
-                  }
-                })
-                .catch(err => {
-                  console.log(err);
-                });
-            })
-            .catch(err => {
-              console.log(err);
-            });
+              },
+            )
+              .then(res => res.json())
+              .then(respond => {
+                if (respond.error) {
+                  return;
+                }
+                setOrderList(respond);
+              })
+              .catch(err => {
+                console.log(err);
+              });
+          } else {
+            fetch(
+              `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGING`,
+              {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${tokenId}`,
+                },
+              },
+            )
+              .then(res => res.json())
+              .then(respond => {
+                if (respond.error) {
+                  return;
+                }
+                setOrderList(respond);
+                fetch(
+                  `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGED`,
+                  {
+                    method: 'GET',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${tokenId}`,
+                    },
+                  },
+                )
+                  .then(res => res.json())
+                  .then(respond => {
+                    if (respond.error) {
+                      return;
+                    }
+                    if (respond.length !== 0) {
+                      setOrderList([...orderList, respond]);
+                    }
+                  })
+                  .catch(err => {
+                    console.log(err);
+                  });
+              })
+              .catch(err => {
+                console.log(err);
+              });
+          }
         }
-      }
-    }, [tokenId, currentStatus]),
+      };
+      fetchData();
+    }, [currentStatus]),
   );
 
   useFocusEffect(
@@ -227,10 +238,7 @@ const Orders = ({navigation}) => {
             )}
           </TouchableOpacity>
         </View>
-        <ScrollView
-          contentContainerStyle={{}}
-          horizontal
-          showsHorizontalScrollIndicator={false}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {orderStatus.map((item, index) => (
             <TouchableOpacity
               key={index}
@@ -256,6 +264,8 @@ const Orders = ({navigation}) => {
                       currentStatus.display === item.display
                         ? COLORS.primary
                         : 'black',
+                    fontWeight:
+                      currentStatus.display === item.display ? 'bold' : 400,
                   }}>
                   {item.display}
                 </Text>
@@ -264,99 +274,118 @@ const Orders = ({navigation}) => {
           ))}
         </ScrollView>
       </View>
-      <ScrollView contentContainerStyle={{marginTop: 20}}>
-        <View style={{marginBottom: 100}}>
-          {/* Order list */}
-          {orderList.map(item => (
-            <View
-              key={item.id}
-              style={{backgroundColor: 'white', marginBottom: 20}}>
-              {/* Order detail */}
-              <TouchableOpacity
-                onPress={() => {
-                  navigation.navigate('OrderDetail', {
-                    id: item.id,
-                    orderSuccess: false,
-                  });
-                }}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: 20,
-                  }}>
-                  <View style={{flexDirection: 'column', gap: 8}}>
-                    <Text
-                      style={{
-                        fontSize: 20,
-                        fontWeight: 'bold',
-                        fontFamily: 'Roboto',
-                        color: COLORS.primary,
-                      }}>
-                      {item?.status === 0 && 'Chờ xác nhận'}
-                      {item?.status === 1 && 'Đang đóng gói'}
-                      {item?.status === 2 && 'Đã đóng gói'}
-                      {item?.status === 3 && 'Đang giao hàng'}
-                      {item?.status === 4 && 'Thành công'}
-                      {item?.status === 5 && 'Đơn thất bại'}
-                      {item?.status === 6 && 'Đã hủy'}
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 17,
-                        fontWeight: 'bold',
-                        fontFamily: 'Roboto',
-                        color: 'black',
-                      }}>
-                      Ngày đặt :{' '}
-                      {format(Date.parse(item?.createdTime), 'dd/MM/yyyy')}
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 17,
-                        fontWeight: 'bold',
-                        fontFamily: 'Roboto',
-                        color: 'black',
-                      }}>
-                      Ngày giao :{' '}
-                      {format(Date.parse(item?.deliveryDate), 'dd/MM/yyyy')}
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 17,
-                        fontWeight: 'bold',
-                        fontFamily: 'Roboto',
-                        color: 'black',
-                      }}>
-                      Tổng tiền:{' '}
-                      {item?.totalPrice?.toLocaleString('vi-VN', {
-                        style: 'currency',
-                        currency: 'VND',
-                      })}
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 17,
-                        fontWeight: 'bold',
-                        fontFamily: 'Roboto',
-                        color: 'black',
-                      }}>
-                      Phương thức thanh toán:{' '}
-                      {item?.paymentMethod === 0 ? 'COD' : 'VN Pay'}
-                    </Text>
-                  </View>
-                  <Image
-                    resizeMode="contain"
-                    style={{width: 30, height: 30, tintColor: COLORS.primary}}
-                    source={icons.rightArrow}
-                  />
-                </View>
-              </TouchableOpacity>
-              {/* *********************** */}
 
-              {/* Order again */}
-              {/* <TouchableOpacity>
+      {/* Order list */}
+      {orderList.length === 0 ? (
+        <View style={{alignItems: 'center', justifyContent: 'center'}}>
+          <Image
+            style={{width: '100%', height: '50%'}}
+            resizeMode="contain"
+            source={CartEmpty}
+          />
+          <Text
+            style={{
+              fontSize: 20,
+              fontFamily: 'Roboto',
+              // color: 'black',
+              fontWeight: 'bold',
+            }}>
+            Chưa có sản phẩm nào trong giỏ hàng
+          </Text>
+        </View>
+      ) : (
+        <ScrollView contentContainerStyle={{marginTop: 20}}>
+          <View style={{marginBottom: 100}}>
+            {orderList.map(item => (
+              <View
+                key={item.id}
+                style={{backgroundColor: 'white', marginBottom: 20}}>
+                {/* Order detail */}
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.navigate('OrderDetail', {
+                      id: item.id,
+                      orderSuccess: false,
+                    });
+                  }}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: 20,
+                    }}>
+                    <View style={{flexDirection: 'column', gap: 8}}>
+                      <Text
+                        style={{
+                          fontSize: 20,
+                          fontWeight: 'bold',
+                          fontFamily: 'Roboto',
+                          color: COLORS.primary,
+                        }}>
+                        {item?.status === 0 && 'Chờ xác nhận'}
+                        {item?.status === 1 && 'Đang đóng gói'}
+                        {item?.status === 2 && 'Đã đóng gói'}
+                        {item?.status === 3 && 'Đang giao hàng'}
+                        {item?.status === 4 && 'Thành công'}
+                        {item?.status === 5 && 'Đơn thất bại'}
+                        {item?.status === 6 && 'Đã hủy'}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 17,
+                          fontWeight: 'bold',
+                          fontFamily: 'Roboto',
+                          color: 'black',
+                        }}>
+                        Ngày đặt :{' '}
+                        {format(Date.parse(item?.createdTime), 'dd/MM/yyyy')}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 17,
+                          fontWeight: 'bold',
+                          fontFamily: 'Roboto',
+                          color: 'black',
+                        }}>
+                        Ngày giao :{' '}
+                        {format(Date.parse(item?.deliveryDate), 'dd/MM/yyyy')}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 17,
+                          fontWeight: 'bold',
+                          fontFamily: 'Roboto',
+                          color: 'black',
+                        }}>
+                        Tổng tiền:{' '}
+                        {item?.totalPrice?.toLocaleString('vi-VN', {
+                          style: 'currency',
+                          currency: 'VND',
+                        })}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 17,
+                          fontWeight: 'bold',
+                          fontFamily: 'Roboto',
+                          color: 'black',
+                        }}>
+                        Phương thức thanh toán:{' '}
+                        {item?.paymentMethod === 0 ? 'COD' : 'VN Pay'}
+                      </Text>
+                    </View>
+                    <Image
+                      resizeMode="contain"
+                      style={{width: 30, height: 30, tintColor: COLORS.primary}}
+                      source={icons.rightArrow}
+                    />
+                  </View>
+                </TouchableOpacity>
+                {/* *********************** */}
+
+                {/* Order again */}
+                {/* <TouchableOpacity>
                 <View
                   style={{
                     borderTopColor: '#decbcb',
@@ -376,13 +405,63 @@ const Orders = ({navigation}) => {
                 </View>
               </TouchableOpacity> */}
 
-              {/* ******************** */}
-            </View>
-          ))}
+                {/* ******************** */}
+              </View>
+            ))}
+          </View>
+        </ScrollView>
+      )}
 
-          {/* ************************ */}
+      {/* ************************ */}
+      {/* auth modal */}
+      <Modal
+        width={0.8}
+        visible={openAuthModal}
+        onTouchOutside={() => {
+          setOpenAuthModal(false);
+        }}
+        dialogAnimation={
+          new ScaleAnimation({
+            initialValue: 0, // optional
+            useNativeDriver: true, // optional
+          })
+        }
+        footer={
+          <ModalFooter>
+            <ModalButton
+              text="Đăng nhập"
+              onPress={async () => {
+                try {
+                  setOpenAuthModal(false);
+                  await GoogleSignin.signOut();
+                  auth()
+                    .signOut()
+                    .then(async () => {
+                      await AsyncStorage.removeItem('userInfo');
+                      await AsyncStorage.removeItem('CartList');
+                      navigation.navigate('Login');
+                    })
+                    .catch(e => console.log(e));
+                } catch (error) {
+                  console.log(error);
+                }
+              }}
+            />
+          </ModalFooter>
+        }>
+        <View
+          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
+          <Text
+            style={{
+              fontSize: 20,
+              fontFamily: 'Roboto',
+              color: 'black',
+              textAlign: 'center',
+            }}>
+            Phiên bản đăng nhập của bạn đã hết hạn vui lòng đăng nhập lại
+          </Text>
         </View>
-      </ScrollView>
+      </Modal>
     </>
   );
 };

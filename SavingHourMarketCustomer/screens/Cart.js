@@ -104,10 +104,10 @@ const Cart = ({navigation}) => {
           alignItems: 'center',
           flexDirection: 'row',
           gap: 20,
-          marginBottom: 10,
+
           backgroundColor: '#ffffff',
           padding: 20,
-          elevation: 4,
+          marginBottom: 10,
         }}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Image
@@ -148,7 +148,7 @@ const Cart = ({navigation}) => {
         <>
           <View
             style={{
-              marginBottom: 170,
+              marginBottom: 175,
             }}>
             <SwipeListView
               data={cartItems}
@@ -158,6 +158,7 @@ const Cart = ({navigation}) => {
                   cartItems={cartItems}
                   item={data.item}
                   navigation={navigation}
+                  index={rowMap}
                 />
               )}
               renderHiddenItem={(data, rowMap) => (
@@ -165,8 +166,8 @@ const Cart = ({navigation}) => {
                   style={{
                     flexDirection: 'row',
                     justifyContent: 'space-between',
-                    height: '92%',
-                    marginVertical: '2%',
+                    height: '100%',
+                    // marginVertical: '2%',
                   }}>
                   <View></View>
                   <TouchableOpacity
@@ -175,7 +176,6 @@ const Cart = ({navigation}) => {
                       height: '100%',
                       backgroundColor: 'red',
                       // flex: 1,
-
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}
@@ -214,7 +214,7 @@ const Cart = ({navigation}) => {
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'space-between',
-              paddingLeft: 20,
+              paddingHorizontal: 20,
               marginTop: 10,
             }}>
             <View
@@ -279,12 +279,13 @@ const Cart = ({navigation}) => {
             <TouchableOpacity
               onPress={() => handleBuyButton()}
               style={{
-                height: '100%',
+                height: '60%',
                 width: '30%',
                 backgroundColor: COLORS.primary,
                 textAlign: 'center',
                 alignItems: 'center',
                 justifyContent: 'center',
+                borderRadius: 30,
               }}>
               <Text
                 style={{

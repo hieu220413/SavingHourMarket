@@ -66,9 +66,9 @@ const Payment = ({navigation, route}) => {
 
   const [cannotChangeDate, setCannotChangeDate] = useState(false);
 
-  const [tokenId, setTokenId] = useState(null);
-
   const [initializing, setInitializing] = useState(true);
+
+  const [openAuthModal, setOpenAuthModal] = useState(false);
 
   const [customerLocation, setCustomerLocation] = useState({
     address: 'Số 121, Trần Văn Dư, Phường 13, Tân Bình,TP.HCM',
@@ -206,12 +206,11 @@ const Payment = ({navigation, route}) => {
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
         await AsyncStorage.removeItem('userInfo');
+        await AsyncStorage.removeItem('CartList');
+        setOpenAuthModal(true);
         return;
       }
 
-      const token = await auth().currentUser.getIdToken();
-
-      setTokenId(token);
       console.log('user is logged in');
       const json = await AsyncStorage.getItem('userInfo');
       const user = JSON.parse(json);
@@ -221,6 +220,8 @@ const Payment = ({navigation, route}) => {
     } else {
       // no sessions found.
       await AsyncStorage.removeItem('userInfo');
+      await AsyncStorage.removeItem('CartList');
+      setOpenAuthModal(true);
       console.log('user is not logged in');
     }
   };
@@ -404,6 +405,8 @@ const Payment = ({navigation, route}) => {
     if (!validate()) {
       return;
     }
+    const tokenId = await auth().currentUser.getIdToken();
+
     let submitOrder = {};
     const voucherListId = voucherList.map(item => {
       return item.id;
@@ -468,6 +471,14 @@ const Payment = ({navigation, route}) => {
       })
       .then(respond => {
         console.log(respond);
+
+        if (respond.code === 409) {
+          setValidateMessage(
+            'Số lượng hàng trong kho không đủ để đáp ứng đơn hàng của bạn',
+          );
+          setOpenValidateDialog(true);
+          return;
+        }
         navigation.navigate('Order success', {id: respond.id});
       })
 
@@ -553,6 +564,7 @@ const Payment = ({navigation, route}) => {
                     backgroundColor: 'white',
                     paddingBottom: 10,
                     marginBottom: 20,
+                    paddingHorizontal: 20,
                   }}>
                   {/* item group by category */}
                   {groupByCategory[key].map(item => (
@@ -565,7 +577,7 @@ const Payment = ({navigation, route}) => {
                         backgroundColor: 'white',
                         borderBottomColor: '#decbcb',
                         borderBottomWidth: 0.75,
-                        padding: 20,
+                        paddingVertical: 20,
                       }}>
                       <Image
                         resizeMode="contain"
@@ -653,7 +665,7 @@ const Payment = ({navigation, route}) => {
                     }}>
                     <View
                       style={{
-                        padding: 20,
+                        paddingVertical: 20,
                         flexDirection: 'row',
                         alignItems: 'center',
                         justifyContent: 'space-between',
@@ -693,7 +705,6 @@ const Payment = ({navigation, route}) => {
                   {voucherApplied && (
                     <View
                       style={{
-                        paddingHorizontal: 20,
                         paddingVertical: 20,
                         // marginTop: 20,
                         flexDirection: 'row',
@@ -727,7 +738,6 @@ const Payment = ({navigation, route}) => {
 
                   <View
                     style={{
-                      paddingHorizontal: 20,
                       paddingVertical: 10,
                       marginTop: 20,
                       flexDirection: 'row',
@@ -838,7 +848,12 @@ const Payment = ({navigation, route}) => {
             </View>
             {/* Manage PickupPoint / TimeFrame/ Date */}
             {pickUpPointIsChecked && (
-              <View style={{backgroundColor: 'white', marginTop: 20}}>
+              <View
+                style={{
+                  backgroundColor: 'white',
+                  marginTop: 20,
+                  paddingHorizontal: 20,
+                }}>
                 {/* Manage Pickup Point */}
                 <TouchableOpacity
                   onPress={() => {
@@ -848,7 +863,7 @@ const Payment = ({navigation, route}) => {
                   }}>
                   <View
                     style={{
-                      padding: 20,
+                      paddingVertical: 20,
                       flexDirection: 'row',
                       alignItems: 'center',
                       justifyContent: 'space-between',
@@ -887,6 +902,59 @@ const Payment = ({navigation, route}) => {
                     />
                   </View>
                 </TouchableOpacity>
+
+                {/* Manage time frame */}
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.navigate('Select time frame', {setTimeFrame});
+                  }}>
+                  <View
+                    style={{
+                      paddingVertical: 20,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      borderTopColor: '#decbcb',
+                      borderTopWidth: 0.75,
+                    }}>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        gap: 10,
+                        alignItems: 'center',
+                        width: '80%',
+                      }}>
+                      <Image
+                        resizeMode="contain"
+                        style={{width: 25, height: 25}}
+                        source={icons.time}
+                      />
+                      <Text
+                        style={{
+                          fontSize: 20,
+                          fontFamily: 'Roboto',
+                          color: 'black',
+                        }}>
+                        {timeFrame
+                          ? `${timeFrame?.fromHour.slice(
+                              0,
+                              5,
+                            )} đến ${timeFrame?.toHour.slice(0, 5)}`
+                          : 'Chọn khung giờ'}
+                      </Text>
+                    </View>
+
+                    <Image
+                      resizeMode="contain"
+                      style={{
+                        width: 25,
+                        height: 25,
+                      }}
+                      source={icons.rightArrow}
+                    />
+                  </View>
+                </TouchableOpacity>
+
                 {/* Manage Date */}
                 <TouchableOpacity
                   onPress={() => {
@@ -901,14 +969,12 @@ const Payment = ({navigation, route}) => {
                   }}>
                   <View
                     style={{
-                      padding: 20,
+                      paddingVertical: 20,
                       flexDirection: 'row',
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       borderTopColor: '#decbcb',
                       borderTopWidth: 0.75,
-                      borderBottomColor: '#decbcb',
-                      borderBottomWidth: 0.75,
                     }}>
                     <View
                       style={{
@@ -948,59 +1014,15 @@ const Payment = ({navigation, route}) => {
                     setOpen(false);
                   }}
                 />
-                {/* Manage time frame */}
-                <TouchableOpacity
-                  onPress={() => {
-                    navigation.navigate('Select time frame', {setTimeFrame});
-                  }}>
-                  <View
-                    style={{
-                      padding: 20,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                    }}>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        gap: 10,
-                        alignItems: 'center',
-                        width: '80%',
-                      }}>
-                      <Image
-                        resizeMode="contain"
-                        style={{width: 25, height: 25}}
-                        source={icons.time}
-                      />
-                      <Text
-                        style={{
-                          fontSize: 20,
-                          fontFamily: 'Roboto',
-                          color: 'black',
-                        }}>
-                        {timeFrame
-                          ? `${timeFrame?.fromHour.slice(
-                              0,
-                              5,
-                            )} đến ${timeFrame?.toHour.slice(0, 5)}`
-                          : 'Chọn khung giờ'}
-                      </Text>
-                    </View>
-
-                    <Image
-                      resizeMode="contain"
-                      style={{
-                        width: 25,
-                        height: 25,
-                      }}
-                      source={icons.rightArrow}
-                    />
-                  </View>
-                </TouchableOpacity>
               </View>
             )}
             {customerLocationIsChecked && (
-              <View style={{backgroundColor: 'white', marginTop: 20}}>
+              <View
+                style={{
+                  backgroundColor: 'white',
+                  marginTop: 20,
+                  paddingHorizontal: 20,
+                }}>
                 {/* Manage customer location */}
                 <TouchableOpacity
                   onPress={() => {
@@ -1011,7 +1033,7 @@ const Payment = ({navigation, route}) => {
                   }}>
                   <View
                     style={{
-                      padding: 20,
+                      paddingVertical: 20,
                       flexDirection: 'row',
                       alignItems: 'center',
                       justifyContent: 'space-between',
@@ -1036,7 +1058,7 @@ const Payment = ({navigation, route}) => {
                             fontFamily: 'Roboto',
                             color: 'black',
                           }}>
-                          Current location
+                          Địa chỉ hiện tại
                         </Text>
                       </View>
                       <View
@@ -1074,7 +1096,7 @@ const Payment = ({navigation, route}) => {
                 <TouchableOpacity onPress={() => setOpen(true)}>
                   <View
                     style={{
-                      padding: 20,
+                      paddingVertical: 20,
                       flexDirection: 'row',
                       alignItems: 'center',
                       justifyContent: 'space-between',
@@ -1100,7 +1122,7 @@ const Payment = ({navigation, route}) => {
                           fontFamily: 'Roboto',
                           color: 'black',
                         }}>
-                        {date ? format(date, 'dd-MM-yyyy') : 'Select date'}
+                        {date ? format(date, 'dd-MM-yyyy') : 'Chọn ngày giao'}
                       </Text>
                     </View>
                   </View>
@@ -1177,14 +1199,19 @@ const Payment = ({navigation, route}) => {
             </View>
 
             {/* Thong tin lien lac */}
-            <View style={{backgroundColor: 'white', marginTop: 20}}>
+            <View
+              style={{
+                backgroundColor: 'white',
+                marginTop: 20,
+                paddingHorizontal: 20,
+              }}>
               <View
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
                   gap: 10,
 
-                  padding: 20,
+                  paddingVertical: 20,
                   borderBottomColor: '#decbcb',
                   borderBottomWidth: 0.75,
                 }}>
@@ -1204,7 +1231,7 @@ const Payment = ({navigation, route}) => {
                   fontSize: 20,
                   borderBottomColor: '#decbcb',
                   borderBottomWidth: 0.75,
-                  paddingHorizontal: 20,
+
                   paddingVertical: 20,
                 }}
                 value={name}
@@ -1218,7 +1245,7 @@ const Payment = ({navigation, route}) => {
                   fontSize: 20,
                   borderBottomColor: '#decbcb',
                   borderBottomWidth: 0.75,
-                  paddingHorizontal: 20,
+
                   paddingVertical: 20,
                 }}
                 value={phone}
@@ -1302,7 +1329,7 @@ const Payment = ({navigation, route}) => {
                 }}>
                 <Text
                   style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
-                  Shipping Cost:
+                  Phí giao hàng:
                 </Text>
                 <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
                   {(0).toLocaleString('vi-VN', {
@@ -1377,10 +1404,10 @@ const Payment = ({navigation, route}) => {
               paddingHorizontal: 40,
               borderRadius: 30,
             }}>
-            <View style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+            <View style={{flexDirection: 'row', alignItems: 'center', gap: 15}}>
               <Image
                 resizeMode="contain"
-                source={icons.orderIcon}
+                source={icons.bike}
                 style={{width: 25, height: 25, tintColor: 'white'}}
               />
               <Text
@@ -1445,6 +1472,56 @@ const Payment = ({navigation, route}) => {
               textAlign: 'center',
             }}>
             {validateMessage}
+          </Text>
+        </View>
+      </Modal>
+
+      {/* auth modal */}
+      <Modal
+        width={0.8}
+        visible={openAuthModal}
+        onTouchOutside={() => {
+          setOpenAuthModal(false);
+        }}
+        dialogAnimation={
+          new ScaleAnimation({
+            initialValue: 0, // optional
+            useNativeDriver: true, // optional
+          })
+        }
+        footer={
+          <ModalFooter>
+            <ModalButton
+              text="Đăng nhập"
+              onPress={async () => {
+                try {
+                  setOpenAuthModal(false);
+                  await GoogleSignin.signOut();
+                  auth()
+                    .signOut()
+                    .then(async () => {
+                      await AsyncStorage.removeItem('userInfo');
+                      await AsyncStorage.removeItem('CartList');
+                      navigation.navigate('Login');
+                    })
+                    .catch(e => console.log(e));
+                } catch (error) {
+                  console.log(error);
+                }
+              }}
+            />
+          </ModalFooter>
+        }>
+        <View
+          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
+          <Text
+            style={{
+              fontSize: 20,
+              fontFamily: 'Roboto',
+              color: 'black',
+              textAlign: 'center',
+            }}>
+            Phiên bản đăng nhập của bạn đã hết hạn vui lòng đăng nhập lại
           </Text>
         </View>
       </Modal>

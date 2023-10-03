@@ -85,11 +85,16 @@ const OrderDetail = ({navigation, route}) => {
       },
     })
       .then(res => {
-        return res.json();
-      })
-      .then(respond => {
-        console.log(respond);
-        // setItem(respond);
+        fetch(`${API.baseURL}/api/order/getOrderDetail/${id}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${tokenId}`,
+          },
+        })
+          .then(res => res.json())
+          .then(respond => setItem(respond))
+          .catch(err => console.log(err));
       })
       .catch(err => console.log(err));
   };
@@ -142,92 +147,93 @@ const OrderDetail = ({navigation, route}) => {
                 {item?.status === 6 && 'Đơn hàng đã hủy'}
               </Text>
             </View>
-            {/* pickup location */}
             <View
-              style={{
-                backgroundColor: 'white',
-                padding: 20,
-                gap: 10,
-                borderBottomColor: '#decbcb',
-                borderBottomWidth: 0.75,
-              }}>
+              style={{padding: 20, backgroundColor: 'white', marginBottom: 20}}>
+              {/* pickup location */}
               <View
-                style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
-                <Image
-                  style={{width: 20, height: 20}}
-                  resizeMode="contain"
-                  source={icons.location}
-                />
-                <Text
-                  style={{fontSize: 20, color: 'black', fontWeight: 'bold'}}>
-                  Thông tin giao hàng
-                </Text>
-              </View>
-              <View
-                style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
-                <View style={{width: 20}} />
-                <View style={{gap: 8}}>
-                  <View style={{gap: 3}}>
-                    {/* <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                style={{
+                  backgroundColor: 'white',
+                  paddingVertical: 20,
+                  gap: 10,
+                  borderBottomColor: '#decbcb',
+                  borderBottomWidth: 0.75,
+                }}>
+                <View
+                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+                  <Image
+                    style={{width: 20, height: 20}}
+                    resizeMode="contain"
+                    source={icons.location}
+                  />
+                  <Text
+                    style={{fontSize: 20, color: 'black', fontWeight: 'bold'}}>
+                    Thông tin giao hàng
+                  </Text>
+                </View>
+                <View
+                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+                  <View style={{width: 20}} />
+                  <View style={{gap: 8}}>
+                    <View style={{gap: 3}}>
+                      {/* <Text style={{fontSize: 18, fontWeight: 'bold'}}>
                   Điểm giao hàng:
                 </Text> */}
+                      <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                        {item?.addressDeliver}
+                      </Text>
+                    </View>
+                    {item.timeFrame && (
+                      <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                        {item?.timeFrame
+                          ? `${item?.timeFrame?.fromHour.slice(
+                              0,
+                              5,
+                            )} đến ${item?.timeFrame?.toHour.slice(0, 5)}`
+                          : ''}
+                      </Text>
+                    )}
                     <Text style={{fontSize: 18, fontWeight: 'bold'}}>
-                      {item?.addressDeliver}
+                      Ngày giao hàng:{' '}
+                      {format(new Date(item?.deliveryDate), 'dd/MM/yyyy')}
                     </Text>
                   </View>
-                  {item.timeFrame && (
+                </View>
+              </View>
+              {/* ******************* */}
+              {/* Customer information */}
+              <View
+                style={{
+                  backgroundColor: 'white',
+                  paddingVertical: 20,
+                  gap: 10,
+                }}>
+                <View
+                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+                  <Image
+                    style={{width: 20, height: 20}}
+                    resizeMode="contain"
+                    source={icons.phone}
+                  />
+                  <Text
+                    style={{fontSize: 20, color: 'black', fontWeight: 'bold'}}>
+                    Thông tin liên lạc
+                  </Text>
+                </View>
+                <View
+                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+                  <View style={{width: 20}} />
+                  <View style={{gap: 5}}>
                     <Text style={{fontSize: 18, fontWeight: 'bold'}}>
-                      {item?.timeFrame
-                        ? `${item?.timeFrame?.fromHour.slice(
-                            0,
-                            5,
-                          )} đến ${item?.timeFrame?.toHour.slice(0, 5)}`
-                        : ''}
+                      {item.receiverName}
                     </Text>
-                  )}
-                  <Text style={{fontSize: 18, fontWeight: 'bold'}}>
-                    Ngày giao hàng:{' '}
-                    {format(new Date(item?.deliveryDate), 'dd/MM/yyyy')}
-                  </Text>
+                    <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                      {item.receiverPhone}
+                    </Text>
+                  </View>
                 </View>
               </View>
+              {/* *********************** */}
             </View>
-            {/* ******************* */}
-
-            {/* Customer information */}
-            <View
-              style={{
-                backgroundColor: 'white',
-                padding: 20,
-                gap: 10,
-                marginBottom: 20,
-              }}>
-              <View
-                style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
-                <Image
-                  style={{width: 20, height: 20}}
-                  resizeMode="contain"
-                  source={icons.phone}
-                />
-                <Text
-                  style={{fontSize: 20, color: 'black', fontWeight: 'bold'}}>
-                  Thông tin liên lạc
-                </Text>
-              </View>
-              <View
-                style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
-                <View style={{width: 20}} />
-                <View style={{gap: 5}}>
-                  <Text style={{fontSize: 18, fontWeight: 'bold'}}>
-                    {item.receiverName}
-                  </Text>
-                  <Text style={{fontSize: 18, fontWeight: 'bold'}}>
-                    {item.receiverPhone}
-                  </Text>
-                </View>
-              </View>
-            </View>
-            {/* *********************** */}
 
             {/* Order Item */}
             <View
@@ -235,6 +241,7 @@ const OrderDetail = ({navigation, route}) => {
                 backgroundColor: 'white',
                 paddingBottom: 10,
                 marginBottom: 10,
+                padding: 20,
               }}>
               {item?.orderDetailList?.map(product => (
                 <View
@@ -246,7 +253,7 @@ const OrderDetail = ({navigation, route}) => {
                     backgroundColor: 'white',
                     borderBottomColor: '#decbcb',
                     borderBottomWidth: 0.5,
-                    padding: 20,
+                    paddingVertical: 20,
                   }}>
                   <Image
                     source={{
@@ -314,7 +321,7 @@ const OrderDetail = ({navigation, route}) => {
               <View
                 style={{
                   paddingHorizontal: 20,
-                  paddingVertical: 10,
+                  paddingBottom: 20,
                   marginTop: 20,
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -583,28 +590,53 @@ const OrderDetail = ({navigation, route}) => {
           elevation: 10,
         }}>
         <View style={{width: '95%'}}>
-          <TouchableOpacity
-            onPress={() => {
-              item.status === 0 ? cancelOrder() : console.log('abc');
-            }}
-            style={{
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: '#23ba9c',
-              paddingVertical: 10,
-              width: '100%',
-              borderRadius: 5,
-            }}>
-            <Text
+          {item?.status === 0 ? (
+            <TouchableOpacity
+              onPress={() => {
+                cancelOrder();
+              }}
               style={{
-                fontSize: 18,
-                color: 'white',
-                fontFamily: 'Roboto',
-                fontWeight: 'bold',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#23ba9c',
+                paddingVertical: 10,
+                width: '100%',
+                borderRadius: 5,
               }}>
-              {item?.status === 0 ? 'Hủy đơn hàng' : 'Đặt lại'}
-            </Text>
-          </TouchableOpacity>
+              <Text
+                style={{
+                  fontSize: 18,
+                  color: 'white',
+                  fontFamily: 'Roboto',
+                  fontWeight: 'bold',
+                }}>
+                Hủy đơn hàng
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              onPress={() => {
+                console.log('abc');
+              }}
+              style={{
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#23ba9c',
+                paddingVertical: 10,
+                width: '100%',
+                borderRadius: 5,
+              }}>
+              <Text
+                style={{
+                  fontSize: 18,
+                  color: 'white',
+                  fontFamily: 'Roboto',
+                  fontWeight: 'bold',
+                }}>
+                Đặt lại
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </>
