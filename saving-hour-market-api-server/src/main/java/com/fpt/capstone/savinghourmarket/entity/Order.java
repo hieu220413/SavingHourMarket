@@ -30,6 +30,10 @@ public class Order {
 
     private Integer totalPrice;
 
+    private String receiverPhone;
+
+    private String receiverName;
+
     private Integer totalDiscountPrice;
 
     @CreationTimestamp
@@ -59,13 +63,6 @@ public class Order {
             referencedColumnName = "id"
     )
     private Staff packager;
-
-//    @ManyToOne()
-//    @JoinColumn(
-//            name = "deliverer_id",
-//            referencedColumnName = "id"
-//    )
-//    private Staff deliverer;
 
     @ManyToOne()
     @JoinColumn(

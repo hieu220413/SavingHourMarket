@@ -246,7 +246,6 @@ public class OrderServiceImpl implements OrderService {
         Customer customer = customerRepository
                 .findByEmail(email)
                 .orElseThrow(() -> new AuthorizationServiceException("Access denied with this account: " + email));
-        saveCustomerInfoIfNeeded(customer, orderCreate);
 
         if (repository.getOrdersProcessing(customer.getEmail()).size() > 3) {
             throw new CustomerLimitOrderProcessingException("Customer already has 3 PROCESSING orders");
@@ -284,18 +283,6 @@ public class OrderServiceImpl implements OrderService {
         return orderSavedSuccess;
     }
 
-    private void saveCustomerInfoIfNeeded(Customer customer, OrderCreate orderCreate) throws IOException {
-        CustomerUpdateRequestBody customerUpdateRequestBody = new CustomerUpdateRequestBody();
-        if (customer.getAddress() == null || customer.getAddress().isEmpty() || customer.getAddress().isBlank()) {
-            customerUpdateRequestBody.setAddress(orderCreate.getAddressDeliver());
-        } else if (customer.getFullName() == null || customer.getFullName().isEmpty() || customer.getFullName().isBlank()) {
-            customerUpdateRequestBody.setFullName(orderCreate.getCustomerName());
-        } else if (customer.getPhone() == null || customer.getPhone().isEmpty() || customer.getPhone().isBlank()) {
-            customerUpdateRequestBody.setPhone(orderCreate.getPhone());
-        }
-        customerService.updateInfo(customerUpdateRequestBody, customer.getEmail(), null);
-    }
-
     private void batchingOrder(Order order, OrderCreate orderCreate) throws ResourceNotFoundException {
         String district = extractDistrict(orderCreate.getAddressDeliver());
         if (district != null) {
@@ -319,6 +306,8 @@ public class OrderServiceImpl implements OrderService {
     private Order setOrderData(OrderCreate orderCreate, Customer customer) throws ResourceNotFoundException, InterruptedException {
         Order order = new Order();
         order.setCustomer(customer);
+        order.setReceiverName(orderCreate.getReceiverName());
+        order.setReceiverPhone(orderCreate.getReceiverPhone());
         order.setShippingFee(orderCreate.getShippingFee());
         order.setTotalPrice(orderCreate.getTotalPrice());
         order.setTotalDiscountPrice(orderCreate.getTotalDiscountPrice());
