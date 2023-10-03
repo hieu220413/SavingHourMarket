@@ -49,5 +49,5 @@ google-api-key: ${GOOGLE_API_KEY}
 vnpay-hash-secret: ${VNPAY_HASH_SECRET}
 vnpay-tmn-code: ${VNPAY_TMN_CODE}
 
-base-path-android: ${BASE_PATH:#{'http://10.0.2.2:8082'}}
+base-path: ${BASE_PATH:#{'http://saving-hour-market.ap-southeast-2.elasticbeanstalk.com'}}
 

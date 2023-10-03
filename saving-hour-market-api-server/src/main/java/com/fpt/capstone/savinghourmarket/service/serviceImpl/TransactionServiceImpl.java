@@ -36,13 +36,13 @@ import java.util.UUID;
 @Getter
 public class TransactionServiceImpl implements TransactionService {
 
-    @Value("CZQRWKJUMKNIUPGECAIOTTBLXOJAIMFM")
+    @Value("MNWQOE3L")
     private String vnpayTmnCode;
 
-    @Value("MNWQOE3L")
+    @Value("CZQRWKJUMKNIUPGECAIOTTBLXOJAIMFM")
     private String vnpayHashSecret;
 
-    @Value("${base-path-android}")
+    @Value("${base-path}")
     private String basePath;
 
     private final OrderRepository orderRepository;
