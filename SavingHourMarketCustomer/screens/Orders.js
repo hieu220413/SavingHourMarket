@@ -10,6 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
 import {API} from '../constants/api';
 import {format} from 'date-fns';
+import {GoogleSignin} from '@react-native-google-signin/google-signin';
 
 const Orders = ({navigation}) => {
   const orderStatus = [
@@ -58,21 +59,27 @@ const Orders = ({navigation}) => {
     }
   };
 
-  useEffect(() => {
-    // auth().currentUser.reload()
-    const subscriber = auth().onAuthStateChanged(
-      async userInfo => await onAuthStateChange(userInfo),
-    );
-    return subscriber;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      // auth().currentUser.reload()
+      const subscriber = auth().onAuthStateChanged(
+        async userInfo => await onAuthStateChange(userInfo),
+      );
+      GoogleSignin.configure({
+        webClientId:
+          '857253936194-dmrh0nls647fpqbuou6mte9c7e4o6e6h.apps.googleusercontent.com',
+      });
+      return subscriber;
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
+  );
 
   useFocusEffect(
     useCallback(() => {
       if (tokenId) {
         if (currentStatus.display !== 'Đóng gói') {
           fetch(
-            `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=${currentStatus.value}`,
+            `${API.baseURL}/api/order/getOrdersForCustomer?orderStatus=${currentStatus.value}`,
             {
               method: 'GET',
               headers: {
@@ -83,6 +90,10 @@ const Orders = ({navigation}) => {
           )
             .then(res => res.json())
             .then(respond => {
+              console.log(respond);
+              if (respond.error) {
+                return;
+              }
               setOrderList(respond);
             })
             .catch(err => {
@@ -101,6 +112,9 @@ const Orders = ({navigation}) => {
           )
             .then(res => res.json())
             .then(respond => {
+              if (respond.error) {
+                return;
+              }
               setOrderList(respond);
               fetch(
                 `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGED`,
@@ -114,6 +128,9 @@ const Orders = ({navigation}) => {
               )
                 .then(res => res.json())
                 .then(respond => {
+                  if (respond.error) {
+                    return;
+                  }
                   if (respond.length !== 0) {
                     setOrderList([...orderList, respond]);
                   }
@@ -251,11 +268,16 @@ const Orders = ({navigation}) => {
         <View style={{marginBottom: 100}}>
           {/* Order list */}
           {orderList.map(item => (
-            <View style={{backgroundColor: 'white', marginBottom: 20}}>
+            <View
+              key={item.id}
+              style={{backgroundColor: 'white', marginBottom: 20}}>
               {/* Order detail */}
               <TouchableOpacity
                 onPress={() => {
-                  navigation.navigate('OrderDetail', {id: item.id, item: item});
+                  navigation.navigate('OrderDetail', {
+                    id: item.id,
+                    orderSuccess: false,
+                  });
                 }}>
                 <View
                   style={{
