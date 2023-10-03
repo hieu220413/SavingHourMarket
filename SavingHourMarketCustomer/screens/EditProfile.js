@@ -10,6 +10,10 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native';
+import {
+  GoogleSignin,
+  GoogleSigninButton,
+} from '@react-native-google-signin/google-signin';
 import React, {useState, useEffect, useCallback} from 'react';
 import {format} from 'date-fns';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -22,6 +26,7 @@ import FlatButton from '../shared/button';
 import {useFocusEffect} from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {API} from '../constants/api';
 
 const EditProfile = ({navigation, route}) => {
   const user = route.params.user;
@@ -76,6 +81,10 @@ const EditProfile = ({navigation, route}) => {
     const subscriber = auth().onAuthStateChanged(
       async userInfo => await onAuthStateChange(userInfo),
     );
+    GoogleSignin.configure({
+      webClientId:
+        '857253936194-dmrh0nls647fpqbuou6mte9c7e4o6e6h.apps.googleusercontent.com',
+    });
     return subscriber;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -89,7 +98,7 @@ const EditProfile = ({navigation, route}) => {
       setDate(currentDate);
       if (Platform.OS === 'android') {
         toggleDatepicker();
-        setDateOfBirth(formatDate(currentDate));
+        setDateOfBirth(currentDate);
       }
     } else {
       toggleDatepicker();
@@ -141,17 +150,38 @@ const EditProfile = ({navigation, route}) => {
     return true;
   };
 
-  const token = auth().currentUser.getIdToken;
-  const submitForm = () => {
-    let submitInfo = {}
-    if (isValidForm()) {
-      submitInfo={
+  const submitForm = async () => {
+    let submitInfo = {};
+    if (!isValidForm()) {
+      return;
+    }
+    const valid = isValidForm();
+    if (valid === true) {
+      submitInfo = {
         fullName: username,
         phone: phone,
         dateOfBirth: format(dateOfBirth, 'yyyy-MM-dd'),
         address: address,
-        gender: 0
-      }
+        gender: 0,
+      };
+      console.log(submitInfo);
+      const token = await auth().currentUser.getIdToken();
+      console.log("token: "+ token);
+      fetch(`${API.baseURL}/api/customer/updateInfo`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`,
+        },
+        body:JSON.stringify(submitInfo),
+      })
+        .then(res => {
+          console.log(res);
+          return res.json();
+        })
+        .then(respond => console.log(respond))
+        .catch(err => console.log(err.errorFields));
+      navigation.navigate('Profile');
     }
   };
 
@@ -269,7 +299,7 @@ const EditProfile = ({navigation, route}) => {
                   <TextInput
                     style={{flex: 1, color: 'black'}}
                     onChangeText={setDateOfBirth}
-                    value={dateOfBirth}
+                    value={dateOfBirth ? format(new Date(dateOfBirth), 'dd/MM/yyyy') : ''}
                     underlineColorAndroid="transparent"
                     placeholder="Date of birth"
                     keyboardType="default"
@@ -301,6 +331,7 @@ const EditProfile = ({navigation, route}) => {
                   setEmail(text);
                 }}
                 value={email}
+                editable={false}
                 placeholder="Email"
                 keyboardType="email-address"></TextInput>
               {emailError && (
