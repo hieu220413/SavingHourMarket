@@ -83,7 +83,6 @@ const Orders = ({navigation}) => {
           )
             .then(res => res.json())
             .then(respond => {
-              console.log(respond);
               setOrderList(respond);
             })
             .catch(err => {
@@ -102,7 +101,6 @@ const Orders = ({navigation}) => {
           )
             .then(res => res.json())
             .then(respond => {
-              console.log(respond);
               setOrderList(respond);
               fetch(
                 `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGED`,
@@ -144,6 +142,7 @@ const Orders = ({navigation}) => {
       })();
     }, []),
   );
+
   return (
     <>
       <View
@@ -256,7 +255,7 @@ const Orders = ({navigation}) => {
               {/* Order detail */}
               <TouchableOpacity
                 onPress={() => {
-                  navigation.navigate('OrderDetail');
+                  navigation.navigate('OrderDetail', {id: item.id, item: item});
                 }}>
                 <View
                   style={{
@@ -273,13 +272,13 @@ const Orders = ({navigation}) => {
                         fontFamily: 'Roboto',
                         color: COLORS.primary,
                       }}>
-                      {item?.status === 'PROCESSING' && 'Chờ xác nhận'}
-                      {item?.status === 'PACKAGING' && 'Đang đóng gói'}
-                      {item?.status === 'PACKAGED' && 'Đã đóng gói'}
-                      {item?.status === 'DELIVERING' && 'Đang giao hàng'}
-                      {item?.status === 'SUCCESS' && 'Thành công'}
-                      {item?.status === 'FAIL' && 'Đơn thất bại'}
-                      {item?.status === 'CANCEL' && 'Đã hủy'}
+                      {item?.status === 0 && 'Chờ xác nhận'}
+                      {item?.status === 1 && 'Đang đóng gói'}
+                      {item?.status === 2 && 'Đã đóng gói'}
+                      {item?.status === 3 && 'Đang giao hàng'}
+                      {item?.status === 4 && 'Thành công'}
+                      {item?.status === 5 && 'Đơn thất bại'}
+                      {item?.status === 6 && 'Đã hủy'}
                     </Text>
                     <Text
                       style={{

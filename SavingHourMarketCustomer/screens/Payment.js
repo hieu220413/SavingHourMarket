@@ -443,28 +443,35 @@ const Payment = ({navigation, route}) => {
 
     console.log(submitOrder);
 
-    const createOrderRequest = await fetch(`${API.baseURL}/api/order/createOrder`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${tokenId}`,
+    const createOrderRequest = await fetch(
+      `${API.baseURL}/api/order/createOrder`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${tokenId}`,
+        },
+        body: JSON.stringify(submitOrder),
       },
-      body: JSON.stringify(submitOrder),
-    }).catch(err => { 
+    ).catch(err => {
       console.log(err);
       return null;
     });
 
-    if(createOrderRequest) {
-      // handle vnpay payment method 
+    if (createOrderRequest) {
+      // handle vnpay payment method
       if (paymentMethod.id === 1 && createOrderRequest.status === 200) {
         const createdOrderBody = createOrderRequest.json();
         const createdOrderId = createdOrderBody.id;
         const createdOrderTotalPrice = createdOrderBody.totalPrice;
-        await processVNPay(createdOrderTotalPrice, createdOrderId, auth().currentUser.getIdToken());
+        await processVNPay(
+          createdOrderTotalPrice,
+          createdOrderId,
+          auth().currentUser.getIdToken(),
+        );
       }
       // Handle other request status
-    } 
+    }
   };
 
   return (
@@ -1084,7 +1091,9 @@ const Payment = ({navigation, route}) => {
                   modal
                   mode="date"
                   open={open}
-                  date={date ? date : new Date()}
+                  date={date ? date : minDate}
+                  minimumDate={minDate}
+                  maximumDate={maxDate}
                   onConfirm={date => {
                     setOpen(false);
                     setDate(date);

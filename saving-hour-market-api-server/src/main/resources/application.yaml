@@ -13,7 +13,7 @@ spring:
     password: ${PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
-    url: jdbc:mysql://localhost/saving_hour_market?useUnicode=true&characterEncoding=UTF-8
+    url: jdbc:mysql://localhost:3306/saving_hour_market?useUnicode=true&characterEncoding=UTF-8
   sql:
     init:
       mode: always
@@ -50,4 +50,6 @@ vnpay-hash-secret: ${VNPAY_HASH_SECRET}
 vnpay-tmn-code: ${VNPAY_TMN_CODE}
 
 base-path: ${BASE_PATH:#{'http://saving-hour-market.ap-southeast-2.elasticbeanstalk.com'}}
+REDIS_HOST: localhost
+REDIS_PORT: 6379
 

@@ -10,6 +10,7 @@ import com.fpt.capstone.savinghourmarket.entity.TimeFrame;
 import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.OrderCreate;
 import com.fpt.capstone.savinghourmarket.model.OrderProduct;
+import com.fpt.capstone.savinghourmarket.model.OrderWithDetails;
 import com.fpt.capstone.savinghourmarket.service.OrderService;
 import com.google.firebase.auth.FirebaseAuthException;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -53,8 +54,7 @@ public class OrderController {
     }
 
     @GetMapping("/getOrdersForStaff")
-    public ResponseEntity<List<Order>> getOrdersForStaff(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
-                                                        @RequestParam(required = false) SortType totalPriceSortType,
+    public ResponseEntity<List<Order>> getOrdersForStaff(@RequestParam(required = false) SortType totalPriceSortType,
                                                         @RequestParam(required = false) SortType createdTimeSortType,
                                                         @RequestParam(required = false) SortType deliveryDateSortType,
                                                         @RequestParam(required = false) OrderStatus orderStatus,
@@ -63,7 +63,7 @@ public class OrderController {
                                                         @RequestParam(required = false) Boolean isGrouped,
                                                         @RequestParam(defaultValue = "0")  Integer page,
                                                         @RequestParam(defaultValue = "10") Integer size) throws ResourceNotFoundException, NoSuchOrderException, FirebaseAuthException {
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrdersForStaff(jwtToken,
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrdersForStaff(
                 totalPriceSortType == null ? null : totalPriceSortType.name(),
                 createdTimeSortType == null ? null : createdTimeSortType.name(),
                 deliveryDateSortType == null ? null : deliveryDateSortType.name(),
@@ -72,37 +72,49 @@ public class OrderController {
                 isPaid,
                 isGrouped,
                 page,
-                size));
+                size)
+        );
     }
 
     @GetMapping("/getOrderGroupForStaff")
-    public ResponseEntity<List<OrderGroup>> getOrderGroupForStaff(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
-                                                                  @RequestParam(required = false) LocalDate deliverDate,
+    public ResponseEntity<List<OrderGroup>> getOrderGroupForStaff(@RequestParam(required = false) LocalDate deliverDate,
                                                                   @RequestParam(required = false) UUID timeFrameId,
                                                                   @RequestParam(required = false) UUID pickupPointId,
                                                                   @RequestParam(required = false) UUID delivererId ) throws NoSuchOrderException, FirebaseAuthException {
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderGroups(jwtToken,deliverDate,timeFrameId,pickupPointId,delivererId));
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderGroups(deliverDate,timeFrameId,pickupPointId,delivererId));
     }
 
     @GetMapping("/getOrderBatchForStaff")
-    public ResponseEntity<List<OrderBatch>> getOrderBatchForStaff(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken, @RequestParam(required = false) District district, @RequestParam(required = false) LocalDate deliveryDate) throws NoSuchOrderException, FirebaseAuthException {
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderBatches(jwtToken,district,deliveryDate));
+    public ResponseEntity<List<OrderBatch>> getOrderBatchForStaff(@RequestParam(required = false) District district, @RequestParam(required = false) LocalDate deliveryDate) throws NoSuchOrderException, FirebaseAuthException {
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderBatches(district,deliveryDate));
     }
 
     @GetMapping("/getOrderDetail/{id}")
-    public ResponseEntity<List<OrderProduct>> getOrderDetail(@PathVariable UUID id) throws ResourceNotFoundException {
+    public ResponseEntity<OrderWithDetails> getOrderDetail(@PathVariable UUID id) throws ResourceNotFoundException {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderDetail(id));
     }
 
-    @Transactional
+
     @PutMapping("/createOrder")
-    public ResponseEntity<String> createOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,@Valid @RequestBody OrderCreate order) throws Exception, OutOfProductQuantityException {
+    public ResponseEntity<Order> createOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,@Valid @RequestBody OrderCreate order) throws Exception {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.createOrder(jwtToken, order));
     }
 
     @PutMapping("/cancelOrder/{id}")
     public ResponseEntity<String> cancelOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken, @PathVariable UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException, FirebaseAuthException {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.cancelOrder(jwtToken,id));
+    }
+
+    @PutMapping("/assignPackageStaff")
+    public ResponseEntity<String> assignStaff(@RequestParam UUID orderId, @RequestParam UUID staffId) throws NoSuchOrderException {
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.assignPackager(orderId,staffId));
+    }
+
+    @PutMapping("/assignDeliveryStaff")
+    public ResponseEntity<String> assignDeliveryStaffToGroupOrBatch(@RequestParam(required = false) UUID orderGroupId,
+                                                                    @RequestParam(required = false) UUID orderBatchId,
+                                                                    @RequestParam UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException {
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.assignDeliverToOrderGroupOrBatch(orderGroupId,orderBatchId,staffId));
     }
 
 }
