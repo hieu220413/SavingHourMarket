@@ -51,10 +51,12 @@ const Payment = ({navigation, route}) => {
 
   const [cannotChangeDate, setCannotChangeDate] = useState(false);
 
+  const [tokenId, setTokenId] = useState(null);
+
   const [initializing, setInitializing] = useState(true);
 
   const [customerLocation, setCustomerLocation] = useState({
-    address: 'Số 121, Trần Văn Dư, Phường 13, Quận Tân Bình,TP.HCM',
+    address: 'Số 121, Trần Văn Dư, Phường 13, Tân Bình,TP.HCM',
     long: 106.644295,
     lat: 10.8022319,
   });
@@ -92,10 +94,14 @@ const Payment = ({navigation, route}) => {
         return;
       }
 
+      const token = await auth().currentUser.getIdToken();
+
+      setTokenId(token);
       console.log('user is logged in');
       console.log(await AsyncStorage.getItem('userInfo'));
     } else {
       // no sessions found.
+      await AsyncStorage.removeItem('userInfo');
       console.log('user is not logged in');
     }
   };
@@ -299,7 +305,7 @@ const Payment = ({navigation, route}) => {
         timeFrameId: timeFrame.id,
         paymentStatus: 'UNPAID',
         paymentMethod: paymentMethod.id,
-        addressDelivery: pickupPoint.address,
+        addressDelivery: customerLocation.address,
         discountID: voucherListId,
         orderDetailList: orderDetailList,
       };
@@ -321,25 +327,23 @@ const Payment = ({navigation, route}) => {
       };
     }
 
-    const token = auth().currentUser.getIdToken;
-
     console.log(submitOrder);
 
     fetch(`${API.baseURL}/api/order/createOrder`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${tokenId}`,
       },
       body: JSON.stringify(submitOrder),
     })
       .then(res => {
-        console.log(res);
         return res.json();
       })
-      .then(respond => console.log(respond))
+      .then(respond => {
+        console.log(respond);
+      })
       .catch(err => console.log(err));
-    navigation.navigate('Order success');
   };
 
   return (
@@ -959,7 +963,9 @@ const Payment = ({navigation, route}) => {
                   modal
                   mode="date"
                   open={open}
-                  date={date ? date : new Date()}
+                  date={date ? date : minDate}
+                  minimumDate={minDate}
+                  maximumDate={maxDate}
                   onConfirm={date => {
                     setOpen(false);
                     setDate(date);

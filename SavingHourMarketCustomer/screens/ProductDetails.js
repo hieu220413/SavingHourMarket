@@ -13,6 +13,10 @@ const ProductDetails = ({ navigation, route }) => {
         console.log('buy');
     };
 
+    const handleAddToCart = () => {
+        console.log('Add to cart');
+    }
+
     return (
         <View
             style={{
@@ -132,10 +136,11 @@ const ProductDetails = ({ navigation, route }) => {
                     <View style={{ flexDirection: 'row' }}>
                         <Text
                             style={{
-                                fontSize: 28,
+                                fontSize: 24,
                                 lineHeight: 30,
                                 color: COLORS.secondary,
                                 fontWeight: 700,
+                                fontFamily: FONTS.fontFamily,
                             }}>
                             {product.price.toLocaleString("vi-VN", {
                                 currency: "VND",
@@ -143,29 +148,51 @@ const ProductDetails = ({ navigation, route }) => {
                         </Text>
                         <Text
                             style={{
-                                fontSize: 20,
+                                fontSize: 16,
                                 lineHeight: 18,
                                 color: COLORS.secondary,
                                 fontWeight: 700,
+                                fontFamily: FONTS.fontFamily,
+                                paddingRight: '10%',
                             }}>
                             ₫
                         </Text>
                     </View>
+                    <TouchableOpacity onPress={handleAddToCart}>
+                        <Text
+                            style={{
+                                paddingVertical: 8,
+                                paddingHorizontal: '8%',
+                                backgroundColor: '#ffffff',
+                                borderRadius: 20,
+                                fontWeight: 700,
+                                textAlign: 'center',
+                                color: COLORS.primary,
+                                fontSize: 18,
+                                fontFamily: FONTS.fontFamily,
+                                borderColor: COLORS.primary,
+                                borderWidth: 1,
+                            }}>
+                            Thêm
+                        </Text>
+                    </TouchableOpacity>
                     <TouchableOpacity onPress={handleBuy}>
                         <Text
                             style={{
-                                paddingVertical: 15,
-                                paddingHorizontal: '20%',
+                                paddingVertical: 10,
+                                paddingHorizontal: '10%',
                                 backgroundColor: COLORS.primary,
-                                borderRadius: 30,
+                                borderRadius: 20,
                                 fontWeight: 700,
                                 textAlign: 'center',
                                 color: '#ffffff',
-                                fontSize: 20,
+                                fontSize: 18,
+                                fontFamily: FONTS.fontFamily,
                             }}>
                             Mua
                         </Text>
                     </TouchableOpacity>
+
                 </View>
             </ScrollView>
         </View>

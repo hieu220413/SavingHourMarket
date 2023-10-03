@@ -2,10 +2,9 @@
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import React from 'react';
 import { COLORS, FONTS } from '../constants/theme';
+import dayjs from 'dayjs';
 
-
-const DiscountCard = ({ }) => {
-
+const DiscountCard = ({ data }) => {
     const handleViewProductOfCate = () => {
         console.log('click');
     };
@@ -29,9 +28,9 @@ const DiscountCard = ({ }) => {
                     left: '4%',
                     top: '2%'
                 }}
-            >- 80%</Text>
+            >- {data.percentage}%</Text>
             <Image source={{
-                uri: 'https://reactnative.dev/img/tiny_logo.png',
+                uri: data.imageUrl,
             }}
                 style={{
                     backgroundColor: 'grey',
@@ -45,24 +44,26 @@ const DiscountCard = ({ }) => {
                 style={{
                     paddingLeft: 5,
                 }}>
+                <Text
+                    numberOfLines={1}
+                    style={{
+                        fontFamily: FONTS.fontFamily,
+                        fontSize: 18,
+                        fontWeight: 700,
+                        maxWidth: 180,
+                        color: 'black'
+                    }}>{data.name} </Text>
                 <Text style={{
                     fontFamily: FONTS.fontFamily,
-                    fontSize: 20,
-                    fontWeight: 700,
-                    maxWidth: 180,
-                    color: 'black'
-                }}>Giảm tối đa 50k</Text>
-                <Text style={{
-                    fontFamily: FONTS.fontFamily,
-                    fontSize: 20,
+                    fontSize: 16,
                     maxWidth: 180,
 
-                }}>Còn lại: 20</Text>
+                }}>Còn lại: {data.quantity}</Text>
                 <Text style={{
                     fontFamily: FONTS.fontFamily,
-                    fontSize: 20,
+                    fontSize: 18,
                     color: COLORS.secondary,
-                }}>HSD: 23/09/2023</Text>
+                }}>HSD: {dayjs(data.expiredDate).format('DD/MM/YYYY')}</Text>
                 <TouchableOpacity
                     onPress={handleViewProductOfCate}
                     style={{
@@ -80,7 +81,6 @@ const DiscountCard = ({ }) => {
                     }}>Xem sản phẩm</Text>
                 </TouchableOpacity>
             </View>
-
         </TouchableOpacity>
     )
 }
