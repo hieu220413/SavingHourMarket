@@ -10,7 +10,12 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import {
+  GoogleSignin,
+  GoogleSigninButton,
+} from '@react-native-google-signin/google-signin';
+import React, {useState, useEffect, useCallback} from 'react';
+import {format} from 'date-fns';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {TouchableOpacity} from 'react-native-gesture-handler';
@@ -18,13 +23,19 @@ import {ScrollView} from 'react-native-gesture-handler';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import FlatButton from '../shared/button';
+import {useFocusEffect} from '@react-navigation/native';
+import auth from '@react-native-firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {API} from '../constants/api';
 
-const EditProfile = ({navigation}) => {
-  const [username, setUsername] = useState('');
-  const [address, setAddress] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [dateOfBirth, setDateOfBirth] = useState('');
+const EditProfile = ({navigation, route}) => {
+  const user = route.params.user;
+  console.log(user);
+  const [username, setUsername] = useState(user?.fullName);
+  const [address, setAddress] = useState(user?.address);
+  const [phone, setPhone] = useState(user?.phone);
+  const [email, setEmail] = useState(user?.email);
+  const [dateOfBirth, setDateOfBirth] = useState(user?.dateOfBirth);
   const [usernameError, setUsernameError] = useState('');
   const [addressError, setAddressError] = useState('');
   const [phoneError, setPhoneError] = useState('');
@@ -33,6 +44,51 @@ const EditProfile = ({navigation}) => {
   const [date, setDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
   const [display, setDisplay] = useState(false);
+
+  const [initializing, setInitializing] = useState(true);
+
+  //authen check
+  const onAuthStateChange = async userInfo => {
+    // console.log(userInfo);
+    if (initializing) {
+      setInitializing(false);
+    }
+    if (userInfo) {
+      // check if user sessions is still available. If yes => redirect to another screen
+      const userTokenId = await userInfo
+        .getIdToken(true)
+        .then(token => token)
+        .catch(async e => {
+          console.log(e);
+          return null;
+        });
+      if (!userTokenId) {
+        // sessions end. (revoke refresh token like password change, disable account, ....)
+        await AsyncStorage.removeItem('userInfo');
+        return;
+      }
+
+      console.log('user is logged in');
+      console.log(await AsyncStorage.getItem('userInfo'));
+    } else {
+      // no sessions found.
+      console.log('user is not logged in');
+    }
+  };
+
+  useEffect(() => {
+    // auth().currentUser.reload()
+    const subscriber = auth().onAuthStateChanged(
+      async userInfo => await onAuthStateChange(userInfo),
+    );
+    GoogleSignin.configure({
+      webClientId:
+        '857253936194-dmrh0nls647fpqbuou6mte9c7e4o6e6h.apps.googleusercontent.com',
+    });
+    return subscriber;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const toggleDatepicker = () => {
     setShowPicker(!showPicker);
   };
@@ -42,7 +98,7 @@ const EditProfile = ({navigation}) => {
       setDate(currentDate);
       if (Platform.OS === 'android') {
         toggleDatepicker();
-        setDateOfBirth(formatDate(currentDate));
+        setDateOfBirth(currentDate);
       }
     } else {
       toggleDatepicker();
@@ -66,13 +122,13 @@ const EditProfile = ({navigation}) => {
     setEmailError('');
     setAddressError('');
     setPhoneError('');
-    if (username.trim().length == 0) {
+    if (username === null || username.trim().length == 0) {
       return setUsernameError('Username can not be empty !');
     }
     if (username.trim().length < 3) {
       return setUsernameError('Invalid username');
     }
-    if (dateOfBirth.trim().length == 0) {
+    if (dateOfBirth === null) {
       return setDateOfBirthError('Date of birth can not be empty !');
     }
     if (email.trim().length == 0) {
@@ -81,20 +137,54 @@ const EditProfile = ({navigation}) => {
     if (!isValidEmail(email)) {
       return setEmailError('Invalid email !');
     }
-    if (address.trim().length == 0) {
+    if (address === null || address.trim().length == 0) {
       return setAddressError('Address can not be empty !');
     }
-    if (phone.trim().length == 0) {
-      return setPhoneError('Phone can not be empty !');
+    if (
+      phone === null ||
+      phone.trim().length < 10 ||
+      phone.trim().length > 12
+    ) {
+      return setPhoneError('Invalid phone number!');
     }
     return true;
   };
-  const submitForm = () => {
-    if (isValidForm()) {
-      const userInfo = {username, dateOfBirth, email, address, phone};
-      console.log(userInfo);
+
+  const submitForm = async () => {
+    let submitInfo = {};
+    if (!isValidForm()) {
+      return;
+    }
+    const valid = isValidForm();
+    if (valid === true) {
+      submitInfo = {
+        fullName: username,
+        phone: phone,
+        dateOfBirth: format(dateOfBirth, 'yyyy-MM-dd'),
+        address: address,
+        gender: 0,
+      };
+      console.log(submitInfo);
+      const token = await auth().currentUser.getIdToken();
+      console.log("token: "+ token);
+      fetch(`${API.baseURL}/api/customer/updateInfo`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`,
+        },
+        body:JSON.stringify(submitInfo),
+      })
+        .then(res => {
+          console.log(res);
+          return res.json();
+        })
+        .then(respond => console.log(respond))
+        .catch(err => console.log(err.errorFields));
+      navigation.navigate('Profile');
     }
   };
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <SafeAreaView style={{backgroundColor: 'white', height: '100%'}}>
@@ -137,7 +227,7 @@ const EditProfile = ({navigation}) => {
               alignSelf: 'center',
               borderRadius: 100,
             }}
-            source={require('../assets/image/profileImage.jpeg')}
+            source={{uri: `${user?.avatarUrl}`}}
           />
         </View>
         {/* Form */}
@@ -170,8 +260,8 @@ const EditProfile = ({navigation}) => {
                   usernameError ? {borderColor: 'red', borderWidth: 1} : {},
                 ]}
                 onChangeText={setUsername}
-                value={username}
                 placeholder="User Name"
+                value={username}
                 keyboardType="default"></TextInput>
               {usernameError && (
                 <View style={{width: '85%', marginTop: '-4%'}}>
@@ -209,7 +299,7 @@ const EditProfile = ({navigation}) => {
                   <TextInput
                     style={{flex: 1, color: 'black'}}
                     onChangeText={setDateOfBirth}
-                    value={dateOfBirth}
+                    value={dateOfBirth ? format(new Date(dateOfBirth), 'dd/MM/yyyy') : ''}
                     underlineColorAndroid="transparent"
                     placeholder="Date of birth"
                     keyboardType="default"
@@ -241,6 +331,7 @@ const EditProfile = ({navigation}) => {
                   setEmail(text);
                 }}
                 value={email}
+                editable={false}
                 placeholder="Email"
                 keyboardType="email-address"></TextInput>
               {emailError && (

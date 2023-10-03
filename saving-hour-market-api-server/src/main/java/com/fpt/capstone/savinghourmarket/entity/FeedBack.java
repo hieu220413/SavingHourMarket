@@ -1,5 +1,7 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
+import com.fpt.capstone.savinghourmarket.common.FeedbackObject;
+import com.fpt.capstone.savinghourmarket.common.FeedbackStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,19 +28,19 @@ public class FeedBack {
     @Column(columnDefinition = "text")
     private String message;
 
-    @Column(columnDefinition = "tinyint")
-    private Integer status;
+    @Enumerated(EnumType.ORDINAL)
+    private FeedbackStatus status;
 
     @OneToMany(
             mappedBy = "feedBack"
     )
     private List<FeedBackImage> imageUrls;
 
-    @Column(columnDefinition = "varchar(255)")
-    private String object;
+    @Enumerated(EnumType.STRING)
+    private FeedbackObject object;
 
     @ManyToOne(
-            fetch = FetchType.LAZY
+            fetch = FetchType.EAGER
     )
     @JoinColumn(
             name = "customer_id",

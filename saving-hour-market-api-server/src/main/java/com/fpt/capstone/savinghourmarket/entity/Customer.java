@@ -32,7 +32,7 @@ public class Customer {
 //        this.avatarUrl = customerRegisterRequestBody.getAvatarUrl();
 //        this.address = customerRegisterRequestBody.getAddress();
 //        this.gender = customerRegisterRequestBody.getGender();
-        this.email = Utils.generatePublicImageUrlFirebaseStorage("public/default-avatar.jpg");
+        this.avatarUrl = Utils.generatePublicImageUrlFirebaseStorage("public/default-avatar.jpg");
         this.status = EnableDisableStatus.ENABLE.ordinal();
     }
 

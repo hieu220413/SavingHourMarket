@@ -2,15 +2,10 @@ package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
 import com.fpt.capstone.savinghourmarket.common.District;
 import com.fpt.capstone.savinghourmarket.common.OrderStatus;
+import com.fpt.capstone.savinghourmarket.common.StaffRole;
 import com.fpt.capstone.savinghourmarket.entity.*;
-import com.fpt.capstone.savinghourmarket.exception.NoSuchOrderException;
-import com.fpt.capstone.savinghourmarket.exception.OrderCancellationNotAllowedException;
-import com.fpt.capstone.savinghourmarket.exception.OutOfProductQuantityException;
-import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
-import com.fpt.capstone.savinghourmarket.model.CustomerUpdateRequestBody;
-import com.fpt.capstone.savinghourmarket.model.OrderCreate;
-import com.fpt.capstone.savinghourmarket.model.OrderProduct;
-import com.fpt.capstone.savinghourmarket.model.OrderProductCreate;
+import com.fpt.capstone.savinghourmarket.exception.*;
+import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.repository.*;
 import com.fpt.capstone.savinghourmarket.service.CustomerService;
 import com.fpt.capstone.savinghourmarket.service.FirebaseStorageService;
@@ -22,15 +17,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.glxn.qrgen.QRCode;
 import net.glxn.qrgen.image.ImageType;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -40,7 +35,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -48,6 +42,9 @@ import java.util.stream.Collectors;
 public class OrderServiceImpl implements OrderService {
 
     private final FirebaseAuth firebaseAuth;
+
+    @Autowired
+    private final RedissonClient redissonClient;
 
     @Autowired
     private OrderRepository repository;
@@ -84,16 +81,12 @@ public class OrderServiceImpl implements OrderService {
 
 
     @Override
-    public List<OrderGroup> fetchOrderGroups(String jwtToken, LocalDate deliverDate, UUID timeFrameId, UUID pickupPointId, UUID delivererId) throws NoSuchOrderException, FirebaseAuthException {
-        if (Authorization(jwtToken).equalsIgnoreCase("STAFF")) {
-            List<OrderGroup> orderGroups = orderGroupRepository.findByTimeFrameOrPickupPointOrDeliverDate(timeFrameId, pickupPointId, delivererId, deliverDate);
-            if (orderGroups.isEmpty()) {
-                throw new NoSuchOrderException("No such order group left on system");
-            }
-            return orderGroups;
-        } else {
-            throw new AuthorizationServiceException("Access denied with this email");
+    public List<OrderGroup> fetchOrderGroups(LocalDate deliverDate, UUID timeFrameId, UUID pickupPointId, UUID delivererId) throws NoSuchOrderException, FirebaseAuthException {
+        List<OrderGroup> orderGroups = orderGroupRepository.findByTimeFrameOrPickupPointOrDeliverDate(timeFrameId, pickupPointId, delivererId, deliverDate);
+        if (orderGroups.isEmpty()) {
+            throw new NoSuchOrderException("No such order group left on system");
         }
+        return orderGroups;
     }
 
     @Override
@@ -105,33 +98,57 @@ public class OrderServiceImpl implements OrderService {
                                               Boolean isPaid,
                                               int page,
                                               int limit) throws NoSuchOrderException, FirebaseAuthException {
-        if (Authorization(jwtToken).equalsIgnoreCase("CUSTOMER")) {
-            List<Order> orders = repository.findOrderForCustomer(Utils.getCustomerEmail(jwtToken, firebaseAuth),
-                    orderStatus == null ? null : orderStatus.ordinal(),
-                    isPaid,
-                    getPageableWithSort(totalPriceSortType, createdTimeSortType, deliveryDateSortType, page, limit));
-            if (orders.size() == 0) {
-                throw new NoSuchOrderException("No orders found");
-            }
-            return orders;
-        } else {
-            throw new AuthorizationServiceException("Access denied with this email");
-        }
-
+        List<Order> orders = repository.findOrderForCustomer(Utils.getCustomerEmail(jwtToken, firebaseAuth),
+                orderStatus == null ? null : orderStatus.ordinal(),
+                isPaid,
+                getPageableWithSort(totalPriceSortType, createdTimeSortType, deliveryDateSortType, page, limit));
+        return orders;
     }
 
     @Override
-    public List<OrderBatch> fetchOrderBatches(String jwtToken, District district, LocalDate deliveryDate) throws NoSuchOrderException {
+    public List<OrderBatch> fetchOrderBatches(District district, LocalDate deliveryDate) throws NoSuchOrderException {
         List<OrderBatch> orderBatches = orderBatchRepository.findByDistrictOrDeliverDate(district != null ? district.getDistrictName() : null, deliveryDate);
-        if (orderBatches.size() == 0) {
-            throw new NoSuchOrderException("No order batch found");
-        }
         return orderBatches;
     }
 
     @Override
-    public List<Order> fetchOrdersForStaff(String jwtToken,
-                                           String totalPriceSortType,
+    @Transactional
+    public String assignPackager(UUID orderId, UUID staffId) throws NoSuchOrderException {
+        Order order = repository.findById(orderId)
+                .orElseThrow(() -> new NoSuchOrderException("No order found with this id " + orderId));
+        Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new NoSuchElementException("No staff found with this id " + staffId));
+        if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_ORD.toString())) {
+            order.setPackager(staff);
+        } else {
+            return "Staff with id" + staffId + "is not PACKAGER";
+        }
+        return "Packager with id" + staffId + "set to order" + order.getId().toString() + "successfully";
+    }
+
+    @Override
+    public String assignDeliverToOrderGroupOrBatch(UUID orderGroupId, UUID orderBatchId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException {
+        Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new NoSuchElementException("No staff found with this id " + staffId));
+        if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_DLV_0.toString())) {
+            if (orderGroupId != null && orderBatchId == null) {
+                OrderGroup orderGroup = orderGroupRepository.findById(orderGroupId)
+                        .orElseThrow(() -> new NoSuchOrderException("No group found with this group id " + orderGroupId));
+                orderGroup.setDeliverer(staff);
+            }else if(orderGroupId == null && orderBatchId != null){
+                OrderBatch orderBatch = orderBatchRepository.findById(orderBatchId)
+                        .orElseThrow(() -> new NoSuchOrderException("No batch found with this batch id " + orderBatchId));
+                orderBatch.setDeliverer(staff);
+            }else {
+                throw new ConflictGroupAndBatchException("Group or batch must be specified");
+            }
+        } else {
+            return "Staff with id" + staffId + "is not DELIVERER LEVEL 0";
+        }
+
+        return "Staff with id" + staffId + "set successfully";
+    }
+
+    @Override
+    public List<Order> fetchOrdersForStaff(String totalPriceSortType,
                                            String createdTimeSortType,
                                            String deliveryDateSortType,
                                            OrderStatus orderStatus,
@@ -140,33 +157,49 @@ public class OrderServiceImpl implements OrderService {
                                            Boolean isGrouped,
                                            int page,
                                            int limit) throws NoSuchOrderException, FirebaseAuthException {
-        if (Authorization(jwtToken).equalsIgnoreCase("STAFF")) {
-            List<Order> orders = repository.findOrderForStaff(packagerId,
-                    orderStatus == null ? null : orderStatus.ordinal(),
-                    isGrouped,
-                    isPaid,
-                    getPageableWithSort(totalPriceSortType,
-                            createdTimeSortType,
-                            deliveryDateSortType,
-                            page,
-                            limit)
-            );
-            if (orders.size() == 0) {
-                throw new NoSuchOrderException("No orders found");
-            }
-            return orders;
-        } else {
-            throw new AuthorizationServiceException("Access denied with this email");
-        }
+        List<Order> orders = repository.findOrderForStaff(packagerId,
+                orderStatus == null ? null : orderStatus.ordinal(),
+                isGrouped,
+                isPaid,
+                getPageableWithSort(totalPriceSortType,
+                        createdTimeSortType,
+                        deliveryDateSortType,
+                        page,
+                        limit)
+        );
+        return orders;
     }
 
     @Override
-    public List<OrderProduct> fetchOrderDetail(UUID id) throws ResourceNotFoundException {
+    public OrderWithDetails fetchOrderDetail(UUID id) throws ResourceNotFoundException {
         log.info("Fetching order detail of order_id " + id);
         Order order = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
+
+        OrderWithDetails orderWithDetails = new OrderWithDetails();
+        orderWithDetails.setId(order.getId());
+        orderWithDetails.setReceiverName(order.getReceiverName());
+        orderWithDetails.setReceiverPhone(order.getReceiverPhone());
+        orderWithDetails.setQrCodeUrl(order.getQrCodeUrl());
+        orderWithDetails.setTotalPrice(order.getTotalPrice());
+        orderWithDetails.setCreatedTime(order.getCreatedTime());
+        orderWithDetails.setAddressDeliver(order.getAddressDeliver());
+        orderWithDetails.setTotalDiscountPrice(order.getTotalDiscountPrice());
+        orderWithDetails.setDeliveryDate(order.getDeliveryDate());
+        orderWithDetails.setCustomer(order.getCustomer());
+        orderWithDetails.setPaymentStatus(order.getPaymentStatus());
+        orderWithDetails.setPaymentMethod(order.getPaymentMethod());
+        orderWithDetails.setShippingFee(order.getShippingFee());
+        orderWithDetails.setStatus(order.getStatus());
+        orderWithDetails.setTransaction(order.getTransaction());
+
+        if(order.getOrderGroup() != null){
+            orderWithDetails.setTimeFrame(order.getOrderGroup().getTimeFrame());
+            orderWithDetails.setPickupPoint(order.getOrderGroup().getPickupPoint());
+        }
+
         List<OrderDetail> orderDetails = order.getOrderDetailList();
-        return orderDetails.stream()
+        List<OrderProduct> orderProducts = orderDetails.stream()
                 .map(o -> {
                     //Map product to model orderProduct
                     OrderProduct orderProduct = new OrderProduct();
@@ -183,11 +216,13 @@ public class OrderServiceImpl implements OrderService {
                     orderProduct.setProductSubCategory(product.getProductSubCategory().getName());
                     orderProduct.setSupermarketName(product.getSupermarket().getName());
                     orderProduct.setStatus(product.getStatus());
+                    orderProduct.setProductCategory(product.getProductSubCategory().getProductCategory().getName());
 
                     return orderProduct;
 
-                })
-                .collect(Collectors.toList());
+                }).toList();
+        orderWithDetails.setOrderDetailList(orderProducts);
+        return orderWithDetails;
     }
 
     @Override
@@ -211,20 +246,30 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Transactional(rollbackFor = {ResourceNotFoundException.class, IOException.class, OutOfProductQuantityException.class, Exception.class},
-            propagation = Propagation.REQUIRES_NEW)
-    public String createOrder(String jwtToken, OrderCreate orderCreate) throws Exception, OutOfProductQuantityException {
+    public Order createOrder(String jwtToken, OrderCreate orderCreate) throws Exception {
         log.info("Creating new order");
         String email = Utils.getCustomerEmail(jwtToken, firebaseAuth);
         Customer customer = customerRepository
                 .findByEmail(email)
                 .orElseThrow(() -> new AuthorizationServiceException("Access denied with this account: " + email));
-        saveCustomerInfoIfNeeded(customer, orderCreate);
 
         if (repository.getOrdersProcessing(customer.getEmail()).size() > 3) {
-            throw new Exception("Customer already has 3 PROCESSING orders");
+            throw new CustomerLimitOrderProcessingException("Customer already has 3 PROCESSING orders");
         }
 
+        RLock rLock = redissonClient.getLock("createOrderLock");
+        Order order = null;
+        try {
+            rLock.lock();
+            order = createOrderTransact(orderCreate, customer);
+        } finally {
+            rLock.unlock();
+        }
+        return order;
+    }
+
+    @Transactional(rollbackFor = {ResourceNotFoundException.class, InterruptedException.class, IOException.class, OutOfProductQuantityException.class})
+    Order createOrderTransact(OrderCreate orderCreate, Customer customer) throws ResourceNotFoundException, InterruptedException, IOException, OutOfProductQuantityException {
         Order order = setOrderData(orderCreate, customer);
 
         if (orderCreateHasPickupPointAndTimeFrame(orderCreate)) {
@@ -241,19 +286,7 @@ public class OrderServiceImpl implements OrderService {
 
         saveOrderDetails(orderSavedSuccess, orderCreate);
 
-        return orderSavedSuccess.getQrCodeUrl();
-    }
-
-    private void saveCustomerInfoIfNeeded(Customer customer, OrderCreate orderCreate) throws IOException {
-        CustomerUpdateRequestBody customerUpdateRequestBody = new CustomerUpdateRequestBody();
-        if (customer.getAddress() == null || customer.getAddress().isEmpty() || customer.getAddress().isBlank()) {
-            customerUpdateRequestBody.setAddress(orderCreate.getAddressDeliver());
-        } else if (customer.getFullName() == null || customer.getFullName().isEmpty() || customer.getFullName().isBlank()) {
-            customerUpdateRequestBody.setFullName(orderCreate.getCustomerName());
-        } else if (customer.getPhone() == null || customer.getPhone().isEmpty() || customer.getPhone().isBlank()) {
-            customerUpdateRequestBody.setPhone(orderCreate.getPhone());
-        }
-        customerService.updateInfo(customerUpdateRequestBody, customer.getEmail(), null);
+        return orderSavedSuccess;
     }
 
     private void batchingOrder(Order order, OrderCreate orderCreate) throws ResourceNotFoundException {
@@ -263,8 +296,8 @@ public class OrderServiceImpl implements OrderService {
         } else {
             throw new ResourceNotFoundException("District not found");
         }
+        OrderBatch batch = null;
         Optional<OrderBatch> orderBatch = orderBatchRepository.findByDistrictAndDeliverDate(district, orderCreate.getDeliveryDate());
-        OrderBatch batch;
         if (orderBatch.isPresent()) {
             batch = orderBatch.get();
         } else {
@@ -276,9 +309,11 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderBatch(batch);
     }
 
-    private Order setOrderData(OrderCreate orderCreate, Customer customer) throws ResourceNotFoundException {
+    private Order setOrderData(OrderCreate orderCreate, Customer customer) throws ResourceNotFoundException, InterruptedException {
         Order order = new Order();
         order.setCustomer(customer);
+        order.setReceiverName(orderCreate.getReceiverName());
+        order.setReceiverPhone(orderCreate.getReceiverPhone());
         order.setShippingFee(orderCreate.getShippingFee());
         order.setTotalPrice(orderCreate.getTotalPrice());
         order.setTotalDiscountPrice(orderCreate.getTotalDiscountPrice());
@@ -299,6 +334,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private void groupingOrder(Order order, OrderCreate orderCreate) {
+        OrderGroup group = null;
         Optional<OrderGroup> orderGroup = orderGroupRepository
                 .findByTimeFrameIdAndPickupPointIdAndDeliverDate(
                         orderCreate.getTimeFrameId(),
@@ -306,11 +342,12 @@ public class OrderServiceImpl implements OrderService {
                         orderCreate.getDeliveryDate()
                 );
         if (orderGroup.isPresent()) {
-            order.setOrderGroup(orderGroup.get());
+            group = orderGroup.get();
         } else {
             OrderGroup orderGroupNew = createNewOrderGroup(orderCreate);
-            order.setOrderGroup(orderGroupRepository.save(orderGroupNew));
+            group = orderGroupRepository.save(orderGroupNew);
         }
+        order.setOrderGroup(group);
     }
 
     private OrderGroup createNewOrderGroup(OrderCreate orderCreate) {
@@ -323,7 +360,7 @@ public class OrderServiceImpl implements OrderService {
         return orderGroupNew;
     }
 
-    private void mapDiscountsToOrder(Order order, List<UUID> discountIds) throws ResourceNotFoundException {
+    private void mapDiscountsToOrder(Order order, List<UUID> discountIds) throws ResourceNotFoundException, InterruptedException {
         if (!discountIds.isEmpty()) {
             order.setDiscountList(new ArrayList<>());
             for (UUID discountId : discountIds) {
@@ -353,7 +390,7 @@ public class OrderServiceImpl implements OrderService {
         order.setTransaction(transactions);
     }
 
-    private void saveOrderDetails(Order order, OrderCreate orderCreate) throws OutOfProductQuantityException, ResourceNotFoundException {
+    private void saveOrderDetails(Order order, OrderCreate orderCreate) throws OutOfProductQuantityException, ResourceNotFoundException, InterruptedException {
         List<OrderDetail> orderDetailsSaved = new ArrayList<>();
         for (OrderProductCreate orderProductCreate : orderCreate.getOrderDetailList()) {
             OrderDetail orderDetail = mapOrderProductCreateToOrderDetail(order, orderProductCreate);
@@ -364,7 +401,7 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-    private OrderDetail mapOrderProductCreateToOrderDetail(Order order, OrderProductCreate orderProductCreate) throws OutOfProductQuantityException, ResourceNotFoundException {
+    private OrderDetail mapOrderProductCreateToOrderDetail(Order order, OrderProductCreate orderProductCreate) throws OutOfProductQuantityException, ResourceNotFoundException, InterruptedException {
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setOrder(order);
         Product product = getProductById(orderProductCreate.getId());
@@ -413,18 +450,6 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return pageableWithSort;
-    }
-
-    private String Authorization(String jwtToken) throws FirebaseAuthException {
-        String email = Utils.getCustomerEmail(jwtToken, firebaseAuth);
-
-        if (staffRepository.findByEmail(email).isPresent()) {
-            return "STAFF";
-        } else if (customerRepository.findByEmail(email).isPresent()) {
-            return "CUSTOMER";
-        } else {
-            return "ACCESS DENIED";
-        }
     }
 
     private ByteArrayOutputStream generateQRCodeImage(UUID orderId) throws IOException {

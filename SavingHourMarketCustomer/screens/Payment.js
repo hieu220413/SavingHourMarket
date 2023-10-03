@@ -4,8 +4,17 @@
 /* eslint-disable react/self-closing-comp */
 /* eslint-disable react-native/no-inline-styles */
 
-import React, {useEffect, useState, useCallback} from 'react';
-import {Image, Keyboard, Text, TouchableOpacity, View} from 'react-native';
+import React, {useEffect, useState, useCallback, useRef} from 'react';
+import {
+  Image,
+  Keyboard,
+  Text,
+  TouchableOpacity,
+  View,
+  LogBox,
+  NativeEventEmitter,
+  Alert,
+} from 'react-native';
 import {ScrollView, TextInput} from 'react-native-gesture-handler';
 import {icons} from '../constants';
 import {COLORS} from '../constants/theme';
@@ -22,6 +31,11 @@ import {useFocusEffect} from '@react-navigation/native';
 import {API} from '../constants/api';
 import auth from '@react-native-firebase/auth';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
+import VnpayMerchant, {
+  VnpayMerchantModule,
+} from '../react-native-vnpay-merchant';
+LogBox.ignoreLogs(['new NativeEventEmitter']);
+const eventEmitter = new NativeEventEmitter(VnpayMerchantModule);
 
 const Payment = ({navigation, route}) => {
   const [customerLocationIsChecked, setCustomerLocationIsChecked] =
@@ -63,6 +77,106 @@ const Payment = ({navigation, route}) => {
   });
 
   const [keyboard, setKeyboard] = useState(Boolean);
+
+  //VNPAY function/param
+  const orderIdDummy = useRef('ec5dcac6-56dc-11ee-8a50-a85e45c41921');
+  const totalPriceDummy = useRef(111111);
+  const processVNPay = async (totalPrice, orderId, idToken) => {
+    console.log('is in process');
+    // lay payment url
+    const getPaymentResponse = await fetch(
+      `${API.baseURL}/api/transaction/getPaymentUrl?paidAmount=${totalPrice}&orderId=${orderId}`,
+      {
+        method: 'GET',
+        withCredentials: true,
+        credentials: 'include',
+        // truyen idToken vao
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+      },
+    )
+      .then(res => res)
+      .catch(e => {
+        console.log(e);
+        return null;
+      });
+
+    if (!getPaymentResponse) {
+      //Handle internal error
+      Alert.alert('Unexpected error happened');
+      return;
+    }
+
+    if (getPaymentResponse.status === 401) {
+      //Handle Unauthorized (chuyen ve log in hay sao do)
+      Alert.alert('Unauthorized');
+      return;
+    }
+
+    if (getPaymentResponse.status === 404) {
+      Alert.alert('Order not found');
+    }
+
+    if (getPaymentResponse.status === 403) {
+      const responseBody = await getPaymentResponse.json();
+      if (responseBody.message === 'ORDER_IS_PAID') {
+        Alert.alert('This Order has already been paid');
+      }
+
+      if (responseBody.message === 'REQUIRED_E_PAYMENT') {
+        Alert.alert('This order payment method is COD');
+      }
+      return;
+    }
+
+    if (getPaymentResponse.status === 200) {
+      const paymentUrl = await getPaymentResponse.text();
+      console.log(paymentUrl);
+      if (!paymentUrl) {
+        return;
+      }
+      // mở sdk
+      eventEmitter.addListener('PaymentBack', e => {
+        console.log('Sdk back!');
+        if (e) {
+          console.log('e.resultCode = ' + e.resultCode);
+          switch (e.resultCode) {
+            case -1:
+              // Khi nguoi dung nhan nut back tu device (Khong phai nhan nut back tu VNPAY UI)
+              console.log('nguoi dung nhan nut back tu device');
+              break;
+            case 97:
+              // Giao dich thanh cong.
+              console.log('Giao dich thanh cong');
+              break;
+            case 98:
+              // Giao dich khong thanh cong. (bao gom case nguoi dung an nut back tu VNPAY UI)
+              console.log('Giao dich khong thanh cong');
+              break;
+          }
+
+          //   khi tắt sdk
+          eventEmitter.removeAllListeners('PaymentBack');
+        }
+      });
+
+      VnpayMerchant.show({
+        isSandbox: true,
+        scheme: 'savingHourMarket',
+        title: 'Thanh toán VNPAY',
+        titleColor: '#333333',
+        beginColor: '#ffffff',
+        endColor: '#ffffff',
+        iconBackName: 'close',
+        paymentUrl: paymentUrl,
+      });
+
+      console.log('Sdk opened');
+    }
+  };
+
+  // end VNPay function/param
 
   useEffect(() => {
     Keyboard.addListener('keyboardDidShow', _keyboardDidShow);
@@ -286,7 +400,7 @@ const Payment = ({navigation, route}) => {
     return true;
   };
 
-  const handleOrder = () => {
+  const handleOrder = async () => {
     if (!validate()) {
       return;
     }
@@ -338,14 +452,17 @@ const Payment = ({navigation, route}) => {
 
     console.log(submitOrder);
 
-    fetch(`${API.baseURL}/api/order/createOrder`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${tokenId}`,
+    const createOrderRequest = await fetch(
+      `${API.baseURL}/api/order/createOrder`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${tokenId}`,
+        },
+        body: JSON.stringify(submitOrder),
       },
-      body: JSON.stringify(submitOrder),
-    })
+    )
       .then(res => {
         return res.json();
       })
@@ -353,7 +470,26 @@ const Payment = ({navigation, route}) => {
         console.log(respond);
         navigation.navigate('Order success', {id: respond.id});
       })
-      .catch(err => console.log(err));
+
+      .catch(err => {
+        console.log(err);
+        return null;
+      });
+
+    if (createOrderRequest) {
+      // handle vnpay payment method
+      if (paymentMethod.id === 1 && createOrderRequest.status === 200) {
+        const createdOrderBody = await createOrderRequest.json();
+        const createdOrderId = createdOrderBody.id;
+        const createdOrderTotalPrice = createdOrderBody.totalPrice;
+        const idToken = await auth().currentUser.getIdToken();
+        console.log('processing vnpay');
+        await processVNPay(createdOrderTotalPrice, createdOrderId, idToken);
+        return;
+      }
+      console.log(await createOrderRequest.json());
+      // Handle other request status
+    }
   };
 
   return (

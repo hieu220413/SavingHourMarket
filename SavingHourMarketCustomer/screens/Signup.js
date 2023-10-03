@@ -9,6 +9,7 @@ import {
   ImageBackground,
   KeyboardAvoidingView,
   ScrollView,
+  Alert,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import {COLORS} from '../constants/theme';
@@ -43,25 +44,39 @@ const Signup = ({navigation}) => {
   };
 
   const passwordValidation = () => {
-    if (password.length < 8) {
-      setPasswordError('Password must be more than 8 characters!');
+    if (!isValidPassword(password)) {
+      setPasswordError(
+        'At least 8 characters, 1 digit, 1 uppercase and lowercase letter',
+      );
     } else {
       setPasswordError('');
     }
   };
-  const ConfirmPasswordValidation = () => {
-    if (password_confirm.length < 8) {
-      setPassword_confirmError(
-        'Confirm password must be more than 8 characters!',
-      );
-    } else {
-      setPassword_confirmError('');
-    }
+  // const ConfirmPasswordValidation = () => {
+  //   if (password_confirm.length < 8) {
+  //     setPassword_confirmError(
+  //       'Confirm password must be more than 8 characters!',
+  //     );
+  //   } else {
+  //     setPassword_confirmError('');
+  //   }
+  // };
+
+  const isValidPassword = password => {
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+    return regex.test(password);
   };
 
   const isValidEmail = email => {
     const regex = /^([A-Za-z0-9_\-\.])+@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
     return regex.test(email);
+  };
+
+  const isValidForm = () => {
+    if (!isValidEmail(email) || !isValidPassword(password)) {
+      return;
+    }
+    return true;
   };
 
   const isSecureTextEntry = () => {
@@ -72,6 +87,13 @@ const Signup = ({navigation}) => {
     setSecureTextEntry_confirm(!secureTextEntry_confirm);
   };
 
+  const handleSubmit = () => {
+    if (!isValidForm()) {
+      Alert.alert('fail');
+      return;
+    }
+    console.log('success');
+  };
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={styles.container}>
@@ -184,9 +206,9 @@ const Signup = ({navigation}) => {
                       placeholder="Confirm password ..."
                       style={styles.textInput}
                       secureTextEntry={true}
-                      onBlur={() => {
-                        ConfirmPasswordValidation();
-                      }}
+                      // onBlur={() => {
+                      //   ConfirmPasswordValidation();
+                      // }}
                       value={password_confirm}
                       onChangeText={text => setPassword_confirm(text)}
                     />
@@ -195,9 +217,9 @@ const Signup = ({navigation}) => {
                       placeholder="Confirm password ..."
                       style={styles.textInput}
                       secureTextEntry={false}
-                      onBlur={() => {
-                        ConfirmPasswordValidation();
-                      }}
+                      // onBlur={() => {
+                      //   ConfirmPasswordValidation();
+                      // }}
                       value={password_confirm}
                       onChangeText={text => setPassword_confirm(text)}
                     />
@@ -213,7 +235,7 @@ const Signup = ({navigation}) => {
                     )}
                   </TouchableOpacity>
                 </View>
-                {password_confirmError && (
+                {/* {password_confirmError && (
                   <View
                     style={{
                       width: '90%',
@@ -222,7 +244,7 @@ const Signup = ({navigation}) => {
                     }}>
                     <Text style={{color: 'red'}}>{password_confirmError}</Text>
                   </View>
-                )}
+                )} */}
                 <View style={styles.textPrivate}>
                   <Text style={styles.color_textPrivate}>
                     By signing up you agree to our
@@ -242,7 +264,7 @@ const Signup = ({navigation}) => {
                   <TouchableOpacity
                     style={{width: '100%'}}
                     onPress={() => {
-                      console.log('sign up');
+                      handleSubmit();
                     }}>
                     <LinearGradient
                       colors={['#66CC66', '#66CC99']}
