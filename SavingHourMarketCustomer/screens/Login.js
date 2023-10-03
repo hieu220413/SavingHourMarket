@@ -22,6 +22,7 @@ import {
 } from '@react-native-google-signin/google-signin';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {API} from '../constants/api';
 
 const Login = ({navigation}) => {
   const [password, setPassword] = useState('');
@@ -68,7 +69,7 @@ const Login = ({navigation}) => {
           .then(token => token)
           .catch(e => console.log(e));
         const userInfoAfterGooleLoginRequest = await fetch(
-          'http://saving-hour-market.ap-southeast-2.elasticbeanstalk.com/api/customer/getInfoAfterGoogleLogged',
+          `${API.baseURL}/api/customer/getInfoAfterGoogleLogged`,
           {
             method: 'get',
             headers: {Authorization: `Bearer ${userTokenId}`},
@@ -117,7 +118,7 @@ const Login = ({navigation}) => {
           .then(token => token)
           .catch(e => console.log(e));
         const userInfoAfterEmailPasswordLoginRequest = await fetch(
-          'http://saving-hour-market.ap-southeast-2.elasticbeanstalk.com/api/customer/getInfo',
+          `${API.baseURL}/api/customer/getInfo`,
           {
             method: 'get',
             credentials: 'include',
@@ -160,9 +161,8 @@ const Login = ({navigation}) => {
           // Alert.alert(
           //   'Login thanh cong, da save user. Redirect qua screen nao do di',
           // );
-          () => {
-            navigation.navigate('Profile');
-          };
+
+          navigation.navigate('Profile');
         }
       }
 
@@ -389,8 +389,8 @@ const Login = ({navigation}) => {
                   {borderColor: '#66CC66', borderWidth: 1, marginTop: 15},
                 ]}
                 onPress={() => {
-                  navigation.navigate('Sign Up');
-                  // logout();
+                  // navigation.navigate('Sign Up');
+                  logout();
                 }}>
                 <Text style={[styles.textSign, {color: '#66CC66'}]}>
                   Sign Up

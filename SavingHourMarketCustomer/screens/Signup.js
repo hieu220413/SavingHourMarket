@@ -18,6 +18,7 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import Feather from 'react-native-vector-icons/Feather';
 import LinearGradient from 'react-native-linear-gradient';
 import * as Animatable from 'react-native-animatable';
+import {API} from '../constants/api';
 
 const Signup = ({navigation}) => {
   const [password, setPassword] = useState('');
@@ -74,7 +75,14 @@ const Signup = ({navigation}) => {
 
   const isValidForm = () => {
     if (!isValidEmail(email) || !isValidPassword(password)) {
+      // Alert.alert('fail');
       return;
+    }
+    if (password_confirm !== password) {
+      setPassword_confirmError('Confirm password does not match!');
+      return;
+    } else {
+      setPassword_confirmError('');
     }
     return true;
   };
@@ -87,12 +95,42 @@ const Signup = ({navigation}) => {
     setSecureTextEntry_confirm(!secureTextEntry_confirm);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    let submitInfo = {};
     if (!isValidForm()) {
-      Alert.alert('fail');
       return;
     }
-    console.log('success');
+    const valid = isValidForm();
+    if (valid == true) {
+      submitInfo = {
+        email: email,
+        password: password,
+      };
+    }
+    await fetch(`${API.baseURL}/api/customer/registerWithEmailPassword`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(submitInfo),
+    })
+      .then(res => {
+        return res.json();
+      })
+      .then(respond => {
+        console.log(respond);
+        if (respond.code == 403 || respond.code == 422) {
+          Alert.alert('This email has already been registered');
+          return null;
+        } else {
+          Alert.alert('Sign up successful');
+          navigation.navigate('Login');
+        }
+      })
+      .catch(err => {
+        console.log(err);
+        return null;
+      });
   };
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -235,7 +273,7 @@ const Signup = ({navigation}) => {
                     )}
                   </TouchableOpacity>
                 </View>
-                {/* {password_confirmError && (
+                {password_confirmError && (
                   <View
                     style={{
                       width: '90%',
@@ -244,7 +282,7 @@ const Signup = ({navigation}) => {
                     }}>
                     <Text style={{color: 'red'}}>{password_confirmError}</Text>
                   </View>
-                )} */}
+                )}
                 <View style={styles.textPrivate}>
                   <Text style={styles.color_textPrivate}>
                     By signing up you agree to our
