@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 // eslint-disable-next-line prettier/prettier
-import React, {useState, useEffect, useCallback} from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Text,
   View,
@@ -9,15 +9,15 @@ import {
   Image,
   StyleSheet,
 } from 'react-native';
-import {icons} from '../constants';
-import {COLORS, FONTS} from '../constants/theme';
+import { icons } from '../constants';
+import { COLORS, FONTS } from '../constants/theme';
 import Categories from '../components/Categories';
 import dayjs from 'dayjs';
-import {API} from '../constants/api';
-import {useFocusEffect} from '@react-navigation/native';
+import { API } from '../constants/api';
+import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const Discount = ({navigation}) => {
+const Discount = ({ navigation }) => {
   const [discounts, setDiscounts] = useState([]);
 
   const [cartList, setCartList] = useState([]);
@@ -54,10 +54,10 @@ const Discount = ({navigation}) => {
     console.log('buy');
   };
 
-  const Item = ({data}) => (
+  const Item = ({ data }) => (
     <TouchableOpacity
       onPress={() => {
-        navigation.navigate('ProductDetails');
+        navigation.navigate('DiscountForCategories');
       }}>
       <View style={styles.itemContainer}>
         {/* Image Product */}
@@ -69,7 +69,7 @@ const Discount = ({navigation}) => {
           style={styles.itemImage}
         />
 
-        <View style={{justifyContent: 'center', flex: 1, marginRight: 10}}>
+        <View style={{ justifyContent: 'center', flex: 1, marginRight: 10 }}>
           <Text
             numberOfLines={1}
             style={{
@@ -95,6 +95,8 @@ const Discount = ({navigation}) => {
             onPress={() => navigation.navigate('DiscountForCategories')}>
             <Text
               style={{
+                maxWidth: 120,
+                maxHeight: 38,
                 padding: 10,
                 backgroundColor: COLORS.primary,
                 borderRadius: 10,
@@ -125,7 +127,7 @@ const Discount = ({navigation}) => {
           <Image
             source={icons.leftArrow}
             resizeMode="contain"
-            style={{width: 35, height: 35, tintColor: COLORS.primary}}
+            style={{ width: 35, height: 35, tintColor: COLORS.primary }}
           />
         </TouchableOpacity>
         <Text
@@ -164,7 +166,7 @@ const Discount = ({navigation}) => {
                 justifyContent: 'center',
               }}>
               <Text
-                style={{fontSize: 12, color: 'white', fontFamily: 'Roboto'}}>
+                style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
                 {cartList.length}
               </Text>
             </View>
@@ -172,13 +174,16 @@ const Discount = ({navigation}) => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView>
+      <ScrollView
+        contentContainerStyle={{
+          paddingBottom: 150,
+        }}
+      >
         {/* Filter by Cate */}
         <Categories />
         {/* List voucher */}
-        {/* <Voucher navigation={navigation} /> */}
-        {discounts.map(item => (
-          <Item data={item} />
+        {discounts.map((item, index) => (
+          <Item data={item} key={index} />
         ))}
       </ScrollView>
     </View>

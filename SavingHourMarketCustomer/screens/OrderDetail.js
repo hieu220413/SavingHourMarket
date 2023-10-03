@@ -245,11 +245,11 @@ const OrderDetail = ({navigation}) => {
                   color: 'black',
                   fontWeight: 'bold',
                 }}>
-                Thông tin đơn hàng
+                Thanh toán
               </Text>
             </View>
 
-            <View
+            {/* <View
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
@@ -263,8 +263,27 @@ const OrderDetail = ({navigation}) => {
                 style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
                 Mã đơn hàng:
               </Text>
+              <Text style={{fontSize: 20, fontFamily: 'Roboto', width: '60%'}}>
+                3f720006-64e6-4701-9b7f-dc45aea76570
+              </Text>
+            </View> */}
+
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 15,
+                paddingTop: 20,
+                borderTopColor: '#decbcb',
+                borderTopWidth: 0.75,
+                justifyContent: 'space-between',
+              }}>
+              <Text
+                style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
+                Trạng thái
+              </Text>
               <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
-                0837ew02349w2
+                Chưa thanh toán
               </Text>
             </View>
 
@@ -279,11 +298,12 @@ const OrderDetail = ({navigation}) => {
               }}>
               <Text
                 style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
-                Phương thức thanh toán
+                Phương thức
               </Text>
               <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>COD</Text>
             </View>
           </View>
+
           {/* ******************* */}
 
           {/* Price information */}
