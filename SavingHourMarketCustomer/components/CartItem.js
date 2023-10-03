@@ -93,6 +93,7 @@ const CartItem = ({item, cartItems, setcartItems, navigation}) => {
 
         <View style={{flex: 4, alignItems: 'start', gap: 5, marginLeft: 10}}>
           <Text
+            numberOfLines={1}
             style={{
               fontSize: 23,
               color: 'black',

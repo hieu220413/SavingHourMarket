@@ -11,8 +11,9 @@ import {COLORS} from '../constants/theme';
 import {useFocusEffect} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const OrderSuccess = ({navigation}) => {
+const OrderSuccess = ({navigation, route}) => {
   const [cartList, setCartList] = useState([]);
+  const {id} = route.params;
 
   useFocusEffect(
     useCallback(() => {
@@ -38,7 +39,7 @@ const OrderSuccess = ({navigation}) => {
           uri: 'https://photomedia.in/wp-content/uploads/2023/05/abstract-background-green-1-scaled.jpg',
         }}
         style={{padding: 15}}>
-        <View
+        {/* <View
           style={{
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -84,8 +85,14 @@ const OrderSuccess = ({navigation}) => {
               </View>
             )}
           </TouchableOpacity>
-        </View>
-        <View style={{alignItems: 'center', justifyContent: 'center', gap: 15}}>
+        </View> */}
+        <View
+          style={{
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 15,
+            marginTop: 20,
+          }}>
           <Text
             style={{
               fontSize: 22,
@@ -133,7 +140,7 @@ const OrderSuccess = ({navigation}) => {
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
-              navigation.navigate('OrderDetail');
+              navigation.navigate('OrderDetail', {id: id, orderSuccess: true});
             }}
             style={{
               borderColor: 'white',

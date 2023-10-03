@@ -108,7 +108,11 @@ export default function App() {
             name="Edit customer location"
             component={EditCustomerLocation}
           />
-          <Stack.Screen name="Order success" component={OrderSuccess} />
+          <Stack.Screen
+            name="Order success"
+            component={OrderSuccess}
+            options={{swipeEnabled: false}}
+          />
           <Stack.Screen name="Forgot password" component={ForgetPassword} />
           <Stack.Screen name="Code reset" component={CodeReset} />
           <Stack.Screen name="Reset password" component={ResetPassword} />

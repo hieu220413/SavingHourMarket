@@ -21,6 +21,7 @@ import Modal, {
 import {useFocusEffect} from '@react-navigation/native';
 import {API} from '../constants/api';
 import auth from '@react-native-firebase/auth';
+import {GoogleSignin} from '@react-native-google-signin/google-signin';
 
 const Payment = ({navigation, route}) => {
   const [customerLocationIsChecked, setCustomerLocationIsChecked] =
@@ -39,9 +40,9 @@ const Payment = ({navigation, route}) => {
 
   const [voucherList, setVoucherList] = useState([]);
 
-  const [name, setName] = useState('Hà Anh Tú');
+  const [name, setName] = useState(null);
 
-  const [phone, setPhone] = useState('0898449505');
+  const [phone, setPhone] = useState(null);
 
   const [validateMessage, setValidateMessage] = useState('');
 
@@ -98,7 +99,11 @@ const Payment = ({navigation, route}) => {
 
       setTokenId(token);
       console.log('user is logged in');
-      console.log(await AsyncStorage.getItem('userInfo'));
+      const json = await AsyncStorage.getItem('userInfo');
+      const user = JSON.parse(json);
+
+      setName(user.fullName);
+      setPhone(user.phone);
     } else {
       // no sessions found.
       await AsyncStorage.removeItem('userInfo');
@@ -111,6 +116,10 @@ const Payment = ({navigation, route}) => {
     const subscriber = auth().onAuthStateChanged(
       async userInfo => await onAuthStateChange(userInfo),
     );
+    GoogleSignin.configure({
+      webClientId:
+        '857253936194-dmrh0nls647fpqbuou6mte9c7e4o6e6h.apps.googleusercontent.com',
+    });
     return subscriber;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -299,13 +308,13 @@ const Payment = ({navigation, route}) => {
         totalPrice: totalProductPrice,
         totalDiscountPrice: totalDiscountPrice,
         deliveryDate: format(date, 'yyyy-MM-dd'),
-        customerName: name,
-        phone: phone,
+        receiverName: name,
+        receiverPhone: phone,
         pickupPointId: pickupPoint.id,
         timeFrameId: timeFrame.id,
         paymentStatus: 'UNPAID',
         paymentMethod: paymentMethod.id,
-        addressDelivery: customerLocation.address,
+        addressDeliver: pickupPoint.address,
         discountID: voucherListId,
         orderDetailList: orderDetailList,
       };
@@ -317,11 +326,11 @@ const Payment = ({navigation, route}) => {
         totalPrice: totalProductPrice,
         totalDiscountPrice: totalDiscountPrice,
         deliveryDate: format(date, 'yyyy-MM-dd'),
-        customerName: name,
-        phone: phone,
+        receiverName: name,
+        receiverPhone: phone,
         paymentStatus: 'UNPAID',
         paymentMethod: paymentMethod.id,
-        addressDelivery: customerLocation.address,
+        addressDeliver: customerLocation.address,
         discountID: voucherListId,
         orderDetailList: orderDetailList,
       };
@@ -342,6 +351,7 @@ const Payment = ({navigation, route}) => {
       })
       .then(respond => {
         console.log(respond);
+        navigation.navigate('Order success', {id: respond.id});
       })
       .catch(err => console.log(err));
   };
@@ -378,7 +388,7 @@ const Payment = ({navigation, route}) => {
           </Text>
         </View>
         <ScrollView automaticallyAdjustKeyboardInsets={true}>
-          <View style={{marginBottom: 190}}>
+          <View style={{marginBottom: 200}}>
             {/* OrderItem */}
             {Object.keys(groupByCategory).map(function (key) {
               const totalPriceByCategory = groupByCategory[key].reduce(
@@ -1206,26 +1216,53 @@ const Payment = ({navigation, route}) => {
             right: 0,
             backgroundColor: 'white',
             borderTopColor: 'transparent',
-            height: 80,
+            height: 100,
             width: '100%',
-            flex: 1,
+
             flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'space-between',
+            justifyContent: 'center',
             paddingLeft: 20,
             marginTop: 20,
+            elevation: 3,
           }}>
-          <View></View>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            <Text style={{fontSize: 18, color: 'black', fontFamily: 'Roboto'}}>
-              Tổng cộng:{' '}
-            </Text>
+          <TouchableOpacity
+            onPress={() => {
+              handleOrder();
+            }}
+            style={{
+              height: '60%',
+              width: '95%',
+              backgroundColor: COLORS.primary,
+              textAlign: 'center',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexDirection: 'row',
+              paddingHorizontal: 40,
+              borderRadius: 30,
+            }}>
+            <View style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+              <Image
+                resizeMode="contain"
+                source={icons.orderIcon}
+                style={{width: 25, height: 25, tintColor: 'white'}}
+              />
+              <Text
+                style={{
+                  color: 'white',
+                  fontSize: 20,
+                  fontFamily: 'Roboto',
+                  fontWeight: 'bold',
+                }}>
+                Đặt hàng
+              </Text>
+            </View>
+
             <Text
               style={{
+                color: 'white',
                 fontSize: 18,
-                color: 'red',
                 fontFamily: 'Roboto',
-                fontWeight: 'bold',
               }}>
               {(totalProductPrice - totalDiscountPrice).toLocaleString(
                 'vi-VN',
@@ -1234,28 +1271,6 @@ const Payment = ({navigation, route}) => {
                   currency: 'VND',
                 },
               )}
-            </Text>
-          </View>
-          <TouchableOpacity
-            onPress={() => {
-              handleOrder();
-            }}
-            style={{
-              height: '100%',
-              width: '30%',
-              backgroundColor: COLORS.primary,
-              textAlign: 'center',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-            <Text
-              style={{
-                color: 'white',
-                fontSize: 20,
-                fontFamily: 'Roboto',
-                fontWeight: 'bold',
-              }}>
-              Đặt hàng
             </Text>
           </TouchableOpacity>
         </View>

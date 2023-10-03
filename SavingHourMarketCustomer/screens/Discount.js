@@ -35,7 +35,6 @@ const Discount = ({ navigation }) => {
     }, []),
   );
 
-  console.log(cartList);
 
   useEffect(() => {
     fetch(
