@@ -1,8 +1,10 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
+import com.fpt.capstone.savinghourmarket.common.StaffRole;
 import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.entity.Staff;
 import com.fpt.capstone.savinghourmarket.model.PasswordRequestBody;
+import com.fpt.capstone.savinghourmarket.model.StaffCreateRequestBody;
 import com.fpt.capstone.savinghourmarket.model.StaffUpdateRequestBody;
 import com.fpt.capstone.savinghourmarket.service.StaffService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 @RestController
 @RequestMapping("/api/staff")
@@ -57,6 +60,22 @@ public class StaffController {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         String email = Utils.validateIdToken(idToken, firebaseAuth);
         Staff staff = staffService.updateInfo(staffUpdateRequestBody, email, imageFile);
+        return ResponseEntity.status(HttpStatus.OK).body(staff);
+    }
+
+    @RequestMapping(value = "/createStaffAccount", method = RequestMethod.POST)
+    public ResponseEntity<Staff> createStaffAccount(@RequestBody StaffCreateRequestBody staffCreateRequestBody, @RequestParam StaffRole role, @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException, UnsupportedEncodingException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        Staff staff = staffService.createStaffAccount(staffCreateRequestBody, role);
+        return ResponseEntity.status(HttpStatus.OK).body(staff);
+    }
+
+    @RequestMapping(value = "/getStaffByEmail", method = RequestMethod.GET)
+    public ResponseEntity<Staff> getStaffByEmail(@RequestParam String email, @Parameter(hidden = true)  @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        Staff staff = staffService.getStaffByEmail(email);
         return ResponseEntity.status(HttpStatus.OK).body(staff);
     }
 

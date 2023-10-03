@@ -1,5 +1,9 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
+import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
+import com.fpt.capstone.savinghourmarket.common.StaffRole;
+import com.fpt.capstone.savinghourmarket.model.StaffCreateRequestBody;
+import com.fpt.capstone.savinghourmarket.util.Utils;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -9,6 +13,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.io.UnsupportedEncodingException;
 import java.util.UUID;
 
 @Entity
@@ -35,4 +40,12 @@ public class Staff {
 
     @Column(columnDefinition = "tinyint")
     private Integer status;
+
+    public Staff(StaffCreateRequestBody staffCreateRequestBody, StaffRole role) throws UnsupportedEncodingException {
+        this.fullName = staffCreateRequestBody.getFullName();
+        this.email = staffCreateRequestBody.getEmail();
+        this.role = role.toString();
+        this.avatarUrl = Utils.generatePublicImageUrlFirebaseStorage("public/default-avatar.jpg");
+        this.status = EnableDisableStatus.ENABLE.ordinal();
+    }
 }

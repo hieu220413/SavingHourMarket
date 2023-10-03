@@ -1,12 +1,12 @@
 package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
 import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
-import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
+import com.fpt.capstone.savinghourmarket.common.StaffRole;
 import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.entity.Staff;
 import com.fpt.capstone.savinghourmarket.exception.InvalidUserInputException;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
-import com.fpt.capstone.savinghourmarket.model.PasswordRequestBody;
+import com.fpt.capstone.savinghourmarket.model.StaffCreateRequestBody;
 import com.fpt.capstone.savinghourmarket.model.StaffUpdateRequestBody;
 import com.fpt.capstone.savinghourmarket.repository.CustomerRepository;
 import com.fpt.capstone.savinghourmarket.repository.StaffRepository;
@@ -14,7 +14,7 @@ import com.fpt.capstone.savinghourmarket.service.StaffService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.UserInfo;
+import com.google.firebase.auth.UserRecord;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -101,5 +103,67 @@ public class StaffServiceImpl implements StaffService {
         return customer.get();
     }
 
+    @Override
+    public Staff createStaffAccount(StaffCreateRequestBody staffCreateRequestBody, StaffRole role) throws FirebaseAuthException, UnsupportedEncodingException {
+        Pattern pattern;
+        Matcher matcher;
+        HashMap errorFields = new HashMap<>();
 
+        // email format validate
+        pattern = Pattern.compile("^[\\w!#$%&amp;'*+/=?`{|}~^-]+(?:\\.[\\w!#$%&amp;'*+/=?`{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$");
+        matcher = pattern.matcher(staffCreateRequestBody.getEmail());
+        if(!matcher.matches()){
+            errorFields.put("emailError", "Invalid email format");
+        }
+
+        // password validate
+        pattern = Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,20}$");
+        matcher = pattern.matcher(staffCreateRequestBody.getPassword());
+
+        if(!matcher.matches()){
+            errorFields.put("passwordError", "At least 8 characters, 1 digit, 1 uppercase and lowercase letter");
+        }
+
+        // email duplicate validate
+        if(staffRepository.findByEmail(staffCreateRequestBody.getEmail().trim()).isPresent()){
+            errorFields.put("emailError", "This email has already been registered");
+        }
+
+        pattern = Pattern.compile("^[a-zA-Z_ÀÁÂÃÈÉÊẾÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêếìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹ\s]{2,50}$");
+        matcher = pattern.matcher(staffCreateRequestBody.getFullName());
+        if(!matcher.matches()){
+            errorFields.put("fullNameError", "Contain only alphabet en/vn and space. Minimum characters is 2 and maximum is 50");
+        }
+
+
+
+        if(errorFields.size() > 0){
+            throw new InvalidUserInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
+        }
+
+
+        UserRecord.CreateRequest request = new UserRecord.CreateRequest()
+                .setEmail(staffCreateRequestBody.getEmail())
+                .setEmailVerified(true)
+                .setPassword(staffCreateRequestBody.getPassword());
+
+        UserRecord staffNewAccount = firebaseAuth.createUser(request);
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("user_role", role.toString());
+        firebaseAuth.setCustomUserClaims(staffNewAccount.getUid(), claims);
+
+        Staff staff = new Staff(staffCreateRequestBody, role);
+
+        return staffRepository.save(staff);
+    }
+
+    @Override
+    public Staff getStaffByEmail(String email) {
+        Optional<Staff> staff = staffRepository.findByEmail(email);
+        if(!staff.isPresent()){
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_NOT_FOUND.getCode()), AdditionalResponseCode.STAFF_NOT_FOUND.toString());
+        }
+        return staff.get();
+    }
 }
