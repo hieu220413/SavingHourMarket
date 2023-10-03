@@ -44,6 +44,7 @@ const Login = ({navigation}) => {
     }
     if (userInfo) {
       // check if user sessions is still available. If yes => redirect to another screen
+      console.log(loginMode.current);
       if (loginMode.current.length === 0) {
         const userTokenId = await userInfo
           .getIdToken(true)
@@ -134,7 +135,7 @@ const Login = ({navigation}) => {
         if (!userInfoAfterEmailPasswordLoginRequest) {
           await logout();
           Alert.alert(
-            'internal error happened in fetching user info with google',
+            'internal error happened in fetching user info with email & password',
           );
           return;
         }
@@ -145,6 +146,11 @@ const Login = ({navigation}) => {
           if (responseBody.message === 'STAFF_ACCESS_FORBIDDEN') {
             await logout();
             Alert.alert('Staff account can not access to customer application');
+            return;
+          }
+          if (responseBody.message === 'UNVERIFIED_EMAIL') {
+            await logout();
+            Alert.alert('Email is not verified');
             return;
           }
         }
