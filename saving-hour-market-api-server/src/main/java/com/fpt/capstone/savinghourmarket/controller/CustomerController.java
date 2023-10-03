@@ -30,10 +30,10 @@ public class CustomerController {
 
     private final FirebaseAuth firebaseAuth;
 
-    @RequestMapping(value = "/registerWithEmailPassword", method = RequestMethod.POST , consumes = {"application/json"}, produces = {"application/json"})
-    public ResponseEntity<Customer> register(@Valid @RequestBody CustomerRegisterRequestBody customerRegisterRequestBody) throws FirebaseAuthException, UnsupportedEncodingException {
-        Customer customer = customerService.register(customerRegisterRequestBody);
-        return ResponseEntity.status(HttpStatus.OK).body(customer);
+    @RequestMapping(value = "/registerWithEmailPassword", method = RequestMethod.POST , consumes = {"application/json"}, produces = {"text/plain"})
+    public String register(@Valid @RequestBody CustomerRegisterRequestBody customerRegisterRequestBody) throws FirebaseAuthException, UnsupportedEncodingException {
+        String customerCustomToken = customerService.register(customerRegisterRequestBody);
+        return customerCustomToken;
     }
 
     @RequestMapping(value = "/getInfoAfterGoogleLogged", method = RequestMethod.GET)

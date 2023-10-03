@@ -9,7 +9,7 @@ import {
   ImageBackground,
   Alert,
 } from 'react-native';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState, useCallback} from 'react';
 import {COLORS} from '../constants/theme';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -23,6 +23,7 @@ import {
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {API} from '../constants/api';
+import {useFocusEffect} from '@react-navigation/native';
 
 const Login = ({navigation}) => {
   const [password, setPassword] = useState('');
@@ -154,6 +155,9 @@ const Login = ({navigation}) => {
             return;
           }
         }
+
+        console.log(userInfoAfterEmailPasswordLoginRequest.status)
+
         // fetch success
         if (userInfoAfterEmailPasswordLoginRequest.status === 200) {
           const userInfoResult =
@@ -220,11 +224,12 @@ const Login = ({navigation}) => {
   };
 
   const logout = async () => {
-    await GoogleSignin.signOut();
-    await AsyncStorage.removeItem('userInfo');
-    auth()
+    await GoogleSignin.signOut().catch(e => console.log(e));
+    await AsyncStorage.removeItem('userInfo').catch(e => console.log(e));
+    await auth()
       .signOut()
-      .then(() => console.log('Signed out successfully!'));
+      .then(() => console.log('Signed out successfully!'))
+      .catch(e => console.log(e));
   };
 
   // useEffect(() => {
@@ -232,18 +237,24 @@ const Login = ({navigation}) => {
   //   console.log(idTokenResultPayload)
   // }, [setTokenId, setIdTokenResultPayload]);
 
-  useEffect(() => {
-    // auth().currentUser.reload()
-    const subscriber = auth().onAuthStateChanged(
-      async userInfo => await onAuthStateChange(userInfo),
-    );
-    GoogleSignin.configure({
-      webClientId:
-        '857253936194-dmrh0nls647fpqbuou6mte9c7e4o6e6h.apps.googleusercontent.com',
-    });
-    return subscriber;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      // auth().currentUser.reload()
+      const subscriber = auth().onAuthStateChanged(
+        async userInfo => await onAuthStateChange(userInfo),
+      );
+      GoogleSignin.configure({
+        webClientId:
+          '857253936194-dmrh0nls647fpqbuou6mte9c7e4o6e6h.apps.googleusercontent.com',
+      });
+      return subscriber;
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
+  );
+
+  // () => {
+
+  // }, []
 
   const emailValidator = () => {
     if (email == '') {
@@ -395,8 +406,8 @@ const Login = ({navigation}) => {
                   {borderColor: '#66CC66', borderWidth: 1, marginTop: 15},
                 ]}
                 onPress={() => {
-                  // navigation.navigate('Sign Up');
-                  logout();
+                  navigation.navigate('Sign Up');
+                  // logout();
                 }}>
                 <Text style={[styles.textSign, {color: '#66CC66'}]}>
                   Sign Up

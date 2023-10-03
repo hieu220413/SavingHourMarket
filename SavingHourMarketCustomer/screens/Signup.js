@@ -18,6 +18,7 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import Feather from 'react-native-vector-icons/Feather';
 import LinearGradient from 'react-native-linear-gradient';
 import * as Animatable from 'react-native-animatable';
+import auth from '@react-native-firebase/auth';
 import {API} from '../constants/api';
 
 const Signup = ({navigation}) => {
@@ -107,30 +108,74 @@ const Signup = ({navigation}) => {
         password: password,
       };
     }
-    await fetch(`${API.baseURL}/api/customer/registerWithEmailPassword`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const registerWithEmailPasswordRequest = await fetch(
+      `${API.baseURL}/api/customer/registerWithEmailPassword`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submitInfo),
       },
-      body: JSON.stringify(submitInfo),
-    })
-      .then(res => {
-        return res.json();
-      })
-      .then(respond => {
-        console.log(respond);
-        if (respond.code == 403 || respond.code == 422) {
-          Alert.alert('This email has already been registered');
+    ).catch(err => {
+      console.log(err);
+      return null;
+    });
+
+    // Handle register internal error
+    if (!registerWithEmailPasswordRequest) {
+      Alert.alert('Internal error happened');
+      return;
+    }
+    // Handle register success
+    if (registerWithEmailPasswordRequest.status === 200) {
+      const customToken = await registerWithEmailPasswordRequest.text();
+      const user = await auth()
+        .signInWithCustomToken(customToken)
+        .catch(e => {
+          console.log(e);
           return null;
-        } else {
-          Alert.alert('Sign up successful');
-          navigation.navigate('Login');
-        }
-      })
-      .catch(err => {
-        console.log(err);
-        return null;
-      });
+        });
+      if (user) {
+        // handle sender email verification
+        console.log(user.user);
+        await user.user
+          .sendEmailVerification()
+          .then(async result => {
+            console.log('send mail sucesss');
+            await auth()
+              .signOut()
+              .catch(e => console.log(e));
+            Alert.alert(
+              'Sign up successfull. Email verfication has been sent to your account',
+            );
+            // navigation.navigate('Login');
+          })
+          .catch(async e => {
+            console.log(e);
+            Alert.alert(
+              'Sign up successfully but email verification was sent fail',
+            );
+            await auth()
+              .signOut()
+              .catch(e => console.log(e));
+          });
+      }
+    }
+
+    // .then(res => {
+    //   return res.json();
+    // })
+    // .then(respond => {
+    //   console.log(respond);
+    //   if (respond.code == 403 || respond.code == 422) {
+    //     Alert.alert('This email has already been registered');
+    //     return null;
+    //   } else {
+    //     Alert.alert('Sign up successful');
+    //     navigation.navigate('Login');
+    //   }
+    // })
   };
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
