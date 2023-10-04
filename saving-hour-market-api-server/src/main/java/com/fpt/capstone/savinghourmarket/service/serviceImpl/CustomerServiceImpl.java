@@ -22,7 +22,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -43,7 +42,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final StaffRepository staffRepository;
 
     @Override
-    public Customer register(CustomerRegisterRequestBody customerRegisterRequestBody) throws FirebaseAuthException, UnsupportedEncodingException {
+    public String register(CustomerRegisterRequestBody customerRegisterRequestBody) throws FirebaseAuthException, UnsupportedEncodingException {
         Pattern pattern;
         Matcher matcher;
         HashMap errorFields = new HashMap<>();
@@ -105,13 +104,17 @@ public class CustomerServiceImpl implements CustomerService {
                 .setEmailVerified(false)
                 .setPassword(customerRegisterRequestBody.getPassword());
 
-        firebaseAuth.createUser(request);
+        UserRecord userRecord = firebaseAuth.createUser(request);
+
+        String customToken = firebaseAuth.createCustomToken(userRecord.getUid());
 
 //        if(customerRegisterRequestBody.getAvatarUrl() == null) customerRegisterRequestBody.setAvatarUrl("");
 
         Customer customerEntity = new Customer(customerRegisterRequestBody);
 
-        return customerRepository.save(customerEntity);
+        customerRepository.save(customerEntity);
+
+        return customToken;
 
     }
 
@@ -146,7 +149,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     @Transactional
-    public Customer updateInfo(CustomerUpdateRequestBody customerUpdateRequestBody, String email, MultipartFile imageFile) throws IOException {
+    public Customer updateInfo(CustomerUpdateRequestBody customerUpdateRequestBody, String email) throws IOException {
         Pattern pattern;
         Matcher matcher;
         HashMap errorFields = new HashMap<>();
@@ -212,10 +215,14 @@ public class CustomerServiceImpl implements CustomerService {
             throw new InvalidUserInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
         }
 
-        if(imageFile != null && !imageFile.isEmpty()){
-            String imageUrl = Utils.uploadPublicFileToFirebaseStorage(imageFile);
-            targetedCustomer.get().setAvatarUrl(imageUrl);
+        if(customerUpdateRequestBody.getAvatarUrl()!= null && !customerUpdateRequestBody.getAvatarUrl().isBlank()){
+            targetedCustomer.get().setAvatarUrl(customerUpdateRequestBody.getAvatarUrl());
         }
+
+//        if(imageFile != null && !imageFile.isEmpty()){
+//            String imageUrl = Utils.uploadPublicFileToFirebaseStorage(imageFile);
+//            targetedCustomer.get().setAvatarUrl(imageUrl);
+//        }
 
 //        Customer result = customerRepository.save(targetedCustomer.get());
 

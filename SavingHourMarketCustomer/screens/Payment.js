@@ -109,6 +109,7 @@ const Payment = ({navigation, route}) => {
     if (!getPaymentResponse) {
       //Handle internal error
       Alert.alert('Unexpected error happened');
+
       return;
     }
 
@@ -483,7 +484,6 @@ const Payment = ({navigation, route}) => {
           setOpenValidateDialog(true);
           return;
         }
-        navigation.navigate('Order success', {id: respond.id});
       })
 
       .catch(err => {
@@ -491,7 +491,14 @@ const Payment = ({navigation, route}) => {
         return null;
       });
 
+    if (!createOrderRequest) {
+      setValidateMessage('Hệ thống hiện đang có lỗi');
+      setOpenValidateDialog(true);
+    }
+
     if (createOrderRequest) {
+      console.log(createOrderRequest);
+      console.log(paymentMethod.id);
       // handle vnpay payment method
       if (paymentMethod.id === 1 && createOrderRequest.status === 200) {
         const createdOrderBody = await createOrderRequest.json();
@@ -502,7 +509,14 @@ const Payment = ({navigation, route}) => {
         await processVNPay(createdOrderTotalPrice, createdOrderId, idToken);
         return;
       }
-      console.log(await createOrderRequest.json());
+      // hangle COD payment method
+      if (paymentMethod.id === 0 && createOrderRequest.status === 200) {
+        const createdOrderBody = await createOrderRequest.json();
+        console.log(createdOrderBody);
+        navigation.navigate('Order success', {id: createdOrderBody.id});
+        return;
+      }
+      // console.log(await createOrderRequest.json());
       // Handle other request status
     }
   };

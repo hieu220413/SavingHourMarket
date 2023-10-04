@@ -133,11 +133,11 @@ public class OrderServiceImpl implements OrderService {
                 OrderGroup orderGroup = orderGroupRepository.findById(orderGroupId)
                         .orElseThrow(() -> new NoSuchOrderException("No group found with this group id " + orderGroupId));
                 orderGroup.setDeliverer(staff);
-            }else if(orderGroupId == null && orderBatchId != null){
+            } else if (orderGroupId == null && orderBatchId != null) {
                 OrderBatch orderBatch = orderBatchRepository.findById(orderBatchId)
                         .orElseThrow(() -> new NoSuchOrderException("No batch found with this batch id " + orderBatchId));
                 orderBatch.setDeliverer(staff);
-            }else {
+            } else {
                 throw new ConflictGroupAndBatchException("Group or batch must be specified");
             }
         } else {
@@ -193,7 +193,7 @@ public class OrderServiceImpl implements OrderService {
         orderWithDetails.setStatus(order.getStatus());
         orderWithDetails.setTransaction(order.getTransaction());
 
-        if(order.getOrderGroup() != null){
+        if (order.getOrderGroup() != null) {
             orderWithDetails.setTimeFrame(order.getOrderGroup().getTimeFrame());
             orderWithDetails.setPickupPoint(order.getOrderGroup().getPickupPoint());
         }
@@ -238,6 +238,8 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
         if (order.getStatus() == OrderStatus.PROCESSING.ordinal()) {
             order.setStatus(OrderStatus.CANCEL.ordinal());
+            List<OrderDetail> orderDetails = order.getOrderDetailList();
+            increaseProductQuantity(orderDetails);
         } else {
             throw new OrderCancellationNotAllowedException("Order with id " + id + " is already in " + order.getStatus().toString() + " process");
         }
@@ -405,7 +407,7 @@ public class OrderServiceImpl implements OrderService {
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setOrder(order);
         Product product = getProductById(orderProductCreate.getId());
-        updateProductQuantity(product, orderProductCreate.getBoughtQuantity());
+        decreaseProductQuantity(product, orderProductCreate.getBoughtQuantity(), order);
         orderDetail.setProduct(product);
         orderDetail.setProductPrice(orderProductCreate.getProductPrice());
         orderDetail.setProductOriginalPrice(orderProductCreate.getProductOriginalPrice());
@@ -418,11 +420,13 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("No Product found with this id " + productId));
     }
 
-    private void updateProductQuantity(Product product, Integer boughtQuantity) throws OutOfProductQuantityException {
+    private void decreaseProductQuantity(Product product, Integer boughtQuantity, Order order) throws OutOfProductQuantityException {
         if (product.getQuantity() >= boughtQuantity) {
             product.setQuantity(product.getQuantity() - boughtQuantity);
             productRepository.save(product);
         } else {
+
+            repository.delete(order);
             throw new OutOfProductQuantityException("Product don't have enough quantity");
         }
     }
@@ -508,6 +512,15 @@ public class OrderServiceImpl implements OrderService {
             return matcher.group(0);
         } else {
             return null;
+        }
+    }
+
+
+    private void increaseProductQuantity(List<OrderDetail> orderDetails) {
+        for (OrderDetail orderDetail : orderDetails) {
+            Product product = orderDetail.getProduct();
+            product.setQuantity(product.getQuantity() + orderDetail.getBoughtQuantity());
+            productRepository.save(product);
         }
     }
 }

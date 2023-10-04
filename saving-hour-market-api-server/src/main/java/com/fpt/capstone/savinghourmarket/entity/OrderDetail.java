@@ -1,10 +1,7 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,7 +26,9 @@ public class OrderDetail {
 
     private Integer boughtQuantity;
 
-    @ManyToOne
+    @ManyToOne(
+            cascade = CascadeType.ALL
+    )
     @JoinColumn(
             name = "order_id",
             referencedColumnName = "id"
