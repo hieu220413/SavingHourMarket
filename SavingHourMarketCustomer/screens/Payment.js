@@ -463,20 +463,25 @@ const Payment = ({navigation, route}) => {
         body: JSON.stringify(submitOrder),
       },
     )
-      .then(res => {
-        return res.json();
-      })
-      .then(respond => {
-        console.log(respond);
-        navigation.navigate('Order success', {id: respond.id});
-      })
-
+      // .then(res => {
+      //   return res.json();
+      // })
+      // .then(respond => {
+      //   console.log(respond);
+      //   navigation.navigate('Order success', {id: respond.id});
+      // })
       .catch(err => {
         console.log(err);
         return null;
       });
 
+    if (!createOrderRequest) {
+      Alert.alert('Internal error happened');
+    }
+
     if (createOrderRequest) {
+      console.log(createOrderRequest);
+      console.log(paymentMethod.id);
       // handle vnpay payment method
       if (paymentMethod.id === 1 && createOrderRequest.status === 200) {
         const createdOrderBody = await createOrderRequest.json();
@@ -487,7 +492,14 @@ const Payment = ({navigation, route}) => {
         await processVNPay(createdOrderTotalPrice, createdOrderId, idToken);
         return;
       }
-      console.log(await createOrderRequest.json());
+      // hangle COD payment method
+      if (paymentMethod.id === 0 && createOrderRequest.status === 200) {
+        const createdOrderBody = await createOrderRequest.json();
+        console.log(createdOrderBody);
+        navigation.navigate('Order success', {id: createdOrderBody.id});
+        return;
+      }
+      // console.log(await createOrderRequest.json());
       // Handle other request status
     }
   };
