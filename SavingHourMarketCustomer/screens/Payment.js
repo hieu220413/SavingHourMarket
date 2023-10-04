@@ -25,6 +25,7 @@ import {format} from 'date-fns';
 import Modal, {
   ModalFooter,
   ModalButton,
+  SlideAnimation,
   ScaleAnimation,
 } from 'react-native-modals';
 import {useFocusEffect} from '@react-navigation/native';
@@ -34,6 +35,7 @@ import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import VnpayMerchant, {
   VnpayMerchantModule,
 } from '../react-native-vnpay-merchant';
+
 LogBox.ignoreLogs(['new NativeEventEmitter']);
 const eventEmitter = new NativeEventEmitter(VnpayMerchantModule);
 
@@ -69,6 +71,8 @@ const Payment = ({navigation, route}) => {
   const [initializing, setInitializing] = useState(true);
 
   const [openAuthModal, setOpenAuthModal] = useState(false);
+
+  const [helpModal, setHelpModal] = useState(false);
 
   const [customerLocation, setCustomerLocation] = useState({
     address: 'Số 121, Trần Văn Dư, Phường 13, Tân Bình,TP.HCM',
@@ -604,13 +608,17 @@ const Payment = ({navigation, route}) => {
                         <Text
                           style={{
                             fontSize: 18,
-                            color: 'black',
+                            color: COLORS.primary,
+
                             fontFamily: 'Roboto',
-                            backgroundColor: '#7ae19c',
+                            backgroundColor: 'white',
                             alignSelf: 'flex-start',
                             paddingVertical: 5,
-                            paddingHorizontal: 10,
-                            borderRadius: 5,
+                            paddingHorizontal: 15,
+                            borderRadius: 15,
+                            borderColor: COLORS.primary,
+                            borderWidth: 1.5,
+                            fontWeight: 700,
                           }}>
                           {item.productCategoryName}
                         </Text>
@@ -1144,6 +1152,36 @@ const Payment = ({navigation, route}) => {
                 />
               </View>
             )}
+
+            <TouchableOpacity
+              onPress={() => {
+                setHelpModal(true);
+              }}
+              style={{
+                padding: 20,
+                marginTop: 20,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                gap: 10,
+                backgroundColor: 'white',
+              }}>
+              <Image
+                resizeMode="contain"
+                style={{width: 25, height: 25}}
+                source={icons.questionMark}
+              />
+
+              <Text
+                style={{
+                  fontSize: 20,
+                  color: 'black',
+                  fontFamily: 'Roboto',
+                }}>
+                Qui định ngày giao hàng
+              </Text>
+            </TouchableOpacity>
+
             {/* Manage payment method */}
             <View style={{backgroundColor: 'white', marginTop: 20}}>
               {/* manage payment method */}
@@ -1523,6 +1561,107 @@ const Payment = ({navigation, route}) => {
             }}>
             Phiên bản đăng nhập của bạn đã hết hạn vui lòng đăng nhập lại
           </Text>
+        </View>
+      </Modal>
+
+      {/* auth modal */}
+      <Modal
+        width={0.8}
+        visible={helpModal}
+        onTouchOutside={() => {
+          setHelpModal(false);
+        }}
+        dialogAnimation={
+          new SlideAnimation({
+            initialValue: 0, // optional
+            slideFrom: 'bottom', // optional
+            useNativeDriver: true, // optional
+          })
+        }
+        footer={
+          <ModalFooter>
+            <ModalButton
+              text="Tôi đã hiểu"
+              onPress={() => {
+                setHelpModal(false);
+              }}
+            />
+          </ModalFooter>
+        }>
+        <View
+          style={{
+            padding: 20,
+          }}>
+          <View
+            style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderBottomColor: '#decbcb',
+              borderBottomWidth: 0.75,
+              paddingBottom: 20,
+            }}>
+            <Text
+              style={{
+                fontSize: 20,
+                color: 'black',
+                fontFamily: 'Roboto',
+                fontWeight: 'bold',
+              }}>
+              Qui định chọn ngày giao hàng
+            </Text>
+          </View>
+          <View style={{marginTop: 20, alignItems: 'flex-start', gap: 15}}>
+            <View
+              style={{flexDirection: 'row', alignItems: 'flex-start', gap: 10}}>
+              <Text
+                style={{
+                  fontSize: 22,
+                  color: 'black',
+                  fontFamily: 'Roboto',
+                  fontWeight: 'bold',
+                }}>
+                •
+              </Text>
+              <Text
+                style={{fontSize: 18, color: 'black', fontFamily: 'Roboto'}}>
+                Đơn hàng luôn được giao sau 2 ngày kể từ ngày đặt hàng trở đi.
+              </Text>
+            </View>
+            <View
+              style={{flexDirection: 'row', alignItems: 'flex-start', gap: 10}}>
+              <Text
+                style={{
+                  fontSize: 22,
+                  color: 'black',
+                  fontFamily: 'Roboto',
+                  fontWeight: 'bold',
+                }}>
+                •
+              </Text>
+              <Text
+                style={{fontSize: 18, color: 'black', fontFamily: 'Roboto'}}>
+                Đơn hàng phải giao trước HSD của sản phẩm có HSD gần nhất một
+                ngày.
+              </Text>
+            </View>
+            <View
+              style={{flexDirection: 'row', alignItems: 'flex-start', gap: 10}}>
+              <Text
+                style={{
+                  fontSize: 22,
+                  color: 'black',
+                  fontFamily: 'Roboto',
+                  fontWeight: 'bold',
+                }}>
+                •
+              </Text>
+              <Text
+                style={{fontSize: 18, color: 'black', fontFamily: 'Roboto'}}>
+                Nếu sản phẩm có HSD gần nhất cách ngày đặt hàng một hoặc hai
+                ngày thì sẽ giao vào ngày hôm sau kể từ ngày đặt hàng
+              </Text>
+            </View>
+          </View>
         </View>
       </Modal>
     </>

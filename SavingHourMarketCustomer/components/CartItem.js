@@ -31,6 +31,9 @@ const CartItem = ({item, cartItems, setcartItems, navigation}) => {
   const handleRemoveQuantity = async () => {
     const newCart = cartItems.map(data => {
       if (data.id === item.id) {
+        if (data.cartQuantity === 1) {
+          return data;
+        }
         return {...data, cartQuantity: data.cartQuantity - 1};
       }
       return data;
@@ -117,13 +120,17 @@ const CartItem = ({item, cartItems, setcartItems, navigation}) => {
             <Text
               style={{
                 fontSize: 18,
-                color: 'black',
+                color: COLORS.primary,
+
                 fontFamily: 'Roboto',
-                backgroundColor: '#7ae19c',
+                backgroundColor: 'white',
                 alignSelf: 'flex-start',
                 paddingVertical: 5,
-                paddingHorizontal: 10,
-                borderRadius: 5,
+                paddingHorizontal: 15,
+                borderRadius: 15,
+                borderColor: COLORS.primary,
+                borderWidth: 1.5,
+                fontWeight: 700,
               }}>
               {item.productSubCategory.productCategory.name}
             </Text>

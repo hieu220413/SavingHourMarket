@@ -279,13 +279,17 @@ const OrderDetail = ({navigation, route}) => {
                     <Text
                       style={{
                         fontSize: 18,
-                        color: 'black',
+                        color: COLORS.primary,
+
                         fontFamily: 'Roboto',
-                        backgroundColor: '#7ae19c',
+                        backgroundColor: 'white',
                         alignSelf: 'flex-start',
                         paddingVertical: 5,
-                        paddingHorizontal: 10,
-                        borderRadius: 5,
+                        paddingHorizontal: 15,
+                        borderRadius: 15,
+                        borderColor: COLORS.primary,
+                        borderWidth: 1.5,
+                        fontWeight: 700,
                       }}>
                       {product.productCategory}
                     </Text>
@@ -621,10 +625,10 @@ const OrderDetail = ({navigation, route}) => {
               style={{
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: '#23ba9c',
+                backgroundColor: COLORS.primary,
                 paddingVertical: 10,
                 width: '100%',
-                borderRadius: 5,
+                borderRadius: 30,
               }}>
               <Text
                 style={{

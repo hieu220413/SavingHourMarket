@@ -25,6 +25,7 @@ const cross = require('../assets/icons/cross.png');
 const close = require('../assets/icons/close.png');
 const orderIcon = require('../assets/icons/ordericon.png');
 const bike = require('../assets/icons/bike.png');
+const questionMark = require('../assets/icons/questionMark.png');
 
 export default {
   home,
@@ -53,4 +54,5 @@ export default {
   close,
   orderIcon,
   bike,
+  questionMark,
 };
