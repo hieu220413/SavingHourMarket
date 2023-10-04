@@ -8,7 +8,7 @@ import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.repository.*;
 import com.fpt.capstone.savinghourmarket.service.CustomerService;
-import com.fpt.capstone.savinghourmarket.service.FirebaseStorageService;
+import com.fpt.capstone.savinghourmarket.service.FirebaseService;
 import com.fpt.capstone.savinghourmarket.service.OrderService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
@@ -383,7 +383,7 @@ public class OrderServiceImpl implements OrderService {
 
     private String generateAndUploadQRCode(Order order) throws IOException {
         ByteArrayOutputStream qrCode = generateQRCodeImage(order.getId());
-        return FirebaseStorageService.uploadQRCodeToStorage(qrCode, order.getId());
+        return FirebaseService.uploadQRCodeToStorage(qrCode, order.getId());
     }
 
     private void mapTransactionToOrder(Order order, Transaction transaction) {
