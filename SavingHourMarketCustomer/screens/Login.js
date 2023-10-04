@@ -9,7 +9,7 @@ import {
   ImageBackground,
   Alert,
 } from 'react-native';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState, useCallback} from 'react';
 import {COLORS} from '../constants/theme';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -22,6 +22,8 @@ import {
 } from '@react-native-google-signin/google-signin';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {API} from '../constants/api';
+import {useFocusEffect} from '@react-navigation/native';
 
 const Login = ({navigation}) => {
   const [password, setPassword] = useState('');
@@ -43,6 +45,7 @@ const Login = ({navigation}) => {
     }
     if (userInfo) {
       // check if user sessions is still available. If yes => redirect to another screen
+      console.log(loginMode.current);
       if (loginMode.current.length === 0) {
         const userTokenId = await userInfo
           .getIdToken(true)
@@ -68,7 +71,7 @@ const Login = ({navigation}) => {
           .then(token => token)
           .catch(e => console.log(e));
         const userInfoAfterGooleLoginRequest = await fetch(
-          'http://saving-hour-market.ap-southeast-2.elasticbeanstalk.com/api/customer/getInfoAfterGoogleLogged',
+          `${API.baseURL}/api/customer/getInfoAfterGoogleLogged`,
           {
             method: 'get',
             headers: {Authorization: `Bearer ${userTokenId}`},
@@ -117,7 +120,7 @@ const Login = ({navigation}) => {
           .then(token => token)
           .catch(e => console.log(e));
         const userInfoAfterEmailPasswordLoginRequest = await fetch(
-          'http://saving-hour-market.ap-southeast-2.elasticbeanstalk.com/api/customer/getInfo',
+          `${API.baseURL}/api/customer/getInfo`,
           {
             method: 'get',
             credentials: 'include',
@@ -133,7 +136,7 @@ const Login = ({navigation}) => {
         if (!userInfoAfterEmailPasswordLoginRequest) {
           await logout();
           Alert.alert(
-            'internal error happened in fetching user info with google',
+            'internal error happened in fetching user info with email & password',
           );
           return;
         }
@@ -146,7 +149,15 @@ const Login = ({navigation}) => {
             Alert.alert('Staff account can not access to customer application');
             return;
           }
+          if (responseBody.message === 'UNVERIFIED_EMAIL') {
+            await logout();
+            Alert.alert('Email is not verified');
+            return;
+          }
         }
+
+        console.log(userInfoAfterEmailPasswordLoginRequest.status)
+
         // fetch success
         if (userInfoAfterEmailPasswordLoginRequest.status === 200) {
           const userInfoResult =
@@ -160,9 +171,8 @@ const Login = ({navigation}) => {
           // Alert.alert(
           //   'Login thanh cong, da save user. Redirect qua screen nao do di',
           // );
-          () => {
-            navigation.navigate('Profile');
-          };
+
+          navigation.navigate('Profile');
         }
       }
 
@@ -214,11 +224,12 @@ const Login = ({navigation}) => {
   };
 
   const logout = async () => {
-    await GoogleSignin.signOut();
-    await AsyncStorage.removeItem('userInfo');
-    auth()
+    await GoogleSignin.signOut().catch(e => console.log(e));
+    await AsyncStorage.removeItem('userInfo').catch(e => console.log(e));
+    await auth()
       .signOut()
-      .then(() => console.log('Signed out successfully!'));
+      .then(() => console.log('Signed out successfully!'))
+      .catch(e => console.log(e));
   };
 
   // useEffect(() => {
@@ -226,18 +237,24 @@ const Login = ({navigation}) => {
   //   console.log(idTokenResultPayload)
   // }, [setTokenId, setIdTokenResultPayload]);
 
-  useEffect(() => {
-    // auth().currentUser.reload()
-    const subscriber = auth().onAuthStateChanged(
-      async userInfo => await onAuthStateChange(userInfo),
-    );
-    GoogleSignin.configure({
-      webClientId:
-        '857253936194-dmrh0nls647fpqbuou6mte9c7e4o6e6h.apps.googleusercontent.com',
-    });
-    return subscriber;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      // auth().currentUser.reload()
+      const subscriber = auth().onAuthStateChanged(
+        async userInfo => await onAuthStateChange(userInfo),
+      );
+      GoogleSignin.configure({
+        webClientId:
+          '857253936194-dmrh0nls647fpqbuou6mte9c7e4o6e6h.apps.googleusercontent.com',
+      });
+      return subscriber;
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
+  );
+
+  // () => {
+
+  // }, []
 
   const emailValidator = () => {
     if (email == '') {
