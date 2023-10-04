@@ -255,19 +255,20 @@ public class OrderServiceImpl implements OrderService {
                 .findByEmail(email)
                 .orElseThrow(() -> new AuthorizationServiceException("Access denied with this account: " + email));
 
-        if (repository.getOrdersProcessing(customer.getEmail()).size() > 3) {
-            throw new CustomerLimitOrderProcessingException("Customer already has 3 PROCESSING orders");
-        }
+        if (repository.getOrdersProcessing(customer.getEmail()).size() < 3) {
+            RLock rLock = redissonClient.getLock("createOrderLock");
+            Order order = null;
+            try {
+                rLock.lock();
+                order = createOrderTransact(orderCreate, customer);
+            } finally {
+                rLock.unlock();
+            }
+            return order;
 
-        RLock rLock = redissonClient.getLock("createOrderLock");
-        Order order = null;
-        try {
-            rLock.lock();
-            order = createOrderTransact(orderCreate, customer);
-        } finally {
-            rLock.unlock();
+        } else{
+            throw new CustomerLimitOrderProcessingException("Bạn hiện đang có 3 đơn hàng đang chờ xác nhận!");
         }
-        return order;
     }
 
     @Transactional(rollbackFor = {ResourceNotFoundException.class, InterruptedException.class, IOException.class, OutOfProductQuantityException.class})
@@ -425,9 +426,8 @@ public class OrderServiceImpl implements OrderService {
             product.setQuantity(product.getQuantity() - boughtQuantity);
             productRepository.save(product);
         } else {
-
             repository.delete(order);
-            throw new OutOfProductQuantityException("Product don't have enough quantity");
+            throw new OutOfProductQuantityException(product.getName() + " chỉ còn " + product.getQuantity() +" sản phẩm!");
         }
     }
 
