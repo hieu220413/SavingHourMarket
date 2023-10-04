@@ -107,7 +107,8 @@ public class Order {
     private OrderBatch orderBatch;
 
     @OneToMany(
-            mappedBy = "order"
+            mappedBy = "order",
+            cascade = CascadeType.ALL
     )
     @JsonIgnore
     private List<OrderDetail> orderDetailList;

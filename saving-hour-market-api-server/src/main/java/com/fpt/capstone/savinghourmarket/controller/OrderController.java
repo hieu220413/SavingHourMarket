@@ -105,6 +105,11 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.cancelOrder(jwtToken,id));
     }
 
+    @DeleteMapping("/deleteOrder/{id}")
+    public ResponseEntity<String> deleteOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken, @PathVariable UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException, FirebaseAuthException, OrderDeletionNotAllowedException {
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.deleteOrder(jwtToken,id));
+    }
+
     @PutMapping("/assignPackageStaff")
     public ResponseEntity<String> assignStaff(@RequestParam UUID orderId, @RequestParam UUID staffId) throws NoSuchOrderException {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.assignPackager(orderId,staffId));

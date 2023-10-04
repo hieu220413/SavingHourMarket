@@ -137,21 +137,63 @@ const Payment = ({navigation, route}) => {
         return;
       }
       // mở sdk
-      eventEmitter.addListener('PaymentBack', e => {
+      eventEmitter.addListener('PaymentBack', async e => {
         console.log('Sdk back!');
         if (e) {
           console.log('e.resultCode = ' + e.resultCode);
+          let orderId;
+          let tokenId;
           switch (e.resultCode) {
             case -1:
               // Khi nguoi dung nhan nut back tu device (Khong phai nhan nut back tu VNPAY UI)
+              orderId = await AsyncStorage.getItem('createdOrderId')
+              tokenId = await auth().currentUser.getIdToken()
+              await fetch(`${API.baseURL}/api/order/deleteOrder/${orderId}`, {
+                method: 'DELETE',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${tokenId}`,
+                },
+              })
+                .then(res => {
+                  return res.json();
+                })
+                .then(respond => {
+                  console.log(respond);
+                  // setItem(respond);
+                })
+                .catch(err => console.log(err));
+              await AsyncStorage.removeItem('createdOrderId')
               console.log('nguoi dung nhan nut back tu device');
               break;
             case 97:
               // Giao dich thanh cong.
+              orderId = await AsyncStorage.getItem('createdOrderId');
+              const orderIdCopy = orderId.slice();
+              await AsyncStorage.removeItem('createdOrderId');
+              navigation.navigate('Order success', {id: orderIdCopy});
               console.log('Giao dich thanh cong');
               break;
             case 98:
               // Giao dich khong thanh cong. (bao gom case nguoi dung an nut back tu VNPAY UI)
+              orderId = await AsyncStorage.getItem('createdOrderId')
+              tokenId = await auth().currentUser.getIdToken()
+              await fetch(`${API.baseURL}/api/order/deleteOrder/${orderId}`, {
+                method: 'DELETE',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${tokenId}`,
+                },
+              })
+                .then(res => {
+                  return res.json();
+                })
+                .then(respond => {
+                  console.log(respond);
+                  // setItem(respond);
+                })
+                .catch(err => console.log(err));
+              await AsyncStorage.removeItem('createdOrderId')
               console.log('Giao dich khong thanh cong');
               break;
           }
@@ -489,6 +531,7 @@ const Payment = ({navigation, route}) => {
         const createdOrderTotalPrice = createdOrderBody.totalPrice;
         const idToken = await auth().currentUser.getIdToken();
         console.log('processing vnpay');
+        await AsyncStorage.setItem('createdOrderId', createdOrderId)
         await processVNPay(createdOrderTotalPrice, createdOrderId, idToken);
         return;
       }

@@ -240,11 +240,39 @@ public class OrderServiceImpl implements OrderService {
             order.setStatus(OrderStatus.CANCEL.ordinal());
             List<OrderDetail> orderDetails = order.getOrderDetailList();
             increaseProductQuantity(orderDetails);
+            if(order.getDiscountList() != null & order.getDiscountList().size() > 0){
+                increaseDiscountQuantity(order.getDiscountList());
+            }
         } else {
             throw new OrderCancellationNotAllowedException("Order with id " + id + " is already in " + order.getStatus().toString() + " process");
         }
         repository.save(order);
         return "Successfully canceled order " + id;
+    }
+
+    @Override
+    public String deleteOrder(String jwtToken, UUID id) throws FirebaseAuthException, ResourceNotFoundException, OrderDeletionNotAllowedException {
+        String email = Utils.getCustomerEmail(jwtToken, firebaseAuth);
+        Customer customer = customerRepository
+                .findByEmail(email)
+                .orElseThrow(() -> new AuthorizationServiceException("Access denied with this account: " + email));
+        if (customer == null) {
+            return "Fail to delete order " + id;
+        }
+        Order order = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
+        if (order.getStatus() == OrderStatus.PROCESSING.ordinal()) {
+            List<OrderDetail> orderDetails = order.getOrderDetailList();
+            increaseProductQuantity(orderDetails);
+            if(order.getDiscountList() != null & order.getDiscountList().size() > 0){
+                increaseDiscountQuantity(order.getDiscountList());
+            }
+
+        } else {
+            throw new OrderDeletionNotAllowedException("Order with id " + id + " is already in " + order.getStatus().toString() + " process");
+        }
+        repository.deleteById(order.getId());
+        return "Successfully deleted  order " + id;
     }
 
     @Override
@@ -521,6 +549,13 @@ public class OrderServiceImpl implements OrderService {
             Product product = orderDetail.getProduct();
             product.setQuantity(product.getQuantity() + orderDetail.getBoughtQuantity());
             productRepository.save(product);
+        }
+    }
+
+    private void increaseDiscountQuantity(List<Discount> discounts) {
+        for (Discount discount : discounts) {
+            discount.setQuantity(discount.getQuantity() + 1);
+            discountRepository.save(discount);
         }
     }
 }
