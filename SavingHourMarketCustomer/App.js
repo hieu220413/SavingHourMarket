@@ -48,10 +48,14 @@ import ForgetPassword from './screens/ForgetPassword';
 import CodeReset from './screens/CodeReset';
 import ResetPassword from './screens/ResetPassword';
 import Feedback from './screens/Feedback';
+import UploadScreen from './screens/Upload';
 
 const Stack = createStackNavigator();
 export default function App() {
   useEffect(() => {
+    messaging()
+      .subscribeToTopic('weather')
+      .then(() => console.log('Subscribed to topic!'));
     const unsubscribe = messaging().onMessage(async remoteMessage => {
       Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
     });
@@ -117,6 +121,7 @@ export default function App() {
           <Stack.Screen name="Code reset" component={CodeReset} />
           <Stack.Screen name="Reset password" component={ResetPassword} />
           <Stack.Screen name="Feedback" component={Feedback} />
+          <Stack.Screen name="Upload" component={UploadScreen} />
         </Stack.Navigator>
       </NavigationContainer>
       <ModalPortal />

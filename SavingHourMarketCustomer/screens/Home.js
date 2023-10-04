@@ -1,7 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable prettier/prettier */
 /* eslint-disable react/no-unstable-nested-components */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   Text,
   View,
@@ -15,14 +15,14 @@ import {
 import SearchBar from '../components/SearchBar';
 import Categories from '../components/Categories';
 import DiscountRow from '../components/DiscountRow';
-import { COLORS, FONTS } from '../constants/theme';
-import { icons } from '../constants';
+import {COLORS, FONTS} from '../constants/theme';
+import {icons} from '../constants';
 import dayjs from 'dayjs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API } from '../constants/api';
-import { useFocusEffect } from '@react-navigation/native';
+import {API} from '../constants/api';
+import {useFocusEffect} from '@react-navigation/native';
 
-const Home = ({ navigation }) => {
+const Home = ({navigation}) => {
   const [categoryList, setCategoryList] = useState([]);
   const [products, setProducts] = useState([]);
   const [cartList, setCartList] = useState([]);
@@ -66,7 +66,7 @@ const Home = ({ navigation }) => {
         return;
       }
 
-      const cartData = { ...data, isChecked: false, cartQuantity: 1 };
+      const cartData = {...data, isChecked: false, cartQuantity: 1};
       newCartList = [...newCartList, cartData];
       setCartList(newCartList);
       await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
@@ -75,7 +75,7 @@ const Home = ({ navigation }) => {
     }
   };
 
-  const Item = ({ data }) => {
+  const Item = ({data}) => {
     return (
       <TouchableOpacity
         key={data.id}
@@ -94,7 +94,7 @@ const Home = ({ navigation }) => {
             style={styles.itemImage}
           />
 
-          <View style={{ justifyContent: 'center', flex: 1, marginRight: 10 }}>
+          <View style={{justifyContent: 'center', flex: 1, marginRight: 10}}>
             <Text
               numberOfLines={1}
               style={{
@@ -107,7 +107,7 @@ const Home = ({ navigation }) => {
               {data.name}
             </Text>
 
-            <View style={{ flexDirection: 'row' }}>
+            <View style={{flexDirection: 'row'}}>
               <Text
                 style={{
                   maxWidth: '70%',
@@ -166,7 +166,7 @@ const Home = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       {/* Search */}
-      <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+      <View style={{flexDirection: 'row', gap: 10, alignItems: 'center'}}>
         <SearchBar />
         <TouchableOpacity
           onPress={() => {
@@ -195,7 +195,7 @@ const Home = ({ navigation }) => {
                 justifyContent: 'center',
               }}>
               <Text
-                style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
+                style={{fontSize: 12, color: 'white', fontFamily: 'Roboto'}}>
                 {cartList.length}
               </Text>
             </View>
@@ -217,8 +217,7 @@ const Home = ({ navigation }) => {
             flexDirection: 'row',
             justifyContent: 'space-between',
             marginHorizontal: 20,
-          }}
-        >
+          }}>
           <Text
             style={{
               fontFamily: FONTS.fontFamily,
@@ -245,8 +244,7 @@ const Home = ({ navigation }) => {
                 color: COLORS.primary,
                 fontWeight: 700,
                 marginBottom: 10,
-              }}
-            >
+              }}>
               Tất cả
             </Text>
           </TouchableOpacity>

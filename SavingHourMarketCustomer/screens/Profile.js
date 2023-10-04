@@ -40,7 +40,7 @@ const Profile = ({navigation}) => {
       }
       console.log('user is logged in');
       const info = await AsyncStorage.getItem('userInfo');
-      // console.log('info: ' + user);
+      console.log('info: ' + info);
       setUser(JSON.parse(info));
       // console.log('Username: ' + user?.fullName);
     } else {
@@ -66,9 +66,9 @@ const Profile = ({navigation}) => {
   );
 
   const logout = async () => {
-    console.log('a');
+    // console.log('a');
     await GoogleSignin.signOut().catch(e => console.log(e));
-    console.log('b');
+    // console.log('b');
     await AsyncStorage.removeItem('userInfo');
     auth()
       .signOut()
@@ -299,7 +299,7 @@ const Profile = ({navigation}) => {
           </TouchableOpacity>
         )}
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -324,8 +324,8 @@ const Profile = ({navigation}) => {
             </Text>
           </View>
           <AntDesign name="right" size={20} color="black"></AntDesign>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </TouchableOpacity> */}
+        {/* <TouchableOpacity
           style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -350,16 +350,16 @@ const Profile = ({navigation}) => {
             </Text>
           </View>
           <AntDesign name="right" size={20} color="black"></AntDesign>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         {/* Line */}
-        <View
+        {/* <View
           style={{
             borderBottomColor: 'black',
             borderBottomWidth: 1,
             width: '93%',
             alignSelf: 'center',
           }}
-        />
+        /> */}
         {/* Options 2 */}
         <TouchableOpacity
           style={{
@@ -389,7 +389,7 @@ const Profile = ({navigation}) => {
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => {
-            navigation.navigate('Login');
+            navigation.navigate('Upload');
           }}
           style={{
             flexDirection: 'row',

@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Keyboard,
+  Alert,
 } from 'react-native';
 import {
   GoogleSignin,
@@ -25,12 +26,15 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import FlatButton from '../shared/button';
 import {useFocusEffect} from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
+import * as ImagePicker from 'react-native-image-picker';
+import storage from '@react-native-firebase/storage';
+import * as Progress from 'react-native-progress';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {API} from '../constants/api';
 
 const EditProfile = ({navigation, route}) => {
   const user = route.params.user;
-  console.log(user);
+  // console.log(user);
   const [username, setUsername] = useState(user?.fullName);
   const [address, setAddress] = useState(user?.address);
   const [phone, setPhone] = useState(user?.phone);
@@ -46,6 +50,66 @@ const EditProfile = ({navigation, route}) => {
   const [display, setDisplay] = useState(false);
 
   const [initializing, setInitializing] = useState(true);
+  const [image, setImage] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [transferred, setTransferred] = useState(0);
+
+  const selectImage = () => {
+    const options = {
+      maxWidth: 2000,
+      maxHeight: 2000,
+      storageOptions: {
+        skipBackup: true,
+        path: 'images',
+      },
+    };
+    ImagePicker.launchImageLibrary(options).then(response => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.error) {
+        console.log('ImagePicker Error: ', response.error);
+      } else if (response.customButton) {
+        console.log('User tapped custom button: ', response.customButton);
+      } else {
+        const source = response.assets[0].uri;
+        console.log('hinh anh', source);
+        setImage(source);
+      }
+    });
+  };
+
+  const uploadImage = async () => {
+    const uri = image;
+    const filename = uri.substring(uri.lastIndexOf('/') + 1);
+    const uploadUri = Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
+    setUploading(true);
+    setTransferred(0);
+
+    let url;
+
+    const task = storage().ref(`userImage/${filename}`).putFile(uploadUri);
+
+    // set progress state
+    task.on('state_changed', snapshot => {
+      setTransferred(
+        Math.round(snapshot.bytesTransferred / snapshot.totalBytes) * 10000,
+      );
+    });
+    try {
+      await task;
+      url = await storage().ref(`userImage/${filename}`).getDownloadURL();
+      // console.log(url);
+    } catch (e) {
+      console.log(e);
+    }
+    setUploading(false);
+    // Alert.alert(
+    //   'Photo uploaded!',
+    //   'Your photo has been uploaded to Firebase Cloud Storage!',
+    // );
+    setImage(null);
+    return url;
+  };
 
   //authen check
   const onAuthStateChange = async userInfo => {
@@ -69,7 +133,7 @@ const EditProfile = ({navigation, route}) => {
       }
 
       console.log('user is logged in');
-      console.log(await AsyncStorage.getItem('userInfo'));
+      console.log('userInfo', await AsyncStorage.getItem('userInfo'));
     } else {
       // no sessions found.
       console.log('user is not logged in');
@@ -128,22 +192,22 @@ const EditProfile = ({navigation, route}) => {
     if (username.trim().length < 3) {
       return setUsernameError('Invalid username');
     }
-    if (dateOfBirth === null) {
-      return setDateOfBirthError('Date of birth can not be empty !');
-    }
+    // if (dateOfBirth === null) {
+    //   return setDateOfBirthError('Date of birth can not be empty !');
+    // }
     if (email.trim().length == 0) {
       return setEmailError('Email can not be empty !');
     }
     if (!isValidEmail(email)) {
       return setEmailError('Invalid email !');
     }
-    if (address === null || address.trim().length == 0) {
-      return setAddressError('Address can not be empty !');
-    }
+    // if (address === null || address.trim().length == 0) {
+    //   return setAddressError('Address can not be empty !');
+    // }
     if (
-      phone === null ||
-      phone.trim().length < 10 ||
-      phone.trim().length > 12
+      phone !== null &&
+      ((phone.trim().length >= 1 && phone.trim().length < 10) ||
+        phone.trim().length > 12)
     ) {
       return setPhoneError('Invalid phone number!');
     }
@@ -157,31 +221,41 @@ const EditProfile = ({navigation, route}) => {
     }
     const valid = isValidForm();
     if (valid === true) {
+      let avatarUrl;
+      if (image !== null) {
+        avatarUrl = await uploadImage();
+      }
+
       submitInfo = {
         fullName: username,
         phone: phone,
-        dateOfBirth: format(dateOfBirth, 'yyyy-MM-dd'),
+        dateOfBirth: dateOfBirth
+          ? format(new Date(dateOfBirth), 'yyyy-MM-dd')
+          : user?.dateOfBirth,
         address: address,
         gender: 0,
+        avatarUrl: avatarUrl ? avatarUrl : user?.avatarUrl,
       };
-      console.log(submitInfo);
+      // console.log('Info', submitInfo);
       const token = await auth().currentUser.getIdToken();
-      console.log("token: "+ token);
+      console.log('token: ', token);
       fetch(`${API.baseURL}/api/customer/updateInfo`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body:JSON.stringify(submitInfo),
+        body: JSON.stringify(submitInfo),
       })
         .then(res => {
-          console.log(res);
           return res.json();
         })
-        .then(respond => console.log(respond))
+        .then(async respond => {
+          console.log('respone', JSON.stringify(respond));
+          await AsyncStorage.setItem('userInfo', JSON.stringify(respond));
+          navigation.navigate('Profile');
+        })
         .catch(err => console.log(err.errorFields));
-      navigation.navigate('Profile');
     }
   };
 
@@ -220,15 +294,29 @@ const EditProfile = ({navigation, route}) => {
             marginVertical: '6%',
             paddingHorizontal: 20,
           }}>
-          <Image
-            style={{
-              width: 120,
-              height: 120,
-              alignSelf: 'center',
-              borderRadius: 100,
-            }}
-            source={{uri: `${user?.avatarUrl}`}}
-          />
+          <TouchableOpacity onPress={selectImage}>
+            {image !== null ? (
+              <Image
+                source={{uri: image}}
+                style={{
+                  width: 120,
+                  height: 120,
+                  alignSelf: 'center',
+                  borderRadius: 100,
+                }}
+              />
+            ) : (
+              <Image
+                style={{
+                  width: 120,
+                  height: 120,
+                  alignSelf: 'center',
+                  borderRadius: 100,
+                }}
+                source={{uri: `${user?.avatarUrl}`}}
+              />
+            )}
+          </TouchableOpacity>
         </View>
         {/* Form */}
         <KeyboardAvoidingView
@@ -299,7 +387,11 @@ const EditProfile = ({navigation, route}) => {
                   <TextInput
                     style={{flex: 1, color: 'black'}}
                     onChangeText={setDateOfBirth}
-                    value={dateOfBirth ? format(new Date(dateOfBirth), 'dd/MM/yyyy') : ''}
+                    value={
+                      dateOfBirth
+                        ? format(new Date(dateOfBirth), 'dd/MM/yyyy')
+                        : ''
+                    }
                     underlineColorAndroid="transparent"
                     placeholder="Date of birth"
                     keyboardType="default"

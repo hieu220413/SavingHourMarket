@@ -147,7 +147,7 @@ const Feedback = ({navigation}) => {
           </View>
           <View style={{height: '60%'}}>
             <ScrollView style={styles.evaluation_box}>
-              <View style={[styles.row_evaluation, {borderBottomWidth: 0.5}]}>
+              {/* <View style={[styles.row_evaluation, {borderBottomWidth: 0.5}]}>
                 <Text style={styles.text_evaluation}>Tiêu đề:</Text>
                 <TextInput
                   placeholder="nhập ..."
@@ -155,11 +155,11 @@ const Feedback = ({navigation}) => {
                     styles.input_evaluation,
                     {marginLeft: 3, marginTop: -12},
                   ]}></TextInput>
-              </View>
+              </View> */}
               <View style={styles.row_evaluation}>
                 <Text style={styles.text_evaluation}>Đánh giá:</Text>
                 <TextInput
-                  placeholder="để lại đánh giá"
+                  placeholder=" để lại đánh giá"
                   multiline={true}
                   style={[
                     styles.input_evaluation,
