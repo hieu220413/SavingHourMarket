@@ -113,30 +113,40 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public String assignPackager(UUID orderId, UUID staffId) throws NoSuchOrderException {
+    public String assignPackager(UUID orderId, UUID staffId) throws NoSuchOrderException, IOException {
         Order order = repository.findById(orderId)
                 .orElseThrow(() -> new NoSuchOrderException("No order found with this id " + orderId));
-        Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new NoSuchElementException("No staff found with this id " + staffId));
+        Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new NoSuchElementException("Không tìm thấy nhân viên với ID: " + staffId));
         if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_ORD.toString())) {
             order.setPackager(staff);
+            order.setStatus(OrderStatus.PACKAGING.ordinal());
+            FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getEmail());
         } else {
-            return "Staff with id" + staffId + "is not PACKAGER";
+            return "Nhân viên này không phải là nhân Viên ĐÓNG GÓI!";
         }
-        return "Packager with id" + staffId + "set to order" + order.getId().toString() + "successfully";
+        return "Đơn hàng này đã được nhận đóng gói thành công!";
     }
 
     @Override
-    public String assignDeliverToOrderGroupOrBatch(UUID orderGroupId, UUID orderBatchId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException {
+    public String assignDeliverToOrderGroupOrBatch(UUID orderGroupId, UUID orderBatchId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException, IOException {
         Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new NoSuchElementException("No staff found with this id " + staffId));
         if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_DLV_0.toString())) {
             if (orderGroupId != null && orderBatchId == null) {
                 OrderGroup orderGroup = orderGroupRepository.findById(orderGroupId)
                         .orElseThrow(() -> new NoSuchOrderException("No group found with this group id " + orderGroupId));
                 orderGroup.setDeliverer(staff);
+                for (Order order: orderGroup.getOrderList()){
+                    order.setStatus(OrderStatus.DELIVERING.ordinal());
+                    FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getEmail());
+                }
             } else if (orderGroupId == null && orderBatchId != null) {
                 OrderBatch orderBatch = orderBatchRepository.findById(orderBatchId)
                         .orElseThrow(() -> new NoSuchOrderException("No batch found with this batch id " + orderBatchId));
                 orderBatch.setDeliverer(staff);
+                for (Order order: orderBatch.getOrderList()){
+                    order.setStatus(OrderStatus.DELIVERING.ordinal());
+                    FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getEmail());
+                }
             } else {
                 throw new ConflictGroupAndBatchException("Group or batch must be specified");
             }
