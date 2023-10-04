@@ -121,8 +121,9 @@ public class OrderController {
     }
 
     @PostMapping("/sendNotification")
-    public ResponseEntity<HttpResponse> sendNotification(@RequestParam String title,@RequestParam String message,@RequestParam String topic) throws IOException {
-        return ResponseEntity.status(HttpStatus.OK).body(FirebaseService.sendPushNotification(title,message,topic));
+    public ResponseEntity<String> sendNotification(@RequestParam String title,@RequestParam String message,@RequestParam String topic) throws IOException {
+        FirebaseService.sendPushNotification(title,message,topic);
+        return ResponseEntity.status(HttpStatus.OK).body("OK");
     }
 
 }
