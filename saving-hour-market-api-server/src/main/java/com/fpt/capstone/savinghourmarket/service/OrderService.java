@@ -11,6 +11,7 @@ import com.fpt.capstone.savinghourmarket.model.OrderProduct;
 import com.fpt.capstone.savinghourmarket.model.OrderWithDetails;
 import com.google.firebase.auth.FirebaseAuthException;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -41,8 +42,9 @@ public interface OrderService {
 
     List<OrderBatch> fetchOrderBatches(District district, LocalDate deliveryDate) throws NoSuchOrderException;
 
-    String assignPackager(UUID orderId, UUID staffId) throws NoSuchOrderException;
+    String assignPackager(UUID orderId, UUID staffId) throws NoSuchOrderException, IOException;
 
-    String assignDeliverToOrderGroupOrBatch(UUID orderGroupId,UUID orderBatchId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException;
+    String assignDeliverToOrderGroupOrBatch(UUID orderGroupId,UUID orderBatchId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException, IOException;
 
+    String deleteOrder(String jwtToken, UUID id) throws FirebaseAuthException, ResourceNotFoundException, OrderDeletionNotAllowedException;
 }

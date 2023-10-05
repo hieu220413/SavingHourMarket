@@ -30,6 +30,12 @@ public class OrderExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiError(LocalDateTime.now().toString(), HttpStatus.METHOD_NOT_ALLOWED.value(),e.getMessage()));
     }
 
+    @ExceptionHandler(OrderDeletionNotAllowedException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<ApiError> handleOrderDeletionNotAllowedException (Exception e){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiError(LocalDateTime.now().toString(), HttpStatus.METHOD_NOT_ALLOWED.value(),e.getMessage()));
+    }
+
 
     @ExceptionHandler(OutOfProductQuantityException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
