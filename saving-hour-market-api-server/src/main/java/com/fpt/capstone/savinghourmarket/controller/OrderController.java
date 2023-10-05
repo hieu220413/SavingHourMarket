@@ -139,8 +139,10 @@ public class OrderController {
     ) throws FirebaseAuthException, IOException, InterruptedException, ApiException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        ShippingFeeDetailResponseBody shippingFeeDetailResponseBody = orderService.getShippingFeeDetail(latitude,longitude);
+        ShippingFeeDetailResponseBody shippingFeeDetailResponseBody = orderService.getShippingFeeDetail(latitude, longitude);
         return ResponseEntity.status(HttpStatus.OK).body(shippingFeeDetailResponseBody);
+    }
+
     @PostMapping("/sendNotification")
     public ResponseEntity<String> sendNotification(@RequestParam String title,@RequestParam String message,@RequestParam String topic) throws IOException {
         FirebaseService.sendPushNotification(title,message,topic);
