@@ -9,8 +9,11 @@ import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.OrderCreate;
 import com.fpt.capstone.savinghourmarket.model.OrderProduct;
 import com.fpt.capstone.savinghourmarket.model.OrderWithDetails;
+import com.fpt.capstone.savinghourmarket.model.ShippingFeeDetailResponseBody;
 import com.google.firebase.auth.FirebaseAuthException;
+import com.google.maps.errors.ApiException;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -46,4 +49,6 @@ public interface OrderService {
     String assignDeliverToOrderGroupOrBatch(UUID orderGroupId,UUID orderBatchId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException;
 
     String deleteOrder(String jwtToken, UUID id) throws FirebaseAuthException, ResourceNotFoundException, OrderDeletionNotAllowedException;
+
+    ShippingFeeDetailResponseBody getShippingFeeDetail(Double latitude, Double longitude) throws IOException, InterruptedException, ApiException;
 }

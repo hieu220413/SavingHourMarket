@@ -11,8 +11,12 @@ import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.OrderCreate;
 import com.fpt.capstone.savinghourmarket.model.OrderProduct;
 import com.fpt.capstone.savinghourmarket.model.OrderWithDetails;
+import com.fpt.capstone.savinghourmarket.model.ShippingFeeDetailResponseBody;
 import com.fpt.capstone.savinghourmarket.service.OrderService;
+import com.fpt.capstone.savinghourmarket.util.Utils;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
+import com.google.maps.errors.ApiException;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -32,6 +37,8 @@ import java.util.UUID;
 public class OrderController {
 
     private final OrderService orderService;
+
+    private final FirebaseAuth firebaseAuth;
 
     @GetMapping("/getOrdersForCustomer")
     public ResponseEntity<List<Order>> getOrdersForCustomer(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
@@ -120,6 +127,18 @@ public class OrderController {
                                                                     @RequestParam(required = false) UUID orderBatchId,
                                                                     @RequestParam UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.assignDeliverToOrderGroupOrBatch(orderGroupId,orderBatchId,staffId));
+    }
+
+    @GetMapping("/getShippingFeeDetail")
+    public ResponseEntity<ShippingFeeDetailResponseBody> getShippingFeeDetail(
+            @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken,
+            @RequestParam Double latitude,
+            @RequestParam Double longitude
+    ) throws FirebaseAuthException, IOException, InterruptedException, ApiException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        ShippingFeeDetailResponseBody shippingFeeDetailResponseBody = orderService.getShippingFeeDetail(latitude,longitude);
+        return ResponseEntity.status(HttpStatus.OK).body(shippingFeeDetailResponseBody);
     }
 
 }
