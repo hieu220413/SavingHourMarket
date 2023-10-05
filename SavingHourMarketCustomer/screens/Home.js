@@ -21,6 +21,8 @@ import dayjs from 'dayjs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API } from '../constants/api';
 import { useFocusEffect } from '@react-navigation/native';
+import { Alert } from 'react-native';
+import messaging from '@react-native-firebase/messaging';
 
 const Home = ({ navigation }) => {
   const [categoryList, setCategoryList] = useState([]);

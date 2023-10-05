@@ -11,17 +11,20 @@ import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.OrderCreate;
 import com.fpt.capstone.savinghourmarket.model.OrderProduct;
 import com.fpt.capstone.savinghourmarket.model.OrderWithDetails;
+import com.fpt.capstone.savinghourmarket.service.FirebaseService;
 import com.fpt.capstone.savinghourmarket.service.OrderService;
 import com.google.firebase.auth.FirebaseAuthException;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.http.HttpResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -111,15 +114,21 @@ public class OrderController {
     }
 
     @PutMapping("/assignPackageStaff")
-    public ResponseEntity<String> assignStaff(@RequestParam UUID orderId, @RequestParam UUID staffId) throws NoSuchOrderException {
+    public ResponseEntity<String> assignStaff(@RequestParam UUID orderId, @RequestParam UUID staffId) throws NoSuchOrderException, IOException {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.assignPackager(orderId,staffId));
     }
 
     @PutMapping("/assignDeliveryStaff")
     public ResponseEntity<String> assignDeliveryStaffToGroupOrBatch(@RequestParam(required = false) UUID orderGroupId,
                                                                     @RequestParam(required = false) UUID orderBatchId,
-                                                                    @RequestParam UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException {
+                                                                    @RequestParam UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException, IOException {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.assignDeliverToOrderGroupOrBatch(orderGroupId,orderBatchId,staffId));
+    }
+
+    @PostMapping("/sendNotification")
+    public ResponseEntity<String> sendNotification(@RequestParam String title,@RequestParam String message,@RequestParam String topic) throws IOException {
+        FirebaseService.sendPushNotification(title,message,topic);
+        return ResponseEntity.status(HttpStatus.OK).body("OK");
     }
 
 }
