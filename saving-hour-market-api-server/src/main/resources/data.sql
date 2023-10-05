@@ -137,17 +137,17 @@ INSERT INTO `saving_hour_market`.`product_category` (`id`, `name`)
 
 
 -- Product sub category
-INSERT INTO `saving_hour_market`.`product_sub_category` (`id`, `name`, `allowable_display_threshold`, `product_category_id`)
+INSERT INTO `saving_hour_market`.`product_sub_category` (`id`, `name`, `allowable_display_threshold`, `product_category_id`, `image_url`)
 --     VALUES ('id', 'name', 'allowable_display_threshold', 'product_category_id');
-    VALUES  (UUID_TO_BIN('accf3fdf-5541-11ee-8a50-a85e45c41921'), 'Fruit', 3, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), 'Frozen Food Package', 4, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf4210-5541-11ee-8a50-a85e45c41921'), 'Frozen Dessert', 4, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf4320-5541-11ee-8a50-a85e45c41921'), 'Dairy Product', 2, UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf4875-5541-11ee-8a50-a85e45c41921'), 'Noodles', 5, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf4766-5541-11ee-8a50-a85e45c41921'), 'Cosmetic', 30, UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf442f-5541-11ee-8a50-a85e45c41921'), 'Toiletries', 30, UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf4547-5541-11ee-8a50-a85e45c41921'), 'Detergents', 30, UUID_TO_BIN('accf0055-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf4656-5541-11ee-8a50-a85e45c41921'), 'Alcoholic drink', 5, UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'));
+    VALUES  (UUID_TO_BIN('accf3fdf-5541-11ee-8a50-a85e45c41921'), 'Fruit', 3, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ffruit.png?alt=media'),
+            (UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), 'Frozen Food Package', 4, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ffrozen-food.png?alt=media'),
+            (UUID_TO_BIN('accf4210-5541-11ee-8a50-a85e45c41921'), 'Frozen Dessert', 4, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ffrozen-desert.png?alt=media'),
+            (UUID_TO_BIN('accf4320-5541-11ee-8a50-a85e45c41921'), 'Dairy Product', 2, UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdiary-product.png?alt=media'),
+            (UUID_TO_BIN('accf4875-5541-11ee-8a50-a85e45c41921'), 'Noodles', 5, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnoodles.png?alt=media'),
+            (UUID_TO_BIN('accf4766-5541-11ee-8a50-a85e45c41921'), 'Cosmetic', 30, UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fcosmetics.png?alt=media'),
+            (UUID_TO_BIN('accf442f-5541-11ee-8a50-a85e45c41921'), 'Toiletries', 30, UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ftoiletries.png?alt=media'),
+            (UUID_TO_BIN('accf4547-5541-11ee-8a50-a85e45c41921'), 'Detergents', 30, UUID_TO_BIN('accf0055-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdetergent.png?alt=media'),
+            (UUID_TO_BIN('accf4656-5541-11ee-8a50-a85e45c41921'), 'Alcoholic drink', 5, UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Falcoholic-drink.png?alt=media');
 
 -- Supermarket
 INSERT INTO `saving_hour_market`.`supermarket` (`id`, `status`, `address`, `name`, `phone`)
