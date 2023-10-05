@@ -44,9 +44,9 @@ public interface OrderService {
 
     List<OrderBatch> fetchOrderBatches(District district, LocalDate deliveryDate) throws NoSuchOrderException;
 
-    String assignPackager(UUID orderId, UUID staffId) throws NoSuchOrderException;
+    String assignPackager(UUID orderId, UUID staffId) throws NoSuchOrderException, IOException;
 
-    String assignDeliverToOrderGroupOrBatch(UUID orderGroupId,UUID orderBatchId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException;
+    String assignDeliverToOrderGroupOrBatch(UUID orderGroupId,UUID orderBatchId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException, IOException;
 
     String deleteOrder(String jwtToken, UUID id) throws FirebaseAuthException, ResourceNotFoundException, OrderDeletionNotAllowedException;
 

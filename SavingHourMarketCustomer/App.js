@@ -1,9 +1,9 @@
 /* eslint-disable prettier/prettier */
-import React, {useEffect} from 'react';
-import {createStackNavigator} from '@react-navigation/stack';
-import {NavigationContainer} from '@react-navigation/native';
+import React, { useEffect } from 'react';
+import { createStackNavigator } from '@react-navigation/stack';
+import { NavigationContainer } from '@react-navigation/native';
 import 'react-native-gesture-handler';
-import {Alert} from 'react-native';
+import { Alert } from 'react-native';
 import Tabs from './navigation/tabs';
 import Discount from './screens/Discount';
 import Orders from './screens/Orders';
@@ -14,7 +14,7 @@ import VNPayTest from './screens/VNPayTest';
 import EditProfile from './screens/EditProfile';
 import Login from './screens/Login';
 import Signup from './screens/Signup';
-import {ModalPortal} from 'react-native-modals';
+import { ModalPortal } from 'react-native-modals';
 import Payment from './screens/Payment';
 import SelectPickupPoint from './screens/SelectPickupPoint';
 import SelectTimeFrame from './screens/SelectTimeFrame';
@@ -24,7 +24,7 @@ import SelectCustomerLocation from './screens/SelectCustomerLocation';
 import EditCustomerLocation from './screens/EditCustomerLocation';
 import OrderDetail from './screens/OrderDetail';
 
-import {LogBox} from 'react-native';
+import { LogBox } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 
 Geolocation.setRNConfiguration({
@@ -52,6 +52,9 @@ import Feedback from './screens/Feedback';
 const Stack = createStackNavigator();
 export default function App() {
   useEffect(() => {
+    messaging()
+      .subscribeToTopic('weather')
+      .then(() => console.log('Subscribed to topic!'));
     const unsubscribe = messaging().onMessage(async remoteMessage => {
       Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
     });
@@ -111,7 +114,7 @@ export default function App() {
           <Stack.Screen
             name="Order success"
             component={OrderSuccess}
-            options={{swipeEnabled: false}}
+            options={{ swipeEnabled: false }}
           />
           <Stack.Screen name="Forgot password" component={ForgetPassword} />
           <Stack.Screen name="Code reset" component={CodeReset} />
