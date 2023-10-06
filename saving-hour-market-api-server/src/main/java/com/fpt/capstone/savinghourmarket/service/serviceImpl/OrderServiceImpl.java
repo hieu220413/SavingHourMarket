@@ -461,6 +461,8 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderStatus.PROCESSING.ordinal());
         order.setPaymentMethod(orderCreate.getPaymentMethod());
         order.setAddressDeliver(orderCreate.getAddressDeliver());
+        order.setLongitude(orderCreate.getLongitude());
+        order.setLatitude(orderCreate.getLatitude());
         order.setCreatedTime(LocalDateTime.now());
         mapDiscountsToOrder(order, orderCreate.getDiscountID());
         mapTransactionToOrder(order, orderCreate.getTransaction());
