@@ -34,6 +34,12 @@ public class Order {
 
     private String receiverName;
 
+    @Column(columnDefinition = "decimal(11,8)")
+    private Float longitude;
+
+    @Column(columnDefinition = "decimal(10,8)")
+    private Float latitude;
+
     private Integer totalDiscountPrice;
 
     @CreationTimestamp
@@ -70,6 +76,13 @@ public class Order {
             referencedColumnName = "id"
     )
     private Customer customer;
+
+    @ManyToOne()
+    @JoinColumn(
+            name = "time_frame_id",
+            referencedColumnName = "id"
+    )
+    private TimeFrame timeFrame;
 
     @ManyToMany(
             fetch = FetchType.LAZY
