@@ -13,6 +13,14 @@ import com.fpt.capstone.savinghourmarket.service.OrderService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
+import com.google.maps.DistanceMatrixApi;
+import com.google.maps.DistanceMatrixApiRequest;
+import com.google.maps.GeoApiContext;
+import com.google.maps.errors.ApiException;
+import com.google.maps.model.DistanceMatrix;
+import com.google.maps.model.DistanceMatrixElement;
+import com.google.maps.model.DistanceMatrixRow;
+import com.google.maps.model.LatLng;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.glxn.qrgen.QRCode;
@@ -42,6 +50,8 @@ import java.util.regex.Pattern;
 public class OrderServiceImpl implements OrderService {
 
     private final FirebaseAuth firebaseAuth;
+
+    private final GeoApiContext geoApiContext;
 
     @Autowired
     private final RedissonClient redissonClient;
@@ -340,6 +350,58 @@ public class OrderServiceImpl implements OrderService {
 //            // Handle each cluster of data points
 //        }
         return null;
+    }
+
+    @Override
+    public ShippingFeeDetailResponseBody getShippingFeeDetail(Double latitude, Double longitude) throws IOException, InterruptedException, ApiException {
+        int numberOfClosestPickupPointPicked = 3;
+        PickupPointSuggestionResponseBody closetPickupPoint;
+        Integer shippingFee = 10000;
+        List<PickupPoint> pickupPoints = pickupPointRepository.getAllSortByDistance(latitude, longitude);
+        List<PickupPointSuggestionResponseBody> pickupPointSuggestionResponseBodyList = new ArrayList<>();
+        List<LatLng> latLngs = new ArrayList<>();
+        for(int i = 0; i < numberOfClosestPickupPointPicked; i++) {
+            pickupPointSuggestionResponseBodyList.add(new PickupPointSuggestionResponseBody(pickupPoints.get(i)));
+            latLngs.add(new LatLng(pickupPoints.get(i).getLatitude(), pickupPoints.get(i).getLongitude()));
+        }
+
+        DistanceMatrixApiRequest req = DistanceMatrixApi.newRequest(geoApiContext);
+        DistanceMatrix distanceMatrix = req
+                .origins(new LatLng(latitude, longitude))
+                .destinations(
+                        latLngs.toArray(new LatLng[numberOfClosestPickupPointPicked])
+                )
+                .await();
+
+        Iterator distanceMatrixRowsIterator = Arrays.stream(distanceMatrix.rows).iterator();
+        if (distanceMatrixRowsIterator.hasNext()){
+            int i = 0;
+            DistanceMatrixRow distanceMatrixRow = (DistanceMatrixRow) distanceMatrixRowsIterator.next();
+            Iterator distanceMatrixElementsIterator = Arrays.stream(distanceMatrixRow.elements).iterator();
+            while (distanceMatrixElementsIterator.hasNext()){
+                DistanceMatrixElement distanceMatrixElement = (DistanceMatrixElement) distanceMatrixElementsIterator.next();
+                pickupPointSuggestionResponseBodyList.get(i).setDistance(distanceMatrixElement.distance.humanReadable);
+                pickupPointSuggestionResponseBodyList.get(i).setDistanceInValue(distanceMatrixElement.distance.inMeters);
+                i++;
+            }
+        }
+
+        pickupPointSuggestionResponseBodyList.sort((o1, o2) -> (int) (o1.getDistanceInValue() - o2.getDistanceInValue()));
+
+        closetPickupPoint = pickupPointSuggestionResponseBodyList.get(0);
+
+        // convert m to km
+        int distance = closetPickupPoint.getDistanceInValue().intValue() / 1000;
+
+        if(distance > 2) {
+            shippingFee += (distance - 2)*1000;
+        }
+
+        ShippingFeeDetailResponseBody shippingFeeDetailResponseBody = new ShippingFeeDetailResponseBody();
+        shippingFeeDetailResponseBody.setClosestPickupPoint(closetPickupPoint);
+        shippingFeeDetailResponseBody.setShippingFee(shippingFee);
+
+        return shippingFeeDetailResponseBody;
     }
 
     @Override
