@@ -140,6 +140,7 @@ const Signup = ({navigation}) => {
           console.log(e);
           return null;
         });
+      console.log(user);
       if (!user) {
         Alert.alert('Email address does not exitst!!!');
         navigation.navigate('Login');
