@@ -47,4 +47,6 @@ public interface OrderService {
     String assignDeliverToOrderGroupOrBatch(UUID orderGroupId,UUID orderBatchId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException, IOException;
 
     String deleteOrder(String jwtToken, UUID id) throws FirebaseAuthException, ResourceNotFoundException, OrderDeletionNotAllowedException;
+
+    List<OrderBatch> batchingForStaff(LocalDate deliverDate, UUID timeFrameId, Integer batchQuantity);
 }

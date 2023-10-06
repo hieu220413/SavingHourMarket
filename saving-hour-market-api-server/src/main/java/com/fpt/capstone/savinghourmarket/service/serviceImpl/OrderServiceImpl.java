@@ -135,7 +135,7 @@ public class OrderServiceImpl implements OrderService {
                 OrderGroup orderGroup = orderGroupRepository.findById(orderGroupId)
                         .orElseThrow(() -> new NoSuchOrderException("No group found with this group id " + orderGroupId));
                 orderGroup.setDeliverer(staff);
-                for (Order order: orderGroup.getOrderList()){
+                for (Order order : orderGroup.getOrderList()) {
                     order.setStatus(OrderStatus.DELIVERING.ordinal());
                     FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getEmail());
                 }
@@ -143,7 +143,7 @@ public class OrderServiceImpl implements OrderService {
                 OrderBatch orderBatch = orderBatchRepository.findById(orderBatchId)
                         .orElseThrow(() -> new NoSuchOrderException("No batch found with this batch id " + orderBatchId));
                 orderBatch.setDeliverer(staff);
-                for (Order order: orderBatch.getOrderList()){
+                for (Order order : orderBatch.getOrderList()) {
                     order.setStatus(OrderStatus.DELIVERING.ordinal());
                     FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getEmail());
                 }
@@ -250,7 +250,7 @@ public class OrderServiceImpl implements OrderService {
             order.setStatus(OrderStatus.CANCEL.ordinal());
             List<OrderDetail> orderDetails = order.getOrderDetailList();
             increaseProductQuantity(orderDetails);
-            if(order.getDiscountList() != null & order.getDiscountList().size() > 0){
+            if (order.getDiscountList() != null & order.getDiscountList().size() > 0) {
                 increaseDiscountQuantity(order.getDiscountList());
             }
         } else {
@@ -274,7 +274,7 @@ public class OrderServiceImpl implements OrderService {
         if (order.getStatus() == OrderStatus.PROCESSING.ordinal()) {
             List<OrderDetail> orderDetails = order.getOrderDetailList();
             increaseProductQuantity(orderDetails);
-            if(order.getDiscountList() != null & order.getDiscountList().size() > 0){
+            if (order.getDiscountList() != null & order.getDiscountList().size() > 0) {
                 increaseDiscountQuantity(order.getDiscountList());
             }
 
@@ -283,6 +283,63 @@ public class OrderServiceImpl implements OrderService {
         }
         repository.deleteById(order.getId());
         return "Successfully deleted  order " + id;
+    }
+
+    @Override
+    public List<OrderBatch> batchingForStaff(LocalDate deliverDate, UUID timeFrameId, Integer batchQuantity) {
+//
+//
+//        private static final int MIN_POINTS = 5; // Minimum number of points for a cluster
+//
+//
+//        // Define the epsilon (ε) value in degrees for a 10 km radius
+//        double epsilonInDegrees = 0.0897;
+//
+//        // Create a DBSCAN clusterer with the specified epsilon and distance measure
+//        DBSCANClusterer<DataPoint> clusterer = new DBSCANClusterer<>(epsilonInDegrees, MIN_POINTS, new DistanceMeasure() {
+//            @Override
+//            public double compute(double[] a, double[] b) {
+//                // Implement the Haversine distance calculation
+//                double lat1 = a[0];
+//                double lon1 = a[1];
+//                double lat2 = b[0];
+//                double lon2 = b[1];
+//
+//                // Convert latitude and longitude from degrees to radians
+//                lat1 = Math.toRadians(lat1);
+//                lon1 = Math.toRadians(lon1);
+//                lat2 = Math.toRadians(lat2);
+//                lon2 = Math.toRadians(lon2);
+//
+//                // Haversine formula
+//                double dLat = lat2 - lat1;
+//                double dLon = lon2 - lon1;
+//
+//                double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+//                        Math.cos(lat1) * Math.cos(lat2) *
+//                                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+//
+//                double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+//
+//                // Radius of the Earth in kilometers
+//                double earthRadiusKm = 6371.0;
+//
+//                // Calculate the distance
+//                double distance = earthRadiusKm * c;
+//
+//                return distance;
+//            }
+//        });
+//
+//        // Perform clustering
+//        List<Cluster<DataPoint>> clusters = clusterer.cluster(dataPoints);
+//
+//        // Process the clusters as needed
+//        for (Cluster<DataPoint> cluster : clusters) {
+//            List<DataPoint> clusterPoints = cluster.getPoints();
+//            // Handle each cluster of data points
+//        }
+        return null;
     }
 
     @Override
@@ -304,7 +361,7 @@ public class OrderServiceImpl implements OrderService {
             }
             return order;
 
-        } else{
+        } else {
             throw new CustomerLimitOrderProcessingException("Bạn hiện đang có 3 đơn hàng đang chờ xác nhận!");
         }
     }
@@ -315,8 +372,6 @@ public class OrderServiceImpl implements OrderService {
 
         if (orderCreateHasPickupPointAndTimeFrame(orderCreate)) {
             groupingOrder(order, orderCreate);
-        } else {
-            batchingOrder(order, orderCreate);
         }
 
         Order orderSavedSuccessWithoutQrCodeUrl = repository.save(order);
@@ -330,25 +385,6 @@ public class OrderServiceImpl implements OrderService {
         return orderSavedSuccess;
     }
 
-    private void batchingOrder(Order order, OrderCreate orderCreate) throws ResourceNotFoundException {
-        String district = extractDistrict(orderCreate.getAddressDeliver());
-        if (district != null) {
-            log.debug(district);
-        } else {
-            throw new ResourceNotFoundException("District not found");
-        }
-        OrderBatch batch = null;
-        Optional<OrderBatch> orderBatch = orderBatchRepository.findByDistrictAndDeliverDate(district, orderCreate.getDeliveryDate());
-        if (orderBatch.isPresent()) {
-            batch = orderBatch.get();
-        } else {
-            batch = new OrderBatch();
-            batch.setDeliverDate(orderCreate.getDeliveryDate());
-            batch.setDistrict(district);
-            orderBatchRepository.save(batch);
-        }
-        order.setOrderBatch(batch);
-    }
 
     private Order setOrderData(OrderCreate orderCreate, Customer customer) throws ResourceNotFoundException, InterruptedException {
         Order order = new Order();
@@ -465,7 +501,7 @@ public class OrderServiceImpl implements OrderService {
             productRepository.save(product);
         } else {
             repository.delete(order);
-            throw new OutOfProductQuantityException(product.getName() + " chỉ còn " + product.getQuantity() +" sản phẩm!");
+            throw new OutOfProductQuantityException(product.getName() + " chỉ còn " + product.getQuantity() + " sản phẩm!");
         }
     }
 

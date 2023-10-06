@@ -131,4 +131,9 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body("OK");
     }
 
+    @GetMapping("/batchingForStaff")
+    public ResponseEntity<List<OrderBatch>> batchingForStaff(@RequestParam LocalDate deliverDate,@RequestParam UUID timeFrameId,@RequestParam Integer batchQuantity){
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.batchingForStaff(deliverDate,timeFrameId,batchQuantity));
+    }
+
 }
