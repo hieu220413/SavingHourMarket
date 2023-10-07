@@ -48,6 +48,8 @@ import ForgetPassword from './screens/ForgetPassword';
 import CodeReset from './screens/CodeReset';
 import ResetPassword from './screens/ResetPassword';
 import Feedback from './screens/Feedback';
+import Toast, {BaseToast} from 'react-native-toast-message';
+import {COLORS} from './constants/theme';
 
 const Stack = createStackNavigator();
 export default function App() {
@@ -64,6 +66,33 @@ export default function App() {
     notificationListener();
     getToken();
   }, []);
+
+  /*
+  1. Create the config
+*/
+  const toastConfig = {
+    /*
+    Overwrite 'success' type,
+    by modifying the existing `BaseToast` component
+  */
+    success: props => (
+      <BaseToast
+        {...props}
+        style={{backgroundColor: COLORS.primary, borderLeftWidth: 0}}
+        contentContainerStyle={{paddingHorizontal: 15}}
+        text1Style={{
+          fontSize: 16,
+          fontWeight: '700',
+          color: 'white',
+        }}
+        text2Style={{
+          fontSize: 14,
+          fontWeight: '400',
+          color: 'white',
+        }}
+      />
+    ),
+  };
   return (
     <>
       <NavigationContainer>
@@ -120,6 +149,7 @@ export default function App() {
         </Stack.Navigator>
       </NavigationContainer>
       <ModalPortal />
+      <Toast config={toastConfig} />
     </>
   );
 }

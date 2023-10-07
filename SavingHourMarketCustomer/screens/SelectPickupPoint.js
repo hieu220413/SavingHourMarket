@@ -10,6 +10,7 @@ import {useFocusEffect} from '@react-navigation/native';
 import Geolocation from '@react-native-community/geolocation';
 import GetLocation from 'react-native-get-location';
 import {API} from '../constants/api';
+import LoadingScreen from '../components/LoadingScreen';
 
 const SelectPickupPoint = ({navigation, route}) => {
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -18,6 +19,7 @@ const SelectPickupPoint = ({navigation, route}) => {
     [],
   );
   const [otherPickupPointList, setOtherPickupPointList] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -67,6 +69,7 @@ const SelectPickupPoint = ({navigation, route}) => {
       // )
       //   .then(res => res.json())
       //   .then(response => {
+      //     console.log(response);
       //     setPickupPointSuggestionList(
       //       response.sortedPickupPointSuggestionList,
       //     );
@@ -76,154 +79,162 @@ const SelectPickupPoint = ({navigation, route}) => {
       // *************************
 
       // Xài đỡ cái này
+      setLoading(true);
       fetch(`${API.baseURL}/api/pickupPoint/getAll`)
         .then(res => res.json())
         .then(response => {
           setOtherPickupPointList(response);
+          setLoading(false);
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+          console.log(err);
+          setLoading(false);
+        });
       // ****************
     }, []),
   );
 
   return (
-    <ScrollView>
-      <View
-        style={{
-          flex: 1,
-          alignItems: 'center',
-          flexDirection: 'row',
-          gap: 20,
-          marginBottom: 30,
-          backgroundColor: '#ffffff',
-          padding: 20,
-          elevation: 4,
-        }}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Image
-            source={icons.leftArrow}
-            resizeMode="contain"
-            style={{width: 35, height: 35, tintColor: COLORS.primary}}
-          />
-        </TouchableOpacity>
-        <Text
+    <>
+      <ScrollView>
+        <View
           style={{
-            fontSize: 30,
-            textAlign: 'center',
-            color: '#000000',
-            fontWeight: 'bold',
-            fontFamily: 'Roboto',
+            flex: 1,
+            alignItems: 'center',
+            flexDirection: 'row',
+            gap: 20,
+            marginBottom: 30,
+            backgroundColor: '#ffffff',
+            padding: 20,
+            elevation: 4,
           }}>
-          Select pickup point
-        </Text>
-      </View>
-      <View style={{backgroundColor: 'white', padding: 20}}>
-        <Text
-          style={{
-            fontSize: 20,
-            color: 'black',
-            fontFamily: 'Roboto',
-            fontWeight: 'bold',
-            marginBottom: 20,
-          }}>
-          Điểm giao hàng gần nhất
-        </Text>
-        {/* Suggest Pickup point */}
-        {pickupPointSuggestionList.map(item => (
-          <TouchableOpacity
-            key={item.id}
-            onPress={() => {
-              route.params.setPickupPoint(item);
-              navigation.navigate('Payment');
-            }}
-            style={{
-              paddingVertical: 15,
-              borderTopColor: '#decbcb',
-              borderTopWidth: 0.75,
-              borderBottomColor: '#decbcb',
-              borderBottomWidth: 0.75,
-            }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 15,
-                flex: 1,
-              }}>
-              <Image
-                resizeMode="contain"
-                style={{width: 25, height: 25}}
-                source={icons.location}
-              />
-              <Text
-                style={{
-                  fontSize: 17,
-                  color: 'black',
-                  fontFamily: 'Roboto',
-                  width: '75%',
-                }}>
-                {item.address}
-              </Text>
-              <Text style={{fontSize: 14}}>{item.distance}</Text>
-            </View>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Image
+              source={icons.leftArrow}
+              resizeMode="contain"
+              style={{width: 35, height: 35, tintColor: COLORS.primary}}
+            />
           </TouchableOpacity>
-        ))}
-
-        {/* ******* */}
-        <Text
-          style={{
-            fontSize: 20,
-            color: 'black',
-            fontFamily: 'Roboto',
-            fontWeight: 'bold',
-            marginBottom: 20,
-            marginTop: 20,
-          }}>
-          Khác
-        </Text>
-        {/* Order pickup point */}
-        {otherPickupPointList.map(item => (
-          <TouchableOpacity
-            key={item.id}
-            onPress={() => {
-              route.params.setPickupPoint(item);
-              navigation.navigate('Payment');
-            }}
+          <Text
             style={{
-              paddingVertical: 15,
-              borderTopColor: '#decbcb',
-              borderTopWidth: 0.75,
-              borderBottomColor: '#decbcb',
-              borderBottomWidth: 0.75,
+              fontSize: 25,
+              textAlign: 'center',
+              color: '#000000',
+              fontWeight: 'bold',
+              fontFamily: 'Roboto',
             }}>
-            <View
+            Chọn điểm giao hàng
+          </Text>
+        </View>
+        <View style={{backgroundColor: 'white', padding: 20}}>
+          <Text
+            style={{
+              fontSize: 20,
+              color: 'black',
+              fontFamily: 'Roboto',
+              fontWeight: 'bold',
+              marginBottom: 20,
+            }}>
+            Điểm giao hàng gần nhất
+          </Text>
+          {/* Suggest Pickup point */}
+          {pickupPointSuggestionList.map(item => (
+            <TouchableOpacity
+              key={item.id}
+              onPress={() => {
+                route.params.setPickupPoint(item);
+                navigation.navigate('Payment');
+              }}
               style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 15,
-                flex: 1,
+                paddingVertical: 15,
+                borderTopColor: '#decbcb',
+                borderTopWidth: 0.75,
+                borderBottomColor: '#decbcb',
+                borderBottomWidth: 0.75,
               }}>
-              <Image
-                resizeMode="contain"
-                style={{width: 25, height: 25}}
-                source={icons.location}
-              />
-              <Text
+              <View
                 style={{
-                  fontSize: 17,
-                  color: 'black',
-                  fontFamily: 'Roboto',
-                  flex: 0.9,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 15,
+                  flex: 1,
                 }}>
-                {item.address}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        ))}
+                <Image
+                  resizeMode="contain"
+                  style={{width: 25, height: 25}}
+                  source={icons.location}
+                />
+                <Text
+                  style={{
+                    fontSize: 17,
+                    color: 'black',
+                    fontFamily: 'Roboto',
+                    width: '75%',
+                  }}>
+                  {item.address}
+                </Text>
+                <Text style={{fontSize: 14}}>{item.distance}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
 
-        {/* *************************** */}
-      </View>
-    </ScrollView>
+          {/* ******* */}
+          <Text
+            style={{
+              fontSize: 20,
+              color: 'black',
+              fontFamily: 'Roboto',
+              fontWeight: 'bold',
+              marginBottom: 20,
+              marginTop: 20,
+            }}>
+            Khác
+          </Text>
+          {/* Order pickup point */}
+          {otherPickupPointList.map(item => (
+            <TouchableOpacity
+              key={item.id}
+              onPress={() => {
+                route.params.setPickupPoint(item);
+                navigation.navigate('Payment');
+              }}
+              style={{
+                paddingVertical: 15,
+                borderTopColor: '#decbcb',
+                borderTopWidth: 0.75,
+                borderBottomColor: '#decbcb',
+                borderBottomWidth: 0.75,
+              }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 15,
+                  flex: 1,
+                }}>
+                <Image
+                  resizeMode="contain"
+                  style={{width: 25, height: 25}}
+                  source={icons.location}
+                />
+                <Text
+                  style={{
+                    fontSize: 17,
+                    color: 'black',
+                    fontFamily: 'Roboto',
+                    flex: 0.9,
+                  }}>
+                  {item.address}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+
+          {/* *************************** */}
+        </View>
+      </ScrollView>
+      {loading && <LoadingScreen />}
+    </>
   );
 };
 

@@ -125,12 +125,8 @@ const EditCustomerLocation = ({navigation, route}) => {
               long: details.geometry.location.lng,
               lat: details.geometry.location.lat,
             };
+            console.log(location);
             setLocationPicked(location);
-          }}
-          textInputProps={{
-            onChangeText: value => {
-              setTextHasChanged(true);
-            },
           }}
           query={{
             // available options: https://developers.google.com/places/web-service/autocomplete

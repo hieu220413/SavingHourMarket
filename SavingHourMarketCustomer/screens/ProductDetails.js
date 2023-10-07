@@ -231,9 +231,7 @@ const ProductDetails = ({navigation, route}) => {
             </Text>
           </View>
 
-          <TouchableOpacity
-            disabled={clickable}
-            onPress={() => handleAddToCart(product)}>
+          <TouchableOpacity onPress={() => handleAddToCart(product)}>
             <Text
               style={{
                 paddingVertical: 8,

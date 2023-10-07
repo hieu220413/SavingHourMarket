@@ -30,13 +30,13 @@ const SelectPaymentMethod = ({navigation, route}) => {
         </TouchableOpacity>
         <Text
           style={{
-            fontSize: 30,
+            fontSize: 25,
             textAlign: 'center',
             color: '#000000',
             fontWeight: 'bold',
             fontFamily: 'Roboto',
           }}>
-          Payment Method
+          Phương thức thanh toán
         </Text>
       </View>
       <View style={{backgroundColor: 'white', padding: 20}}>
@@ -69,7 +69,7 @@ const SelectPaymentMethod = ({navigation, route}) => {
                 color: 'black',
                 fontFamily: 'Roboto',
               }}>
-              Cost On Delivery
+              Thanh toán khi nhận hàng (COD)
             </Text>
           </View>
         </TouchableOpacity>

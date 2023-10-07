@@ -35,6 +35,7 @@ import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import VnpayMerchant, {
   VnpayMerchantModule,
 } from '../react-native-vnpay-merchant';
+import LoadingScreen from '../components/LoadingScreen';
 
 LogBox.ignoreLogs(['new NativeEventEmitter']);
 const eventEmitter = new NativeEventEmitter(VnpayMerchantModule);
@@ -74,6 +75,8 @@ const Payment = ({navigation, route}) => {
 
   const [helpModal, setHelpModal] = useState(false);
 
+  const [loading, setLoading] = useState(false);
+
   const [customerLocation, setCustomerLocation] = useState({
     address: 'Số 121, Trần Văn Dư, Phường 13, Tân Bình,TP.HCM',
     long: 106.644295,
@@ -108,29 +111,33 @@ const Payment = ({navigation, route}) => {
 
     if (!getPaymentResponse) {
       //Handle internal error
-      Alert.alert('Unexpected error happened');
+      setValidateMessage('Hệ thống hiện đang có lỗi');
+      setOpenValidateDialog(true);
 
       return;
     }
 
     if (getPaymentResponse.status === 401) {
       //Handle Unauthorized (chuyen ve log in hay sao do)
-      Alert.alert('Unauthorized');
+      setOpenAuthModal(true);
       return;
     }
 
     if (getPaymentResponse.status === 404) {
-      Alert.alert('Order not found');
+      setValidateMessage('Không tìm thấy đơn hàng');
+      setOpenValidateDialog(true);
     }
 
     if (getPaymentResponse.status === 403) {
       const responseBody = await getPaymentResponse.json();
       if (responseBody.message === 'ORDER_IS_PAID') {
-        Alert.alert('This Order has already been paid');
+        setValidateMessage('Đơn hàng đã được thanh toán');
+        setOpenValidateDialog(true);
       }
 
       if (responseBody.message === 'REQUIRED_E_PAYMENT') {
-        Alert.alert('This order payment method is COD');
+        setValidateMessage('Đơn hàng có phương thức thanh toán là COD');
+        setOpenValidateDialog(true);
       }
       return;
     }
@@ -148,16 +155,17 @@ const Payment = ({navigation, route}) => {
           console.log('e.resultCode = ' + e.resultCode);
           switch (e.resultCode) {
             case -1:
-              // Khi nguoi dung nhan nut back tu device (Khong phai nhan nut back tu VNPAY UI)
-              console.log('nguoi dung nhan nut back tu device');
+              setValidateMessage('Thanh toán thất bại ');
+              setOpenValidateDialog(true);
               break;
             case 97:
               // Giao dich thanh cong.
-              console.log('Giao dich thanh cong');
+              navigation.navigate('Order success', {id: orderId});
               break;
             case 98:
               // Giao dich khong thanh cong. (bao gom case nguoi dung an nut back tu VNPAY UI)
-              console.log('Giao dich khong thanh cong');
+              setValidateMessage('Thanh toán thất bại ');
+              setOpenValidateDialog(true);
               break;
           }
 
@@ -195,6 +203,7 @@ const Payment = ({navigation, route}) => {
 
   //authen check
   const onAuthStateChange = async userInfo => {
+    setLoading(true);
     // console.log(userInfo);
     if (initializing) {
       setInitializing(false);
@@ -212,7 +221,9 @@ const Payment = ({navigation, route}) => {
         // sessions end. (revoke refresh token like password change, disable account, ....)
         await AsyncStorage.removeItem('userInfo');
         await AsyncStorage.removeItem('CartList');
+        setLoading(false);
         setOpenAuthModal(true);
+
         return;
       }
 
@@ -222,10 +233,12 @@ const Payment = ({navigation, route}) => {
 
       setName(user.fullName);
       setPhone(user.phone);
+      setLoading(false);
     } else {
       // no sessions found.
       await AsyncStorage.removeItem('userInfo');
       await AsyncStorage.removeItem('CartList');
+      setLoading(false);
       setOpenAuthModal(true);
       console.log('user is not logged in');
     }
@@ -254,18 +267,19 @@ const Payment = ({navigation, route}) => {
 
   const [orderItems, setOrderItems] = useState([]);
 
-  useFocusEffect(
-    useCallback(() => {
-      (async () => {
-        try {
-          const orders = await AsyncStorage.getItem('OrderItems');
-          setOrderItems(orders ? JSON.parse(orders) : []);
-        } catch (err) {
-          console.log(err);
-        }
-      })();
-    }, []),
-  );
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoading(true);
+        const orders = await AsyncStorage.getItem('OrderItems');
+        setOrderItems(orders ? JSON.parse(orders) : []);
+        setLoading(false);
+      } catch (err) {
+        console.log(err);
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   function groupByKey(array, key) {
     return array.reduce((hash, obj) => {
@@ -436,7 +450,6 @@ const Payment = ({navigation, route}) => {
         timeFrameId: timeFrame.id,
         paymentStatus: 'UNPAID',
         paymentMethod: paymentMethod.id,
-        addressDeliver: pickupPoint.address,
         discountID: voucherListId,
         orderDetailList: orderDetailList,
       };
@@ -453,6 +466,8 @@ const Payment = ({navigation, route}) => {
         paymentStatus: 'UNPAID',
         paymentMethod: paymentMethod.id,
         addressDeliver: customerLocation.address,
+        longitude: customerLocation.long,
+        latitude: customerLocation.lat,
         discountID: voucherListId,
         orderDetailList: orderDetailList,
       };
@@ -460,28 +475,49 @@ const Payment = ({navigation, route}) => {
 
     console.log(submitOrder);
 
-    const createOrderRequest = await fetch(
-      `${API.baseURL}/api/order/createOrder`,
-      {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${tokenId}`,
-        },
-        body: JSON.stringify(submitOrder),
+    setLoading(true);
+
+    fetch(`${API.baseURL}/api/order/createOrder`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${tokenId}`,
       },
-    )
+      body: JSON.stringify(submitOrder),
+    })
       .then(res => {
         return res.json();
       })
-      .then(respond => {
+      .then(async respond => {
         console.log(respond);
 
         if (respond.code === 409) {
-          setValidateMessage(
-            'Số lượng hàng trong kho không đủ để đáp ứng đơn hàng của bạn',
-          );
+          setValidateMessage(respond.message);
+          setLoading(false);
           setOpenValidateDialog(true);
+          return;
+        }
+        if (respond.code === 403) {
+          setLoading(false);
+          setOpenAuthModal(true);
+          return;
+        }
+        // handle vnpay payment method
+        if (paymentMethod.id === 1) {
+          const createdOrderBody = respond;
+          const createdOrderId = createdOrderBody.id;
+          const createdOrderTotalPrice = createdOrderBody.totalPrice;
+          const idToken = await auth().currentUser.getIdToken();
+          console.log('processing vnpay');
+          await processVNPay(createdOrderTotalPrice, createdOrderId, idToken);
+          setLoading(false);
+          return;
+        }
+        // hangle COD payment method
+        if (paymentMethod.id === 0) {
+          const createdOrderBody = respond;
+          setLoading(false);
+          navigation.navigate('Order success', {id: createdOrderBody.id});
           return;
         }
       })
@@ -491,34 +527,17 @@ const Payment = ({navigation, route}) => {
         return null;
       });
 
-    if (!createOrderRequest) {
-      setValidateMessage('Hệ thống hiện đang có lỗi');
-      setOpenValidateDialog(true);
-    }
+    // if (!createOrderRequest) {
+    //   setValidateMessage('Hệ thống hiện đang có lỗi');
+    //   setOpenValidateDialog(true);
+    // }
 
-    if (createOrderRequest) {
-      console.log(createOrderRequest);
-      console.log(paymentMethod.id);
-      // handle vnpay payment method
-      if (paymentMethod.id === 1 && createOrderRequest.status === 200) {
-        const createdOrderBody = await createOrderRequest.json();
-        const createdOrderId = createdOrderBody.id;
-        const createdOrderTotalPrice = createdOrderBody.totalPrice;
-        const idToken = await auth().currentUser.getIdToken();
-        console.log('processing vnpay');
-        await processVNPay(createdOrderTotalPrice, createdOrderId, idToken);
-        return;
-      }
-      // hangle COD payment method
-      if (paymentMethod.id === 0 && createOrderRequest.status === 200) {
-        const createdOrderBody = await createOrderRequest.json();
-        console.log(createdOrderBody);
-        navigation.navigate('Order success', {id: createdOrderBody.id});
-        return;
-      }
-      // console.log(await createOrderRequest.json());
-      // Handle other request status
-    }
+    // if (createOrderRequest) {
+    //   // handle vnpay payment method
+    //   // hangle COD payment method
+    //   // console.log(await createOrderRequest.json());
+    //   // Handle other request status
+    // }
   };
 
   return (
@@ -772,7 +791,7 @@ const Payment = ({navigation, route}) => {
                         fontFamily: 'Roboto',
                         color: 'black',
                       }}>
-                      Total price ({totalQuantityByCategory} item):
+                      Thành tiền ({totalQuantityByCategory} sản phẩm):
                     </Text>
                     <Text
                       style={{
@@ -1532,9 +1551,6 @@ const Payment = ({navigation, route}) => {
       <Modal
         width={0.8}
         visible={openAuthModal}
-        onTouchOutside={() => {
-          setOpenAuthModal(false);
-        }}
         dialogAnimation={
           new ScaleAnimation({
             initialValue: 0, // optional
@@ -1543,6 +1559,13 @@ const Payment = ({navigation, route}) => {
         }
         footer={
           <ModalFooter>
+            <ModalButton
+              text="Ở lại trang"
+              textStyle={{color: 'red'}}
+              onPress={() => {
+                setOpenAuthModal(false);
+              }}
+            />
             <ModalButton
               text="Đăng nhập"
               onPress={async () => {
@@ -1554,6 +1577,7 @@ const Payment = ({navigation, route}) => {
                     .then(async () => {
                       await AsyncStorage.removeItem('userInfo');
                       await AsyncStorage.removeItem('CartList');
+                      setOpenAuthModal(false);
                       navigation.navigate('Login');
                     })
                     .catch(e => console.log(e));
@@ -1678,6 +1702,7 @@ const Payment = ({navigation, route}) => {
           </View>
         </View>
       </Modal>
+      {loading && <LoadingScreen />}
     </>
   );
 };

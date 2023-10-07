@@ -14,6 +14,7 @@ import Modal, {
 } from 'react-native-modals';
 import {format} from 'date-fns';
 import Empty from '../assets/image/search-empty.png';
+import LoadingScreen from '../components/LoadingScreen';
 
 const SelectVoucher = ({navigation, route}) => {
   const {
@@ -30,16 +31,23 @@ const SelectVoucher = ({navigation, route}) => {
 
   const [validateMessage, setValidateMessage] = useState('');
 
+  const [loading, setLoading] = useState(false);
+
   useFocusEffect(
     useCallback(() => {
+      setLoading(true);
       fetch(
         `${API.baseURL}/api/discount/getDiscountsForCustomer?fromPercentage=0&toPercentage=100&page=0&limit=5&productCategoryId=${categoryId}&expiredSortType=DESC`,
       )
         .then(res => res.json())
         .then(response => {
           setResultVoucherList(response);
+          setLoading(false);
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+          console.log(err);
+          setLoading(false);
+        });
     }, []),
   );
 
@@ -325,6 +333,7 @@ const SelectVoucher = ({navigation, route}) => {
         </View>
       </Modal>
       {/* ******************** */}
+      {loading && <LoadingScreen />}
     </View>
   );
 };

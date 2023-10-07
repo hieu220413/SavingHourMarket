@@ -17,6 +17,7 @@ import Modal, {
   ScaleAnimation,
 } from 'react-native-modals';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
+import LoadingScreen from '../components/LoadingScreen';
 
 const Orders = ({navigation}) => {
   const orderStatus = [
@@ -35,10 +36,12 @@ const Orders = ({navigation}) => {
   const [initializing, setInitializing] = useState(true);
   const [orderList, setOrderList] = useState([]);
   const [openAuthModal, setOpenAuthModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   //authen check
   const onAuthStateChange = async userInfo => {
     // console.log(userInfo);
+    setLoading(true);
     if (initializing) {
       setInitializing(false);
     }
@@ -53,16 +56,20 @@ const Orders = ({navigation}) => {
         });
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
+
         await AsyncStorage.removeItem('userInfo');
         await AsyncStorage.removeItem('CartList');
+        setLoading(false);
         setOpenAuthModal(true);
         return;
       }
+      setLoading(false);
     } else {
       // no sessions found.
       console.log('user is not logged in');
       await AsyncStorage.removeItem('userInfo');
       await AsyncStorage.removeItem('CartList');
+      setLoading(false);
       setOpenAuthModal(true);
     }
   };
@@ -86,8 +93,10 @@ const Orders = ({navigation}) => {
     useCallback(() => {
       const fetchData = async () => {
         const tokenId = await auth().currentUser.getIdToken();
+
         if (tokenId) {
           if (currentStatus.display !== 'Đóng gói') {
+            setLoading(true);
             fetch(
               `${API.baseURL}/api/order/getOrdersForCustomer?orderStatus=${currentStatus.value}`,
               {
@@ -101,14 +110,18 @@ const Orders = ({navigation}) => {
               .then(res => res.json())
               .then(respond => {
                 if (respond.error) {
+                  setLoading(false);
                   return;
                 }
                 setOrderList(respond);
+                setLoading(false);
               })
               .catch(err => {
                 console.log(err);
+                setLoading(false);
               });
           } else {
+            setLoading(true);
             fetch(
               `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGING`,
               {
@@ -122,9 +135,11 @@ const Orders = ({navigation}) => {
               .then(res => res.json())
               .then(respond => {
                 if (respond.error) {
+                  setLoading(false);
                   return;
                 }
                 setOrderList(respond);
+
                 fetch(
                   `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGED`,
                   {
@@ -138,18 +153,22 @@ const Orders = ({navigation}) => {
                   .then(res => res.json())
                   .then(respond => {
                     if (respond.error) {
+                      setLoading(false);
                       return;
                     }
                     if (respond.length !== 0) {
                       setOrderList([...orderList, respond]);
+                      setLoading(false);
                     }
                   })
                   .catch(err => {
                     console.log(err);
+                    setLoading(false);
                   });
               })
               .catch(err => {
                 console.log(err);
+                setLoading(false);
               });
           }
         }
@@ -429,6 +448,13 @@ const Orders = ({navigation}) => {
         footer={
           <ModalFooter>
             <ModalButton
+              text="Ở lại trang"
+              textStyle={{color: 'red'}}
+              onPress={() => {
+                setOpenAuthModal(false);
+              }}
+            />
+            <ModalButton
               text="Đăng nhập"
               onPress={async () => {
                 try {
@@ -462,6 +488,7 @@ const Orders = ({navigation}) => {
           </Text>
         </View>
       </Modal>
+      {loading && <LoadingScreen />}
     </>
   );
 };

@@ -11,14 +11,27 @@ import {useFocusEffect} from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
 import {format} from 'date-fns';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
+import Toast from 'react-native-toast-message';
+import LoadingScreen from '../components/LoadingScreen';
 
 const OrderDetail = ({navigation, route}) => {
   const {id, orderSuccess} = route.params;
   const [initializing, setInitializing] = useState(true);
   const [tokenId, setTokenId] = useState(null);
   const [item, setItem] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const showToast = () => {
+    Toast.show({
+      type: 'success',
+      text1: 'Thành công',
+      text2: 'Đơn hàng đã hủy thành công 👋',
+      duration: 1500,
+    });
+  };
 
   const onAuthStateChange = async userInfo => {
+    setLoading(true);
     // console.log(userInfo);
     if (initializing) {
       setInitializing(false);
@@ -35,14 +48,17 @@ const OrderDetail = ({navigation, route}) => {
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
         await AsyncStorage.removeItem('userInfo');
+        setLoading(false);
         return;
       }
 
       const token = await auth().currentUser.getIdToken();
       setTokenId(token);
+      setLoading(false);
     } else {
       // no sessions found.
       console.log('user is not logged in');
+      setLoading(false);
     }
   };
 
@@ -62,6 +78,7 @@ const OrderDetail = ({navigation, route}) => {
   useFocusEffect(
     useCallback(() => {
       if (tokenId) {
+        setLoading(true);
         fetch(`${API.baseURL}/api/order/getOrderDetail/${id}`, {
           method: 'GET',
           headers: {
@@ -70,13 +87,20 @@ const OrderDetail = ({navigation, route}) => {
           },
         })
           .then(res => res.json())
-          .then(respond => setItem(respond))
-          .catch(err => console.log(err));
+          .then(respond => {
+            setItem(respond);
+            setLoading(false);
+          })
+          .catch(err => {
+            console.log(err);
+            setLoading(false);
+          });
       }
     }, [tokenId]),
   );
 
   const cancelOrder = () => {
+    setLoading(true);
     fetch(`${API.baseURL}/api/order/cancelOrder/${id}`, {
       method: 'PUT',
       headers: {
@@ -93,10 +117,20 @@ const OrderDetail = ({navigation, route}) => {
           },
         })
           .then(res => res.json())
-          .then(respond => setItem(respond))
-          .catch(err => console.log(err));
+          .then(respond => {
+            setItem(respond);
+            showToast();
+            setLoading(false);
+          })
+          .catch(err => {
+            console.log(err);
+            setLoading(false);
+          });
       })
-      .catch(err => console.log(err));
+      .catch(err => {
+        console.log(err);
+        setLoading(false);
+      });
   };
 
   return (
@@ -135,7 +169,7 @@ const OrderDetail = ({navigation, route}) => {
         </View>
         {item && (
           <ScrollView>
-            <View style={{padding: 20, backgroundColor: '#23ba9c'}}>
+            <View style={{padding: 20, backgroundColor: COLORS.primary}}>
               <Text
                 style={{color: 'white', fontSize: 18, fontFamily: 'Roboto'}}>
                 {item?.status === 0 && 'Đơn hàng đang chờ xác nhận'}
@@ -179,7 +213,9 @@ const OrderDetail = ({navigation, route}) => {
                   Điểm giao hàng:
                 </Text> */}
                       <Text style={{fontSize: 18, fontWeight: 'bold'}}>
-                        {item?.addressDeliver}
+                        {item?.addressDeliver
+                          ? item?.addressDeliver
+                          : item?.pickupPoint.address}
                       </Text>
                     </View>
                     {item.timeFrame && (
@@ -435,7 +471,7 @@ const OrderDetail = ({navigation, route}) => {
                   Phương thức
                 </Text>
                 <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
-                  {item.paymentStatus === 0 ? 'COD' : 'VN Pay'}
+                  {item.paymentMethod === 0 ? 'COD' : 'VN Pay'}
                 </Text>
               </View>
             </View>
@@ -563,7 +599,7 @@ const OrderDetail = ({navigation, route}) => {
                 backgroundColor: 'white',
                 padding: 20,
                 marginTop: 20,
-                marginBottom: 180,
+                marginBottom: item?.status === 0 ? 180 : 110,
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
@@ -576,51 +612,28 @@ const OrderDetail = ({navigation, route}) => {
           </ScrollView>
         )}
       </View>
-      <View
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          backgroundColor: 'white',
-          borderTopColor: 'transparent',
-          height: 70,
-          width: '100%',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
+      {item?.status === 0 && (
+        <View
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: 'white',
+            borderTopColor: 'transparent',
+            height: 70,
+            width: '100%',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
 
-          marginTop: 20,
-          elevation: 10,
-        }}>
-        <View style={{width: '95%'}}>
-          {item?.status === 0 ? (
+            marginTop: 20,
+            elevation: 10,
+          }}>
+          <View style={{width: '95%'}}>
             <TouchableOpacity
               onPress={() => {
                 cancelOrder();
-              }}
-              style={{
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: '#23ba9c',
-                paddingVertical: 10,
-                width: '100%',
-                borderRadius: 5,
-              }}>
-              <Text
-                style={{
-                  fontSize: 18,
-                  color: 'white',
-                  fontFamily: 'Roboto',
-                  fontWeight: 'bold',
-                }}>
-                Hủy đơn hàng
-              </Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              onPress={() => {
-                console.log('abc');
               }}
               style={{
                 alignItems: 'center',
@@ -637,12 +650,13 @@ const OrderDetail = ({navigation, route}) => {
                   fontFamily: 'Roboto',
                   fontWeight: 'bold',
                 }}>
-                Đặt lại
+                Hủy đơn hàng
               </Text>
             </TouchableOpacity>
-          )}
+          </View>
         </View>
-      </View>
+      )}
+      {loading && <LoadingScreen />}
     </>
   );
 };
