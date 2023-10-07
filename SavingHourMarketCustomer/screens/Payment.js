@@ -153,8 +153,6 @@ const Payment = ({navigation, route}) => {
         console.log('Sdk back!');
         if (e) {
           console.log('e.resultCode = ' + e.resultCode);
-          let orderId;
-          let tokenId;
           switch (e.resultCode) {
             case -1:
               await fetch(`${API.baseURL}/api/order/deleteOrder/${orderId}`, {
