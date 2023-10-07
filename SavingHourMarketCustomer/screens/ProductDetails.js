@@ -1,21 +1,56 @@
 /* eslint-disable prettier/prettier */
 // eslint-disable-next-line prettier/prettier
 import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { icons } from '../constants';
 import { COLORS, FONTS } from '../constants/theme';
 import dayjs from 'dayjs';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from "@react-navigation/native";
+
 
 const ProductDetails = ({ navigation, route }) => {
     const product = route.params.product;
+    const [cartList, setCartList] = useState([]);
+
+    useFocusEffect(
+        useCallback(() => {
+            (async () => {
+                try {
+                    const cartList = await AsyncStorage.getItem('CartList');
+                    setCartList(cartList ? JSON.parse(cartList) : []);
+                } catch (err) {
+                    console.log(err);
+                }
+            })();
+        }, []),
+    );
 
     const handleBuy = () => {
         console.log('buy');
     };
 
-    const handleAddToCart = () => {
-        console.log('Add to cart');
-    }
+    const handleAddToCart = async data => {
+        try {
+            const jsonValue = await AsyncStorage.getItem('CartList');
+            let newCartList = jsonValue ? JSON.parse(jsonValue) : [];
+            const itemExisted = newCartList.some(item => item.id === data.id);
+            if (itemExisted) {
+                const index = newCartList.findIndex(item => item.id === data.id);
+                newCartList[index].cartQuantity = newCartList[index].cartQuantity + 1;
+                setCartList(newCartList);
+                await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
+                return;
+            }
+
+            const cartData = { ...data, isChecked: false, cartQuantity: 1 };
+            newCartList = [...newCartList, cartData];
+            setCartList(newCartList);
+            await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
+        } catch (error) {
+            console.log(error);
+        }
+    };
 
     return (
         <View
@@ -59,6 +94,25 @@ const ProductDetails = ({ navigation, route }) => {
                         }}
                         source={icons.cart}
                     />
+                    {cartList.lenght !== 0 && (
+                        <View
+                            style={{
+                                position: 'absolute',
+                                top: 0,
+                                right: -10,
+                                backgroundColor: COLORS.primary,
+                                borderRadius: 50,
+                                width: 20,
+                                height: 20,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}>
+                            <Text
+                                style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
+                                {cartList.length}
+                            </Text>
+                        </View>
+                    )}
                 </TouchableOpacity>
             </View>
 
@@ -73,7 +127,7 @@ const ProductDetails = ({ navigation, route }) => {
                     }}
                     resizeMode="contain"
                     source={{
-                        uri: product.imageUrl,
+                        uri: product?.imageUrl,
                     }}
                 />
                 <View
@@ -113,7 +167,8 @@ const ProductDetails = ({ navigation, route }) => {
                             fontFamily: FONTS.fontFamily,
                             fontSize: 18,
                             marginVertical: 10,
-                            color: 'black'
+                            color: 'black',
+                            lineHeight: 26,
                         }}>
                         {product.description}
                     </Text>
@@ -121,12 +176,13 @@ const ProductDetails = ({ navigation, route }) => {
 
                 <View
                     style={{
+                        flex: 1,
                         flexDirection: 'row',
                         backgroundColor: '#F5F5F5',
-                        marginHorizontal: 30,
+                        marginHorizontal: 20,
                         paddingHorizontal: 10,
                         paddingTop: '8%',
-                        paddingBottom: 80,
+                        paddingBottom: '22%',
                         borderTopLeftRadius: 20,
                         borderTopRightRadius: 20,
                         alignItems: 'center',
@@ -158,7 +214,7 @@ const ProductDetails = ({ navigation, route }) => {
                             ₫
                         </Text>
                     </View>
-                    <TouchableOpacity onPress={handleAddToCart}>
+                    <TouchableOpacity onPress={() => handleAddToCart(product)}>
                         <Text
                             style={{
                                 paddingVertical: 8,
