@@ -20,7 +20,7 @@ public interface FeedBackRepository extends JpaRepository<FeedBack, UUID> {
             "((:status IS NULL) OR (fb.status = :status)) " +
             "AND " +
             "(fb.customer.id = :customerId)")
-    List<FeedBack> findFeedbackForCustomer(UUID customerId, FeedbackObject object, int status, Pageable pageable);
+    List<FeedBack> findFeedbackForCustomer(UUID customerId, FeedbackObject object, FeedbackStatus status, Pageable pageable);
 
     @Query("SELECT fb FROM FeedBack fb " +
             "WHERE " +
@@ -29,5 +29,5 @@ public interface FeedBackRepository extends JpaRepository<FeedBack, UUID> {
             "((:status IS NULL) OR (fb.status = :status)) " +
             "AND " +
             "((:customerId IS NULL) OR (fb.customer.id = :customerId))")
-    List<FeedBack> findFeedBackForStaff(UUID customerId, FeedbackObject object, int status, Pageable pageable);
+    List<FeedBack> findFeedBackForStaff(UUID customerId, FeedbackObject object, FeedbackStatus status, Pageable pageable);
 }
