@@ -37,7 +37,7 @@ const Home = ({navigation}) => {
       type: 'success',
       text1: 'Thành công',
       text2: 'Thêm sản phẩm vào giỏ hàng thành công 👋',
-      duration: 300,
+      duration: 500,
     });
   };
 
