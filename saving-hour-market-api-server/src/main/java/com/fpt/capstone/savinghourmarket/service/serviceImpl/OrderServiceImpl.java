@@ -41,6 +41,7 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -359,13 +360,20 @@ public class OrderServiceImpl implements OrderService {
             throw new CustomerLimitOrderProcessingException("Customer already has 3 PROCESSING orders");
         }
 
-        RLock rLock = redissonClient.getLock("createOrderLock");
+        RLock rLock = redissonClient.getFairLock("createOrderLock");
+        boolean res = rLock.tryLock(100, 10, TimeUnit.SECONDS);
         Order order = null;
-        try {
-            rLock.lock();
-            order = createOrderTransact(orderCreate, customer);
-        } finally {
-            rLock.unlock();
+        if(res) {
+            try {
+                order = createOrderTransact(orderCreate, customer);
+            } finally {
+                try{
+                    rLock.unlock();
+                } catch (Exception e) {
+                    log.error(e.toString());
+                }
+
+            }
         }
         return order;
     }

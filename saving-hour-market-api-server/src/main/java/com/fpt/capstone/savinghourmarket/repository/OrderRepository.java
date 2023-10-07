@@ -50,7 +50,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
                                      Pageable pageable);
 
     @Query("SELECT o FROM Order o " +
-            "WHERE o.status = 0")
+            "WHERE o.status = 0 AND o.customer.email = :customerEmail")
     List<Order> getOrdersProcessing(String customerEmail);
 
 }
