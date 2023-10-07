@@ -57,6 +57,9 @@ import {COLORS} from './constants/theme';
 const Stack = createStackNavigator();
 export default function App() {
   useEffect(() => {
+    messaging()
+      .subscribeToTopic('weather')
+      .then(() => console.log('Subscribed to topic!'));
     const unsubscribe = messaging().onMessage(async remoteMessage => {
       Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
     });
@@ -146,7 +149,7 @@ export default function App() {
           <Stack.Screen
             name="Order success"
             component={OrderSuccess}
-            options={{swipeEnabled: false}}
+            options={{ swipeEnabled: false }}
           />
           <Stack.Screen name="Forgot password" component={ForgetPassword} />
           <Stack.Screen name="Code reset" component={CodeReset} />

@@ -149,14 +149,34 @@ const Payment = ({navigation, route}) => {
         return;
       }
       // mở sdk
-      eventEmitter.addListener('PaymentBack', e => {
+      eventEmitter.addListener('PaymentBack', async e => {
         console.log('Sdk back!');
         if (e) {
           console.log('e.resultCode = ' + e.resultCode);
+          let orderId;
+          let tokenId;
           switch (e.resultCode) {
             case -1:
-              setValidateMessage('Thanh toán thất bại ');
-              setOpenValidateDialog(true);
+              await fetch(`${API.baseURL}/api/order/deleteOrder/${orderId}`, {
+                method: 'DELETE',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${idToken}`,
+                },
+              })
+                .then(res => {
+                  return res.json();
+                })
+                .then(respond => {
+                  console.log(respond);
+                  setValidateMessage('Thanh toán thất bại ');
+                  setOpenValidateDialog(true);
+                  // setItem(respond);
+                })
+                .catch(err => console.log(err));
+
+              console.log('nguoi dung nhan nut back tu device');
+
               break;
             case 97:
               // Giao dich thanh cong.
@@ -164,8 +184,24 @@ const Payment = ({navigation, route}) => {
               break;
             case 98:
               // Giao dich khong thanh cong. (bao gom case nguoi dung an nut back tu VNPAY UI)
-              setValidateMessage('Thanh toán thất bại ');
-              setOpenValidateDialog(true);
+              await fetch(`${API.baseURL}/api/order/deleteOrder/${orderId}`, {
+                method: 'DELETE',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${idToken}`,
+                },
+              })
+                .then(res => {
+                  return res.json();
+                })
+                .then(respond => {
+                  console.log(respond);
+                  setValidateMessage('Thanh toán thất bại ');
+                  setOpenValidateDialog(true);
+                  // setItem(respond);
+                })
+                .catch(err => console.log(err));
+
               break;
           }
 

@@ -11,17 +11,24 @@ import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.OrderCreate;
 import com.fpt.capstone.savinghourmarket.model.OrderProduct;
 import com.fpt.capstone.savinghourmarket.model.OrderWithDetails;
+import com.fpt.capstone.savinghourmarket.model.ShippingFeeDetailResponseBody;
+import com.fpt.capstone.savinghourmarket.service.FirebaseService;
 import com.fpt.capstone.savinghourmarket.service.OrderService;
+import com.fpt.capstone.savinghourmarket.util.Utils;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
+import com.google.maps.errors.ApiException;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.http.HttpResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -32,6 +39,8 @@ import java.util.UUID;
 public class OrderController {
 
     private final OrderService orderService;
+
+    private final FirebaseAuth firebaseAuth;
 
     @GetMapping("/getOrdersForCustomer")
     public ResponseEntity<List<Order>> getOrdersForCustomer(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
@@ -105,16 +114,39 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.cancelOrder(jwtToken,id));
     }
 
+    @DeleteMapping("/deleteOrder/{id}")
+    public ResponseEntity<String> deleteOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken, @PathVariable UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException, FirebaseAuthException, OrderDeletionNotAllowedException {
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.deleteOrder(jwtToken,id));
+    }
+
     @PutMapping("/assignPackageStaff")
-    public ResponseEntity<String> assignStaff(@RequestParam UUID orderId, @RequestParam UUID staffId) throws NoSuchOrderException {
+    public ResponseEntity<String> assignStaff(@RequestParam UUID orderId, @RequestParam UUID staffId) throws NoSuchOrderException, IOException {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.assignPackager(orderId,staffId));
     }
 
     @PutMapping("/assignDeliveryStaff")
     public ResponseEntity<String> assignDeliveryStaffToGroupOrBatch(@RequestParam(required = false) UUID orderGroupId,
                                                                     @RequestParam(required = false) UUID orderBatchId,
-                                                                    @RequestParam UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException {
+                                                                    @RequestParam UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException, IOException {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.assignDeliverToOrderGroupOrBatch(orderGroupId,orderBatchId,staffId));
+    }
+
+    @GetMapping("/getShippingFeeDetail")
+    public ResponseEntity<ShippingFeeDetailResponseBody> getShippingFeeDetail(
+            @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken,
+            @RequestParam Double latitude,
+            @RequestParam Double longitude
+    ) throws FirebaseAuthException, IOException, InterruptedException, ApiException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        ShippingFeeDetailResponseBody shippingFeeDetailResponseBody = orderService.getShippingFeeDetail(latitude, longitude);
+        return ResponseEntity.status(HttpStatus.OK).body(shippingFeeDetailResponseBody);
+    }
+
+    @PostMapping("/sendNotification")
+    public ResponseEntity<String> sendNotification(@RequestParam String title,@RequestParam String message,@RequestParam String topic) throws IOException {
+        FirebaseService.sendPushNotification(title,message,topic);
+        return ResponseEntity.status(HttpStatus.OK).body("OK");
     }
 
 }

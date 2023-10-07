@@ -21,6 +21,8 @@ import {API} from '../constants/api';
 import {useFocusEffect} from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import LoadingScreen from '../components/LoadingScreen';
+import {Alert} from 'react-native';
+import messaging from '@react-native-firebase/messaging';
 
 const Home = ({navigation}) => {
   const [categories, setCategories] = useState([]);
