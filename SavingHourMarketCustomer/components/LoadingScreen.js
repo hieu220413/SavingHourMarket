@@ -1,0 +1,29 @@
+import {View, Text, StyleSheet} from 'react-native';
+import React from 'react';
+import * as Progress from 'react-native-progress';
+import {COLORS} from '../constants/theme';
+
+const LoadingScreen = () => {
+  return (
+    <View
+      style={[
+        StyleSheet.absoluteFillObject,
+        {
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: 'rgba(0,0,0,0.3)',
+          zIndex: 99999,
+        },
+      ]}>
+      <Progress.CircleSnail
+        strokeCap="butt"
+        fill="transparent"
+        size={80}
+        color={COLORS.se}
+        thickness={4}
+      />
+    </View>
+  );
+};
+
+export default LoadingScreen;

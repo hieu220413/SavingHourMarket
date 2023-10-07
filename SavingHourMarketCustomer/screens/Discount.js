@@ -1,26 +1,29 @@
 /* eslint-disable prettier/prettier */
 // eslint-disable-next-line prettier/prettier
-import React, { useState, useEffect, useCallback } from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   Text,
   View,
-  ScrollView,
   TouchableOpacity,
   Image,
   StyleSheet,
+  FlatList,
 } from 'react-native';
-import { icons } from '../constants';
-import { COLORS, FONTS } from '../constants/theme';
+import {icons} from '../constants';
+import {COLORS, FONTS} from '../constants/theme';
 import Categories from '../components/Categories';
 import dayjs from 'dayjs';
-import { API } from '../constants/api';
-import { useFocusEffect } from '@react-navigation/native';
+import {API} from '../constants/api';
+import {useFocusEffect} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Empty from '../assets/image/search-empty.png';
 
-const Discount = ({ navigation }) => {
+const Discount = ({navigation}) => {
   const [discounts, setDiscounts] = useState([]);
-
+  const [categories, setCategories] = useState([]);
+  const [currentCate, setCurrentCate] = useState('');
   const [cartList, setCartList] = useState([]);
+  const [products, setProducts] = useState([]);
 
   useFocusEffect(
     useCallback(() => {
@@ -35,85 +38,102 @@ const Discount = ({ navigation }) => {
     }, []),
   );
 
-
   useEffect(() => {
-    fetch(
-      `${API.baseURL}/api/discount/getDiscountsForCustomer?fromPercentage=0&toPercentage=100&page=0&expiredSortType=DESC`,
-    )
+    fetch(`${API.baseURL}/api/product/getAllCategory`)
       .then(res => res.json())
       .then(data => {
-        setDiscounts(data);
+        setCategories(data);
+        setCurrentCate(data[0].id);
       })
       .catch(err => {
         console.log(err);
       });
   }, []);
 
-  const handleBuy = () => {
-    console.log('buy');
-  };
+  useEffect(() => {
+    if (currentCate) {
+      fetch(
+        `${API.baseURL}/api/discount/getDiscountsForCustomer?fromPercentage=0&toPercentage=100&productCategoryId=${currentCate}&page=0&limit=5&expiredSortType=ASC`,
+      )
+        .then(res => res.json())
+        .then(data => {
+          setDiscounts(data);
+        })
+        .catch(err => {
+          console.log(err);
+        });
 
-  const Item = ({ data }) => (
-    <TouchableOpacity
-      onPress={() => {
-        navigation.navigate('DiscountForCategories');
-      }}>
-      <View style={styles.itemContainer}>
-        {/* Image Product */}
-        <Image
-          resizeMode="contain"
-          source={{
-            uri: data.imageUrl,
-          }}
-          style={styles.itemImage}
-        />
+      fetch(
+        `${API.baseURL}/api/product/getProductsForCustomer?productCategoryId=${currentCate}&page=0&limit=5&quantitySortType=DESC&expiredSortType=ASC`,
+      )
+        .then(res => res.json())
+        .then(data => {
+          setProducts(data);
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    }
+  }, [currentCate]);
 
-        <View style={{ justifyContent: 'center', flex: 1, marginRight: 10 }}>
+  const Item = ({data}) => (
+    <View style={styles.itemContainer}>
+      {/* Image Product */}
+      <Image
+        resizeMode="contain"
+        source={{
+          uri: data?.imageUrl,
+        }}
+        style={styles.itemImage}
+      />
+
+      <View style={{justifyContent: 'center', flex: 1, marginRight: 10}}>
+        <Text
+          numberOfLines={1}
+          style={{
+            fontFamily: FONTS.fontFamily,
+            fontSize: 18,
+            fontWeight: 700,
+            maxWidth: '95%',
+            color: 'black',
+          }}>
+          {data.name}
+        </Text>
+
+        <Text
+          style={{
+            fontFamily: FONTS.fontFamily,
+            fontSize: 18,
+            marginBottom: 10,
+          }}>
+          HSD: {dayjs(data.expiredDate).format('DD/MM/YYYY')}
+        </Text>
+        {/* Button use */}
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate('DiscountForCategories', {
+              discount: data,
+              products: products,
+            })
+          }>
           <Text
-            numberOfLines={1}
             style={{
-              fontFamily: FONTS.fontFamily,
-              fontSize: 18,
-              fontWeight: 700,
-              maxWidth: '95%',
-              color: 'black',
+              maxWidth: 120,
+              maxHeight: 38,
+              padding: 10,
+              backgroundColor: COLORS.primary,
+              borderRadius: 10,
+              textAlign: 'center',
+              color: '#ffffff',
             }}>
-            {data.name}
+            Dùng ngay
           </Text>
-
-          <Text
-            style={{
-              fontFamily: FONTS.fontFamily,
-              fontSize: 18,
-              marginBottom: 10,
-            }}>
-            HSD: {dayjs(data.expiredDate).format('DD/MM/YYYY')}
-          </Text>
-          {/* Button use */}
-          <TouchableOpacity
-            onPress={() => navigation.navigate('DiscountForCategories')}>
-            <Text
-              style={{
-                maxWidth: 120,
-                maxHeight: 38,
-                padding: 10,
-                backgroundColor: COLORS.primary,
-                borderRadius: 10,
-                textAlign: 'center',
-                color: '#ffffff',
-              }}>
-              Dùng ngay
-            </Text>
-          </TouchableOpacity>
-        </View>
+        </TouchableOpacity>
       </View>
-    </TouchableOpacity>
+    </View>
   );
   return (
-    <View
-      style={{
-        backgroundColor: '#fff',
-      }}>
+    <View>
       <View
         style={{
           flexDirection: 'row',
@@ -126,7 +146,7 @@ const Discount = ({ navigation }) => {
           <Image
             source={icons.leftArrow}
             resizeMode="contain"
-            style={{ width: 35, height: 35, tintColor: COLORS.primary }}
+            style={{width: 35, height: 35, tintColor: COLORS.primary}}
           />
         </TouchableOpacity>
         <Text
@@ -151,7 +171,7 @@ const Discount = ({ navigation }) => {
             }}
             source={icons.cart}
           />
-          {cartList.lenght !== 0 && (
+          {cartList.length !== 0 && (
             <View
               style={{
                 position: 'absolute',
@@ -165,37 +185,52 @@ const Discount = ({ navigation }) => {
                 justifyContent: 'center',
               }}>
               <Text
-                style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
+                style={{fontSize: 12, color: 'white', fontFamily: 'Roboto'}}>
                 {cartList.length}
               </Text>
             </View>
           )}
         </TouchableOpacity>
       </View>
-
-      <ScrollView
-        contentContainerStyle={{
-          paddingBottom: 150,
-        }}
-      >
-        {/* Filter by Cate */}
-        <Categories />
-        {/* List voucher */}
-        {discounts.map((item, index) => (
-          <Item data={item} key={index} />
-        ))}
-      </ScrollView>
+      {/* Filter by Cate */}
+      <Categories
+        categories={categories}
+        currentCate={currentCate}
+        setCurrentCate={setCurrentCate}
+      />
+      {/* List voucher */}
+      {discounts.length == 0 ? (
+        <View style={{alignItems: 'center'}}>
+          <Image
+            style={{width: '100%', height: '65%'}}
+            resizeMode="contain"
+            source={Empty}
+          />
+          <Text
+            style={{
+              fontSize: 20,
+              fontFamily: 'Roboto',
+              fontWeight: 'bold',
+            }}>
+            Đã hết mã giảm giá cho loại mặt hàng này
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          scrollEnabled={true}
+          showsVerticalScrollIndicator={true}
+          data={discounts}
+          keyExtractor={item => `${item.id}`}
+          renderItem={({item}) => <Item data={item} />}
+        />
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
   itemContainer: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#ffffff',
     maxWidth: '90%',
     borderRadius: 20,
     marginHorizontal: '5%',

@@ -9,7 +9,7 @@ const TabIcon = ({focused, icon, display}) => {
       style={{
         alignItems: 'center',
         height: 80,
-        width: 70,
+        width: 80,
         justifyContent: 'center',
         gap: 5,
       }}>
@@ -24,7 +24,7 @@ const TabIcon = ({focused, icon, display}) => {
       />
       <Text
         style={{
-          fontSize: 18,
+          fontSize: 15,
           color: focused ? COLORS.secondary : COLORS.tabIcon,
           fontWeight: 400,
           fontFamily: FONTS.fontFamily,

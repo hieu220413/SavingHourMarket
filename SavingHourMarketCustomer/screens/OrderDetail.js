@@ -11,14 +11,27 @@ import {useFocusEffect} from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
 import {format} from 'date-fns';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
+import Toast from 'react-native-toast-message';
+import LoadingScreen from '../components/LoadingScreen';
 
 const OrderDetail = ({navigation, route}) => {
   const {id, orderSuccess} = route.params;
   const [initializing, setInitializing] = useState(true);
   const [tokenId, setTokenId] = useState(null);
   const [item, setItem] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const showToast = () => {
+    Toast.show({
+      type: 'success',
+      text1: 'Thành công',
+      text2: 'Đơn hàng đã hủy thành công 👋',
+      duration: 1500,
+    });
+  };
 
   const onAuthStateChange = async userInfo => {
+    setLoading(true);
     // console.log(userInfo);
     if (initializing) {
       setInitializing(false);
@@ -35,14 +48,17 @@ const OrderDetail = ({navigation, route}) => {
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
         await AsyncStorage.removeItem('userInfo');
+        setLoading(false);
         return;
       }
 
       const token = await auth().currentUser.getIdToken();
       setTokenId(token);
+      setLoading(false);
     } else {
       // no sessions found.
       console.log('user is not logged in');
+      setLoading(false);
     }
   };
 
@@ -62,6 +78,7 @@ const OrderDetail = ({navigation, route}) => {
   useFocusEffect(
     useCallback(() => {
       if (tokenId) {
+        setLoading(true);
         fetch(`${API.baseURL}/api/order/getOrderDetail/${id}`, {
           method: 'GET',
           headers: {
@@ -70,13 +87,20 @@ const OrderDetail = ({navigation, route}) => {
           },
         })
           .then(res => res.json())
-          .then(respond => setItem(respond))
-          .catch(err => console.log(err));
+          .then(respond => {
+            setItem(respond);
+            setLoading(false);
+          })
+          .catch(err => {
+            console.log(err);
+            setLoading(false);
+          });
       }
     }, [tokenId]),
   );
 
   const cancelOrder = () => {
+    setLoading(true);
     fetch(`${API.baseURL}/api/order/cancelOrder/${id}`, {
       method: 'PUT',
       headers: {
@@ -85,13 +109,28 @@ const OrderDetail = ({navigation, route}) => {
       },
     })
       .then(res => {
-        return res.json();
+        fetch(`${API.baseURL}/api/order/getOrderDetail/${id}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${tokenId}`,
+          },
+        })
+          .then(res => res.json())
+          .then(respond => {
+            setItem(respond);
+            showToast();
+            setLoading(false);
+          })
+          .catch(err => {
+            console.log(err);
+            setLoading(false);
+          });
       })
-      .then(respond => {
-        console.log(respond);
-        // setItem(respond);
-      })
-      .catch(err => console.log(err));
+      .catch(err => {
+        console.log(err);
+        setLoading(false);
+      });
   };
 
   return (
@@ -130,7 +169,7 @@ const OrderDetail = ({navigation, route}) => {
         </View>
         {item && (
           <ScrollView>
-            <View style={{padding: 20, backgroundColor: '#23ba9c'}}>
+            <View style={{padding: 20, backgroundColor: COLORS.primary}}>
               <Text
                 style={{color: 'white', fontSize: 18, fontFamily: 'Roboto'}}>
                 {item?.status === 0 && 'Đơn hàng đang chờ xác nhận'}
@@ -142,92 +181,95 @@ const OrderDetail = ({navigation, route}) => {
                 {item?.status === 6 && 'Đơn hàng đã hủy'}
               </Text>
             </View>
-            {/* pickup location */}
             <View
-              style={{
-                backgroundColor: 'white',
-                padding: 20,
-                gap: 10,
-                borderBottomColor: '#decbcb',
-                borderBottomWidth: 0.75,
-              }}>
+              style={{padding: 20, backgroundColor: 'white', marginBottom: 20}}>
+              {/* pickup location */}
               <View
-                style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
-                <Image
-                  style={{width: 20, height: 20}}
-                  resizeMode="contain"
-                  source={icons.location}
-                />
-                <Text
-                  style={{fontSize: 20, color: 'black', fontWeight: 'bold'}}>
-                  Thông tin giao hàng
-                </Text>
-              </View>
-              <View
-                style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
-                <View style={{width: 20}} />
-                <View style={{gap: 8}}>
-                  <View style={{gap: 3}}>
-                    {/* <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                style={{
+                  backgroundColor: 'white',
+                  paddingVertical: 20,
+                  gap: 10,
+                  borderBottomColor: '#decbcb',
+                  borderBottomWidth: 0.75,
+                }}>
+                <View
+                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+                  <Image
+                    style={{width: 20, height: 20}}
+                    resizeMode="contain"
+                    source={icons.location}
+                  />
+                  <Text
+                    style={{fontSize: 20, color: 'black', fontWeight: 'bold'}}>
+                    Thông tin giao hàng
+                  </Text>
+                </View>
+                <View
+                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+                  <View style={{width: 20}} />
+                  <View style={{gap: 8}}>
+                    <View style={{gap: 3}}>
+                      {/* <Text style={{fontSize: 18, fontWeight: 'bold'}}>
                   Điểm giao hàng:
                 </Text> */}
+                      <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                        {item?.addressDeliver
+                          ? item?.addressDeliver
+                          : item?.pickupPoint.address}
+                      </Text>
+                    </View>
+                    {item.timeFrame && (
+                      <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                        {item?.timeFrame
+                          ? `${item?.timeFrame?.fromHour.slice(
+                              0,
+                              5,
+                            )} đến ${item?.timeFrame?.toHour.slice(0, 5)}`
+                          : ''}
+                      </Text>
+                    )}
                     <Text style={{fontSize: 18, fontWeight: 'bold'}}>
-                      {item?.addressDeliver}
+                      Ngày giao hàng:{' '}
+                      {format(new Date(item?.deliveryDate), 'dd/MM/yyyy')}
                     </Text>
                   </View>
-                  {item.timeFrame && (
+                </View>
+              </View>
+              {/* ******************* */}
+              {/* Customer information */}
+              <View
+                style={{
+                  backgroundColor: 'white',
+                  paddingVertical: 20,
+                  gap: 10,
+                }}>
+                <View
+                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+                  <Image
+                    style={{width: 20, height: 20}}
+                    resizeMode="contain"
+                    source={icons.phone}
+                  />
+                  <Text
+                    style={{fontSize: 20, color: 'black', fontWeight: 'bold'}}>
+                    Thông tin liên lạc
+                  </Text>
+                </View>
+                <View
+                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+                  <View style={{width: 20}} />
+                  <View style={{gap: 5}}>
                     <Text style={{fontSize: 18, fontWeight: 'bold'}}>
-                      {item?.timeFrame
-                        ? `${item?.timeFrame?.fromHour.slice(
-                            0,
-                            5,
-                          )} đến ${item?.timeFrame?.toHour.slice(0, 5)}`
-                        : ''}
+                      {item.receiverName}
                     </Text>
-                  )}
-                  <Text style={{fontSize: 18, fontWeight: 'bold'}}>
-                    Ngày giao hàng:{' '}
-                    {format(new Date(item?.deliveryDate), 'dd/MM/yyyy')}
-                  </Text>
+                    <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                      {item.receiverPhone}
+                    </Text>
+                  </View>
                 </View>
               </View>
+              {/* *********************** */}
             </View>
-            {/* ******************* */}
-
-            {/* Customer information */}
-            <View
-              style={{
-                backgroundColor: 'white',
-                padding: 20,
-                gap: 10,
-                marginBottom: 20,
-              }}>
-              <View
-                style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
-                <Image
-                  style={{width: 20, height: 20}}
-                  resizeMode="contain"
-                  source={icons.phone}
-                />
-                <Text
-                  style={{fontSize: 20, color: 'black', fontWeight: 'bold'}}>
-                  Thông tin liên lạc
-                </Text>
-              </View>
-              <View
-                style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
-                <View style={{width: 20}} />
-                <View style={{gap: 5}}>
-                  <Text style={{fontSize: 18, fontWeight: 'bold'}}>
-                    {item.receiverName}
-                  </Text>
-                  <Text style={{fontSize: 18, fontWeight: 'bold'}}>
-                    {item.receiverPhone}
-                  </Text>
-                </View>
-              </View>
-            </View>
-            {/* *********************** */}
 
             {/* Order Item */}
             <View
@@ -235,6 +277,7 @@ const OrderDetail = ({navigation, route}) => {
                 backgroundColor: 'white',
                 paddingBottom: 10,
                 marginBottom: 10,
+                padding: 20,
               }}>
               {item?.orderDetailList?.map(product => (
                 <View
@@ -246,7 +289,7 @@ const OrderDetail = ({navigation, route}) => {
                     backgroundColor: 'white',
                     borderBottomColor: '#decbcb',
                     borderBottomWidth: 0.5,
-                    padding: 20,
+                    paddingVertical: 20,
                   }}>
                   <Image
                     source={{
@@ -272,13 +315,17 @@ const OrderDetail = ({navigation, route}) => {
                     <Text
                       style={{
                         fontSize: 18,
-                        color: 'black',
+                        color: COLORS.primary,
+
                         fontFamily: 'Roboto',
-                        backgroundColor: '#7ae19c',
+                        backgroundColor: 'white',
                         alignSelf: 'flex-start',
                         paddingVertical: 5,
-                        paddingHorizontal: 10,
-                        borderRadius: 5,
+                        paddingHorizontal: 15,
+                        borderRadius: 15,
+                        borderColor: COLORS.primary,
+                        borderWidth: 1.5,
+                        fontWeight: 700,
                       }}>
                       {product.productCategory}
                     </Text>
@@ -314,7 +361,7 @@ const OrderDetail = ({navigation, route}) => {
               <View
                 style={{
                   paddingHorizontal: 20,
-                  paddingVertical: 10,
+                  paddingBottom: 20,
                   marginTop: 20,
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -424,7 +471,7 @@ const OrderDetail = ({navigation, route}) => {
                   Phương thức
                 </Text>
                 <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
-                  {item.paymentStatus === 0 ? 'COD' : 'VN Pay'}
+                  {item.paymentMethod === 0 ? 'COD' : 'VN Pay'}
                 </Text>
               </View>
             </View>
@@ -552,7 +599,7 @@ const OrderDetail = ({navigation, route}) => {
                 backgroundColor: 'white',
                 padding: 20,
                 marginTop: 20,
-                marginBottom: 180,
+                marginBottom: item?.status === 0 ? 180 : 110,
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
@@ -565,48 +612,51 @@ const OrderDetail = ({navigation, route}) => {
           </ScrollView>
         )}
       </View>
-      <View
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          backgroundColor: 'white',
-          borderTopColor: 'transparent',
-          height: 70,
-          width: '100%',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
+      {item?.status === 0 && (
+        <View
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: 'white',
+            borderTopColor: 'transparent',
+            height: 70,
+            width: '100%',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
 
-          marginTop: 20,
-          elevation: 10,
-        }}>
-        <View style={{width: '95%'}}>
-          <TouchableOpacity
-            onPress={() => {
-              item.status === 0 ? cancelOrder() : console.log('abc');
-            }}
-            style={{
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: '#23ba9c',
-              paddingVertical: 10,
-              width: '100%',
-              borderRadius: 5,
-            }}>
-            <Text
+            marginTop: 20,
+            elevation: 10,
+          }}>
+          <View style={{width: '95%'}}>
+            <TouchableOpacity
+              onPress={() => {
+                cancelOrder();
+              }}
               style={{
-                fontSize: 18,
-                color: 'white',
-                fontFamily: 'Roboto',
-                fontWeight: 'bold',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: COLORS.primary,
+                paddingVertical: 10,
+                width: '100%',
+                borderRadius: 30,
               }}>
-              {item?.status === 0 ? 'Hủy đơn hàng' : 'Đặt lại'}
-            </Text>
-          </TouchableOpacity>
+              <Text
+                style={{
+                  fontSize: 18,
+                  color: 'white',
+                  fontFamily: 'Roboto',
+                  fontWeight: 'bold',
+                }}>
+                Hủy đơn hàng
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      )}
+      {loading && <LoadingScreen />}
     </>
   );
 };
