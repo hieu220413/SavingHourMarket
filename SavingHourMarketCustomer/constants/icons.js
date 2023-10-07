@@ -24,6 +24,9 @@ const trashBin = require('../assets/icons/trashbin.png');
 const cross = require('../assets/icons/cross.png');
 const close = require('../assets/icons/close.png');
 const orderIcon = require('../assets/icons/ordericon.png');
+const bike = require('../assets/icons/bike.png');
+const questionMark = require('../assets/icons/questionMark.png');
+const filter = require('../assets/icons/filter.png');
 
 export default {
   home,
@@ -51,4 +54,7 @@ export default {
   cross,
   close,
   orderIcon,
+  bike,
+  questionMark,
+  filter,
 };

@@ -26,9 +26,14 @@ const CartItem = ({item, cartItems, setcartItems, navigation}) => {
     }
   };
 
+  const itemIndex = cartItems.findIndex(i => i.id === item.id);
+
   const handleRemoveQuantity = async () => {
     const newCart = cartItems.map(data => {
       if (data.id === item.id) {
+        if (data.cartQuantity === 1) {
+          return data;
+        }
         return {...data, cartQuantity: data.cartQuantity - 1};
       }
       return data;
@@ -45,137 +50,152 @@ const CartItem = ({item, cartItems, setcartItems, navigation}) => {
     <View
       style={{
         backgroundColor: 'white',
-        marginVertical: '2%',
-        paddingBottom: 20,
+
+        paddingHorizontal: 30,
       }}>
-      <Pressable
-        onPress={() => {
-          navigation.navigate('ProductDetails', {product: item});
-        }}
-        style={{
-          alignItems: 'center',
-          flexDirection: 'row',
-          paddingHorizontal: 10,
-          paddingTop: 20,
-          paddingBottom: 10,
-          gap: 10,
-        }}>
-        <CheckBox
-          uncheckedCheckBoxColor="#000000"
-          checkedCheckBoxColor={COLORS.primary}
-          style={{flex: 0.5}}
-          onClick={async () => {
-            const newCart = cartItems.map(data => {
-              if (data.id === item.id) {
-                return {...data, isChecked: !data.isChecked};
-              }
-              return data;
-            });
-
-            setcartItems(newCart);
-
-            try {
-              await AsyncStorage.setItem('CartList', JSON.stringify(newCart));
-            } catch (error) {
-              console.log(error);
-            }
+      <View
+        style={[
+          {
+            paddingBottom: 20,
+          },
+          itemIndex !== 0 && {
+            borderTopColor: '#decbcb',
+            borderTopWidth: 1,
+          },
+        ]}>
+        <Pressable
+          onPress={() => {
+            navigation.navigate('ProductDetails', {product: item});
           }}
-          isChecked={item.isChecked}
-        />
-
-        <Image
-          resizeMode="contain"
-          style={{flex: 3, width: '100%', height: 160, borderRadius: 10}}
-          source={{
-            uri: item.imageUrl,
-          }}
-        />
-
-        <View style={{flex: 4, alignItems: 'start', gap: 5, marginLeft: 10}}>
-          <Text
-            numberOfLines={1}
-            style={{
-              fontSize: 23,
-              color: 'black',
-              fontFamily: 'Roboto',
-              fontWeight: 'bold',
-            }}>
-            {item.name}{' '}
-          </Text>
-          <Text
-            style={{
-              fontSize: 18,
-              color: 'black',
-              fontFamily: 'Roboto',
-              backgroundColor: '#7ae19c',
-              alignSelf: 'flex-start',
-              paddingVertical: 5,
-              paddingHorizontal: 10,
-              borderRadius: 5,
-            }}>
-            {item.productSubCategory.productCategory.name}
-          </Text>
-          <Text
-            style={{
-              fontSize: 18,
-              color: 'black',
-              fontFamily: 'Roboto',
-              fontWeight: 'bold',
-            }}>
-            HSD:{format(new Date(item.expiredDate), 'dd/MM/yyyy')}
-          </Text>
-          <Text
-            style={{
-              fontSize: 20,
-              color: 'red',
-              fontFamily: 'Roboto',
-              fontWeight: 'bold',
-            }}>
-            {item.price.toLocaleString('vi-VN', {
-              style: 'currency',
-              currency: 'VND',
-            })}
-          </Text>
-        </View>
-      </Pressable>
-      <View style={{flexDirection: 'row'}}>
-        <View style={{flex: 4}} />
-        <View
           style={{
-            flex: 4,
-            flexDirection: 'row',
             alignItems: 'center',
-            gap: 12,
+            flexDirection: 'row',
+            paddingHorizontal: 10,
+            paddingTop: 20,
+            paddingBottom: 10,
+            gap: 10,
           }}>
-          <TouchableOpacity
-            onPress={() => handleRemoveQuantity()}
+          <CheckBox
+            uncheckedCheckBoxColor="#000000"
+            checkedCheckBoxColor={COLORS.primary}
+            style={{flex: 0.5}}
+            onClick={async () => {
+              const newCart = cartItems.map(data => {
+                if (data.id === item.id) {
+                  return {...data, isChecked: !data.isChecked};
+                }
+                return data;
+              });
+
+              setcartItems(newCart);
+
+              try {
+                await AsyncStorage.setItem('CartList', JSON.stringify(newCart));
+              } catch (error) {
+                console.log(error);
+              }
+            }}
+            isChecked={item.isChecked}
+          />
+
+          <Image
+            resizeMode="contain"
+            style={{flex: 3, width: '100%', height: 160, borderRadius: 10}}
+            source={{
+              uri: item.imageUrl,
+            }}
+          />
+
+          <View style={{flex: 4, alignItems: 'start', gap: 5, marginLeft: 10}}>
+            <Text
+              numberOfLines={1}
+              style={{
+                fontSize: 23,
+                color: 'black',
+                fontFamily: 'Roboto',
+                fontWeight: 'bold',
+              }}>
+              {item.name}{' '}
+            </Text>
+            <Text
+              style={{
+                fontSize: 18,
+                color: COLORS.primary,
+
+                fontFamily: 'Roboto',
+                backgroundColor: 'white',
+                alignSelf: 'flex-start',
+                paddingVertical: 5,
+                paddingHorizontal: 15,
+                borderRadius: 15,
+                borderColor: COLORS.primary,
+                borderWidth: 1.5,
+                fontWeight: 700,
+              }}>
+              {item.productSubCategory.productCategory.name}
+            </Text>
+            <Text
+              style={{
+                fontSize: 18,
+                color: 'black',
+                fontFamily: 'Roboto',
+                fontWeight: 'bold',
+              }}>
+              HSD:{format(new Date(item.expiredDate), 'dd/MM/yyyy')}
+            </Text>
+            <Text
+              style={{
+                fontSize: 20,
+                color: 'red',
+                fontFamily: 'Roboto',
+                fontWeight: 'bold',
+              }}>
+              {item.price.toLocaleString('vi-VN', {
+                style: 'currency',
+                currency: 'VND',
+              })}
+            </Text>
+          </View>
+        </Pressable>
+        <View style={{flexDirection: 'row'}}>
+          <View style={{flex: 4}} />
+          <View
             style={{
-              backgroundColor: '#F5F5F5',
-              borderRadius: 5,
-              padding: 5,
+              flex: 4,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 12,
             }}>
-            <Image
-              resizeMode="contain"
-              style={{height: 20, width: 20}}
-              source={icons.minus}
-            />
-          </TouchableOpacity>
-          <Text style={{fontSize: 22, color: 'black', fontFamily: 'Roboto'}}>
-            {item.cartQuantity}
-          </Text>
-          <TouchableOpacity
-            onPress={() => handleAddQuantity()}
-            style={{
-              backgroundColor: '#F5F5F5',
-              borderRadius: 5,
-              padding: 5,
-            }}>
-            <Image
-              resizeMode="contain"
-              style={{height: 20, width: 20}}
-              source={icons.plus}
-            />
-          </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => handleRemoveQuantity()}
+              style={{
+                backgroundColor: '#F5F5F5',
+                borderRadius: 5,
+                padding: 5,
+              }}>
+              <Image
+                resizeMode="contain"
+                style={{height: 20, width: 20}}
+                source={icons.minus}
+              />
+            </TouchableOpacity>
+            <Text style={{fontSize: 22, color: 'black', fontFamily: 'Roboto'}}>
+              {item.cartQuantity}
+            </Text>
+            <TouchableOpacity
+              onPress={() => handleAddQuantity()}
+              style={{
+                backgroundColor: '#F5F5F5',
+                borderRadius: 5,
+                padding: 5,
+              }}>
+              <Image
+                resizeMode="contain"
+                style={{height: 20, width: 20}}
+                source={icons.plus}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </View>

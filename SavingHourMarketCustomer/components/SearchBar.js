@@ -8,15 +8,20 @@ import {
   StyleSheet,
   Image,
 } from 'react-native';
-import {COLORS, FONTS} from '../constants/theme';
-import {icons} from '../constants';
-import {useState} from 'react';
+import { COLORS, FONTS } from '../constants/theme';
+import { icons } from '../constants';
+import { useState } from 'react';
 
-const SearchBar = () => {
-  const [text, setText] = useState();
-
+const SearchBar = ({
+  navigation,
+  text,
+  setText,
+  handleTypingSearch,
+  result,
+}) => {
   const handleClearText = () => {
     setText('');
+    handleTypingSearch('');
   };
   return (
     <View style={style.container}>
@@ -24,11 +29,25 @@ const SearchBar = () => {
         <Image resizeMode="center" style={style.icon} source={icons.search} />
       </View>
       <TextInput
+        autoFocus={true}
         style={style.input}
-        placeholder="Search"
+        placeholder="Bạn cần tìm gì ?"
         value={text}
-        onChangeText={text => {
-          setText(text);
+        onChangeText={data => {
+          setText(data);
+          handleTypingSearch(data);
+        }}
+        onSubmitEditing={() => {
+          if (text !== '') {
+            navigation.navigate('SearchResult', {
+              result: result,
+              text: text,
+            });
+          } else {
+            navigation.navigate('SearchResult', {
+              result: '',
+            });
+          }
         }}
       />
       <View style={style.clear}>
@@ -54,12 +73,13 @@ const style = StyleSheet.create({
     marginLeft: 20,
     marginBottom: 10,
     flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.primary,
   },
   input: {
     fontFamily: FONTS.fontFamily,
     fontSize: 16,
     flex: 1,
-    // backgroundColor: 'green',
   },
   wrapperSearch: {
     justifyContent: 'center',
@@ -67,7 +87,6 @@ const style = StyleSheet.create({
     width: 40,
     height: 40,
     flex: 0.2,
-    // backgroundColor: 'red',
   },
   icon: {
     width: 20,
@@ -78,7 +97,6 @@ const style = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 5,
-    // backgroundColor: 'blue',
   },
 });
 
