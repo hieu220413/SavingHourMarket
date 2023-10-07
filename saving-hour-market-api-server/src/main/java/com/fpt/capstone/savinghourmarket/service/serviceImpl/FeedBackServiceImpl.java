@@ -86,7 +86,6 @@ public class FeedBackServiceImpl implements FeedBackService {
 
     @Override
     public List<FeedBack> getFeedbackForStaff(UUID customerId, SortType rateSortType, FeedbackObject feedbackObject, FeedbackStatus feedbackStatus, int page, int size) {
-
         List<FeedBack> feedBacks = feedBackRepository.findFeedbackForCustomer(
                 customerId,
                 feedbackObject,

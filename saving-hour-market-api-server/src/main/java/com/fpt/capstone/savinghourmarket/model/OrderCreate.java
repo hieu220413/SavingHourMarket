@@ -47,6 +47,7 @@ public class OrderCreate {
 
     private UUID pickupPointId;
 
+    @NotNull
     private UUID timeFrameId;
 
     private PaymentStatus paymentStatus;
@@ -55,6 +56,10 @@ public class OrderCreate {
     private Integer paymentMethod;
 
     private String addressDeliver;
+
+    private Float longitude;
+
+    private Float latitude;
 
     private List<UUID> discountID;
 

@@ -146,7 +146,7 @@ public class OrderServiceImpl implements OrderService {
                 OrderGroup orderGroup = orderGroupRepository.findById(orderGroupId)
                         .orElseThrow(() -> new NoSuchOrderException("No group found with this group id " + orderGroupId));
                 orderGroup.setDeliverer(staff);
-                for (Order order: orderGroup.getOrderList()){
+                for (Order order : orderGroup.getOrderList()) {
                     order.setStatus(OrderStatus.DELIVERING.ordinal());
                     FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getEmail());
                 }
@@ -154,7 +154,7 @@ public class OrderServiceImpl implements OrderService {
                 OrderBatch orderBatch = orderBatchRepository.findById(orderBatchId)
                         .orElseThrow(() -> new NoSuchOrderException("No batch found with this batch id " + orderBatchId));
                 orderBatch.setDeliverer(staff);
-                for (Order order: orderBatch.getOrderList()){
+                for (Order order : orderBatch.getOrderList()) {
                     order.setStatus(OrderStatus.DELIVERING.ordinal());
                     FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getEmail());
                 }
@@ -261,7 +261,7 @@ public class OrderServiceImpl implements OrderService {
             order.setStatus(OrderStatus.CANCEL.ordinal());
             List<OrderDetail> orderDetails = order.getOrderDetailList();
             increaseProductQuantity(orderDetails);
-            if(order.getDiscountList() != null & order.getDiscountList().size() > 0){
+            if (order.getDiscountList() != null & order.getDiscountList().size() > 0) {
                 increaseDiscountQuantity(order.getDiscountList());
             }
         } else {
@@ -285,7 +285,7 @@ public class OrderServiceImpl implements OrderService {
         if (order.getStatus() == OrderStatus.PROCESSING.ordinal()) {
             List<OrderDetail> orderDetails = order.getOrderDetailList();
             increaseProductQuantity(orderDetails);
-            if(order.getDiscountList() != null & order.getDiscountList().size() > 0){
+            if (order.getDiscountList() != null & order.getDiscountList().size() > 0) {
                 increaseDiscountQuantity(order.getDiscountList());
             }
 
@@ -294,6 +294,63 @@ public class OrderServiceImpl implements OrderService {
         }
         repository.deleteById(order.getId());
         return "Successfully deleted  order " + id;
+    }
+
+    @Override
+    public List<OrderBatch> batchingForStaff(LocalDate deliverDate, UUID timeFrameId, Integer batchQuantity) {
+//
+//
+//        private static final int MIN_POINTS = 5; // Minimum number of points for a cluster
+//
+//
+//        // Define the epsilon (ε) value in degrees for a 10 km radius
+//        double epsilonInDegrees = 0.0897;
+//
+//        // Create a DBSCAN clusterer with the specified epsilon and distance measure
+//        DBSCANClusterer<DataPoint> clusterer = new DBSCANClusterer<>(epsilonInDegrees, MIN_POINTS, new DistanceMeasure() {
+//            @Override
+//            public double compute(double[] a, double[] b) {
+//                // Implement the Haversine distance calculation
+//                double lat1 = a[0];
+//                double lon1 = a[1];
+//                double lat2 = b[0];
+//                double lon2 = b[1];
+//
+//                // Convert latitude and longitude from degrees to radians
+//                lat1 = Math.toRadians(lat1);
+//                lon1 = Math.toRadians(lon1);
+//                lat2 = Math.toRadians(lat2);
+//                lon2 = Math.toRadians(lon2);
+//
+//                // Haversine formula
+//                double dLat = lat2 - lat1;
+//                double dLon = lon2 - lon1;
+//
+//                double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+//                        Math.cos(lat1) * Math.cos(lat2) *
+//                                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+//
+//                double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+//
+//                // Radius of the Earth in kilometers
+//                double earthRadiusKm = 6371.0;
+//
+//                // Calculate the distance
+//                double distance = earthRadiusKm * c;
+//
+//                return distance;
+//            }
+//        });
+//
+//        // Perform clustering
+//        List<Cluster<DataPoint>> clusters = clusterer.cluster(dataPoints);
+//
+//        // Process the clusters as needed
+//        for (Cluster<DataPoint> cluster : clusters) {
+//            List<DataPoint> clusterPoints = cluster.getPoints();
+//            // Handle each cluster of data points
+//        }
+        return null;
     }
 
     @Override
@@ -355,27 +412,21 @@ public class OrderServiceImpl implements OrderService {
         Customer customer = customerRepository
                 .findByEmail(email)
                 .orElseThrow(() -> new AuthorizationServiceException("Access denied with this account: " + email));
-
-        if (repository.getOrdersProcessing(customer.getEmail()).size() > 3) {
-            throw new CustomerLimitOrderProcessingException("Customer already has 3 PROCESSING orders");
-        }
-
-        RLock rLock = redissonClient.getFairLock("createOrderLock");
-        boolean res = rLock.tryLock(100, 10, TimeUnit.SECONDS);
-        Order order = null;
-        if(res) {
-            try {
-                order = createOrderTransact(orderCreate, customer);
-            } finally {
-                try{
+        Order orderCreated = null;
+        if (repository.getOrdersProcessing(customer.getEmail()).size() < 3) {
+            RLock rLock = redissonClient.getFairLock("createOrderLock");
+            boolean res = rLock.tryLock(100, 10, TimeUnit.SECONDS);
+            if(res) {
+                try {
+                    orderCreated = createOrderTransact(orderCreate, customer);
+                    }finally {
                     rLock.unlock();
-                } catch (Exception e) {
-                    log.error(e.toString());
                 }
-
             }
+        } else {
+            throw new CustomerLimitOrderProcessingException("Bạn hiện đang có 3 đơn hàng đang chờ xác nhận!");
         }
-        return order;
+        return orderCreated;
     }
 
     @Transactional(rollbackFor = {ResourceNotFoundException.class, InterruptedException.class, IOException.class, OutOfProductQuantityException.class})
@@ -384,40 +435,18 @@ public class OrderServiceImpl implements OrderService {
 
         if (orderCreateHasPickupPointAndTimeFrame(orderCreate)) {
             groupingOrder(order, orderCreate);
-        } else {
-            batchingOrder(order, orderCreate);
         }
 
-        Order orderSavedSuccessWithoutQrCodeUrl = repository.save(order);
-        String qrCodeUrl = generateAndUploadQRCode(orderSavedSuccessWithoutQrCodeUrl);
-        orderSavedSuccessWithoutQrCodeUrl.setQrCodeUrl(qrCodeUrl);
-
-        Order orderSavedSuccess = repository.save(orderSavedSuccessWithoutQrCodeUrl);
-
-        saveOrderDetails(orderSavedSuccess, orderCreate);
-
-        return orderSavedSuccess;
+        List<OrderDetail> orderDetails = getOrderDetails(order, orderCreate);
+        order.setOrderDetailList(orderDetails);
+        Order orderSaved = repository.save(order);
+        mapDiscountsToOrder(orderSaved, orderCreate.getDiscountID());
+        mapTransactionToOrder(orderSaved, orderCreate.getTransaction());
+        String qrCodeUrl = generateAndUploadQRCode(orderSaved);
+        orderSaved.setQrCodeUrl(qrCodeUrl);
+        return orderSaved;
     }
 
-    private void batchingOrder(Order order, OrderCreate orderCreate) throws ResourceNotFoundException {
-        String district = extractDistrict(orderCreate.getAddressDeliver());
-        if (district != null) {
-            log.debug(district);
-        } else {
-            throw new ResourceNotFoundException("District not found");
-        }
-        OrderBatch batch = null;
-        Optional<OrderBatch> orderBatch = orderBatchRepository.findByDistrictAndDeliverDate(district, orderCreate.getDeliveryDate());
-        if (orderBatch.isPresent()) {
-            batch = orderBatch.get();
-        } else {
-            batch = new OrderBatch();
-            batch.setDeliverDate(orderCreate.getDeliveryDate());
-            batch.setDistrict(district);
-            orderBatchRepository.save(batch);
-        }
-        order.setOrderBatch(batch);
-    }
 
     private Order setOrderData(OrderCreate orderCreate, Customer customer) throws ResourceNotFoundException, InterruptedException {
         Order order = new Order();
@@ -432,9 +461,10 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderStatus.PROCESSING.ordinal());
         order.setPaymentMethod(orderCreate.getPaymentMethod());
         order.setAddressDeliver(orderCreate.getAddressDeliver());
+        order.setLongitude(orderCreate.getLongitude());
+        order.setLatitude(orderCreate.getLatitude());
         order.setCreatedTime(LocalDateTime.now());
-        mapDiscountsToOrder(order, orderCreate.getDiscountID());
-        mapTransactionToOrder(order, orderCreate.getTransaction());
+
         return order;
     }
 
@@ -500,22 +530,24 @@ public class OrderServiceImpl implements OrderService {
         order.setTransaction(transactions);
     }
 
-    private void saveOrderDetails(Order order, OrderCreate orderCreate) throws OutOfProductQuantityException, ResourceNotFoundException, InterruptedException {
-        List<OrderDetail> orderDetailsSaved = new ArrayList<>();
+    private List<OrderDetail> getOrderDetails(Order order, OrderCreate orderCreate) throws OutOfProductQuantityException, ResourceNotFoundException, InterruptedException {
+        List<OrderDetail> orderDetails = new ArrayList<>();
         for (OrderProductCreate orderProductCreate : orderCreate.getOrderDetailList()) {
             OrderDetail orderDetail = mapOrderProductCreateToOrderDetail(order, orderProductCreate);
-            orderDetailsSaved.add(orderDetailRepository.save(orderDetail));
+            orderDetails.add(orderDetail);
         }
-        if (!orderDetailsSaved.isEmpty() && orderDetailsSaved.size() == orderCreate.getOrderDetailList().size()) {
-            log.info("Created order: %s with details saved: %s".formatted(order.getId(), orderDetailsSaved.get(0).toString()));
-        }
+        return orderDetails;
     }
 
-    private OrderDetail mapOrderProductCreateToOrderDetail(Order order, OrderProductCreate orderProductCreate) throws OutOfProductQuantityException, ResourceNotFoundException, InterruptedException {
+    private OrderDetail mapOrderProductCreateToOrderDetail(Order order, OrderProductCreate orderProductCreate) throws OutOfProductQuantityException, ResourceNotFoundException {
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setOrder(order);
         Product product = getProductById(orderProductCreate.getId());
-        decreaseProductQuantity(product, orderProductCreate.getBoughtQuantity(), order);
+        if (product.getQuantity() >= orderProductCreate.getBoughtQuantity()) {
+            product.setQuantity(product.getQuantity() - orderProductCreate.getBoughtQuantity());
+        } else {
+            throw new OutOfProductQuantityException(product.getName() + " chỉ còn " + product.getQuantity() + " sản phẩm!");
+        }
         orderDetail.setProduct(product);
         orderDetail.setProductPrice(orderProductCreate.getProductPrice());
         orderDetail.setProductOriginalPrice(orderProductCreate.getProductOriginalPrice());
@@ -526,17 +558,6 @@ public class OrderServiceImpl implements OrderService {
     private Product getProductById(UUID productId) throws ResourceNotFoundException {
         return productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("No Product found with this id " + productId));
-    }
-
-    private void decreaseProductQuantity(Product product, Integer boughtQuantity, Order order) throws OutOfProductQuantityException {
-        if (product.getQuantity() >= boughtQuantity) {
-            product.setQuantity(product.getQuantity() - boughtQuantity);
-            productRepository.save(product);
-        } else {
-
-            repository.delete(order);
-            throw new OutOfProductQuantityException("Product don't have enough quantity");
-        }
     }
 
     private Pageable getPageableWithSort(String totalPriceSortType, String createdTimeSortType, String deliveryDateSortType, int page, int limit) {
