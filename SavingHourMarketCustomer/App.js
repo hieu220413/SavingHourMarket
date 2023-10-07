@@ -54,6 +54,8 @@ import Feedback from './screens/Feedback';
 import UploadScreen from './screens/Upload';
 import Toast, {BaseToast} from 'react-native-toast-message';
 import {COLORS} from './constants/theme';
+import OrderFeedback from './screens/OrderFeedback';
+import FeedbackList from './screens/FeedbackList';
 
 const Stack = createStackNavigator();
 export default function App() {
@@ -157,6 +159,8 @@ export default function App() {
           <Stack.Screen name="Reset password" component={ResetPassword} />
           <Stack.Screen name="Feedback" component={Feedback} />
           <Stack.Screen name="Upload" component={UploadScreen} />
+          <Stack.Screen name="Order Feedback" component={OrderFeedback} />
+          <Stack.Screen name="List Feedback" component={FeedbackList} />
         </Stack.Navigator>
       </NavigationContainer>
       <ModalPortal />

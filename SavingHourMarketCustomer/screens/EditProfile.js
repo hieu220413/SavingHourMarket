@@ -236,7 +236,7 @@ const EditProfile = ({navigation, route}) => {
         gender: 0,
         avatarUrl: avatarUrl ? avatarUrl : user?.avatarUrl,
       };
-      // console.log('Info', submitInfo);
+      console.log('Info', submitInfo);
       const token = await auth().currentUser.getIdToken();
       console.log('token: ', token);
       fetch(`${API.baseURL}/api/customer/updateInfo`, {
@@ -255,7 +255,7 @@ const EditProfile = ({navigation, route}) => {
           await AsyncStorage.setItem('userInfo', JSON.stringify(respond));
           navigation.navigate('Profile');
         })
-        .catch(err => console.log(err.errorFields));
+        .catch(err => console.log(err));
     }
   };
 

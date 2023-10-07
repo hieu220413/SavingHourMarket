@@ -422,7 +422,7 @@ const Profile = ({navigation}) => {
             justifyContent: 'space-between',
           }}
           onPress={() => {
-            navigation.navigate('Feedback');
+            navigation.navigate('List Feedback');
           }}
           activeOpacity={0.8}>
           <View
