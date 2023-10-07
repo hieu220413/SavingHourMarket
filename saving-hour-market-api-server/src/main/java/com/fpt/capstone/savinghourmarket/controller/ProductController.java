@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
+import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
 import com.fpt.capstone.savinghourmarket.model.ProductCateWithSubCate;
@@ -32,8 +33,9 @@ public class ProductController {
             , @RequestParam(required = false) String productSubCategoryId
             , @RequestParam(defaultValue = "0") Integer page
             , @RequestParam(defaultValue = "5") Integer limit
-            , @RequestParam(defaultValue = "DESC") String quantitySortType
-            , @RequestParam(defaultValue = "DESC") String expiredSortType
+            , @RequestParam(required = false) SortType quantitySortType
+            , @RequestParam(required = false) SortType expiredSortType
+            , @RequestParam(required = false) SortType priceSort
             , @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
@@ -45,7 +47,8 @@ public class ProductController {
                 , page
                 , limit
                 , quantitySortType
-                , expiredSortType);
+                , expiredSortType
+                , priceSort);
         return ResponseEntity.status(HttpStatus.OK).body(productList);
     }
 
@@ -56,8 +59,9 @@ public class ProductController {
             , @RequestParam(required = false) String productSubCategoryId
             , @RequestParam(defaultValue = "0") Integer page
             , @RequestParam(defaultValue = "5") Integer limit
-            , @RequestParam(defaultValue = "DESC") String quantitySortType
-            , @RequestParam(defaultValue = "DESC") String expiredSortType) {
+            , @RequestParam(required = false) SortType quantitySortType
+            , @RequestParam(required = false) SortType expiredSortType
+            , @RequestParam(required = false) SortType priceSort) {
         List<Product> productList = productService.getProductsForCustomer(name
                 , supermarketId
                 , productCategoryId
@@ -65,7 +69,8 @@ public class ProductController {
                 , page
                 , limit
                 , quantitySortType
-                , expiredSortType);
+                , expiredSortType
+                , priceSort);
         return ResponseEntity.status(HttpStatus.OK).body(productList);
     }
 
