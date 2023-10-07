@@ -26,9 +26,7 @@ public class OrderDetail {
 
     private Integer boughtQuantity;
 
-    @ManyToOne(
-            cascade = CascadeType.ALL
-    )
+    @ManyToOne()
     @JoinColumn(
             name = "order_id",
             referencedColumnName = "id"

@@ -437,15 +437,14 @@ public class OrderServiceImpl implements OrderService {
             groupingOrder(order, orderCreate);
         }
 
-        Order orderSavedSuccessWithoutQrCodeUrl = repository.save(order);
-        String qrCodeUrl = generateAndUploadQRCode(orderSavedSuccessWithoutQrCodeUrl);
-        orderSavedSuccessWithoutQrCodeUrl.setQrCodeUrl(qrCodeUrl);
-
-        Order orderSavedSuccess = repository.save(orderSavedSuccessWithoutQrCodeUrl);
-
-        saveOrderDetails(orderSavedSuccess, orderCreate);
-
-        return orderSavedSuccess;
+        List<OrderDetail> orderDetails = getOrderDetails(order, orderCreate);
+        order.setOrderDetailList(orderDetails);
+        Order orderSaved = repository.save(order);
+        mapDiscountsToOrder(orderSaved, orderCreate.getDiscountID());
+        mapTransactionToOrder(orderSaved, orderCreate.getTransaction());
+        String qrCodeUrl = generateAndUploadQRCode(orderSaved);
+        orderSaved.setQrCodeUrl(qrCodeUrl);
+        return orderSaved;
     }
 
 
@@ -465,8 +464,7 @@ public class OrderServiceImpl implements OrderService {
         order.setLongitude(orderCreate.getLongitude());
         order.setLatitude(orderCreate.getLatitude());
         order.setCreatedTime(LocalDateTime.now());
-        mapDiscountsToOrder(order, orderCreate.getDiscountID());
-        mapTransactionToOrder(order, orderCreate.getTransaction());
+
         return order;
     }
 
@@ -532,22 +530,24 @@ public class OrderServiceImpl implements OrderService {
         order.setTransaction(transactions);
     }
 
-    private void saveOrderDetails(Order order, OrderCreate orderCreate) throws OutOfProductQuantityException, ResourceNotFoundException, InterruptedException {
-        List<OrderDetail> orderDetailsSaved = new ArrayList<>();
+    private List<OrderDetail> getOrderDetails(Order order, OrderCreate orderCreate) throws OutOfProductQuantityException, ResourceNotFoundException, InterruptedException {
+        List<OrderDetail> orderDetails = new ArrayList<>();
         for (OrderProductCreate orderProductCreate : orderCreate.getOrderDetailList()) {
             OrderDetail orderDetail = mapOrderProductCreateToOrderDetail(order, orderProductCreate);
-            orderDetailsSaved.add(orderDetailRepository.save(orderDetail));
+            orderDetails.add(orderDetail);
         }
-        if (!orderDetailsSaved.isEmpty() && orderDetailsSaved.size() == orderCreate.getOrderDetailList().size()) {
-            log.info("Created order: %s with details saved: %s".formatted(order.getId(), orderDetailsSaved.get(0).toString()));
-        }
+        return orderDetails;
     }
 
-    private OrderDetail mapOrderProductCreateToOrderDetail(Order order, OrderProductCreate orderProductCreate) throws OutOfProductQuantityException, ResourceNotFoundException, InterruptedException {
+    private OrderDetail mapOrderProductCreateToOrderDetail(Order order, OrderProductCreate orderProductCreate) throws OutOfProductQuantityException, ResourceNotFoundException {
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setOrder(order);
         Product product = getProductById(orderProductCreate.getId());
-        decreaseProductQuantity(product, orderProductCreate.getBoughtQuantity(), order);
+        if (product.getQuantity() >= orderProductCreate.getBoughtQuantity()) {
+            product.setQuantity(product.getQuantity() - orderProductCreate.getBoughtQuantity());
+        } else {
+            throw new OutOfProductQuantityException(product.getName() + " chỉ còn " + product.getQuantity() + " sản phẩm!");
+        }
         orderDetail.setProduct(product);
         orderDetail.setProductPrice(orderProductCreate.getProductPrice());
         orderDetail.setProductOriginalPrice(orderProductCreate.getProductOriginalPrice());
@@ -558,16 +558,6 @@ public class OrderServiceImpl implements OrderService {
     private Product getProductById(UUID productId) throws ResourceNotFoundException {
         return productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("No Product found with this id " + productId));
-    }
-
-    private void decreaseProductQuantity(Product product, Integer boughtQuantity, Order order) throws OutOfProductQuantityException {
-        if (product.getQuantity() >= boughtQuantity) {
-            product.setQuantity(product.getQuantity() - boughtQuantity);
-            productRepository.save(product);
-        } else {
-            repository.delete(order);
-            throw new OutOfProductQuantityException(product.getName() + " chỉ còn " + product.getQuantity() + " sản phẩm!");
-        }
     }
 
     private Pageable getPageableWithSort(String totalPriceSortType, String createdTimeSortType, String deliveryDateSortType, int page, int limit) {

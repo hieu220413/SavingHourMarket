@@ -33,7 +33,7 @@ public class FeedBackController {
     }
 
     @PutMapping("/updateStatus")
-    public ResponseEntity<String> updateStatus(@RequestParam UUID feedbackId, @RequestParam FeedbackStatus status) throws ResourceNotFoundException, FirebaseAuthException {
+    public ResponseEntity<String> updateStatus(@RequestParam UUID feedbackId, @RequestParam FeedbackStatus status) {
         return ResponseEntity.status(HttpStatus.OK).body(feedBackService.updateStatus(feedbackId, status));
     }
 
