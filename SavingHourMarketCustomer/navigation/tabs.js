@@ -51,7 +51,11 @@ const Tabs = () => {
         component={Home}
         options={{
           tabBarIcon: ({focused}) => (
-            <TabIcon display={'Home'} focused={focused} icon={icons.home} />
+            <TabIcon
+              display={'Trang chủ'}
+              focused={focused}
+              icon={icons.home}
+            />
           ),
         }}
       />
@@ -69,7 +73,11 @@ const Tabs = () => {
         component={Discount}
         options={{
           tabBarIcon: ({focused}) => (
-            <TabIcon display={'D&P'} focused={focused} icon={icons.discount} />
+            <TabIcon
+              display={'Giảm giá'}
+              focused={focused}
+              icon={icons.discount}
+            />
           ),
         }}
       />
@@ -78,7 +86,11 @@ const Tabs = () => {
         component={Orders}
         options={{
           tabBarIcon: ({focused}) => (
-            <TabIcon display={'Orders'} focused={focused} icon={icons.order} />
+            <TabIcon
+              display={'Đơn hàng'}
+              focused={focused}
+              icon={icons.order}
+            />
           ),
         }}
       />
@@ -87,7 +99,7 @@ const Tabs = () => {
         component={Profile}
         options={{
           tabBarIcon: ({focused}) => (
-            <TabIcon display={'Profile'} focused={focused} icon={icons.user} />
+            <TabIcon display={'Tôi'} focused={focused} icon={icons.user} />
           ),
         }}
       />

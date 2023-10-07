@@ -8,104 +8,111 @@ import {icons} from '../constants';
 import {COLORS} from '../constants/theme';
 import {useFocusEffect} from '@react-navigation/native';
 import {API} from '../constants/api';
+import LoadingScreen from '../components/LoadingScreen';
 
 const SelectTimeFrame = ({navigation, route}) => {
   const [timeFrameList, setTimeFrameList] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
+      setLoading(true);
       fetch(`${API.baseURL}/api/timeframe/getAll`)
         .then(res => res.json())
         .then(response => {
           setTimeFrameList(response);
+          setLoading(false);
         })
         .catch(err => console.log(err));
     }, []),
   );
   return (
-    <ScrollView>
-      <View
-        style={{
-          flex: 1,
-          alignItems: 'center',
-          flexDirection: 'row',
-          gap: 20,
-          marginBottom: 30,
-          backgroundColor: '#ffffff',
-          padding: 20,
-          elevation: 4,
-        }}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Image
-            source={icons.leftArrow}
-            resizeMode="contain"
-            style={{width: 35, height: 35, tintColor: COLORS.primary}}
-          />
-        </TouchableOpacity>
-        <Text
+    <>
+      <ScrollView>
+        <View
           style={{
-            fontSize: 30,
-            textAlign: 'center',
-            color: '#000000',
-            fontWeight: 'bold',
-            fontFamily: 'Roboto',
+            flex: 1,
+            alignItems: 'center',
+            flexDirection: 'row',
+            gap: 20,
+            marginBottom: 30,
+            backgroundColor: '#ffffff',
+            padding: 20,
+            elevation: 4,
           }}>
-          Select time frame
-        </Text>
-      </View>
-      <View style={{backgroundColor: 'white', padding: 20}}>
-        <Text
-          style={{
-            fontSize: 20,
-            color: 'black',
-            fontFamily: 'Roboto',
-            fontWeight: 'bold',
-            marginBottom: 20,
-          }}>
-          Time frames
-        </Text>
-        {/* Time Frames */}
-        {timeFrameList.map(item => (
-          <TouchableOpacity
-            key={item.id}
-            onPress={() => {
-              route.params.setTimeFrame(item);
-              navigation.navigate('Payment');
-            }}
-            style={{
-              paddingVertical: 15,
-              borderTopColor: '#decbcb',
-              borderTopWidth: 0.75,
-            }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 15,
-                flex: 1,
-                justifyContent: 'space-between',
-              }}>
-              <Text
-                style={{
-                  fontSize: 17,
-                  color: 'black',
-                  fontFamily: 'Roboto',
-                }}>
-                {item.fromHour.slice(0, 5)} đến {item.toHour.slice(0, 5)}
-              </Text>
-              <Text
-                style={{
-                  fontSize: 17,
-                  color: 'black',
-                  fontFamily: 'Roboto',
-                }}>
-                {item.dayOfWeek === 0 && 'Mỗi ngày'}
-              </Text>
-            </View>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Image
+              source={icons.leftArrow}
+              resizeMode="contain"
+              style={{width: 35, height: 35, tintColor: COLORS.primary}}
+            />
           </TouchableOpacity>
-        ))}
-      </View>
-    </ScrollView>
+          <Text
+            style={{
+              fontSize: 25,
+              textAlign: 'center',
+              color: '#000000',
+              fontWeight: 'bold',
+              fontFamily: 'Roboto',
+            }}>
+            Chọn khung giờ
+          </Text>
+        </View>
+        <View style={{backgroundColor: 'white', padding: 20}}>
+          <Text
+            style={{
+              fontSize: 20,
+              color: 'black',
+              fontFamily: 'Roboto',
+              fontWeight: 'bold',
+              marginBottom: 20,
+            }}>
+            Khung giờ
+          </Text>
+          {/* Time Frames */}
+          {timeFrameList.map(item => (
+            <TouchableOpacity
+              key={item.id}
+              onPress={() => {
+                route.params.setTimeFrame(item);
+                navigation.navigate('Payment');
+              }}
+              style={{
+                paddingVertical: 15,
+                borderTopColor: '#decbcb',
+                borderTopWidth: 0.75,
+              }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 15,
+                  flex: 1,
+                  justifyContent: 'space-between',
+                }}>
+                <Text
+                  style={{
+                    fontSize: 17,
+                    color: 'black',
+                    fontFamily: 'Roboto',
+                  }}>
+                  {item.fromHour.slice(0, 5)} đến {item.toHour.slice(0, 5)}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 17,
+                    color: 'black',
+                    fontFamily: 'Roboto',
+                  }}>
+                  {item.dayOfWeek === 0 && 'Mỗi ngày'}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
+      {loading && <LoadingScreen />}
+    </>
   );
 };
 

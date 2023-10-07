@@ -41,6 +41,7 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -411,21 +412,21 @@ public class OrderServiceImpl implements OrderService {
         Customer customer = customerRepository
                 .findByEmail(email)
                 .orElseThrow(() -> new AuthorizationServiceException("Access denied with this account: " + email));
-
+        Order orderCreated = null;
         if (repository.getOrdersProcessing(customer.getEmail()).size() < 3) {
-            RLock rLock = redissonClient.getLock("createOrderLock");
-            Order order = null;
-            try {
-                rLock.lock();
-                order = createOrderTransact(orderCreate, customer);
-            } finally {
-                rLock.unlock();
+            RLock rLock = redissonClient.getFairLock("createOrderLock");
+            boolean res = rLock.tryLock(100, 10, TimeUnit.SECONDS);
+            if(res) {
+                try {
+                    orderCreated = createOrderTransact(orderCreate, customer);
+                    }finally {
+                    rLock.unlock();
+                }
             }
-            return order;
-
         } else {
             throw new CustomerLimitOrderProcessingException("Bạn hiện đang có 3 đơn hàng đang chờ xác nhận!");
         }
+        return orderCreated;
     }
 
     @Transactional(rollbackFor = {ResourceNotFoundException.class, InterruptedException.class, IOException.class, OutOfProductQuantityException.class})

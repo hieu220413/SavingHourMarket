@@ -1,47 +1,44 @@
 /* eslint-disable prettier/prettier */
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { API } from '../constants/api';
 import { COLORS, FONTS } from '../constants/theme';
 import { icons } from '../constants';
 
-const Categories = () => {
-
-    const [categories, setCategories] = useState([]);
-
-    useEffect(() => {
-        fetch(
-            `${API.baseURL}/api/product/getAllCategory`,
-        )
-            .then(res => res.json())
-            .then(data => {
-                setCategories(data);
-                // console.log('cate:', data);
-            })
-            .catch(err => {
-                console.log(err);
-            });
-    }, []);
-
-    const handleSelectCategory = () => {
-        console.log('select');
-    };
+const Categories = (
+    {
+        categories,
+        currentCate,
+        setCurrentCate,
+    }
+) => {
     const Item = ({ data }) => {
         return (
             <TouchableOpacity
-                onPress={handleSelectCategory}
+                onPress={() => setCurrentCate(data.id)}
                 style={{
                     marginRight: 5,
                 }}>
                 <Text
-                    style={{
+                    style={currentCate == data.id ? {
+                        paddingBottom: 5,
+                        paddingHorizontal: 5,
+                        fontSize: 22,
+                        fontFamily: FONTS.fontFamily,
+                        borderRadius: 20,
+                        textAlign: 'center',
+                        fontWeight: 700,
+                        color: COLORS.secondary,
+
+                    } : {
                         padding: 5,
                         fontSize: 20,
                         fontFamily: FONTS.fontFamily,
                         borderRadius: 20,
+                        fontWeight: 700,
                         textAlign: 'center',
                     }}
-                >{data}</Text>
+                >{data.name}</Text>
             </TouchableOpacity>
         );
     };
@@ -56,7 +53,7 @@ const Categories = () => {
         >
             {/* Category */}
             {categories.map((item, index) => (
-                <Item data={item.name} key={index} />
+                <Item data={item} key={index} />
             ))}
         </ScrollView>
     );

@@ -24,4 +24,16 @@ public class TimeFrameController {
         List<TimeFrame> timeFrameList = timeFrameService.getAll();
         return ResponseEntity.status(HttpStatus.OK).body(timeFrameList);
     }
+
+    @RequestMapping(value = "/getForPickupPoint", method = RequestMethod.GET)
+    public ResponseEntity<List<TimeFrame>> getForPickupPoint() {
+        List<TimeFrame> timeFrameList = timeFrameService.getForPickupPoint();
+        return ResponseEntity.status(HttpStatus.OK).body(timeFrameList);
+    }
+
+    @RequestMapping(value = "/getForHomeDelivery", method = RequestMethod.GET)
+    public ResponseEntity<List<TimeFrame>> getForHomeDelivery() {
+        List<TimeFrame> timeFrameList = timeFrameService.getForHomeDelivery();
+        return ResponseEntity.status(HttpStatus.OK).body(timeFrameList);
+    }
 }
