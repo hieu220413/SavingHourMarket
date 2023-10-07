@@ -25,6 +25,7 @@ import {format} from 'date-fns';
 import Modal, {
   ModalFooter,
   ModalButton,
+  SlideAnimation,
   ScaleAnimation,
 } from 'react-native-modals';
 import {useFocusEffect} from '@react-navigation/native';
@@ -34,6 +35,8 @@ import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import VnpayMerchant, {
   VnpayMerchantModule,
 } from '../react-native-vnpay-merchant';
+import LoadingScreen from '../components/LoadingScreen';
+
 LogBox.ignoreLogs(['new NativeEventEmitter']);
 const eventEmitter = new NativeEventEmitter(VnpayMerchantModule);
 
@@ -66,9 +69,13 @@ const Payment = ({navigation, route}) => {
 
   const [cannotChangeDate, setCannotChangeDate] = useState(false);
 
-  const [tokenId, setTokenId] = useState(null);
-
   const [initializing, setInitializing] = useState(true);
+
+  const [openAuthModal, setOpenAuthModal] = useState(false);
+
+  const [helpModal, setHelpModal] = useState(false);
+
+  const [loading, setLoading] = useState(false);
 
   const [customerLocation, setCustomerLocation] = useState({
     address: 'Số 121, Trần Văn Dư, Phường 13, Tân Bình,TP.HCM',
@@ -104,28 +111,33 @@ const Payment = ({navigation, route}) => {
 
     if (!getPaymentResponse) {
       //Handle internal error
-      Alert.alert('Unexpected error happened');
+      setValidateMessage('Hệ thống hiện đang có lỗi');
+      setOpenValidateDialog(true);
+
       return;
     }
 
     if (getPaymentResponse.status === 401) {
       //Handle Unauthorized (chuyen ve log in hay sao do)
-      Alert.alert('Unauthorized');
+      setOpenAuthModal(true);
       return;
     }
 
     if (getPaymentResponse.status === 404) {
-      Alert.alert('Order not found');
+      setValidateMessage('Không tìm thấy đơn hàng');
+      setOpenValidateDialog(true);
     }
 
     if (getPaymentResponse.status === 403) {
       const responseBody = await getPaymentResponse.json();
       if (responseBody.message === 'ORDER_IS_PAID') {
-        Alert.alert('This Order has already been paid');
+        setValidateMessage('Đơn hàng đã được thanh toán');
+        setOpenValidateDialog(true);
       }
 
       if (responseBody.message === 'REQUIRED_E_PAYMENT') {
-        Alert.alert('This order payment method is COD');
+        setValidateMessage('Đơn hàng có phương thức thanh toán là COD');
+        setOpenValidateDialog(true);
       }
       return;
     }
@@ -137,22 +149,57 @@ const Payment = ({navigation, route}) => {
         return;
       }
       // mở sdk
-      eventEmitter.addListener('PaymentBack', e => {
+      eventEmitter.addListener('PaymentBack', async e => {
         console.log('Sdk back!');
         if (e) {
           console.log('e.resultCode = ' + e.resultCode);
           switch (e.resultCode) {
             case -1:
-              // Khi nguoi dung nhan nut back tu device (Khong phai nhan nut back tu VNPAY UI)
+              await fetch(`${API.baseURL}/api/order/deleteOrder/${orderId}`, {
+                method: 'DELETE',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${idToken}`,
+                },
+              })
+                .then(res => {
+                  return res.json();
+                })
+                .then(respond => {
+                  console.log(respond);
+                  setValidateMessage('Thanh toán thất bại ');
+                  setOpenValidateDialog(true);
+                  // setItem(respond);
+                })
+                .catch(err => console.log(err));
+
               console.log('nguoi dung nhan nut back tu device');
+
               break;
             case 97:
               // Giao dich thanh cong.
-              console.log('Giao dich thanh cong');
+              navigation.navigate('Order success', {id: orderId});
               break;
             case 98:
               // Giao dich khong thanh cong. (bao gom case nguoi dung an nut back tu VNPAY UI)
-              console.log('Giao dich khong thanh cong');
+              await fetch(`${API.baseURL}/api/order/deleteOrder/${orderId}`, {
+                method: 'DELETE',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${idToken}`,
+                },
+              })
+                .then(res => {
+                  return res.json();
+                })
+                .then(respond => {
+                  console.log(respond);
+                  setValidateMessage('Thanh toán thất bại ');
+                  setOpenValidateDialog(true);
+                  // setItem(respond);
+                })
+                .catch(err => console.log(err));
+
               break;
           }
 
@@ -190,6 +237,7 @@ const Payment = ({navigation, route}) => {
 
   //authen check
   const onAuthStateChange = async userInfo => {
+    setLoading(true);
     // console.log(userInfo);
     if (initializing) {
       setInitializing(false);
@@ -206,21 +254,26 @@ const Payment = ({navigation, route}) => {
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
         await AsyncStorage.removeItem('userInfo');
+        await AsyncStorage.removeItem('CartList');
+        setLoading(false);
+        setOpenAuthModal(true);
+
         return;
       }
 
-      const token = await auth().currentUser.getIdToken();
-
-      setTokenId(token);
       console.log('user is logged in');
       const json = await AsyncStorage.getItem('userInfo');
       const user = JSON.parse(json);
 
       setName(user.fullName);
       setPhone(user.phone);
+      setLoading(false);
     } else {
       // no sessions found.
       await AsyncStorage.removeItem('userInfo');
+      await AsyncStorage.removeItem('CartList');
+      setLoading(false);
+      setOpenAuthModal(true);
       console.log('user is not logged in');
     }
   };
@@ -248,18 +301,19 @@ const Payment = ({navigation, route}) => {
 
   const [orderItems, setOrderItems] = useState([]);
 
-  useFocusEffect(
-    useCallback(() => {
-      (async () => {
-        try {
-          const orders = await AsyncStorage.getItem('OrderItems');
-          setOrderItems(orders ? JSON.parse(orders) : []);
-        } catch (err) {
-          console.log(err);
-        }
-      })();
-    }, []),
-  );
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoading(true);
+        const orders = await AsyncStorage.getItem('OrderItems');
+        setOrderItems(orders ? JSON.parse(orders) : []);
+        setLoading(false);
+      } catch (err) {
+        console.log(err);
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   function groupByKey(array, key) {
     return array.reduce((hash, obj) => {
@@ -404,6 +458,8 @@ const Payment = ({navigation, route}) => {
     if (!validate()) {
       return;
     }
+    const tokenId = await auth().currentUser.getIdToken();
+
     let submitOrder = {};
     const voucherListId = voucherList.map(item => {
       return item.id;
@@ -428,7 +484,6 @@ const Payment = ({navigation, route}) => {
         timeFrameId: timeFrame.id,
         paymentStatus: 'UNPAID',
         paymentMethod: paymentMethod.id,
-        addressDeliver: pickupPoint.address,
         discountID: voucherListId,
         orderDetailList: orderDetailList,
       };
@@ -445,6 +500,8 @@ const Payment = ({navigation, route}) => {
         paymentStatus: 'UNPAID',
         paymentMethod: paymentMethod.id,
         addressDeliver: customerLocation.address,
+        longitude: customerLocation.long,
+        latitude: customerLocation.lat,
         discountID: voucherListId,
         orderDetailList: orderDetailList,
       };
@@ -452,23 +509,51 @@ const Payment = ({navigation, route}) => {
 
     console.log(submitOrder);
 
-    const createOrderRequest = await fetch(
-      `${API.baseURL}/api/order/createOrder`,
-      {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${tokenId}`,
-        },
-        body: JSON.stringify(submitOrder),
+    setLoading(true);
+
+    fetch(`${API.baseURL}/api/order/createOrder`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${tokenId}`,
       },
-    )
+      body: JSON.stringify(submitOrder),
+    })
       .then(res => {
         return res.json();
       })
-      .then(respond => {
+      .then(async respond => {
         console.log(respond);
-        navigation.navigate('Order success', {id: respond.id});
+
+        if (respond.code === 409) {
+          setValidateMessage(respond.message);
+          setLoading(false);
+          setOpenValidateDialog(true);
+          return;
+        }
+        if (respond.code === 403) {
+          setLoading(false);
+          setOpenAuthModal(true);
+          return;
+        }
+        // handle vnpay payment method
+        if (paymentMethod.id === 1) {
+          const createdOrderBody = respond;
+          const createdOrderId = createdOrderBody.id;
+          const createdOrderTotalPrice = createdOrderBody.totalPrice;
+          const idToken = await auth().currentUser.getIdToken();
+          console.log('processing vnpay');
+          await processVNPay(createdOrderTotalPrice, createdOrderId, idToken);
+          setLoading(false);
+          return;
+        }
+        // hangle COD payment method
+        if (paymentMethod.id === 0) {
+          const createdOrderBody = respond;
+          setLoading(false);
+          navigation.navigate('Order success', {id: createdOrderBody.id});
+          return;
+        }
       })
 
       .catch(err => {
@@ -476,20 +561,17 @@ const Payment = ({navigation, route}) => {
         return null;
       });
 
-    if (createOrderRequest) {
-      // handle vnpay payment method
-      if (paymentMethod.id === 1 && createOrderRequest.status === 200) {
-        const createdOrderBody = await createOrderRequest.json();
-        const createdOrderId = createdOrderBody.id;
-        const createdOrderTotalPrice = createdOrderBody.totalPrice;
-        const idToken = await auth().currentUser.getIdToken();
-        console.log('processing vnpay');
-        await processVNPay(createdOrderTotalPrice, createdOrderId, idToken);
-        return;
-      }
-      console.log(await createOrderRequest.json());
-      // Handle other request status
-    }
+    // if (!createOrderRequest) {
+    //   setValidateMessage('Hệ thống hiện đang có lỗi');
+    //   setOpenValidateDialog(true);
+    // }
+
+    // if (createOrderRequest) {
+    //   // handle vnpay payment method
+    //   // hangle COD payment method
+    //   // console.log(await createOrderRequest.json());
+    //   // Handle other request status
+    // }
   };
 
   return (
@@ -553,6 +635,7 @@ const Payment = ({navigation, route}) => {
                     backgroundColor: 'white',
                     paddingBottom: 10,
                     marginBottom: 20,
+                    paddingHorizontal: 20,
                   }}>
                   {/* item group by category */}
                   {groupByCategory[key].map(item => (
@@ -565,7 +648,7 @@ const Payment = ({navigation, route}) => {
                         backgroundColor: 'white',
                         borderBottomColor: '#decbcb',
                         borderBottomWidth: 0.75,
-                        padding: 20,
+                        paddingVertical: 20,
                       }}>
                       <Image
                         resizeMode="contain"
@@ -592,13 +675,17 @@ const Payment = ({navigation, route}) => {
                         <Text
                           style={{
                             fontSize: 18,
-                            color: 'black',
+                            color: COLORS.primary,
+
                             fontFamily: 'Roboto',
-                            backgroundColor: '#7ae19c',
+                            backgroundColor: 'white',
                             alignSelf: 'flex-start',
                             paddingVertical: 5,
-                            paddingHorizontal: 10,
-                            borderRadius: 5,
+                            paddingHorizontal: 15,
+                            borderRadius: 15,
+                            borderColor: COLORS.primary,
+                            borderWidth: 1.5,
+                            fontWeight: 700,
                           }}>
                           {item.productCategoryName}
                         </Text>
@@ -653,7 +740,7 @@ const Payment = ({navigation, route}) => {
                     }}>
                     <View
                       style={{
-                        padding: 20,
+                        paddingVertical: 20,
                         flexDirection: 'row',
                         alignItems: 'center',
                         justifyContent: 'space-between',
@@ -693,7 +780,6 @@ const Payment = ({navigation, route}) => {
                   {voucherApplied && (
                     <View
                       style={{
-                        paddingHorizontal: 20,
                         paddingVertical: 20,
                         // marginTop: 20,
                         flexDirection: 'row',
@@ -727,7 +813,6 @@ const Payment = ({navigation, route}) => {
 
                   <View
                     style={{
-                      paddingHorizontal: 20,
                       paddingVertical: 10,
                       marginTop: 20,
                       flexDirection: 'row',
@@ -740,7 +825,7 @@ const Payment = ({navigation, route}) => {
                         fontFamily: 'Roboto',
                         color: 'black',
                       }}>
-                      Total price ({totalQuantityByCategory} item):
+                      Thành tiền ({totalQuantityByCategory} sản phẩm):
                     </Text>
                     <Text
                       style={{
@@ -838,7 +923,12 @@ const Payment = ({navigation, route}) => {
             </View>
             {/* Manage PickupPoint / TimeFrame/ Date */}
             {pickUpPointIsChecked && (
-              <View style={{backgroundColor: 'white', marginTop: 20}}>
+              <View
+                style={{
+                  backgroundColor: 'white',
+                  marginTop: 20,
+                  paddingHorizontal: 20,
+                }}>
                 {/* Manage Pickup Point */}
                 <TouchableOpacity
                   onPress={() => {
@@ -848,7 +938,7 @@ const Payment = ({navigation, route}) => {
                   }}>
                   <View
                     style={{
-                      padding: 20,
+                      paddingVertical: 20,
                       flexDirection: 'row',
                       alignItems: 'center',
                       justifyContent: 'space-between',
@@ -887,6 +977,59 @@ const Payment = ({navigation, route}) => {
                     />
                   </View>
                 </TouchableOpacity>
+
+                {/* Manage time frame */}
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.navigate('Select time frame', {setTimeFrame});
+                  }}>
+                  <View
+                    style={{
+                      paddingVertical: 20,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      borderTopColor: '#decbcb',
+                      borderTopWidth: 0.75,
+                    }}>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        gap: 10,
+                        alignItems: 'center',
+                        width: '80%',
+                      }}>
+                      <Image
+                        resizeMode="contain"
+                        style={{width: 25, height: 25}}
+                        source={icons.time}
+                      />
+                      <Text
+                        style={{
+                          fontSize: 20,
+                          fontFamily: 'Roboto',
+                          color: 'black',
+                        }}>
+                        {timeFrame
+                          ? `${timeFrame?.fromHour.slice(
+                              0,
+                              5,
+                            )} đến ${timeFrame?.toHour.slice(0, 5)}`
+                          : 'Chọn khung giờ'}
+                      </Text>
+                    </View>
+
+                    <Image
+                      resizeMode="contain"
+                      style={{
+                        width: 25,
+                        height: 25,
+                      }}
+                      source={icons.rightArrow}
+                    />
+                  </View>
+                </TouchableOpacity>
+
                 {/* Manage Date */}
                 <TouchableOpacity
                   onPress={() => {
@@ -901,14 +1044,12 @@ const Payment = ({navigation, route}) => {
                   }}>
                   <View
                     style={{
-                      padding: 20,
+                      paddingVertical: 20,
                       flexDirection: 'row',
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       borderTopColor: '#decbcb',
                       borderTopWidth: 0.75,
-                      borderBottomColor: '#decbcb',
-                      borderBottomWidth: 0.75,
                     }}>
                     <View
                       style={{
@@ -948,59 +1089,15 @@ const Payment = ({navigation, route}) => {
                     setOpen(false);
                   }}
                 />
-                {/* Manage time frame */}
-                <TouchableOpacity
-                  onPress={() => {
-                    navigation.navigate('Select time frame', {setTimeFrame});
-                  }}>
-                  <View
-                    style={{
-                      padding: 20,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                    }}>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        gap: 10,
-                        alignItems: 'center',
-                        width: '80%',
-                      }}>
-                      <Image
-                        resizeMode="contain"
-                        style={{width: 25, height: 25}}
-                        source={icons.time}
-                      />
-                      <Text
-                        style={{
-                          fontSize: 20,
-                          fontFamily: 'Roboto',
-                          color: 'black',
-                        }}>
-                        {timeFrame
-                          ? `${timeFrame?.fromHour.slice(
-                              0,
-                              5,
-                            )} đến ${timeFrame?.toHour.slice(0, 5)}`
-                          : 'Chọn khung giờ'}
-                      </Text>
-                    </View>
-
-                    <Image
-                      resizeMode="contain"
-                      style={{
-                        width: 25,
-                        height: 25,
-                      }}
-                      source={icons.rightArrow}
-                    />
-                  </View>
-                </TouchableOpacity>
               </View>
             )}
             {customerLocationIsChecked && (
-              <View style={{backgroundColor: 'white', marginTop: 20}}>
+              <View
+                style={{
+                  backgroundColor: 'white',
+                  marginTop: 20,
+                  paddingHorizontal: 20,
+                }}>
                 {/* Manage customer location */}
                 <TouchableOpacity
                   onPress={() => {
@@ -1011,7 +1108,7 @@ const Payment = ({navigation, route}) => {
                   }}>
                   <View
                     style={{
-                      padding: 20,
+                      paddingVertical: 20,
                       flexDirection: 'row',
                       alignItems: 'center',
                       justifyContent: 'space-between',
@@ -1036,7 +1133,7 @@ const Payment = ({navigation, route}) => {
                             fontFamily: 'Roboto',
                             color: 'black',
                           }}>
-                          Current location
+                          Địa chỉ hiện tại
                         </Text>
                       </View>
                       <View
@@ -1074,7 +1171,7 @@ const Payment = ({navigation, route}) => {
                 <TouchableOpacity onPress={() => setOpen(true)}>
                   <View
                     style={{
-                      padding: 20,
+                      paddingVertical: 20,
                       flexDirection: 'row',
                       alignItems: 'center',
                       justifyContent: 'space-between',
@@ -1100,7 +1197,7 @@ const Payment = ({navigation, route}) => {
                           fontFamily: 'Roboto',
                           color: 'black',
                         }}>
-                        {date ? format(date, 'dd-MM-yyyy') : 'Select date'}
+                        {date ? format(date, 'dd-MM-yyyy') : 'Chọn ngày giao'}
                       </Text>
                     </View>
                   </View>
@@ -1122,6 +1219,36 @@ const Payment = ({navigation, route}) => {
                 />
               </View>
             )}
+
+            <TouchableOpacity
+              onPress={() => {
+                setHelpModal(true);
+              }}
+              style={{
+                padding: 20,
+                marginTop: 20,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                gap: 10,
+                backgroundColor: 'white',
+              }}>
+              <Image
+                resizeMode="contain"
+                style={{width: 25, height: 25}}
+                source={icons.questionMark}
+              />
+
+              <Text
+                style={{
+                  fontSize: 20,
+                  color: 'black',
+                  fontFamily: 'Roboto',
+                }}>
+                Qui định ngày giao hàng
+              </Text>
+            </TouchableOpacity>
+
             {/* Manage payment method */}
             <View style={{backgroundColor: 'white', marginTop: 20}}>
               {/* manage payment method */}
@@ -1177,14 +1304,19 @@ const Payment = ({navigation, route}) => {
             </View>
 
             {/* Thong tin lien lac */}
-            <View style={{backgroundColor: 'white', marginTop: 20}}>
+            <View
+              style={{
+                backgroundColor: 'white',
+                marginTop: 20,
+                paddingHorizontal: 20,
+              }}>
               <View
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
                   gap: 10,
 
-                  padding: 20,
+                  paddingVertical: 20,
                   borderBottomColor: '#decbcb',
                   borderBottomWidth: 0.75,
                 }}>
@@ -1204,7 +1336,7 @@ const Payment = ({navigation, route}) => {
                   fontSize: 20,
                   borderBottomColor: '#decbcb',
                   borderBottomWidth: 0.75,
-                  paddingHorizontal: 20,
+
                   paddingVertical: 20,
                 }}
                 value={name}
@@ -1218,7 +1350,7 @@ const Payment = ({navigation, route}) => {
                   fontSize: 20,
                   borderBottomColor: '#decbcb',
                   borderBottomWidth: 0.75,
-                  paddingHorizontal: 20,
+
                   paddingVertical: 20,
                 }}
                 value={phone}
@@ -1302,7 +1434,7 @@ const Payment = ({navigation, route}) => {
                 }}>
                 <Text
                   style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
-                  Shipping Cost:
+                  Phí giao hàng:
                 </Text>
                 <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
                   {(0).toLocaleString('vi-VN', {
@@ -1377,10 +1509,10 @@ const Payment = ({navigation, route}) => {
               paddingHorizontal: 40,
               borderRadius: 30,
             }}>
-            <View style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+            <View style={{flexDirection: 'row', alignItems: 'center', gap: 15}}>
               <Image
                 resizeMode="contain"
-                source={icons.orderIcon}
+                source={icons.bike}
                 style={{width: 25, height: 25, tintColor: 'white'}}
               />
               <Text
@@ -1448,6 +1580,163 @@ const Payment = ({navigation, route}) => {
           </Text>
         </View>
       </Modal>
+
+      {/* auth modal */}
+      <Modal
+        width={0.8}
+        visible={openAuthModal}
+        dialogAnimation={
+          new ScaleAnimation({
+            initialValue: 0, // optional
+            useNativeDriver: true, // optional
+          })
+        }
+        footer={
+          <ModalFooter>
+            <ModalButton
+              text="Ở lại trang"
+              textStyle={{color: 'red'}}
+              onPress={() => {
+                setOpenAuthModal(false);
+              }}
+            />
+            <ModalButton
+              text="Đăng nhập"
+              onPress={async () => {
+                try {
+                  setOpenAuthModal(false);
+                  await GoogleSignin.signOut();
+                  auth()
+                    .signOut()
+                    .then(async () => {
+                      await AsyncStorage.removeItem('userInfo');
+                      await AsyncStorage.removeItem('CartList');
+                      setOpenAuthModal(false);
+                      navigation.navigate('Login');
+                    })
+                    .catch(e => console.log(e));
+                } catch (error) {
+                  console.log(error);
+                }
+              }}
+            />
+          </ModalFooter>
+        }>
+        <View
+          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
+          <Text
+            style={{
+              fontSize: 20,
+              fontFamily: 'Roboto',
+              color: 'black',
+              textAlign: 'center',
+            }}>
+            Phiên bản đăng nhập của bạn đã hết hạn vui lòng đăng nhập lại
+          </Text>
+        </View>
+      </Modal>
+
+      {/* auth modal */}
+      <Modal
+        width={0.8}
+        visible={helpModal}
+        onTouchOutside={() => {
+          setHelpModal(false);
+        }}
+        dialogAnimation={
+          new SlideAnimation({
+            initialValue: 0, // optional
+            slideFrom: 'bottom', // optional
+            useNativeDriver: true, // optional
+          })
+        }
+        footer={
+          <ModalFooter>
+            <ModalButton
+              text="Tôi đã hiểu"
+              onPress={() => {
+                setHelpModal(false);
+              }}
+            />
+          </ModalFooter>
+        }>
+        <View
+          style={{
+            padding: 20,
+          }}>
+          <View
+            style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderBottomColor: '#decbcb',
+              borderBottomWidth: 0.75,
+              paddingBottom: 20,
+            }}>
+            <Text
+              style={{
+                fontSize: 20,
+                color: 'black',
+                fontFamily: 'Roboto',
+                fontWeight: 'bold',
+              }}>
+              Qui định chọn ngày giao hàng
+            </Text>
+          </View>
+          <View style={{marginTop: 20, alignItems: 'flex-start', gap: 15}}>
+            <View
+              style={{flexDirection: 'row', alignItems: 'flex-start', gap: 10}}>
+              <Text
+                style={{
+                  fontSize: 22,
+                  color: 'black',
+                  fontFamily: 'Roboto',
+                  fontWeight: 'bold',
+                }}>
+                •
+              </Text>
+              <Text
+                style={{fontSize: 18, color: 'black', fontFamily: 'Roboto'}}>
+                Đơn hàng luôn được giao sau 2 ngày kể từ ngày đặt hàng trở đi.
+              </Text>
+            </View>
+            <View
+              style={{flexDirection: 'row', alignItems: 'flex-start', gap: 10}}>
+              <Text
+                style={{
+                  fontSize: 22,
+                  color: 'black',
+                  fontFamily: 'Roboto',
+                  fontWeight: 'bold',
+                }}>
+                •
+              </Text>
+              <Text
+                style={{fontSize: 18, color: 'black', fontFamily: 'Roboto'}}>
+                Đơn hàng phải giao trước HSD của sản phẩm có HSD gần nhất một
+                ngày.
+              </Text>
+            </View>
+            <View
+              style={{flexDirection: 'row', alignItems: 'flex-start', gap: 10}}>
+              <Text
+                style={{
+                  fontSize: 22,
+                  color: 'black',
+                  fontFamily: 'Roboto',
+                  fontWeight: 'bold',
+                }}>
+                •
+              </Text>
+              <Text
+                style={{fontSize: 18, color: 'black', fontFamily: 'Roboto'}}>
+                Nếu sản phẩm có HSD gần nhất cách ngày đặt hàng một hoặc hai
+                ngày thì sẽ giao vào ngày hôm sau kể từ ngày đặt hàng
+              </Text>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      {loading && <LoadingScreen />}
     </>
   );
 };

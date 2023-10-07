@@ -1,62 +1,80 @@
 /* eslint-disable prettier/prettier */
 // eslint-disable-next-line prettier/prettier
 import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { icons } from '../constants';
 import { COLORS, FONTS } from '../constants/theme';
+import dayjs from 'dayjs';
+import { useFocusEffect } from "@react-navigation/native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const DiscountForCategories = ({ navigation }) => {
+const DiscountForCategories = ({ navigation, route }) => {
+    const discount = route.params.discount;
+    const products = route.params.products;
+    const [cartList, setCartList] = useState([]);
 
-    const data = [
-        {
-            id: 1,
-            name: 'Chuối',
-            price: 500,
-            price_original: 1000,
-            quantity: 5,
-            expired_date: '30/09/2023',
-            image_url:
-                'https://suckhoedoisong.qltns.mediacdn.vn/324455921873985536/2022/11/23/a-va-dai-thao-duong-co-an-duoc-chuoi-16691977534161220101928.jpg',
-        },
-
-        {
-            id: 2,
-            name: 'Beef',
-            price: 1000,
-            price_original: 2000,
-            quantity: 5,
-            expired_date: '30/09/2023',
-            image_url:
-                'https://tfruit.com.vn/wp-content/uploads/2021/07/tao-xanh-my.jpg',
-        },
-    ];
+    useFocusEffect(
+        useCallback(() => {
+            (async () => {
+                try {
+                    const cartList = await AsyncStorage.getItem('CartList');
+                    setCartList(cartList ? JSON.parse(cartList) : []);
+                } catch (err) {
+                    console.log(err);
+                }
+            })();
+        }, []),
+    );
 
 
-    const handleBuy = () => {
-        console.log('Buy');
+    const handleAddToCart = async data => {
+        try {
+            const jsonValue = await AsyncStorage.getItem('CartList');
+            let newCartList = jsonValue ? JSON.parse(jsonValue) : [];
+            const itemExisted = newCartList.some(item => item.id === data.id);
+            if (itemExisted) {
+                const index = newCartList.findIndex(item => item.id === data.id);
+                newCartList[index].cartQuantity = newCartList[index].cartQuantity + 1;
+                setCartList(newCartList);
+                await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
+                return;
+            }
+
+            const cartData = { ...data, isChecked: false, cartQuantity: 1 };
+            newCartList = [...newCartList, cartData];
+            setCartList(newCartList);
+            await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
+        } catch (error) {
+            console.log(error);
+        }
     };
 
-
     const Item = ({ data }) => (
-        <TouchableOpacity onPress={() => {
-            navigation.navigate('ProductDetails');
-        }}>
+        <TouchableOpacity
+            key={data.id}
+            onPress={() => {
+                navigation.navigate('ProductDetails', {
+                    product: data,
+                });
+            }}>
             <View style={styles.itemContainer}>
                 {/* Image Product */}
                 <Image
                     resizeMode="contain"
                     source={{
-                        uri: data.image_url,
+                        uri: data?.imageUrl,
                     }}
                     style={styles.itemImage}
                 />
-                <View style={{ justifyContent: 'center' }}>
+
+                <View style={{ justifyContent: 'center', flex: 1, marginRight: 10 }}>
                     <Text
+                        numberOfLines={1}
                         style={{
                             fontFamily: FONTS.fontFamily,
-                            fontSize: 20,
+                            fontSize: 18,
                             fontWeight: 700,
-                            maxWidth: '75%',
+                            maxWidth: '95%',
                             color: 'black',
                         }}>
                         {data.name}
@@ -65,19 +83,24 @@ const DiscountForCategories = ({ navigation }) => {
                     <View style={{ flexDirection: 'row' }}>
                         <Text
                             style={{
-                                fontSize: 20,
+                                maxWidth: '70%',
+                                fontSize: 18,
                                 lineHeight: 30,
                                 color: COLORS.secondary,
                                 fontWeight: 600,
+                                fontFamily: FONTS.fontFamily,
                             }}>
-                            {data.price}
+                            {data.price.toLocaleString('vi-VN', {
+                                currency: 'VND',
+                            })}
                         </Text>
                         <Text
                             style={{
-                                fontSize: 15,
+                                fontSize: 12,
                                 lineHeight: 18,
                                 color: COLORS.secondary,
                                 fontWeight: 600,
+                                fontFamily: FONTS.fontFamily,
                             }}>
                             ₫
                         </Text>
@@ -89,23 +112,24 @@ const DiscountForCategories = ({ navigation }) => {
                             fontSize: 18,
                             marginBottom: 10,
                         }}>
-                        HSD: {data.expired_date}
+                        HSD: {dayjs(data.expiredDate).format('DD/MM/YYYY')}
                     </Text>
-
-                    <TouchableOpacity onPress={handleBuy}>
+                    {/* Button buy */}
+                    <TouchableOpacity onPress={() => handleAddToCart(data)}>
                         <Text
                             style={{
-                                maxWidth: '100%',
+                                maxWidth: 150,
+                                maxHeight: 40,
                                 padding: 10,
                                 backgroundColor: COLORS.primary,
                                 borderRadius: 10,
                                 textAlign: 'center',
                                 color: '#ffffff',
+                                fontFamily: FONTS.fontFamily,
                             }}>
                             Thêm vào giỏ hàng
                         </Text>
                     </TouchableOpacity>
-
                 </View>
             </View>
         </TouchableOpacity>
@@ -137,10 +161,12 @@ const DiscountForCategories = ({ navigation }) => {
                     style={{
                         textAlign: 'center',
                         color: 'black',
-                        fontSize: 24,
+                        fontSize: 20,
                         fontFamily: FONTS.fontFamily,
                     }}
-                >Giảm giá 50k</Text>
+                >
+                    {discount.name}
+                </Text>
                 <TouchableOpacity
                     onPress={() => {
                         navigation.navigate('Cart');
@@ -154,6 +180,25 @@ const DiscountForCategories = ({ navigation }) => {
                         }}
                         source={icons.cart}
                     />
+                    {cartList.lenght !== 0 && (
+                        <View
+                            style={{
+                                position: 'absolute',
+                                top: 0,
+                                right: -10,
+                                backgroundColor: COLORS.primary,
+                                borderRadius: 50,
+                                width: 20,
+                                height: 20,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}>
+                            <Text
+                                style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
+                                {cartList.length}
+                            </Text>
+                        </View>
+                    )}
                 </TouchableOpacity>
             </View>
 
@@ -164,8 +209,8 @@ const DiscountForCategories = ({ navigation }) => {
                     paddingBottom: 100,
                     paddingTop: 20,
                 }}>
-                {data.map(item => (
-                    <Item data={item} />
+                {products.map((item, index) => (
+                    <Item data={item} key={index} />
                 ))}
 
             </ScrollView>
@@ -179,7 +224,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F5F5F5',
     },
     itemContainer: {
-        backgroundColor: '#F5F5F5',
+        backgroundColor: '#fff',
         maxWidth: '90%',
         borderRadius: 20,
         marginHorizontal: '7%',

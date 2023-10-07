@@ -30,7 +30,7 @@ const DiscountCard = ({ data }) => {
                 }}
             >- {data.percentage}%</Text>
             <Image source={{
-                uri: data.imageUrl,
+                uri: data?.imageUrl,
             }}
                 style={{
                     backgroundColor: 'grey',
@@ -64,7 +64,7 @@ const DiscountCard = ({ data }) => {
                     fontSize: 18,
                     color: COLORS.secondary,
                 }}>HSD: {dayjs(data.expiredDate).format('DD/MM/YYYY')}</Text>
-                <TouchableOpacity
+                {/* <TouchableOpacity
                     onPress={handleViewProductOfCate}
                     style={{
                         alignItems: 'center',
@@ -79,7 +79,7 @@ const DiscountCard = ({ data }) => {
                         textAlign: 'center',
                         color: '#ffffff'
                     }}>Xem sản phẩm</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </View>
         </TouchableOpacity>
     )

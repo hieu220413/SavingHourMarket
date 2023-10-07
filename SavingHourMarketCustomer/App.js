@@ -23,6 +23,9 @@ import SelectVoucher from './screens/SelectVoucher';
 import SelectCustomerLocation from './screens/SelectCustomerLocation';
 import EditCustomerLocation from './screens/EditCustomerLocation';
 import OrderDetail from './screens/OrderDetail';
+import Search from './screens/Search';
+import SearchResult from './screens/SearchResult';
+import SearchBar from './components/SearchBar';
 
 import {LogBox} from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
@@ -49,6 +52,8 @@ import CodeReset from './screens/CodeReset';
 import ResetPassword from './screens/ResetPassword';
 import Feedback from './screens/Feedback';
 import UploadScreen from './screens/Upload';
+import Toast, {BaseToast} from 'react-native-toast-message';
+import {COLORS} from './constants/theme';
 
 const Stack = createStackNavigator();
 export default function App() {
@@ -68,6 +73,33 @@ export default function App() {
     notificationListener();
     getToken();
   }, []);
+
+  /*
+  1. Create the config
+*/
+  const toastConfig = {
+    /*
+    Overwrite 'success' type,
+    by modifying the existing `BaseToast` component
+  */
+    success: props => (
+      <BaseToast
+        {...props}
+        style={{backgroundColor: COLORS.primary, borderLeftWidth: 0}}
+        contentContainerStyle={{paddingHorizontal: 15}}
+        text1Style={{
+          fontSize: 16,
+          fontWeight: '700',
+          color: 'white',
+        }}
+        text2Style={{
+          fontSize: 14,
+          fontWeight: '400',
+          color: 'white',
+        }}
+      />
+    ),
+  };
   return (
     <>
       <NavigationContainer>
@@ -84,6 +116,9 @@ export default function App() {
           <Stack.Screen name="Cart" component={Cart} />
           {/* <Stack.Screen name="Profile" component={Profile} /> */}
           <Stack.Screen name="OrderDetail" component={OrderDetail} />
+          <Stack.Screen name="Search" component={Search} />
+          <Stack.Screen name="SearchResult" component={SearchResult} />
+          <Stack.Screen name="SearchBar" component={SearchBar} />
 
           <Stack.Screen name="Edit Profile" component={EditProfile} />
           <Stack.Screen name="Sign Up" component={Signup} />
@@ -125,6 +160,7 @@ export default function App() {
         </Stack.Navigator>
       </NavigationContainer>
       <ModalPortal />
+      <Toast config={toastConfig} />
     </>
   );
 }

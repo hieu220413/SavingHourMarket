@@ -8,11 +8,19 @@ import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.repository.*;
 import com.fpt.capstone.savinghourmarket.service.CustomerService;
-import com.fpt.capstone.savinghourmarket.service.FirebaseStorageService;
+import com.fpt.capstone.savinghourmarket.service.FirebaseService;
 import com.fpt.capstone.savinghourmarket.service.OrderService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
+import com.google.maps.DistanceMatrixApi;
+import com.google.maps.DistanceMatrixApiRequest;
+import com.google.maps.GeoApiContext;
+import com.google.maps.errors.ApiException;
+import com.google.maps.model.DistanceMatrix;
+import com.google.maps.model.DistanceMatrixElement;
+import com.google.maps.model.DistanceMatrixRow;
+import com.google.maps.model.LatLng;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.glxn.qrgen.QRCode;
@@ -42,6 +50,8 @@ import java.util.regex.Pattern;
 public class OrderServiceImpl implements OrderService {
 
     private final FirebaseAuth firebaseAuth;
+
+    private final GeoApiContext geoApiContext;
 
     @Autowired
     private final RedissonClient redissonClient;
@@ -113,31 +123,41 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public String assignPackager(UUID orderId, UUID staffId) throws NoSuchOrderException {
+    public String assignPackager(UUID orderId, UUID staffId) throws NoSuchOrderException, IOException {
         Order order = repository.findById(orderId)
                 .orElseThrow(() -> new NoSuchOrderException("No order found with this id " + orderId));
-        Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new NoSuchElementException("No staff found with this id " + staffId));
+        Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new NoSuchElementException("Không tìm thấy nhân viên với ID: " + staffId));
         if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_ORD.toString())) {
             order.setPackager(staff);
+            order.setStatus(OrderStatus.PACKAGING.ordinal());
+            FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getEmail());
         } else {
-            return "Staff with id" + staffId + "is not PACKAGER";
+            return "Nhân viên này không phải là nhân Viên ĐÓNG GÓI!";
         }
-        return "Packager with id" + staffId + "set to order" + order.getId().toString() + "successfully";
+        return "Đơn hàng này đã được nhận đóng gói thành công!";
     }
 
     @Override
-    public String assignDeliverToOrderGroupOrBatch(UUID orderGroupId, UUID orderBatchId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException {
+    public String assignDeliverToOrderGroupOrBatch(UUID orderGroupId, UUID orderBatchId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException, IOException {
         Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new NoSuchElementException("No staff found with this id " + staffId));
         if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_DLV_0.toString())) {
             if (orderGroupId != null && orderBatchId == null) {
                 OrderGroup orderGroup = orderGroupRepository.findById(orderGroupId)
                         .orElseThrow(() -> new NoSuchOrderException("No group found with this group id " + orderGroupId));
                 orderGroup.setDeliverer(staff);
-            }else if(orderGroupId == null && orderBatchId != null){
+                for (Order order: orderGroup.getOrderList()){
+                    order.setStatus(OrderStatus.DELIVERING.ordinal());
+                    FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getEmail());
+                }
+            } else if (orderGroupId == null && orderBatchId != null) {
                 OrderBatch orderBatch = orderBatchRepository.findById(orderBatchId)
                         .orElseThrow(() -> new NoSuchOrderException("No batch found with this batch id " + orderBatchId));
                 orderBatch.setDeliverer(staff);
-            }else {
+                for (Order order: orderBatch.getOrderList()){
+                    order.setStatus(OrderStatus.DELIVERING.ordinal());
+                    FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getEmail());
+                }
+            } else {
                 throw new ConflictGroupAndBatchException("Group or batch must be specified");
             }
         } else {
@@ -193,7 +213,7 @@ public class OrderServiceImpl implements OrderService {
         orderWithDetails.setStatus(order.getStatus());
         orderWithDetails.setTransaction(order.getTransaction());
 
-        if(order.getOrderGroup() != null){
+        if (order.getOrderGroup() != null) {
             orderWithDetails.setTimeFrame(order.getOrderGroup().getTimeFrame());
             orderWithDetails.setPickupPoint(order.getOrderGroup().getPickupPoint());
         }
@@ -238,11 +258,93 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
         if (order.getStatus() == OrderStatus.PROCESSING.ordinal()) {
             order.setStatus(OrderStatus.CANCEL.ordinal());
+            List<OrderDetail> orderDetails = order.getOrderDetailList();
+            increaseProductQuantity(orderDetails);
+            if(order.getDiscountList() != null & order.getDiscountList().size() > 0){
+                increaseDiscountQuantity(order.getDiscountList());
+            }
         } else {
             throw new OrderCancellationNotAllowedException("Order with id " + id + " is already in " + order.getStatus().toString() + " process");
         }
         repository.save(order);
         return "Successfully canceled order " + id;
+    }
+
+    @Override
+    public String deleteOrder(String jwtToken, UUID id) throws FirebaseAuthException, ResourceNotFoundException, OrderDeletionNotAllowedException {
+        String email = Utils.getCustomerEmail(jwtToken, firebaseAuth);
+        Customer customer = customerRepository
+                .findByEmail(email)
+                .orElseThrow(() -> new AuthorizationServiceException("Access denied with this account: " + email));
+        if (customer == null) {
+            return "Fail to delete order " + id;
+        }
+        Order order = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
+        if (order.getStatus() == OrderStatus.PROCESSING.ordinal()) {
+            List<OrderDetail> orderDetails = order.getOrderDetailList();
+            increaseProductQuantity(orderDetails);
+            if(order.getDiscountList() != null & order.getDiscountList().size() > 0){
+                increaseDiscountQuantity(order.getDiscountList());
+            }
+
+        } else {
+            throw new OrderDeletionNotAllowedException("Order with id " + id + " is already in " + order.getStatus().toString() + " process");
+        }
+        repository.deleteById(order.getId());
+        return "Successfully deleted  order " + id;
+    }
+
+    @Override
+    public ShippingFeeDetailResponseBody getShippingFeeDetail(Double latitude, Double longitude) throws IOException, InterruptedException, ApiException {
+        int numberOfClosestPickupPointPicked = 3;
+        PickupPointSuggestionResponseBody closetPickupPoint;
+        Integer shippingFee = 10000;
+        List<PickupPoint> pickupPoints = pickupPointRepository.getAllSortByDistance(latitude, longitude);
+        List<PickupPointSuggestionResponseBody> pickupPointSuggestionResponseBodyList = new ArrayList<>();
+        List<LatLng> latLngs = new ArrayList<>();
+        for(int i = 0; i < numberOfClosestPickupPointPicked; i++) {
+            pickupPointSuggestionResponseBodyList.add(new PickupPointSuggestionResponseBody(pickupPoints.get(i)));
+            latLngs.add(new LatLng(pickupPoints.get(i).getLatitude(), pickupPoints.get(i).getLongitude()));
+        }
+
+        DistanceMatrixApiRequest req = DistanceMatrixApi.newRequest(geoApiContext);
+        DistanceMatrix distanceMatrix = req
+                .origins(new LatLng(latitude, longitude))
+                .destinations(
+                        latLngs.toArray(new LatLng[numberOfClosestPickupPointPicked])
+                )
+                .await();
+
+        Iterator distanceMatrixRowsIterator = Arrays.stream(distanceMatrix.rows).iterator();
+        if (distanceMatrixRowsIterator.hasNext()){
+            int i = 0;
+            DistanceMatrixRow distanceMatrixRow = (DistanceMatrixRow) distanceMatrixRowsIterator.next();
+            Iterator distanceMatrixElementsIterator = Arrays.stream(distanceMatrixRow.elements).iterator();
+            while (distanceMatrixElementsIterator.hasNext()){
+                DistanceMatrixElement distanceMatrixElement = (DistanceMatrixElement) distanceMatrixElementsIterator.next();
+                pickupPointSuggestionResponseBodyList.get(i).setDistance(distanceMatrixElement.distance.humanReadable);
+                pickupPointSuggestionResponseBodyList.get(i).setDistanceInValue(distanceMatrixElement.distance.inMeters);
+                i++;
+            }
+        }
+
+        pickupPointSuggestionResponseBodyList.sort((o1, o2) -> (int) (o1.getDistanceInValue() - o2.getDistanceInValue()));
+
+        closetPickupPoint = pickupPointSuggestionResponseBodyList.get(0);
+
+        // convert m to km
+        int distance = closetPickupPoint.getDistanceInValue().intValue() / 1000;
+
+        if(distance > 2) {
+            shippingFee += (distance - 2)*1000;
+        }
+
+        ShippingFeeDetailResponseBody shippingFeeDetailResponseBody = new ShippingFeeDetailResponseBody();
+        shippingFeeDetailResponseBody.setClosestPickupPoint(closetPickupPoint);
+        shippingFeeDetailResponseBody.setShippingFee(shippingFee);
+
+        return shippingFeeDetailResponseBody;
     }
 
     @Override
@@ -381,7 +483,7 @@ public class OrderServiceImpl implements OrderService {
 
     private String generateAndUploadQRCode(Order order) throws IOException {
         ByteArrayOutputStream qrCode = generateQRCodeImage(order.getId());
-        return FirebaseStorageService.uploadQRCodeToStorage(qrCode, order.getId());
+        return FirebaseService.uploadQRCodeToStorage(qrCode, order.getId());
     }
 
     private void mapTransactionToOrder(Order order, Transaction transaction) {
@@ -405,7 +507,7 @@ public class OrderServiceImpl implements OrderService {
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setOrder(order);
         Product product = getProductById(orderProductCreate.getId());
-        updateProductQuantity(product, orderProductCreate.getBoughtQuantity());
+        decreaseProductQuantity(product, orderProductCreate.getBoughtQuantity(), order);
         orderDetail.setProduct(product);
         orderDetail.setProductPrice(orderProductCreate.getProductPrice());
         orderDetail.setProductOriginalPrice(orderProductCreate.getProductOriginalPrice());
@@ -418,11 +520,13 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("No Product found with this id " + productId));
     }
 
-    private void updateProductQuantity(Product product, Integer boughtQuantity) throws OutOfProductQuantityException {
+    private void decreaseProductQuantity(Product product, Integer boughtQuantity, Order order) throws OutOfProductQuantityException {
         if (product.getQuantity() >= boughtQuantity) {
             product.setQuantity(product.getQuantity() - boughtQuantity);
             productRepository.save(product);
         } else {
+
+            repository.delete(order);
             throw new OutOfProductQuantityException("Product don't have enough quantity");
         }
     }
@@ -508,6 +612,22 @@ public class OrderServiceImpl implements OrderService {
             return matcher.group(0);
         } else {
             return null;
+        }
+    }
+
+
+    private void increaseProductQuantity(List<OrderDetail> orderDetails) {
+        for (OrderDetail orderDetail : orderDetails) {
+            Product product = orderDetail.getProduct();
+            product.setQuantity(product.getQuantity() + orderDetail.getBoughtQuantity());
+            productRepository.save(product);
+        }
+    }
+
+    private void increaseDiscountQuantity(List<Discount> discounts) {
+        for (Discount discount : discounts) {
+            discount.setQuantity(discount.getQuantity() + 1);
+            discountRepository.save(discount);
         }
     }
 }

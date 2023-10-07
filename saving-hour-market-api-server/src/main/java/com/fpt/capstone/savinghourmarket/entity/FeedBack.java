@@ -28,6 +28,9 @@ public class FeedBack {
     @Column(columnDefinition = "text")
     private String message;
 
+    @Column(columnDefinition = "text")
+    private String responseMessage;
+
     @Enumerated(EnumType.ORDINAL)
     private FeedbackStatus status;
 

@@ -1,5 +1,5 @@
-/* eslint-disable react-native/no-inline-styles */
 /* eslint-disable prettier/prettier */
+/* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react/no-unstable-nested-components */
 import React, {useCallback, useEffect, useState} from 'react';
 import {
@@ -7,12 +7,10 @@ import {
   View,
   StyleSheet,
   SafeAreaView,
-  FlatList,
   Image,
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import SearchBar from '../components/SearchBar';
 import Categories from '../components/Categories';
 import DiscountRow from '../components/DiscountRow';
 import {COLORS, FONTS} from '../constants/theme';
@@ -21,11 +19,29 @@ import dayjs from 'dayjs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {API} from '../constants/api';
 import {useFocusEffect} from '@react-navigation/native';
+import Toast from 'react-native-toast-message';
+import LoadingScreen from '../components/LoadingScreen';
+import {Alert} from 'react-native';
+import messaging from '@react-native-firebase/messaging';
 
 const Home = ({navigation}) => {
-  const [categoryList, setCategoryList] = useState([]);
-  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
+  const [currentCate, setCurrentCate] = useState('');
+  const [productsByCategory, setProductsByCategory] = useState([]);
+  const [discountsByCategory, setDiscountsByCategory] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(0);
   const [cartList, setCartList] = useState([]);
+
+  const showToast = () => {
+    Toast.show({
+      type: 'success',
+      text1: 'Thành công',
+      text2: 'Thêm sản phẩm vào giỏ hàng thành công 👋',
+      duration: 500,
+    });
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -41,17 +57,45 @@ const Home = ({navigation}) => {
   );
 
   useEffect(() => {
-    fetch(
-      `${API.baseURL}/api/product/getProductsForCustomer?page=0&quantitySortType=DESC&expiredSortType=DESC`,
-    )
+    fetch(`${API.baseURL}/api/product/getAllCategory`)
       .then(res => res.json())
       .then(data => {
-        setProducts(data);
+        setCategories(data);
+        setCurrentCate(data[0].id);
       })
       .catch(err => {
         console.log(err);
       });
   }, []);
+
+  useEffect(() => {
+    if (currentCate) {
+      fetch(
+        `${API.baseURL}/api/product/getProductsForCustomer?productCategoryId=${currentCate}&page=0&limit=5&quantitySortType=DESC&expiredSortType=ASC`,
+      )
+        .then(res => res.json())
+        .then(data => {
+          setProductsByCategory(data);
+        })
+        .catch(err => {
+          console.log(err);
+        });
+
+      fetch(
+        `${API.baseURL}/api/discount/getDiscountsForCustomer?fromPercentage=0&toPercentage=100&productCategoryId=${currentCate}&page=0&limit=5&expiredSortType=ASC`,
+      )
+        .then(res => res.json())
+        .then(data => {
+          setDiscountsByCategory(data);
+        })
+        .catch(err => {
+          console.log(err);
+        });
+      categories.map(item => {
+        item.id === currentCate && setSubCategories(item.productSubCategories);
+      });
+    }
+  }, [currentCate, categories]);
 
   const handleAddToCart = async data => {
     try {
@@ -63,6 +107,7 @@ const Home = ({navigation}) => {
         newCartList[index].cartQuantity = newCartList[index].cartQuantity + 1;
         setCartList(newCartList);
         await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
+        showToast();
         return;
       }
 
@@ -70,6 +115,7 @@ const Home = ({navigation}) => {
       newCartList = [...newCartList, cartData];
       setCartList(newCartList);
       await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
+      showToast();
     } catch (error) {
       console.log(error);
     }
@@ -89,7 +135,7 @@ const Home = ({navigation}) => {
           <Image
             resizeMode="contain"
             source={{
-              uri: data.imageUrl,
+              uri: data?.imageUrl,
             }}
             style={styles.itemImage}
           />
@@ -163,6 +209,88 @@ const Home = ({navigation}) => {
     );
   };
 
+  const SubCategory = ({data}) => {
+    return (
+      <View
+        style={{
+          marginTop: 20,
+          marginLeft: 15,
+          marginRight: 25,
+          alignItems: 'center',
+          maxWidth: 80,
+        }}>
+        <Image
+          resizeMode="contain"
+          source={{
+            uri: data?.imageUrl,
+          }}
+          style={{
+            width: 65,
+            height: 65,
+          }}
+        />
+        <Text
+          style={{
+            color: 'black',
+            fontFamily: FONTS.fontFamily,
+            fontSize: 14,
+            marginTop: 8,
+            textAlign: 'center',
+          }}>
+          {data.name}
+        </Text>
+      </View>
+    );
+  };
+
+  const SearchBar = () => {
+    return (
+      <TouchableOpacity
+        style={{
+          backgroundColor: '#f5f5f5',
+          width: '80%',
+          height: 45,
+          borderRadius: 40,
+          paddingLeft: 10,
+          marginTop: 10,
+          marginLeft: 20,
+          marginBottom: 10,
+          flexDirection: 'row',
+        }}
+        onPress={() => {
+          navigation.navigate('Search');
+        }}>
+        <View
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: 40,
+            flexWrap: 'wrap',
+            paddingLeft: 5,
+            paddingTop: 2,
+          }}>
+          <Image
+            resizeMode="contain"
+            style={{
+              width: 20,
+              height: 20,
+            }}
+            source={icons.search}
+          />
+
+          <Text
+            style={{
+              fontFamily: FONTS.fontFamily,
+              fontSize: 16,
+              paddingLeft: 15,
+            }}>
+            Bạn cần tìm gì ?
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Search */}
@@ -210,53 +338,76 @@ const Home = ({navigation}) => {
           paddingBottom: 100,
         }}>
         {/* Categories */}
-        <Categories />
-        {/* Sale, Discount */}
+        <Categories
+          categories={categories}
+          currentCate={currentCate}
+          setCurrentCate={setCurrentCate}
+        />
+
+        {/* Sub-Categories */}
         <View
           style={{
+            flex: 1,
             flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginHorizontal: 20,
+            flexWrap: 'wrap',
+            marginVertical: 5,
           }}>
-          <Text
-            style={{
-              fontFamily: FONTS.fontFamily,
-              fontSize: 22,
-              color: 'black',
-              fontWeight: 700,
-              marginTop: '5%',
-              marginBottom: 10,
-            }}>
-            Khuyến Mãi Cực Sốc
-          </Text>
-
-          <TouchableOpacity
-            style={{
-              marginTop: '5%',
-            }}
-            onPress={() => {
-              navigation.navigate('Discount');
-            }}>
-            <Text
-              style={{
-                fontFamily: FONTS.fontFamily,
-                fontSize: 22,
-                color: COLORS.primary,
-                fontWeight: 700,
-                marginBottom: 10,
-              }}>
-              Tất cả
-            </Text>
-          </TouchableOpacity>
+          {subCategories.map((item, index) => (
+            <SubCategory data={item} key={index} />
+          ))}
         </View>
 
-        <DiscountRow />
+        {!discountsByCategory.length == 0 ? (
+          <>
+            {/* Sale, Discount */}
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                marginHorizontal: 20,
+              }}>
+              <Text
+                style={{
+                  fontFamily: FONTS.fontFamily,
+                  fontSize: 22,
+                  color: 'black',
+                  fontWeight: 700,
+                  marginTop: '5%',
+                  marginBottom: 10,
+                }}>
+                Khuyến Mãi Cực Sốc
+              </Text>
+
+              <TouchableOpacity
+                style={{
+                  marginTop: '5%',
+                }}
+                onPress={() => {
+                  navigation.navigate('Discount');
+                }}>
+                <Text
+                  style={{
+                    fontFamily: FONTS.fontFamily,
+                    fontSize: 22,
+                    color: COLORS.primary,
+                    fontWeight: 700,
+                    marginBottom: 10,
+                  }}>
+                  Tất cả
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <DiscountRow discounts={discountsByCategory} />
+          </>
+        ) : (
+          <></>
+        )}
         {/* List Product */}
         <Text
           style={{
             fontFamily: FONTS.fontFamily,
             fontSize: 22,
-            color: COLORS.secondary,
+            color: 'black',
             fontWeight: 700,
             marginLeft: 20,
             marginTop: '5%',
@@ -264,9 +415,29 @@ const Home = ({navigation}) => {
           }}>
           Danh sách sản phẩm
         </Text>
-        {products.map((item, index) => (
+
+        {productsByCategory.map((item, index) => (
           <Item data={item} key={index} />
         ))}
+        {/* Load more Products */}
+        {page < totalPage && (
+          <TouchableOpacity>
+            <Text
+              style={{
+                backgroundColor: COLORS.light_green,
+                color: COLORS.primary,
+                borderColor: COLORS.primary,
+                borderWidth: 1,
+                paddingVertical: 10,
+                width: '40%',
+                borderRadius: 20,
+                textAlign: 'center',
+                marginLeft: '30%',
+              }}>
+              Xem thêm sản phẩm
+            </Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

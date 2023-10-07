@@ -13,6 +13,11 @@ import java.util.UUID;
 @Repository
 public interface ProductSubCategoryRepository extends JpaRepository<ProductSubCategory, UUID> {
 
-    @Query("SELECT psct FROM ProductSubCategory psct ")
+    @Query("SELECT DISTINCT psct FROM ProductSubCategory psct " +
+            "INNER JOIN psct.productList pd " +
+            "WHERE " +
+            "pd.expiredDate > CURRENT_TIMESTAMP + pd.productSubCategory.allowableDisplayThreshold DAY " +
+            "AND pd.quantity > 0" +
+            "AND pd.status = 1")
     List<ProductSubCateOnly> findAllSubCategoryOnly();
 }
