@@ -134,26 +134,26 @@ INSERT INTO `saving_hour_market`.`staff` (`id`, `email`, `full_name`, `role`, `a
 -- Product category
 INSERT INTO `saving_hour_market`.`product_category` (`id`, `name`)
 --     VALUES  ('id', 'name');
-    VALUES  (UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'Beverage'),
-            (UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'Food'),
-            (UUID_TO_BIN('accefcee-5541-11ee-8a50-a85e45c41921'), 'Spice'),
-            (UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921'), 'Personal Care'),
-            (UUID_TO_BIN('acceff37-5541-11ee-8a50-a85e45c41921'), 'Pet Food'),
-            (UUID_TO_BIN('accf0055-5541-11ee-8a50-a85e45c41921'), 'Cleaning Supply');
+    VALUES  (UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'Đồ uống'),
+            (UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'Thực phẩm'),
+            (UUID_TO_BIN('accefcee-5541-11ee-8a50-a85e45c41921'), 'Gia vị'),
+            (UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921'), 'Chăm sóc cá nhân'),
+            (UUID_TO_BIN('acceff37-5541-11ee-8a50-a85e45c41921'), 'Thức ăn cho thú cưng'),
+            (UUID_TO_BIN('accf0055-5541-11ee-8a50-a85e45c41921'), 'Vật tư vệ sinh');
 
 
 -- Product sub category
 INSERT INTO `saving_hour_market`.`product_sub_category` (`id`, `name`, `allowable_display_threshold`, `product_category_id`, `image_url`)
 --     VALUES ('id', 'name', 'allowable_display_threshold', 'product_category_id');
-    VALUES  (UUID_TO_BIN('accf3fdf-5541-11ee-8a50-a85e45c41921'), 'Fruit', 3, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ffruit.png?alt=media'),
-            (UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), 'Frozen Food Package', 4, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ffrozen-food.png?alt=media'),
-            (UUID_TO_BIN('accf4210-5541-11ee-8a50-a85e45c41921'), 'Frozen Dessert', 4, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ffrozen-desert.png?alt=media'),
-            (UUID_TO_BIN('accf4320-5541-11ee-8a50-a85e45c41921'), 'Dairy Product', 2, UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdiary-product.png?alt=media'),
-            (UUID_TO_BIN('accf4875-5541-11ee-8a50-a85e45c41921'), 'Noodles', 5, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnoodles.png?alt=media'),
-            (UUID_TO_BIN('accf4766-5541-11ee-8a50-a85e45c41921'), 'Cosmetic', 30, UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fcosmetics.png?alt=media'),
-            (UUID_TO_BIN('accf442f-5541-11ee-8a50-a85e45c41921'), 'Toiletries', 30, UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ftoiletries.png?alt=media'),
-            (UUID_TO_BIN('accf4547-5541-11ee-8a50-a85e45c41921'), 'Detergents', 30, UUID_TO_BIN('accf0055-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdetergent.png?alt=media'),
-            (UUID_TO_BIN('accf4656-5541-11ee-8a50-a85e45c41921'), 'Alcoholic drink', 5, UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Falcoholic-drink.png?alt=media');
+    VALUES  (UUID_TO_BIN('accf3fdf-5541-11ee-8a50-a85e45c41921'), 'Trái cây', 3, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ffruit.png?alt=media'),
+            (UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), 'Thực phẩm đông lạnh gói', 4, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ffrozen-food.png?alt=media'),
+            (UUID_TO_BIN('accf4210-5541-11ee-8a50-a85e45c41921'), 'Đồ tráng miệng lạnh', 4, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ffrozen-desert.png?alt=media'),
+            (UUID_TO_BIN('accf4320-5541-11ee-8a50-a85e45c41921'), 'Sản phẩm sữa', 2, UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdiary-product.png?alt=media'),
+            (UUID_TO_BIN('accf4875-5541-11ee-8a50-a85e45c41921'), 'Mì', 5, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnoodles.png?alt=media'),
+            (UUID_TO_BIN('accf4766-5541-11ee-8a50-a85e45c41921'), 'Mỹ phẩm', 30, UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fcosmetics.png?alt=media'),
+            (UUID_TO_BIN('accf442f-5541-11ee-8a50-a85e45c41921'), 'Đồ dùng vệ sinh cá nhân', 30, UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ftoiletries.png?alt=media'),
+            (UUID_TO_BIN('accf4547-5541-11ee-8a50-a85e45c41921'), 'Chất tẩy rửa', 30, UUID_TO_BIN('accf0055-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdetergent.png?alt=media'),
+            (UUID_TO_BIN('accf4656-5541-11ee-8a50-a85e45c41921'), 'Đồ uống có cồn', 5, UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Falcoholic-drink.png?alt=media');
 
 -- Supermarket
 INSERT INTO `saving_hour_market`.`supermarket` (`id`, `status`, `address`, `name`, `phone`)
