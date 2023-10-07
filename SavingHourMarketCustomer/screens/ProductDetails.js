@@ -5,8 +5,8 @@ import React, {useCallback, useState} from 'react';
 import {icons} from '../constants';
 import {COLORS, FONTS} from '../constants/theme';
 import dayjs from 'dayjs';
-import {useFocusEffect} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useFocusEffect} from '@react-navigation/native';
 
 const ProductDetails = ({navigation, route}) => {
   const product = route.params.product;
@@ -146,7 +146,7 @@ const ProductDetails = ({navigation, route}) => {
           }}
           resizeMode="contain"
           source={{
-            uri: product.imageUrl,
+            uri: product?.imageUrl,
           }}
         />
         <View
@@ -187,9 +187,85 @@ const ProductDetails = ({navigation, route}) => {
               fontSize: 18,
               marginVertical: 10,
               color: 'black',
+              lineHeight: 26,
             }}>
             {product.description}
           </Text>
+        </View>
+
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+            backgroundColor: '#F5F5F5',
+            marginHorizontal: 20,
+            paddingHorizontal: 10,
+            paddingTop: '8%',
+            paddingBottom: '22%',
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+          <View style={{flexDirection: 'row'}}>
+            <Text
+              style={{
+                fontSize: 24,
+                lineHeight: 30,
+                color: COLORS.secondary,
+                fontWeight: 700,
+                fontFamily: FONTS.fontFamily,
+              }}>
+              {product.price.toLocaleString('vi-VN', {
+                currency: 'VND',
+              })}
+            </Text>
+            <Text
+              style={{
+                fontSize: 16,
+                lineHeight: 18,
+                color: COLORS.secondary,
+                fontWeight: 700,
+                fontFamily: FONTS.fontFamily,
+                paddingRight: '10%',
+              }}>
+              ₫
+            </Text>
+          </View>
+          <TouchableOpacity onPress={() => handleAddToCart(product)}>
+            <Text
+              style={{
+                paddingVertical: 8,
+                paddingHorizontal: '8%',
+                backgroundColor: '#ffffff',
+                borderRadius: 20,
+                fontWeight: 700,
+                textAlign: 'center',
+                color: COLORS.primary,
+                fontSize: 18,
+                fontFamily: FONTS.fontFamily,
+                borderColor: COLORS.primary,
+                borderWidth: 1,
+              }}>
+              Thêm
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleBuy}>
+            <Text
+              style={{
+                paddingVertical: 10,
+                paddingHorizontal: '10%',
+                backgroundColor: COLORS.primary,
+                borderRadius: 20,
+                fontWeight: 700,
+                textAlign: 'center',
+                color: '#ffffff',
+                fontSize: 18,
+                fontFamily: FONTS.fontFamily,
+              }}>
+              Mua
+            </Text>
+          </TouchableOpacity>
         </View>
 
         <View
