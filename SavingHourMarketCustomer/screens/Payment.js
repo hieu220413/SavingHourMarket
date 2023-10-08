@@ -77,6 +77,8 @@ const Payment = ({navigation, route}) => {
 
   const [loading, setLoading] = useState(false);
 
+  const [shippingFee, setShippingFee] = useState(0);
+
   const [customerLocation, setCustomerLocation] = useState({
     address: 'Số 121, Trần Văn Dư, Phường 13, Tân Bình,TP.HCM',
     long: 106.644295,
@@ -84,6 +86,33 @@ const Payment = ({navigation, route}) => {
   });
 
   const [keyboard, setKeyboard] = useState(Boolean);
+
+  useEffect(() => {
+    const getShippingFee = async () => {
+      console.log(typeof customerLocation.lat);
+      const idToken = await auth().currentUser.getIdToken();
+      fetch(
+        `${API.baseURL}/api/order/getShippingFeeDetail?latitude=${customerLocation.lat}&longitude=${customerLocation.long}`,
+        {
+          method: 'GET',
+          // truyen idToken vao
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${idToken}`,
+          },
+        },
+      )
+        .then(res => res.json())
+        .then(respond => {
+          // if(respond.error){
+          //   return;
+          // }
+          console.log(respond);
+        })
+        .catch(err => console.log(err));
+    };
+    getShippingFee();
+  }, [customerLocation]);
 
   //VNPAY function/param
   const orderIdDummy = useRef('ec5dcac6-56dc-11ee-8a50-a85e45c41921');
@@ -270,11 +299,11 @@ const Payment = ({navigation, route}) => {
       setLoading(false);
     } else {
       // no sessions found.
+      navigation.navigate('Login');
       await AsyncStorage.removeItem('userInfo');
       await AsyncStorage.removeItem('CartList');
       setLoading(false);
       setOpenAuthModal(true);
-      console.log('user is not logged in');
     }
   };
 
@@ -491,7 +520,7 @@ const Payment = ({navigation, route}) => {
 
     if (customerLocationIsChecked) {
       submitOrder = {
-        shippingFee: 0,
+        shippingFee: shippingFee,
         totalPrice: totalProductPrice,
         totalDiscountPrice: totalDiscountPrice,
         deliveryDate: format(date, 'yyyy-MM-dd'),
@@ -1611,8 +1640,8 @@ const Payment = ({navigation, route}) => {
                     .then(async () => {
                       await AsyncStorage.removeItem('userInfo');
                       await AsyncStorage.removeItem('CartList');
-                      setOpenAuthModal(false);
                       navigation.navigate('Login');
+                      setOpenAuthModal(false);
                     })
                     .catch(e => console.log(e));
                 } catch (error) {
@@ -1636,7 +1665,7 @@ const Payment = ({navigation, route}) => {
         </View>
       </Modal>
 
-      {/* auth modal */}
+      {/*  */}
       <Modal
         width={0.8}
         visible={helpModal}
