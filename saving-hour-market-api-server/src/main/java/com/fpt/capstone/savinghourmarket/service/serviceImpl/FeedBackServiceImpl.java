@@ -74,7 +74,7 @@ public class FeedBackServiceImpl implements FeedBackService {
         List<FeedBack> feedBacks = feedBackRepository.findFeedbackForCustomer(
                 customer.getId(),
                 feedbackObject,
-                feedbackStatus.ordinal(),
+                feedbackStatus,
                 getPageableWithSort(rateSortType,page,size)
         );
 
@@ -86,11 +86,10 @@ public class FeedBackServiceImpl implements FeedBackService {
 
     @Override
     public List<FeedBack> getFeedbackForStaff(UUID customerId, SortType rateSortType, FeedbackObject feedbackObject, FeedbackStatus feedbackStatus, int page, int size) {
-
-        List<FeedBack> feedBacks = feedBackRepository.findFeedbackForCustomer(
+        List<FeedBack> feedBacks = feedBackRepository.findFeedBackForStaff(
                 customerId,
                 feedbackObject,
-                feedbackStatus.ordinal(),
+                feedbackStatus,
                 getPageableWithSort(rateSortType,page,size)
         );
 

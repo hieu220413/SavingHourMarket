@@ -8,4 +8,8 @@ import java.util.UUID;
 
 public interface TimeFrameService {
     List<TimeFrame> getAll();
+
+    List<TimeFrame> getForPickupPoint();
+
+    List<TimeFrame> getForHomeDelivery();
 }
