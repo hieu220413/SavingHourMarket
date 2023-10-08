@@ -16,14 +16,13 @@ import java.util.List;
 @RestControllerAdvice
 public class BadRequestExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiError> handleValidationException(MethodArgumentNotValidException ex) {
+    public ResponseEntity<List<String>> handleValidationException(MethodArgumentNotValidException ex) {
         List<String> errors = new ArrayList<>();
         for (ObjectError objectError : ex.getBindingResult()
                 .getAllErrors()) {
             String defaultMessage = objectError.getDefaultMessage();
             errors.add(defaultMessage);
         }
-        ApiError error = new ApiError(LocalDateTime.now().toString(), HttpStatus.BAD_REQUEST.value(), errors.toString());
-        return ResponseEntity.badRequest().body(error);
+        return ResponseEntity.badRequest().body(errors);
     }
 }

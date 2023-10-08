@@ -6,6 +6,7 @@ import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.entity.FeedBack;
 import com.fpt.capstone.savinghourmarket.entity.FeedBackImage;
+import com.fpt.capstone.savinghourmarket.exception.FeedBackNotFoundException;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.FeedbackCreate;
 import com.fpt.capstone.savinghourmarket.repository.CustomerRepository;
@@ -69,7 +70,7 @@ public class FeedBackServiceImpl implements FeedBackService {
     }
 
     @Override
-    public List<FeedBack> getFeedbackForCustomer(String jwtToken, SortType rateSortType, FeedbackObject feedbackObject, FeedbackStatus feedbackStatus, int page, int size) throws ResourceNotFoundException, FirebaseAuthException {
+    public List<FeedBack> getFeedbackForCustomer(String jwtToken, SortType rateSortType, FeedbackObject feedbackObject, FeedbackStatus feedbackStatus, int page, int size) throws ResourceNotFoundException, FirebaseAuthException, FeedBackNotFoundException {
         Customer customer = getCustomerInfo(jwtToken);
         List<FeedBack> feedBacks = feedBackRepository.findFeedbackForCustomer(
                 customer.getId(),
@@ -79,13 +80,13 @@ public class FeedBackServiceImpl implements FeedBackService {
         );
 
         if(feedBacks.size() == 0) {
-            throw new NoSuchElementException("No feedback found for customer");
+            throw new FeedBackNotFoundException("Hiện tại khách hàng chưa có ý kiến đánh giá!");
         }
         return feedBacks;
     }
 
     @Override
-    public List<FeedBack> getFeedbackForStaff(UUID customerId, SortType rateSortType, FeedbackObject feedbackObject, FeedbackStatus feedbackStatus, int page, int size) {
+    public List<FeedBack> getFeedbackForStaff(UUID customerId, SortType rateSortType, FeedbackObject feedbackObject, FeedbackStatus feedbackStatus, int page, int size) throws FeedBackNotFoundException {
         List<FeedBack> feedBacks = feedBackRepository.findFeedBackForStaff(
                 customerId,
                 feedbackObject,
@@ -94,7 +95,7 @@ public class FeedBackServiceImpl implements FeedBackService {
         );
 
         if(feedBacks.size() == 0) {
-            throw new NoSuchElementException("No feedback found");
+            throw new FeedBackNotFoundException("Danh sách trống!");
         }
         return feedBacks;
     }

@@ -261,7 +261,8 @@ public class OrderServiceImpl implements OrderService {
             order.setStatus(OrderStatus.CANCEL.ordinal());
             List<OrderDetail> orderDetails = order.getOrderDetailList();
             increaseProductQuantity(orderDetails);
-            if (order.getDiscountList() != null & order.getDiscountList().size() > 0) {
+            List<Discount> discounts = order.getDiscountList();
+            if (discounts != null && discounts.size() > 0) {
                 increaseDiscountQuantity(order.getDiscountList());
             }
         } else {
@@ -444,7 +445,7 @@ public class OrderServiceImpl implements OrderService {
         mapTransactionToOrder(orderSaved, orderCreate.getTransaction());
         String qrCodeUrl = generateAndUploadQRCode(orderSaved);
         orderSaved.setQrCodeUrl(qrCodeUrl);
-        return orderSaved;
+        return repository.save(orderSaved);
     }
 
 
@@ -502,14 +503,15 @@ public class OrderServiceImpl implements OrderService {
 
     private void mapDiscountsToOrder(Order order, List<UUID> discountIds) throws ResourceNotFoundException, InterruptedException {
         if (!discountIds.isEmpty()) {
-            order.setDiscountList(new ArrayList<>());
+            List<Discount> discounts = new ArrayList<>();
             for (UUID discountId : discountIds) {
                 Discount discount = discountRepository
                         .findById(discountId)
                         .orElseThrow(() -> new ResourceNotFoundException("Discount not found with id" + discountId));
                 decrementDiscountQuantity(discount);
-                order.getDiscountList().add(discount);
+                discounts.add(discount);
             }
+            order.setDiscountList(discounts);
         }
     }
 
