@@ -7,12 +7,14 @@ import { icons } from '../constants';
 import { COLORS, FONTS } from '../constants/theme';
 import { API } from '../constants/api';
 import { useFocusEffect } from "@react-navigation/native";
+import LoadingScreen from '../components/LoadingScreen';
 
 const Search = ({ navigation }) => {
     const [products, setProducts] = useState([]);
     const [result, setResult] = useState([]);
     const [productName, setProductName] = useState('');
     const [text, setText] = useState();
+    const [loading, setLoading] = useState(false);
 
     const typingTimeoutRef = useRef(null);
 
@@ -28,13 +30,16 @@ const Search = ({ navigation }) => {
     // fetch search suggestion
     useFocusEffect(
         useCallback(() => {
+            setLoading(true);
             fetch(`${API.baseURL}/api/product/getProductsForCustomer?name=${productName}&quantitySortType=DESC&expiredSortType=DESC`)
                 .then(res => res.json())
                 .then(data => {
                     setResult(data);
+                    setLoading(false);
                 })
                 .catch(err => {
                     console.log(err);
+                    setLoading(false);
                 });
         }, [productName]
         )
@@ -42,13 +47,16 @@ const Search = ({ navigation }) => {
 
     // fetch recommend products for display
     useEffect(() => {
+        setLoading(true);
         fetch(`${API.baseURL}/api/product/getProductsForCustomer?page=0&limit=6&quantitySortType=DESC&expiredSortType=ASC`)
             .then(res => res.json())
             .then(data => {
                 setProducts(data);
+                setLoading(false);
             })
             .catch(err => {
                 console.log(err);
+                setLoading(false);
             });
     }, []);
 
@@ -183,6 +191,7 @@ const Search = ({ navigation }) => {
                     ))}
                 </View>
             </ScrollView>
+            {loading && <LoadingScreen />}
         </View>
     );
 };
