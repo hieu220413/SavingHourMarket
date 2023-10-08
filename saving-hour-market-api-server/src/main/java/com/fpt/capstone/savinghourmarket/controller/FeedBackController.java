@@ -4,6 +4,7 @@ import com.fpt.capstone.savinghourmarket.common.FeedbackObject;
 import com.fpt.capstone.savinghourmarket.common.FeedbackStatus;
 import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.FeedBack;
+import com.fpt.capstone.savinghourmarket.exception.FeedBackNotFoundException;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.FeedbackCreate;
 import com.fpt.capstone.savinghourmarket.service.FeedBackService;
@@ -43,7 +44,7 @@ public class FeedBackController {
                                                                  @RequestParam(required = false) FeedbackObject feedbackObject,
                                                                  @RequestParam(required = false) FeedbackStatus feedbackStatus,
                                                                  @RequestParam(defaultValue = "0") int page,
-                                                                 @RequestParam(defaultValue = "5") int size) throws ResourceNotFoundException, FirebaseAuthException {
+                                                                 @RequestParam(defaultValue = "5") int size) throws ResourceNotFoundException, FirebaseAuthException, FeedBackNotFoundException {
         return ResponseEntity.status(HttpStatus.OK).body(feedBackService.getFeedbackForCustomer(jwtToken, rateSortType, feedbackObject, feedbackStatus, page, size));
     }
 
@@ -54,7 +55,7 @@ public class FeedBackController {
             @RequestParam(required = false) FeedbackObject feedbackObject,
             @RequestParam(required = false) FeedbackStatus feedbackStatus,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size) throws ResourceNotFoundException, FirebaseAuthException {
+            @RequestParam(defaultValue = "5") int size) throws ResourceNotFoundException, FirebaseAuthException, FeedBackNotFoundException {
         return ResponseEntity.status(HttpStatus.OK).body(feedBackService.getFeedbackForStaff(customerId, rateSortType, feedbackObject, feedbackStatus, page, size));
 
     }
