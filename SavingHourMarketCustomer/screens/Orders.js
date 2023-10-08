@@ -89,6 +89,7 @@ const Orders = ({navigation}) => {
     }, []),
   );
 
+  console.log(orderList);
   useFocusEffect(
     useCallback(() => {
       const fetchData = async () => {
@@ -122,6 +123,7 @@ const Orders = ({navigation}) => {
               });
           } else {
             setLoading(true);
+            let list = [];
             fetch(
               `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGING`,
               {
@@ -134,11 +136,12 @@ const Orders = ({navigation}) => {
             )
               .then(res => res.json())
               .then(respond => {
+                console.log(respond);
                 if (respond.error) {
                   setLoading(false);
                   return;
                 }
-                setOrderList(respond);
+                list.concat(respond);
 
                 fetch(
                   `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGED`,
@@ -156,10 +159,10 @@ const Orders = ({navigation}) => {
                       setLoading(false);
                       return;
                     }
-                    if (respond.length !== 0) {
-                      setOrderList([...orderList, respond]);
-                      setLoading(false);
-                    }
+
+                    list.concat(respond);
+                    setOrderList(list);
+                    setLoading(false);
                   })
                   .catch(err => {
                     console.log(err);
