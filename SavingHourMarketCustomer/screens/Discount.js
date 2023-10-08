@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 // eslint-disable-next-line prettier/prettier
-import React, {useState, useEffect, useCallback} from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Text,
   View,
@@ -9,48 +9,57 @@ import {
   StyleSheet,
   FlatList,
 } from 'react-native';
-import {icons} from '../constants';
-import {COLORS, FONTS} from '../constants/theme';
+import { icons } from '../constants';
+import { COLORS, FONTS } from '../constants/theme';
 import Categories from '../components/Categories';
 import dayjs from 'dayjs';
-import {API} from '../constants/api';
-import {useFocusEffect} from '@react-navigation/native';
+import { API } from '../constants/api';
+import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Empty from '../assets/image/search-empty.png';
+import LoadingScreen from '../components/LoadingScreen';
 
-const Discount = ({navigation}) => {
+const Discount = ({ navigation }) => {
   const [discounts, setDiscounts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [currentCate, setCurrentCate] = useState('');
   const [cartList, setCartList] = useState([]);
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
       (async () => {
         try {
+          setLoading(true);
           const cartList = await AsyncStorage.getItem('CartList');
           setCartList(cartList ? JSON.parse(cartList) : []);
+          setLoading(false);
         } catch (err) {
           console.log(err);
+          setLoading(false);
         }
       })();
     }, []),
   );
 
   useEffect(() => {
+    setLoading(true);
     fetch(`${API.baseURL}/api/product/getAllCategory`)
       .then(res => res.json())
       .then(data => {
         setCategories(data);
         setCurrentCate(data[0].id);
+        setLoading(false);
       })
       .catch(err => {
         console.log(err);
+        setLoading(false);
       });
   }, []);
 
   useEffect(() => {
+    setLoading(true);
     if (currentCate) {
       fetch(
         `${API.baseURL}/api/discount/getDiscountsForCustomer?fromPercentage=0&toPercentage=100&productCategoryId=${currentCate}&page=0&limit=5&expiredSortType=ASC`,
@@ -73,10 +82,11 @@ const Discount = ({navigation}) => {
         .catch(err => {
           console.log(err);
         });
+      setLoading(false);
     }
   }, [currentCate]);
 
-  const Item = ({data}) => (
+  const Item = ({ data }) => (
     <View style={styles.itemContainer}>
       {/* Image Product */}
       <Image
@@ -87,7 +97,7 @@ const Discount = ({navigation}) => {
         style={styles.itemImage}
       />
 
-      <View style={{justifyContent: 'center', flex: 1, marginRight: 10}}>
+      <View style={{ justifyContent: 'center', flex: 1, marginRight: 10 }}>
         <Text
           numberOfLines={1}
           style={{
@@ -146,7 +156,7 @@ const Discount = ({navigation}) => {
           <Image
             source={icons.leftArrow}
             resizeMode="contain"
-            style={{width: 35, height: 35, tintColor: COLORS.primary}}
+            style={{ width: 35, height: 35, tintColor: COLORS.primary }}
           />
         </TouchableOpacity>
         <Text
@@ -185,7 +195,7 @@ const Discount = ({navigation}) => {
                 justifyContent: 'center',
               }}>
               <Text
-                style={{fontSize: 12, color: 'white', fontFamily: 'Roboto'}}>
+                style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
                 {cartList.length}
               </Text>
             </View>
@@ -200,9 +210,9 @@ const Discount = ({navigation}) => {
       />
       {/* List voucher */}
       {discounts.length == 0 ? (
-        <View style={{alignItems: 'center'}}>
+        <View style={{ alignItems: 'center' }}>
           <Image
-            style={{width: '100%', height: '65%'}}
+            style={{ width: '100%', height: '65%' }}
             resizeMode="contain"
             source={Empty}
           />
@@ -221,7 +231,7 @@ const Discount = ({navigation}) => {
           showsVerticalScrollIndicator={true}
           data={discounts}
           keyExtractor={item => `${item.id}`}
-          renderItem={({item}) => <Item data={item} />}
+          renderItem={({ item }) => <Item data={item} />}
         />
       )}
     </View>
