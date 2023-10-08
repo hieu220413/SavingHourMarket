@@ -1,8 +1,8 @@
 package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
 import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
+import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Product;
-import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.ProductCateWithSubCate;
 import com.fpt.capstone.savinghourmarket.model.ProductSubCateOnly;
@@ -32,16 +32,28 @@ public class ProductServiceImpl implements ProductService {
     private final ProductSubCategoryRepository productSubCategoryRepository;
 
     @Override
-    public List<Product> getProductsForStaff(Boolean isExpiredShown, String name, String supermarketId, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, String quantitySortType, String expiredSortType) {
-        Sort sortable;
-        if(quantitySortType.equals("ASC") ){
-            sortable = Sort.by("expiredDate").ascending();
-        }else if (quantitySortType.equals("DESC")) {
-            sortable = Sort.by("expiredDate").ascending();
-        }else if (quantitySortType.equals("ASC")){
-            sortable = Sort.by("expiredDate").ascending();
-        }else {
-            sortable = Sort.by("expiredDate").descending();
+    public List<Product> getProductsForStaff(Boolean isExpiredShown, String name, String supermarketId, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, SortType quantitySortType, SortType expiredSortType, SortType priceSort) {
+        Sort sortable = Sort.by("expiredDate").ascending();
+//        if(quantitySortType.equals("ASC") ){
+//            sortable = Sort.by("expiredDate").ascending();
+//        }else if (quantitySortType.equals("DESC")) {
+//            sortable = Sort.by("expiredDate").ascending();
+//        }else if (quantitySortType.equals("ASC")){
+//            sortable = Sort.by("expiredDate").ascending();
+//        }else {
+//            sortable = Sort.by("expiredDate").descending();
+//        }
+
+        if(quantitySortType != null) {
+            sortable = quantitySortType.toString().equals("ASC") ? Sort.by("quantity").ascending() : Sort.by("quantity").descending();
+        }
+
+        if(priceSort != null) {
+            sortable = priceSort.toString().equals("ASC") ? Sort.by("price").ascending() : Sort.by("price").descending();
+        }
+
+        if(expiredSortType != null) {
+            sortable = expiredSortType.toString().equals("ASC") ? Sort.by("expiredDate").ascending() : Sort.by("expiredDate").descending();
         }
 
         Pageable pageableWithSort = PageRequest.of(page, limit, sortable);
@@ -56,16 +68,19 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> getProductsForCustomer(String name, String supermarketId, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, String quantitySortType, String expiredSortType) {
-        Sort sortable;
-        if(quantitySortType.equals("ASC")  && expiredSortType.equals("DESC")){
-            sortable = Sort.by("expiredDate").descending().and(Sort.by("quantity").ascending());
-        }else if (quantitySortType.equals("DESC")  && expiredSortType.equals("ASC")) {
-            sortable = Sort.by("expiredDate").ascending().and(Sort.by("quantity").descending());
-        }else if (quantitySortType.equals("ASC") && expiredSortType.equals("ASC")){
-            sortable = Sort.by("expiredDate").ascending().and(Sort.by("quantity").ascending());
-        }else {
-            sortable = Sort.by("expiredDate").descending().and(Sort.by("quantity").descending());
+    public List<Product> getProductsForCustomer(String name, String supermarketId, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, SortType quantitySortType, SortType expiredSortType, SortType priceSort) {
+        Sort sortable = Sort.by("expiredDate").ascending();
+
+        if(quantitySortType != null) {
+            sortable = quantitySortType.toString().equals("ASC") ? Sort.by("quantity").ascending() : Sort.by("quantity").descending();
+        }
+
+        if(priceSort != null) {
+            sortable = priceSort.toString().equals("ASC") ? Sort.by("price").ascending() : Sort.by("price").descending();
+        }
+
+        if(expiredSortType != null) {
+            sortable = expiredSortType.toString().equals("ASC") ? Sort.by("expiredDate").ascending() : Sort.by("expiredDate").descending();
         }
 
         Pageable pageableWithSort = PageRequest.of(page, limit, sortable);
