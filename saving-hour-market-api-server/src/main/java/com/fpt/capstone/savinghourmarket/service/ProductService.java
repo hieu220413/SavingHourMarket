@@ -2,7 +2,9 @@ package com.fpt.capstone.savinghourmarket.service;
 
 import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Product;
+import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.ProductCateWithSubCate;
+import com.fpt.capstone.savinghourmarket.model.ProductCreate;
 import com.fpt.capstone.savinghourmarket.model.ProductSubCateOnly;
 
 import java.util.List;
@@ -18,4 +20,6 @@ public interface ProductService {
     List<ProductCateWithSubCate> getAllCategory();
 
     List<ProductSubCateOnly> getAllSubCategory();
+
+    Product createProduct(ProductCreate productCreate) throws ResourceNotFoundException;
 }

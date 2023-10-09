@@ -4,6 +4,7 @@ import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
 import com.fpt.capstone.savinghourmarket.model.ProductCateWithSubCate;
+import com.fpt.capstone.savinghourmarket.model.ProductCreate;
 import com.fpt.capstone.savinghourmarket.model.ProductSubCateOnly;
 import com.fpt.capstone.savinghourmarket.service.ProductCategoryService;
 import com.fpt.capstone.savinghourmarket.service.ProductService;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 
@@ -91,4 +93,10 @@ public class ProductController {
         List<ProductSubCateOnly> productSubCateOnlyList = productService.getAllSubCategory();
         return ResponseEntity.status(HttpStatus.OK).body(productSubCateOnlyList);
     }
+
+    @RequestMapping(value = "/upload", method = RequestMethod.PUT)
+    public ResponseEntity<Product> uploadProduct(@Valid @RequestBody ProductCreate productCreate){
+        return ResponseEntity.status(HttpStatus.OK).body(productService.createProduct(productCreate));
+    }
+
 }

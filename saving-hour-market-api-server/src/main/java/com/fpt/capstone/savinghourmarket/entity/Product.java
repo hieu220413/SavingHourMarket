@@ -42,7 +42,9 @@ public class Product {
     @Column(columnDefinition = "tinyint")
     private Integer status;
 
-    @ManyToOne
+    @ManyToOne(
+            cascade = CascadeType.ALL
+    )
     @JoinColumn(
             name = "product_sub_category_id",
             referencedColumnName = "id"
