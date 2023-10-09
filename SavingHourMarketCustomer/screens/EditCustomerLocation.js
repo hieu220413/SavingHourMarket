@@ -1,9 +1,9 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
-import React, {useEffect, useState} from 'react';
-import {View, Image, Text, TouchableOpacity} from 'react-native';
+import React, {useEffect, useRef, useState} from 'react';
+import {View, Image, Text, TouchableOpacity, Keyboard} from 'react-native';
 import {icons} from '../constants';
-import {COLORS} from '../constants/theme';
+import {COLORS, FONTS} from '../constants/theme';
 import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
 import {API} from '../constants/api';
 import Modal, {
@@ -11,21 +11,94 @@ import Modal, {
   ModalButton,
   ScaleAnimation,
 } from 'react-native-modals';
+import {TextInput} from 'react-native-gesture-handler';
+import LoadingScreen from '../components/LoadingScreen';
 
 const EditCustomerLocation = ({navigation, route}) => {
   const {setCustomerLocation, customerLocation} = route.params;
-  const [locationPicked, setLocationPicked] = useState(null);
-  const [clear, setClear] = useState(false);
+  const [locationPicked, setLocationPicked] = useState(customerLocation);
   const [openValidateDialog, setOpenValidateDialog] = useState(false);
-  const [textHasChanged, setTextHasChanged] = useState(false);
   const [validateMessage, setValidateMessage] = useState('');
+  const [text, setText] = useState(customerLocation.address);
+  const [searchValue, setSearchValue] = useState(customerLocation.address);
+  const [data, setData] = useState([]);
+  const [isFocused, setIsFocused] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const [shouldSetDefaultValue, setShouldSetDefaultValue] = useState(true);
+  const selectLocation = item => {
+    setText(item.description);
+    setSearchValue(item.description);
+    Keyboard.dismiss();
+    setIsFocused(false);
+
+    fetch(
+      `https://rsapi.goong.io/Place/Detail?place_id=${item.place_id}&api_key=${API.GoongAPIKey}`,
+    )
+      .then(res => res.json())
+      .then(respond => {
+        const picked = {
+          address: item.description,
+          long: respond.result.geometry.location.lng,
+          lat: respond.result.geometry.location.lat,
+        };
+
+        setLocationPicked(picked);
+      })
+      .catch(err => console.log(err));
+  };
+
+  const Item = ({item}) => {
+    return (
+      <View
+        style={{
+          borderColor: '#decbcb',
+          borderBottomWidth: 0.74,
+
+          paddingVertical: 15,
+        }}>
+        <TouchableOpacity onPress={() => selectLocation(item)}>
+          <Text
+            numberOfLines={1}
+            style={{
+              color: 'black',
+              fontFamily: FONTS.fontFamily,
+              fontSize: 16,
+              lineHeight: 40,
+            }}>
+            {item.description}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   useEffect(() => {
-    const cleanUp = setTimeout(() => {
-      setShouldSetDefaultValue(false);
-    }, 300);
-  }, []);
+    fetch(
+      `https://rsapi.goong.io/Place/AutoComplete?api_key=${API.GoongAPIKey}&input=${searchValue}`,
+    )
+      .then(res => res.json())
+      .then(respond => {
+        if (respond.predictions) {
+          setData(respond.predictions);
+        } else {
+          setData([]);
+        }
+      })
+      .catch(err => console.log(err));
+  }, [searchValue]);
+
+  const typingTimeoutRef = useRef(null);
+
+  const onChange = text => {
+    setText(text);
+    setLocationPicked(null);
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    typingTimeoutRef.current = setTimeout(() => {
+      setSearchValue(text);
+    }, 400);
+  };
 
   return (
     <>
@@ -59,11 +132,9 @@ const EditCustomerLocation = ({navigation, route}) => {
         <TouchableOpacity
           onPress={() => {
             if (!locationPicked) {
-              if (textHasChanged) {
-                setValidateMessage('Địa chỉ không hợp lệ');
-                setOpenValidateDialog(true);
-                return;
-              }
+              setValidateMessage('Địa chỉ không hợp lệ');
+              setOpenValidateDialog(true);
+              return;
             }
 
             if (
@@ -71,9 +142,7 @@ const EditCustomerLocation = ({navigation, route}) => {
               locationPicked.address.includes('Hồ Chí Minh') ||
               locationPicked.address.includes('HCM')
             ) {
-              setCustomerLocation(
-                locationPicked ? locationPicked : customerLocation,
-              );
+              setCustomerLocation(locationPicked);
               navigation.navigate('Payment');
             } else {
               setValidateMessage(
@@ -102,8 +171,60 @@ const EditCustomerLocation = ({navigation, route}) => {
         }}>
         Địa chỉ
       </Text>
-      <View style={{marginTop: 8, height: '100%'}}>
-        <GooglePlacesAutocomplete
+      <View style={{marginTop: 8, height: '100%', position: 'relative'}}>
+        <TextInput
+          numberOfLines={1}
+          style={{
+            backgroundColor: 'white',
+            paddingLeft: 10,
+            paddingRight: 30,
+            paddingHorizontal: 15,
+            color: 'black',
+            fontFamily: FONTS.fontFamily,
+            fontSize: 16,
+            lineHeight: 40,
+            height: 60,
+          }}
+          value={text}
+          onChangeText={data => onChange(data)}
+          onFocus={() => {
+            setIsFocused(true);
+          }}
+        />
+        <TouchableOpacity
+          onPress={() => {
+            setText('');
+            setSearchValue('');
+            setLocationPicked(null);
+          }}
+          style={{
+            position: 'absolute',
+            top: 20,
+            right: 10,
+            zIndex: 999,
+          }}>
+          <Image
+            resizeMode="contain"
+            source={icons.cross}
+            style={{width: 20, height: 20}}
+          />
+        </TouchableOpacity>
+
+        {isFocused && data.length !== 0 && (
+          <View
+            style={{
+              backgroundColor: 'white',
+              marginTop: 10,
+              height: '100%',
+              paddingHorizontal: 15,
+            }}>
+            {data.map(item => (
+              <Item item={item} />
+            ))}
+          </View>
+        )}
+
+        {/* <GooglePlacesAutocomplete
           ref={ref => {
             if (shouldSetDefaultValue) {
               ref?.setAddressText(customerLocation.address);
@@ -185,7 +306,7 @@ const EditCustomerLocation = ({navigation, route}) => {
           nearbyPlacesAPI="GooglePlacesSearch" // Which API to use: GoogleReverseGeocoding or GooglePlacesSearch
           filterReverseGeocodingByTypes={['locality']} // filter the reverse geocoding results by types - ['locality', 'administrative_area_level_3'] if you want to display only cities
           debounce={200} // debounce the requests in ms. Set to 0 to remove debounce. By default 0ms.
-        />
+        /> */}
       </View>
       <Modal
         width={0.8}
@@ -223,6 +344,7 @@ const EditCustomerLocation = ({navigation, route}) => {
           </Text>
         </View>
       </Modal>
+      {loading && <LoadingScreen />}
     </>
   );
 };
