@@ -2,7 +2,7 @@
 
 :root {
   --primary: #37a65b;
-  --primary-light: #56cd7c;
+  --primary-light: #38b15e;
   --background: #f6f4fc;
   --default-layout-header-height: 60px;
   --default-layout-width: 1150px;
@@ -39,4 +39,142 @@ ul {
 
 li {
   list-style: none;
+}
+
+// search bar
+.search {
+  position: relative;
+
+  &-icon {
+    position: absolute;
+    top: 9px;
+    left: 12px;
+    cursor: pointer;
+    &:hover {
+      opacity: 0.7;
+    }
+
+    svg {
+      width: 20px;
+      height: 18px;
+      color: #919eab;
+    }
+  }
+
+  input {
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+    width: 300px;
+    height: 36px;
+    border-radius: 3px;
+    border: 1px solid #c4cdd5;
+    background: #fff;
+    box-shadow: 0px 1px 2px 0px rgba(102, 113, 123, 0.21) inset,
+      0px 0px 0px 0px rgba(102, 113, 123, 0.25) inset;
+    padding: 10px 40px;
+
+    &:focus-visible {
+      border: 2px solid var(--primary);
+      outline: none;
+    }
+  }
+}
+
+// data table
+.table__container {
+  width: 1030px;
+  height: 550px;
+  border-radius: 4px;
+  background: #fff;
+  padding: 8px 24px 32px;
+  position: relative;
+
+  th {
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+    color: var(--primary-light);
+  }
+
+  td {
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+
+    i {
+      font-size: 20px;
+      color: var(--primary-light);
+      margin-left: 10px;
+      cursor: pointer;
+
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .table-body-row {
+    height: 52px;
+  }
+
+  thead {
+    vertical-align: baseline;
+  }
+
+  tr {
+    display: table-row;
+    vertical-align: inherit;
+    border-color: inherit;
+    // border: none;
+  }
+
+  .table > :not(caption) > * > * {
+    padding: 1.85rem 0.5rem;
+  }
+
+  .table {
+    border-collapse: inherit;
+  }
+}
+
+// pagintaion
+.pageBtn {
+  position: absolute;
+  bottom: 12px;
+  right: 24px;
+  form {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    button {
+      margin-right: 0.5rem;
+      background-color: var(--primary);
+
+      i {
+        font-size: 12px;
+      }
+    }
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input {
+      margin-right: 0.5rem;
+      color: white !important;
+      background-color: var(--primary);
+      outline: none;
+      border: none;
+      border-radius: 3px;
+      font-size: 14px;
+    }
+  }
 }
