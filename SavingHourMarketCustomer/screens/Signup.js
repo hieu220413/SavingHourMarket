@@ -127,6 +127,10 @@ const Signup = ({navigation}) => {
       Alert.alert('Internal error happened');
       return;
     }
+    if (registerWithEmailPasswordRequest.status === 422) {
+      Alert.alert('This email has already been registered');
+      return null;
+    }
     // Handle register success
     if (registerWithEmailPasswordRequest.status === 200) {
       const customToken = await registerWithEmailPasswordRequest.text();
@@ -136,6 +140,11 @@ const Signup = ({navigation}) => {
           console.log(e);
           return null;
         });
+      console.log(user);
+      if (!user) {
+        Alert.alert('Email address does not exitst!!!');
+        navigation.navigate('Login');
+      }
       if (user) {
         // handle sender email verification
         console.log(user.user);
@@ -149,7 +158,7 @@ const Signup = ({navigation}) => {
             Alert.alert(
               'Sign up successfull. Email verfication has been sent to your account',
             );
-            // navigation.navigate('Login');
+            navigation.navigate('Login');
           })
           .catch(async e => {
             console.log(e);
