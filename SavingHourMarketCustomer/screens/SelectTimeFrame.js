@@ -17,13 +17,29 @@ const SelectTimeFrame = ({navigation, route}) => {
   useFocusEffect(
     useCallback(() => {
       setLoading(true);
-      fetch(`${API.baseURL}/api/timeframe/getAll`)
-        .then(res => res.json())
-        .then(response => {
-          setTimeFrameList(response);
-          setLoading(false);
-        })
-        .catch(err => console.log(err));
+      if (route.params.picked == 0) {
+        fetch(`${API.baseURL}/api/timeframe/getForPickupPoint`)
+          .then(res => res.json())
+          .then(response => {
+            setTimeFrameList(response);
+            setLoading(false);
+          })
+          .catch(err => {
+            console.log(err);
+            setLoading(false);
+          });
+      } else {
+        fetch(`${API.baseURL}/api/timeframe/getForHomeDelivery`)
+          .then(res => res.json())
+          .then(response => {
+            setTimeFrameList(response);
+            setLoading(false);
+          })
+          .catch(err => {
+            console.log(err);
+            setLoading(false);
+          });
+      }
     }, []),
   );
   return (
@@ -74,7 +90,12 @@ const SelectTimeFrame = ({navigation, route}) => {
             <TouchableOpacity
               key={item.id}
               onPress={() => {
-                route.params.setTimeFrame(item);
+                if (route.params.picked == 0) {
+                  route.params.setTimeFrame(item);
+                } else {
+                  route.params.setCustomerTimeFrame(item);
+                }
+
                 navigation.navigate('Payment');
               }}
               style={{

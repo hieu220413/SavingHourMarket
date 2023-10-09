@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react/no-unstable-nested-components */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   Text,
   View,
@@ -13,18 +13,18 @@ import {
 } from 'react-native';
 import Categories from '../components/Categories';
 import DiscountRow from '../components/DiscountRow';
-import { COLORS, FONTS } from '../constants/theme';
-import { icons } from '../constants';
+import {COLORS, FONTS} from '../constants/theme';
+import {icons} from '../constants';
 import dayjs from 'dayjs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API } from '../constants/api';
-import { useFocusEffect } from '@react-navigation/native';
+import {API} from '../constants/api';
+import {useFocusEffect} from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import LoadingScreen from '../components/LoadingScreen';
-import { Alert } from 'react-native';
+import {Alert} from 'react-native';
 import messaging from '@react-native-firebase/messaging';
 
-const Home = ({ navigation }) => {
+const Home = ({navigation}) => {
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [currentCate, setCurrentCate] = useState('');
@@ -120,7 +120,7 @@ const Home = ({ navigation }) => {
         return;
       }
 
-      const cartData = { ...data, isChecked: false, cartQuantity: 1 };
+      const cartData = {...data, isChecked: false, cartQuantity: 1};
       newCartList = [...newCartList, cartData];
       setCartList(newCartList);
       await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
@@ -130,7 +130,7 @@ const Home = ({ navigation }) => {
     }
   };
 
-  const Item = ({ data }) => {
+  const Item = ({data}) => {
     return (
       <TouchableOpacity
         key={data.id}
@@ -149,7 +149,7 @@ const Home = ({ navigation }) => {
             style={styles.itemImage}
           />
 
-          <View style={{ justifyContent: 'center', flex: 1, marginRight: 10 }}>
+          <View style={{justifyContent: 'center', flex: 1, marginRight: 10}}>
             <Text
               numberOfLines={1}
               style={{
@@ -162,7 +162,7 @@ const Home = ({ navigation }) => {
               {data.name}
             </Text>
 
-            <View style={{ flexDirection: 'row' }}>
+            <View style={{flexDirection: 'row'}}>
               <Text
                 style={{
                   maxWidth: '70%',
@@ -218,7 +218,7 @@ const Home = ({ navigation }) => {
     );
   };
 
-  const SubCategory = ({ data }) => {
+  const SubCategory = ({data}) => {
     return (
       <View
         style={{
@@ -303,7 +303,7 @@ const Home = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       {/* Search */}
-      <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+      <View style={{flexDirection: 'row', gap: 10, alignItems: 'center'}}>
         <SearchBar />
         <TouchableOpacity
           onPress={() => {
@@ -332,7 +332,7 @@ const Home = ({ navigation }) => {
                 justifyContent: 'center',
               }}>
               <Text
-                style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
+                style={{fontSize: 12, color: 'white', fontFamily: 'Roboto'}}>
                 {cartList.length}
               </Text>
             </View>
@@ -433,7 +433,13 @@ const Home = ({ navigation }) => {
           <TouchableOpacity
             onPress={() => {
               setPage(page + 1);
-              fetch(`${API.baseURL}/api/product/getProductsForCustomer?productCategoryId=${currentCate}&page=${page + 1}&limit=5&quantitySortType=DESC&expiredSortType=ASC`)
+              fetch(
+                `${
+                  API.baseURL
+                }/api/product/getProductsForCustomer?productCategoryId=${currentCate}&page=${
+                  page + 1
+                }&limit=5&quantitySortType=DESC&expiredSortType=ASC`,
+              )
                 .then(res => res.json())
                 .then(data => {
                   setProductsByCategory([...productsByCategory, ...data]);
@@ -442,8 +448,7 @@ const Home = ({ navigation }) => {
                 .catch(err => {
                   console.log(err);
                 });
-            }}
-          >
+            }}>
             <Text
               style={{
                 backgroundColor: COLORS.light_green,
