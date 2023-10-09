@@ -10,11 +10,21 @@ import {
   Animated,
   Easing,
   Image,
+  Alert,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {COLORS} from '../constants/theme';
+import {useFocusEffect} from '@react-navigation/native';
+import auth from '@react-native-firebase/auth';
+import {
+  GoogleSignin,
+  GoogleSigninButton,
+} from '@react-native-google-signin/google-signin';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {API} from '../constants/api';
+import LoadingScreen from '../components/LoadingScreen';
 
 class Star extends React.Component {
   render() {
@@ -166,6 +176,7 @@ const Item = ({data}) => {
       </Animated.View>,
     );
   }
+
   return (
     <View
       style={{
@@ -224,6 +235,91 @@ const Item = ({data}) => {
 
 const FeedbackList = ({navigation}) => {
   const [FeedbackList, setFeedbackList] = useState(DATA);
+  const [loading, setLoading] = useState(false);
+  const [initializing, setInitializing] = useState(true);
+  const [tokenId, setTokenId] = useState(null);
+  //authen check
+  const onAuthStateChange = async userInfo => {
+    // console.log(userInfo);
+    setLoading(true);
+    if (initializing) {
+      setInitializing(false);
+    }
+    if (userInfo) {
+      // check if user sessions is still available. If yes => redirect to another screen
+      const userTokenId = await userInfo
+        .getIdToken(true)
+        .then(token => token)
+        .catch(async e => {
+          console.log(e);
+          return null;
+        });
+      if (!userTokenId) {
+        // sessions end. (revoke refresh token like password change, disable account, ....)
+        await AsyncStorage.removeItem('userInfo');
+        setLoading(false);
+        return;
+      }
+      setLoading(false);
+      console.log('user is logged in');
+      console.log('userInfo', await AsyncStorage.getItem('userInfo'));
+    } else {
+      // no sessions found.
+      setLoading(false);
+      console.log('user is not logged in');
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      // auth().currentUser.reload()
+      const subscriber = auth().onAuthStateChanged(
+        async userInfo => await onAuthStateChange(userInfo),
+      );
+      GoogleSignin.configure({
+        webClientId:
+          '857253936194-dmrh0nls647fpqbuou6mte9c7e4o6e6h.apps.googleusercontent.com',
+      });
+      return subscriber;
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchData = async () => {
+        const token = await auth().currentUser?.getIdToken();
+        setTokenId(token);
+        if (token === null) {
+          Alert.alert('Unauthorized');
+          return;
+        } else {
+          setLoading(true);
+          fetch(
+            `${API.baseURL}/api/feedback/getFeedbackForCustomer?page=0&size=100`,
+            {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          )
+            .then(res => res.json())
+            .then(data => {
+              setLoading(false);
+              console.log(data[0]);
+              setFeedbackList(data);
+            })
+            .catch(err => {
+              console.log(err);
+              setLoading(false);
+            });
+        }
+      };
+      fetchData();
+    }, []),
+  );
   return (
     // <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
     <View style={styles.container}>
@@ -247,6 +343,7 @@ const FeedbackList = ({navigation}) => {
               onPress={() => {
                 navigation.navigate('Feedback');
                 //   console.log(FeedbackList.length);
+                console.log(tokenId);
               }}>
               <Text
                 style={{
@@ -263,7 +360,7 @@ const FeedbackList = ({navigation}) => {
       </View>
       <View style={styles.footer}>
         <ScrollView>
-          {FeedbackList.map((item, index) => (
+          {FeedbackList?.map((item, index) => (
             <Item data={item} key={index} />
           ))}
           <View
@@ -284,6 +381,7 @@ const FeedbackList = ({navigation}) => {
           </View>
         </ScrollView>
       </View>
+      {loading && <LoadingScreen />}
     </View>
     // </TouchableWithoutFeedback>
   );

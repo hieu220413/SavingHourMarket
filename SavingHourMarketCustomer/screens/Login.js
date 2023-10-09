@@ -156,7 +156,7 @@ const Login = ({navigation}) => {
           }
         }
 
-        console.log(userInfoAfterEmailPasswordLoginRequest.status)
+        console.log(userInfoAfterEmailPasswordLoginRequest.status);
 
         // fetch success
         if (userInfoAfterEmailPasswordLoginRequest.status === 200) {

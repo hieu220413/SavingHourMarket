@@ -1,5 +1,13 @@
 import React, {useState, useEffect, useCallback} from 'react';
-import {Text, View, SafeAreaView, Image, Touchable, Switch} from 'react-native';
+import {
+  Text,
+  View,
+  SafeAreaView,
+  Image,
+  Touchable,
+  Switch,
+  Alert,
+} from 'react-native';
 import Header from '../shared/Header';
 import {COLORS} from '../constants/theme';
 import {icons} from '../constants';
@@ -231,73 +239,56 @@ const Profile = ({navigation}) => {
         />
         {/* Options 1 */}
 
-        {user ? (
-          <TouchableOpacity
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginHorizontal: '3%',
-              justifyContent: 'space-between',
-            }}
-            activeOpacity={0.8}
-            onPress={() => {
+        <TouchableOpacity
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginHorizontal: '3%',
+            justifyContent: 'space-between',
+          }}
+          activeOpacity={0.8}
+          onPress={() => {
+            if (user == null) {
+              Alert.alert('Unauthorized !!!', 'Login to your account', [
+                {
+                  text: 'Cancel',
+                  onPress: () => {
+                    console.log('cancel');
+                  },
+                  style: 'cancel',
+                },
+                {
+                  text: 'Ok',
+                  onPress: () => {
+                    navigation.navigate('Login');
+                  },
+                },
+              ]);
+            } else {
               navigation.navigate('Edit Profile', {user});
-            }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                columnGap: 15,
-                alignItems: 'center',
-              }}>
-              <AntDesign name="user" size={30} color="black"></AntDesign>
-              <Text
-                style={{
-                  fontFamily: 'Roboto',
-                  fontSize: 16,
-                  fontWeight: '700',
-                  color: 'black',
-                }}>
-                Profile
-              </Text>
-            </View>
-            <View>
-              <AntDesign name="right" size={20} color="black"></AntDesign>
-            </View>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
+            }
+          }}>
+          <View
             style={{
               flexDirection: 'row',
+              columnGap: 15,
               alignItems: 'center',
-              marginHorizontal: '3%',
-              justifyContent: 'space-between',
-            }}
-            activeOpacity={0.8}
-            onPress={() => {
-              navigation.navigate('Login');
             }}>
-            <View
+            <AntDesign name="user" size={30} color="black"></AntDesign>
+            <Text
               style={{
-                flexDirection: 'row',
-                columnGap: 15,
-                alignItems: 'center',
+                fontFamily: 'Roboto',
+                fontSize: 16,
+                fontWeight: '700',
+                color: 'black',
               }}>
-              <AntDesign name="user" size={30} color="black"></AntDesign>
-              <Text
-                style={{
-                  fontFamily: 'Roboto',
-                  fontSize: 16,
-                  fontWeight: '700',
-                  color: 'black',
-                }}>
-                Profile
-              </Text>
-            </View>
-            <View>
-              <AntDesign name="right" size={20} color="black"></AntDesign>
-            </View>
-          </TouchableOpacity>
-        )}
+              Profile
+            </Text>
+          </View>
+          <View>
+            <AntDesign name="right" size={20} color="black"></AntDesign>
+          </View>
+        </TouchableOpacity>
 
         {/* <TouchableOpacity
           style={{
@@ -422,7 +413,25 @@ const Profile = ({navigation}) => {
             justifyContent: 'space-between',
           }}
           onPress={() => {
-            navigation.navigate('List Feedback');
+            if (user == null) {
+              Alert.alert('Unauthorized !!!', 'Login to your account', [
+                {
+                  text: 'Cancel',
+                  onPress: () => {
+                    console.log('cancel');
+                  },
+                  style: 'cancel',
+                },
+                {
+                  text: 'ok',
+                  onPress: () => {
+                    navigation.navigate('Login');
+                  },
+                },
+              ]);
+            } else {
+              navigation.navigate('List Feedback');
+            }
           }}
           activeOpacity={0.8}>
           <View

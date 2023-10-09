@@ -262,8 +262,9 @@ const Feedback = ({navigation}) => {
       return;
     } else {
       let listImages;
-      if (images.length !== 0) {
+      if (images.length != 0) {
         listImages = await uploadImages(images);
+        // console.log(listImages);
       } else {
         listImages = [];
       }
@@ -281,7 +282,7 @@ const Feedback = ({navigation}) => {
         imageUrls: listImages,
         object: object,
       };
-      console.log('token', tokenId);
+      console.log('feedbackInfo', feedbackInfo);
       if (tokenId === null) {
         Alert.alert('Unauthorized');
         return;
