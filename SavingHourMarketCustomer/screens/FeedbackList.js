@@ -234,7 +234,7 @@ const Item = ({data}) => {
 };
 
 const FeedbackList = ({navigation}) => {
-  const [FeedbackList, setFeedbackList] = useState(DATA);
+  const [FeedbackList, setFeedbackList] = useState(null);
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [tokenId, setTokenId] = useState(null);
@@ -307,8 +307,12 @@ const FeedbackList = ({navigation}) => {
           )
             .then(res => res.json())
             .then(data => {
+              if (data.code == 404) {
+                setFeedbackList([]);
+                return;
+              }
               setLoading(false);
-              console.log(data[0]);
+              console.log(data);
               setFeedbackList(data);
             })
             .catch(err => {
@@ -359,27 +363,29 @@ const FeedbackList = ({navigation}) => {
         </View>
       </View>
       <View style={styles.footer}>
-        <ScrollView>
-          {FeedbackList?.map((item, index) => (
-            <Item data={item} key={index} />
-          ))}
-          <View
-            style={{
-              backgroundColor: '#f4f4f4',
-              alignItems: 'center',
-              borderBottomWidth: 10,
-              borderBottomColor: '#f4f4f4',
-            }}>
-            <Text
+        {FeedbackList ? (
+          <ScrollView>
+            {FeedbackList?.map((item, index) => (
+              <Item data={item} key={index} />
+            ))}
+            <View
               style={{
-                color: COLORS.primary,
-                fontFamily: 'Roboto',
-                fontSize: 14,
+                backgroundColor: '#f4f4f4',
+                alignItems: 'center',
+                borderBottomWidth: 10,
+                borderBottomColor: '#f4f4f4',
               }}>
-              Không còn đánh giá nào
-            </Text>
-          </View>
-        </ScrollView>
+              <Text
+                style={{
+                  color: COLORS.primary,
+                  fontFamily: 'Roboto',
+                  fontSize: 14,
+                }}>
+                Không còn đánh giá nào
+              </Text>
+            </View>
+          </ScrollView>
+        ) : null}
       </View>
       {loading && <LoadingScreen />}
     </View>
