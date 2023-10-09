@@ -208,7 +208,8 @@ const Item = ({data}) => {
               ))
             : null}
         </View>
-        <View style={{backgroundColor: '#F4F4F4', padding: 10, marginTop: 5}}>
+        <View
+          style={{backgroundColor: '#F4F4F4', padding: 10, marginVertical: 5}}>
           <Text style={{fontFamily: 'Roboto', fontSize: 18, color: 'black'}}>
             Phản hồi của người bán:
           </Text>
