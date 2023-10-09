@@ -57,8 +57,6 @@ const SearchResult = ({
     const sortProduct = (id) => {
         setSelectSortOption(id);
         if (id == 1) {
-            console.log('pro:', productName);
-            console.log('cr1:', currentCate);
             fetch(`${API.baseURL}/api/product/getProductsForCustomer?name=${productName}${currentCate === '' ? '' : '&productCategoryId=' + currentCate}&page=0&limit=5&quantitySortType=DESC&expiredSortType=ASC&priceSort=ASC`)
                 .then(res => res.json())
                 .then(data => {

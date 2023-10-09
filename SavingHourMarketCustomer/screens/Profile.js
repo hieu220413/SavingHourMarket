@@ -1,5 +1,13 @@
 import React, {useState, useEffect, useCallback} from 'react';
-import {Text, View, SafeAreaView, Image, Touchable, Switch} from 'react-native';
+import {
+  Text,
+  View,
+  SafeAreaView,
+  Image,
+  Touchable,
+  Switch,
+  Alert,
+} from 'react-native';
 import Header from '../shared/Header';
 import {COLORS} from '../constants/theme';
 import {icons} from '../constants';
@@ -40,7 +48,7 @@ const Profile = ({navigation}) => {
       }
       console.log('user is logged in');
       const info = await AsyncStorage.getItem('userInfo');
-      // console.log('info: ' + user);
+      console.log('info: ' + info);
       setUser(JSON.parse(info));
       // console.log('Username: ' + user?.fullName);
     } else {
@@ -66,9 +74,9 @@ const Profile = ({navigation}) => {
   );
 
   const logout = async () => {
-    console.log('a');
+    // console.log('a');
     await GoogleSignin.signOut().catch(e => console.log(e));
-    console.log('b');
+    // console.log('b');
     await AsyncStorage.removeItem('userInfo');
     auth()
       .signOut()
@@ -231,75 +239,58 @@ const Profile = ({navigation}) => {
         />
         {/* Options 1 */}
 
-        {user ? (
-          <TouchableOpacity
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginHorizontal: '3%',
-              justifyContent: 'space-between',
-            }}
-            activeOpacity={0.8}
-            onPress={() => {
-              navigation.navigate('Edit Profile', {user});
-            }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                columnGap: 15,
-                alignItems: 'center',
-              }}>
-              <AntDesign name="user" size={30} color="black"></AntDesign>
-              <Text
-                style={{
-                  fontFamily: 'Roboto',
-                  fontSize: 16,
-                  fontWeight: '700',
-                  color: 'black',
-                }}>
-                Profile
-              </Text>
-            </View>
-            <View>
-              <AntDesign name="right" size={20} color="black"></AntDesign>
-            </View>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginHorizontal: '3%',
-              justifyContent: 'space-between',
-            }}
-            activeOpacity={0.8}
-            onPress={() => {
-              navigation.navigate('Login');
-            }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                columnGap: 15,
-                alignItems: 'center',
-              }}>
-              <AntDesign name="user" size={30} color="black"></AntDesign>
-              <Text
-                style={{
-                  fontFamily: 'Roboto',
-                  fontSize: 16,
-                  fontWeight: '700',
-                  color: 'black',
-                }}>
-                Profile
-              </Text>
-            </View>
-            <View>
-              <AntDesign name="right" size={20} color="black"></AntDesign>
-            </View>
-          </TouchableOpacity>
-        )}
-
         <TouchableOpacity
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginHorizontal: '3%',
+            justifyContent: 'space-between',
+          }}
+          activeOpacity={0.8}
+          onPress={() => {
+            if (user == null) {
+              Alert.alert('Unauthorized !!!', 'Login to your account', [
+                {
+                  text: 'Cancel',
+                  onPress: () => {
+                    console.log('cancel');
+                  },
+                  style: 'cancel',
+                },
+                {
+                  text: 'Ok',
+                  onPress: () => {
+                    navigation.navigate('Login');
+                  },
+                },
+              ]);
+            } else {
+              navigation.navigate('Edit Profile', {user});
+            }
+          }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              columnGap: 15,
+              alignItems: 'center',
+            }}>
+            <AntDesign name="user" size={30} color="black"></AntDesign>
+            <Text
+              style={{
+                fontFamily: 'Roboto',
+                fontSize: 16,
+                fontWeight: '700',
+                color: 'black',
+              }}>
+              Profile
+            </Text>
+          </View>
+          <View>
+            <AntDesign name="right" size={20} color="black"></AntDesign>
+          </View>
+        </TouchableOpacity>
+
+        {/* <TouchableOpacity
           style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -324,8 +315,8 @@ const Profile = ({navigation}) => {
             </Text>
           </View>
           <AntDesign name="right" size={20} color="black"></AntDesign>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </TouchableOpacity> */}
+        {/* <TouchableOpacity
           style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -350,16 +341,16 @@ const Profile = ({navigation}) => {
             </Text>
           </View>
           <AntDesign name="right" size={20} color="black"></AntDesign>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         {/* Line */}
-        <View
+        {/* <View
           style={{
             borderBottomColor: 'black',
             borderBottomWidth: 1,
             width: '93%',
             alignSelf: 'center',
           }}
-        />
+        /> */}
         {/* Options 2 */}
         <TouchableOpacity
           style={{
@@ -389,7 +380,7 @@ const Profile = ({navigation}) => {
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => {
-            navigation.navigate('Login');
+            navigation.navigate('Upload');
           }}
           style={{
             flexDirection: 'row',
@@ -422,7 +413,25 @@ const Profile = ({navigation}) => {
             justifyContent: 'space-between',
           }}
           onPress={() => {
-            navigation.navigate('Feedback');
+            if (user == null) {
+              Alert.alert('Unauthorized !!!', 'Login to your account', [
+                {
+                  text: 'Cancel',
+                  onPress: () => {
+                    console.log('cancel');
+                  },
+                  style: 'cancel',
+                },
+                {
+                  text: 'ok',
+                  onPress: () => {
+                    navigation.navigate('Login');
+                  },
+                },
+              ]);
+            } else {
+              navigation.navigate('List Feedback');
+            }
           }}
           activeOpacity={0.8}>
           <View

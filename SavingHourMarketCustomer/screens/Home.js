@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react/no-unstable-nested-components */
-import React, {useCallback, useEffect, useState} from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Text,
   View,
@@ -13,26 +13,27 @@ import {
 } from 'react-native';
 import Categories from '../components/Categories';
 import DiscountRow from '../components/DiscountRow';
-import {COLORS, FONTS} from '../constants/theme';
-import {icons} from '../constants';
+import { COLORS, FONTS } from '../constants/theme';
+import { icons } from '../constants';
 import dayjs from 'dayjs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {API} from '../constants/api';
-import {useFocusEffect} from '@react-navigation/native';
+import { API } from '../constants/api';
+import { useFocusEffect } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import LoadingScreen from '../components/LoadingScreen';
-import {Alert} from 'react-native';
+import { Alert } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
 
-const Home = ({navigation}) => {
+const Home = ({ navigation }) => {
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [currentCate, setCurrentCate] = useState('');
   const [productsByCategory, setProductsByCategory] = useState([]);
   const [discountsByCategory, setDiscountsByCategory] = useState([]);
-  const [page, setPage] = useState(1);
-  const [totalPage, setTotalPage] = useState(0);
+  const [page, setPage] = useState(0);
+  const [totalPage, setTotalPage] = useState(1);
   const [cartList, setCartList] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const showToast = () => {
     Toast.show({
@@ -47,29 +48,36 @@ const Home = ({navigation}) => {
     useCallback(() => {
       (async () => {
         try {
+          setLoading(true);
           const cartList = await AsyncStorage.getItem('CartList');
           setCartList(cartList ? JSON.parse(cartList) : []);
+          setLoading(false);
         } catch (err) {
           console.log(err);
+          setLoading(false);
         }
       })();
     }, []),
   );
 
   useEffect(() => {
+    setLoading(true);
     fetch(`${API.baseURL}/api/product/getAllCategory`)
       .then(res => res.json())
       .then(data => {
         setCategories(data);
         setCurrentCate(data[0].id);
+        setLoading(false);
       })
       .catch(err => {
         console.log(err);
+        setLoading(false);
       });
   }, []);
 
   useEffect(() => {
     if (currentCate) {
+      setLoading(true);
       fetch(
         `${API.baseURL}/api/product/getProductsForCustomer?productCategoryId=${currentCate}&page=0&limit=5&quantitySortType=DESC&expiredSortType=ASC`,
       )
@@ -95,6 +103,7 @@ const Home = ({navigation}) => {
         item.id === currentCate && setSubCategories(item.productSubCategories);
       });
     }
+    setLoading(false);
   }, [currentCate, categories]);
 
   const handleAddToCart = async data => {
@@ -111,7 +120,7 @@ const Home = ({navigation}) => {
         return;
       }
 
-      const cartData = {...data, isChecked: false, cartQuantity: 1};
+      const cartData = { ...data, isChecked: false, cartQuantity: 1 };
       newCartList = [...newCartList, cartData];
       setCartList(newCartList);
       await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
@@ -121,7 +130,7 @@ const Home = ({navigation}) => {
     }
   };
 
-  const Item = ({data}) => {
+  const Item = ({ data }) => {
     return (
       <TouchableOpacity
         key={data.id}
@@ -140,7 +149,7 @@ const Home = ({navigation}) => {
             style={styles.itemImage}
           />
 
-          <View style={{justifyContent: 'center', flex: 1, marginRight: 10}}>
+          <View style={{ justifyContent: 'center', flex: 1, marginRight: 10 }}>
             <Text
               numberOfLines={1}
               style={{
@@ -153,7 +162,7 @@ const Home = ({navigation}) => {
               {data.name}
             </Text>
 
-            <View style={{flexDirection: 'row'}}>
+            <View style={{ flexDirection: 'row' }}>
               <Text
                 style={{
                   maxWidth: '70%',
@@ -209,7 +218,7 @@ const Home = ({navigation}) => {
     );
   };
 
-  const SubCategory = ({data}) => {
+  const SubCategory = ({ data }) => {
     return (
       <View
         style={{
@@ -294,7 +303,7 @@ const Home = ({navigation}) => {
   return (
     <SafeAreaView style={styles.container}>
       {/* Search */}
-      <View style={{flexDirection: 'row', gap: 10, alignItems: 'center'}}>
+      <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
         <SearchBar />
         <TouchableOpacity
           onPress={() => {
@@ -323,7 +332,7 @@ const Home = ({navigation}) => {
                 justifyContent: 'center',
               }}>
               <Text
-                style={{fontSize: 12, color: 'white', fontFamily: 'Roboto'}}>
+                style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
                 {cartList.length}
               </Text>
             </View>
@@ -421,7 +430,20 @@ const Home = ({navigation}) => {
         ))}
         {/* Load more Products */}
         {page < totalPage && (
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setPage(page + 1);
+              fetch(`${API.baseURL}/api/product/getProductsForCustomer?productCategoryId=${currentCate}&page=${page + 1}&limit=5&quantitySortType=DESC&expiredSortType=ASC`)
+                .then(res => res.json())
+                .then(data => {
+                  setProductsByCategory([...productsByCategory, ...data]);
+                  setTotalPage(Math.round(productsByCategory / 5));
+                })
+                .catch(err => {
+                  console.log(err);
+                });
+            }}
+          >
             <Text
               style={{
                 backgroundColor: COLORS.light_green,
@@ -439,6 +461,7 @@ const Home = ({navigation}) => {
           </TouchableOpacity>
         )}
       </ScrollView>
+      {loading && <LoadingScreen />}
     </SafeAreaView>
   );
 };

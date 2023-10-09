@@ -97,6 +97,45 @@ SET @HaCaoMiniCauTre = 'Há cảo thực phẩm thơm ngon khó cưỡng, kết 
 SET @BongTrangDiemSilcot = 'Bông trang điểm Silcot là sản phẩm chăm sóc da cao cấp bán chạy số 1 Nhật Bản trong hơn 10 năm liền. Được làm từ 100% sợi bông tự nhiên, bông trang điểm mềm xốp, êm ái và vô cùng dịu nhẹ với da. Sợi bông thấm được dàn đều cùng thiết kế dạng túi giúp miếng bông trang điểm không bị xù, biến dạng hoặc để lại xơ bông trên mặt đồng thời tiết kiệm dung dịch dưỡng da và tăng cường đối da hiệu quả trên da.
 ';
 
+SET @XaLachLolo = 'Xà lách lolo xanh thủy canh chứa hàm lượng lớn các khoáng chất canxi, sắt, magie, phốt pho, natri, kẽm, và đặc biệt hàm lượng kali và canxi cao hơn so với các loại xà lách là màu xanh. Hàm lượng vitamin A cao hơn so với 1 số loại rau cải ăn lá, và chứa một số vitamin cần thiết khác như vitamin C, B6, folate, E, thiamin, riboflavin, niacin.
+\n\nXà lách lolo xanh thủy canh có thể sử dụng để làm nhiều món ăn nhưng thích hợp nhất là món salad, các món cuộn, hay ăn kèm các loại nước sốt, canh chua,.. Hương vị của rau sẽ ngon hơn khi dùng với dầu olive, muối, giấm hoặc sốt mayonaise. Người dùng có thể thêm các nguyên liệu như củ đậu, cà chua, đậu phộng, phomai sợi,… để tăng hương vị món ăn.
+';
+
+SET @CaiThao = 'Bắp cải thảo là loại rau có bẹ lá to, giòn, ngọt thường được dùng để nấu canh, xào chung với rau củ hoặc để muối kim chi.
+\n\nCải thảo cũng giống với các loại rau khác, có thể sử dụng phổ biến trong bữa ăn hàng ngày, có thể kể đến một số món ăn chế biến từ cải thảo như: canh cải thảo, cải thảo cuốn thịt, cải thảo xào,... Ngoài ra, khi nhắc đến cải thảo thì bạn sẽ nhớ ngay đến món ăn đặc sản của Hàn Quốc đó chính là kim chi, cay cay, chua chua kích thích vị giác vô cùng.
+';
+
+SET @NuocXaComfort = 'Những bộ cánh yêu thích nhanh chóng bạc màu, sờn vải sau mỗi lần giặt khiến bạn đau đầu tìm giải pháp? Đừng lo, vì đã có chuyên gia chăm sóc áo quần Comfort! Nước Xả Vải Comfort Chăm Sóc Chuyên Sâu mới sẽ giúp bạn ngăn bạc màu và ngừa sờn vải. Với công thức Ultra Care độc quyền, nước xả vải Comfort thẩm thấu sâu vào từng sợi vải tạo nên lớp màng giúp bảo vệ màu sắc và độ bền sợi vải, cũng như lưu lại hương thơm lôi cuốn bền lâu, giữ áo quần luôn như mới sau nhiều lần giặt.
+';
+
+SET @PhoMaiVienHoaDanh = 'Phô Mai Que Hoa Doanh Phô mai que với lớp vỏ vàng giòn rụm và phần phô mai béo ngậy hương thơm tự nhiên hấp dẫn.
+\n\nPhô mai que đã trở thành món ăn thông dụng, được dùng như món tráng miệng trong các nhà hàng, các quán trà sữa hay những quán ăn vặt...Sản phẩm phù hợp với mọi lứa tuổi từ trẻ em đến người lớn do hương thơm tự nhiên, cực kỳ lôi cuốn.
+';
+
+SET @sapVaseline = 'Sáp Vaseline sẽ giúp bảo vệ da khỏi những tác động của thời tiết và nó hoạt động như chất hàn gắn cho các tế bào của da và ngăn cản sự mất nước của làn da.Giúp cho các tế bào da sẽ tự củng cố và tái tạo từ bên trong,chống khô da ,trị nứt nẻ ,giúp hàn gắn lại những vết cắt nhỏ và những vết bỏng.
+'
+;
+
+SET @BiaHeineken = 'Heineken là loại bia có hương vị đậm đà, khó quên và luôn bỏ xa các đối thủ cạnh tranh trong các cuộc thử nghiệm về chất lượng giữa các lọai bia. Trong số những người tham gia blind testing trong năm 2003, 90% cho biết họ sẽ chọn lại Bia Heineken (Hà Lan).
+\nHeineken được tạo ra bởi một nhóm người tận tâm theo đuổi chất lượng cao nhất, bảo tồn theo công thức phát minh ra ba thế hệ trước bởi gia đình Heineken. Hương vị của nó hơi chua chua, ngọt, hương thơm nhẹ, màu sắc tươi sáng và rõ nét, đặc biệt được làm từ nước tinh khiết, hoa bia và mạch nha lúa mạch, Heineken không chứa các chất phụ gia.
+';
+
+SET @MiHaoHaoKimChi = 'Hương vị mới Lẩu Kim Chi Hàn Quốc còn sở hữu vị nước súp ngon chua chua cay cay thơm lừng mùi kim chi, đặc biệt phù hợp với khẩu vị của người Việt Nam. Cùng với tính tiện lợi sẵn có, Hảo Hảo tin chắc rằng bạn có thể thưởng thức hương vị mới này ở bất kì khi nào và bạn sẽ có thêm thật nhiều hạnh phúc khi nhớ đến những ký ức tốt đẹp và động lực để phát triến trong tương lai.
+\n\nThành phần: Bột mì, dầu cọ, tinh bột khoai mì, muối, đường, nước mắm, chất điều vị (621), chất ổn định (451(i), 501(i)), chất điều chỉnh độ acid (500(i)), phẩm màu curcumin tự nhiên, bột nghệ, chất chống oxy hóa (320, 321). Muối, dầu cọ, chất điều vị (621, 631, 627, 951), đường, các gia vị (tỏi, ớt, gừng, tiêu), chất điều chỉnh độ acid (330, 296), hương liệu (hương kim chi tự nhiên, hương bò tổng hợp), chiết xuất nấm men, chất chống đông vón (551), hành lá sấy, phẩm màu paprika oleoresin tự nhiên.
+';
+
+SET @SuaTamXmenDetox = 'Sữa tắm Detox dành cho nam giới đầu tiên tại Việt Nam với Than tre hoạt tính giúp loại bỏ 5 tác nhân ô nhiễm, làm sạch sâu, loại bỏ hiệu quả dầu nhờn và bụi bẩn trên cơ thể.
+\n\nThành phần: Water, Sodium Laureth Sulfate, Cocamidopropyl Betaine, Perfume, Cocamide MEA, Sodium Chloride, Potassium Cocoyl Glycinate, Sodium Lauroyl Sarcosinate, Menthol, Hydroxyethylcellulose, Mentha Arvensis Leaf Oil, Mentha Piperita (Peppermint) Oil, Citric Acid, Tetrasodium EDTA, Benzophenone-4, BHT, Sodium Cumenesulfonate, Styrene/ Acrylates Copolymer, Methylchloroisothiazolinone, Methylisothiazolinone, CI 60730, CI 42051.
+';
+
+SET @KemYukimiMatcha = 'Đậm đà hương vị Nhật Bản với kem Mochi Yukimi Daifuku của Lotte.
+\nMochi Lotte là bánh mochi nhân kem matcha ăn vị khá lạ và đặc trưng hương vị Nhật Bản, ngọt vừa, vị beo béo vỏ mềm dẻo, mịn thơm.
+\n\nThành phần: Đường, siro bắp, bột gạo, dairy product (bột sữa tách béo 10%, bơ), dầu thực vật, siro bắp fructose, tinh bột bắp, bột lòng trắng trứng, chất ổn định (dextrin), muối, chất nhũ hóa (este của acid béo với propylene glycol; este của polyglycerol với acid béo), chất ổn định (gôm gua; gôm đậu carob/gôm đậu locust; carrageenan), tinh bột biến tính (oxidized starch), hương tổng hợp (hương matcha, hương sữa), màu thực phẩm tự nhiên (chất chiết xuất từ annatto, norbixin-based; chất chiết xuất từ gardenia yellow).
+';
+
+SET @NemBoTieuXanh = 'Sản phẩm Nem Bò tiêu xanh được chế biến từ nguồn nguyên liệu thịt nạc bò tươi, sạch đạt chuẩn ESCAS và được giết mổ trực tiếp tại nhà máy của Công ty. Do đó, thịt khi đưa vào sản xuất vẫn đảm bảo được độ kết dính và dai giòn cho món ăn. Với hương vị thơm ngon từ thịt bò tươi nguyên chất cùng những thớ thịt dai giòn sực sực kết hợp độc đáo cùng tiêu xanh thơm lừng và vị nồng nàn của xả làm cho món Nem bò tiêu xanh trở nên vô cùng hấp dẫn.
+\nThêm vào đó là tính tiện dụng của sản phẩm sẽ giúp người dùng dễ dàng chế biến và tiết kiệm thời gian khi nấu nướng. Chỉ cần 10 - 15 phút chiên hoặc nướng sản phẩm bằng nồi chiên không dầu hoặc chảo là có ngay những chiếc nem bò tiêu xanh thơm ngon lạ vị để thưởng thức cùng bạn bè và gia đình.
+';
 
 -- Configuration
 INSERT INTO `saving_hour_market`.`configuration` (`id`, `limit_of_orders`, `number_of_suggested_pickup_point`, `system_status`)
@@ -146,6 +185,7 @@ INSERT INTO `saving_hour_market`.`product_category` (`id`, `name`)
 INSERT INTO `saving_hour_market`.`product_sub_category` (`id`, `name`, `allowable_display_threshold`, `product_category_id`, `image_url`)
 --     VALUES ('id', 'name', 'allowable_display_threshold', 'product_category_id');
     VALUES  (UUID_TO_BIN('accf3fdf-5541-11ee-8a50-a85e45c41921'), 'Trái cây', 3, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ffruit.png?alt=media'),
+            (UUID_TO_BIN('ec5e1ddc-56dc-11ee-8a50-a85e45c41921'), 'Rau củ', 2, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fvegetable.png?alt=media'),
             (UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), 'Thực phẩm đông lạnh gói', 4, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ffrozen-food.png?alt=media'),
             (UUID_TO_BIN('accf4210-5541-11ee-8a50-a85e45c41921'), 'Đồ tráng miệng lạnh', 4, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ffrozen-desert.png?alt=media'),
             (UUID_TO_BIN('accf4320-5541-11ee-8a50-a85e45c41921'), 'Sản phẩm sữa', 2, UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdiary-product.png?alt=media'),
@@ -178,7 +218,6 @@ INSERT INTO `saving_hour_market`.`time_frame` (`id`, `day_of_week`, `from_hour`,
 
 
 
--- 'ec5e1ddc-56dc-11ee-8a50-a85e45c41921'
 -- 'ec5e1f3a-56dc-11ee-8a50-a85e45c41921'
 -- 'ec5e2090-56dc-11ee-8a50-a85e45c41921'
 -- 'ec5e321c-56dc-11ee-8a50-a85e45c41921'
@@ -241,21 +280,49 @@ INSERT INTO `saving_hour_market`.`order_batch` (`id`, `district`, `deliver_date`
 -- Product
 INSERT INTO `saving_hour_market`.`product` (`id`, `name`, `price`, `price_original`, `quantity`, `expired_date`, `description`, `image_url`, `status`, `product_sub_category_id`, `supermarket_id`)
 --     VALUES (`id`, `name`, `price`, `price_original`, `quantity`, `expired_date`, `description`, `image_url`, `status`, `product_category_id`, `supermarket_id`);
-    VALUES  (UUID_TO_BIN('accf2b04-5541-11ee-8a50-a85e45c41921'), 'Nước giặt Omo 2,9kg', 159000, 200000, 50, '2023-11-25 00:00:00', @OmoDescription, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnuoc-giat-omo.jpeg?alt=media', @enable, UUID_TO_BIN('accf4547-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf2c1d-5541-11ee-8a50-a85e45c41921'), 'Chả Giò Tôm Cua 500g', 55000, 85000, 15, '2023-10-10 00:00:00', @ChaGioTomCuaDescription, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fcha-gio-tom-cua-500g.jpg?alt=media', @enable, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0709-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf2d37-5541-11ee-8a50-a85e45c41921'), 'Giò Heo Xông Khói 500g', 90000, 135000, 10, '2023-10-05 00:00:00', @GioHeoXongKhoi, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fgio_heo_xong_khoi.jpg?alt=media', @enable, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0709-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf2f65-5541-11ee-8a50-a85e45c41921'), 'Kem Wall’s Oreo hộp 750ml', 75000, 100000, 25, '2023-10-01 00:00:00', @KemWallOreo, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fkem-walls-oreo-hop.jpg?alt=media', @enable, UUID_TO_BIN('accf4210-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf3079-5541-11ee-8a50-a85e45c41921'), 'Bột Milo Protomalt hũ 400g', 60000, 80000, 30, '2023-10-15 00:00:00', @BotMilo, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fbot-milo-protomalt.jpg?alt=media', @enable, UUID_TO_BIN('accf4320-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf32f7-5541-11ee-8a50-a85e45c41921'), 'Nho mẫu đơn nội địa Trung 500g', 51000, 75000, 10, '2023-09-28 00:00:00', @NhoMauDon, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnho_mau_don.jpg?alt=media', @enable, UUID_TO_BIN('accf3fdf-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf343c-5541-11ee-8a50-a85e45c41921'), '2 lốc sữa chua Vinamilk nha đam (8 hộp)', 42000, 60000, 10, '2023-09-30 00:00:00', @SuaChuaVinamilk, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fsua-chua-vinamilk-nha-dam.jpg?alt=media', @enable, UUID_TO_BIN('accf4320-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf3552-5541-11ee-8a50-a85e45c41921'), '1 lốc hộp sữa tươi Vinamilk có đường (4 hộp)', 25000, 33000, 15, '2023-10-03 00:00:00', @SuaTuoiVinamilk, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fsua-tuoi-vinamilk-co-duong.jpg?alt=media', @enable, UUID_TO_BIN('accf4320-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf3664-5541-11ee-8a50-a85e45c41921'), 'Sữa tắm Lifebuoy Vitamin 800g', 145000, 180000, 10, '2023-11-20 00:00:00', @SuaTamLifeBoy, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fsua-tam-lifeboy.jpg?alt=media', @enable, UUID_TO_BIN('accf442f-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf377f-5541-11ee-8a50-a85e45c41921'), 'Nem Lụi 300g', 42000, 60000, 15, '2023-10-05 00:00:00', @NemLui, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnem-lui.jpg?alt=media', @enable, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0709-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf3897-5541-11ee-8a50-a85e45c41921'), 'Táo Pink Lady nhập khẩu New Zealand 1kg', 51000, 70000, 15, '2023-09-27 00:00:00', @TaoPinkLady, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ftao-pinklady.jpg?alt=media', @enable, UUID_TO_BIN('accf3fdf-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf39b0-5541-11ee-8a50-a85e45c41921'), 'Thùng 30 gói mì Omachi lẩu tôm', 185000, 245000, 10, '2023-10-20 00:00:00', @MiLauTomOmachi, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fthung-mi-omachi-lau-tom.jpg?alt=media', @enable, UUID_TO_BIN('accf4875-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf028b-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf3ac4-5541-11ee-8a50-a85e45c41921'), '1 lốc Strongbow Appple Ciders Gold (6 lon)', 88000, 110000, 20, '2023-10-15 00:00:00', @StrongbowAppleGold, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fstrongbow-apple-cider.jpg?alt=media', @enable, UUID_TO_BIN('accf4656-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf028b-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf3be3-5541-11ee-8a50-a85e45c41921'), 'Há Cảo Mini Cầu Tre Gói 500G', 58000, 80000, 15, '2023-10-02 00:00:00', @HaCaoMiniCauTre, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fha-cao-mini.jpg?alt=media', @enable, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf028b-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf3cf4-5541-11ee-8a50-a85e45c41921'), 'Bông trang điểm Silcot hộp 82 miếng', 31000, 41000, 10, '2023-11-28 00:00:00', @BongTrangDiemSilcot, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fbong-tay-trang-silicot.jpg?alt=media', @enable, UUID_TO_BIN('accf4766-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921'));
+    VALUES  (UUID_TO_BIN('accf2b04-5541-11ee-8a50-a85e45c41921'), 'Nước giặt Omo 2,9L', 159000, 200000, 50, '2023-12-25 00:00:00', @OmoDescription, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnuoc-giat-omo.jpeg?alt=media', @enable, UUID_TO_BIN('accf4547-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e38e3-56dc-11ee-8a50-a85e45c41921'), 'Nước xả vải Comfort hương nước hoa 3,8L', 210000, 270000, 25, '2023-11-30 00:00:00', @NuocXaComfort, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnuoc-xa-vai-comfort.jpg?alt=media', @enable, UUID_TO_BIN('accf4547-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf2c1d-5541-11ee-8a50-a85e45c41921'), 'Chả Giò Tôm Cua 500g', 55000, 85000, 15, '2023-11-10 00:00:00', @ChaGioTomCuaDescription, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fcha-gio-tom-cua-500g.jpg?alt=media', @enable, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0709-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf2d37-5541-11ee-8a50-a85e45c41921'), 'Giò Heo Xông Khói 500g', 90000, 135000, 10, '2023-11-05 00:00:00', @GioHeoXongKhoi, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fgio_heo_xong_khoi.jpg?alt=media', @enable, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0709-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf2f65-5541-11ee-8a50-a85e45c41921'), 'Kem Wall’s Oreo hộp 750ml', 75000, 100000, 25, '2023-11-01 00:00:00', @KemWallOreo, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fkem-walls-oreo-hop.jpg?alt=media', @enable, UUID_TO_BIN('accf4210-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e3b8f-56dc-11ee-8a50-a85e45c41921'), 'Kem Yukimi Daifuku Matcha 270ml', 60000, 80000, 30, '2023-11-10 00:00:00', @KemYukimiMatcha, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fkem-yukimi-daifuku-matcha.jpg?alt=media', @enable, UUID_TO_BIN('accf4210-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf3079-5541-11ee-8a50-a85e45c41921'), 'Bột Milo Protomalt hũ 400g', 60000, 80000, 30, '2023-11-15 00:00:00', @BotMilo, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fbot-milo-protomalt.jpg?alt=media', @enable, UUID_TO_BIN('accf4320-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf32f7-5541-11ee-8a50-a85e45c41921'), 'Nho mẫu đơn nội địa Trung 500g', 51000, 75000, 10, '2023-10-28 00:00:00', @NhoMauDon, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnho_mau_don.jpg?alt=media', @enable, UUID_TO_BIN('accf3fdf-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf343c-5541-11ee-8a50-a85e45c41921'), '2 lốc sữa chua Vinamilk nha đam (8 hộp)', 42000, 60000, 10, '2023-10-30 00:00:00', @SuaChuaVinamilk, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fsua-chua-vinamilk-nha-dam.jpg?alt=media', @enable, UUID_TO_BIN('accf4320-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf3552-5541-11ee-8a50-a85e45c41921'), '1 lốc hộp sữa tươi Vinamilk có đường (4 hộp)', 25000, 33000, 15, '2023-10-29 00:00:00', @SuaTuoiVinamilk, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fsua-tuoi-vinamilk-co-duong.jpg?alt=media', @enable, UUID_TO_BIN('accf4320-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf3664-5541-11ee-8a50-a85e45c41921'), 'Sữa tắm Lifebuoy Vitamin 800g', 145000, 180000, 10, '2023-12-20 00:00:00', @SuaTamLifeBoy, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fsua-tam-lifeboy.jpg?alt=media', @enable, UUID_TO_BIN('accf442f-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e3ced-56dc-11ee-8a50-a85e45c41921'), 'Sữa tắm Xmen sạch khuẩn detox 630g', 155000, 200000, 25, '2023-12-20 00:00:00', @SuaTamXmenDetox, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fsua-tam-xmen-sach-khuan-detox.jpg?alt=media', @enable, UUID_TO_BIN('accf442f-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf377f-5541-11ee-8a50-a85e45c41921'), 'Nem Lụi 300g', 42000, 60000, 15, '2023-11-05 00:00:00', @NemLui, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnem-lui.jpg?alt=media', @enable, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0709-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e432f-56dc-11ee-8a50-a85e45c41921'), 'Nem bò tiêu xanh 400g', 65000, 85000, 15, '2023-11-26 00:00:00', @NemBoTieuXanh, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnem-bo-tieu-xanh.jpg?alt=media', @enable, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0709-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e3a42-56dc-11ee-8a50-a85e45c41921'), 'Phô mai viên Hoa Doanh 300g', 42000, 58000, 20, '2023-11-05 00:00:00', @PhoMaiVienHoaDanh, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fpho-mai-vien-hoa-doanh.jpg?alt=media', @enable, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf3897-5541-11ee-8a50-a85e45c41921'), 'Táo Pink Lady nhập khẩu New Zealand 1kg', 51000, 70000, 15, '2023-10-27 00:00:00', @TaoPinkLady, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ftao-pinklady.jpg?alt=media', @enable, UUID_TO_BIN('accf3fdf-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf39b0-5541-11ee-8a50-a85e45c41921'), 'Thùng 30 gói mì Omachi lẩu tôm', 185000, 245000, 10, '2023-11-25 00:00:00', @MiLauTomOmachi, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fthung-mi-omachi-lau-tom.jpg?alt=media', @enable, UUID_TO_BIN('accf4875-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf028b-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e3e40-56dc-11ee-8a50-a85e45c41921'), 'Thùng 30 gói mì Hảo Hảo hương vị lẩu kim chi', 95000, 125000, 25, '2023-11-29 00:00:00', @MiHaoHaoKimChi, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fthung-mi-hao-hao-kim-chi.jpg?alt=media', @enable, UUID_TO_BIN('accf4875-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf3ac4-5541-11ee-8a50-a85e45c41921'), '1 lốc Strongbow Appple Ciders Gold (6 lon)', 88000, 110000, 20, '2023-11-15 00:00:00', @StrongbowAppleGold, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fstrongbow-apple-cider.jpg?alt=media', @enable, UUID_TO_BIN('accf4656-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf028b-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e4012-56dc-11ee-8a50-a85e45c41921'), 'Thùng 24 lon bia Heineken Silver', 340000, 460000, 10, '2023-11-30 00:00:00', @BiaHeineken, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fthung-bia-heineken.jpg?alt=media', @enable, UUID_TO_BIN('accf4656-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf3be3-5541-11ee-8a50-a85e45c41921'), 'Há Cảo Mini Cầu Tre Gói 500G', 58000, 80000, 15, '2023-11-02 00:00:00', @HaCaoMiniCauTre, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fha-cao-mini.jpg?alt=media', @enable, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf028b-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf3cf4-5541-11ee-8a50-a85e45c41921'), 'Bông trang điểm Silcot hộp 82 miếng', 31000, 41000, 10, '2023-12-28 00:00:00', @BongTrangDiemSilcot, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fbong-tay-trang-silicot.jpg?alt=media', @enable, UUID_TO_BIN('accf4766-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e41d8-56dc-11ee-8a50-a85e45c41921'), 'Sáp dưỡng ẩm Vaseline 50ml', 50000, 64000, 25, '2023-12-26 00:00:00', @sapVaseline, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fsap-duong-am-vaseline.jpg?alt=media', @enable, UUID_TO_BIN('accf4766-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e3596-56dc-11ee-8a50-a85e45c41921'), 'Xà lách lolo 1kg', 40000, 53000, 15, '2023-11-25 00:00:00', @XaLachLolo, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fxa-lach-lolo.jpg?alt=media', @enable, UUID_TO_BIN('ec5e1ddc-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e3778-56dc-11ee-8a50-a85e45c41921'), 'Cải thảo 1kg', 18000, 24000, 10, '2023-11-26 00:00:00', @CaiThao, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fcai-thao.jpg?alt=media', @enable, UUID_TO_BIN('ec5e1ddc-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921'));
+
+
+
+
+
+
+
+
+
+
+-- 'ec5e44d1-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e4627-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e4897-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e49f8-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e4b66-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e4cbe-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e4e60-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e4fce-56dc-11ee-8a50-a85e45c41921'
 
 
 -- Discount
@@ -395,24 +462,7 @@ INSERT INTO `saving_hour_market`.`order_detail` (`id`, `product_id`, `bought_qua
 
 
 
--- 'ec5e3596-56dc-11ee-8a50-a85e45c41921'
--- 'ec5e3778-56dc-11ee-8a50-a85e45c41921'
--- 'ec5e38e3-56dc-11ee-8a50-a85e45c41921'
--- 'ec5e3a42-56dc-11ee-8a50-a85e45c41921'
--- 'ec5e3b8f-56dc-11ee-8a50-a85e45c41921'
--- 'ec5e3ced-56dc-11ee-8a50-a85e45c41921'
--- 'ec5e3e40-56dc-11ee-8a50-a85e45c41921'
--- 'ec5e4012-56dc-11ee-8a50-a85e45c41921'
--- 'ec5e41d8-56dc-11ee-8a50-a85e45c41921'
--- 'ec5e432f-56dc-11ee-8a50-a85e45c41921'
--- 'ec5e44d1-56dc-11ee-8a50-a85e45c41921'
--- 'ec5e4627-56dc-11ee-8a50-a85e45c41921'
--- 'ec5e4897-56dc-11ee-8a50-a85e45c41921'
--- 'ec5e49f8-56dc-11ee-8a50-a85e45c41921'
--- 'ec5e4b66-56dc-11ee-8a50-a85e45c41921'
--- 'ec5e4cbe-56dc-11ee-8a50-a85e45c41921'
--- 'ec5e4e60-56dc-11ee-8a50-a85e45c41921'
--- 'ec5e4fce-56dc-11ee-8a50-a85e45c41921'
+
 -- 'ec5e574e-56dc-11ee-8a50-a85e45c41921'
 -- 'ec5e5994-56dc-11ee-8a50-a85e45c41921'
 -- 'ec5e5e8d-56dc-11ee-8a50-a85e45c41921'

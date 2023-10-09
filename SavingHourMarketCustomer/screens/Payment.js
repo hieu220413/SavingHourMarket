@@ -51,6 +51,8 @@ const Payment = ({navigation, route}) => {
 
   const [timeFrame, setTimeFrame] = useState(null);
 
+  const [customerTimeFrame, setCustomerTimeFrame] = useState(null);
+
   const [paymentMethod, setPaymentMethod] = useState(null);
 
   const [openValidateDialog, setOpenValidateDialog] = useState(false);
@@ -458,6 +460,11 @@ const Payment = ({navigation, route}) => {
         setOpenValidateDialog(true);
         return false;
       }
+      if (!customerTimeFrame) {
+        setValidateMessage('Vui lòng chọn khung giờ');
+        setOpenValidateDialog(true);
+        return false;
+      }
     }
     if (!date) {
       setValidateMessage('Vui lòng chọn ngày giao hàng');
@@ -526,6 +533,7 @@ const Payment = ({navigation, route}) => {
         deliveryDate: format(date, 'yyyy-MM-dd'),
         receiverName: name,
         receiverPhone: phone,
+        timeFrameId: customerTimeFrame.id,
         paymentStatus: 'UNPAID',
         paymentMethod: paymentMethod.id,
         addressDeliver: customerLocation.address,
@@ -1010,7 +1018,10 @@ const Payment = ({navigation, route}) => {
                 {/* Manage time frame */}
                 <TouchableOpacity
                   onPress={() => {
-                    navigation.navigate('Select time frame', {setTimeFrame});
+                    navigation.navigate('Select time frame', {
+                      setTimeFrame,
+                      picked: 0,
+                    });
                   }}>
                   <View
                     style={{
@@ -1184,6 +1195,61 @@ const Payment = ({navigation, route}) => {
                           </Text>
                         </View>
                       </View>
+                    </View>
+
+                    <Image
+                      resizeMode="contain"
+                      style={{
+                        width: 25,
+                        height: 25,
+                      }}
+                      source={icons.rightArrow}
+                    />
+                  </View>
+                </TouchableOpacity>
+
+                {/* manage time frame */}
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.navigate('Select time frame', {
+                      setCustomerTimeFrame,
+                      picked: 1,
+                    });
+                  }}>
+                  <View
+                    style={{
+                      paddingVertical: 20,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      borderTopColor: '#decbcb',
+                      borderTopWidth: 0.75,
+                    }}>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        gap: 10,
+                        alignItems: 'center',
+                        width: '80%',
+                      }}>
+                      <Image
+                        resizeMode="contain"
+                        style={{width: 25, height: 25}}
+                        source={icons.time}
+                      />
+                      <Text
+                        style={{
+                          fontSize: 20,
+                          fontFamily: 'Roboto',
+                          color: 'black',
+                        }}>
+                        {customerTimeFrame
+                          ? `${customerTimeFrame?.fromHour.slice(
+                              0,
+                              5,
+                            )} đến ${customerTimeFrame?.toHour.slice(0, 5)}`
+                          : 'Chọn khung giờ'}
+                      </Text>
                     </View>
 
                     <Image
