@@ -16,6 +16,7 @@ import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +31,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FeedBackServiceImpl implements FeedBackService {
 
     private final FirebaseAuth firebaseAuth;
@@ -52,7 +54,7 @@ public class FeedBackServiceImpl implements FeedBackService {
         if (!feedBackCreate.getImageUrls().isEmpty()) {
             List<FeedBackImage> feedBackImages = new ArrayList<>();
             for (String url : feedBackCreate.getImageUrls()) {
-                feedBackImages.add(FeedBackImage.builder().url(url).build());
+                feedBackImages.add(FeedBackImage.builder().url(url).feedBack(feedBack).build());
             }
             feedBack.setImageUrls(feedBackImages);
         }

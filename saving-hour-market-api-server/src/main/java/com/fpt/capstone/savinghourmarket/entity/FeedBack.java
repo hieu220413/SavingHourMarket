@@ -35,7 +35,9 @@ public class FeedBack {
     private FeedbackStatus status;
 
     @OneToMany(
-            mappedBy = "feedBack"
+            mappedBy = "feedBack",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.EAGER
     )
     private List<FeedBackImage> imageUrls;
 
