@@ -301,7 +301,7 @@ const Payment = ({navigation, route}) => {
       setLoading(false);
     } else {
       // no sessions found.
-      navigation.navigate('Login');
+
       await AsyncStorage.removeItem('userInfo');
       await AsyncStorage.removeItem('CartList');
       setLoading(false);
@@ -1699,7 +1699,6 @@ const Payment = ({navigation, route}) => {
               text="Đăng nhập"
               onPress={async () => {
                 try {
-                  setOpenAuthModal(false);
                   await GoogleSignin.signOut();
                   auth()
                     .signOut()

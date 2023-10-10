@@ -28,15 +28,18 @@ import net.glxn.qrgen.image.ImageType;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -44,6 +47,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -89,6 +93,12 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private DiscountRepository discountRepository;
+
+    @Value("${goong-api-key}")
+    private String goongApiKey;
+    @Value("${goong-distance-matrix-url}")
+    private String goongDistanceMatrixUrl;
+
 
 
     @Override
@@ -354,36 +364,40 @@ public class OrderServiceImpl implements OrderService {
         return null;
     }
 
+
+    // GOONG IMPLEMENT
+
     @Override
     public ShippingFeeDetailResponseBody getShippingFeeDetail(Double latitude, Double longitude) throws IOException, InterruptedException, ApiException {
-        int numberOfClosestPickupPointPicked = 3;
+//        int numberOfSuggestion = 3;
         PickupPointSuggestionResponseBody closetPickupPoint;
         Integer shippingFee = 10000;
         List<PickupPoint> pickupPoints = pickupPointRepository.getAllSortByDistance(latitude, longitude);
         List<PickupPointSuggestionResponseBody> pickupPointSuggestionResponseBodyList = new ArrayList<>();
-        List<LatLng> latLngs = new ArrayList<>();
-        for(int i = 0; i < numberOfClosestPickupPointPicked; i++) {
-            pickupPointSuggestionResponseBodyList.add(new PickupPointSuggestionResponseBody(pickupPoints.get(i)));
-            latLngs.add(new LatLng(pickupPoints.get(i).getLatitude(), pickupPoints.get(i).getLongitude()));
+        List<LatLngModel> destinations = new ArrayList<>();
+        LatLngModel origin = new LatLngModel(latitude, longitude);
+        for(PickupPoint pickupPoint : pickupPoints) {
+            // using 0 because pickup point at index 0 will be deleted and next index will be 0
+            pickupPointSuggestionResponseBodyList.add(new PickupPointSuggestionResponseBody(pickupPoint));
+            destinations.add(new LatLngModel(pickupPoint.getLatitude().doubleValue(), pickupPoint.getLongitude().doubleValue()));
         }
 
-        DistanceMatrixApiRequest req = DistanceMatrixApi.newRequest(geoApiContext);
-        DistanceMatrix distanceMatrix = req
-                .origins(new LatLng(latitude, longitude))
-                .destinations(
-                        latLngs.toArray(new LatLng[numberOfClosestPickupPointPicked])
-                )
-                .await();
+        // fetch goong api
+        String apiKeyParam = "api_key=" + goongApiKey;
+        String vehicleParam = "vehicle=bike";
+        String originParam = "origins=" + origin;
+        String destinationParam = "destinations=" + destinations.stream().map(latLngModel -> latLngModel.toString()).collect(Collectors.joining("%7C"));
+        String goongMatrixDistanceRequest = goongDistanceMatrixUrl + "?" + originParam + "&" + destinationParam + "&" + vehicleParam + "&" + apiKeyParam;
+        RestTemplate restTemplate = new RestTemplate();
+        URI goongMatrixDistanceRequestURI = URI.create(goongMatrixDistanceRequest);
+        GoongDistanceMatrixResult goongDistanceMatrixResult = restTemplate.getForObject(goongMatrixDistanceRequestURI, GoongDistanceMatrixResult.class);
 
-        Iterator distanceMatrixRowsIterator = Arrays.stream(distanceMatrix.rows).iterator();
-        if (distanceMatrixRowsIterator.hasNext()){
+
+        for (GoongDistanceMatrixRow goongDistanceMatrixRow : goongDistanceMatrixResult.getRows()){
             int i = 0;
-            DistanceMatrixRow distanceMatrixRow = (DistanceMatrixRow) distanceMatrixRowsIterator.next();
-            Iterator distanceMatrixElementsIterator = Arrays.stream(distanceMatrixRow.elements).iterator();
-            while (distanceMatrixElementsIterator.hasNext()){
-                DistanceMatrixElement distanceMatrixElement = (DistanceMatrixElement) distanceMatrixElementsIterator.next();
-                pickupPointSuggestionResponseBodyList.get(i).setDistance(distanceMatrixElement.distance.humanReadable);
-                pickupPointSuggestionResponseBodyList.get(i).setDistanceInValue(distanceMatrixElement.distance.inMeters);
+            for (GoongDistanceMatrixElement goongDistanceMatrixElement : goongDistanceMatrixRow.getElements()){
+                pickupPointSuggestionResponseBodyList.get(i).setDistance(goongDistanceMatrixElement.getDistance().getText());
+                pickupPointSuggestionResponseBodyList.get(i).setDistanceInValue(goongDistanceMatrixElement.getDistance().getValue());
                 i++;
             }
         }
@@ -405,6 +419,60 @@ public class OrderServiceImpl implements OrderService {
 
         return shippingFeeDetailResponseBody;
     }
+
+
+    // GOOGLE MAP IMPLEMENT
+//    @Override
+//    public ShippingFeeDetailResponseBody getShippingFeeDetail(Double latitude, Double longitude) throws IOException, InterruptedException, ApiException {
+//        int numberOfClosestPickupPointPicked = 3;
+//        PickupPointSuggestionResponseBody closetPickupPoint;
+//        Integer shippingFee = 10000;
+//        List<PickupPoint> pickupPoints = pickupPointRepository.getAllSortByDistance(latitude, longitude);
+//        List<PickupPointSuggestionResponseBody> pickupPointSuggestionResponseBodyList = new ArrayList<>();
+//        List<LatLng> latLngs = new ArrayList<>();
+//        for(int i = 0; i < numberOfClosestPickupPointPicked; i++) {
+//            pickupPointSuggestionResponseBodyList.add(new PickupPointSuggestionResponseBody(pickupPoints.get(i)));
+//            latLngs.add(new LatLng(pickupPoints.get(i).getLatitude(), pickupPoints.get(i).getLongitude()));
+//        }
+//
+//        DistanceMatrixApiRequest req = DistanceMatrixApi.newRequest(geoApiContext);
+//        DistanceMatrix distanceMatrix = req
+//                .origins(new LatLng(latitude, longitude))
+//                .destinations(
+//                        latLngs.toArray(new LatLng[numberOfClosestPickupPointPicked])
+//                )
+//                .await();
+//
+//        Iterator distanceMatrixRowsIterator = Arrays.stream(distanceMatrix.rows).iterator();
+//        if (distanceMatrixRowsIterator.hasNext()){
+//            int i = 0;
+//            DistanceMatrixRow distanceMatrixRow = (DistanceMatrixRow) distanceMatrixRowsIterator.next();
+//            Iterator distanceMatrixElementsIterator = Arrays.stream(distanceMatrixRow.elements).iterator();
+//            while (distanceMatrixElementsIterator.hasNext()){
+//                DistanceMatrixElement distanceMatrixElement = (DistanceMatrixElement) distanceMatrixElementsIterator.next();
+//                pickupPointSuggestionResponseBodyList.get(i).setDistance(distanceMatrixElement.distance.humanReadable);
+//                pickupPointSuggestionResponseBodyList.get(i).setDistanceInValue(distanceMatrixElement.distance.inMeters);
+//                i++;
+//            }
+//        }
+//
+//        pickupPointSuggestionResponseBodyList.sort((o1, o2) -> (int) (o1.getDistanceInValue() - o2.getDistanceInValue()));
+//
+//        closetPickupPoint = pickupPointSuggestionResponseBodyList.get(0);
+//
+//        // convert m to km
+//        int distance = closetPickupPoint.getDistanceInValue().intValue() / 1000;
+//
+//        if(distance > 2) {
+//            shippingFee += (distance - 2)*1000;
+//        }
+//
+//        ShippingFeeDetailResponseBody shippingFeeDetailResponseBody = new ShippingFeeDetailResponseBody();
+//        shippingFeeDetailResponseBody.setClosestPickupPoint(closetPickupPoint);
+//        shippingFeeDetailResponseBody.setShippingFee(shippingFee);
+//
+//        return shippingFeeDetailResponseBody;
+//    }
 
     @Override
     public Order createOrder(String jwtToken, OrderCreate orderCreate) throws Exception {

@@ -28,8 +28,8 @@ public class PickupPoint {
     private Integer status;
 
     @Column(columnDefinition = "decimal(11,8)")
-    private Float longitude;
+    private Double longitude;
 
     @Column(columnDefinition = "decimal(10,8)")
-    private Float latitude;
+    private Double latitude;
 }
