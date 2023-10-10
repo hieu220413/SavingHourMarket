@@ -4,6 +4,7 @@ import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
 import com.fpt.capstone.savinghourmarket.model.ProductCateWithSubCate;
+import com.fpt.capstone.savinghourmarket.model.ProductListResponseBody;
 import com.fpt.capstone.savinghourmarket.model.ProductSubCateOnly;
 import com.fpt.capstone.savinghourmarket.service.ProductCategoryService;
 import com.fpt.capstone.savinghourmarket.service.ProductService;
@@ -26,7 +27,7 @@ public class ProductController {
     private final FirebaseAuth firebaseAuth;
 
     @RequestMapping(value = "/getProductsForStaff", method = RequestMethod.GET)
-    public ResponseEntity<List<Product>> getProductsForStaff(@RequestParam(required = false) Boolean isExpiredShown
+    public ResponseEntity<ProductListResponseBody> getProductsForStaff(@RequestParam(required = false) Boolean isExpiredShown
             , @RequestParam(defaultValue = "") String name
             , @RequestParam(required = false) String supermarketId
             , @RequestParam(required = false) String productCategoryId
@@ -39,7 +40,7 @@ public class ProductController {
             , @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        List<Product> productList = productService.getProductsForStaff(isExpiredShown
+        ProductListResponseBody productList = productService.getProductsForStaff(isExpiredShown
                 , name
                 , supermarketId
                 , productCategoryId
@@ -53,7 +54,7 @@ public class ProductController {
     }
 
     @RequestMapping(value = "/getProductsForCustomer", method = RequestMethod.GET)
-    public ResponseEntity<List<Product>> getProductsForCustomer(@RequestParam(defaultValue = "") String name
+    public ResponseEntity<ProductListResponseBody> getProductsForCustomer(@RequestParam(defaultValue = "") String name
             , @RequestParam(required = false) String supermarketId
             , @RequestParam(required = false) String productCategoryId
             , @RequestParam(required = false) String productSubCategoryId
@@ -62,7 +63,7 @@ public class ProductController {
             , @RequestParam(required = false) SortType quantitySortType
             , @RequestParam(required = false) SortType expiredSortType
             , @RequestParam(required = false) SortType priceSort) {
-        List<Product> productList = productService.getProductsForCustomer(name
+        ProductListResponseBody productList = productService.getProductsForCustomer(name
                 , supermarketId
                 , productCategoryId
                 , productSubCategoryId
