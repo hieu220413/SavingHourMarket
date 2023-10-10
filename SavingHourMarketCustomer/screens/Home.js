@@ -23,6 +23,14 @@ import Toast from 'react-native-toast-message';
 import LoadingScreen from '../components/LoadingScreen';
 import {Alert} from 'react-native';
 import messaging from '@react-native-firebase/messaging';
+import auth from '@react-native-firebase/auth';
+import {GoogleSignin} from '@react-native-google-signin/google-signin';
+import Modal, {
+  ModalFooter,
+  ModalButton,
+  SlideAnimation,
+  ScaleAnimation,
+} from 'react-native-modals';
 
 const Home = ({navigation}) => {
   const [categories, setCategories] = useState([]);
@@ -34,6 +42,7 @@ const Home = ({navigation}) => {
   const [totalPage, setTotalPage] = useState(1);
   const [cartList, setCartList] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [openAuthModal, setOpenAuthModal] = useState(false);
 
   const showToast = () => {
     Toast.show({
@@ -108,6 +117,11 @@ const Home = ({navigation}) => {
 
   const handleAddToCart = async data => {
     try {
+      const user = await AsyncStorage.getItem('userInfo');
+      if (!user) {
+        setOpenAuthModal(true);
+        return;
+      }
       const jsonValue = await AsyncStorage.getItem('CartList');
       let newCartList = jsonValue ? JSON.parse(jsonValue) : [];
       const itemExisted = newCartList.some(item => item.id === data.id);
@@ -306,8 +320,15 @@ const Home = ({navigation}) => {
       <View style={{flexDirection: 'row', gap: 10, alignItems: 'center'}}>
         <SearchBar />
         <TouchableOpacity
-          onPress={() => {
-            navigation.navigate('Cart');
+          onPress={async () => {
+            try {
+              const user = await AsyncStorage.getItem('userInfo');
+              if (!user) {
+                setOpenAuthModal(true);
+                return;
+              }
+              navigation.navigate('Cart');
+            } catch (error) {}
           }}>
           <Image
             resizeMode="contain"
@@ -318,7 +339,7 @@ const Home = ({navigation}) => {
             }}
             source={icons.cart}
           />
-          {cartList.lenght !== 0 && (
+          {cartList.length !== 0 && (
             <View
               style={{
                 position: 'absolute',
@@ -466,6 +487,53 @@ const Home = ({navigation}) => {
           </TouchableOpacity>
         )}
       </ScrollView>
+      {/* auth modal */}
+      <Modal
+        width={0.8}
+        visible={openAuthModal}
+        dialogAnimation={
+          new ScaleAnimation({
+            initialValue: 0, // optional
+            useNativeDriver: true, // optional
+          })
+        }
+        footer={
+          <ModalFooter>
+            <ModalButton
+              text="Ở lại trang"
+              textStyle={{color: 'red'}}
+              onPress={() => {
+                setOpenAuthModal(false);
+              }}
+            />
+            <ModalButton
+              text="Đăng nhập"
+              onPress={async () => {
+                try {
+                  await AsyncStorage.removeItem('userInfo');
+                  await AsyncStorage.removeItem('CartList');
+                  navigation.navigate('Login');
+                  setOpenAuthModal(false);
+                } catch (error) {
+                  console.log(error);
+                }
+              }}
+            />
+          </ModalFooter>
+        }>
+        <View
+          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
+          <Text
+            style={{
+              fontSize: 20,
+              fontFamily: 'Roboto',
+              color: 'black',
+              textAlign: 'center',
+            }}>
+            Vui lòng đăng nhập để thực hiện thao tác này
+          </Text>
+        </View>
+      </Modal>
       {loading && <LoadingScreen />}
     </SafeAreaView>
   );

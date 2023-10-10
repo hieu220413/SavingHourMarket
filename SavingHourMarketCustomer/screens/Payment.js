@@ -91,7 +91,6 @@ const Payment = ({navigation, route}) => {
 
   useEffect(() => {
     const getShippingFee = async () => {
-      console.log(typeof customerLocation.lat);
       const idToken = await auth().currentUser.getIdToken();
       fetch(
         `${API.baseURL}/api/order/getShippingFeeDetail?latitude=${customerLocation.lat}&longitude=${customerLocation.long}`,
@@ -106,10 +105,10 @@ const Payment = ({navigation, route}) => {
       )
         .then(res => res.json())
         .then(respond => {
-          // if(respond.error){
-          //   return;
-          // }
-          console.log(respond);
+          if (respond.error) {
+            return;
+          }
+          setShippingFee(respond.shippingFee);
         })
         .catch(err => console.log(err));
     };
@@ -1119,9 +1118,23 @@ const Payment = ({navigation, route}) => {
                   mode="date"
                   open={open}
                   date={date ? date : minDate}
-                  minimumDate={minDate}
-                  maximumDate={maxDate}
                   onConfirm={date => {
+                    if (date.getTime() < minDate.getTime()) {
+                      setOpen(false);
+                      setValidateMessage(
+                        'Đơn hàng luôn được giao sau 2 ngày kể từ ngày đặt hàng',
+                      );
+                      setOpenValidateDialog(true);
+                      return;
+                    }
+                    if (date.getTime() > maxDate.getTime()) {
+                      setOpen(false);
+                      setValidateMessage(
+                        'Đơn hàng phải giao trước HSD của sản phẩm có HSD gần nhất 1 ngày',
+                      );
+                      setOpenValidateDialog(true);
+                      return;
+                    }
                     setOpen(false);
                     setDate(date);
                   }}
@@ -1263,7 +1276,17 @@ const Payment = ({navigation, route}) => {
                   </View>
                 </TouchableOpacity>
                 {/* Manage Date */}
-                <TouchableOpacity onPress={() => setOpen(true)}>
+                <TouchableOpacity
+                  onPress={() => {
+                    if (cannotChangeDate) {
+                      setValidateMessage(
+                        'Một trong số sản phẩm của bạn sắp hết hạn, chỉ có thể giao vào ngày này !',
+                      );
+                      setOpenValidateDialog(true);
+                      return;
+                    }
+                    setOpen(true);
+                  }}>
                   <View
                     style={{
                       paddingVertical: 20,
@@ -1302,9 +1325,23 @@ const Payment = ({navigation, route}) => {
                   mode="date"
                   open={open}
                   date={date ? date : minDate}
-                  minimumDate={minDate}
-                  maximumDate={maxDate}
                   onConfirm={date => {
+                    if (date.getTime() < minDate.getTime()) {
+                      setOpen(false);
+                      setValidateMessage(
+                        'Đơn hàng luôn được giao sau 2 ngày kể từ ngày đặt hàng',
+                      );
+                      setOpenValidateDialog(true);
+                      return;
+                    }
+                    if (date.getTime() > maxDate.getTime()) {
+                      setOpen(false);
+                      setValidateMessage(
+                        'Đơn hàng phải giao trước HSD của sản phẩm có HSD gần nhất 1 ngày',
+                      );
+                      setOpenValidateDialog(true);
+                      return;
+                    }
                     setOpen(false);
                     setDate(date);
                   }}
@@ -1532,10 +1569,15 @@ const Payment = ({navigation, route}) => {
                   Phí giao hàng:
                 </Text>
                 <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
-                  {(0).toLocaleString('vi-VN', {
-                    style: 'currency',
-                    currency: 'VND',
-                  })}
+                  {customerLocationIsChecked
+                    ? shippingFee.toLocaleString('vi-VN', {
+                        style: 'currency',
+                        currency: 'VND',
+                      })
+                    : (0).toLocaleString('vi-VN', {
+                        style: 'currency',
+                        currency: 'VND',
+                      })}
                 </Text>
               </View>
 
