@@ -31,6 +31,7 @@ import {
 } from '@react-native-google-signin/google-signin';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {API} from '../constants/api';
+import LoadingScreen from '../components/LoadingScreen';
 
 const numStar = 5;
 
@@ -211,9 +212,11 @@ const Feedback = ({navigation}) => {
   const [message, setMessage] = useState('');
   const [initializing, setInitializing] = useState(true);
   const [tokenId, setTokenId] = useState(null);
+  const [loading, setLoading] = useState(false);
   //authen check
   const onAuthStateChange = async userInfo => {
     // console.log(userInfo);
+    setLoading(true);
     if (initializing) {
       setInitializing(false);
     }
@@ -224,19 +227,24 @@ const Feedback = ({navigation}) => {
         .then(token => token)
         .catch(async e => {
           console.log(e);
+          setLoading(false);
           return null;
         });
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
         await AsyncStorage.removeItem('userInfo');
+        setLoading(false);
         return;
       }
       const token = await auth().currentUser.getIdToken();
       setTokenId(token);
+      setLoading(false);
+      console.log('token', token);
       console.log('user is logged in');
-      console.log('userInfo', await AsyncStorage.getItem('userInfo'));
+      // console.log('userInfo', await AsyncStorage.getItem('userInfo'));
     } else {
       // no sessions found.
+      setLoading(false);
       console.log('user is not logged in');
     }
   };
@@ -258,11 +266,12 @@ const Feedback = ({navigation}) => {
   const sendFeedback = async () => {
     let feedbackInfo = {};
     if (selected === '') {
-      Alert.alert('Vui long chọn mục để đánh giá !!!');
+      Alert.alert('Vui lòng chọn mục để đánh giá !!!');
       return;
     } else {
       let listImages;
       if (images.length != 0) {
+        setLoading(true);
         listImages = await uploadImages(images);
         // console.log(listImages);
       } else {
@@ -287,6 +296,7 @@ const Feedback = ({navigation}) => {
         Alert.alert('Unauthorized');
         return;
       } else {
+        setLoading(true);
         fetch(`${API.baseURL}/api/feedback/create`, {
           method: 'PUT',
           headers: {
@@ -301,8 +311,13 @@ const Feedback = ({navigation}) => {
           .then(async respond => {
             console.log('respone', respond);
             Alert.alert(respond);
+            setLoading(false);
+            navigation.navigate('List Feedback');
           })
-          .catch(err => console.log(err));
+          .catch(err => {
+            console.log(err);
+            setLoading(false);
+          });
       }
     }
   };
@@ -369,6 +384,7 @@ const Feedback = ({navigation}) => {
                 setSelected={val => setSelected(val)}
                 search={false}
                 data={data}
+                placeholder="Chọn mục đánh giá"
                 boxStyles={{backgroundColor: 'white'}}
                 dropdownStyles={{backgroundColor: 'white'}}
                 inputStyles={{color: 'black'}}
@@ -509,6 +525,7 @@ const Feedback = ({navigation}) => {
           : null} */}
           </View>
         </View>
+        {loading && <LoadingScreen />}
       </View>
     </TouchableWithoutFeedback>
   );
@@ -569,6 +586,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'Roboto',
     color: 'black',
+    // backgroundColor:'black',
+    width: '80%',
   },
   text_evaluation: {
     fontSize: 18,

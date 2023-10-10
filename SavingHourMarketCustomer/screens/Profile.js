@@ -22,13 +22,16 @@ import {
 } from '@react-native-google-signin/google-signin';
 import {useFocusEffect} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import LoadingScreen from '../components/LoadingScreen';
 
 const Profile = ({navigation}) => {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
   //authen check
   const onAuthStateChange = async userInfo => {
     // console.log(userInfo);
+    setLoading(true);
     if (initializing) {
       setInitializing(false);
     }
@@ -39,11 +42,14 @@ const Profile = ({navigation}) => {
         .then(token => token)
         .catch(async e => {
           console.log(e);
+          setLoading(false);
           return null;
         });
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
         await AsyncStorage.removeItem('userInfo');
+        await AsyncStorage.removeItem('CartList');
+        setLoading(false);
         return;
       }
       console.log('user is logged in');
@@ -51,9 +57,13 @@ const Profile = ({navigation}) => {
       console.log('info: ' + info);
       setUser(JSON.parse(info));
       // console.log('Username: ' + user?.fullName);
+      setLoading(false);
     } else {
       // no sessions found.
+      await AsyncStorage.removeItem('userInfo');
+      await AsyncStorage.removeItem('CartList');
       console.log('user is not logged in');
+      setLoading(false);
       // console.log(user);
     }
   };
@@ -378,7 +388,7 @@ const Profile = ({navigation}) => {
           </View>
           <AntDesign name="right" size={20} color="black"></AntDesign>
         </TouchableOpacity>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           onPress={() => {
             navigation.navigate('Upload');
           }}
@@ -403,7 +413,7 @@ const Profile = ({navigation}) => {
             </Text>
           </View>
           <AntDesign name="right" size={20} color="black"></AntDesign>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <TouchableOpacity
           style={{
@@ -516,6 +526,7 @@ const Profile = ({navigation}) => {
           </TouchableOpacity>
         )}
       </View>
+      {loading && <LoadingScreen />}
     </SafeAreaView>
   );
 };

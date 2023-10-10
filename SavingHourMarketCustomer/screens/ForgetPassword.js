@@ -7,6 +7,7 @@ import {
   ImageBackground,
   TextInput,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import React, {useState} from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -14,6 +15,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import {COLORS} from '../constants/theme';
 import LinearGradient from 'react-native-linear-gradient';
 import * as Animatable from 'react-native-animatable';
+import auth from '@react-native-firebase/auth';
 
 const ForgetPassword = ({navigation}) => {
   const [email, setEmail] = useState('');
@@ -24,12 +26,15 @@ const ForgetPassword = ({navigation}) => {
     if (email === '') {
       setEmailError('Email field cannot be empty');
       setCheck_textInputChange(false);
+      return false;
     } else if (!isValidEmail(email)) {
       setEmailError('Invalid email');
       setCheck_textInputChange(false);
+      return false;
     } else {
       setEmailError('');
       setCheck_textInputChange(true);
+      return true;
     }
   };
 
@@ -37,6 +42,22 @@ const ForgetPassword = ({navigation}) => {
     const regex = /^([A-Za-z0-9_\-\.])+@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
     return regex.test(email);
   };
+
+  const resetPassword = async () => {
+    await auth()
+      .sendPasswordResetEmail(email)
+      .then(() => {
+        Alert.alert('Link đổi mật khẩu đã được gửi vào email của bạn !!!');
+        navigation.navigate('Login');
+        console.log('Bam vao duong link de reset');
+      })
+      .catch(e => {
+        Alert.alert('Không tồn tại người dùng này!!!');
+        setEmail('');
+        console.log(e);
+      });
+  };
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={styles.container}>
@@ -86,7 +107,11 @@ const ForgetPassword = ({navigation}) => {
             <TouchableOpacity
               style={{width: '100%'}}
               onPress={() => {
-                navigation.navigate('Code reset');
+                if (emailValidator()) {
+                  resetPassword();
+                } else {
+                  return;
+                }
               }}>
               <LinearGradient
                 colors={['#66CC66', '#66CC99']}
