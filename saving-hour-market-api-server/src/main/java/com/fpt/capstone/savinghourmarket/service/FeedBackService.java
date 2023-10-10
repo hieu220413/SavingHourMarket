@@ -18,10 +18,12 @@ public interface FeedBackService {
     String updateStatus(UUID feedbackId, FeedbackStatus feedbackStatus);
 
     List<FeedBack> getFeedbackForCustomer(String jwtToken,
+                                          SortType createTimeSortType,
                                           SortType rateSortType,
                                           FeedbackObject feedbackObject, FeedbackStatus feedbackStatus, int page, int size) throws ResourceNotFoundException, FirebaseAuthException, FeedBackNotFoundException;
 
     List<FeedBack> getFeedbackForStaff(UUID customerId,
+                                       SortType createTimeSortType,
                                        SortType rateSortType,
                                        FeedbackObject feedbackObject, FeedbackStatus feedbackStatus, int page, int size) throws ResourceNotFoundException, FirebaseAuthException, FeedBackNotFoundException;
 }

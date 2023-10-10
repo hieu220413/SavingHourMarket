@@ -40,23 +40,25 @@ public class FeedBackController {
 
     @GetMapping("/getFeedbackForCustomer")
     public ResponseEntity<List<FeedBack>> getFeedbackForCustomer(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
+                                                                 @RequestParam(defaultValue = "DESC") SortType createTimeSortType,
                                                                  @RequestParam(required = false) SortType rateSortType,
                                                                  @RequestParam(required = false) FeedbackObject feedbackObject,
                                                                  @RequestParam(required = false) FeedbackStatus feedbackStatus,
                                                                  @RequestParam(defaultValue = "0") int page,
                                                                  @RequestParam(defaultValue = "5") int size) throws ResourceNotFoundException, FirebaseAuthException, FeedBackNotFoundException {
-        return ResponseEntity.status(HttpStatus.OK).body(feedBackService.getFeedbackForCustomer(jwtToken, rateSortType, feedbackObject, feedbackStatus, page, size));
+        return ResponseEntity.status(HttpStatus.OK).body(feedBackService.getFeedbackForCustomer(jwtToken, rateSortType, createTimeSortType, feedbackObject, feedbackStatus, page, size));
     }
 
     @GetMapping("/getFeedbackForStaff")
     public ResponseEntity<List<FeedBack>> getFeedbackForStaff(
             @RequestParam(required = false) UUID customerId,
+            @RequestParam(defaultValue = "DESC") SortType createTimeSortType,
             @RequestParam(required = false) SortType rateSortType,
             @RequestParam(required = false) FeedbackObject feedbackObject,
             @RequestParam(required = false) FeedbackStatus feedbackStatus,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) throws ResourceNotFoundException, FirebaseAuthException, FeedBackNotFoundException {
-        return ResponseEntity.status(HttpStatus.OK).body(feedBackService.getFeedbackForStaff(customerId, rateSortType, feedbackObject, feedbackStatus, page, size));
+        return ResponseEntity.status(HttpStatus.OK).body(feedBackService.getFeedbackForStaff(customerId, createTimeSortType, rateSortType, feedbackObject, feedbackStatus, page, size));
 
     }
 }

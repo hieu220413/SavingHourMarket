@@ -24,6 +24,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -50,6 +52,7 @@ public class FeedBackServiceImpl implements FeedBackService {
         feedBack.setRate(feedBackCreate.getRate());
         feedBack.setMessage(feedBackCreate.getMessage());
         feedBack.setObject(feedBackCreate.getObject());
+        feedBack.setCreatedTime(LocalDateTime.now());
         feedBack.setStatus(FeedbackStatus.PROCESSING);
         if (!feedBackCreate.getImageUrls().isEmpty()) {
             List<FeedBackImage> feedBackImages = new ArrayList<>();
@@ -66,48 +69,52 @@ public class FeedBackServiceImpl implements FeedBackService {
     @Override
     @Transactional
     public String updateStatus(UUID feedbackId, FeedbackStatus feedbackStatus) {
-        FeedBack feedBack = feedBackRepository.findById(feedbackId).orElseThrow(()-> new NoSuchElementException("Feedback not found with id " + feedbackId));
+        FeedBack feedBack = feedBackRepository.findById(feedbackId).orElseThrow(() -> new NoSuchElementException("Feedback not found with id " + feedbackId));
         feedBack.setStatus(feedbackStatus);
         return "Feedback updated successfully";
     }
 
     @Override
-    public List<FeedBack> getFeedbackForCustomer(String jwtToken, SortType rateSortType, FeedbackObject feedbackObject, FeedbackStatus feedbackStatus, int page, int size) throws ResourceNotFoundException, FirebaseAuthException, FeedBackNotFoundException {
+    public List<FeedBack> getFeedbackForCustomer(String jwtToken, SortType createTimeSortType, SortType rateSortType, FeedbackObject feedbackObject, FeedbackStatus feedbackStatus, int page, int size) throws ResourceNotFoundException, FirebaseAuthException, FeedBackNotFoundException {
         Customer customer = getCustomerInfo(jwtToken);
         List<FeedBack> feedBacks = feedBackRepository.findFeedbackForCustomer(
                 customer.getId(),
                 feedbackObject,
                 feedbackStatus,
-                getPageableWithSort(rateSortType,page,size)
+                getPageableWithSort(createTimeSortType, rateSortType, page, size)
         );
 
-        if(feedBacks.size() == 0) {
+        if (feedBacks.size() == 0) {
             throw new FeedBackNotFoundException("Hiện tại khách hàng chưa có ý kiến đánh giá!");
         }
         return feedBacks;
     }
 
     @Override
-    public List<FeedBack> getFeedbackForStaff(UUID customerId, SortType rateSortType, FeedbackObject feedbackObject, FeedbackStatus feedbackStatus, int page, int size) throws FeedBackNotFoundException {
+    public List<FeedBack> getFeedbackForStaff(UUID customerId, SortType createTimeSortType, SortType rateSortType, FeedbackObject feedbackObject, FeedbackStatus feedbackStatus, int page, int size) throws FeedBackNotFoundException {
         List<FeedBack> feedBacks = feedBackRepository.findFeedBackForStaff(
                 customerId,
                 feedbackObject,
                 feedbackStatus,
-                getPageableWithSort(rateSortType,page,size)
+                getPageableWithSort(createTimeSortType, rateSortType, page, size)
         );
 
-        if(feedBacks.size() == 0) {
+        if (feedBacks.size() == 0) {
             throw new FeedBackNotFoundException("Danh sách trống!");
         }
         return feedBacks;
     }
 
-    private Pageable getPageableWithSort(SortType rateSortType, int page, int size){
+    private Pageable getPageableWithSort(SortType createTimeSortType, SortType rateSortType, int page, int size) {
         Sort sort = null;
         if (rateSortType != null && rateSortType.equals(SortType.ASC)) {
             sort = Sort.by("rate").ascending();
         } else if (rateSortType != null && rateSortType.equals(SortType.DESC)) {
             sort = Sort.by("rate").descending();
+        } else if (createTimeSortType != null && rateSortType.equals(SortType.DESC)) {
+            sort = Sort.by("createdTime").descending();
+        } else if (createTimeSortType != null && rateSortType.equals(SortType.ASC)) {
+            sort = Sort.by("createdTime").ascending();
         }
         Pageable pageableWithSort;
         if (sort != null) {
