@@ -31,6 +31,7 @@ import storage from '@react-native-firebase/storage';
 import * as Progress from 'react-native-progress';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {API} from '../constants/api';
+import LoadingScreen from '../components/LoadingScreen';
 
 const EditProfile = ({navigation, route}) => {
   const user = route.params.user;
@@ -53,6 +54,7 @@ const EditProfile = ({navigation, route}) => {
   const [image, setImage] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [transferred, setTransferred] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const selectImage = () => {
     const options = {
@@ -180,6 +182,11 @@ const EditProfile = ({navigation, route}) => {
     const regex = /^([A-Za-z0-9_\-\.])+@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
     return regex.test(email);
   };
+
+  const isValidName = name => {
+    const regex = /^[A-Za-z ]{2,50}$/;
+    return regex.test(name);
+  };
   const isValidForm = () => {
     setUsernameError('');
     setDateOfBirthError('');
@@ -189,8 +196,8 @@ const EditProfile = ({navigation, route}) => {
     if (username === null || username.trim().length == 0) {
       return setUsernameError('Username can not be empty !');
     }
-    if (username.trim().length < 3) {
-      return setUsernameError('Invalid username');
+    if (!isValidName(username)) {
+      return setUsernameError('Invalid username!');
     }
     // if (dateOfBirth === null) {
     //   return setDateOfBirthError('Date of birth can not be empty !');
@@ -206,8 +213,8 @@ const EditProfile = ({navigation, route}) => {
     // }
     if (
       phone !== null &&
-      ((phone.trim().length >= 1 && phone.trim().length < 10) ||
-        phone.trim().length > 12)
+      phone.trim().length >= 1 &&
+      phone.trim().length < 10
     ) {
       return setPhoneError('Invalid phone number!');
     }
@@ -215,8 +222,10 @@ const EditProfile = ({navigation, route}) => {
   };
 
   const submitForm = async () => {
+    setLoading(true);
     let submitInfo = {};
     if (!isValidForm()) {
+      setLoading(false);
       return;
     }
     const valid = isValidForm();
@@ -224,6 +233,8 @@ const EditProfile = ({navigation, route}) => {
       let avatarUrl;
       if (image !== null) {
         avatarUrl = await uploadImage();
+      } else {
+        avatarUrl = user?.avatarUrl;
       }
 
       submitInfo = {
@@ -253,9 +264,13 @@ const EditProfile = ({navigation, route}) => {
         .then(async respond => {
           console.log('respone', JSON.stringify(respond));
           await AsyncStorage.setItem('userInfo', JSON.stringify(respond));
+          setLoading(false);
           navigation.navigate('Profile');
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+          console.log(err);
+          setLoading(false);
+        });
     }
   };
 
@@ -490,6 +505,7 @@ const EditProfile = ({navigation, route}) => {
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
+        {loading && <LoadingScreen />}
       </SafeAreaView>
     </TouchableWithoutFeedback>
   );

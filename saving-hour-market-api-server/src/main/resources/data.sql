@@ -226,14 +226,13 @@ INSERT INTO `saving_hour_market`.`time_frame` (`id`, `day_of_week`, `from_hour`,
 -- Pickup point
 INSERT INTO `saving_hour_market`.`pickup_point` (`id`, `address`, `latitude`, `longitude`, `status`)
 --     VALUES ('id', 'address', 'latitude', 'longitude', 'status');
-    VALUES  (UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), '662/2 Nguyễn Văn Tăng, Long Thạnh Mỹ, Quận 9, Thành phố Hồ Chí Minh', 10.844867, 106.831038, @enable),
-            (UUID_TO_BIN('accf0be1-5541-11ee-8a50-a85e45c41921'), '63 Đ. Võ Nguyên Giáp, Thảo Điền, Quận 2, Thành phố Hồ Chí Minh', 10.801419, 106.736042, @enable),
-            (UUID_TO_BIN('accf0d06-5541-11ee-8a50-a85e45c41921'), '432 Đ. Liên Phường, Phước Long B, Quận 9, Thành phố Hồ Chí Minh', 10.805475, 106.789022, @enable),
-            (UUID_TO_BIN('accf0e1e-5541-11ee-8a50-a85e45c41921'), '857 Phạm Văn Đồng, P, Thủ Đức, Thành phố Hồ Chí Minh', 10.852884, 106.750717, @enable),
-            (UUID_TO_BIN('accf0f40-5541-11ee-8a50-a85e45c41921'), '528 Huỳnh Tấn Phát, Tân Thuận Đông, Quận 7, Thành phố Hồ Chí Minh', 10.738769, 106.729944, @enable),
-            (UUID_TO_BIN('accf105d-5541-11ee-8a50-a85e45c41921'), '159 Đ. Võ Nguyên Giáp, Thảo Điền, Quận 2, Thành phố Hồ Chí Minh', 10.803325, 106.741962, @enable),
-            (UUID_TO_BIN('accf117b-5541-11ee-8a50-a85e45c41921'), '96 Đường số 4, Phước Bình, Quận 9, Thành phố Hồ Chí Minh', 10.818573, 106.771057, @enable);
-
+    VALUES  (UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), 'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh', 10.844867, 106.831038, @enable),
+            (UUID_TO_BIN('accf0be1-5541-11ee-8a50-a85e45c41921'), '20 Đ. Nguyễn Đăng Giai, Thảo Điền, Quận 2, Hồ Chí Minh', 10.8019121, 106.7362979, @enable),
+            (UUID_TO_BIN('accf0d06-5541-11ee-8a50-a85e45c41921'), '432 Đ. Liên Phường, Phước Long B, Quận 9, Thành phố Hồ Chí Minh', 10.8059505, 106.7891284, @enable),
+            (UUID_TO_BIN('accf0e1e-5541-11ee-8a50-a85e45c41921'), '857, Phạm Văn Đồng, Khu phố 4, Thủ Đức, Thành phố Hồ Chí Minh', 10.8268113, 106.7188031, @enable),
+            (UUID_TO_BIN('accf0f40-5541-11ee-8a50-a85e45c41921'), '430 Huỳnh Tấn Phát, Bình Thuận, Quận 7, Hồ Chí Minh', 10.7457942, 106.7290568, @enable),
+            (UUID_TO_BIN('accf105d-5541-11ee-8a50-a85e45c41921'), '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh', 10.8027419, 106.7384590, @enable),
+            (UUID_TO_BIN('accf117b-5541-11ee-8a50-a85e45c41921'), '96 Đường Số 4, Phước Bình, Thủ Đức, Hồ Chí Minh', 10.8184717, 106.7710715, @enable);
 
 -- Order Group
 INSERT INTO `saving_hour_market`.`order_group` (`id`, `deliver_date`, `time_frame_id`, `pickup_point_id`, `deliverer_id`)
