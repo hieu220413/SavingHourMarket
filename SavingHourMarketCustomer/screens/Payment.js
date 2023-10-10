@@ -91,7 +91,6 @@ const Payment = ({navigation, route}) => {
 
   useEffect(() => {
     const getShippingFee = async () => {
-      console.log(typeof customerLocation.lat);
       const idToken = await auth().currentUser.getIdToken();
       fetch(
         `${API.baseURL}/api/order/getShippingFeeDetail?latitude=${customerLocation.lat}&longitude=${customerLocation.long}`,
@@ -106,10 +105,10 @@ const Payment = ({navigation, route}) => {
       )
         .then(res => res.json())
         .then(respond => {
-          // if(respond.error){
-          //   return;
-          // }
-          console.log(respond);
+          if (respond.error) {
+            return;
+          }
+          setShippingFee(respond.shippingFee);
         })
         .catch(err => console.log(err));
     };
@@ -1532,10 +1531,15 @@ const Payment = ({navigation, route}) => {
                   Phí giao hàng:
                 </Text>
                 <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
-                  {(0).toLocaleString('vi-VN', {
-                    style: 'currency',
-                    currency: 'VND',
-                  })}
+                  {customerLocationIsChecked
+                    ? shippingFee.toLocaleString('vi-VN', {
+                        style: 'currency',
+                        currency: 'VND',
+                      })
+                    : (0).toLocaleString('vi-VN', {
+                        style: 'currency',
+                        currency: 'VND',
+                      })}
                 </Text>
               </View>
 

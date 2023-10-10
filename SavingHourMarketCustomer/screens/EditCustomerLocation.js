@@ -218,8 +218,8 @@ const EditCustomerLocation = ({navigation, route}) => {
               height: '100%',
               paddingHorizontal: 15,
             }}>
-            {data.map(item => (
-              <Item item={item} />
+            {data.map((item, i) => (
+              <Item key={i} item={item} />
             ))}
           </View>
         )}
