@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
+import com.fpt.capstone.savinghourmarket.model.PickupPointSuggestionResponseBody;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -32,4 +33,14 @@ public class PickupPoint {
 
     @Column(columnDefinition = "decimal(10,8)")
     private Double latitude;
+
+
+    public PickupPoint(PickupPointSuggestionResponseBody pickupPointSuggestionResponseBody) {
+        this.id = pickupPointSuggestionResponseBody.getId();
+        this.address = pickupPointSuggestionResponseBody.getAddress();
+        this.latitude = pickupPointSuggestionResponseBody.getLatitude();
+        this.longitude = pickupPointSuggestionResponseBody.getLongitude();
+        this.status = pickupPointSuggestionResponseBody.getStatus();
+
+    }
 }

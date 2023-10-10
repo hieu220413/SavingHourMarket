@@ -48,15 +48,19 @@ public class PickupPointServiceImpl implements PickupPointService {
     public PickupPointsSortWithSuggestionsResponseBody getWithSortAndSuggestion(Double latitude, Double longitude) throws IOException, InterruptedException, ApiException {
         int numberOfSuggestion = 3;
         List<PickupPoint> pickupPoints = pickupPointRepository.getAllSortByDistance(latitude, longitude);
-        List<PickupPointSuggestionResponseBody> pickupPointSuggestionResponseBodyList = new ArrayList<>();
+        List<PickupPointSuggestionResponseBody> pointSuggestionResponseBodyFromGoongList = new ArrayList<>();
         List<LatLngModel> destinations = new ArrayList<>();
         LatLngModel origin = new LatLngModel(latitude, longitude);
-        for(int i = 0; i < numberOfSuggestion; i++) {
-            // using 0 because pickup point at index 0 will be deleted and next index will be 0
-            pickupPointSuggestionResponseBodyList.add(new PickupPointSuggestionResponseBody(pickupPoints.get(0)));
-            destinations.add(new LatLngModel(pickupPoints.get(0).getLatitude().doubleValue(), pickupPoints.get(0).getLongitude().doubleValue()));
-            pickupPoints.remove(0);
+        for(PickupPoint pickupPoint : pickupPoints) {
+            pointSuggestionResponseBodyFromGoongList.add(new PickupPointSuggestionResponseBody(pickupPoint));
+            destinations.add(new LatLngModel(pickupPoint.getLatitude().doubleValue(), pickupPoint.getLongitude().doubleValue()));
         }
+//        for(int i = 0; i < numberOfSuggestion; i++) {
+//            // using 0 because pickup point at index 0 will be deleted and next index will be 0
+//            pickupPointSuggestionResponseBodyList.add(new PickupPointSuggestionResponseBody(pickupPoints.get(0)));
+//            destinations.add(new LatLngModel(pickupPoints.get(0).getLatitude().doubleValue(), pickupPoints.get(0).getLongitude().doubleValue()));
+//            pickupPoints.remove(0);
+//        }
 
         // fetch goong api
         String apiKeyParam = "api_key=" + goongApiKey;
@@ -76,18 +80,28 @@ public class PickupPointServiceImpl implements PickupPointService {
         for (GoongDistanceMatrixRow goongDistanceMatrixRow : goongDistanceMatrixResult.getRows()){
             int i = 0;
             for (GoongDistanceMatrixElement goongDistanceMatrixElement : goongDistanceMatrixRow.getElements()){
-                pickupPointSuggestionResponseBodyList.get(i).setDistance(goongDistanceMatrixElement.getDistance().getText());
-                pickupPointSuggestionResponseBodyList.get(i).setDistanceInValue(goongDistanceMatrixElement.getDistance().getValue());
+                pointSuggestionResponseBodyFromGoongList.get(i).setDistance(goongDistanceMatrixElement.getDistance().getText());
+                pointSuggestionResponseBodyFromGoongList.get(i).setDistanceInValue(goongDistanceMatrixElement.getDistance().getValue());
                 i++;
             }
         }
-        pickupPointSuggestionResponseBodyList.sort((o1, o2) -> (int) (o1.getDistanceInValue() - o2.getDistanceInValue()));
+        pointSuggestionResponseBodyFromGoongList.sort((o1, o2) -> (int) (o1.getDistanceInValue() - o2.getDistanceInValue()));
 
+        //Result mapping
+        List<PickupPointSuggestionResponseBody> pickupPointSuggestionResultList = new ArrayList<>();
 
+        for (int i = 0 ; i < numberOfSuggestion; i++){
+            pickupPointSuggestionResultList.add(pointSuggestionResponseBodyFromGoongList.get(0));
+            pointSuggestionResponseBodyFromGoongList.remove(0);
+        }
+
+//        for (int i = numberOfSuggestion ; i < pointSuggestionResponseBodyFromGoongList.size() ; i++) {
+//            pickupPointsResultList.add(pointSuggestionResponseBodyFromGoongList.get(i));
+//        }
 
         PickupPointsSortWithSuggestionsResponseBody result = new PickupPointsSortWithSuggestionsResponseBody();
-        result.setOtherSortedPickupPointList(pickupPoints);
-        result.setSortedPickupPointSuggestionList(pickupPointSuggestionResponseBodyList);
+        result.setOtherSortedPickupPointList(pointSuggestionResponseBodyFromGoongList);
+        result.setSortedPickupPointSuggestionList(pickupPointSuggestionResultList);
         return result;
     }
 
