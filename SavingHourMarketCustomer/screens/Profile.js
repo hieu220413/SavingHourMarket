@@ -24,6 +24,7 @@ import {
 import {useFocusEffect} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoadingScreen from '../components/LoadingScreen';
+import messaging from '@react-native-firebase/messaging';
 
 const Profile = ({navigation}) => {
   const [initializing, setInitializing] = useState(true);
@@ -31,6 +32,16 @@ const Profile = ({navigation}) => {
   const [loading, setLoading] = useState(false);
   const [isEnable, setIsEnable] = useState(true);
   const toggleSwitch = () => {
+    if (!isEnable) {
+      console.log('hello');
+      messaging()
+        .subscribeToTopic('weather')
+        .then(() => console.log('Subscribed to topic!'));
+    } else {
+      messaging()
+        .unsubscribeFromTopic('weather')
+        .then(() => console.log('Unsubscribed fom the topic!'));
+    }
     setIsEnable(previousState => !previousState);
   };
   //authen check
@@ -392,9 +403,9 @@ const Profile = ({navigation}) => {
             </Text>
           </View>
           <Switch
-            trackColor={{false: '#767577', true: '#81b0ff'}}
-            thumbColor={isEnable ? '#f5dd4b' : '#f4f3f4'}
-            ios_backgroundColor="#3e3e3e"
+            trackColor={{false: 'grey', true: 'tomato'}}
+            thumbColor={isEnable ? '#f4f3f4' : '#f4f3f4'}
+            // ios_backgroundColor="#3e3e3e"
             onValueChange={toggleSwitch}
             value={isEnable}
           />
