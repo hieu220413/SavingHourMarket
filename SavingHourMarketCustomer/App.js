@@ -56,6 +56,7 @@ import Toast, {BaseToast} from 'react-native-toast-message';
 import {COLORS} from './constants/theme';
 import OrderFeedback from './screens/OrderFeedback';
 import FeedbackList from './screens/FeedbackList';
+import RemotePushController from './src/services/RemotePushController';
 
 const Stack = createStackNavigator();
 export default function App() {
@@ -64,7 +65,14 @@ export default function App() {
       .subscribeToTopic('weather')
       .then(() => console.log('Subscribed to topic!'));
     const unsubscribe = messaging().onMessage(async remoteMessage => {
-      Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
+      // Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
+      console.log('remoteMessage', remoteMessage.notification.body);
+      Toast.show({
+        type: 'success',
+        text1: remoteMessage.notification.title,
+        text2: remoteMessage.notification.body,
+        visibilityTime: 2000,
+      });
     });
 
     return unsubscribe;
@@ -74,6 +82,8 @@ export default function App() {
     requestUserPermission();
     notificationListener();
     getToken();
+    // const installationId = firebase.installations().getId();
+    // console.log(installationId);
   }, []);
 
   /*
@@ -165,6 +175,7 @@ export default function App() {
       </NavigationContainer>
       <ModalPortal />
       <Toast config={toastConfig} />
+      <RemotePushController />
     </>
   );
 }
