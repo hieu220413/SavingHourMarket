@@ -1,6 +1,7 @@
 package com.fpt.capstone.savinghourmarket.repository;
 
 import com.fpt.capstone.savinghourmarket.entity.Product;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,7 +30,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "((:isExpiredShown IS NULL) OR (:isExpiredShown = TRUE AND p.expiredDate < CURRENT_TIMESTAMP) OR (:isExpiredShown = FALSE AND p.expiredDate > CURRENT_TIMESTAMP)) " +
             "AND p.status = 1")
 
-    List<Product> getProductsForStaff(UUID supermarketId, String name, UUID productCategoryId, UUID productSubCategoryId, Boolean isExpiredShown, Pageable pageable);
+    Page<Product> getProductsForStaff(UUID supermarketId, String name, UUID productCategoryId, UUID productSubCategoryId, Boolean isExpiredShown, Pageable pageable);
 
 
     @Query("SELECT p FROM Product p " +
@@ -49,7 +50,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "AND p.quantity > 0" +
             "AND p.status = 1")
 
-    List<Product> getProductsForCustomer(UUID supermarketId, String name, UUID productCategoryId, UUID productSubCategoryId, Pageable pageable);
+    Page<Product> getProductsForCustomer(UUID supermarketId, String name, UUID productCategoryId, UUID productSubCategoryId, Pageable pageable);
 
     @Query("SELECT p FROM Product p " +
             "WHERE p.status = 1 AND p.supermarket.id = :supermarketId ")
