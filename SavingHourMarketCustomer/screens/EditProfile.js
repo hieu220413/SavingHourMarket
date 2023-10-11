@@ -184,7 +184,7 @@ const EditProfile = ({navigation, route}) => {
   };
 
   const isValidName = name => {
-    const regex = /^[A-Za-z ]{2,50}$/;
+    const regex = /^[A-Za-zÀ-ỹ ]{2,50}$/;
     return regex.test(name);
   };
   const isValidForm = () => {

@@ -119,7 +119,7 @@ const Login = ({navigation}) => {
           //   'Login thanh cong, da save user. Redirect qua screen nao do di',
           // );
           setLoading(false);
-          navigation.navigate('Profile');
+          navigation.goBack();
         }
       }
 
@@ -187,7 +187,7 @@ const Login = ({navigation}) => {
           //   'Login thanh cong, da save user. Redirect qua screen nao do di',
           // );
 
-          navigation.navigate('Profile');
+          navigation.goBack();
         }
       }
 
