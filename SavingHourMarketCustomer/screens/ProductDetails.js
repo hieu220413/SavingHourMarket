@@ -7,10 +7,17 @@ import {COLORS, FONTS} from '../constants/theme';
 import dayjs from 'dayjs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useFocusEffect} from '@react-navigation/native';
+import Modal, {
+  ModalFooter,
+  ModalButton,
+  SlideAnimation,
+  ScaleAnimation,
+} from 'react-native-modals';
 
 const ProductDetails = ({navigation, route}) => {
   const product = route.params.product;
   const [cartList, setCartList] = useState([]);
+  const [openAuthModal, setOpenAuthModal] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -26,21 +33,27 @@ const ProductDetails = ({navigation, route}) => {
   );
 
   const handleBuy = async () => {
-    const item = product;
-    const orderItem = [
-      {
-        id: item.id,
-        name: item.name,
-        price: item.price,
-        priceOriginal: item.priceOriginal,
-        expiredDate: Date.parse(item.expiredDate),
-        imageUrl: item.imageUrl,
-        productCategoryName: item.productSubCategory.productCategory.name,
-        productCategoryId: item.productSubCategory.productCategory.id,
-        quantity: 1,
-      },
-    ];
     try {
+      const user = await AsyncStorage.getItem('userInfo');
+      if (!user) {
+        setOpenAuthModal(true);
+        return;
+      }
+      const item = product;
+      const orderItem = [
+        {
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          priceOriginal: item.priceOriginal,
+          expiredDate: Date.parse(item.expiredDate),
+          imageUrl: item.imageUrl,
+          productCategoryName: item.productSubCategory.productCategory.name,
+          productCategoryId: item.productSubCategory.productCategory.id,
+          quantity: 1,
+        },
+      ];
+
       await AsyncStorage.setItem('OrderItems', JSON.stringify(orderItem));
       navigation.navigate('Payment');
     } catch (error) {
@@ -50,6 +63,11 @@ const ProductDetails = ({navigation, route}) => {
 
   const handleAddToCart = async data => {
     try {
+      const user = await AsyncStorage.getItem('userInfo');
+      if (!user) {
+        setOpenAuthModal(true);
+        return;
+      }
       const jsonValue = await AsyncStorage.getItem('CartList');
       let newCartList = jsonValue ? JSON.parse(jsonValue) : [];
       const itemExisted = newCartList.some(item => item.id === data.id);
@@ -101,7 +119,12 @@ const ProductDetails = ({navigation, route}) => {
         </Text>
 
         <TouchableOpacity
-          onPress={() => {
+          onPress={async () => {
+            const user = await AsyncStorage.getItem('userInfo');
+            if (!user) {
+              setOpenAuthModal(true);
+              return;
+            }
             navigation.navigate('Cart');
           }}>
           <Image
@@ -113,7 +136,7 @@ const ProductDetails = ({navigation, route}) => {
             }}
             source={icons.cart}
           />
-          {cartList.lenght !== 0 && (
+          {cartList.length !== 0 && (
             <View
               style={{
                 position: 'absolute',
@@ -268,6 +291,53 @@ const ProductDetails = ({navigation, route}) => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      {/* auth modal */}
+      <Modal
+        width={0.8}
+        visible={openAuthModal}
+        dialogAnimation={
+          new ScaleAnimation({
+            initialValue: 0, // optional
+            useNativeDriver: true, // optional
+          })
+        }
+        footer={
+          <ModalFooter>
+            <ModalButton
+              text="Ở lại trang"
+              textStyle={{color: 'red'}}
+              onPress={() => {
+                setOpenAuthModal(false);
+              }}
+            />
+            <ModalButton
+              text="Đăng nhập"
+              onPress={async () => {
+                try {
+                  await AsyncStorage.removeItem('userInfo');
+                  await AsyncStorage.removeItem('CartList');
+                  navigation.navigate('Login');
+                  setOpenAuthModal(false);
+                } catch (error) {
+                  console.log(error);
+                }
+              }}
+            />
+          </ModalFooter>
+        }>
+        <View
+          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
+          <Text
+            style={{
+              fontSize: 20,
+              fontFamily: 'Roboto',
+              color: 'black',
+              textAlign: 'center',
+            }}>
+            Vui lòng đăng nhập để thực hiện thao tác này
+          </Text>
+        </View>
+      </Modal>
     </View>
   );
 };

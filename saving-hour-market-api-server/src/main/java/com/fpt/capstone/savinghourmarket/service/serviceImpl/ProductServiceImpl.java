@@ -5,16 +5,19 @@ import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.ProductCateWithSubCate;
+import com.fpt.capstone.savinghourmarket.model.ProductListResponseBody;
 import com.fpt.capstone.savinghourmarket.model.ProductSubCateOnly;
 import com.fpt.capstone.savinghourmarket.repository.ProductCategoryRepository;
 import com.fpt.capstone.savinghourmarket.repository.ProductRepository;
 import com.fpt.capstone.savinghourmarket.repository.ProductSubCategoryRepository;
 import com.fpt.capstone.savinghourmarket.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,7 +35,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductSubCategoryRepository productSubCategoryRepository;
 
     @Override
-    public List<Product> getProductsForStaff(Boolean isExpiredShown, String name, String supermarketId, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, SortType quantitySortType, SortType expiredSortType, SortType priceSort) {
+    public ProductListResponseBody getProductsForStaff(Boolean isExpiredShown, String name, String supermarketId, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, SortType quantitySortType, SortType expiredSortType, SortType priceSort) {
         Sort sortable = Sort.by("expiredDate").ascending();
 //        if(quantitySortType.equals("ASC") ){
 //            sortable = Sort.by("expiredDate").ascending();
@@ -57,18 +60,23 @@ public class ProductServiceImpl implements ProductService {
         }
 
         Pageable pageableWithSort = PageRequest.of(page, limit, sortable);
-        List<Product> productList = productRepository.getProductsForStaff(supermarketId == null ? null : UUID.fromString(supermarketId)
+        Page<Product> result = productRepository.getProductsForStaff(supermarketId == null ? null : UUID.fromString(supermarketId)
                 , name
                 , productCategoryId == null ? null : UUID.fromString(productCategoryId)
                 , productSubCategoryId == null ? null : UUID.fromString(productSubCategoryId)
                 , isExpiredShown
                 , pageableWithSort);
 
-        return productList;
+        int totalPage = result.getTotalPages();
+        long totalProduct = result.getTotalElements();
+
+        List<Product> productList = result.stream().toList();
+
+        return new ProductListResponseBody(productList, totalPage, totalProduct);
     }
 
     @Override
-    public List<Product> getProductsForCustomer(String name, String supermarketId, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, SortType quantitySortType, SortType expiredSortType, SortType priceSort) {
+    public ProductListResponseBody getProductsForCustomer(String name, String supermarketId, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, SortType quantitySortType, SortType expiredSortType, SortType priceSort) {
         Sort sortable = Sort.by("expiredDate").ascending();
 
         if(quantitySortType != null) {
@@ -84,12 +92,18 @@ public class ProductServiceImpl implements ProductService {
         }
 
         Pageable pageableWithSort = PageRequest.of(page, limit, sortable);
-        List<Product> productList = productRepository.getProductsForCustomer(supermarketId == null ? null : UUID.fromString(supermarketId)
+        Page<Product> result = productRepository.getProductsForCustomer(supermarketId == null ? null : UUID.fromString(supermarketId)
                 , name
                 , productCategoryId == null ? null : UUID.fromString(productCategoryId)
                 , productSubCategoryId == null ? null : UUID.fromString(productSubCategoryId)
                 , pageableWithSort);
-        return productList;
+
+        int totalPage = result.getTotalPages();
+        long totalProduct = result.getTotalElements();
+
+        List<Product> productList = result.stream().toList();
+
+        return new ProductListResponseBody(productList, totalPage, totalProduct);
     }
 
     @Override

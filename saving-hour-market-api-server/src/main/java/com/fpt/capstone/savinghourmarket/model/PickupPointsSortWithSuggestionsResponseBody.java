@@ -14,5 +14,5 @@ import java.util.List;
 @NoArgsConstructor
 public class PickupPointsSortWithSuggestionsResponseBody {
     private List<PickupPointSuggestionResponseBody> sortedPickupPointSuggestionList;
-    private List<PickupPoint> otherSortedPickupPointList;
+    private List<PickupPointSuggestionResponseBody> otherSortedPickupPointList;
 }
