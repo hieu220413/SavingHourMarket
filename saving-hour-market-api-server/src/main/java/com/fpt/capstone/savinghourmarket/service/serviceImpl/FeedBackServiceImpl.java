@@ -106,16 +106,18 @@ public class FeedBackServiceImpl implements FeedBackService {
     }
 
     private Pageable getPageableWithSort(SortType createTimeSortType, SortType rateSortType, int page, int size) {
-        Sort sort = null;
+        Sort sort;
+
         if (rateSortType != null && rateSortType.equals(SortType.ASC)) {
             sort = Sort.by("rate").ascending();
         } else if (rateSortType != null && rateSortType.equals(SortType.DESC)) {
             sort = Sort.by("rate").descending();
-        } else if (createTimeSortType != null && rateSortType.equals(SortType.DESC)) {
-            sort = Sort.by("createdTime").descending();
-        } else if (createTimeSortType != null && rateSortType.equals(SortType.ASC)) {
+        } else if (createTimeSortType != null && createTimeSortType.equals(SortType.ASC)) {
             sort = Sort.by("createdTime").ascending();
+        } else{
+            sort = Sort.by("createdTime").descending();
         }
+
         Pageable pageableWithSort;
         if (sort != null) {
             pageableWithSort = PageRequest.of(page, size, sort);

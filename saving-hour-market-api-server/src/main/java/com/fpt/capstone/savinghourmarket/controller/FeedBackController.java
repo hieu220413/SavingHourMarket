@@ -46,7 +46,7 @@ public class FeedBackController {
                                                                  @RequestParam(required = false) FeedbackStatus feedbackStatus,
                                                                  @RequestParam(defaultValue = "0") int page,
                                                                  @RequestParam(defaultValue = "5") int size) throws ResourceNotFoundException, FirebaseAuthException, FeedBackNotFoundException {
-        return ResponseEntity.status(HttpStatus.OK).body(feedBackService.getFeedbackForCustomer(jwtToken, rateSortType, createTimeSortType, feedbackObject, feedbackStatus, page, size));
+        return ResponseEntity.status(HttpStatus.OK).body(feedBackService.getFeedbackForCustomer(jwtToken, createTimeSortType, rateSortType, feedbackObject, feedbackStatus, page, size));
     }
 
     @GetMapping("/getFeedbackForStaff")
