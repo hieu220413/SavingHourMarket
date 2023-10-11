@@ -5,9 +5,10 @@ import {
   SafeAreaView,
   Image,
   Touchable,
-  Switch,
   Alert,
+  Switch,
 } from 'react-native';
+// import {Switch} from 'react-native-switch';
 import Header from '../shared/Header';
 import {COLORS} from '../constants/theme';
 import {icons} from '../constants';
@@ -28,6 +29,10 @@ const Profile = ({navigation}) => {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isEnable, setIsEnable] = useState(true);
+  const toggleSwitch = () => {
+    setIsEnable(previousState => !previousState);
+  };
   //authen check
   const onAuthStateChange = async userInfo => {
     // console.log(userInfo);
@@ -362,7 +367,7 @@ const Profile = ({navigation}) => {
           }}
         /> */}
         {/* Options 2 */}
-        <TouchableOpacity
+        <View
           style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -386,8 +391,14 @@ const Profile = ({navigation}) => {
               Notification
             </Text>
           </View>
-          <AntDesign name="right" size={20} color="black"></AntDesign>
-        </TouchableOpacity>
+          <Switch
+            trackColor={{false: '#767577', true: '#81b0ff'}}
+            thumbColor={isEnable ? '#f5dd4b' : '#f4f3f4'}
+            ios_backgroundColor="#3e3e3e"
+            onValueChange={toggleSwitch}
+            value={isEnable}
+          />
+        </View>
         {/* <TouchableOpacity
           onPress={() => {
             navigation.navigate('Upload');
