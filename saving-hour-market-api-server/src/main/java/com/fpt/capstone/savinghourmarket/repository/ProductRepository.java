@@ -70,9 +70,9 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "JOIN ordDetail.order ord " +
             "JOIN ordDetail.product pd " +
             "WHERE " +
-            "((:supermarketId IS NULL) OR (pd.supermarket.id = :supermarketId)) " +
+            "pd.supermarket.id = :supermarketId " +
             "AND " +
-            "((:quarter IS NOT NULL) OR (EXTRACT(MONTH FROM ord.createdTime) =  :monthValue)) " +
+            "((:quarter IS NOT NULL) OR ((:monthValue IS NULL) OR EXTRACT(MONTH FROM ord.createdTime) =  :monthValue)) " +
             "AND " +
             "((:quarter IS NULL) " +
                 "OR " +

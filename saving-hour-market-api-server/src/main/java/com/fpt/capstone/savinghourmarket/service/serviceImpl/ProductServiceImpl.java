@@ -120,12 +120,8 @@ public class ProductServiceImpl implements ProductService {
             year = currentDate.getYear();
         }
 
-        if(month == null) {
-            month = Month.getMonthEnumFromNumber(currentDate.getMonthValue());
-        }
-
         SaleReportResponseBody saleReportResponseBody = new SaleReportResponseBody();
-        List<Product> productEntityReportList = productRepository.getProductsReportForSupermarket(supermarketId, month.getMonthInNumber(), quarter == null ? null : quarter.getQuarterInNumber(), year);
+        List<Product> productEntityReportList = productRepository.getProductsReportForSupermarket(supermarketId, month == null ? null : month.getMonthInNumber(), quarter == null ? null : quarter.getQuarterInNumber(), year);
         productEntityReportList.stream().forEach(product -> {
             saleReportResponseBody.getProductSaleReportList().add(new ProductSaleReport(product));
             saleReportResponseBody.setTotalSale(saleReportResponseBody.getTotalSale() + product.getQuantity());
