@@ -231,6 +231,7 @@ const SelectPickupPoint = ({navigation, route}) => {
                   }}>
                   {item.address}
                 </Text>
+                <Text style={{fontSize: 14}}>{item.distance}</Text>
               </View>
             </TouchableOpacity>
           ))}
