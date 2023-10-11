@@ -74,6 +74,10 @@ const Home = ({ navigation }) => {
     fetch(`${API.baseURL}/api/product/getAllCategory`)
       .then(res => res.json())
       .then(data => {
+        if (data.error) {
+          setCategories([]);
+          return;
+        }
         setCategories(data);
         setCurrentCate(data[0].id);
         setLoading(false);
