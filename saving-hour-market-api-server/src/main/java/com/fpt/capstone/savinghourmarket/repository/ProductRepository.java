@@ -1,11 +1,14 @@
 package com.fpt.capstone.savinghourmarket.repository;
 
+import com.fpt.capstone.savinghourmarket.common.Month;
+import com.fpt.capstone.savinghourmarket.common.Quarter;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -62,6 +65,30 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "JOIN FETCH p.supermarket " +
             "WHERE p.id = :id AND p.status = 1")
     Optional<Product> findByIdCustom(UUID id);
+
+    @Query("SELECT NEW com.fpt.capstone.savinghourmarket.entity.Product(ordDetail.product.id, ordDetail.product.name, ordDetail.product.imageUrl, SUM(ordDetail.productPrice * ordDetail.boughtQuantity), SUM(ordDetail.productOriginalPrice * ordDetail.boughtQuantity), SUM(ordDetail.boughtQuantity)) FROM OrderDetail ordDetail " +
+            "JOIN ordDetail.order ord " +
+            "JOIN ordDetail.product pd " +
+            "WHERE " +
+            "((:supermarketId IS NULL) OR (pd.supermarket.id = :supermarketId)) " +
+            "AND " +
+            "((:quarter IS NOT NULL) OR (EXTRACT(MONTH FROM ord.createdTime) =  :monthValue)) " +
+            "AND " +
+            "((:quarter IS NULL) " +
+                "OR " +
+                "((:quarter = 1) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 1 and 3)) " +
+                "OR " +
+                "((:quarter = 2) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 4 and 6)) " +
+                "OR " +
+                "((:quarter = 3) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 7 and 9)) " +
+                "OR " +
+                "((:quarter = 4) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 10 and 12)) " +
+            ")" +
+            "AND " +
+            "EXTRACT(YEAR FROM ord.createdTime) = :year " +
+            "AND ord.status = 4 " +
+            "GROUP BY ordDetail.product.id, ordDetail.product.name ")
+    List<Product> getProductsReportForSupermarket(UUID supermarketId, Integer monthValue, Integer quarter, Integer year);
 
 
 //    @Query(value = "SELECT * FROM product p " +
