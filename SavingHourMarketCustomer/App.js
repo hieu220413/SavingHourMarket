@@ -1,20 +1,20 @@
 /* eslint-disable prettier/prettier */
-import React, { useEffect } from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
-import { NavigationContainer } from '@react-navigation/native';
+import React, {useEffect, useState} from 'react';
+import {createStackNavigator} from '@react-navigation/stack';
+import {NavigationContainer} from '@react-navigation/native';
 import 'react-native-gesture-handler';
-import { Alert } from 'react-native';
+import {Alert} from 'react-native';
 import Tabs from './navigation/tabs';
 import Discount from './screens/Discount';
 import Orders from './screens/Orders';
 import Cart from './screens/Cart';
 import Profile from './screens/Profile';
 import VNPayTest from './screens/VNPayTest';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import EditProfile from './screens/EditProfile';
 import Login from './screens/Login';
 import Signup from './screens/Signup';
-import { ModalPortal } from 'react-native-modals';
+import {ModalPortal} from 'react-native-modals';
 import Payment from './screens/Payment';
 import SelectPickupPoint from './screens/SelectPickupPoint';
 import SelectTimeFrame from './screens/SelectTimeFrame';
@@ -28,7 +28,7 @@ import SearchResult from './screens/SearchResult';
 import SearchBar from './components/SearchBar';
 import ProductsBySubCategories from './screens/ProductsBySubCategories';
 
-import { LogBox } from 'react-native';
+import {LogBox} from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 
 Geolocation.setRNConfiguration({
@@ -53,18 +53,34 @@ import CodeReset from './screens/CodeReset';
 import ResetPassword from './screens/ResetPassword';
 import Feedback from './screens/Feedback';
 import UploadScreen from './screens/Upload';
-import Toast, { BaseToast } from 'react-native-toast-message';
-import { COLORS } from './constants/theme';
+import Toast, {BaseToast} from 'react-native-toast-message';
+import {COLORS} from './constants/theme';
 import OrderFeedback from './screens/OrderFeedback';
 import FeedbackList from './screens/FeedbackList';
 import RemotePushController from './src/services/RemotePushController';
 
 const Stack = createStackNavigator();
 export default function App() {
+  const [user, setUser] = useState(null);
   useEffect(() => {
-    messaging()
-      .subscribeToTopic('weather')
-      .then(() => console.log('Subscribed to topic!'));
+    const notification = async () => {
+      let userInfo = await AsyncStorage.getItem('userInfo');
+      userInfo = userInfo ? JSON.parse(userInfo) : null;
+      let isEnable = await AsyncStorage.getItem('isEnable');
+      isEnable = isEnable ? JSON.parse(isEnable) : true;
+      if (isEnable) {
+        messaging()
+          .subscribeToTopic(userInfo ? userInfo.id : '.')
+          .then(() => console.log('Subscribed to topic!'));
+      } else {
+        messaging()
+          .unsubscribeFromTopic(userInfo ? userInfo.id : '.')
+          .then(() => console.log('Unsubscribed to topic!'));
+      }
+    };
+
+    notification();
+
     const unsubscribe = messaging().onMessage(async remoteMessage => {
       // Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
       console.log('remoteMessage', remoteMessage.notification.body);
@@ -78,7 +94,6 @@ export default function App() {
 
     return unsubscribe;
   }, []);
-
   useEffect(() => {
     requestUserPermission();
     notificationListener();
@@ -98,8 +113,8 @@ export default function App() {
     success: props => (
       <BaseToast
         {...props}
-        style={{ backgroundColor: COLORS.primary, borderLeftWidth: 0 }}
-        contentContainerStyle={{ paddingHorizontal: 15 }}
+        style={{backgroundColor: COLORS.primary, borderLeftWidth: 0}}
+        contentContainerStyle={{paddingHorizontal: 15}}
         text1Style={{
           fontSize: 16,
           fontWeight: '700',
@@ -138,7 +153,10 @@ export default function App() {
 
           <Stack.Screen name="Payment" component={Payment} />
           <Stack.Screen name="ProductDetails" component={ProductDetails} />
-          <Stack.Screen name="ProductsBySubCategories" component={ProductsBySubCategories} />
+          <Stack.Screen
+            name="ProductsBySubCategories"
+            component={ProductsBySubCategories}
+          />
           <Stack.Screen
             name="DiscountForCategories"
             component={DiscountForCategories}
@@ -164,7 +182,7 @@ export default function App() {
           <Stack.Screen
             name="Order success"
             component={OrderSuccess}
-            options={{ swipeEnabled: false }}
+            options={{swipeEnabled: false}}
           />
           <Stack.Screen name="Forgot password" component={ForgetPassword} />
           <Stack.Screen name="Code reset" component={CodeReset} />

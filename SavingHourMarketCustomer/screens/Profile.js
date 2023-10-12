@@ -31,18 +31,35 @@ const Profile = ({navigation}) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isEnable, setIsEnable] = useState(true);
-  const toggleSwitch = () => {
-    if (!isEnable) {
+  useFocusEffect(
+    useCallback(() => {
+      (async () => {
+        try {
+          setLoading(true);
+          const isEnabled = await AsyncStorage.getItem('isEnable');
+          setIsEnable(isEnabled ? JSON.parse(isEnabled) : true);
+          setLoading(false);
+        } catch (err) {
+          console.log(err);
+          setLoading(false);
+        }
+      })();
+    }, []),
+  );
+  const toggleSwitch = async value => {
+    if (value) {
       console.log('hello');
       messaging()
-        .subscribeToTopic('weather')
+        .subscribeToTopic(user ? user.id : '.')
         .then(() => console.log('Subscribed to topic!'));
+      await AsyncStorage.setItem('isEnable', JSON.stringify(value));
     } else {
       messaging()
-        .unsubscribeFromTopic('weather')
+        .unsubscribeFromTopic(user ? user.id : '.')
         .then(() => console.log('Unsubscribed fom the topic!'));
+      await AsyncStorage.setItem('isEnable', JSON.stringify(value));
     }
-    setIsEnable(previousState => !previousState);
+    setIsEnable(value);
   };
   //authen check
   const onAuthStateChange = async userInfo => {
@@ -100,9 +117,13 @@ const Profile = ({navigation}) => {
   );
 
   const logout = async () => {
-    // console.log('a');
+    messaging()
+      .unsubscribeFromTopic(user ? user.id : '.')
+      .then(() => console.log('Unsubscribed fom the topic!'));
+
     await GoogleSignin.signOut().catch(e => console.log(e));
-    // console.log('b');
+
+    await AsyncStorage.removeItem('CartList');
     await AsyncStorage.removeItem('userInfo');
     auth()
       .signOut()
@@ -406,7 +427,9 @@ const Profile = ({navigation}) => {
             trackColor={{false: 'grey', true: 'tomato'}}
             thumbColor={isEnable ? '#f4f3f4' : '#f4f3f4'}
             // ios_backgroundColor="#3e3e3e"
-            onValueChange={toggleSwitch}
+            onValueChange={value => {
+              toggleSwitch(value);
+            }}
             value={isEnable}
           />
         </View>
