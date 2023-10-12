@@ -46,6 +46,8 @@ logging:
 
 
 google-api-key: AIzaSyB40Egueby5QI8obTYKCOTcVD-sPzbfWfs
+goong-api-key: pjSCY4qPMMbJ4ILtd75FcvXTc3TCO5hataxheWDW
+goong-distance-matrix-url: https://rsapi.goong.io/DistanceMatrix
 vnpay-hash-secret: ${VNPAY_HASH_SECRET}
 vnpay-tmn-code: ${VNPAY_TMN_CODE}
 

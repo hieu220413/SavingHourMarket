@@ -1,5 +1,14 @@
 import React, {useState, useEffect, useCallback} from 'react';
-import {Text, View, SafeAreaView, Image, Touchable, Switch} from 'react-native';
+import {
+  Text,
+  View,
+  SafeAreaView,
+  Image,
+  Touchable,
+  Alert,
+  Switch,
+} from 'react-native';
+// import {Switch} from 'react-native-switch';
 import Header from '../shared/Header';
 import {COLORS} from '../constants/theme';
 import {icons} from '../constants';
@@ -14,13 +23,48 @@ import {
 } from '@react-native-google-signin/google-signin';
 import {useFocusEffect} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import LoadingScreen from '../components/LoadingScreen';
+import messaging from '@react-native-firebase/messaging';
 
 const Profile = ({navigation}) => {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [isEnable, setIsEnable] = useState(true);
+  useFocusEffect(
+    useCallback(() => {
+      (async () => {
+        try {
+          setLoading(true);
+          const isEnabled = await AsyncStorage.getItem('isEnable');
+          setIsEnable(isEnabled ? JSON.parse(isEnabled) : true);
+          setLoading(false);
+        } catch (err) {
+          console.log(err);
+          setLoading(false);
+        }
+      })();
+    }, []),
+  );
+  const toggleSwitch = async value => {
+    if (value) {
+      console.log('hello');
+      messaging()
+        .subscribeToTopic(user ? user.id : '.')
+        .then(() => console.log('Subscribed to topic!'));
+      await AsyncStorage.setItem('isEnable', JSON.stringify(value));
+    } else {
+      messaging()
+        .unsubscribeFromTopic(user ? user.id : '.')
+        .then(() => console.log('Unsubscribed fom the topic!'));
+      await AsyncStorage.setItem('isEnable', JSON.stringify(value));
+    }
+    setIsEnable(value);
+  };
   //authen check
   const onAuthStateChange = async userInfo => {
     // console.log(userInfo);
+    setLoading(true);
     if (initializing) {
       setInitializing(false);
     }
@@ -31,21 +75,28 @@ const Profile = ({navigation}) => {
         .then(token => token)
         .catch(async e => {
           console.log(e);
+          setLoading(false);
           return null;
         });
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
         await AsyncStorage.removeItem('userInfo');
+        await AsyncStorage.removeItem('CartList');
+        setLoading(false);
         return;
       }
       console.log('user is logged in');
       const info = await AsyncStorage.getItem('userInfo');
-      // console.log('info: ' + user);
+      console.log('info: ' + info);
       setUser(JSON.parse(info));
       // console.log('Username: ' + user?.fullName);
+      setLoading(false);
     } else {
       // no sessions found.
+      await AsyncStorage.removeItem('userInfo');
+      await AsyncStorage.removeItem('CartList');
       console.log('user is not logged in');
+      setLoading(false);
       // console.log(user);
     }
   };
@@ -66,9 +117,13 @@ const Profile = ({navigation}) => {
   );
 
   const logout = async () => {
-    console.log('a');
+    messaging()
+      .unsubscribeFromTopic(user ? user.id : '.')
+      .then(() => console.log('Unsubscribed fom the topic!'));
+
     await GoogleSignin.signOut().catch(e => console.log(e));
-    console.log('b');
+
+    await AsyncStorage.removeItem('CartList');
     await AsyncStorage.removeItem('userInfo');
     auth()
       .signOut()
@@ -231,75 +286,58 @@ const Profile = ({navigation}) => {
         />
         {/* Options 1 */}
 
-        {user ? (
-          <TouchableOpacity
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginHorizontal: '3%',
-              justifyContent: 'space-between',
-            }}
-            activeOpacity={0.8}
-            onPress={() => {
-              navigation.navigate('Edit Profile', {user});
-            }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                columnGap: 15,
-                alignItems: 'center',
-              }}>
-              <AntDesign name="user" size={30} color="black"></AntDesign>
-              <Text
-                style={{
-                  fontFamily: 'Roboto',
-                  fontSize: 16,
-                  fontWeight: '700',
-                  color: 'black',
-                }}>
-                Profile
-              </Text>
-            </View>
-            <View>
-              <AntDesign name="right" size={20} color="black"></AntDesign>
-            </View>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginHorizontal: '3%',
-              justifyContent: 'space-between',
-            }}
-            activeOpacity={0.8}
-            onPress={() => {
-              navigation.navigate('Login');
-            }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                columnGap: 15,
-                alignItems: 'center',
-              }}>
-              <AntDesign name="user" size={30} color="black"></AntDesign>
-              <Text
-                style={{
-                  fontFamily: 'Roboto',
-                  fontSize: 16,
-                  fontWeight: '700',
-                  color: 'black',
-                }}>
-                Profile
-              </Text>
-            </View>
-            <View>
-              <AntDesign name="right" size={20} color="black"></AntDesign>
-            </View>
-          </TouchableOpacity>
-        )}
-
         <TouchableOpacity
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginHorizontal: '3%',
+            justifyContent: 'space-between',
+          }}
+          activeOpacity={0.8}
+          onPress={() => {
+            if (user == null) {
+              Alert.alert('Unauthorized !!!', 'Login to your account', [
+                {
+                  text: 'Cancel',
+                  onPress: () => {
+                    console.log('cancel');
+                  },
+                  style: 'cancel',
+                },
+                {
+                  text: 'Ok',
+                  onPress: () => {
+                    navigation.navigate('Login');
+                  },
+                },
+              ]);
+            } else {
+              navigation.navigate('Edit Profile', {user});
+            }
+          }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              columnGap: 15,
+              alignItems: 'center',
+            }}>
+            <AntDesign name="user" size={30} color="black"></AntDesign>
+            <Text
+              style={{
+                fontFamily: 'Roboto',
+                fontSize: 16,
+                fontWeight: '700',
+                color: 'black',
+              }}>
+              Profile
+            </Text>
+          </View>
+          <View>
+            <AntDesign name="right" size={20} color="black"></AntDesign>
+          </View>
+        </TouchableOpacity>
+
+        {/* <TouchableOpacity
           style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -324,8 +362,8 @@ const Profile = ({navigation}) => {
             </Text>
           </View>
           <AntDesign name="right" size={20} color="black"></AntDesign>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </TouchableOpacity> */}
+        {/* <TouchableOpacity
           style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -350,18 +388,18 @@ const Profile = ({navigation}) => {
             </Text>
           </View>
           <AntDesign name="right" size={20} color="black"></AntDesign>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         {/* Line */}
-        <View
+        {/* <View
           style={{
             borderBottomColor: 'black',
             borderBottomWidth: 1,
             width: '93%',
             alignSelf: 'center',
           }}
-        />
+        /> */}
         {/* Options 2 */}
-        <TouchableOpacity
+        <View
           style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -385,11 +423,19 @@ const Profile = ({navigation}) => {
               Notification
             </Text>
           </View>
-          <AntDesign name="right" size={20} color="black"></AntDesign>
-        </TouchableOpacity>
-        <TouchableOpacity
+          <Switch
+            trackColor={{false: 'grey', true: 'tomato'}}
+            thumbColor={isEnable ? '#f4f3f4' : '#f4f3f4'}
+            // ios_backgroundColor="#3e3e3e"
+            onValueChange={value => {
+              toggleSwitch(value);
+            }}
+            value={isEnable}
+          />
+        </View>
+        {/* <TouchableOpacity
           onPress={() => {
-            navigation.navigate('Login');
+            navigation.navigate('Upload');
           }}
           style={{
             flexDirection: 'row',
@@ -412,7 +458,7 @@ const Profile = ({navigation}) => {
             </Text>
           </View>
           <AntDesign name="right" size={20} color="black"></AntDesign>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <TouchableOpacity
           style={{
@@ -422,7 +468,25 @@ const Profile = ({navigation}) => {
             justifyContent: 'space-between',
           }}
           onPress={() => {
-            navigation.navigate('Feedback');
+            if (user == null) {
+              Alert.alert('Unauthorized !!!', 'Login to your account', [
+                {
+                  text: 'Cancel',
+                  onPress: () => {
+                    console.log('cancel');
+                  },
+                  style: 'cancel',
+                },
+                {
+                  text: 'ok',
+                  onPress: () => {
+                    navigation.navigate('Login');
+                  },
+                },
+              ]);
+            } else {
+              navigation.navigate('List Feedback');
+            }
           }}
           activeOpacity={0.8}>
           <View
@@ -507,6 +571,7 @@ const Profile = ({navigation}) => {
           </TouchableOpacity>
         )}
       </View>
+      {loading && <LoadingScreen />}
     </SafeAreaView>
   );
 };

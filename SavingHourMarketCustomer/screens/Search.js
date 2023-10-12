@@ -34,7 +34,7 @@ const Search = ({ navigation }) => {
             fetch(`${API.baseURL}/api/product/getProductsForCustomer?name=${productName}&quantitySortType=DESC&expiredSortType=DESC`)
                 .then(res => res.json())
                 .then(data => {
-                    setResult(data);
+                    setResult(data.productList);
                     setLoading(false);
                 })
                 .catch(err => {
@@ -51,7 +51,7 @@ const Search = ({ navigation }) => {
         fetch(`${API.baseURL}/api/product/getProductsForCustomer?page=0&limit=6&quantitySortType=DESC&expiredSortType=ASC`)
             .then(res => res.json())
             .then(data => {
-                setProducts(data);
+                setProducts(data.productList);
                 setLoading(false);
             })
             .catch(err => {

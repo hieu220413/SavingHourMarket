@@ -1,17 +1,31 @@
 /* eslint-disable prettier/prettier */
 // eslint-disable-next-line prettier/prettier
-import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+    View,
+    Text,
+    Image,
+    ScrollView,
+    TouchableOpacity,
+    StyleSheet,
+} from 'react-native';
 import React, { useState, useCallback } from 'react';
 import { icons } from '../constants';
 import { COLORS, FONTS } from '../constants/theme';
 import dayjs from 'dayjs';
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Modal, {
+    ModalFooter,
+    ModalButton,
+    SlideAnimation,
+    ScaleAnimation,
+} from 'react-native-modals';
 
 const DiscountForCategories = ({ navigation, route }) => {
     const discount = route.params.discount;
-    const products = route.params.products;
+    const products = route.params.products.productList;
     const [cartList, setCartList] = useState([]);
+    const [openAuthModal, setOpenAuthModal] = useState(false);
 
     useFocusEffect(
         useCallback(() => {
@@ -26,9 +40,13 @@ const DiscountForCategories = ({ navigation, route }) => {
         }, []),
     );
 
-
     const handleAddToCart = async data => {
         try {
+            const user = await AsyncStorage.getItem('userInfo');
+            if (!user) {
+                setOpenAuthModal(true);
+                return;
+            }
             const jsonValue = await AsyncStorage.getItem('CartList');
             let newCartList = jsonValue ? JSON.parse(jsonValue) : [];
             const itemExisted = newCartList.some(item => item.id === data.id);
@@ -137,10 +155,11 @@ const DiscountForCategories = ({ navigation, route }) => {
 
     return (
         <View
-            style={{
-                // backgroundColor: '#fff'
-            }}
-        >
+            style={
+                {
+                    // backgroundColor: '#fff'
+                }
+            }>
             <View
                 style={{
                     flexDirection: 'row',
@@ -148,8 +167,7 @@ const DiscountForCategories = ({ navigation, route }) => {
                     justifyContent: 'space-between',
                     marginVertical: 15,
                     marginHorizontal: 30,
-                }}
-            >
+                }}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Image
                         source={icons.leftArrow}
@@ -163,12 +181,16 @@ const DiscountForCategories = ({ navigation, route }) => {
                         color: 'black',
                         fontSize: 20,
                         fontFamily: FONTS.fontFamily,
-                    }}
-                >
+                    }}>
                     {discount.name}
                 </Text>
                 <TouchableOpacity
-                    onPress={() => {
+                    onPress={async () => {
+                        const user = await AsyncStorage.getItem('userInfo');
+                        if (!user) {
+                            setOpenAuthModal(true);
+                            return;
+                        }
                         navigation.navigate('Cart');
                     }}>
                     <Image
@@ -180,7 +202,7 @@ const DiscountForCategories = ({ navigation, route }) => {
                         }}
                         source={icons.cart}
                     />
-                    {cartList.lenght !== 0 && (
+                    {cartList.length !== 0 && (
                         <View
                             style={{
                                 position: 'absolute',
@@ -212,8 +234,54 @@ const DiscountForCategories = ({ navigation, route }) => {
                 {products.map((item, index) => (
                     <Item data={item} key={index} />
                 ))}
-
             </ScrollView>
+            {/* auth modal */}
+            <Modal
+                width={0.8}
+                visible={openAuthModal}
+                dialogAnimation={
+                    new ScaleAnimation({
+                        initialValue: 0, // optional
+                        useNativeDriver: true, // optional
+                    })
+                }
+                footer={
+                    <ModalFooter>
+                        <ModalButton
+                            text="Ở lại trang"
+                            textStyle={{ color: 'red' }}
+                            onPress={() => {
+                                setOpenAuthModal(false);
+                            }}
+                        />
+                        <ModalButton
+                            text="Đăng nhập"
+                            onPress={async () => {
+                                try {
+                                    await AsyncStorage.removeItem('userInfo');
+                                    await AsyncStorage.removeItem('CartList');
+                                    navigation.navigate('Login');
+                                    setOpenAuthModal(false);
+                                } catch (error) {
+                                    console.log(error);
+                                }
+                            }}
+                        />
+                    </ModalFooter>
+                }>
+                <View
+                    style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
+                    <Text
+                        style={{
+                            fontSize: 20,
+                            fontFamily: 'Roboto',
+                            color: 'black',
+                            textAlign: 'center',
+                        }}>
+                        Vui lòng đăng nhập để thực hiện thao tác này
+                    </Text>
+                </View>
+            </Modal>
         </View>
     );
 };

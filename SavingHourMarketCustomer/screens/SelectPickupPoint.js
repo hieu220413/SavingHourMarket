@@ -64,32 +64,37 @@ const SelectPickupPoint = ({navigation, route}) => {
       const latitude = 10.8022319;
 
       // get suggest pickup point
-      // fetch(
-      //   `${API.baseURL}/api/pickupPoint/getWithSortAndSuggestion?latitude=${latitude}&longitude=${longitude}`,
-      // )
-      //   .then(res => res.json())
-      //   .then(response => {
-      //     console.log(response);
-      //     setPickupPointSuggestionList(
-      //       response.sortedPickupPointSuggestionList,
-      //     );
-      //     setOtherPickupPointList(response.otherSortedPickupPointList);
-      //   })
-      //   .catch(err => console.log(err));
-      // *************************
-
-      // Xài đỡ cái này
       setLoading(true);
-      fetch(`${API.baseURL}/api/pickupPoint/getAll`)
+      fetch(
+        `${API.baseURL}/api/pickupPoint/getWithSortAndSuggestion?latitude=${latitude}&longitude=${longitude}`,
+      )
         .then(res => res.json())
         .then(response => {
-          setOtherPickupPointList(response);
+          console.log(response);
+          setPickupPointSuggestionList(
+            response.sortedPickupPointSuggestionList,
+          );
+          setOtherPickupPointList(response.otherSortedPickupPointList);
           setLoading(false);
         })
         .catch(err => {
           console.log(err);
           setLoading(false);
         });
+      // *************************
+
+      // Xài đỡ cái này
+      // setLoading(true);
+      // fetch(`${API.baseURL}/api/pickupPoint/getAll`)
+      //   .then(res => res.json())
+      //   .then(response => {
+      //     setOtherPickupPointList(response);
+      //     setLoading(false);
+      //   })
+      //   .catch(err => {
+      //     console.log(err);
+      //     setLoading(false);
+      //   });
       // ****************
     }, []),
   );
@@ -226,6 +231,7 @@ const SelectPickupPoint = ({navigation, route}) => {
                   }}>
                   {item.address}
                 </Text>
+                <Text style={{fontSize: 14}}>{item.distance}</Text>
               </View>
             </TouchableOpacity>
           ))}

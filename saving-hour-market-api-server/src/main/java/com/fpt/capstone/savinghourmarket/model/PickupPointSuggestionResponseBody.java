@@ -16,8 +16,8 @@ public class PickupPointSuggestionResponseBody {
     private Integer status;
     private String distance;
     private Long distanceInValue;
-    private Float longitude;
-    private Float latitude;
+    private Double longitude;
+    private Double latitude;
 
     public PickupPointSuggestionResponseBody(PickupPoint pickupPoint) {
         this.id = pickupPoint.getId();

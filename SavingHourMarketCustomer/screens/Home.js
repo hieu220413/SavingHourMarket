@@ -23,6 +23,14 @@ import Toast from 'react-native-toast-message';
 import LoadingScreen from '../components/LoadingScreen';
 import { Alert } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
+import auth from '@react-native-firebase/auth';
+import {GoogleSignin} from '@react-native-google-signin/google-signin';
+import Modal, {
+  ModalFooter,
+  ModalButton,
+  SlideAnimation,
+  ScaleAnimation,
+} from 'react-native-modals';
 
 const Home = ({ navigation }) => {
   const [categories, setCategories] = useState([]);
@@ -30,10 +38,11 @@ const Home = ({ navigation }) => {
   const [currentCate, setCurrentCate] = useState('');
   const [productsByCategory, setProductsByCategory] = useState([]);
   const [discountsByCategory, setDiscountsByCategory] = useState([]);
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(1);
   const [cartList, setCartList] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [openAuthModal, setOpenAuthModal] = useState(false);
 
   const showToast = () => {
     Toast.show({
@@ -65,6 +74,10 @@ const Home = ({ navigation }) => {
     fetch(`${API.baseURL}/api/product/getAllCategory`)
       .then(res => res.json())
       .then(data => {
+        if (data.error) {
+          setCategories([]);
+          return;
+        }
         setCategories(data);
         setCurrentCate(data[0].id);
         setLoading(false);
@@ -79,14 +92,18 @@ const Home = ({ navigation }) => {
     if (currentCate) {
       setLoading(true);
       fetch(
-        `${API.baseURL}/api/product/getProductsForCustomer?productCategoryId=${currentCate}&page=0&limit=5&quantitySortType=DESC&expiredSortType=ASC`,
+        `${API.baseURL}/api/product/getProductsForCustomer?productCategoryId=${currentCate}&page=0&limit=10&quantitySortType=DESC&expiredSortType=ASC`,
       )
         .then(res => res.json())
         .then(data => {
-          setProductsByCategory(data);
+          setProductsByCategory(data.productList);
+          setPage(1);
+          setTotalPage(data.totalPage);
+          setLoading(false);
         })
         .catch(err => {
           console.log(err);
+          setLoading(false);
         });
 
       fetch(
@@ -95,19 +112,25 @@ const Home = ({ navigation }) => {
         .then(res => res.json())
         .then(data => {
           setDiscountsByCategory(data);
+          setLoading(false);
         })
         .catch(err => {
           console.log(err);
+          setLoading(false);
         });
       categories.map(item => {
         item.id === currentCate && setSubCategories(item.productSubCategories);
       });
     }
-    setLoading(false);
   }, [currentCate, categories]);
 
   const handleAddToCart = async data => {
     try {
+      const user = await AsyncStorage.getItem('userInfo');
+      if (!user) {
+        setOpenAuthModal(true);
+        return;
+      }
       const jsonValue = await AsyncStorage.getItem('CartList');
       let newCartList = jsonValue ? JSON.parse(jsonValue) : [];
       const itemExisted = newCartList.some(item => item.id === data.id);
@@ -220,11 +243,16 @@ const Home = ({ navigation }) => {
 
   const SubCategory = ({ data }) => {
     return (
-      <View
+      <TouchableOpacity
+        onPress={() => {
+          navigation.navigate('ProductsBySubCategories', {
+            subCategory: data,
+          })
+        }}
         style={{
           marginTop: 20,
           marginLeft: 15,
-          marginRight: 25,
+          marginRight: 20,
           alignItems: 'center',
           maxWidth: 80,
         }}>
@@ -234,8 +262,8 @@ const Home = ({ navigation }) => {
             uri: data?.imageUrl,
           }}
           style={{
-            width: 65,
-            height: 65,
+            width: 60,
+            height: 60,
           }}
         />
         <Text
@@ -248,7 +276,7 @@ const Home = ({ navigation }) => {
           }}>
           {data.name}
         </Text>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -306,8 +334,15 @@ const Home = ({ navigation }) => {
       <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
         <SearchBar />
         <TouchableOpacity
-          onPress={() => {
-            navigation.navigate('Cart');
+          onPress={async () => {
+            try {
+              const user = await AsyncStorage.getItem('userInfo');
+              if (!user) {
+                setOpenAuthModal(true);
+                return;
+              }
+              navigation.navigate('Cart');
+            } catch (error) {}
           }}>
           <Image
             resizeMode="contain"
@@ -318,7 +353,7 @@ const Home = ({ navigation }) => {
             }}
             source={icons.cart}
           />
-          {cartList.lenght !== 0 && (
+          {cartList.length !== 0 && (
             <View
               style={{
                 position: 'absolute',
@@ -433,17 +468,23 @@ const Home = ({ navigation }) => {
           <TouchableOpacity
             onPress={() => {
               setPage(page + 1);
-              fetch(`${API.baseURL}/api/product/getProductsForCustomer?productCategoryId=${currentCate}&page=${page + 1}&limit=5&quantitySortType=DESC&expiredSortType=ASC`)
+              setLoading(true);
+              fetch(
+                `${API.baseURL
+                }/api/product/getProductsForCustomer?productCategoryId=${currentCate}&page=${page + 1
+                }&limit=5`,
+              )
                 .then(res => res.json())
                 .then(data => {
-                  setProductsByCategory([...productsByCategory, ...data]);
-                  setTotalPage(Math.round(productsByCategory / 5));
+                  setProductsByCategory([...productsByCategory, ...data.productList]);
+                  setTotalPage(data.totalPage);
+                  setLoading(false);
                 })
                 .catch(err => {
                   console.log(err);
+                  setLoading(false);
                 });
-            }}
-          >
+            }}>
             <Text
               style={{
                 backgroundColor: COLORS.light_green,
@@ -461,6 +502,53 @@ const Home = ({ navigation }) => {
           </TouchableOpacity>
         )}
       </ScrollView>
+      {/* auth modal */}
+      <Modal
+        width={0.8}
+        visible={openAuthModal}
+        dialogAnimation={
+          new ScaleAnimation({
+            initialValue: 0, // optional
+            useNativeDriver: true, // optional
+          })
+        }
+        footer={
+          <ModalFooter>
+            <ModalButton
+              text="Ở lại trang"
+              textStyle={{color: 'red'}}
+              onPress={() => {
+                setOpenAuthModal(false);
+              }}
+            />
+            <ModalButton
+              text="Đăng nhập"
+              onPress={async () => {
+                try {
+                  await AsyncStorage.removeItem('userInfo');
+                  await AsyncStorage.removeItem('CartList');
+                  navigation.navigate('Login');
+                  setOpenAuthModal(false);
+                } catch (error) {
+                  console.log(error);
+                }
+              }}
+            />
+          </ModalFooter>
+        }>
+        <View
+          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
+          <Text
+            style={{
+              fontSize: 20,
+              fontFamily: 'Roboto',
+              color: 'black',
+              textAlign: 'center',
+            }}>
+            Vui lòng đăng nhập để thực hiện thao tác này
+          </Text>
+        </View>
+      </Modal>
       {loading && <LoadingScreen />}
     </SafeAreaView>
   );
@@ -475,7 +563,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
     maxWidth: '90%',
     borderRadius: 20,
-    marginHorizontal: '5%',
+    marginHorizontal: '6%',
     marginBottom: 20,
     flexDirection: 'row',
   },

@@ -24,6 +24,7 @@ import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {API} from '../constants/api';
 import {useFocusEffect} from '@react-navigation/native';
+import LoadingScreen from '../components/LoadingScreen';
 
 const Login = ({navigation}) => {
   const [password, setPassword] = useState('');
@@ -34,11 +35,13 @@ const Login = ({navigation}) => {
   const [check_textInputChange, setCheck_textInputChange] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const loginMode = useRef('');
+  const [loading, setLoading] = useState(false);
   // const [user, setUser] = useState();
   // const [tokenId, setTokenId] = useState('');
   // const [idTokenResultPayload, setIdTokenResultPayload] = useState('');
 
   const onAuthStateChange = async userInfo => {
+    setLoading(true);
     // console.log(userInfo);
     if (initializing) {
       setInitializing(false);
@@ -55,13 +58,16 @@ const Login = ({navigation}) => {
             console.log(e);
             Alert.alert('Session ended. Required re-authenticate');
             await AsyncStorage.removeItem('userInfo');
+            setLoading(false);
             return null;
           });
         if (userTokenId) {
           // session van con. redirect qua trang khac
           Alert.alert('User session van con. Redirect qua screen nao do di');
+          setLoading(false);
           return;
         }
+        setLoading(false);
         return;
       }
       // login with google
@@ -77,6 +83,7 @@ const Login = ({navigation}) => {
             headers: {Authorization: `Bearer ${userTokenId}`},
           },
         ).catch(e => {
+          setLoading(false);
           console.log(e);
           return null;
         });
@@ -86,6 +93,7 @@ const Login = ({navigation}) => {
           Alert.alert(
             'internal error happened in fetching user info with google',
           );
+          setLoading(false);
           return;
         }
         // staff account access to customer application handle
@@ -94,6 +102,7 @@ const Login = ({navigation}) => {
           if (responseBody.message === 'STAFF_ACCESS_FORBIDDEN') {
             await logout();
             Alert.alert('Staff account can not access to customer application');
+            setLoading(false);
             return;
           }
         }
@@ -109,7 +118,8 @@ const Login = ({navigation}) => {
           // Alert.alert(
           //   'Login thanh cong, da save user. Redirect qua screen nao do di',
           // );
-          navigation.navigate('Profile');
+          setLoading(false);
+          navigation.goBack();
         }
       }
 
@@ -129,6 +139,7 @@ const Login = ({navigation}) => {
           },
         ).catch(e => {
           console.log(e);
+          setLoading(false);
           return null;
         });
 
@@ -138,6 +149,7 @@ const Login = ({navigation}) => {
           Alert.alert(
             'internal error happened in fetching user info with email & password',
           );
+          setLoading(false);
           return;
         }
         // no user found
@@ -147,16 +159,18 @@ const Login = ({navigation}) => {
           if (responseBody.message === 'STAFF_ACCESS_FORBIDDEN') {
             await logout();
             Alert.alert('Staff account can not access to customer application');
+            setLoading(false);
             return;
           }
           if (responseBody.message === 'UNVERIFIED_EMAIL') {
             await logout();
             Alert.alert('Email is not verified');
+            setLoading(false);
             return;
           }
         }
 
-        console.log(userInfoAfterEmailPasswordLoginRequest.status)
+        console.log(userInfoAfterEmailPasswordLoginRequest.status);
 
         // fetch success
         if (userInfoAfterEmailPasswordLoginRequest.status === 200) {
@@ -167,12 +181,13 @@ const Login = ({navigation}) => {
             'userInfo',
             JSON.stringify(userInfoResult),
           );
+          setLoading(false);
           // login thanh cong roi => redirect di dau do di
           // Alert.alert(
           //   'Login thanh cong, da save user. Redirect qua screen nao do di',
           // );
 
-          navigation.navigate('Profile');
+          navigation.goBack();
         }
       }
 
@@ -182,9 +197,11 @@ const Login = ({navigation}) => {
       //   .then(payload => payload);
       // setIdTokenResultPayload(userIdTokenPayload);
       console.log('user is logged in');
+      setLoading(false);
       // console.log('info login: ' + (await AsyncStorage.getItem('userInfo')));
     } else {
       console.log('user is not logged in');
+      setLoading(false);
     }
   };
 
@@ -260,19 +277,24 @@ const Login = ({navigation}) => {
     if (email == '') {
       setEmailError('Email field cannot be empty');
       setCheck_textInputChange(false);
+      return false;
     } else if (!isValidEmail(email)) {
       setEmailError('Invalid email !');
       setCheck_textInputChange(false);
+      return false;
     } else {
       setEmailError('');
       setCheck_textInputChange(true);
+      return true;
     }
   };
   const passwordValidation = () => {
     if (password === '') {
       setPasswordError('Enter your password!');
+      return false;
     } else {
       setPasswordError('');
+      return true;
     }
   };
   const isValidEmail = email => {
@@ -389,8 +411,12 @@ const Login = ({navigation}) => {
               <TouchableOpacity
                 style={{width: '100%', marginTop: 15}}
                 onPress={() => {
-                  loginMode.current = 'EMAIL_PASSWORD';
-                  login();
+                  if (emailValidator() && passwordValidation()) {
+                    loginMode.current = 'EMAIL_PASSWORD';
+                    login();
+                  } else {
+                    return;
+                  }
                 }}>
                 <LinearGradient
                   colors={['#66CC66', '#66CC99']}
@@ -416,6 +442,7 @@ const Login = ({navigation}) => {
             </View>
           </Animatable.View>
         </ImageBackground>
+        {loading && <LoadingScreen />}
       </View>
     </TouchableWithoutFeedback>
   );
