@@ -1,11 +1,13 @@
 package com.fpt.capstone.savinghourmarket.service;
 
+import com.fpt.capstone.savinghourmarket.common.Month;
+import com.fpt.capstone.savinghourmarket.common.Quarter;
 import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.model.ProductCateWithSubCate;
 import com.fpt.capstone.savinghourmarket.model.ProductListResponseBody;
 import com.fpt.capstone.savinghourmarket.model.ProductSubCateOnly;
-import org.springframework.http.ResponseEntity;
+import com.fpt.capstone.savinghourmarket.model.SaleReportResponseBody;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,4 +22,6 @@ public interface ProductService {
     List<ProductCateWithSubCate> getAllCategory();
 
     List<ProductSubCateOnly> getAllSubCategory();
+
+    SaleReportResponseBody getSaleReportSupermarket(UUID supermarketId, Month month, Quarter quarter, Integer year);
 }
