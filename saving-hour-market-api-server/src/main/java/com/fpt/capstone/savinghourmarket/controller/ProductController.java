@@ -1,5 +1,7 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
+import com.fpt.capstone.savinghourmarket.common.Month;
+import com.fpt.capstone.savinghourmarket.common.Quarter;
 import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
@@ -7,6 +9,7 @@ import com.fpt.capstone.savinghourmarket.model.ProductCateWithSubCate;
 import com.fpt.capstone.savinghourmarket.model.ProductCreate;
 import com.fpt.capstone.savinghourmarket.model.ProductListResponseBody;
 import com.fpt.capstone.savinghourmarket.model.ProductSubCateOnly;
+import com.fpt.capstone.savinghourmarket.model.SaleReportResponseBody;
 import com.fpt.capstone.savinghourmarket.service.ProductCategoryService;
 import com.fpt.capstone.savinghourmarket.service.ProductService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
@@ -14,6 +17,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
@@ -75,6 +79,17 @@ public class ProductController {
                 , expiredSortType
                 , priceSort);
         return ResponseEntity.status(HttpStatus.OK).body(productList);
+    }
+
+
+    @RequestMapping(value = "/getSaleReportSupermarket", method = RequestMethod.GET)
+    public ResponseEntity<SaleReportResponseBody> getSaleReportSupermarket(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @RequestParam UUID supermarketId
+            , @RequestParam(required = false) Month month
+            , @RequestParam(required = false) Quarter quarter
+            , @RequestParam(required = false) Integer year) {
+        SaleReportResponseBody saleReportResponseBody = productService.getSaleReportSupermarket(supermarketId, month, quarter, year);
+        return ResponseEntity.status(HttpStatus.OK).body(saleReportResponseBody);
     }
 
     @RequestMapping(value = "/getById", method = RequestMethod.GET)

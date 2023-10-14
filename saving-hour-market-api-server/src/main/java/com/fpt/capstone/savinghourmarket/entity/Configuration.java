@@ -25,7 +25,16 @@ public class Configuration {
     @Column(columnDefinition = "tinyint")
     private Integer systemStatus;
 
+    @Column(columnDefinition = "tinyint")
     private Integer limitOfOrders;
 
+    @Column(columnDefinition = "tinyint")
     private Integer numberOfSuggestedPickupPoint;
+
+    private Integer initialShippingFee;
+
+    @Column(columnDefinition = "tinyint")
+    private Integer minKmDistanceForExtraShippingFee;
+
+    private Integer extraShippingFeePerKilometer;
 }

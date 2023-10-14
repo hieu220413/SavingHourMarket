@@ -138,9 +138,9 @@ SET @NemBoTieuXanh = 'Sản phẩm Nem Bò tiêu xanh được chế biến từ
 ';
 
 -- Configuration
-INSERT INTO `saving_hour_market`.`configuration` (`id`, `limit_of_orders`, `number_of_suggested_pickup_point`, `system_status`)
+INSERT INTO `saving_hour_market`.`configuration` (`id`, `limit_of_orders`, `number_of_suggested_pickup_point`, `extra_shipping_fee_per_kilometer`, `initial_shipping_fee`, `min_km_distance_for_extra_shipping_fee`, `system_status`)
 --     VALUES (`id`, `limit_of_orders`, `number_of_suggested_pickup_point`, `system_status`);
-    VALUES  (UUID_TO_BIN('accf78c1-5541-11ee-8a50-a85e45c41921'), 3, 3, @systemActive);
+    VALUES  (UUID_TO_BIN('accf78c1-5541-11ee-8a50-a85e45c41921'), 3, 3, 1000, 10000, 2, @systemActive);
 
 
 -- Customer
