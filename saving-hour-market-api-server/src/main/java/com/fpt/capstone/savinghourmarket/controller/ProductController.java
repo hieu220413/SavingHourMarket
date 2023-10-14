@@ -5,16 +5,15 @@ import com.fpt.capstone.savinghourmarket.common.Quarter;
 import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
-import com.fpt.capstone.savinghourmarket.model.ProductCateWithSubCate;
-import com.fpt.capstone.savinghourmarket.model.ProductListResponseBody;
-import com.fpt.capstone.savinghourmarket.model.ProductSubCateOnly;
-import com.fpt.capstone.savinghourmarket.model.SaleReportResponseBody;
+import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
+import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.service.ProductCategoryService;
 import com.fpt.capstone.savinghourmarket.service.ProductService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.http.*;
@@ -106,5 +105,17 @@ public class ProductController {
     public ResponseEntity<List<ProductSubCateOnly>> getAllSubCategory() {
         List<ProductSubCateOnly> productSubCateOnlyList = productService.getAllSubCategory();
         return ResponseEntity.status(HttpStatus.OK).body(productSubCateOnlyList);
+    }
+
+    @RequestMapping(value = "/createCategory", method = RequestMethod.POST)
+    public ResponseEntity<ProductCategory> createCategory(@RequestBody @Valid ProductCategoryCreateBody productCategoryCreateBody) {
+        ProductCategory productCategory = productService.createCategory(productCategoryCreateBody);
+        return ResponseEntity.status(HttpStatus.OK).body(productCategory);
+    }
+
+    @RequestMapping(value = "/createSubCategory", method = RequestMethod.POST)
+    public ResponseEntity<ProductSubCategory> createSubCategory(@RequestBody @Valid ProductSubCategoryCreateBody productSubCategoryCreateBody) {
+        ProductSubCategory productSubCategory = productService.createSubCategory(productSubCategoryCreateBody);
+        return ResponseEntity.status(HttpStatus.OK).body(productSubCategory);
     }
 }
