@@ -1,17 +1,11 @@
 package com.fpt.capstone.savinghourmarket.model;
 
-import com.fpt.capstone.savinghourmarket.common.Status;
 import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
 import com.fpt.capstone.savinghourmarket.entity.Supermarket;
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.UuidGenerator;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
@@ -48,10 +42,9 @@ public class ProductCreate {
     private String imageUrl;
 
     @NotNull
-    private ProductSubCategory productSubCategoryRequest;
+    private ProductSubCategory productSubCategory;
 
-    private UUID supermarketIdRequest;
-
-    private SupermarketCreateRequestBody newSupermarketCreateRequest;
+    @NotNull
+    private Supermarket supermarket;
 
 }

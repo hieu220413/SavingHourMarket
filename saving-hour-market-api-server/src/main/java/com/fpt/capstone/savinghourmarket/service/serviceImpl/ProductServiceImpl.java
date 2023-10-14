@@ -1,9 +1,6 @@
 package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
-import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
-import com.fpt.capstone.savinghourmarket.common.Month;
-import com.fpt.capstone.savinghourmarket.common.Quarter;
-import com.fpt.capstone.savinghourmarket.common.SortType;
+import com.fpt.capstone.savinghourmarket.common.*;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
 import com.fpt.capstone.savinghourmarket.entity.Supermarket;
@@ -30,11 +27,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -123,10 +124,10 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public SaleReportResponseBody getSaleReportSupermarket(UUID supermarketId, Month month, Quarter quarter, Integer year) {
         LocalDate currentDate = LocalDate.now();
-        if(!supermarketRepository.findById(supermarketId).isPresent()){
+        if (!supermarketRepository.findById(supermarketId).isPresent()) {
             throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.SUPERMARKET_NOT_FOUND.getCode()), AdditionalResponseCode.SUPERMARKET_NOT_FOUND.toString());
         }
-        if(year == null) {
+        if (year == null) {
             year = currentDate.getYear();
         }
 
@@ -163,12 +164,12 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Transactional(rollbackFor = {ResourceNotFoundException.class})
+    @Transactional
     public Product createProduct(ProductCreate productCreate) throws ResourceNotFoundException {
         HashMap<String, String> errorFields = new HashMap<>();
         Product product = new Product();
         if (productCreate.getName().length() > 50) {
-            errorFields.put("Lỗi nhập tên", "Tên sản phẩm chỉ có tối đa 50 kí tự!");
+            errorFields.put("Lỗi nhập tên sản phẩm", "Tên sản phẩm chỉ có tối đa 50 kí tự!");
         }
 
         if (productCreate.getPrice() < 0 || productCreate.getPriceOriginal() < 0) {
@@ -176,29 +177,77 @@ public class ProductServiceImpl implements ProductService {
         }
 
         if (productCreate.getQuantity() <= 0) {
-            errorFields.put("Lỗi nhập số lượng", "Số lượng sản phẩm không thể âm!");
+            errorFields.put("Lỗi nhập số lượng", "Số lượng sản phẩm không thể âm hoặc bằng 0!");
         }
 
-        if(errorFields.size() > 0){
+        if (productCreate.getExpiredDate().isBefore(LocalDateTime.now().plus(productCreate.getProductSubCategory().getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
+            errorFields.put("Lỗi nhập ngày hết hạn", "Ngày hết hạn phải sau ngày hiện tại cộng thêm số ngày điều kiện cho hàng cận hạn sử dụng có trong SUBCATEGORY!");
+        }
+
+        if (productCreate.getProductSubCategory().getId() == null && productCreate.getProductSubCategory().getName().length() > 50) {
+            errorFields.put("Lỗi nhập tên SubCategory", "Tên sản phẩm chỉ có tối đa 50 kí tự!");
+        }
+
+        if (productCreate.getProductSubCategory().getId() == null && productCreate.getProductSubCategory().getAllowableDisplayThreshold() <= 0) {
+            errorFields.put("Lỗi nhập AllowableDisplayThreshold", "AllowableDisplayThreshold không thể âm hoặc bằng 0!");
+        }
+
+        if (productCreate.getProductSubCategory().getId() == null && productCreate.getProductSubCategory().getProductCategory().getName().length() > 50) {
+            errorFields.put("Lỗi nhập tên category", "Tên category chỉ có tối đa 50 kí tự!");
+        }
+
+        if (productCreate.getSupermarket().getId() == null && productCreate.getSupermarket().getName().length() > 50) {
+            errorFields.put("Lỗi nhập tên siêu thị", "Tên siêu thị chỉ có tối đa 50 kí tự!");
+        }
+
+        if (productCreate.getSupermarket().getId() == null && productCreate.getSupermarket().getAddress().length() > 255) {
+            errorFields.put("Lỗi nhập tên siêu thị", "Tên siêu thị chỉ có tối đa 255 kí tự!");
+        }
+
+        Pattern pattern;
+        Matcher matcher;
+        pattern = Pattern.compile("^(0|84)(2(0[3-9]|1[0-6|8|9]|2[0-2|5-9]|3[2-9]|4[0-9]|5[1|2|4-9]|6[0-3|9]|7[0-7]|8[0-9]|9[0-4|6|7|9])|3[2-9]|5[5|6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])([0-9]{7})$");
+        matcher = pattern.matcher(productCreate.getSupermarket().getPhone());
+        if (!matcher.matches()) {
+            errorFields.put("Lỗi nhập số điện thoại siêu thị", "Số điện thoại siêu thị không hợp lệ!");
+        }
+
+
+        if (errorFields.size() > 0) {
             throw new InvalidUserInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
         }
 
-        ModelMapper mapper = new ModelMapper();
-        mapper.map(productCreate,product);
+        ModelMapper modelMapper = new ModelMapper();
+        modelMapper.map(productCreate, product);
+        product.setStatus(Status.ENABLE.ordinal());
+        product.getSupermarket().setStatus(Status.ENABLE.ordinal());
 
-        if(productCreate.getProductSubCategoryRequest().getId() != null){
-            ProductSubCategory productSubCategory = productSubCategoryRepository.findById(productCreate.getProductSubCategoryRequest().getId())
-                    .orElseThrow(()-> new ResourceNotFoundException("Product Sub Category không tìm thấy với id: " + productCreate.getProductSubCategoryRequest().getId()));
-            product.setProductSubCategory(productSubCategory);
-        }else {
-            product.setProductSubCategory(productCreate.getProductSubCategoryRequest());
+        //Save new product Category if id is null
+        UUID productCategoryId = product.getProductSubCategory().getProductCategory().getId();
+        if (productCategoryId != null) {
+            product.getProductSubCategory()
+                    .setProductCategory(productCategoryRepository.findById(productCategoryId)
+                            .orElseThrow(() -> new ResourceNotFoundException("Product Sub Category không tìm thấy với id: " + productCategoryId)));
+        } else {
+            productCategoryRepository.save(product.getProductSubCategory().getProductCategory());
         }
 
-        if(productCreate.getSupermarketIdRequest() != null){
-            Supermarket supermarket = 
-        }
+        //Save new product sub Category if id is null
+        UUID productSubCategoryId = product.getProductSubCategory().getId();
+        product.setProductSubCategory(productSubCategoryId != null ?
+                productSubCategoryRepository.findById(productSubCategoryId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Product Sub Category không tìm thấy với id: " + productSubCategoryId))
+                :
+                productSubCategoryRepository.save(product.getProductSubCategory()));
 
+        //Save new supermarket if id is null
+        UUID supermarketId = product.getSupermarket().getId();
+        product.setSupermarket(supermarketId != null ?
+                supermarketRepository.findById(supermarketId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Supermarket không tìm thấy với id: " + supermarketId))
+                :
+                supermarketRepository.save(product.getSupermarket()));
 
-        return product;
+        return productRepository.save(product);
     }
 }

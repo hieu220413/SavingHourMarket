@@ -5,6 +5,7 @@ import com.fpt.capstone.savinghourmarket.common.Quarter;
 import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
+import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.ProductCateWithSubCate;
 import com.fpt.capstone.savinghourmarket.model.ProductCreate;
 import com.fpt.capstone.savinghourmarket.model.ProductListResponseBody;
@@ -15,6 +16,8 @@ import com.fpt.capstone.savinghourmarket.service.ProductService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.bind.DefaultValue;
@@ -111,7 +114,8 @@ public class ProductController {
     }
 
     @RequestMapping(value = "/upload", method = RequestMethod.PUT)
-    public ResponseEntity<Product> uploadProduct(@Valid @RequestBody ProductCreate productCreate){
+    @Operation(description = "Upload new product, if id of each entities (ex: subCategory, Category, Supermarket) in product is not null, it's mean to upload with existed entities.If not, it's mean to upload with new entities.")
+    public ResponseEntity<Product> uploadProduct(@Valid @RequestBody ProductCreate productCreate) throws ResourceNotFoundException {
         return ResponseEntity.status(HttpStatus.OK).body(productService.createProduct(productCreate));
     }
 
