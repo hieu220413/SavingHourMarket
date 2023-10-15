@@ -2,8 +2,6 @@ package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
 import com.fpt.capstone.savinghourmarket.common.*;
 import com.fpt.capstone.savinghourmarket.entity.Product;
-import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
-import com.fpt.capstone.savinghourmarket.entity.Supermarket;
 import com.fpt.capstone.savinghourmarket.exception.InvalidUserInputException;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
@@ -18,6 +16,12 @@ import com.fpt.capstone.savinghourmarket.repository.ProductSubCategoryRepository
 import com.fpt.capstone.savinghourmarket.repository.SupermarketRepository;
 import com.fpt.capstone.savinghourmarket.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,20 +30,20 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
+import java.util.*;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
@@ -140,6 +144,7 @@ public class ProductServiceImpl implements ProductService {
         });
         return saleReportResponseBody;
     }
+
 
     @Override
     @Transactional
@@ -249,5 +254,36 @@ public class ProductServiceImpl implements ProductService {
                 supermarketRepository.save(product.getSupermarket()));
 
         return productRepository.save(product);
+    }
+
+    @Override
+    public List<Product> createProductByExcel(MultipartFile file) throws IOException {
+        Workbook workbook = new XSSFWorkbook(file.getInputStream());
+        Sheet sheet = workbook.getSheetAt(0);
+        Map<Integer, List<String>> data = new HashMap<>();
+        int i = 0;
+        for (Row row : sheet) {
+            data.put(i, new ArrayList<String>());
+            for (Cell cell : row) {
+                switch (cell.getCellType()) {
+                    case STRING:
+                        log.info(cell.getStringCellValue());
+                        break;
+                    case NUMERIC:
+                        log.info(String.valueOf(cell.getNumericCellValue()));
+                        break;
+                    case BOOLEAN:
+                        log.info(String.valueOf(cell.getBooleanCellValue()));
+                        break;
+                    case FORMULA:
+                        log.info(cell.getCellFormula());
+                        break;
+                    default:
+                        data.get(i).add(" ");
+                }
+            }
+            i++;
+        }
+        return null;
     }
 }
