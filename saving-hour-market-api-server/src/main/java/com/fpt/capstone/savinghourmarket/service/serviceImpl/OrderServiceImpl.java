@@ -230,6 +230,8 @@ public class OrderServiceImpl implements OrderService {
         if (order.getOrderGroup() != null) {
             orderWithDetails.setTimeFrame(order.getOrderGroup().getTimeFrame());
             orderWithDetails.setPickupPoint(order.getOrderGroup().getPickupPoint());
+        } else {
+            orderWithDetails.setTimeFrame(order.getTimeFrame());
         }
 
         List<OrderDetail> orderDetails = order.getOrderDetailList();
@@ -507,6 +509,9 @@ public class OrderServiceImpl implements OrderService {
 
         if (orderCreateHasPickupPointAndTimeFrame(orderCreate)) {
             groupingOrder(order, orderCreate);
+        } else {
+            order.setTimeFrame(timeFrameRepository.findById(orderCreate.getTimeFrameId())
+                    .orElseThrow(()-> new ResourceNotFoundException("Time frame không tìm thấy với id: " + orderCreate.getTimeFrameId())));
         }
 
         List<OrderDetail> orderDetails = getOrderDetails(order, orderCreate);
@@ -560,6 +565,7 @@ public class OrderServiceImpl implements OrderService {
             group = orderGroupRepository.save(orderGroupNew);
         }
         order.setOrderGroup(group);
+        order.setTimeFrame(group.getTimeFrame());
     }
 
     private OrderGroup createNewOrderGroup(OrderCreate orderCreate) {

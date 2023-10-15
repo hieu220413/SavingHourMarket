@@ -59,7 +59,9 @@ public class Product {
     )
     private ProductSubCategory productSubCategory;
 
-    @ManyToOne
+    @ManyToOne(
+            cascade = CascadeType.ALL
+    )
     @JoinColumn(
             name = "supermarket_id",
             referencedColumnName = "id"
