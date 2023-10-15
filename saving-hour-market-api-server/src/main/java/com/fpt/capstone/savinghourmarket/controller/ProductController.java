@@ -5,16 +5,15 @@ import com.fpt.capstone.savinghourmarket.common.Quarter;
 import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
-import com.fpt.capstone.savinghourmarket.model.ProductCateWithSubCate;
-import com.fpt.capstone.savinghourmarket.model.ProductListResponseBody;
-import com.fpt.capstone.savinghourmarket.model.ProductSubCateOnly;
-import com.fpt.capstone.savinghourmarket.model.SaleReportResponseBody;
+import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
+import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.service.ProductCategoryService;
 import com.fpt.capstone.savinghourmarket.service.ProductService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.http.*;
@@ -85,7 +84,9 @@ public class ProductController {
             , @RequestParam UUID supermarketId
             , @RequestParam(required = false) Month month
             , @RequestParam(required = false) Quarter quarter
-            , @RequestParam(required = false) Integer year) {
+            , @RequestParam(required = false) Integer year) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
         SaleReportResponseBody saleReportResponseBody = productService.getSaleReportSupermarket(supermarketId, month, quarter, year);
         return ResponseEntity.status(HttpStatus.OK).body(saleReportResponseBody);
     }
@@ -106,5 +107,37 @@ public class ProductController {
     public ResponseEntity<List<ProductSubCateOnly>> getAllSubCategory() {
         List<ProductSubCateOnly> productSubCateOnlyList = productService.getAllSubCategory();
         return ResponseEntity.status(HttpStatus.OK).body(productSubCateOnlyList);
+    }
+
+    @RequestMapping(value = "/createCategory", method = RequestMethod.POST)
+    public ResponseEntity<ProductCategory> createCategory(@RequestBody @Valid ProductCategoryCreateBody productCategoryCreateBody, @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        ProductCategory productCategory = productService.createCategory(productCategoryCreateBody);
+        return ResponseEntity.status(HttpStatus.OK).body(productCategory);
+    }
+
+    @RequestMapping(value = "/createSubCategory", method = RequestMethod.POST)
+    public ResponseEntity<ProductSubCategory> createSubCategory(@RequestBody @Valid ProductSubCategoryCreateBody productSubCategoryCreateBody, @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        ProductSubCategory productSubCategory = productService.createSubCategory(productSubCategoryCreateBody);
+        return ResponseEntity.status(HttpStatus.OK).body(productSubCategory);
+    }
+
+    @RequestMapping(value = "/updateCategory", method = RequestMethod.PUT)
+    public ResponseEntity<ProductCategory> updateCategory(@RequestBody @Valid ProductCategoryUpdateBody productCategoryUpdateBody, @RequestParam UUID categoryId, @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        ProductCategory productCategory = productService.updateProductCategory(productCategoryUpdateBody, categoryId);
+        return ResponseEntity.status(HttpStatus.OK).body(productCategory);
+    }
+
+    @RequestMapping(value = "/updateSubCategory", method = RequestMethod.PUT)
+    public ResponseEntity<ProductSubCategory> updateSubCategory(@RequestBody @Valid ProductSubCategoryUpdateBody productSubCategoryUpdateBody, @RequestParam UUID subCategoryId, @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        ProductSubCategory productSubCategory = productService.updateProductSubCategory(productSubCategoryUpdateBody, subCategoryId);
+        return ResponseEntity.status(HttpStatus.OK).body(productSubCategory);
     }
 }

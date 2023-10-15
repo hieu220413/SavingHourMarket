@@ -7,9 +7,9 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.HashMap;
 
 @Getter
-public class InvalidUserInputException extends ResponseStatusException {
+public class InvalidInputException extends ResponseStatusException {
     private HashMap errorFields;
-    public InvalidUserInputException(HttpStatusCode status, String message, HashMap errorFields) {
+    public InvalidInputException(HttpStatusCode status, String message, HashMap errorFields) {
         super(status, message);
         this.errorFields = errorFields;
     }

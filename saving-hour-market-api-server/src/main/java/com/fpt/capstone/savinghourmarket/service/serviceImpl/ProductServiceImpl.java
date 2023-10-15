@@ -5,13 +5,17 @@ import com.fpt.capstone.savinghourmarket.common.Month;
 import com.fpt.capstone.savinghourmarket.common.Quarter;
 import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Product;
+import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
+import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.repository.ProductCategoryRepository;
 import com.fpt.capstone.savinghourmarket.repository.ProductRepository;
 import com.fpt.capstone.savinghourmarket.repository.ProductSubCategoryRepository;
 import com.fpt.capstone.savinghourmarket.repository.SupermarketRepository;
+import com.fpt.capstone.savinghourmarket.service.ProductCategoryService;
 import com.fpt.capstone.savinghourmarket.service.ProductService;
+import com.fpt.capstone.savinghourmarket.service.ProductSubCategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -37,6 +41,9 @@ public class ProductServiceImpl implements ProductService {
     private final ProductSubCategoryRepository productSubCategoryRepository;
 
     private final SupermarketRepository supermarketRepository;
+    private final ProductCategoryService productCategoryService;
+
+    private final ProductSubCategoryService productSubCategoryService;
 
     @Override
     public ProductListResponseBody getProductsForStaff(Boolean isExpiredShown, String name, String supermarketId, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, SortType quantitySortType, SortType expiredSortType, SortType priceSort) {
@@ -152,4 +159,23 @@ public class ProductServiceImpl implements ProductService {
         return productSubCateOnlyList;
     }
 
+    @Override
+    public ProductCategory createCategory(ProductCategoryCreateBody productCategoryCreateBody) {
+        return productCategoryService.createCategory(productCategoryCreateBody);
+    }
+
+    @Override
+    public ProductSubCategory createSubCategory(ProductSubCategoryCreateBody productSubCategoryCreateBody) {
+        return productSubCategoryService.createSubCategory(productSubCategoryCreateBody);
+    }
+
+    @Override
+    public ProductCategory updateProductCategory(ProductCategoryUpdateBody productCategoryUpdateBody, UUID categoryId) {
+        return productCategoryService.updateCategory(productCategoryUpdateBody, categoryId);
+    }
+
+    @Override
+    public ProductSubCategory updateProductSubCategory(ProductSubCategoryUpdateBody productSubCategoryUpdateBody, UUID subCategoryId) {
+        return productSubCategoryService.updateSubCategory(productSubCategoryUpdateBody, subCategoryId);
+    }
 }

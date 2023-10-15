@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -21,4 +22,6 @@ public interface ProductCategoryRepository extends JpaRepository<ProductCategory
             "AND pd.status = 1")
 //            "WHERE SIZE(psct.productList) > 0 "
     List<ProductCateWithSubCate> getAllProductCategoryWithSubCate();
+
+    Optional<ProductCategory> findByName(String trim);
 }
