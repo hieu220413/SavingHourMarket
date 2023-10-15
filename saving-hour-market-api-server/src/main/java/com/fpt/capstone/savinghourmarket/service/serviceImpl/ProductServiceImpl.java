@@ -169,5 +169,13 @@ public class ProductServiceImpl implements ProductService {
         return productSubCategoryService.createSubCategory(productSubCategoryCreateBody);
     }
 
+    @Override
+    public ProductCategory updateProductCategory(ProductCategoryUpdateBody productCategoryUpdateBody, UUID categoryId) {
+        return productCategoryService.updateCategory(productCategoryUpdateBody, categoryId);
+    }
 
+    @Override
+    public ProductSubCategory updateProductSubCategory(ProductSubCategoryUpdateBody productSubCategoryUpdateBody, UUID subCategoryId) {
+        return productSubCategoryService.updateSubCategory(productSubCategoryUpdateBody, subCategoryId);
+    }
 }

@@ -49,6 +49,8 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/product/getSaleReportSupermarket").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/product/createCategory").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/product/createSubCategory").hasAnyRole(selectionStaffAndAdmin)
+                            .requestMatchers("/api/product/updateSubCategory").hasAnyRole(selectionStaffAndAdmin)
+                            .requestMatchers("/api/product/updateCategory").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/discount/getDiscountsForCustomer").permitAll()
                             .requestMatchers("/api/discount/getDiscountById").permitAll()
                             .requestMatchers("/api/timeframe/getAll").permitAll()

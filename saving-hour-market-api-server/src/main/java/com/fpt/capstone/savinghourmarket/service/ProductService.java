@@ -27,4 +27,8 @@ public interface ProductService {
     ProductCategory createCategory(ProductCategoryCreateBody productCategoryCreateBody);
 
     ProductSubCategory createSubCategory(ProductSubCategoryCreateBody productSubCategoryCreateBody);
+
+    ProductCategory updateProductCategory(ProductCategoryUpdateBody productCategoryUpdateBody, UUID categoryId);
+
+    ProductSubCategory updateProductSubCategory(ProductSubCategoryUpdateBody productSubCategoryUpdateBody, UUID subCategoryId);
 }

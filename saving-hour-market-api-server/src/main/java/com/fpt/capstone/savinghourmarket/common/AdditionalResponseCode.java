@@ -14,6 +14,7 @@ public enum AdditionalResponseCode {
     REQUIRED_E_PAYMENT(403),
     PRODUCT_NOT_FOUND(404),
     PRODUCT_CATEGORY_NOT_FOUND(404),
+    PRODUCT_SUB_CATEGORY_NOT_FOUND(404),
     ORDER_IS_PAID(403);
 
     private int code;

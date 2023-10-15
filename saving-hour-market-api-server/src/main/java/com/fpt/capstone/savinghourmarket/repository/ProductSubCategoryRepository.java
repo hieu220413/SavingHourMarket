@@ -23,4 +23,9 @@ public interface ProductSubCategoryRepository extends JpaRepository<ProductSubCa
     List<ProductSubCateOnly> findAllSubCategoryOnly();
 
     Optional<ProductSubCategory> findByName(String name);
+
+    @Query("SELECT sct from ProductSubCategory sct " +
+            "JOIN FETCH sct.productCategory " +
+            "WHERE sct.id = :subCategoryId")
+    Optional<ProductSubCategory> findByIdWithCate(UUID subCategoryId);
 }
