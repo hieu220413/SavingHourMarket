@@ -176,6 +176,9 @@ const Discount = ({ navigation }) => {
             justifyContent: 'space-between',
             marginVertical: 15,
             marginHorizontal: 15,
+            fontFamily: FONTS.fontFamily,
+            fontSize: 24,
+            color: 'black',
           }}>
           Mã giảm giá
         </Text>
@@ -234,49 +237,18 @@ const Discount = ({ navigation }) => {
           />
           <Text
             style={{
-              textAlign: 'center',
-              color: 'black',
-              fontSize: 24,
-              fontFamily: FONTS.fontFamily,
-            }}>
-            Mã giảm giá
+              font: FONTS.fontFamily,
+              fontSize: 20,
+            }}
+          >
+            Đã hết mã giảm giá cho loại mặt hàng này
           </Text>
-          <TouchableOpacity
-            onPress={() => {
-              navigation.navigate('Cart');
-            }}>
-            <Image
-              resizeMode="contain"
-              style={{
-                height: 40,
-                tintColor: COLORS.primary,
-                width: 35,
-              }}
-              source={icons.cart}
-            />
-            {cartList.length !== 0 && (
-              <View
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  right: -10,
-                  backgroundColor: COLORS.primary,
-                  borderRadius: 50,
-                  width: 20,
-                  height: 20,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                <Text
-                  style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
-                  {cartList.length}
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
         </View>
       ) : (
         <FlatList
+          style={{
+            marginTop: 20,
+          }}
           scrollEnabled={true}
           showsVerticalScrollIndicator={true}
           data={discounts}

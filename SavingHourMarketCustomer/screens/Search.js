@@ -8,6 +8,7 @@ import { COLORS, FONTS } from '../constants/theme';
 import { API } from '../constants/api';
 import { useFocusEffect } from "@react-navigation/native";
 import LoadingScreen from '../components/LoadingScreen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Search = ({ navigation }) => {
     const [products, setProducts] = useState([]);
@@ -15,6 +16,7 @@ const Search = ({ navigation }) => {
     const [productName, setProductName] = useState('');
     const [text, setText] = useState();
     const [loading, setLoading] = useState(false);
+    const [searchHistory, setSearchHistory] = useState([]);
 
     const typingTimeoutRef = useRef(null);
 
@@ -41,6 +43,17 @@ const Search = ({ navigation }) => {
                     console.log(err);
                     setLoading(false);
                 });
+
+            (async () => {
+                try {
+                    const value = await AsyncStorage.getItem('SearchHistory');
+                    let newSearchHistoryList = value ? JSON.parse(value) : [];
+                    setSearchHistory(newSearchHistoryList);
+                } catch (err) {
+                    console.log(err);
+                    setLoading(false);
+                }
+            })();
         }, [productName]
         )
     );
@@ -71,8 +84,9 @@ const Search = ({ navigation }) => {
             >
                 <TouchableOpacity
                     onPress={() => {
-                        navigation.navigate('ProductDetails', {
-                            product: item,
+                        navigation.navigate('SearchResult', {
+                            result: result,
+                            text: item,
                         });
                     }}
                 >
@@ -83,7 +97,7 @@ const Search = ({ navigation }) => {
                             fontSize: 16,
                             lineHeight: 40,
                         }}
-                    >{item.name}</Text>
+                    >{item}</Text>
                 </TouchableOpacity>
             </View>
         );
@@ -132,7 +146,7 @@ const Search = ({ navigation }) => {
         <View
             style={{
                 backgroundColor: '#fff',
-                paddingBottom: '30%'
+                paddingBottom: '10%'
             }}
         >
             <View
@@ -163,9 +177,28 @@ const Search = ({ navigation }) => {
                 }}
             >
                 {/* Search Suggested */}
-                {result.map((item, index) => (
+                {searchHistory.length > 0 && searchHistory.map((item, index) => (
                     <Item item={item} key={index} />
                 ))}
+                {searchHistory.length > 0 && (
+                    <TouchableOpacity
+                        onPress={() => {
+                            AsyncStorage.removeItem('SearchHistory');
+                            setSearchHistory([]);
+                        }}
+                    >
+                        <Text
+                            style={{
+                                textAlign: 'center',
+                                fontFamily: FONTS.fontFamily,
+                                fontSize: 16,
+                                paddingVertical: 10,
+                                borderColor: '#c8c8c8',
+                                borderWidth: 0.8,
+                            }}
+                        >Xóa Lịch Sử Tìm Kiếm</Text>
+                    </TouchableOpacity>
+                )}
                 {/* Display product suggestions */}
                 <Text
                     style={{

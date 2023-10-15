@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 // eslint-disable-next-line prettier/prettier
-import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Modal } from 'react-native';
 import React, { useCallback, useState } from 'react';
 import { icons } from '../constants';
 import { COLORS, FONTS } from '../constants/theme';
@@ -16,6 +16,30 @@ const ProductsBySubCategories = ({ navigation, route }) => {
     const [products, setProducts] = useState([]);
     const [cartList, setCartList] = useState([]);
     const [loading, setLoading] = useState(false);
+    const sortOptions = [
+        {
+            id: 1,
+            name: 'HSD gần nhất',
+            active: false,
+        },
+        {
+            id: 2,
+            name: 'HSD xa nhất',
+            active: false,
+        },
+        {
+            id: 3,
+            name: 'Giá tiền tăng dần',
+            active: false,
+        },
+        {
+            id: 4,
+            name: 'Giá tiền giảm dần',
+            active: false,
+        },
+    ];
+    const [selectSort, setSelectSort] = useState(sortOptions);
+    const [modalVisible, setModalVisible] = useState(false);
 
     const showToast = () => {
         Toast.show({
@@ -30,7 +54,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
     useFocusEffect(
         useCallback(() => {
             setLoading(true);
-            fetch(`${API.baseURL}/api/product/getProductsForCustomer?productSubCategoryId=${subCategoryId}&page=0&limit=9999&expiredSortType=ASC`)
+            fetch(`${API.baseURL}/api/product/getProductsForCustomer?productSubCategoryId=${subCategoryId}&page=0&limit=9999`)
                 .then(res => res.json())
                 .then(data => {
                     setProducts(data.productList);
@@ -40,6 +64,17 @@ const ProductsBySubCategories = ({ navigation, route }) => {
                     console.log(err);
                     setLoading(false);
                 });
+
+            (async () => {
+                try {
+                    const cartList = await AsyncStorage.getItem('CartList');
+                    setCartList(cartList ? JSON.parse(cartList) : []);
+                    setLoading(false);
+                } catch (err) {
+                    console.log(err);
+                    setLoading(false);
+                }
+            })();
         }, [subCategoryId])
     );
 
@@ -65,6 +100,56 @@ const ProductsBySubCategories = ({ navigation, route }) => {
         } catch (error) {
             console.log(error);
         }
+    };
+
+    const sortProduct = (item) => {
+        const sortItem = item.find(item => item.active === true);
+        setLoading(true);
+        if (sortItem) {
+            fetch(`${API.baseURL}/api/product/getProductsForCustomer?productSubCategoryId=${subCategoryId}&page=0&limit=10${sortItem?.id == 1 ? '&expiredSortType=ASC' : ''}${sortItem?.id == 2 ? '&expiredSortType=DESC' : ''}${sortItem?.id == 3 ? '&priceSort=ASC' : ''}${sortItem?.id == 4 ? '&priceSort=DESC' : ''}`)
+                .then(res => res.json())
+                .then(data => {
+                    setProducts(data.productList);
+                    setLoading(false);
+                })
+                .catch(err => {
+                    console.log(err);
+                    setLoading(false);
+                });
+        } else {
+            fetch(`${API.baseURL}/api/product/getProductsForCustomer?productSubCategoryId=${subCategoryId}&page=0&limit=10`)
+                .then(res => res.json())
+                .then(data => {
+                    setProducts(data.productList);
+                    setLoading(false);
+                })
+                .catch(err => {
+                    console.log(err);
+                    setLoading(false);
+                });
+        }
+    };
+
+    const handleApplyFilter = () => {
+        setModalVisible(!modalVisible);
+        setLoading(true);
+        sortProduct(selectSort);
+    };
+
+    const handleClear = () => {
+        setModalVisible(!modalVisible);
+        setLoading(true);
+        fetch(`${API.baseURL}/api/product/getProductsForCustomer?page=0&limit=10`)
+            .then(res => res.json())
+            .then(data => {
+                setProducts(data.productList);
+                setSelectSort(sortOptions);
+                setLoading(false);
+            })
+            .catch(err => {
+                console.log(err);
+                setLoading(false);
+            });
     };
 
 
@@ -155,6 +240,59 @@ const ProductsBySubCategories = ({ navigation, route }) => {
             </TouchableOpacity>
         );
     };
+
+    const ModalSortItem = ({ item }) => {
+        return (
+            <TouchableOpacity
+                onPress={() => {
+                    const newArray = selectSort.map((i) => {
+                        if (i.id === item.id) {
+                            if (i.active === true) {
+                                return { ...i, active: false }
+                            } else {
+                                return { ...i, active: true }
+                            }
+                        }
+                        return { ...i, active: false }
+                    })
+                    setSelectSort(newArray);
+                }}
+                style={item.active == true ? {
+                    borderColor: COLORS.primary,
+                    borderWidth: 1,
+                    borderRadius: 10,
+                    margin: 5,
+                } : {
+                    borderColor: '#c8c8c8',
+                    borderWidth: 0.2,
+                    borderRadius: 10,
+                    margin: 5,
+                }}
+            >
+                <Text
+                    style={item.active == true ? {
+                        width: 150,
+                        paddingHorizontal: 20,
+                        paddingVertical: 10,
+                        textAlign: 'center',
+                        color: COLORS.primary,
+                        fontFamily: FONTS.fontFamily,
+                        fontSize: 12,
+                    } : {
+                        width: 150,
+                        paddingHorizontal: 20,
+                        paddingVertical: 10,
+                        textAlign: 'center',
+                        color: 'black',
+                        fontFamily: FONTS.fontFamily,
+                        fontSize: 12,
+                    }}
+                >
+                    {item.name}
+                </Text>
+            </TouchableOpacity>
+        )
+    }
     return (
         <View>
             <View
@@ -182,39 +320,63 @@ const ProductsBySubCategories = ({ navigation, route }) => {
                     Sản phẩm liên quan
                 </Text>
 
-                <TouchableOpacity
-                    onPress={() => {
-                        navigation.navigate('Cart');
-                    }}>
-                    <Image
-                        resizeMode="contain"
-                        style={{
-                            height: 40,
-                            tintColor: COLORS.primary,
-                            width: 35,
+
+                <View
+                    style={{
+                        flexDirection: 'row'
+                    }}
+                >
+                    <TouchableOpacity
+                        onPress={() => {
+                            setModalVisible(true);
                         }}
-                        source={icons.cart}
-                    />
-                    {cartList.length !== 0 && (
-                        <View
+                    >
+                        <Image
+                            resizeMode="contain"
                             style={{
-                                position: 'absolute',
-                                top: 0,
-                                right: -10,
-                                backgroundColor: COLORS.primary,
-                                borderRadius: 50,
-                                width: 20,
-                                height: 20,
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                            }}>
-                            <Text
-                                style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
-                                {cartList.length}
-                            </Text>
-                        </View>
-                    )}
-                </TouchableOpacity>
+                                height: 45,
+                                tintColor: COLORS.primary,
+                                width: 35,
+                                marginRight: 10,
+                            }}
+                            source={icons.filter}
+                        />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        onPress={() => {
+                            navigation.navigate('Cart');
+                        }}>
+                        <Image
+                            resizeMode="contain"
+                            style={{
+                                height: 40,
+                                tintColor: COLORS.primary,
+                                width: 35,
+                            }}
+                            source={icons.cart}
+                        />
+                        {cartList.length !== 0 && (
+                            <View
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    right: -10,
+                                    backgroundColor: COLORS.primary,
+                                    borderRadius: 50,
+                                    width: 20,
+                                    height: 20,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}>
+                                <Text
+                                    style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
+                                    {cartList.length}
+                                </Text>
+                            </View>
+                        )}
+                    </TouchableOpacity>
+                </View>
             </View>
             {/* List products */}
             <ScrollView
@@ -227,7 +389,108 @@ const ProductsBySubCategories = ({ navigation, route }) => {
                 ))}
             </ScrollView>
 
+            {/* Modal filter */}
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                    setModalVisible(!modalVisible);
+                }}>
+                <View style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <View
+                            style={{
+                                flexDirection: 'row',
+                                justifyContent: 'space-between',
+                            }}
+                        >
+                            <Text style={{
+                                color: 'black',
+                                fontFamily: FONTS.fontFamily,
+                                fontSize: 20,
+                                fontWeight: 700,
+                                textAlign: 'center',
+                                paddingBottom: 20,
+                            }}>Bộ lọc tìm kiếm</Text>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setModalVisible(!modalVisible);
+                                }}
+                            >
+                                <Image
+                                    resizeMode='contain'
+                                    style={{
+                                        width: 20,
+                                        height: 20,
+                                        tintColor: 'grey'
+                                    }}
+                                    source={icons.close}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                        <Text
+                            style={{
+                                color: 'black',
+                                fontFamily: FONTS.fontFamily,
+                                fontSize: 16,
+                                fontWeight: 700,
+                            }}
+                        >Sắp xếp theo</Text>
+                        <View
+                            style={{
+                                flexDirection: 'row',
+                                flexWrap: 'wrap',
+                                marginVertical: 10,
+                            }}
+                        >
+                            {selectSort.map((item, index) => (
+                                <ModalSortItem item={item} key={index} />
+                            ))}
+                        </View>
+                        <View
+                            style={{
+                                flexDirection: 'row',
+                                justifyContent: 'center',
+                                marginTop: '5%',
+                            }}
+                        >
+                            <TouchableOpacity
+                                style={{
+                                    width: '50%',
+                                    paddingHorizontal: 15,
+                                    paddingVertical: 10,
+                                    backgroundColor: 'white',
+                                    borderRadius: 10,
+                                    borderColor: COLORS.primary,
+                                    borderWidth: 0.5,
+                                    marginRight: '2%',
+                                }}
+                                onPress={handleClear}>
+                                <Text style={{
+                                    color: COLORS.primary,
+                                    fontWeight: 'bold',
+                                    textAlign: 'center',
+                                }}>Thiết lập lại</Text>
+                            </TouchableOpacity>
 
+
+                            <TouchableOpacity
+                                style={{
+                                    width: '50%',
+                                    paddingHorizontal: 15,
+                                    paddingVertical: 10,
+                                    backgroundColor: COLORS.primary,
+                                    color: 'white',
+                                    borderRadius: 10,
+                                }}
+                                onPress={handleApplyFilter}>
+                                <Text style={styles.textStyle}>Áp dụng</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
             {loading && <LoadingScreen />}
         </View>
     );
@@ -255,6 +518,46 @@ const styles = StyleSheet.create({
     itemText: {
         fontFamily: FONTS.fontFamily,
         fontSize: 20,
+    },
+    centeredView: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 22,
+    },
+    modalView: {
+        margin: 20,
+        backgroundColor: 'white',
+        borderRadius: 20,
+        padding: 20,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    button: {
+        borderRadius: 20,
+        padding: 10,
+        elevation: 2,
+    },
+    buttonOpen: {
+        backgroundColor: '#F194FF',
+    },
+    buttonClose: {
+        backgroundColor: '#2196F3',
+    },
+    textStyle: {
+        color: 'white',
+        fontWeight: 'bold',
+        textAlign: 'center',
+    },
+    modalText: {
+        marginBottom: 15,
+        textAlign: 'center',
     },
 });
 export default ProductsBySubCategories;

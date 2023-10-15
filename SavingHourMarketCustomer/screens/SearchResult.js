@@ -48,6 +48,7 @@ const SearchResult = ({
     ];
     const [selectFilterInit, setSelectFilterInit] = useState([]);
     const [selectSort, setSelectSort] = useState(sortOptions);
+    const searchHistory = route.params.text;
 
     const showToast = () => {
         Toast.show({
@@ -76,47 +77,9 @@ const SearchResult = ({
 
     const sortProduct = (item) => {
         const sortItem = item.find(item => item.active === true);
-        if (sortItem?.id == 1) {
-            setLoading(true);
-            console.log(productName);
-            console.log(currentCate);
-            fetch(`${API.baseURL}/api/product/getProductsForCustomer?name=${productName}${currentCate === '' ? '' : '&productCategoryId=' + currentCate}&page=0&limit=10&expiredSortType=ASC`)
-                .then(res => res.json())
-                .then(data => {
-                    setResult(data.productList);
-                    setLoading(false);
-                })
-                .catch(err => {
-                    console.log(err);
-                    setLoading(false);
-                });
-        } else if (sortItem?.id == 2) {
-            setLoading(true);
-            fetch(`${API.baseURL}/api/product/getProductsForCustomer?name=${productName}${currentCate === '' ? '' : '&productCategoryId=' + currentCate}&page=0&limit=10&expiredSortType=DESC`)
-                .then(res => res.json())
-                .then(data => {
-                    setResult(data.productList);
-                    setLoading(false);
-                })
-                .catch(err => {
-                    console.log(err);
-                    setLoading(false);
-                });
-        } else if (sortItem?.id == 3) {
-            setLoading(true);
-            fetch(`${API.baseURL}/api/product/getProductsForCustomer?name=${productName}${currentCate === '' ? '' : '&productCategoryId=' + currentCate}&page=0&limit=10&priceSort=ASC`)
-                .then(res => res.json())
-                .then(data => {
-                    setResult(data.productList);
-                    setLoading(false);
-                })
-                .catch(err => {
-                    console.log(err);
-                    setLoading(false);
-                });
-        } else if (sortItem?.id == 4) {
-            setLoading(true);
-            fetch(`${API.baseURL}/api/product/getProductsForCustomer?name=${productName}${currentCate === '' ? '' : '&productCategoryId=' + currentCate}&page=0&limit=10&priceSort=DESC`)
+        setLoading(true);
+        if (sortItem) {
+            fetch(`${API.baseURL}/api/product/getProductsForCustomer?name=${productName}${currentCate === '' ? '' : '&productCategoryId=' + currentCate}&page=0&limit=10${sortItem?.id == 1 ? '&expiredSortType=ASC' : ''}${sortItem?.id == 2 ? '&expiredSortType=DESC' : ''}${sortItem?.id == 3 ? '&priceSort=ASC' : ''}${sortItem?.id == 4 ? '&priceSort=DESC' : ''}`)
                 .then(res => res.json())
                 .then(data => {
                     setResult(data.productList);
@@ -127,7 +90,6 @@ const SearchResult = ({
                     setLoading(false);
                 });
         } else {
-            setLoading(true);
             fetch(`${API.baseURL}/api/product/getProductsForCustomer?name=${productName}${currentCate === '' ? '' : '&productCategoryId=' + currentCate}&page=0&limit=10`)
                 .then(res => res.json())
                 .then(data => {
@@ -188,6 +150,28 @@ const SearchResult = ({
         }
     };
 
+    const handleStoredSearchHistory = async data => {
+        try {
+            const value = await AsyncStorage.getItem('SearchHistory');
+            let newSearchHistoryList = value ? JSON.parse(value) : [];
+            const isExisted = newSearchHistoryList.some(item => item == data);
+            if (isExisted) {
+                const index = newSearchHistoryList.findIndex(item => item == data);
+                console.log(index);
+                newSearchHistoryList.splice(index, 1);
+                newSearchHistoryList.unshift(data);
+                await AsyncStorage.setItem('SearchHistory', JSON.stringify(newSearchHistoryList));
+            } else {
+                const searchData = newSearchHistoryList.unshift(searchHistory);
+                await AsyncStorage.setItem('SearchHistory', JSON.stringify(searchData));
+            }
+            setLoading(false);
+        } catch (err) {
+            setLoading(false);
+            console.log(err);
+        }
+    };
+
     // fetch search suggestion
     useFocusEffect(
         useCallback(() => {
@@ -214,6 +198,31 @@ const SearchResult = ({
                 }
             })();
 
+            (async () => {
+                try {
+                    const value = await AsyncStorage.getItem('SearchHistory');
+                    let newSearchHistoryList = value ? JSON.parse(value) : [];
+                    const isExisted = newSearchHistoryList.some(item => item == searchHistory);
+                    if (isExisted) {
+                        const index = newSearchHistoryList.findIndex(item => item == searchHistory);
+                        newSearchHistoryList.splice(index, 1);
+                        newSearchHistoryList.unshift(searchHistory);
+                        await AsyncStorage.setItem('SearchHistory', JSON.stringify(newSearchHistoryList));
+                        setLoading(false);
+                        return;
+                    }
+                    const searchData = [searchHistory, ...newSearchHistoryList];
+                    await AsyncStorage.setItem('SearchHistory', JSON.stringify(searchData));
+
+
+                    // AsyncStorage.removeItem('SearchHistory');
+                    setLoading(false);
+                } catch (err) {
+                    console.log(err);
+                    setLoading(false);
+                }
+            })();
+
             fetch(
                 `${API.baseURL}/api/product/getAllCategory`,
             )
@@ -230,7 +239,7 @@ const SearchResult = ({
                     console.log(err);
                     setLoading(false);
                 });
-        }, [productName])
+        }, [productName, searchHistory])
     );
 
     const Product = ({ data }) => {
@@ -382,6 +391,7 @@ const SearchResult = ({
                     const newArray = selectFilter.map((i) => {
                         if (i.id === item.id) {
                             if (i.active === true) {
+                                setCurrentCate('');
                                 return { ...i, active: false }
                             } else {
                                 return { ...i, active: true }
@@ -465,8 +475,13 @@ const SearchResult = ({
                             handleTypingSearch(data);
                         }}
                         onSubmitEditing={() => {
+                            setLoading(true);
                             setSelectSort(sortOptions);
                             setSelectFilter(selectFilterInit);
+                            if (productName != "") {
+                                console.log('suibmit');
+                                handleStoredSearchHistory(productName);
+                            }
                         }}
                     />
                     <View style={styles.clear}>
