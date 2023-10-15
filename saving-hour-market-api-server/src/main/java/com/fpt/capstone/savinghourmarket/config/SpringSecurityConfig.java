@@ -66,6 +66,8 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/staff/createStaffAccount").hasRole("ADMIN")
                             .requestMatchers("/api/staff/getStaffByEmail").hasRole("ADMIN")
                             .requestMatchers("/api/product/getProductsForStaff").hasAnyRole(allStaffAndAdmin)
+                            .requestMatchers("/api/product/upload").hasAnyRole(allStaffAndAdmin)
+                            .requestMatchers("/api/product/uploadByExcelFile").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/discount/getDiscountsForStaff").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/supermarket/create").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/supermarket/changeStatus").hasAnyRole(selectionStaffAndAdmin)
@@ -78,8 +80,7 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/feedback/updateStatus").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/feedback/getFeedbackForStaff").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/order/sendNotification").permitAll()
-                            .requestMatchers("/api/product/upload").permitAll()
-                            .requestMatchers("/api/product/uploadByExcelFile").permitAll();
+                    ;
 
                     auth.anyRequest().authenticated();
                 });

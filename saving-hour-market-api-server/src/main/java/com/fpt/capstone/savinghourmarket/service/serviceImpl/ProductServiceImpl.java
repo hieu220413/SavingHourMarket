@@ -4,7 +4,7 @@ import com.fpt.capstone.savinghourmarket.common.*;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
 import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
-import com.fpt.capstone.savinghourmarket.exception.InvalidUserInputException;
+import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.ProductCateWithSubCate;
@@ -246,7 +246,7 @@ public class ProductServiceImpl implements ProductService {
 
 
         if (errorFields.size() > 0) {
-            throw new InvalidUserInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
+            throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
         }
 
         ModelMapper modelMapper = new ModelMapper();

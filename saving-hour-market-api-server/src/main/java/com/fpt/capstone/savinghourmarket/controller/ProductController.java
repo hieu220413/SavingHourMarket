@@ -6,31 +6,23 @@ import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
 import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
-import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
-import com.fpt.capstone.savinghourmarket.model.ProductCateWithSubCate;
-import com.fpt.capstone.savinghourmarket.model.ProductCreate;
-import com.fpt.capstone.savinghourmarket.model.ProductListResponseBody;
-import com.fpt.capstone.savinghourmarket.model.ProductSubCateOnly;
-import com.fpt.capstone.savinghourmarket.model.SaleReportResponseBody;
-import com.fpt.capstone.savinghourmarket.service.ProductCategoryService;
+import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.service.ProductService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.context.properties.bind.DefaultValue;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -155,7 +147,7 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(productSubCategory);
     }
     
-    @RequestMapping(value = "/upload", method = RequestMethod.PUT)
+    @RequestMapping(value = "/upload", method = RequestMethod.POST)
     @Operation(description = "Upload new product, if id of each entities (ex: subCategory, Category, Supermarket) in product is not null, it's mean to upload with existed entities.If not, it's mean to upload with new entities.")
     public ResponseEntity<Product> uploadProduct(@Valid @RequestBody ProductCreate productCreate) throws ResourceNotFoundException {
         return ResponseEntity.status(HttpStatus.OK).body(productService.createProduct(productCreate));

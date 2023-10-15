@@ -1,7 +1,6 @@
 package com.fpt.capstone.savinghourmarket.exception.handler;
 
 import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
-import com.fpt.capstone.savinghourmarket.exception.InvalidUserInputException;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.ApiError;
 import org.springframework.http.HttpStatus;
@@ -14,8 +13,8 @@ import java.time.LocalDateTime;
 
 @RestControllerAdvice
 public class CustomerExceptionHandler {
-    @ExceptionHandler(InvalidUserInputException.class)
-    public ResponseEntity<ApiError> invalidUserInputExceptionHandler(InvalidUserInputException e) {
+    @ExceptionHandler(InvalidInputException.class)
+    public ResponseEntity<ApiError> invalidUserInputExceptionHandler(InvalidInputException e) {
         ApiError apiError = new ApiError(LocalDateTime.now().toString(), e.getStatusCode().value(), e.getReason(), e.getErrorFields());
         return ResponseEntity.status(e.getStatusCode().value()).body(apiError);
     }
