@@ -192,6 +192,18 @@ input {
   height: 100vh !important;
   overflow-y: scroll !important;
 
+  .modal__container-header {
+    position: absolute;
+    top: 0;
+    z-index: 999;
+    width: 100%;
+  }
+
+  .modal__container-body {
+    margin-top: 65px;
+    margin-bottom: 65px;
+  }
+
   .modal__container-footer {
     position: absolute;
     bottom: 0;
