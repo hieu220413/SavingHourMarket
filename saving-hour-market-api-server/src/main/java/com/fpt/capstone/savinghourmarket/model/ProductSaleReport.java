@@ -18,13 +18,13 @@ import java.util.UUID;
 @NoArgsConstructor
 public class ProductSaleReport {
 
-    public ProductSaleReport(Product product) {
+    public ProductSaleReport(Product product,Integer totalIncome, Integer soldQuantity) {
         this.id = product.getId();
         this.name = product.getName();
         this.imageUrl = product.getImageUrl();
-        this.totalIncome = product.getPrice();
+        this.totalIncome = totalIncome;
 //        this.totalPriceOriginal = product.getPriceOriginal();
-        this.soldQuantity = product.getQuantity();
+        this.soldQuantity = soldQuantity;
     }
 
     private UUID id;
