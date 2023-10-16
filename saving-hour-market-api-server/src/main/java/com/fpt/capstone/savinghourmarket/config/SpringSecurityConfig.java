@@ -31,6 +31,8 @@ public class SpringSecurityConfig {
     private String[] selectionStaffAndAdmin= {StaffRole.STAFF_SLT.toString()
             , "ADMIN"};
 
+    private String[] marketingStaffAndAdmin= {StaffRole.STAFF_MKT.toString(), "ADMIN"};
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable())
@@ -53,6 +55,7 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/product/updateCategory").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/discount/getDiscountsForCustomer").permitAll()
                             .requestMatchers("/api/discount/getDiscountById").permitAll()
+                            .requestMatchers("/api/discount/getDiscountUsageReport").hasAnyRole(marketingStaffAndAdmin)
                             .requestMatchers("/api/timeframe/getAll").permitAll()
                             .requestMatchers("/api/timeframe/getForPickupPoint").permitAll()
                             .requestMatchers("/api/timeframe/getForHomeDelivery").permitAll()
