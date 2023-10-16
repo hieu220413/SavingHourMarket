@@ -142,13 +142,34 @@ public class ProductServiceImpl implements ProductService {
             year = currentDate.getYear();
         }
 
+        HashMap<UUID, Product> productSaleReportHashMap = new HashMap<>();
+        List<Product> rawProudProductList = productRepository.getRawProductFromSupermarketId(supermarketId);
+
+
         SaleReportResponseBody saleReportResponseBody = new SaleReportResponseBody();
         List<Product> productEntityReportList = productRepository.getProductsReportForSupermarket(supermarketId, month == null ? null : month.getMonthInNumber(), quarter == null ? null : quarter.getQuarterInNumber(), year);
-        productEntityReportList.stream().forEach(product -> {
-            saleReportResponseBody.getProductSaleReportList().add(new ProductSaleReport(product));
-            saleReportResponseBody.setTotalSale(saleReportResponseBody.getTotalSale() + product.getQuantity());
-            saleReportResponseBody.setTotalIncome(saleReportResponseBody.getTotalIncome() + product.getPrice());
-        });
+        for(Product product : productEntityReportList) {
+            productSaleReportHashMap.put(product.getId(), product);
+        }
+
+        for(Product rawProduct : rawProudProductList) {
+            // product sale map
+            if(productSaleReportHashMap.containsKey(rawProduct.getId())) {
+                saleReportResponseBody.getProductSaleReportList().add(new ProductSaleReport(rawProduct, productSaleReportHashMap.get(rawProduct.getId()).getPrice(), productSaleReportHashMap.get(rawProduct.getId()).getQuantity()));
+                saleReportResponseBody.setTotalSale(saleReportResponseBody.getTotalSale() + productSaleReportHashMap.get(rawProduct.getId()).getQuantity());
+                saleReportResponseBody.setTotalIncome(saleReportResponseBody.getTotalIncome() + productSaleReportHashMap.get(rawProduct.getId()).getPrice());
+            } else {
+                saleReportResponseBody.getProductSaleReportList().add(new ProductSaleReport(rawProduct, 0, 0));
+            }
+        }
+
+        saleReportResponseBody.getProductSaleReportList().sort((o1, o2) -> o2.getSoldQuantity() - o1.getSoldQuantity());
+
+//        productEntityReportList.stream().forEach(product -> {
+//            saleReportResponseBody.getProductSaleReportList().add(new ProductSaleReport(product));
+//            saleReportResponseBody.setTotalSale(saleReportResponseBody.getTotalSale() + product.getQuantity());
+//            saleReportResponseBody.setTotalIncome(saleReportResponseBody.getTotalIncome() + product.getPrice());
+//        });
         return saleReportResponseBody;
     }
 
