@@ -74,11 +74,13 @@ li {
     box-shadow: 0px 1px 2px 0px rgba(102, 113, 123, 0.21) inset,
       0px 0px 0px 0px rgba(102, 113, 123, 0.25) inset;
     padding: 10px 40px;
+  }
+}
 
-    &:focus-visible {
-      border: 2px solid var(--primary);
-      outline: none;
-    }
+input {
+  &:focus-visible {
+    border: 2px solid var(--primary);
+    outline: none;
   }
 }
 
@@ -182,4 +184,110 @@ li {
 .css-1t1j96h-MuiPaper-root-MuiDialog-paper {
   max-width: none !important;
   max-height: none !important;
+}
+
+// modal style
+.modal__container {
+  width: 610px;
+  height: auto;
+
+  &-header {
+    padding: 20px;
+    height: 65px;
+    background-color: var(--primary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &-title {
+      color: white;
+      font-size: 20px;
+      font-weight: 600;
+      line-height: 28px;
+    }
+
+    svg {
+      font-size: 20px;
+      color: white;
+      cursor: pointer;
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  &-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    &-inputcontrol {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      &-label {
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 20px;
+      }
+
+      &-input {
+        width: 400px;
+        height: 40px;
+        padding: 10px;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 20px;
+      }
+    }
+  }
+
+  &-footer {
+    box-shadow: 0px 1px 0px 0px #dfe3e8 inset;
+    padding: 20px;
+    display: flex;
+    justify-content: flex-end;
+
+    &-buttons {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+
+      button {
+        padding: 10px 20px;
+        border-radius: 3px;
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: 16px;
+        transition: 0.3s linear all;
+        cursor: pointer;
+      }
+
+      &-close {
+        background-color: white;
+        border: 1px solid var(--primary);
+        color: var(--primary);
+
+        &:hover {
+          background-color: var(--primary);
+          color: white;
+        }
+      }
+
+      &-create {
+        background-color: var(--primary);
+        color: white;
+        border: none;
+
+        &:hover {
+          background-color: #157347;
+        }
+      }
+    }
+  }
 }
