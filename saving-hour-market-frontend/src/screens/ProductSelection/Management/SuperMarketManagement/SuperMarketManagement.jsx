@@ -1,10 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import ManagementMenu from "../../../../components/ManagementMenu/ManagementMenu";
 import "./SuperMarketManagement.scss";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { Dialog, Modal } from "@mui/material";
+import CreateSuperMarket from "./CreateSuperMarket";
 
 const SuperMarketManagement = () => {
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
   const menuTabs = [
     {
       display: "Siêu thị",
@@ -29,7 +34,7 @@ const SuperMarketManagement = () => {
           </div>
           {/* ****************** */}
 
-          <div className="supermarket__header-button">
+          <div onClick={handleOpen} className="supermarket__header-button">
             <FontAwesomeIcon icon={faPlus} />
             Thêm siêu thị
           </div>
@@ -184,6 +189,13 @@ const SuperMarketManagement = () => {
         </div>
         {/* ***************** */}
       </div>
+      <Dialog
+        onClose={handleClose}
+        aria-labelledby="customized-dialog-title"
+        open={open}
+      >
+        <CreateSuperMarket />
+      </Dialog>
     </div>
   );
 };
