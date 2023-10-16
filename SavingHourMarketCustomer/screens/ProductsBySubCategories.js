@@ -294,205 +294,207 @@ const ProductsBySubCategories = ({ navigation, route }) => {
         )
     }
     return (
-        <View>
-            <View
-                style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginVertical: 15,
-                    marginHorizontal: 25,
-                }}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Image
-                        source={icons.leftArrow}
-                        resizeMode="contain"
-                        style={{ width: 35, height: 35, tintColor: COLORS.primary }}
-                    />
-                </TouchableOpacity>
-                <Text
-                    style={{
-                        textAlign: 'center',
-                        color: 'black',
-                        fontSize: 24,
-                        fontFamily: FONTS.fontFamily,
-                    }}>
-                    Sản phẩm liên quan
-                </Text>
-
-
+        <>
+            <View>
                 <View
                     style={{
-                        flexDirection: 'row'
-                    }}
-                >
-                    <TouchableOpacity
-                        onPress={() => {
-                            setModalVisible(true);
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginVertical: 15,
+                        marginHorizontal: 25,
+                    }}>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                        <Image
+                            source={icons.leftArrow}
+                            resizeMode="contain"
+                            style={{ width: 35, height: 35, tintColor: COLORS.primary }}
+                        />
+                    </TouchableOpacity>
+                    <Text
+                        style={{
+                            textAlign: 'center',
+                            color: 'black',
+                            fontSize: 24,
+                            fontFamily: FONTS.fontFamily,
+                        }}>
+                        Sản phẩm liên quan
+                    </Text>
+
+
+                    <View
+                        style={{
+                            flexDirection: 'row'
                         }}
                     >
-                        <Image
-                            resizeMode="contain"
-                            style={{
-                                height: 45,
-                                tintColor: COLORS.primary,
-                                width: 35,
-                                marginRight: 10,
-                            }}
-                            source={icons.filter}
-                        />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        onPress={() => {
-                            navigation.navigate('Cart');
-                        }}>
-                        <Image
-                            resizeMode="contain"
-                            style={{
-                                height: 40,
-                                tintColor: COLORS.primary,
-                                width: 35,
-                            }}
-                            source={icons.cart}
-                        />
-                        {cartList.length !== 0 && (
-                            <View
-                                style={{
-                                    position: 'absolute',
-                                    top: 0,
-                                    right: -10,
-                                    backgroundColor: COLORS.primary,
-                                    borderRadius: 50,
-                                    width: 20,
-                                    height: 20,
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                }}>
-                                <Text
-                                    style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
-                                    {cartList.length}
-                                </Text>
-                            </View>
-                        )}
-                    </TouchableOpacity>
-                </View>
-            </View>
-            {/* List products */}
-            <ScrollView
-                keyboardShouldPersistTaps="always"
-                contentContainerStyle={{
-                    paddingBottom: 100,
-                }}>
-                {products.map((item, index) => (
-                    <Item data={item} key={index} />
-                ))}
-            </ScrollView>
-
-            {/* Modal filter */}
-            <Modal
-                animationType="fade"
-                transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => {
-                    setModalVisible(!modalVisible);
-                }}>
-                <View style={styles.centeredView}>
-                    <View style={styles.modalView}>
-                        <View
-                            style={{
-                                flexDirection: 'row',
-                                justifyContent: 'space-between',
+                        <TouchableOpacity
+                            onPress={() => {
+                                setModalVisible(true);
                             }}
                         >
-                            <Text style={{
-                                color: 'black',
-                                fontFamily: FONTS.fontFamily,
-                                fontSize: 20,
-                                fontWeight: 700,
-                                textAlign: 'center',
-                                paddingBottom: 20,
-                            }}>Bộ lọc tìm kiếm</Text>
-                            <TouchableOpacity
-                                onPress={() => {
-                                    setModalVisible(!modalVisible);
+                            <Image
+                                resizeMode="contain"
+                                style={{
+                                    height: 45,
+                                    tintColor: COLORS.primary,
+                                    width: 35,
+                                    marginRight: 10,
                                 }}
-                            >
-                                <Image
-                                    resizeMode='contain'
+                                source={icons.filter}
+                            />
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={() => {
+                                navigation.navigate('Cart');
+                            }}>
+                            <Image
+                                resizeMode="contain"
+                                style={{
+                                    height: 40,
+                                    tintColor: COLORS.primary,
+                                    width: 35,
+                                }}
+                                source={icons.cart}
+                            />
+                            {cartList.length !== 0 && (
+                                <View
                                     style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        right: -10,
+                                        backgroundColor: COLORS.primary,
+                                        borderRadius: 50,
                                         width: 20,
                                         height: 20,
-                                        tintColor: 'grey'
-                                    }}
-                                    source={icons.close}
-                                />
-                            </TouchableOpacity>
-                        </View>
-                        <Text
-                            style={{
-                                color: 'black',
-                                fontFamily: FONTS.fontFamily,
-                                fontSize: 16,
-                                fontWeight: 700,
-                            }}
-                        >Sắp xếp theo</Text>
-                        <View
-                            style={{
-                                flexDirection: 'row',
-                                flexWrap: 'wrap',
-                                marginVertical: 10,
-                            }}
-                        >
-                            {selectSort.map((item, index) => (
-                                <ModalSortItem item={item} key={index} />
-                            ))}
-                        </View>
-                        <View
-                            style={{
-                                flexDirection: 'row',
-                                justifyContent: 'center',
-                                marginTop: '5%',
-                            }}
-                        >
-                            <TouchableOpacity
-                                style={{
-                                    width: '50%',
-                                    paddingHorizontal: 15,
-                                    paddingVertical: 10,
-                                    backgroundColor: 'white',
-                                    borderRadius: 10,
-                                    borderColor: COLORS.primary,
-                                    borderWidth: 0.5,
-                                    marginRight: '2%',
-                                }}
-                                onPress={handleClear}>
-                                <Text style={{
-                                    color: COLORS.primary,
-                                    fontWeight: 'bold',
-                                    textAlign: 'center',
-                                }}>Thiết lập lại</Text>
-                            </TouchableOpacity>
-
-
-                            <TouchableOpacity
-                                style={{
-                                    width: '50%',
-                                    paddingHorizontal: 15,
-                                    paddingVertical: 10,
-                                    backgroundColor: COLORS.primary,
-                                    color: 'white',
-                                    borderRadius: 10,
-                                }}
-                                onPress={handleApplyFilter}>
-                                <Text style={styles.textStyle}>Áp dụng</Text>
-                            </TouchableOpacity>
-                        </View>
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}>
+                                    <Text
+                                        style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
+                                        {cartList.length}
+                                    </Text>
+                                </View>
+                            )}
+                        </TouchableOpacity>
                     </View>
                 </View>
-            </Modal>
+                {/* List products */}
+                <ScrollView
+                    keyboardShouldPersistTaps="always"
+                    contentContainerStyle={{
+                        paddingBottom: 100,
+                    }}>
+                    {products.map((item, index) => (
+                        <Item data={item} key={index} />
+                    ))}
+                </ScrollView>
+
+                {/* Modal filter */}
+                <Modal
+                    animationType="fade"
+                    transparent={true}
+                    visible={modalVisible}
+                    onRequestClose={() => {
+                        setModalVisible(!modalVisible);
+                    }}>
+                    <View style={styles.centeredView}>
+                        <View style={styles.modalView}>
+                            <View
+                                style={{
+                                    flexDirection: 'row',
+                                    justifyContent: 'space-between',
+                                }}
+                            >
+                                <Text style={{
+                                    color: 'black',
+                                    fontFamily: FONTS.fontFamily,
+                                    fontSize: 20,
+                                    fontWeight: 700,
+                                    textAlign: 'center',
+                                    paddingBottom: 20,
+                                }}>Bộ lọc tìm kiếm</Text>
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        setModalVisible(!modalVisible);
+                                    }}
+                                >
+                                    <Image
+                                        resizeMode='contain'
+                                        style={{
+                                            width: 20,
+                                            height: 20,
+                                            tintColor: 'grey'
+                                        }}
+                                        source={icons.close}
+                                    />
+                                </TouchableOpacity>
+                            </View>
+                            <Text
+                                style={{
+                                    color: 'black',
+                                    fontFamily: FONTS.fontFamily,
+                                    fontSize: 16,
+                                    fontWeight: 700,
+                                }}
+                            >Sắp xếp theo</Text>
+                            <View
+                                style={{
+                                    flexDirection: 'row',
+                                    flexWrap: 'wrap',
+                                    marginVertical: 10,
+                                }}
+                            >
+                                {selectSort.map((item, index) => (
+                                    <ModalSortItem item={item} key={index} />
+                                ))}
+                            </View>
+                            <View
+                                style={{
+                                    flexDirection: 'row',
+                                    justifyContent: 'center',
+                                    marginTop: '5%',
+                                }}
+                            >
+                                <TouchableOpacity
+                                    style={{
+                                        width: '50%',
+                                        paddingHorizontal: 15,
+                                        paddingVertical: 10,
+                                        backgroundColor: 'white',
+                                        borderRadius: 10,
+                                        borderColor: COLORS.primary,
+                                        borderWidth: 0.5,
+                                        marginRight: '2%',
+                                    }}
+                                    onPress={handleClear}>
+                                    <Text style={{
+                                        color: COLORS.primary,
+                                        fontWeight: 'bold',
+                                        textAlign: 'center',
+                                    }}>Thiết lập lại</Text>
+                                </TouchableOpacity>
+
+
+                                <TouchableOpacity
+                                    style={{
+                                        width: '50%',
+                                        paddingHorizontal: 15,
+                                        paddingVertical: 10,
+                                        backgroundColor: COLORS.primary,
+                                        color: 'white',
+                                        borderRadius: 10,
+                                    }}
+                                    onPress={handleApplyFilter}>
+                                    <Text style={styles.textStyle}>Áp dụng</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
+            </View>
             {loading && <LoadingScreen />}
-        </View>
+        </>
     );
 };
 const styles = StyleSheet.create({
