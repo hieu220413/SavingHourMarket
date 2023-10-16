@@ -194,7 +194,7 @@ const SuperMarketManagement = () => {
         aria-labelledby="customized-dialog-title"
         open={open}
       >
-        <CreateSuperMarket />
+        <CreateSuperMarket handleClose={handleClose} />
       </Dialog>
     </div>
   );
