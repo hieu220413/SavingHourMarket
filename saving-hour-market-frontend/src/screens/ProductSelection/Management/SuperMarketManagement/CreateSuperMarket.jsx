@@ -3,13 +3,13 @@ import "./CreateSuperMarket.scss";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
-const CreateSuperMarket = () => {
+const CreateSuperMarket = ({ handleClose }) => {
   return (
     // modal header
-    <div className="modal__container">
+    <div className="modal__container ">
       <div className="modal__container-header">
         <h3 className="modal__container-header-title">Thêm siêu thị</h3>
-        <FontAwesomeIcon icon={faXmark} />
+        <FontAwesomeIcon onClick={handleClose} icon={faXmark} />
       </div>
       {/* ****************** */}
 
@@ -25,6 +25,7 @@ const CreateSuperMarket = () => {
             className="modal__container-body-inputcontrol-input"
           />
         </div>
+
         <div className="modal__container-body-inputcontrol">
           <h4 className="modal__container-body-inputcontrol-label">
             Số điện thoại
