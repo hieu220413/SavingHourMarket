@@ -17,6 +17,15 @@ import java.util.UUID;
 @Setter
 @Getter
 public class Discount {
+
+    public Discount(UUID id, String name, Integer percentage, String imageUrl, Long quantity) {
+        this.id = id;
+        this.name = name;
+        this.percentage = percentage;
+        this.imageUrl = imageUrl;
+        this.quantity = quantity.intValue();
+    }
+
     @Id
     @UuidGenerator
     private UUID id;

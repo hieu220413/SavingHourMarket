@@ -1,6 +1,7 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fpt.capstone.savinghourmarket.model.ProductSubCategoryCreateBody;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -17,6 +18,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Setter
 @Getter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProductSubCategory {
 
     @Id
@@ -62,4 +64,7 @@ public class ProductSubCategory {
         this.allowableDisplayThreshold = productSubCategoryCreateBody.getAllowableDisplayThreshold();
 
     }
+
+    @Transient
+    private Integer totalDiscountUsage;
 }

@@ -44,4 +44,7 @@ public class ProductCategory {
     @JsonIgnore
     private List<ProductSubCategory> productSubCategories;
 
+    @Transient
+    private Integer totalDiscountUsage;
+
 }
