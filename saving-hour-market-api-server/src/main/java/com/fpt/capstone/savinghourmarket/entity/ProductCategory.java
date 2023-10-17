@@ -1,6 +1,7 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fpt.capstone.savinghourmarket.model.ProductCategoryCreateBody;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -17,6 +18,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Setter
 @Getter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProductCategory {
 
     public ProductCategory(ProductCategoryCreateBody productCategoryCreateBody) {
@@ -30,8 +32,8 @@ public class ProductCategory {
     @Column(columnDefinition = "varchar(50)")
     private String name;
 
-    @ManyToMany(
-            mappedBy = "productCategoryList",
+    @OneToMany(
+            mappedBy = "productCategory",
             fetch = FetchType.LAZY
     )
     @JsonIgnore

@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -48,5 +49,16 @@ public class SupermarketController {
         Utils.validateIdToken(idToken, firebaseAuth);
         Supermarket supermarket = supermarketService.changeStatus(supermarketId, status);
         return ResponseEntity.status(HttpStatus.OK).body(supermarket);
+    }
+
+    @RequestMapping(value = "/getSupermarketForStaff", method = RequestMethod.GET)
+    public ResponseEntity<List<Supermarket>> getSupermarketForStaff(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken
+            , @RequestParam(defaultValue = "") String name
+            , @RequestParam(defaultValue = "0") Integer page
+            , @RequestParam(defaultValue = "5") Integer limit) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        List<Supermarket> supermarketList = supermarketService.getSupermarketForStaff(name, page, limit);
+        return ResponseEntity.status(HttpStatus.OK).body(supermarketList);
     }
 }

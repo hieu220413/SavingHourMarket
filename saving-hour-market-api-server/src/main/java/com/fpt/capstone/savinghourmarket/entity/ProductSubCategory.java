@@ -50,8 +50,8 @@ public class ProductSubCategory {
     )
     private ProductCategory productCategory;
 
-    @ManyToMany(
-            mappedBy = "productSubCategoryList",
+    @OneToMany(
+            mappedBy = "productSubCategory",
             fetch = FetchType.LAZY
     )
     @JsonIgnore

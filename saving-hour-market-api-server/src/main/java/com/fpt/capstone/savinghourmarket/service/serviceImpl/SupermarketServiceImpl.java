@@ -14,11 +14,13 @@ import com.fpt.capstone.savinghourmarket.repository.SupermarketRepository;
 import com.fpt.capstone.savinghourmarket.service.SupermarketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -144,5 +146,12 @@ public class SupermarketServiceImpl implements SupermarketService {
             supermarket.get().setStatus(status.ordinal());
         }
         return supermarket.get();
+    }
+
+    @Override
+    public List<Supermarket> getSupermarketForStaff(String name, Integer page, Integer limit) {
+        Pageable pageable = PageRequest.of(page, limit);
+        List<Supermarket> supermarketList = supermarketRepository.getSupermarketForStaff(name, pageable);
+        return supermarketList;
     }
 }
