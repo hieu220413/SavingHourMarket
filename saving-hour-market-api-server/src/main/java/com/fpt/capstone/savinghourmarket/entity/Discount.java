@@ -55,23 +55,37 @@ public class Discount {
     )
     private List<Order> orderList;
 
-    @ManyToMany(
+//    @ManyToMany(
+//            fetch = FetchType.LAZY
+//    )
+//    @JoinTable(
+//            name = "discount_product_category",
+//            joinColumns = @JoinColumn(name = "discount_id"),
+//            inverseJoinColumns = @JoinColumn(name = "product_category_id")
+//    )
+    @ManyToOne(
             fetch = FetchType.LAZY
     )
-    @JoinTable(
-            name = "discount_product_category",
-            joinColumns = @JoinColumn(name = "discount_id"),
-            inverseJoinColumns = @JoinColumn(name = "product_category_id")
+    @JoinColumn(
+            name = "product_category_id",
+            referencedColumnName = "id"
     )
-    private List<ProductCategory> productCategoryList;
+    private ProductCategory productCategory;
 
-    @ManyToMany(
+//    @ManyToMany(
+//            fetch = FetchType.LAZY
+//    )
+//    @JoinTable(
+//            name = "discount_product_sub_category",
+//            joinColumns = @JoinColumn(name = "discount_id"),
+//            inverseJoinColumns = @JoinColumn(name = "product_sub_category_id")
+//    )
+    @ManyToOne(
             fetch = FetchType.LAZY
     )
-    @JoinTable(
-            name = "discount_product_sub_category",
-            joinColumns = @JoinColumn(name = "discount_id"),
-            inverseJoinColumns = @JoinColumn(name = "product_sub_category_id")
+    @JoinColumn(
+            name = "product_sub_category_id",
+            referencedColumnName = "id"
     )
-    private List<ProductSubCategory> productSubCategoryList;
+    private ProductSubCategory productSubCategory;
 }
