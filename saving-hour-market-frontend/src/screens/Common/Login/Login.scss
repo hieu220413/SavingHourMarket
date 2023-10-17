@@ -18,7 +18,7 @@
     filter: drop-shadow(0px 1px 3px rgba(63, 63, 68, 0.15))
       drop-shadow(0px 0px 0px rgba(63, 63, 68, 0.05));
     width: 446px;
-    height: 514px;
+    height: auto;
     background-color: white;
     padding: 80px 70px;
     display: flex;
@@ -39,7 +39,7 @@
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: 1rem;
+      gap: 16px;
 
       &-inputcontrol {
         display: flex;
@@ -65,20 +65,21 @@
           border-radius: 3px;
           border: 1px solid var(--neutral-1, #919eab);
           background: #fff;
+          font-size: 14px;
         }
       }
 
       &-features {
         margin-top: 4rem;
         display: flex;
-        align-items: center;
+        // align-items: center;
         justify-content: space-between;
         width: 100%;
 
         &-rememberpassword {
           display: flex;
           gap: 8px;
-          align-items: center;
+          // align-items: center;
 
           input {
             width: 20px;
@@ -90,7 +91,6 @@
             font-size: 14px;
             font-style: normal;
             font-weight: 400;
-            line-height: 20px;
             color: #212b36;
           }
         }
@@ -117,6 +117,11 @@
         line-height: 24px;
         margin-top: 4rem;
         border: none;
+        transition: 0.3s ease-in-out all;
+
+        &:hover {
+          background-color: #157347;
+        }
       }
     }
   }

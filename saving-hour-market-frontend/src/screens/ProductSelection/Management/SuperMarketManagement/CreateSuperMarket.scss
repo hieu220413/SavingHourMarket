@@ -1,0 +1,43 @@
+.input-address {
+  position: relative;
+}
+
+.input-icon-x {
+  position: absolute;
+  right: 10px;
+  font-size: 8px;
+  color: grey;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.suggest-location {
+  position: absolute;
+  bottom: -145px;
+  left: 170px;
+  background-color: white;
+  width: 400px;
+  border: 0.5px solid rgb(180, 174, 174);
+  display: flex;
+  flex-direction: column;
+  border-radius: 3px;
+  height: 140px;
+  overflow-y: scroll;
+
+  .suggest-location-item {
+    cursor: pointer;
+    padding: 7px;
+
+    h4 {
+      font-size: 14px;
+      font-weight: 400;
+    }
+
+    &:hover {
+      background-color: rgb(231, 224, 224);
+    }
+  }
+}
