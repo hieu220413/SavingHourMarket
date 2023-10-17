@@ -14,39 +14,69 @@ import ProductManagement from "../screens/ProductSelection/Management/ProductMan
 import Report from "../screens/ProductSelection/Report/Report";
 
 export const routes = [
-  { path: "/", component: Profile, layout: DefaultLayout },
-  { path: "/usermanagement", component: UserManagement, layout: DefaultLayout },
+  {
+    path: "/",
+    component: Profile,
+    layout: DefaultLayout,
+    private: true,
+    role: "All",
+  },
+  {
+    path: "/usermanagement",
+    component: UserManagement,
+    layout: DefaultLayout,
+    private: true,
+    role: "ADMIN",
+  },
   {
     path: "/feedbackmanagement",
     component: FeedbackManagement,
     layout: DefaultLayout,
+    private: true,
+    role: "ADMIN",
   },
   {
     path: "/pickuppointmanagement",
     component: PickuppointManagement,
     layout: DefaultLayout,
+    private: true,
+    role: "ADMIN",
   },
   {
     path: "/transactionmanagement",
     component: TransactionManagement,
     layout: DefaultLayout,
+    private: true,
+    role: "ADMIN",
   },
   {
     path: "/supermarketmanagement",
     component: SuperMarketManagement,
     layout: DefaultLayout,
+    private: true,
+    role: "STAFF_SLT",
   },
   {
     path: "/productmanagement",
     component: ProductManagement,
     layout: DefaultLayout,
+    private: true,
+    role: "STAFF_SLT",
   },
   {
     path: "/productselectionreport",
     component: Report,
     layout: DefaultLayout,
+    private: true,
+    role: "STAFF_SLT",
   },
-  { path: "/config", component: Configuration, layout: DefaultLayout },
+  {
+    path: "/config",
+    component: Configuration,
+    layout: DefaultLayout,
+    private: true,
+    role: "ADMIN",
+  },
   { path: "/login", component: Login, layout: HeaderOnly },
   { path: "/forgetpassword", component: ForgetPassword, layout: HeaderOnly },
 ];
