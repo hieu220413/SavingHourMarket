@@ -27,6 +27,7 @@ const orderIcon = require('../assets/icons/ordericon.png');
 const bike = require('../assets/icons/bike.png');
 const questionMark = require('../assets/icons/questionMark.png');
 const filter = require('../assets/icons/filter.png');
+const searchIcon = require('../assets/icons/searchIcon.png');
 
 export default {
   home,
@@ -57,4 +58,5 @@ export default {
   bike,
   questionMark,
   filter,
+  searchIcon,
 };

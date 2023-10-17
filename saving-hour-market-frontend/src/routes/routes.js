@@ -1,8 +1,8 @@
-import Profile from "../screens/Profile/Profile";
+import Profile from "../screens/Common/Profile/Profile";
 import DefaultLayout from "../layouts/DefaultLayout/DefaultLayout";
 import HeaderOnly from "../layouts/HeaderOnly/HeaderOnly";
-import Login from "../screens/Login/Login";
-import ForgetPassword from "../screens/ForgetPassword/ForgetPassword";
+import Login from "../screens/Common/Login/Login";
+import ForgetPassword from "../screens/Common/ForgetPassword/ForgetPassword";
 
 import Configuration from "../screens/Admin/Configuration/Configuration";
 import UserManagement from "../screens/Admin/Management/UserManagement/UserManagement";

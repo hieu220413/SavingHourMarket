@@ -1,6 +1,5 @@
 package com.fpt.capstone.savinghourmarket.exception.handler;
 
-import com.fpt.capstone.savinghourmarket.exception.InvalidUserInputException;
 import com.fpt.capstone.savinghourmarket.exception.StaffAccessForbiddenException;
 import com.fpt.capstone.savinghourmarket.model.ApiError;
 import org.springframework.http.ResponseEntity;

@@ -1,6 +1,7 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fpt.capstone.savinghourmarket.model.ProductCategoryCreateBody;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,6 +18,11 @@ import java.util.UUID;
 @Setter
 @Getter
 public class ProductCategory {
+
+    public ProductCategory(ProductCategoryCreateBody productCategoryCreateBody) {
+        this.name = productCategoryCreateBody.getName();
+    }
+
     @Id
     @UuidGenerator
     private UUID id;
@@ -37,5 +43,8 @@ public class ProductCategory {
     )
     @JsonIgnore
     private List<ProductSubCategory> productSubCategories;
+
+    @Transient
+    private Integer totalDiscountUsage;
 
 }

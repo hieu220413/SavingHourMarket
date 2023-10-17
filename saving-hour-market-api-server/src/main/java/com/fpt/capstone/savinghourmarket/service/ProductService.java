@@ -4,6 +4,9 @@ import com.fpt.capstone.savinghourmarket.common.Month;
 import com.fpt.capstone.savinghourmarket.common.Quarter;
 import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Product;
+import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
+import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
+import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.ProductCateWithSubCate;
 import com.fpt.capstone.savinghourmarket.model.ProductCreate;
@@ -28,7 +31,17 @@ public interface ProductService {
     List<ProductSubCateOnly> getAllSubCategory();
 
     Product createProduct(ProductCreate productCreate) throws ResourceNotFoundException;
-    SaleReportResponseBody getSaleReportSupermarket(UUID supermarketId, Month month, Quarter quarter, Integer year);
 
     List<Product> createProductByExcel(MultipartFile file) throws IOException;
+
+    SaleReportResponseBody getSaleReportSupermarket(UUID supermarketId, Month month, Quarter quarter, Integer year);
+
+    ProductCategory createCategory(ProductCategoryCreateBody productCategoryCreateBody);
+
+    ProductSubCategory createSubCategory(ProductSubCategoryCreateBody productSubCategoryCreateBody);
+
+    ProductCategory updateProductCategory(ProductCategoryUpdateBody productCategoryUpdateBody, UUID categoryId);
+
+    ProductSubCategory updateProductSubCategory(ProductSubCategoryUpdateBody productSubCategoryUpdateBody, UUID subCategoryId);
+
 }

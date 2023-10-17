@@ -2,7 +2,9 @@ package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
 import com.fpt.capstone.savinghourmarket.common.*;
 import com.fpt.capstone.savinghourmarket.entity.Product;
-import com.fpt.capstone.savinghourmarket.exception.InvalidUserInputException;
+import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
+import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
+import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.ProductCateWithSubCate;
@@ -14,7 +16,9 @@ import com.fpt.capstone.savinghourmarket.repository.ProductCategoryRepository;
 import com.fpt.capstone.savinghourmarket.repository.ProductRepository;
 import com.fpt.capstone.savinghourmarket.repository.ProductSubCategoryRepository;
 import com.fpt.capstone.savinghourmarket.repository.SupermarketRepository;
+import com.fpt.capstone.savinghourmarket.service.ProductCategoryService;
 import com.fpt.capstone.savinghourmarket.service.ProductService;
+import com.fpt.capstone.savinghourmarket.service.ProductSubCategoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
@@ -49,6 +53,9 @@ public class ProductServiceImpl implements ProductService {
     private final ProductSubCategoryRepository productSubCategoryRepository;
 
     private final SupermarketRepository supermarketRepository;
+    private final ProductCategoryService productCategoryService;
+
+    private final ProductSubCategoryService productSubCategoryService;
 
     @Override
     public ProductListResponseBody getProductsForStaff(Boolean isExpiredShown, String name, String supermarketId, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, SortType quantitySortType, SortType expiredSortType, SortType priceSort) {
@@ -132,13 +139,34 @@ public class ProductServiceImpl implements ProductService {
             year = currentDate.getYear();
         }
 
+        HashMap<UUID, Product> productSaleReportHashMap = new HashMap<>();
+        List<Product> rawProudProductList = productRepository.getRawProductFromSupermarketId(supermarketId);
+
+
         SaleReportResponseBody saleReportResponseBody = new SaleReportResponseBody();
         List<Product> productEntityReportList = productRepository.getProductsReportForSupermarket(supermarketId, month == null ? null : month.getMonthInNumber(), quarter == null ? null : quarter.getQuarterInNumber(), year);
-        productEntityReportList.stream().forEach(product -> {
-            saleReportResponseBody.getProductSaleReportList().add(new ProductSaleReport(product));
-            saleReportResponseBody.setTotalSale(saleReportResponseBody.getTotalSale() + product.getQuantity());
-            saleReportResponseBody.setTotalIncome(saleReportResponseBody.getTotalIncome() + product.getPrice());
-        });
+        for(Product product : productEntityReportList) {
+            productSaleReportHashMap.put(product.getId(), product);
+        }
+
+        for(Product rawProduct : rawProudProductList) {
+            // product sale map
+            if(productSaleReportHashMap.containsKey(rawProduct.getId())) {
+                saleReportResponseBody.getProductSaleReportList().add(new ProductSaleReport(rawProduct, productSaleReportHashMap.get(rawProduct.getId()).getPrice(), productSaleReportHashMap.get(rawProduct.getId()).getQuantity()));
+                saleReportResponseBody.setTotalSale(saleReportResponseBody.getTotalSale() + productSaleReportHashMap.get(rawProduct.getId()).getQuantity());
+                saleReportResponseBody.setTotalIncome(saleReportResponseBody.getTotalIncome() + productSaleReportHashMap.get(rawProduct.getId()).getPrice());
+            } else {
+                saleReportResponseBody.getProductSaleReportList().add(new ProductSaleReport(rawProduct, 0, 0));
+            }
+        }
+
+        saleReportResponseBody.getProductSaleReportList().sort((o1, o2) -> o2.getSoldQuantity() - o1.getSoldQuantity());
+
+//        productEntityReportList.stream().forEach(product -> {
+//            saleReportResponseBody.getProductSaleReportList().add(new ProductSaleReport(product));
+//            saleReportResponseBody.setTotalSale(saleReportResponseBody.getTotalSale() + product.getQuantity());
+//            saleReportResponseBody.setTotalIncome(saleReportResponseBody.getTotalIncome() + product.getPrice());
+//        });
         return saleReportResponseBody;
     }
 
@@ -163,6 +191,26 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductSubCateOnly> getAllSubCategory() {
         List<ProductSubCateOnly> productSubCateOnlyList = productSubCategoryRepository.findAllSubCategoryOnly();
         return productSubCateOnlyList;
+    }
+
+    @Override
+    public ProductCategory createCategory(ProductCategoryCreateBody productCategoryCreateBody) {
+        return productCategoryService.createCategory(productCategoryCreateBody);
+    }
+
+    @Override
+    public ProductSubCategory createSubCategory(ProductSubCategoryCreateBody productSubCategoryCreateBody) {
+        return productSubCategoryService.createSubCategory(productSubCategoryCreateBody);
+    }
+
+    @Override
+    public ProductCategory updateProductCategory(ProductCategoryUpdateBody productCategoryUpdateBody, UUID categoryId) {
+        return productCategoryService.updateCategory(productCategoryUpdateBody, categoryId);
+    }
+
+    @Override
+    public ProductSubCategory updateProductSubCategory(ProductSubCategoryUpdateBody productSubCategoryUpdateBody, UUID subCategoryId) {
+        return productSubCategoryService.updateSubCategory(productSubCategoryUpdateBody, subCategoryId);
     }
 
     @Override
@@ -216,7 +264,7 @@ public class ProductServiceImpl implements ProductService {
 
 
         if (errorFields.size() > 0) {
-            throw new InvalidUserInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
+            throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
         }
 
         ModelMapper modelMapper = new ModelMapper();

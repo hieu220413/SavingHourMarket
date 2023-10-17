@@ -5,29 +5,24 @@ import com.fpt.capstone.savinghourmarket.common.Quarter;
 import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
+import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
-import com.fpt.capstone.savinghourmarket.model.ProductCateWithSubCate;
-import com.fpt.capstone.savinghourmarket.model.ProductCreate;
-import com.fpt.capstone.savinghourmarket.model.ProductListResponseBody;
-import com.fpt.capstone.savinghourmarket.model.ProductSubCateOnly;
-import com.fpt.capstone.savinghourmarket.model.SaleReportResponseBody;
-import com.fpt.capstone.savinghourmarket.service.ProductCategoryService;
+import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.service.ProductService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.context.properties.bind.DefaultValue;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -95,7 +90,9 @@ public class ProductController {
             , @RequestParam UUID supermarketId
             , @RequestParam(required = false) Month month
             , @RequestParam(required = false) Quarter quarter
-            , @RequestParam(required = false) Integer year) {
+            , @RequestParam(required = false) Integer year) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
         SaleReportResponseBody saleReportResponseBody = productService.getSaleReportSupermarket(supermarketId, month, quarter, year);
         return ResponseEntity.status(HttpStatus.OK).body(saleReportResponseBody);
     }
@@ -118,7 +115,39 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(productSubCateOnlyList);
     }
 
-    @RequestMapping(value = "/upload", method = RequestMethod.PUT)
+    @RequestMapping(value = "/createCategory", method = RequestMethod.POST)
+    public ResponseEntity<ProductCategory> createCategory(@RequestBody @Valid ProductCategoryCreateBody productCategoryCreateBody, @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        ProductCategory productCategory = productService.createCategory(productCategoryCreateBody);
+        return ResponseEntity.status(HttpStatus.OK).body(productCategory);
+    }
+
+    @RequestMapping(value = "/createSubCategory", method = RequestMethod.POST)
+    public ResponseEntity<ProductSubCategory> createSubCategory(@RequestBody @Valid ProductSubCategoryCreateBody productSubCategoryCreateBody, @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        ProductSubCategory productSubCategory = productService.createSubCategory(productSubCategoryCreateBody);
+        return ResponseEntity.status(HttpStatus.OK).body(productSubCategory);
+    }
+
+    @RequestMapping(value = "/updateCategory", method = RequestMethod.PUT)
+    public ResponseEntity<ProductCategory> updateCategory(@RequestBody @Valid ProductCategoryUpdateBody productCategoryUpdateBody, @RequestParam UUID categoryId, @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        ProductCategory productCategory = productService.updateProductCategory(productCategoryUpdateBody, categoryId);
+        return ResponseEntity.status(HttpStatus.OK).body(productCategory);
+    }
+
+    @RequestMapping(value = "/updateSubCategory", method = RequestMethod.PUT)
+    public ResponseEntity<ProductSubCategory> updateSubCategory(@RequestBody @Valid ProductSubCategoryUpdateBody productSubCategoryUpdateBody, @RequestParam UUID subCategoryId, @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        ProductSubCategory productSubCategory = productService.updateProductSubCategory(productSubCategoryUpdateBody, subCategoryId);
+        return ResponseEntity.status(HttpStatus.OK).body(productSubCategory);
+    }
+    
+    @RequestMapping(value = "/upload", method = RequestMethod.POST)
     @Operation(description = "Upload new product, if id of each entities (ex: subCategory, Category, Supermarket) in product is not null, it's mean to upload with existed entities.If not, it's mean to upload with new entities.")
     public ResponseEntity<Product> uploadProduct(@Valid @RequestBody ProductCreate productCreate) throws ResourceNotFoundException {
         return ResponseEntity.status(HttpStatus.OK).body(productService.createProduct(productCreate));

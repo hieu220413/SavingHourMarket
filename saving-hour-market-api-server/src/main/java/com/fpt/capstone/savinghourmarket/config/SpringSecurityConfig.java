@@ -33,6 +33,8 @@ public class SpringSecurityConfig {
     private String[] selectionStaffAndAdmin= {StaffRole.STAFF_SLT.toString()
             , "ADMIN"};
 
+    private String[] marketingStaffAndAdmin= {StaffRole.STAFF_MKT.toString(), "ADMIN"};
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable).cors(httpSecurityCorsConfigurer -> {
@@ -51,9 +53,14 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/product/getById").permitAll()
                             .requestMatchers("/api/product/getAllCategory").permitAll()
                             .requestMatchers("/api/product/getAllSubCategory").permitAll()
-                            .requestMatchers("/api/product/getSaleReportSupermarket").hasAnyRole(allStaffAndAdmin)
+                            .requestMatchers("/api/product/getSaleReportSupermarket").hasAnyRole(selectionStaffAndAdmin)
+                            .requestMatchers("/api/product/createCategory").hasAnyRole(selectionStaffAndAdmin)
+                            .requestMatchers("/api/product/createSubCategory").hasAnyRole(selectionStaffAndAdmin)
+                            .requestMatchers("/api/product/updateSubCategory").hasAnyRole(selectionStaffAndAdmin)
+                            .requestMatchers("/api/product/updateCategory").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/discount/getDiscountsForCustomer").permitAll()
                             .requestMatchers("/api/discount/getDiscountById").permitAll()
+                            .requestMatchers("/api/discount/getDiscountUsageReport").hasAnyRole(marketingStaffAndAdmin)
                             .requestMatchers("/api/timeframe/getAll").permitAll()
                             .requestMatchers("/api/timeframe/getForPickupPoint").permitAll()
                             .requestMatchers("/api/timeframe/getForHomeDelivery").permitAll()
@@ -67,6 +74,8 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/staff/createStaffAccount").hasRole("ADMIN")
                             .requestMatchers("/api/staff/getStaffByEmail").hasRole("ADMIN")
                             .requestMatchers("/api/product/getProductsForStaff").hasAnyRole(allStaffAndAdmin)
+                            .requestMatchers("/api/product/upload").hasAnyRole(allStaffAndAdmin)
+                            .requestMatchers("/api/product/uploadByExcelFile").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/discount/getDiscountsForStaff").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/supermarket/create").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/supermarket/changeStatus").hasAnyRole(selectionStaffAndAdmin)
@@ -79,8 +88,7 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/feedback/updateStatus").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/feedback/getFeedbackForStaff").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/order/sendNotification").permitAll()
-                            .requestMatchers("/api/product/upload").permitAll()
-                            .requestMatchers("/api/product/uploadByExcelFile").permitAll();
+                    ;
                     auth.anyRequest().authenticated();
                 });
 //        http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable()).authorizeHttpRequests((auth) -> auth

@@ -90,6 +90,10 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "GROUP BY ordDetail.product.id, ordDetail.product.name ")
     List<Product> getProductsReportForSupermarket(UUID supermarketId, Integer monthValue, Integer quarter, Integer year);
 
+    @Query("SELECT p FROM Product p " +
+            "WHERE p.supermarket.id = :supermarketId ")
+    List<Product> getRawProductFromSupermarketId(UUID supermarketId);
+
 
 //    @Query(value = "SELECT * FROM product p " +
 //            "INNER JOIN product_sub_category subct ON p.product_sub_category_id = subct.id " +

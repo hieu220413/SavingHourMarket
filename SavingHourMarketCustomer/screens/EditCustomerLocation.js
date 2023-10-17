@@ -19,18 +19,16 @@ const EditCustomerLocation = ({navigation, route}) => {
   const [locationPicked, setLocationPicked] = useState(customerLocation);
   const [openValidateDialog, setOpenValidateDialog] = useState(false);
   const [validateMessage, setValidateMessage] = useState('');
-  const [text, setText] = useState(customerLocation.address);
-  const [searchValue, setSearchValue] = useState(customerLocation.address);
+  const [text, setText] = useState('');
+  const [searchValue, setSearchValue] = useState('');
   const [data, setData] = useState([]);
   const [isFocused, setIsFocused] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const selectLocation = item => {
-    setText(item.description);
-    setSearchValue(item.description);
     Keyboard.dismiss();
     setIsFocused(false);
-
+    setLoading(true);
     fetch(
       `https://rsapi.goong.io/Place/Detail?place_id=${item.place_id}&api_key=${API.GoongAPIKey}`,
     )
@@ -42,7 +40,22 @@ const EditCustomerLocation = ({navigation, route}) => {
           lat: respond.result.geometry.location.lat,
         };
 
-        setLocationPicked(picked);
+        if (
+          picked.address.includes('Ho Chi Minh') ||
+          picked.address.includes('Hồ Chí Minh') ||
+          picked.address.includes('HCM')
+        ) {
+          setText(item.description);
+          setSearchValue(item.description);
+          setCustomerLocation(picked);
+          setLoading(false);
+          navigation.navigate('Payment');
+        } else {
+          setValidateMessage('Chúng tôi chỉ giao hàng trong khu vực TP.HCM');
+          setOpenValidateDialog(true);
+          setLoading(false);
+          return;
+        }
       })
       .catch(err => console.log(err));
   };
@@ -107,10 +120,11 @@ const EditCustomerLocation = ({navigation, route}) => {
           alignItems: 'center',
           flexDirection: 'row',
           justifyContent: 'space-between',
-          marginBottom: 30,
+
           backgroundColor: '#ffffff',
-          padding: 20,
-          elevation: 4,
+          paddingHorizontal: 20,
+          paddingTop: 20,
+          paddingBottom: 10,
         }}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Image
@@ -121,72 +135,51 @@ const EditCustomerLocation = ({navigation, route}) => {
         </TouchableOpacity>
         <Text
           style={{
-            fontSize: 25,
+            fontSize: 20,
             textAlign: 'center',
             color: '#000000',
             fontWeight: 'bold',
             fontFamily: 'Roboto',
           }}>
-          Địa chỉ
+          Nhập địa chỉ
         </Text>
-        <TouchableOpacity
-          onPress={() => {
-            if (!locationPicked) {
-              setValidateMessage('Địa chỉ không hợp lệ');
-              setOpenValidateDialog(true);
-              return;
-            }
-
-            if (
-              locationPicked.address.includes('Ho Chi Minh') ||
-              locationPicked.address.includes('Hồ Chí Minh') ||
-              locationPicked.address.includes('HCM')
-            ) {
-              setCustomerLocation(locationPicked);
-              navigation.navigate('Payment');
-            } else {
-              setValidateMessage(
-                'Chúng tôi chỉ giao hàng trong khu vực TP.HCM',
-              );
-              setOpenValidateDialog(true);
-              return;
-            }
-          }}>
-          <Text
-            style={{
-              fontSize: 18,
-              fontFamily: 'Roboto',
-              fontWeight: 'bold',
-              color: COLORS.primary,
-            }}>
-            Cập nhật
-          </Text>
-        </TouchableOpacity>
+        <View></View>
       </View>
-      <Text
+
+      <View
         style={{
-          fontSize: 16,
-          fontWeight: 'bold',
-          marginLeft: 10,
+          height: '100%',
+          position: 'relative',
         }}>
-        Địa chỉ
-      </Text>
-      <View style={{marginTop: 8, height: '100%', position: 'relative'}}>
+        <Image
+          style={{
+            width: 25,
+            height: 30,
+            position: 'absolute',
+            top: 15,
+            left: 20,
+            zIndex: 99,
+            tintColor: '#ad9b9b',
+          }}
+          source={icons.searchIcon}
+        />
         <TextInput
           numberOfLines={1}
           style={{
             backgroundColor: 'white',
             paddingLeft: 10,
-            paddingRight: 30,
+            paddingRight: 40,
             paddingHorizontal: 15,
             color: 'black',
             fontFamily: FONTS.fontFamily,
-            fontSize: 16,
+            fontSize: text ? 18 : 21,
             lineHeight: 40,
             height: 60,
+            paddingLeft: 60,
           }}
           value={text}
           onChangeText={data => onChange(data)}
+          placeholder="Địa điểm hiện tại của bạn ở đâu"
           onFocus={() => {
             setIsFocused(true);
           }}
@@ -206,7 +199,7 @@ const EditCustomerLocation = ({navigation, route}) => {
           <Image
             resizeMode="contain"
             source={icons.cross}
-            style={{width: 20, height: 20}}
+            style={{width: 20, height: 20, tintColor: '#ad9b9b'}}
           />
         </TouchableOpacity>
 
@@ -214,7 +207,7 @@ const EditCustomerLocation = ({navigation, route}) => {
           <View
             style={{
               backgroundColor: 'white',
-              marginTop: 10,
+
               height: '100%',
               paddingHorizontal: 15,
             }}>
