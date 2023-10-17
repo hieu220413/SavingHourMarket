@@ -77,6 +77,7 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/product/upload").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/product/uploadByExcelFile").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/discount/getDiscountsForStaff").hasAnyRole(allStaffAndAdmin)
+                            .requestMatchers("/api/supermarket/getSupermarketForStaff").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/supermarket/create").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/supermarket/changeStatus").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/supermarket/updateInfo").hasAnyRole(selectionStaffAndAdmin)
