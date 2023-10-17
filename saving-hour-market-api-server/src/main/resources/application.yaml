@@ -8,15 +8,15 @@ spring:
         enable_lazy_load_no_trans: 'true'
     defer-datasource-initialization: 'true'
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
   datasource:
-    password: ${PASSWORD}
+    password: admin123
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    url: jdbc:mysql://localhost:3306/saving_hour_market?useUnicode=true&characterEncoding=UTF-8
+    username: admin
+    url: jdbc:mysql://saving-hour-market.crx2foufhga2.ap-southeast-2.rds.amazonaws.com:3306/saving_hour_market?useUnicode=true&characterEncoding=UTF-8
   sql:
     init:
-      mode: always
+      mode: never
   security:
     oauth2:
       resourceserver:

@@ -1,0 +1,56 @@
+name: CI/CD Pipeline
+on:
+  workflow_dispatch:
+  # this will trigger workflow whenever a change is pushed to main branch
+  push:
+    branches:
+      - deploy
+jobs:
+  build:
+    name: Build Archive
+    #Will run steps on latest version of ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      #Check-out your repository under $GITHUB_WORKSPACE, so your workflow can access it
+      - uses: actions/checkout@v1
+      #Set up JDK 8
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: '8'
+      #Build the application using Maven
+      - name: Build with Maven
+        run: mvn package -DskipTests
+      - name: Upload JAR
+        # We upload so we can re-use same jar in next job.
+        uses: actions/upload-artifact@v2
+        with:
+          #Name of artifact can be anything
+          name: artifact
+          #Relative path to jar file
+          path: saving-hour-market-api-server-0.0.1-SNAPSHOT.jar
+  #Deploy's job
+  deploy:
+    #Depends on build's job
+    needs: build
+    name: Deploy to Elastic Beanstalk
+    #Will run steps on latest version of ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download JAR
+        #Download the artifact which was uploaded in the Build Archive's job
+        uses: actions/download-artifact@v2
+        with:
+          name: artifact
+      #Deploy the artifact (JAR) into AWS Beanstalk
+      - name: Deploy to EB
+        uses: einaregilsson/beanstalk-deploy@v13
+        with:
+          aws_access_key: AKIAQ3E6OMK6LGBFUWR4 #This is referred from Github Secrets
+          aws_secret_key: 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 #This is referred from Github Secrets
+          use_existing_version_if_available: true
+          application_name: Saving Hour Market #Application name we created in Elastic BeanStalk
+          environment_name: SavingHourMarket-env-1 #Environment name we created in Elastic BeanStalk
+          version_label: ${{github.SHA}}
+          region: ap-southeast-2 #VERY IMPORTANT: AWS Region where initially Applciation was created in AWS EBS. We created in us-east-1 which is N-Virginia
+          deployment_package: saving-hour-market-api-server-0.0.1-SNAPSHOT.jar #download artifacts from previous job
