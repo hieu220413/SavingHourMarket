@@ -8,9 +8,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -33,7 +35,10 @@ public class SpringSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable())
+        http.csrf(AbstractHttpConfigurer::disable).cors(httpSecurityCorsConfigurer -> {
+                new CorsRegistry().addMapping("/**")
+                        .allowedOrigins("*");
+                })
                 .authorizeHttpRequests((auth) -> {
                     auth.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
                             .requestMatchers("/swagger-ui/**").permitAll()
@@ -76,7 +81,6 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/order/sendNotification").permitAll()
                             .requestMatchers("/api/product/upload").permitAll()
                             .requestMatchers("/api/product/uploadByExcelFile").permitAll();
-
                     auth.anyRequest().authenticated();
                 });
 //        http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable()).authorizeHttpRequests((auth) -> auth

@@ -17,10 +17,7 @@ import com.fpt.capstone.savinghourmarket.repository.SupermarketRepository;
 import com.fpt.capstone.savinghourmarket.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -258,31 +255,24 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<Product> createProductByExcel(MultipartFile file) throws IOException {
+
         Workbook workbook = new XSSFWorkbook(file.getInputStream());
         Sheet sheet = workbook.getSheetAt(0);
-        Map<Integer, List<String>> data = new HashMap<>();
-        int i = 0;
+
+//        //Get first row as title
+//        Row titleRow = sheet.getRow(1);
+//        log.info(titleRow.toString());
+//        sheet.removeRow(titleRow);
+
         for (Row row : sheet) {
-            data.put(i, new ArrayList<String>());
+            log.info(row.toString());
+            int cellIndex = 0;
             for (Cell cell : row) {
-                switch (cell.getCellType()) {
-                    case STRING:
-                        log.info(cell.getStringCellValue());
-                        break;
-                    case NUMERIC:
-                        log.info(String.valueOf(cell.getNumericCellValue()));
-                        break;
-                    case BOOLEAN:
-                        log.info(String.valueOf(cell.getBooleanCellValue()));
-                        break;
-                    case FORMULA:
-                        log.info(cell.getCellFormula());
-                        break;
-                    default:
-                        data.get(i).add(" ");
-                }
+                log.info("Cell index: "+cellIndex+"");
+//                log.info("Cell title: "+titleRow.getCell(cellIndex));
+//
+                cellIndex++;
             }
-            i++;
         }
         return null;
     }
