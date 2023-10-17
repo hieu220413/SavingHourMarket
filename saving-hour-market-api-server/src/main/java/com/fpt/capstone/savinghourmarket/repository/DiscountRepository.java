@@ -18,8 +18,8 @@ import java.util.UUID;
 public interface DiscountRepository extends JpaRepository<Discount, UUID> {
 
     @Query("SELECT DISTINCT d FROM Discount d " +
-            "LEFT JOIN d.productCategoryList cts " +
-            "LEFT JOIN  d.productSubCategoryList subcts " +
+            "LEFT JOIN d.productCategory cts " +
+            "LEFT JOIN  d.productSubCategory subcts " +
             "WHERE " +
             "UPPER(d.name) LIKE UPPER(CONCAT('%',:name,'%')) " +
             "AND " +
@@ -36,8 +36,8 @@ public interface DiscountRepository extends JpaRepository<Discount, UUID> {
     List<DiscountOnly> getDiscountsForStaff(Boolean isExpiredShown, String name, Integer fromPercentage, Integer toPercentage, LocalDateTime fromDatetime, LocalDateTime toDatetime, UUID productCategoryId, UUID productSubCategoryId, Pageable pageable);
 
     @Query("SELECT DISTINCT d FROM Discount d " +
-            "LEFT JOIN d.productCategoryList cts " +
-            "LEFT JOIN  d.productSubCategoryList subcts " +
+            "LEFT JOIN d.productCategory cts " +
+            "LEFT JOIN  d.productSubCategory subcts " +
             "WHERE " +
             "UPPER(d.name) LIKE UPPER(CONCAT('%',:name,'%')) " +
             "AND " +
@@ -55,16 +55,17 @@ public interface DiscountRepository extends JpaRepository<Discount, UUID> {
 
 
     @Query("SELECT d FROM Discount d " +
+            "LEFT JOIN FETCH d.productCategory ct " +
 //            "JOIN FETCH d.productCategoryList ct " +
-            "LEFT JOIN FETCH d.productSubCategoryList subct " +
+            "LEFT JOIN FETCH d.productSubCategory subct " +
             "LEFT JOIN FETCH subct.productCategory " +
             "WHERE d.id = :id")
     Optional<Discount> findByIdWithAllField(UUID id);
 
     @Query("SELECT NEW com.fpt.capstone.savinghourmarket.entity.Discount(d.id, d.name, d.percentage, d.imageUrl, COUNT(d.id)) FROM Order ord " +
             "JOIN ord.discountList d " +
-            "LEFT JOIN d.productCategoryList cts ON (:productCategoryId IS NOT NULL AND :productSubCategoryId IS NULL) " +
-            "LEFT JOIN d.productSubCategoryList subcts ON (:productSubCategoryId IS NOT NULL) " +
+            "LEFT JOIN d.productCategory cts ON (:productCategoryId IS NOT NULL AND :productSubCategoryId IS NULL) " +
+            "LEFT JOIN d.productSubCategory subcts ON (:productSubCategoryId IS NOT NULL) " +
             "WHERE " +
             "d.percentage  BETWEEN :fromPercentage AND :toPercentage " +
             "AND " +
@@ -92,8 +93,8 @@ public interface DiscountRepository extends JpaRepository<Discount, UUID> {
 
 
     @Query("SELECT DISTINCT d FROM Discount d " +
-            "LEFT JOIN d.productCategoryList cts ON (:productCategoryId IS NOT NULL AND :productSubCategoryId IS NULL) " +
-            "LEFT JOIN d.productSubCategoryList subcts ON (:productSubCategoryId IS NOT NULL) " +
+            "LEFT JOIN d.productCategory cts ON (:productCategoryId IS NOT NULL AND :productSubCategoryId IS NULL) " +
+            "LEFT JOIN d.productSubCategory subcts ON (:productSubCategoryId IS NOT NULL) " +
             "WHERE " +
             "(d.percentage  BETWEEN :fromPercentage AND :toPercentage) " +
             "AND " +
