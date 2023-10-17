@@ -12,6 +12,7 @@ import TransactionManagement from "../screens/Admin/Management/TransactionManage
 import SuperMarketManagement from "../screens/ProductSelection/Management/SuperMarketManagement/SuperMarketManagement";
 import ProductManagement from "../screens/ProductSelection/Management/ProductManagement/ProductManagement";
 import Report from "../screens/ProductSelection/Report/Report";
+import SuperMarketReport from "../screens/ProductSelection/Management/SuperMarketReport/SuperMarketReport";
 
 export const routes = [
   { path: "/", component: Profile, layout: DefaultLayout },
@@ -44,6 +45,11 @@ export const routes = [
   {
     path: "/productselectionreport",
     component: Report,
+    layout: DefaultLayout,
+  },
+  {
+    path: "/supermarketreport",
+    component: SuperMarketReport,
     layout: DefaultLayout,
   },
   { path: "/config", component: Configuration, layout: DefaultLayout },
