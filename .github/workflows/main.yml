@@ -56,4 +56,4 @@ jobs:
           environment_name: SavingHourMarket-env-1 #Environment name we created in Elastic BeanStalk
           version_label: ${{github.SHA}}
           region: ap-southeast-2 #VERY IMPORTANT: AWS Region where initially Applciation was created in AWS EBS. We created in us-east-1 which is N-Virginia
-          deployment_package: ./target/saving-hour-market-api-server-0.0.1-SNAPSHOT.jar #download artifacts from previous jobs
+          deployment_package: ./target/saving-hour-market-api-server-0.0.1-SNAPSHOT.jar #download artifacts from previous job
