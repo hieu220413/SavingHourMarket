@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -157,7 +158,7 @@ public class ProductController {
             method = RequestMethod.POST,
             consumes = {"multipart/form-data"})
     @Operation(description = "Upload product by excel")
-    public ResponseEntity<List<Product>> uploadProduct(@RequestParam("file")  MultipartFile file) throws IOException {
+    public ResponseEntity<List<Product>> uploadProduct(@RequestParam("file")  MultipartFile file) throws IOException, InvalidFormatException {
         log.info(file.getName());
         return ResponseEntity.status(HttpStatus.OK).body(productService.createProductByExcel(file));
     }

@@ -4,6 +4,7 @@ import com.fpt.capstone.savinghourmarket.common.*;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
 import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
+import com.fpt.capstone.savinghourmarket.entity.Supermarket;
 import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
@@ -16,12 +17,18 @@ import com.fpt.capstone.savinghourmarket.repository.ProductCategoryRepository;
 import com.fpt.capstone.savinghourmarket.repository.ProductRepository;
 import com.fpt.capstone.savinghourmarket.repository.ProductSubCategoryRepository;
 import com.fpt.capstone.savinghourmarket.repository.SupermarketRepository;
+import com.fpt.capstone.savinghourmarket.service.FirebaseService;
 import com.fpt.capstone.savinghourmarket.service.ProductCategoryService;
 import com.fpt.capstone.savinghourmarket.service.ProductService;
 import com.fpt.capstone.savinghourmarket.service.ProductSubCategoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.openxml4j.opc.PackagePart;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFPictureData;
+import org.apache.poi.xssf.usermodel.XSSFRichTextString;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -33,8 +40,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.time.LocalDate;
@@ -145,13 +155,13 @@ public class ProductServiceImpl implements ProductService {
 
         SaleReportResponseBody saleReportResponseBody = new SaleReportResponseBody();
         List<Product> productEntityReportList = productRepository.getProductsReportForSupermarket(supermarketId, month == null ? null : month.getMonthInNumber(), quarter == null ? null : quarter.getQuarterInNumber(), year);
-        for(Product product : productEntityReportList) {
+        for (Product product : productEntityReportList) {
             productSaleReportHashMap.put(product.getId(), product);
         }
 
-        for(Product rawProduct : rawProudProductList) {
+        for (Product rawProduct : rawProudProductList) {
             // product sale map
-            if(productSaleReportHashMap.containsKey(rawProduct.getId())) {
+            if (productSaleReportHashMap.containsKey(rawProduct.getId())) {
                 saleReportResponseBody.getProductSaleReportList().add(new ProductSaleReport(rawProduct, productSaleReportHashMap.get(rawProduct.getId()).getPrice(), productSaleReportHashMap.get(rawProduct.getId()).getQuantity()));
                 saleReportResponseBody.setTotalSale(saleReportResponseBody.getTotalSale() + productSaleReportHashMap.get(rawProduct.getId()).getQuantity());
                 saleReportResponseBody.setTotalIncome(saleReportResponseBody.getTotalIncome() + productSaleReportHashMap.get(rawProduct.getId()).getPrice());
@@ -302,26 +312,138 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> createProductByExcel(MultipartFile file) throws IOException {
+    public List<Product> createProductByExcel(MultipartFile file) throws IOException, InvalidFormatException {
+        List<Product> productList = new ArrayList();
 
         Workbook workbook = new XSSFWorkbook(file.getInputStream());
         Sheet sheet = workbook.getSheetAt(0);
 
-//        //Get first row as title
-//        Row titleRow = sheet.getRow(1);
-//        log.info(titleRow.toString());
-//        sheet.removeRow(titleRow);
-
+        XSSFSheet xssfSheet = (XSSFSheet) sheet;
+        List<XSSFPictureData> pictures = xssfSheet.getWorkbook().getAllPictures();
+        Pattern pattern;
+        Matcher matcher;
+        //Get first row as title
+        Row titleRow = sheet.getRow(0);
+        int rowIndex = 0;
         for (Row row : sheet) {
-            log.info(row.toString());
-            int cellIndex = 0;
-            for (Cell cell : row) {
-                log.info("Cell index: "+cellIndex+"");
-//                log.info("Cell title: "+titleRow.getCell(cellIndex));
-//
-                cellIndex++;
+            if (rowIndex != 0) {
+                Product product = new Product();
+                ProductCategory productCategory = new ProductCategory();
+                ProductSubCategory productSubCategory = new ProductSubCategory();
+                Supermarket supermarket = new Supermarket();
+                int cellIndex = 0;
+                for (Cell cell : row) {
+                    log.info("Title: " + titleRow.getCell(cellIndex)+",Cell: " + cell);
+                    switch (titleRow.getCell(cellIndex).toString()) {
+                        case "Tên":
+                            product.setName(cell.getStringCellValue());
+                            break;
+                        case "Giá bán":
+                            product.setPrice((int) cell.getNumericCellValue());
+                            break;
+                        case "Giá gốc":
+                            product.setPriceOriginal((int) cell.getNumericCellValue());
+                            break;
+                        case "Mô tả sản phẩm":
+                            product.setDescription(cell.getStringCellValue());
+                            break;
+                        case "Ngày HSD":
+                            product.setExpiredDate(convertDateToLocalDateTime(cell.getDateCellValue()));
+                            break;
+                        case "Số lượng":
+                            product.setQuantity((int) cell.getNumericCellValue());
+                            break;
+                        case "Ảnh sản phẩm":
+                            XSSFRichTextString imageProduct = (XSSFRichTextString) cell.getRichStringCellValue();
+                            // Use regular expressions to find image file names
+                            pattern = Pattern.compile("image(\\d+)\\.(\\w+)");
+                            matcher = pattern.matcher(imageProduct.getString());
+
+                            while (matcher.find()) {
+                                String imageName = matcher.group();
+                                byte[] imageBytes = getImageBytes(xssfSheet, imageName);
+                                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                                byteArrayOutputStream.write(imageBytes, 0, imageBytes.length);
+
+                                if (imageBytes != null) {
+                                    String imageUrl = FirebaseService.uploadImageToStorage(byteArrayOutputStream,imageName);
+                                    product.setImageUrl(imageUrl);
+                                }
+                            }
+                            break;
+                        case "Tên loại sản phẩm":
+                            productCategory.setName(cell.getStringCellValue());
+                            break;
+                        case "Số ngày quy định cho hàng cận hạn":
+                            productSubCategory.setAllowableDisplayThreshold((int) cell.getNumericCellValue());
+                            break;
+                        case "Tên loại sản phẩm phụ":
+                            productSubCategory.setName(cell.getStringCellValue());
+                            break;
+                        case "Ảnh loại sản phẩm phụ":
+                            XSSFRichTextString imageSubCate = (XSSFRichTextString) cell.getRichStringCellValue();
+                            // Use regular expressions to find image file names
+                            pattern = Pattern.compile("image(\\d+)\\.(\\w+)");
+                            matcher = pattern.matcher(imageSubCate.getString());
+
+                            while (matcher.find()) {
+                                String imageName = matcher.group();
+                                byte[] imageBytes = getImageBytes(xssfSheet, imageName);
+                                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                                byteArrayOutputStream.write(imageBytes, 0, imageBytes.length);
+
+                                if (imageBytes != null) {
+                                    String imageUrl = FirebaseService.uploadImageToStorage(byteArrayOutputStream,imageName);
+                                    productSubCategory.setImageUrl(imageUrl);
+                                }
+                            }
+                            break;
+                        case "Tên siêu thị":
+                            supermarket.setName(cell.getStringCellValue());
+                            break;
+                        case "Địa chỉ siêu thị":
+                            supermarket.setAddress(cell.getStringCellValue());
+                            break;
+                        case "Hotline siêu thị":
+                            supermarket.setPhone(cell.getStringCellValue());
+                            break;
+                    }
+                    cellIndex++;
+                }
+                productSubCategory.setProductCategory(productCategory);
+                product.setProductSubCategory(productSubCategory);
+                product.setSupermarket(supermarket);
+                productList.add(product);
+            }
+            rowIndex++;
+        }
+        return productList;
+    }
+    private static byte[] getImageBytes(XSSFSheet sheet, String imageName) throws InvalidFormatException {
+        List<PackagePart> packageParts = sheet.getPackagePart().getPackage().getParts();
+        for (PackagePart part : packageParts) {
+            String partName = part.getPartName().getName();
+            if (partName.contains(imageName)) {
+                try {
+                    return part.getInputStream().readAllBytes();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return null;
+    }
+    private static LocalDateTime convertDateToLocalDateTime(Date date) {
+        // Convert Date to GregorianCalendar
+        GregorianCalendar calendar = new GregorianCalendar();
+        calendar.setTime(date);
+
+        // Convert GregorianCalendar to Instant
+        Instant instant = calendar.toInstant();
+
+        // Convert Instant to LocalDateTime
+        LocalDateTime localDateTime = instant.atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+        return localDateTime;
     }
 }
