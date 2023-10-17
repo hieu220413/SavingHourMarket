@@ -20,7 +20,8 @@ jobs:
           java-version: '8'
       #Build the application using Maven
       - name: Build with Maven
-        run: mvn package -DskipTests
+        working-directory: ./saving-hour-market-api-server
+        run: .\mvnw package -DskipTests
       - name: Upload JAR
         # We upload so we can re-use same jar in next job.
         uses: actions/upload-artifact@v2
