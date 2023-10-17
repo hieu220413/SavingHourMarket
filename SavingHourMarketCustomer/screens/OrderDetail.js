@@ -88,6 +88,7 @@ const OrderDetail = ({navigation, route}) => {
         })
           .then(res => res.json())
           .then(respond => {
+            console.log(respond);
             setItem(respond);
             setLoading(false);
           })

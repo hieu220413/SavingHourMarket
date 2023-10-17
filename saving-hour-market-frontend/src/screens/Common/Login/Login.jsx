@@ -1,5 +1,5 @@
 import React from "react";
-import LoginImg from "../../assets/LoginImg.png";
+import LoginImg from "../../../assets/LoginImg.png";
 import "./Login.scss";
 import { Link } from "react-router-dom";
 
