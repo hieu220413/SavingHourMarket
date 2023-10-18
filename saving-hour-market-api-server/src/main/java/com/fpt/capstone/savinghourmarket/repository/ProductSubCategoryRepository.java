@@ -28,4 +28,36 @@ public interface ProductSubCategoryRepository extends JpaRepository<ProductSubCa
             "JOIN FETCH sct.productCategory " +
             "WHERE sct.id = :subCategoryId")
     Optional<ProductSubCategory> findByIdWithCate(UUID subCategoryId);
+
+    @Query("SELECT NEW com.fpt.capstone.savinghourmarket.entity.ProductSubCategory(subcts.id, subcts.name, subcts.imageUrl, subcts.allowableDisplayThreshold, COUNT(subcts.id)) FROM Order ord " +
+            "JOIN ord.discountList d " +
+            "JOIN d.productSubCategory subcts " +
+            "JOIN subcts.productCategory ct " +
+            "WHERE " +
+            "ct.id = :productCategoryId " +
+            "AND " +
+            "(d.percentage  BETWEEN :fromPercentage AND :toPercentage) " +
+            "AND " +
+            "((:quarter IS NOT NULL) OR ((:monthValue IS NULL) OR EXTRACT(MONTH FROM ord.createdTime) =  :monthValue)) " +
+            "AND " +
+            "((:quarter IS NULL) " +
+            "OR " +
+            "((:quarter = 1) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 1 and 3)) " +
+            "OR " +
+            "((:quarter = 2) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 4 and 6)) " +
+            "OR " +
+            "((:quarter = 3) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 7 and 9)) " +
+            "OR " +
+            "((:quarter = 4) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 10 and 12)) " +
+            ")" +
+            "AND " +
+            "EXTRACT(YEAR FROM ord.createdTime) = :year " +
+            "AND ord.status = 4 " +
+            "GROUP BY subcts.id, subcts.name, subcts.imageUrl, subcts.allowableDisplayThreshold")
+    List<ProductSubCategory> getAllSubCategoryDiscountUsageByCategoryId(Integer monthValue, Integer quarter, Integer year, Integer fromPercentage, Integer toPercentage, UUID productCategoryId);
+
+    @Query("SELECT NEW com.fpt.capstone.savinghourmarket.entity.ProductSubCategory(sct.id, sct.name, sct.imageUrl, sct.allowableDisplayThreshold) FROM ProductSubCategory sct " +
+            "JOIN sct.productCategory ct " +
+            "WHERE ct.id = :productCategoryId")
+    List<ProductSubCategory> getAllSubCategoryByCategoryId(UUID productCategoryId);
 }

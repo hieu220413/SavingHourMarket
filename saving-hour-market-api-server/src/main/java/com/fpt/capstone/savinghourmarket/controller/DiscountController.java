@@ -3,6 +3,7 @@ package com.fpt.capstone.savinghourmarket.controller;
 import com.fpt.capstone.savinghourmarket.common.Month;
 import com.fpt.capstone.savinghourmarket.common.Quarter;
 import com.fpt.capstone.savinghourmarket.entity.Discount;
+import com.fpt.capstone.savinghourmarket.model.CateWithSubCateDiscountUsageReport;
 import com.fpt.capstone.savinghourmarket.model.DiscountOnly;
 import com.fpt.capstone.savinghourmarket.model.DiscountReport;
 import com.fpt.capstone.savinghourmarket.model.DiscountsUsageReportResponseBody;
@@ -105,6 +106,20 @@ public class DiscountController {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
         DiscountsUsageReportResponseBody discountsUsageReportResponseBody = discountService.getPerDiscountUsageReport(month, quarter, year, fromPercentage, toPercentage, productCategoryId, productSubCategoryId);
+        return ResponseEntity.status(HttpStatus.OK).body(discountsUsageReportResponseBody);
+    }
+
+    @RequestMapping(value = "/getCategoryWithSubCategoryDiscountUsageReport", method = RequestMethod.GET)
+    public ResponseEntity<CateWithSubCateDiscountUsageReport> getCategoryWithSubCategoryDiscountUsageReport(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @RequestParam(required = false) Month month
+            , @RequestParam(required = false) Quarter quarter
+            , @RequestParam(required = false) Integer year
+            , @RequestParam(defaultValue = "0") Integer fromPercentage
+            , @RequestParam(defaultValue = "100") Integer toPercentage
+            , @RequestParam UUID productCategoryId) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        CateWithSubCateDiscountUsageReport discountsUsageReportResponseBody = discountService.getCategoryWithSubCategoryDiscountUsageReport(month, quarter, year, fromPercentage, toPercentage, productCategoryId);
         return ResponseEntity.status(HttpStatus.OK).body(discountsUsageReportResponseBody);
     }
 }

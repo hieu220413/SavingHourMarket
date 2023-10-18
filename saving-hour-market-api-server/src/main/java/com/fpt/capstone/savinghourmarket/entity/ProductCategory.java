@@ -25,6 +25,12 @@ public class ProductCategory {
         this.name = productCategoryCreateBody.getName();
     }
 
+    public ProductCategory(UUID id, String name, Long totalDiscountUsage) {
+        this.id = id;
+        this.name = name;
+        this.totalDiscountUsage = totalDiscountUsage.intValue();
+    }
+
     @Id
     @UuidGenerator
     private UUID id;
