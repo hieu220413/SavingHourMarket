@@ -138,7 +138,9 @@ const SelectPickupPoint = ({navigation, route}) => {
               color: 'black',
               fontFamily: 'Roboto',
               fontWeight: 'bold',
-              marginBottom: 20,
+              paddingBottom: 20,
+              borderBottomColor: '#decbcb',
+              borderBottomWidth: 0.75,
             }}>
             Điểm giao hàng gần nhất
           </Text>
@@ -152,8 +154,7 @@ const SelectPickupPoint = ({navigation, route}) => {
               }}
               style={{
                 paddingVertical: 15,
-                borderTopColor: '#decbcb',
-                borderTopWidth: 0.75,
+
                 borderBottomColor: '#decbcb',
                 borderBottomWidth: 0.75,
               }}>
@@ -174,7 +175,7 @@ const SelectPickupPoint = ({navigation, route}) => {
                     fontSize: 17,
                     color: 'black',
                     fontFamily: 'Roboto',
-                    width: '75%',
+                    width: '70%',
                   }}>
                   {item.address}
                 </Text>
@@ -190,8 +191,10 @@ const SelectPickupPoint = ({navigation, route}) => {
               color: 'black',
               fontFamily: 'Roboto',
               fontWeight: 'bold',
-              marginBottom: 20,
+              paddingBottom: 20,
               marginTop: 20,
+              borderBottomColor: '#decbcb',
+              borderBottomWidth: 0.75,
             }}>
             Khác
           </Text>
@@ -205,8 +208,7 @@ const SelectPickupPoint = ({navigation, route}) => {
               }}
               style={{
                 paddingVertical: 15,
-                borderTopColor: '#decbcb',
-                borderTopWidth: 0.75,
+
                 borderBottomColor: '#decbcb',
                 borderBottomWidth: 0.75,
               }}>
@@ -227,10 +229,11 @@ const SelectPickupPoint = ({navigation, route}) => {
                     fontSize: 17,
                     color: 'black',
                     fontFamily: 'Roboto',
-                    flex: 0.9,
+                    width: '70%',
                   }}>
                   {item.address}
                 </Text>
+                <Text style={{fontSize: 14}}>{item.distance}</Text>
               </View>
             </TouchableOpacity>
           ))}

@@ -18,6 +18,15 @@ import java.util.UUID;
 @Setter
 @Getter
 public class Discount {
+
+    public Discount(UUID id, String name, Integer percentage, String imageUrl, Long quantity) {
+        this.id = id;
+        this.name = name;
+        this.percentage = percentage;
+        this.imageUrl = imageUrl;
+        this.quantity = quantity.intValue();
+    }
+
     @Id
     @UuidGenerator
     private UUID id;
@@ -48,25 +57,37 @@ public class Discount {
     @JsonIgnore
     private List<Order> orderList;
 
-    @ManyToMany(
+//    @ManyToMany(
+//            fetch = FetchType.LAZY
+//    )
+//    @JoinTable(
+//            name = "discount_product_category",
+//            joinColumns = @JoinColumn(name = "discount_id"),
+//            inverseJoinColumns = @JoinColumn(name = "product_category_id")
+//    )
+    @ManyToOne(
             fetch = FetchType.LAZY
     )
-    @JoinTable(
-            name = "discount_product_category",
-            joinColumns = @JoinColumn(name = "discount_id"),
-            inverseJoinColumns = @JoinColumn(name = "product_category_id")
+    @JoinColumn(
+            name = "product_category_id",
+            referencedColumnName = "id"
     )
-    @JsonIgnore
-    private List<ProductCategory> productCategoryList;
+    private ProductCategory productCategory;
 
-    @ManyToMany(
+//    @ManyToMany(
+//            fetch = FetchType.LAZY
+//    )
+//    @JoinTable(
+//            name = "discount_product_sub_category",
+//            joinColumns = @JoinColumn(name = "discount_id"),
+//            inverseJoinColumns = @JoinColumn(name = "product_sub_category_id")
+//    )
+    @ManyToOne(
             fetch = FetchType.LAZY
     )
-    @JoinTable(
-            name = "discount_product_sub_category",
-            joinColumns = @JoinColumn(name = "discount_id"),
-            inverseJoinColumns = @JoinColumn(name = "product_sub_category_id")
+    @JoinColumn(
+            name = "product_sub_category_id",
+            referencedColumnName = "id"
     )
-    @JsonIgnore
-    private List<ProductSubCategory> productSubCategoryList;
+    private ProductSubCategory productSubCategory;
 }

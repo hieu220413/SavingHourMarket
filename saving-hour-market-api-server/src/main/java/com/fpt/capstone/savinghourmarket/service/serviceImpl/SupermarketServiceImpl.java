@@ -5,20 +5,24 @@ import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.Supermarket;
 import com.fpt.capstone.savinghourmarket.exception.DisableSupermarketForbidden;
-import com.fpt.capstone.savinghourmarket.exception.InvalidUserInputException;
+import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.SupermarketCreateRequestBody;
+import com.fpt.capstone.savinghourmarket.model.SupermarketListResponseBody;
 import com.fpt.capstone.savinghourmarket.model.SupermarketUpdateRequestBody;
 import com.fpt.capstone.savinghourmarket.repository.ProductRepository;
 import com.fpt.capstone.savinghourmarket.repository.SupermarketRepository;
 import com.fpt.capstone.savinghourmarket.service.SupermarketService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -60,7 +64,7 @@ public class SupermarketServiceImpl implements SupermarketService {
         }
 
         if(errorFields.size() > 0){
-            throw new InvalidUserInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
+            throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
         }
 
         Supermarket supermarket = new Supermarket(supermarketCreateRequestBody);
@@ -118,7 +122,7 @@ public class SupermarketServiceImpl implements SupermarketService {
 
 
         if(errorFields.size() > 0){
-            throw new InvalidUserInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
+            throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
         }
 
 
@@ -144,5 +148,15 @@ public class SupermarketServiceImpl implements SupermarketService {
             supermarket.get().setStatus(status.ordinal());
         }
         return supermarket.get();
+    }
+
+    @Override
+    public SupermarketListResponseBody getSupermarketForStaff(String name, Integer page, Integer limit) {
+        Pageable pageable = PageRequest.of(page, limit);
+        Page<Supermarket> result = supermarketRepository.getSupermarketForStaff(name, pageable);
+        int totalPage = result.getTotalPages();
+        long totalSupermarket = result.getTotalElements();
+        List<Supermarket> supermarketList = result.stream().toList();
+        return new SupermarketListResponseBody(supermarketList, totalPage, totalSupermarket);
     }
 }

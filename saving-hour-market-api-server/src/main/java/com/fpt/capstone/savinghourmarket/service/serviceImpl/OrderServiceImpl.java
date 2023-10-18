@@ -94,10 +94,13 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private DiscountRepository discountRepository;
 
+    private final ConfigurationRepository configurationRepository;
+
     @Value("${goong-api-key}")
     private String goongApiKey;
     @Value("${goong-distance-matrix-url}")
     private String goongDistanceMatrixUrl;
+
 
 
 
@@ -227,6 +230,8 @@ public class OrderServiceImpl implements OrderService {
         if (order.getOrderGroup() != null) {
             orderWithDetails.setTimeFrame(order.getOrderGroup().getTimeFrame());
             orderWithDetails.setPickupPoint(order.getOrderGroup().getPickupPoint());
+        } else {
+            orderWithDetails.setTimeFrame(order.getTimeFrame());
         }
 
         List<OrderDetail> orderDetails = order.getOrderDetailList();
@@ -370,8 +375,9 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public ShippingFeeDetailResponseBody getShippingFeeDetail(Double latitude, Double longitude) throws IOException, InterruptedException, ApiException {
 //        int numberOfSuggestion = 3;
+        Configuration configuration = configurationRepository.findAll().get(0);
         PickupPointSuggestionResponseBody closetPickupPoint;
-        Integer shippingFee = 10000;
+        Integer shippingFee = configuration.getInitialShippingFee();
         List<PickupPoint> pickupPoints = pickupPointRepository.getAllSortByDistance(latitude, longitude);
         List<PickupPointSuggestionResponseBody> pickupPointSuggestionResponseBodyList = new ArrayList<>();
         List<LatLngModel> destinations = new ArrayList<>();
@@ -409,8 +415,8 @@ public class OrderServiceImpl implements OrderService {
         // convert m to km
         int distance = closetPickupPoint.getDistanceInValue().intValue() / 1000;
 
-        if(distance > 2) {
-            shippingFee += (distance - 2)*1000;
+        if(distance > configuration.getMinKmDistanceForExtraShippingFee()) {
+            shippingFee += (distance - 2)*configuration.getExtraShippingFeePerKilometer();
         }
 
         ShippingFeeDetailResponseBody shippingFeeDetailResponseBody = new ShippingFeeDetailResponseBody();
@@ -504,6 +510,9 @@ public class OrderServiceImpl implements OrderService {
 
         if (orderCreateHasPickupPointAndTimeFrame(orderCreate)) {
             groupingOrder(order, orderCreate);
+        } else {
+            order.setTimeFrame(timeFrameRepository.findById(orderCreate.getTimeFrameId())
+                    .orElseThrow(()-> new ResourceNotFoundException("Time frame không tìm thấy với id: " + orderCreate.getTimeFrameId())));
         }
 
         List<OrderDetail> orderDetails = getOrderDetails(order, orderCreate);
@@ -557,6 +566,7 @@ public class OrderServiceImpl implements OrderService {
             group = orderGroupRepository.save(orderGroupNew);
         }
         order.setOrderGroup(group);
+        order.setTimeFrame(group.getTimeFrame());
     }
 
     private OrderGroup createNewOrderGroup(OrderCreate orderCreate) {

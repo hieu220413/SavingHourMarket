@@ -17,6 +17,16 @@ import java.util.UUID;
 @Setter
 @Getter
 public class Product {
+
+    public Product(UUID id, String name, String imageUrl, Long price, Long priceOriginal, Long quantity) {
+        this.id = id;
+        this.name = name;
+        this.imageUrl = imageUrl;
+        this.price = price.intValue();
+        this.priceOriginal = priceOriginal.intValue();
+        this.quantity = quantity.intValue();
+    }
+
     @Id
     @UuidGenerator
     private UUID id;
@@ -49,7 +59,9 @@ public class Product {
     )
     private ProductSubCategory productSubCategory;
 
-    @ManyToOne
+    @ManyToOne(
+            cascade = CascadeType.ALL
+    )
     @JoinColumn(
             name = "supermarket_id",
             referencedColumnName = "id"

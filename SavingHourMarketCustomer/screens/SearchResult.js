@@ -9,6 +9,8 @@ import Empty from '../assets/image/search-empty.png';
 import { API } from '../constants/api';
 import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Toast from 'react-native-toast-message';
+import LoadingScreen from '../components/LoadingScreen';
 
 const SearchResult = ({
     navigation,
@@ -19,24 +21,43 @@ const SearchResult = ({
     const [text, setText] = useState(route.params.text);
     const [cartList, setCartList] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
-    const [categories, setCategories] = useState([]);
     const [currentCate, setCurrentCate] = useState('');
-    const [selectSortOption, setSelectSortOption] = useState('');
-
+    const [loading, setLoading] = useState(false);
+    const [selectFilter, setSelectFilter] = useState([]);
     const sortOptions = [
         {
             id: 1,
-            name: 'Ngày sắp hết hạn',
+            name: 'HSD gần nhất',
+            active: false,
         },
         {
             id: 2,
-            name: 'Giá tiền tăng dần',
+            name: 'HSD xa nhất',
+            active: false,
         },
         {
             id: 3,
+            name: 'Giá tiền tăng dần',
+            active: false,
+        },
+        {
+            id: 4,
             name: 'Giá tiền giảm dần',
+            active: false,
         },
     ];
+    const [selectFilterInit, setSelectFilterInit] = useState([]);
+    const [selectSort, setSelectSort] = useState(sortOptions);
+    const searchHistory = route.params.text;
+
+    const showToast = () => {
+        Toast.show({
+            type: 'success',
+            text1: 'Thành công',
+            text2: 'Thêm sản phẩm vào giỏ hàng thành công 👋',
+            visibilityTime: 500,
+        });
+    };
 
     const typingTimeoutRef = useRef(null);
 
@@ -54,49 +75,55 @@ const SearchResult = ({
         handleTypingSearch('');
     };
 
-    const sortProduct = (id) => {
-        setSelectSortOption(id);
-        if (id == 1) {
-            fetch(`${API.baseURL}/api/product/getProductsForCustomer?name=${productName}${currentCate === '' ? '' : '&productCategoryId=' + currentCate}&page=0&limit=5&quantitySortType=DESC&expiredSortType=ASC&priceSort=ASC`)
+    const sortProduct = (item) => {
+        const sortItem = item.find(item => item.active === true);
+        setLoading(true);
+        if (sortItem) {
+            fetch(`${API.baseURL}/api/product/getProductsForCustomer?name=${productName}${currentCate === '' ? '' : '&productCategoryId=' + currentCate}&page=0&limit=10${sortItem?.id == 1 ? '&expiredSortType=ASC' : ''}${sortItem?.id == 2 ? '&expiredSortType=DESC' : ''}${sortItem?.id == 3 ? '&priceSort=ASC' : ''}${sortItem?.id == 4 ? '&priceSort=DESC' : ''}`)
                 .then(res => res.json())
                 .then(data => {
-                    setResult(data);
+                    setResult(data.productList);
+                    setLoading(false);
                 })
                 .catch(err => {
                     console.log(err);
+                    setLoading(false);
                 });
-        } else if (id == 2) {
-            fetch(`${API.baseURL}/api/product/getProductsForCustomer?name=${productName}${currentCate === '' ? '' : '&productCategoryId=' + currentCate}&page=0&limit=5&quantitySortType=DESC&expiredSortType=DESC&priceSort=ASC`)
+        } else {
+            fetch(`${API.baseURL}/api/product/getProductsForCustomer?name=${productName}${currentCate === '' ? '' : '&productCategoryId=' + currentCate}&page=0&limit=10`)
                 .then(res => res.json())
                 .then(data => {
-                    setResult(data);
+                    setResult(data.productList);
+                    setLoading(false);
                 })
                 .catch(err => {
                     console.log(err);
-                });
-        } else if (id == 3) {
-            fetch(`${API.baseURL}/api/product/getProductsForCustomer?name=${productName}${currentCate === '' ? '' : '&productCategoryId=' + currentCate}&page=0&limit=5&quantitySortType=DESC&expiredSortType=DESC&priceSort=DESC`)
-                .then(res => res.json())
-                .then(data => {
-                    setResult(data);
-                })
-                .catch(err => {
-                    console.log(err);
+                    setLoading(false);
                 });
         }
     };
 
     const handleApplyFilter = () => {
         setModalVisible(!modalVisible);
-        fetch(`${API.baseURL}/api/product/getProductsForCustomer?name=${productName}&productCategoryId=${currentCate}&page=0&limit=5&quantitySortType=DESC&expiredSortType=DESC`)
+        setLoading(true);
+        sortProduct(selectSort);
+    };
+
+    const handleClear = () => {
+        setModalVisible(!modalVisible);
+        setLoading(true);
+        fetch(`${API.baseURL}/api/product/getProductsForCustomer?name=${productName}&page=0&limit=10`)
             .then(res => res.json())
             .then(data => {
-                setResult(data);
+                setResult(data.productList);
+                setSelectSort(sortOptions);
+                setSelectFilter(selectFilterInit);
+                setLoading(false);
             })
             .catch(err => {
                 console.log(err);
+                setLoading(false);
             });
-        sortProduct(selectSortOption);
     };
 
     const handleAddToCart = async data => {
@@ -109,6 +136,7 @@ const SearchResult = ({
                 newCartList[index].cartQuantity = newCartList[index].cartQuantity + 1;
                 setCartList(newCartList);
                 await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
+                showToast();
                 return;
             }
 
@@ -116,29 +144,82 @@ const SearchResult = ({
             newCartList = [...newCartList, cartData];
             setCartList(newCartList);
             await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
+            showToast();
         } catch (error) {
             console.log(error);
+        }
+    };
+
+    const handleStoredSearchHistory = async data => {
+        try {
+            const value = await AsyncStorage.getItem('SearchHistory');
+            let newSearchHistoryList = value ? JSON.parse(value) : [];
+            const isExisted = newSearchHistoryList.some(item => item == data);
+            if (isExisted) {
+                const index = newSearchHistoryList.findIndex(item => item == data);
+                console.log(index);
+                newSearchHistoryList.splice(index, 1);
+                newSearchHistoryList.unshift(data);
+                await AsyncStorage.setItem('SearchHistory', JSON.stringify(newSearchHistoryList));
+            } else {
+                const searchData = newSearchHistoryList.unshift(searchHistory);
+                await AsyncStorage.setItem('SearchHistory', JSON.stringify(searchData));
+            }
+            setLoading(false);
+        } catch (err) {
+            setLoading(false);
+            console.log(err);
         }
     };
 
     // fetch search suggestion
     useFocusEffect(
         useCallback(() => {
+            setLoading(true);
             fetch(`${API.baseURL}/api/product/getProductsForCustomer?name=${productName}&quantitySortType=DESC&expiredSortType=DESC`)
                 .then(res => res.json())
                 .then(data => {
-                    setResult(data);
+                    setResult(data.productList);
+                    setLoading(false);
                 })
                 .catch(err => {
                     console.log(err);
+                    setLoading(false);
                 });
 
             (async () => {
                 try {
                     const cartList = await AsyncStorage.getItem('CartList');
                     setCartList(cartList ? JSON.parse(cartList) : []);
+                    setLoading(false);
                 } catch (err) {
                     console.log(err);
+                    setLoading(false);
+                }
+            })();
+
+            (async () => {
+                try {
+                    const value = await AsyncStorage.getItem('SearchHistory');
+                    let newSearchHistoryList = value ? JSON.parse(value) : [];
+                    const isExisted = newSearchHistoryList.some(item => item == searchHistory);
+                    if (isExisted) {
+                        const index = newSearchHistoryList.findIndex(item => item == searchHistory);
+                        newSearchHistoryList.splice(index, 1);
+                        newSearchHistoryList.unshift(searchHistory);
+                        await AsyncStorage.setItem('SearchHistory', JSON.stringify(newSearchHistoryList));
+                        setLoading(false);
+                        return;
+                    }
+                    const searchData = [searchHistory, ...newSearchHistoryList];
+                    await AsyncStorage.setItem('SearchHistory', JSON.stringify(searchData));
+
+
+                    // AsyncStorage.removeItem('SearchHistory');
+                    setLoading(false);
+                } catch (err) {
+                    console.log(err);
+                    setLoading(false);
                 }
             })();
 
@@ -147,13 +228,18 @@ const SearchResult = ({
             )
                 .then(res => res.json())
                 .then(data => {
-                    setCategories(data);
-                    setCurrentCate(data[0].id);
+                    const cateData = data.map((item) => {
+                        return { ...item, active: false };
+                    });
+                    setSelectFilter(cateData);
+                    setSelectFilterInit(cateData);
+                    setLoading(false);
                 })
                 .catch(err => {
                     console.log(err);
+                    setLoading(false);
                 });
-        }, [productName])
+        }, [productName, searchHistory])
     );
 
     const Product = ({ data }) => {
@@ -248,9 +334,19 @@ const SearchResult = ({
         return (
             <TouchableOpacity
                 onPress={() => {
-                    setSelectSortOption(item.id);
+                    const newArray = selectSort.map((i) => {
+                        if (i.id === item.id) {
+                            if (i.active === true) {
+                                return { ...i, active: false }
+                            } else {
+                                return { ...i, active: true }
+                            }
+                        }
+                        return { ...i, active: false }
+                    })
+                    setSelectSort(newArray);
                 }}
-                style={selectSortOption === item.id ? {
+                style={item.active == true ? {
                     borderColor: COLORS.primary,
                     borderWidth: 1,
                     borderRadius: 10,
@@ -263,14 +359,14 @@ const SearchResult = ({
                 }}
             >
                 <Text
-                    style={selectSortOption === item.id ? {
+                    style={item.active == true ? {
                         width: 150,
                         paddingHorizontal: 20,
                         paddingVertical: 10,
                         textAlign: 'center',
                         color: COLORS.primary,
                         fontFamily: FONTS.fontFamily,
-                        fontSize: 14,
+                        fontSize: 12,
                     } : {
                         width: 150,
                         paddingHorizontal: 20,
@@ -278,7 +374,7 @@ const SearchResult = ({
                         textAlign: 'center',
                         color: 'black',
                         fontFamily: FONTS.fontFamily,
-                        fontSize: 14,
+                        fontSize: 12,
                     }}
                 >
                     {item.name}
@@ -291,9 +387,21 @@ const SearchResult = ({
         return (
             <TouchableOpacity
                 onPress={() => {
-                    setCurrentCate(item.id)
+                    setCurrentCate(item.id);
+                    const newArray = selectFilter.map((i) => {
+                        if (i.id === item.id) {
+                            if (i.active === true) {
+                                setCurrentCate('');
+                                return { ...i, active: false }
+                            } else {
+                                return { ...i, active: true }
+                            }
+                        }
+                        return { ...i, active: false }
+                    })
+                    setSelectFilter(newArray);
                 }}
-                style={currentCate == item.id ? {
+                style={item.active == true ? {
                     borderColor: COLORS.primary,
                     borderWidth: 1,
                     borderRadius: 10,
@@ -306,14 +414,14 @@ const SearchResult = ({
                 }}
             >
                 <Text
-                    style={currentCate == item.id ? {
+                    style={item.active == true ? {
                         width: 150,
                         paddingHorizontal: 20,
                         paddingVertical: 10,
                         textAlign: 'center',
                         color: COLORS.primary,
                         fontFamily: FONTS.fontFamily,
-                        fontSize: 14,
+                        fontSize: 12,
                     } : {
                         width: 150,
                         paddingHorizontal: 20,
@@ -321,7 +429,7 @@ const SearchResult = ({
                         textAlign: 'center',
                         color: 'black',
                         fontFamily: FONTS.fontFamily,
-                        fontSize: 14,
+                        fontSize: 12,
                     }}
                 >
                     {item.name}
@@ -365,6 +473,15 @@ const SearchResult = ({
                         onChangeText={data => {
                             setText(data);
                             handleTypingSearch(data);
+                        }}
+                        onSubmitEditing={() => {
+                            setLoading(true);
+                            setSelectSort(sortOptions);
+                            setSelectFilter(selectFilterInit);
+                            if (productName != "") {
+                                console.log('suibmit');
+                                handleStoredSearchHistory(productName);
+                            }
                         }}
                     />
                     <View style={styles.clear}>
@@ -479,20 +596,16 @@ const SearchResult = ({
                                 fontSize: 20,
                                 fontWeight: 700,
                                 textAlign: 'center',
-                                paddingBottom: 10,
+                                paddingBottom: 20,
                             }}>Bộ lọc tìm kiếm</Text>
                             <TouchableOpacity
                                 onPress={() => {
                                     setModalVisible(!modalVisible);
-                                    setCurrentCate('');
-                                    setSelectSortOption('');
                                 }}
                             >
-
                                 <Image
                                     resizeMode='contain'
                                     style={{
-
                                         width: 20,
                                         height: 20,
                                         tintColor: 'grey'
@@ -511,13 +624,12 @@ const SearchResult = ({
                         >Sắp xếp theo</Text>
                         <View
                             style={{
-                                // flex: 1,
                                 flexDirection: 'row',
                                 flexWrap: 'wrap',
                                 marginVertical: 10,
                             }}
                         >
-                            {sortOptions.map((item, index) => (
+                            {selectSort.map((item, index) => (
                                 <ModalSortItem item={item} key={index} />
                             ))}
                         </View>
@@ -536,25 +648,55 @@ const SearchResult = ({
                                 marginVertical: 10,
                             }}
                         >
-                            {categories.map((item, index) => (
+                            {selectFilter.map((item, index) => (
                                 <ModalCateItem item={item} key={index} />
                             ))}
                         </View>
 
-                        <TouchableOpacity
+                        <View
                             style={{
-                                paddingHorizontal: 15,
-                                paddingVertical: 10,
-                                backgroundColor: COLORS.primary,
-                                color: 'white',
-                                borderRadius: 10,
+                                flexDirection: 'row',
+                                justifyContent: 'center',
+                                marginTop: '5%',
                             }}
-                            onPress={handleApplyFilter}>
-                            <Text style={styles.textStyle}>Áp dụng</Text>
-                        </TouchableOpacity>
+                        >
+                            <TouchableOpacity
+                                style={{
+                                    width: '50%',
+                                    paddingHorizontal: 15,
+                                    paddingVertical: 10,
+                                    backgroundColor: 'white',
+                                    borderRadius: 10,
+                                    borderColor: COLORS.primary,
+                                    borderWidth: 0.5,
+                                    marginRight: '2%',
+                                }}
+                                onPress={handleClear}>
+                                <Text style={{
+                                    color: COLORS.primary,
+                                    fontWeight: 'bold',
+                                    textAlign: 'center',
+                                }}>Thiết lập lại</Text>
+                            </TouchableOpacity>
+
+
+                            <TouchableOpacity
+                                style={{
+                                    width: '50%',
+                                    paddingHorizontal: 15,
+                                    paddingVertical: 10,
+                                    backgroundColor: COLORS.primary,
+                                    color: 'white',
+                                    borderRadius: 10,
+                                }}
+                                onPress={handleApplyFilter}>
+                                <Text style={styles.textStyle}>Áp dụng</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </View>
             </Modal>
+            {loading && <LoadingScreen />}
         </View>
     );
 };
@@ -568,7 +710,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F5F5F5',
         maxWidth: '90%',
         borderRadius: 20,
-        marginHorizontal: '5%',
+        marginHorizontal: '6%',
         marginBottom: 20,
         flexDirection: 'row',
     },

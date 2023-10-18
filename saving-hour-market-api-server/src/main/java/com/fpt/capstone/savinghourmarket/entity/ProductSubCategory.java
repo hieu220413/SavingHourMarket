@@ -1,6 +1,8 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fpt.capstone.savinghourmarket.model.ProductSubCategoryCreateBody;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,7 +18,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @Setter
 @Getter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProductSubCategory {
+
     @Id
     @UuidGenerator
     private UUID id;
@@ -46,10 +50,36 @@ public class ProductSubCategory {
     )
     private ProductCategory productCategory;
 
-    @ManyToMany(
-            mappedBy = "productSubCategoryList",
+    @OneToMany(
+            mappedBy = "productSubCategory",
             fetch = FetchType.LAZY
     )
     @JsonIgnore
     private List<Discount> discountList;
+
+    public ProductSubCategory(ProductSubCategoryCreateBody productSubCategoryCreateBody) {
+        this.id = productSubCategoryCreateBody.getProductCategoryId();
+        this.name = productSubCategoryCreateBody.getName();
+        this.imageUrl = productSubCategoryCreateBody.getImageUrl();
+        this.allowableDisplayThreshold = productSubCategoryCreateBody.getAllowableDisplayThreshold();
+
+    }
+
+    @Transient
+    private Integer totalDiscountUsage;
+
+    public ProductSubCategory(UUID id, String name, String imageUrl, Integer allowableDisplayThreshold, Long totalDiscountUsage) {
+        this.id = id;
+        this.name = name;
+        this.imageUrl = imageUrl;
+        this.allowableDisplayThreshold = allowableDisplayThreshold;
+        this.totalDiscountUsage = totalDiscountUsage.intValue();
+    }
+
+    public ProductSubCategory(UUID id, String name, String imageUrl, Integer allowableDisplayThreshold) {
+        this.id = id;
+        this.name = name;
+        this.imageUrl = imageUrl;
+        this.allowableDisplayThreshold = allowableDisplayThreshold;
+    }
 }

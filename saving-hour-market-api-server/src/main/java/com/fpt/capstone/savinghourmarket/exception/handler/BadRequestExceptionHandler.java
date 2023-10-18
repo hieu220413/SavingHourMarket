@@ -4,6 +4,7 @@ import com.fpt.capstone.savinghourmarket.model.ApiError;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -20,7 +21,7 @@ public class BadRequestExceptionHandler {
         List<String> errors = new ArrayList<>();
         for (ObjectError objectError : ex.getBindingResult()
                 .getAllErrors()) {
-            String defaultMessage = objectError.getDefaultMessage();
+            String defaultMessage = ((FieldError) objectError).getField() + ": " + objectError.getDefaultMessage();
             errors.add(defaultMessage);
         }
         return ResponseEntity.badRequest().body(errors);

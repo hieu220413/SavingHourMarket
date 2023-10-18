@@ -1,7 +1,12 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
+import com.fpt.capstone.savinghourmarket.common.Month;
+import com.fpt.capstone.savinghourmarket.common.Quarter;
 import com.fpt.capstone.savinghourmarket.entity.Discount;
+import com.fpt.capstone.savinghourmarket.model.CateWithSubCateDiscountUsageReport;
 import com.fpt.capstone.savinghourmarket.model.DiscountOnly;
+import com.fpt.capstone.savinghourmarket.model.DiscountReport;
+import com.fpt.capstone.savinghourmarket.model.DiscountsUsageReportResponseBody;
 import com.fpt.capstone.savinghourmarket.service.DiscountService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
@@ -12,11 +17,11 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping(value = "/api/discount")
@@ -87,5 +92,34 @@ public class DiscountController {
     public ResponseEntity<Discount> getDiscountWithCategories(@RequestParam("id") String discountId) {
         Discount discount = discountService.getDiscountById(discountId);
         return ResponseEntity.status(HttpStatus.OK).body(discount);
+    }
+
+    @RequestMapping(value = "/getDiscountUsageReport", method = RequestMethod.GET)
+    public ResponseEntity<DiscountsUsageReportResponseBody> getPerDiscountUsageReport(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @RequestParam(required = false) Month month
+            , @RequestParam(required = false) Quarter quarter
+            , @RequestParam(required = false) Integer year
+            , @RequestParam(defaultValue = "0") Integer fromPercentage
+            , @RequestParam(defaultValue = "100") Integer toPercentage
+            , @RequestParam(required = false) UUID productCategoryId
+            , @RequestParam(required = false) UUID productSubCategoryId) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        DiscountsUsageReportResponseBody discountsUsageReportResponseBody = discountService.getPerDiscountUsageReport(month, quarter, year, fromPercentage, toPercentage, productCategoryId, productSubCategoryId);
+        return ResponseEntity.status(HttpStatus.OK).body(discountsUsageReportResponseBody);
+    }
+
+    @RequestMapping(value = "/getCategoryWithSubCategoryDiscountUsageReport", method = RequestMethod.GET)
+    public ResponseEntity<CateWithSubCateDiscountUsageReport> getCategoryWithSubCategoryDiscountUsageReport(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @RequestParam(required = false) Month month
+            , @RequestParam(required = false) Quarter quarter
+            , @RequestParam(required = false) Integer year
+            , @RequestParam(defaultValue = "0") Integer fromPercentage
+            , @RequestParam(defaultValue = "100") Integer toPercentage
+            , @RequestParam UUID productCategoryId) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        CateWithSubCateDiscountUsageReport discountsUsageReportResponseBody = discountService.getCategoryWithSubCategoryDiscountUsageReport(month, quarter, year, fromPercentage, toPercentage, productCategoryId);
+        return ResponseEntity.status(HttpStatus.OK).body(discountsUsageReportResponseBody);
     }
 }

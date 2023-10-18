@@ -117,7 +117,7 @@ import LoadingScreen from '../components/LoadingScreen';
 // ];
 
 const Item = ({data}) => {
-  const [rating, setRating] = useState(data?.rate);
+  
   const [animation, setAnimation] = useState(new Animated.Value(1));
 
   let stars = [];
@@ -126,7 +126,7 @@ const Item = ({data}) => {
     stars.push(
       <FontAwesome
         key={x}
-        name={x <= rating ? 'star' : 'star-o'}
+        name={x <= data?.rate ? 'star' : 'star-o'}
         color="rgb(255,194,26)"
         size={18}
         style={{marginHorizontal: 2}}></FontAwesome>,
@@ -263,7 +263,7 @@ const FeedbackList = ({navigation}) => {
   useFocusEffect(
     useCallback(() => {
       const fetchData = async () => {
-        const token = await auth().currentUser?.getIdToken();
+        const token = await auth().currentUser.getIdToken();
         setTokenId(token);
         if (token === null) {
           Alert.alert('Unauthorized');
@@ -271,7 +271,7 @@ const FeedbackList = ({navigation}) => {
         } else {
           setLoading(true);
           fetch(
-            `${API.baseURL}/api/feedback/getFeedbackForCustomer?createTimeSortType=ASC&page=0&size=100`,
+            `${API.baseURL}/api/feedback/getFeedbackForCustomer?createTimeSortType=DESC&page=0&size=1000`,
             {
               method: 'GET',
               headers: {

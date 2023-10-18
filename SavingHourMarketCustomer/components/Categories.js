@@ -1,9 +1,7 @@
 /* eslint-disable prettier/prettier */
-import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import React, { useState, useEffect } from 'react';
-import { API } from '../constants/api';
+import { Text, ScrollView, TouchableOpacity } from 'react-native';
+import React from 'react';
 import { COLORS, FONTS } from '../constants/theme';
-import { icons } from '../constants';
 
 const Categories = (
     {
@@ -24,12 +22,11 @@ const Categories = (
                         paddingBottom: 5,
                         paddingHorizontal: 5,
                         fontSize: 22,
-                        fontFamily: FONTS.fontFamily,
+                        fontFamily: '',
                         borderRadius: 20,
                         textAlign: 'center',
                         fontWeight: 700,
                         color: COLORS.secondary,
-
                     } : {
                         padding: 5,
                         fontSize: 20,

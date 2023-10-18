@@ -5,9 +5,10 @@ import {
   SafeAreaView,
   Image,
   Touchable,
-  Switch,
   Alert,
+  Switch,
 } from 'react-native';
+// import {Switch} from 'react-native-switch';
 import Header from '../shared/Header';
 import {COLORS} from '../constants/theme';
 import {icons} from '../constants';
@@ -23,11 +24,43 @@ import {
 import {useFocusEffect} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoadingScreen from '../components/LoadingScreen';
+import messaging from '@react-native-firebase/messaging';
 
 const Profile = ({navigation}) => {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isEnable, setIsEnable] = useState(true);
+  useFocusEffect(
+    useCallback(() => {
+      (async () => {
+        try {
+          setLoading(true);
+          const isEnabled = await AsyncStorage.getItem('isEnable');
+          setIsEnable(isEnabled ? JSON.parse(isEnabled) : true);
+          setLoading(false);
+        } catch (err) {
+          console.log(err);
+          setLoading(false);
+        }
+      })();
+    }, []),
+  );
+  const toggleSwitch = async value => {
+    if (value) {
+      console.log('hello');
+      messaging()
+        .subscribeToTopic(user ? user.id : '.')
+        .then(() => console.log('Subscribed to topic!'));
+      await AsyncStorage.setItem('isEnable', JSON.stringify(value));
+    } else {
+      messaging()
+        .unsubscribeFromTopic(user ? user.id : '.')
+        .then(() => console.log('Unsubscribed fom the topic!'));
+      await AsyncStorage.setItem('isEnable', JSON.stringify(value));
+    }
+    setIsEnable(value);
+  };
   //authen check
   const onAuthStateChange = async userInfo => {
     // console.log(userInfo);
@@ -84,9 +117,13 @@ const Profile = ({navigation}) => {
   );
 
   const logout = async () => {
-    // console.log('a');
+    messaging()
+      .unsubscribeFromTopic(user ? user.id : '.')
+      .then(() => console.log('Unsubscribed fom the topic!'));
+
     await GoogleSignin.signOut().catch(e => console.log(e));
-    // console.log('b');
+
+    await AsyncStorage.removeItem('CartList');
     await AsyncStorage.removeItem('userInfo');
     auth()
       .signOut()
@@ -362,7 +399,7 @@ const Profile = ({navigation}) => {
           }}
         /> */}
         {/* Options 2 */}
-        <TouchableOpacity
+        <View
           style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -386,8 +423,16 @@ const Profile = ({navigation}) => {
               Notification
             </Text>
           </View>
-          <AntDesign name="right" size={20} color="black"></AntDesign>
-        </TouchableOpacity>
+          <Switch
+            trackColor={{false: 'grey', true: 'tomato'}}
+            thumbColor={isEnable ? '#f4f3f4' : '#f4f3f4'}
+            // ios_backgroundColor="#3e3e3e"
+            onValueChange={value => {
+              toggleSwitch(value);
+            }}
+            value={isEnable}
+          />
+        </View>
         {/* <TouchableOpacity
           onPress={() => {
             navigation.navigate('Upload');

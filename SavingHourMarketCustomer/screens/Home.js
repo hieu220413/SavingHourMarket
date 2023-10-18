@@ -38,7 +38,7 @@ const Home = ({navigation}) => {
   const [currentCate, setCurrentCate] = useState('');
   const [productsByCategory, setProductsByCategory] = useState([]);
   const [discountsByCategory, setDiscountsByCategory] = useState([]);
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(1);
   const [cartList, setCartList] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -49,7 +49,7 @@ const Home = ({navigation}) => {
       type: 'success',
       text1: 'Thành công',
       text2: 'Thêm sản phẩm vào giỏ hàng thành công 👋',
-      visibilityTime: 500,
+      visibilityTime: 1000,
     });
   };
 
@@ -74,6 +74,10 @@ const Home = ({navigation}) => {
     fetch(`${API.baseURL}/api/product/getAllCategory`)
       .then(res => res.json())
       .then(data => {
+        if (data.error) {
+          setCategories([]);
+          return;
+        }
         setCategories(data);
         setCurrentCate(data[0].id);
         setLoading(false);
@@ -88,14 +92,18 @@ const Home = ({navigation}) => {
     if (currentCate) {
       setLoading(true);
       fetch(
-        `${API.baseURL}/api/product/getProductsForCustomer?productCategoryId=${currentCate}&page=0&limit=5&quantitySortType=DESC&expiredSortType=ASC`,
+        `${API.baseURL}/api/product/getProductsForCustomer?productCategoryId=${currentCate}&page=0&limit=10&quantitySortType=DESC&expiredSortType=ASC`,
       )
         .then(res => res.json())
         .then(data => {
-          setProductsByCategory(data);
+          setProductsByCategory(data.productList);
+          setPage(1);
+          setTotalPage(data.totalPage);
+          setLoading(false);
         })
         .catch(err => {
           console.log(err);
+          setLoading(false);
         });
 
       fetch(
@@ -104,15 +112,16 @@ const Home = ({navigation}) => {
         .then(res => res.json())
         .then(data => {
           setDiscountsByCategory(data);
+          setLoading(false);
         })
         .catch(err => {
           console.log(err);
+          setLoading(false);
         });
       categories.map(item => {
         item.id === currentCate && setSubCategories(item.productSubCategories);
       });
     }
-    setLoading(false);
   }, [currentCate, categories]);
 
   const handleAddToCart = async data => {
@@ -234,11 +243,16 @@ const Home = ({navigation}) => {
 
   const SubCategory = ({data}) => {
     return (
-      <View
+      <TouchableOpacity
+        onPress={() => {
+          navigation.navigate('ProductsBySubCategories', {
+            subCategory: data,
+          });
+        }}
         style={{
           marginTop: 20,
           marginLeft: 15,
-          marginRight: 25,
+          marginRight: 20,
           alignItems: 'center',
           maxWidth: 80,
         }}>
@@ -248,8 +262,8 @@ const Home = ({navigation}) => {
             uri: data?.imageUrl,
           }}
           style={{
-            width: 65,
-            height: 65,
+            width: 60,
+            height: 60,
           }}
         />
         <Text
@@ -262,7 +276,7 @@ const Home = ({navigation}) => {
           }}>
           {data.name}
         </Text>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -454,20 +468,26 @@ const Home = ({navigation}) => {
           <TouchableOpacity
             onPress={() => {
               setPage(page + 1);
+              setLoading(true);
               fetch(
                 `${
                   API.baseURL
                 }/api/product/getProductsForCustomer?productCategoryId=${currentCate}&page=${
                   page + 1
-                }&limit=5&quantitySortType=DESC&expiredSortType=ASC`,
+                }&limit=5`,
               )
                 .then(res => res.json())
                 .then(data => {
-                  setProductsByCategory([...productsByCategory, ...data]);
-                  setTotalPage(Math.round(productsByCategory / 5));
+                  setProductsByCategory([
+                    ...productsByCategory,
+                    ...data.productList,
+                  ]);
+                  setTotalPage(data.totalPage);
+                  setLoading(false);
                 })
                 .catch(err => {
                   console.log(err);
+                  setLoading(false);
                 });
             }}>
             <Text
@@ -548,7 +568,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
     maxWidth: '90%',
     borderRadius: 20,
-    marginHorizontal: '5%',
+    marginHorizontal: '6%',
     marginBottom: 20,
     flexDirection: 'row',
   },
