@@ -195,15 +195,28 @@ INSERT INTO `saving_hour_market`.`product_sub_category` (`id`, `name`, `allowabl
             (UUID_TO_BIN('accf4547-5541-11ee-8a50-a85e45c41921'), 'Chất tẩy rửa', 30, UUID_TO_BIN('accf0055-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdetergent.png?alt=media'),
             (UUID_TO_BIN('accf4656-5541-11ee-8a50-a85e45c41921'), 'Đồ uống có cồn', 5, UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Falcoholic-drink.png?alt=media');
 
--- Supermarket
-INSERT INTO `saving_hour_market`.`supermarket` (`id`, `status`, `address`, `name`, `phone`)
---     VALUES ('id', 'status', 'address', 'name', 'phone');
-    VALUES  (UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921'), @enable, '34 Đ. Nam Cao, Phường Tân Phú, Quận 9, Thành phố Hồ Chí Minh', 'Vinmart+', '0904756354'),
-            (UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921'), @enable, '191 Quang Trung, Hiệp Phú, Quận 9, Thành phố Hồ Chí Minh', 'Co.opmart', '0904736452'),
-            (UUID_TO_BIN('accf028b-5541-11ee-8a50-a85e45c41921'), @enable, '315 Đỗ Xuân Hợp, phường Phước Long B, quận 9', 'Satrafoods', '0904628495'),
-            (UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921'), @enable, '46 Đ.61, Phước Long B, Quận 9, Thành phố Hồ Chí Minh', 'Bách hóa xanh', '0903636253'),
-            (UUID_TO_BIN('accf0709-5541-11ee-8a50-a85e45c41921'), @enable, '344 Lê Văn Việt, Tăng Nhơn Phú B, Quận 9, Thành phố Hồ Chí Minh', 'Vissan', '0905736451');
 
+-- Supermarket
+INSERT INTO `saving_hour_market`.`supermarket` (`id`, `status`, `name`, `phone`)
+--     VALUES ('id', 'status', 'address', 'name', 'phone');
+    VALUES  (UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921'), @enable, 'Vinmart+', '0904756354'),
+            (UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921'), @enable, 'Co.opmart', '0904736452'),
+            (UUID_TO_BIN('accf028b-5541-11ee-8a50-a85e45c41921'), @enable, 'Satrafoods', '0904628495'),
+            (UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921'), @enable, 'Bách hóa xanh', '0903636253'),
+            (UUID_TO_BIN('accf0709-5541-11ee-8a50-a85e45c41921'), @enable, 'Vissan', '0905736451');
+
+
+-- Supermarket Address
+INSERT INTO `saving_hour_market`.`supermarket_address` (`id`, `address`, `supermarket_id`)
+    VALUES  (UUID_TO_BIN('ec5e8c78-56dc-11ee-8a50-a85e45c41921'), '34 Đ. Nam Cao, Phường Tân Phú, Quận 9, Thành phố Hồ Chí Minh', UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e8dca-56dc-11ee-8a50-a85e45c41921'), '191 Quang Trung, Hiệp Phú, Quận 9, Thành phố Hồ Chí Minh', UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e8f16-56dc-11ee-8a50-a85e45c41921'), '315 Đỗ Xuân Hợp, phường Phước Long B, quận 9', UUID_TO_BIN('accf028b-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e9073-56dc-11ee-8a50-a85e45c41921'), '46 Đ.61, Phước Long B, Quận 9, Thành phố Hồ Chí Minh', UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e923c-56dc-11ee-8a50-a85e45c41921'), '344 Lê Văn Việt, Tăng Nhơn Phú B, Quận 9, Thành phố Hồ Chí Minh', UUID_TO_BIN('accf0709-5541-11ee-8a50-a85e45c41921'));
+
+-- 'ec5e9414-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5ea1b4-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5ea361-56dc-11ee-8a50-a85e45c41921'
 
 -- Time frame
 INSERT INTO `saving_hour_market`.`time_frame` (`id`, `day_of_week`, `from_hour`, `to_hour`, `status`)
@@ -492,14 +505,7 @@ INSERT INTO `saving_hour_market`.`order_detail` (`id`, `product_id`, `bought_qua
 
 
 
--- 'ec5e8c78-56dc-11ee-8a50-a85e45c41921'
--- 'ec5e8dca-56dc-11ee-8a50-a85e45c41921'
--- 'ec5e8f16-56dc-11ee-8a50-a85e45c41921'
--- 'ec5e9073-56dc-11ee-8a50-a85e45c41921'
--- 'ec5e923c-56dc-11ee-8a50-a85e45c41921'
--- 'ec5e9414-56dc-11ee-8a50-a85e45c41921'
--- 'ec5ea1b4-56dc-11ee-8a50-a85e45c41921'
--- 'ec5ea361-56dc-11ee-8a50-a85e45c41921'
+
 -- 'ec5ea50d-56dc-11ee-8a50-a85e45c41921'
 -- 'ec5ea6b7-56dc-11ee-8a50-a85e45c41921'
 -- 'ec5ea831-56dc-11ee-8a50-a85e45c41921'

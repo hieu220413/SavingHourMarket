@@ -250,9 +250,9 @@ public class ProductServiceImpl implements ProductService {
             errorFields.put("Lỗi nhập tên siêu thị", "Tên siêu thị chỉ có tối đa 50 kí tự!");
         }
 
-        if (productCreate.getSupermarket().getId() == null && productCreate.getSupermarket().getAddress().length() > 255) {
-            errorFields.put("Lỗi nhập tên siêu thị", "Tên siêu thị chỉ có tối đa 255 kí tự!");
-        }
+//        if (productCreate.getSupermarket().getId() == null && productCreate.getSupermarket().getAddress().length() > 255) {
+//            errorFields.put("Lỗi nhập tên siêu thị", "Tên siêu thị chỉ có tối đa 255 kí tự!");
+//        }
 
         Pattern pattern;
         Matcher matcher;
