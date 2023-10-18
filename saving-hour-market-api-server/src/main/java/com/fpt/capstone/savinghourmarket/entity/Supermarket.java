@@ -42,7 +42,8 @@ public class Supermarket {
 
     @OneToMany(
             fetch = FetchType.LAZY,
-            mappedBy = "supermarket"
+            mappedBy = "supermarket",
+            cascade = CascadeType.ALL
     )
     private List<SupermarketAddress> supermarketAddressList;
 

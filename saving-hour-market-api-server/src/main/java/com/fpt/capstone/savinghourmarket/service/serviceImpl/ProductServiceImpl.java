@@ -1,10 +1,7 @@
 package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
 import com.fpt.capstone.savinghourmarket.common.*;
-import com.fpt.capstone.savinghourmarket.entity.Product;
-import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
-import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
-import com.fpt.capstone.savinghourmarket.entity.Supermarket;
+import com.fpt.capstone.savinghourmarket.entity.*;
 import com.fpt.capstone.savinghourmarket.exception.InvalidExcelFileDataException;
 import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
@@ -258,9 +255,12 @@ public class ProductServiceImpl implements ProductService {
             errorFields.put("Lỗi nhập tên siêu thị", "Tên siêu thị chỉ có tối đa 50 kí tự!");
         }
 
-//        if (productCreate.getSupermarket().getId() == null && productCreate.getSupermarket().getAddress().length() > 255) {
-//            errorFields.put("Lỗi nhập tên siêu thị", "Tên siêu thị chỉ có tối đa 255 kí tự!");
-//        }
+        List<SupermarketAddress> supermarketAddressList = productCreate.getSupermarket().getSupermarketAddressList();
+        for (SupermarketAddress address : supermarketAddressList) {
+            if (address.getAddress().length() > 255) {
+                errorFields.put("Lỗi nhập địa chỉ siêu thị " + address.getAddress(), "Địa chỉ siêu thị chỉ có tối đa 255 kí tự!");
+            }
+        }
 
         Pattern pattern;
         Matcher matcher;
@@ -320,6 +320,8 @@ public class ProductServiceImpl implements ProductService {
         //Get first row as title
         Row titleRow = sheet.getRow(0);
         List lst = workbook.getAllPictures();
+
+        //Get all images
         int imageRow = 1;
         for (Iterator it = lst.iterator(); it.hasNext(); ) {
 
@@ -395,8 +397,8 @@ public class ProductServiceImpl implements ProductService {
         return productList;
     }
 
-    private static void validateAndGetProductData(Sheet sheet, Product product, Row row, Row titleRow, Cell
-            cell, LinkedHashMap<String, String> errorFields, int cellIndex) {
+    private static void validateAndGetProductData(Sheet sheet, Product product, Row row, Row titleRow,
+                                                  Cell cell, LinkedHashMap<String, String> errorFields, int cellIndex) {
         XSSFSheet xssfSheet = (XSSFSheet) sheet;
         List<XSSFPictureData> pictures = xssfSheet.getWorkbook().getAllPictures();
         Pattern pattern;
@@ -472,8 +474,8 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private static void validateAndGetProductSubCateData(Sheet sheet, ProductSubCategory productSubCategory, Row
-            row, Row titleRow, Cell cell, LinkedHashMap<String, String> errorFields, int cellIndex) {
+    private static void validateAndGetProductSubCateData(Sheet sheet, ProductSubCategory productSubCategory, Row row, Row titleRow,
+                                                         Cell cell, LinkedHashMap<String, String> errorFields, int cellIndex) {
         XSSFSheet xssfSheet = (XSSFSheet) sheet;
         List<XSSFPictureData> pictures = xssfSheet.getWorkbook().getAllPictures();
         Pattern pattern;
@@ -494,8 +496,8 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private static void validateAndGetSupermarketData(Supermarket supermarket, Row row, Row titleRow, Cell
-            cell, LinkedHashMap<String, String> errorFields, int cellIndex) {
+    private static void validateAndGetSupermarketData(Supermarket supermarket, Row row, Row titleRow,
+                                                      Cell cell, LinkedHashMap<String, String> errorFields, int cellIndex) {
         Pattern pattern;
         Matcher matcher;
         switch (titleRow.getCell(cellIndex).toString()) {
@@ -514,8 +516,7 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private static void putFormatError(LinkedHashMap<String, String> errorFields, String STT, String
-            title, CellType cellType) {
+    private static void putFormatError(LinkedHashMap<String, String> errorFields, String STT, String title, CellType cellType) {
         switch (cellType) {
             case STRING ->
                     errorFields.put("Lỗi định dạng " + title + " tại STT " + STT, title + " có định dạng không phải là Chữ");
