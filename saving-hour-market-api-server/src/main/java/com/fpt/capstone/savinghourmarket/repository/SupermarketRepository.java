@@ -1,6 +1,7 @@
 package com.fpt.capstone.savinghourmarket.repository;
 
 import com.fpt.capstone.savinghourmarket.entity.Supermarket;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,5 +17,5 @@ public interface SupermarketRepository extends JpaRepository<Supermarket, UUID> 
 
     @Query("SELECT s FROM Supermarket s " +
             "WHERE UPPER(s.name) LIKE UPPER(CONCAT('%',:name,'%'))")
-    List<Supermarket> getSupermarketForStaff(String name, Pageable pageable);
+    Page<Supermarket> getSupermarketForStaff(String name, Pageable pageable);
 }
