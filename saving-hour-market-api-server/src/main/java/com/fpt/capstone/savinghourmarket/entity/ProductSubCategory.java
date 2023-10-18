@@ -67,4 +67,19 @@ public class ProductSubCategory {
 
     @Transient
     private Integer totalDiscountUsage;
+
+    public ProductSubCategory(UUID id, String name, String imageUrl, Integer allowableDisplayThreshold, Long totalDiscountUsage) {
+        this.id = id;
+        this.name = name;
+        this.imageUrl = imageUrl;
+        this.allowableDisplayThreshold = allowableDisplayThreshold;
+        this.totalDiscountUsage = totalDiscountUsage.intValue();
+    }
+
+    public ProductSubCategory(UUID id, String name, String imageUrl, Integer allowableDisplayThreshold) {
+        this.id = id;
+        this.name = name;
+        this.imageUrl = imageUrl;
+        this.allowableDisplayThreshold = allowableDisplayThreshold;
+    }
 }
