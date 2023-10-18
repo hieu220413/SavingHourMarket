@@ -8,7 +8,7 @@ spring:
         enable_lazy_load_no_trans: 'true'
     defer-datasource-initialization: 'true'
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create
   datasource:
     password: admin123
     driver-class-name: com.mysql.cj.jdbc.Driver
