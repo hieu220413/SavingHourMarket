@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -53,6 +54,7 @@ public class Discount {
             fetch = FetchType.LAZY,
             mappedBy = "discountList"
     )
+    @JsonIgnore
     private List<Order> orderList;
 
 //    @ManyToMany(
