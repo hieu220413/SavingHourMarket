@@ -8,11 +8,13 @@ import com.fpt.capstone.savinghourmarket.exception.DisableSupermarketForbidden;
 import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.SupermarketCreateRequestBody;
+import com.fpt.capstone.savinghourmarket.model.SupermarketListResponseBody;
 import com.fpt.capstone.savinghourmarket.model.SupermarketUpdateRequestBody;
 import com.fpt.capstone.savinghourmarket.repository.ProductRepository;
 import com.fpt.capstone.savinghourmarket.repository.SupermarketRepository;
 import com.fpt.capstone.savinghourmarket.service.SupermarketService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -149,9 +151,12 @@ public class SupermarketServiceImpl implements SupermarketService {
     }
 
     @Override
-    public List<Supermarket> getSupermarketForStaff(String name, Integer page, Integer limit) {
+    public SupermarketListResponseBody getSupermarketForStaff(String name, Integer page, Integer limit) {
         Pageable pageable = PageRequest.of(page, limit);
-        List<Supermarket> supermarketList = supermarketRepository.getSupermarketForStaff(name, pageable);
-        return supermarketList;
+        Page<Supermarket> result = supermarketRepository.getSupermarketForStaff(name, pageable);
+        int totalPage = result.getTotalPages();
+        long totalSupermarket = result.getTotalElements();
+        List<Supermarket> supermarketList = result.stream().toList();
+        return new SupermarketListResponseBody(supermarketList, totalPage, totalSupermarket);
     }
 }
