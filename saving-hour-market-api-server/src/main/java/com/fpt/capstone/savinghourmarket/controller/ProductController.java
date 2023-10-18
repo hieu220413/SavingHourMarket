@@ -6,6 +6,7 @@ import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
 import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
+import com.fpt.capstone.savinghourmarket.exception.InvalidExcelFileDataException;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.service.ProductService;
@@ -158,7 +159,7 @@ public class ProductController {
             method = RequestMethod.POST,
             consumes = {"multipart/form-data"})
     @Operation(description = "Upload product by excel")
-    public ResponseEntity<List<Product>> uploadProduct(@RequestParam("file")  MultipartFile file) throws IOException, InvalidFormatException {
+    public ResponseEntity<List<Product>> uploadProduct(@RequestParam("file")  MultipartFile file) throws IOException, InvalidFormatException, InvalidExcelFileDataException {
         log.info(file.getName());
         return ResponseEntity.status(HttpStatus.OK).body(productService.createProductByExcel(file));
     }

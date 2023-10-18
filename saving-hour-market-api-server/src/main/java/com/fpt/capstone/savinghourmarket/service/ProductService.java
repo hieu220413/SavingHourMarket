@@ -6,6 +6,7 @@ import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
 import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
+import com.fpt.capstone.savinghourmarket.exception.InvalidExcelFileDataException;
 import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.ProductCateWithSubCate;
@@ -33,7 +34,7 @@ public interface ProductService {
 
     Product createProduct(ProductCreate productCreate) throws ResourceNotFoundException;
 
-    List<Product> createProductByExcel(MultipartFile file) throws IOException, InvalidFormatException;
+    List<Product> createProductByExcel(MultipartFile file) throws IOException, InvalidFormatException, InvalidExcelFileDataException;
 
     SaleReportResponseBody getSaleReportSupermarket(UUID supermarketId, Month month, Quarter quarter, Integer year);
 
