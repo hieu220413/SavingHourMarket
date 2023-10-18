@@ -26,9 +26,6 @@ public class Supermarket {
     @Column(columnDefinition = "varchar(50)")
     private String name;
 
-    @Column(columnDefinition = "varchar(255)")
-    private String address;
-
     @Column(columnDefinition = "tinyint")
     private Integer status;
 
@@ -42,9 +39,16 @@ public class Supermarket {
     @JsonIgnore
     private List<Product> productList;
 
+
+    @OneToMany(
+            fetch = FetchType.LAZY,
+            mappedBy = "supermarket"
+    )
+    private List<SupermarketAddress> supermarketAddressList;
+
+
     public Supermarket(SupermarketCreateRequestBody supermarketCreateRequestBody) {
         this.name = supermarketCreateRequestBody.getName();
-        this.address = supermarketCreateRequestBody.getAddress();
         this.phone = supermarketCreateRequestBody.getPhone();
         this.status = EnableDisableStatus.ENABLE.ordinal();
     }
