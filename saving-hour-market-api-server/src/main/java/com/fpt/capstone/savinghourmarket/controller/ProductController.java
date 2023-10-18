@@ -6,6 +6,7 @@ import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
 import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
+import com.fpt.capstone.savinghourmarket.exception.InvalidExcelFileDataException;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.service.ProductService;
@@ -17,6 +18,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -157,8 +159,7 @@ public class ProductController {
             method = RequestMethod.POST,
             consumes = {"multipart/form-data"})
     @Operation(description = "Upload product by excel")
-    public ResponseEntity<List<Product>> uploadProduct(@RequestParam("file")  MultipartFile file) throws IOException {
-        log.info(file.getName());
+    public ResponseEntity<List<Product>> uploadProduct(@RequestParam("file")  MultipartFile file) throws IOException,InvalidExcelFileDataException {
         return ResponseEntity.status(HttpStatus.OK).body(productService.createProductByExcel(file));
     }
 

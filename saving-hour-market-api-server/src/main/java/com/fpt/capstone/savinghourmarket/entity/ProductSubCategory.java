@@ -42,7 +42,7 @@ public class ProductSubCategory {
     private List<Product> productList;
 
     @ManyToOne(
-            fetch = FetchType.LAZY
+            fetch = FetchType.EAGER
     )
     @JoinColumn(
             name = "product_category_id",

@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.exception.handler;
 
+import com.fpt.capstone.savinghourmarket.exception.InvalidExcelFileDataException;
 import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.ApiError;
@@ -15,6 +16,12 @@ import java.time.LocalDateTime;
 public class CustomerExceptionHandler {
     @ExceptionHandler(InvalidInputException.class)
     public ResponseEntity<ApiError> invalidUserInputExceptionHandler(InvalidInputException e) {
+        ApiError apiError = new ApiError(LocalDateTime.now().toString(), e.getStatusCode().value(), e.getReason(), e.getErrorFields());
+        return ResponseEntity.status(e.getStatusCode().value()).body(apiError);
+    }
+
+    @ExceptionHandler(InvalidExcelFileDataException.class)
+    public ResponseEntity<ApiError> invalidUserInputExceptionHandler(InvalidExcelFileDataException e) {
         ApiError apiError = new ApiError(LocalDateTime.now().toString(), e.getStatusCode().value(), e.getReason(), e.getErrorFields());
         return ResponseEntity.status(e.getStatusCode().value()).body(apiError);
     }
