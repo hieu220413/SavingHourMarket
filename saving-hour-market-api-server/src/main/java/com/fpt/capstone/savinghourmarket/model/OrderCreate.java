@@ -1,23 +1,16 @@
 package com.fpt.capstone.savinghourmarket.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fpt.capstone.savinghourmarket.common.OrderStatus;
 import com.fpt.capstone.savinghourmarket.common.PaymentStatus;
-import com.fpt.capstone.savinghourmarket.entity.*;
-import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.*;
+import com.fpt.capstone.savinghourmarket.entity.Transaction;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.UuidGenerator;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
-import java.sql.Date;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 @NoArgsConstructor
@@ -26,14 +19,14 @@ import java.util.UUID;
 @Setter
 public class OrderCreate {
 
-    @Positive
+    @Positive(message = "Phí giao hàng phải luôn dương!")
     private Integer shippingFee;
 
     @NotNull
-    @Positive
+    @Positive(message = "Tổng giá đơn hàng phải luôn dương!")
     private Integer totalPrice;
 
-    @Positive
+    @Positive(message = "Tổng giá giảm phải luôn dương!")
     private Integer totalDiscountPrice;
 
     @NotNull

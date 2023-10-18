@@ -7,8 +7,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,8 +37,14 @@ public class FeedBack {
     @Enumerated(EnumType.ORDINAL)
     private FeedbackStatus status;
 
+    @CreationTimestamp
+    @Column(columnDefinition = "datetime(0)")
+    private LocalDateTime createdTime;
+
     @OneToMany(
-            mappedBy = "feedBack"
+            mappedBy = "feedBack",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.EAGER
     )
     private List<FeedBackImage> imageUrls;
 

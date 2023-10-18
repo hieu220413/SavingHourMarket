@@ -84,15 +84,12 @@ public class Order {
     )
     private TimeFrame timeFrame;
 
-    @ManyToMany(
-            fetch = FetchType.LAZY
-    )
+    @ManyToMany
     @JoinTable(
             name = "discount_order",
             joinColumns = @JoinColumn(name = "order_id"),
             inverseJoinColumns = @JoinColumn(name = "discount_id")
     )
-    @JsonIgnore
     private List<Discount> discountList;
 
     @OneToMany(
