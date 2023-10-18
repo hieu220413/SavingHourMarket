@@ -27,10 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.PackagePart;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFPictureData;
-import org.apache.poi.xssf.usermodel.XSSFRichTextString;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.usermodel.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -313,38 +310,80 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> createProductByExcel(MultipartFile file) throws IOException, InvalidExcelFileDataException, InvalidFormatException {
+    public List<Product> createProductByExcel(MultipartFile file) throws IOException, InvalidExcelFileDataException {
         List<Product> productList = new ArrayList();
         LinkedHashMap<String, String> errorFields = new LinkedHashMap<>();
+        LinkedHashMap<Integer, ByteArrayOutputStream> productImages = new LinkedHashMap<>();
 
         Workbook workbook = new XSSFWorkbook(file.getInputStream());
         Sheet sheet = workbook.getSheetAt(0);
         //Get first row as title
         Row titleRow = sheet.getRow(0);
+        List lst = workbook.getAllPictures();
+        int imageRow = 1;
+        for (Iterator it = lst.iterator(); it.hasNext(); ) {
+
+            PictureData pict = (PictureData) it.next();
+
+            String ext = pict.suggestFileExtension();
+
+            byte[] data = pict.getData();
+            ByteArrayOutputStream productImageByteArrayOutputStream = new ByteArrayOutputStream();
+            productImageByteArrayOutputStream.write(data, 0, data.length);
+            if (ext.equals("png")) {
+                productImages.put(imageRow, productImageByteArrayOutputStream);
+            } else if (ext.equals("jpeg")) {
+                productImages.put(imageRow, productImageByteArrayOutputStream);
+            }
+            imageRow++;
+        }
+
         int rowIndex = 0;
         for (Row row : sheet) {
-            if (rowIndex != 0) {
+            if (rowIndex != 0 && row != null) {
                 Product product = new Product();
-                ProductCategory productCategory = new ProductCategory();
                 ProductSubCategory productSubCategory = new ProductSubCategory();
                 Supermarket supermarket = new Supermarket();
                 int cellIndex = 0;
                 for (Cell cell : row) {
                     log.info(titleRow.getCell(cellIndex) + ", " + row.getCell(cellIndex));
                     validateAndGetProductData(sheet, product, row, titleRow, cell, errorFields, cellIndex);
-                    validateAndGetProductSubCateData(sheet, productSubCategory, productCategory, row, titleRow, cell, errorFields, cellIndex);
+                    validateAndGetProductSubCateData(sheet, productSubCategory, row, titleRow, cell, errorFields, cellIndex);
                     validateAndGetSupermarketData(supermarket, row, titleRow, cell, errorFields, cellIndex);
                     cellIndex++;
                 }
-                if (productSubCategory.getAllowableDisplayThreshold() != null && product.getExpiredDate() != null && product.getExpiredDate().isBefore(LocalDateTime.now().plus(productSubCategory.getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
-                    errorFields.put("Lỗi nhập ngày hết hạn tại STT " + row.getCell(0), "Ngày hết hạn phải sau ngày hiện tại cộng thêm số ngày điều kiện cho hàng cận hạn sử dụng có trong SUBCATEGORY!");
+
+                if (cellIndex > 0) {
+
+                    Optional<ProductSubCategory> productSubCategoryExistedCheck = productSubCategoryRepository.findByName(productSubCategory.getName());
+                    if (productSubCategoryExistedCheck.isPresent()) {
+                        productSubCategory = productSubCategoryExistedCheck.get();
+                    } else {
+                        errorFields.put("Lỗi xử lí tên loại sản phẩm phụ tại STT " + row.getCell(0), productSubCategory.getName() + " không tìm thấy trong hệ thống!");
+                    }
+
+
+                    Optional<Supermarket> supermarketExistedCheck = supermarketRepository.findByName(supermarket.getName());
+                    if (supermarketExistedCheck.isPresent()) {
+                        supermarket = supermarketExistedCheck.get();
+                    } else {
+                        errorFields.put("Lỗi xử lí tên siêu thị tại STT " + row.getCell(0), supermarket.getName() + " không tìm thấy trong hệ thống!");
+                    }
+
+                    if (productSubCategory.getAllowableDisplayThreshold() != null && product.getExpiredDate() != null && product.getExpiredDate().isBefore(LocalDateTime.now().plus(productSubCategory.getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
+                        errorFields.put("Lỗi xử lí HSD tại STT " + row.getCell(0), "HSD phải sau ngày hiện tại cộng thêm số ngày điều kiện cho hàng cận hạn sử dụng có trong SUBCATEGORY!");
+                    }
+
+                    if (productImages.get((int) row.getCell(0).getNumericCellValue()) != null) {
+                        String imageUrl = FirebaseService.uploadImageToStorage(productImages.get((int) row.getCell(0).getNumericCellValue()), product.getName());
+                        product.setImageUrl(imageUrl);
+                    }
+                    product.setStatus(Status.ENABLE.ordinal());
+                    product.setProductSubCategory(productSubCategory);
+                    product.setSupermarket(supermarket);
+                    productList.add(product);
                 }
 
-                product.setStatus(Status.ENABLE.ordinal());
-                productSubCategory.setProductCategory(productCategory);
-                product.setProductSubCategory(productSubCategory);
-                product.setSupermarket(supermarket);
-                productList.add(product);
             }
             rowIndex++;
         }
@@ -356,7 +395,8 @@ public class ProductServiceImpl implements ProductService {
         return productList;
     }
 
-    private static void validateAndGetProductData(Sheet sheet, Product product, Row row, Row titleRow, Cell cell, LinkedHashMap<String, String> errorFields, int cellIndex) throws InvalidFormatException {
+    private static void validateAndGetProductData(Sheet sheet, Product product, Row row, Row titleRow, Cell
+            cell, LinkedHashMap<String, String> errorFields, int cellIndex) {
         XSSFSheet xssfSheet = (XSSFSheet) sheet;
         List<XSSFPictureData> pictures = xssfSheet.getWorkbook().getAllPictures();
         Pattern pattern;
@@ -368,7 +408,7 @@ public class ProductServiceImpl implements ProductService {
                     if (productName.length() > 50) {
                         putValidateDataError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString());
                     } else {
-                        product.setName(productName);
+                        product.setName(productName.trim().replaceAll("\\s+", " "));
                     }
                 } else {
                     putFormatError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString(), CellType.STRING);
@@ -400,7 +440,7 @@ public class ProductServiceImpl implements ProductService {
                 break;
             case "Mô tả sản phẩm":
                 if (cell.getCellType().equals(CellType.STRING)) {
-                    product.setDescription(cell.getStringCellValue());
+                    product.setDescription(cell.getStringCellValue().trim().replaceAll("\\s+", " "));
                 } else {
                     putFormatError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString(), CellType.STRING);
                 }
@@ -429,94 +469,33 @@ public class ProductServiceImpl implements ProductService {
                 }
 
                 break;
-            case "Ảnh sản phẩm":
-                XSSFRichTextString imageProduct = (XSSFRichTextString) cell.getRichStringCellValue();
-                // Use regular expressions to find image file names
-                pattern = Pattern.compile("image(\\d+)\\.(\\w+)");
-                matcher = pattern.matcher(imageProduct.getString());
-
-                while (matcher.find()) {
-                    String imageName = matcher.group();
-                    byte[] imageBytes = getImageBytes(xssfSheet, imageName);
-                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                    byteArrayOutputStream.write(imageBytes, 0, imageBytes.length);
-
-                    if (imageBytes != null) {
-                        String imageUrl = FirebaseService.uploadImageToStorage(byteArrayOutputStream, imageName);
-                        product.setImageUrl(imageUrl);
-                    }
-                }
-                break;
         }
     }
 
-    private static void validateAndGetProductSubCateData(Sheet sheet, ProductSubCategory productSubCategory, ProductCategory productCategory, Row row, Row titleRow, Cell cell, LinkedHashMap<String, String> errorFields, int cellIndex) throws InvalidFormatException {
+    private static void validateAndGetProductSubCateData(Sheet sheet, ProductSubCategory productSubCategory, Row
+            row, Row titleRow, Cell cell, LinkedHashMap<String, String> errorFields, int cellIndex) {
         XSSFSheet xssfSheet = (XSSFSheet) sheet;
         List<XSSFPictureData> pictures = xssfSheet.getWorkbook().getAllPictures();
         Pattern pattern;
         Matcher matcher;
         switch (titleRow.getCell(cellIndex).toString()) {
-            case "Tên loại sản phẩm":
-                if (cell.getCellType().equals(CellType.STRING)) {
-                    String productCateName = cell.getStringCellValue();
-                    if (productCateName.length() > 50) {
-                        putValidateDataError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString());
-                    } else {
-                        productCategory.setName(productCateName);
-                    }
-                } else {
-                    putFormatError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString(), CellType.STRING);
-                }
-
-                break;
-            case "Số ngày quy định cho hàng cận hạn":
-                if (cell.getCellType().equals(CellType.NUMERIC)) {
-                    int allowableDisplayThreshold = (int) cell.getNumericCellValue();
-                    if (allowableDisplayThreshold < 0) {
-                        putValidateDataError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString());
-                    } else {
-                        productSubCategory.setAllowableDisplayThreshold(allowableDisplayThreshold);
-                    }
-                } else {
-                    putFormatError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString(), CellType.NUMERIC);
-                }
-
-                break;
             case "Tên loại sản phẩm phụ":
                 if (cell.getCellType().equals(CellType.STRING)) {
                     String productSubCateName = cell.getStringCellValue();
                     if (productSubCateName.length() > 50) {
                         putValidateDataError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString());
                     } else {
-                        productSubCategory.setName(productSubCateName);
+                        productSubCategory.setName(productSubCateName.trim().replaceAll("\\s+", " "));
                     }
                 } else {
                     putFormatError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString(), CellType.STRING);
-                }
-
-                break;
-            case "Ảnh loại sản phẩm phụ":
-                XSSFRichTextString imageSubCate = (XSSFRichTextString) cell.getRichStringCellValue();
-                // Use regular expressions to find image file names
-                pattern = Pattern.compile("image(\\d+)\\.(\\w+)");
-                matcher = pattern.matcher(imageSubCate.getString());
-
-                while (matcher.find()) {
-                    String imageName = matcher.group();
-                    byte[] imageBytes = getImageBytes(xssfSheet, imageName);
-                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                    byteArrayOutputStream.write(imageBytes, 0, imageBytes.length);
-
-                    if (imageBytes != null) {
-                        String imageUrl = FirebaseService.uploadImageToStorage(byteArrayOutputStream, imageName);
-                        productSubCategory.setImageUrl(imageUrl);
-                    }
                 }
                 break;
         }
     }
 
-    private static void validateAndGetSupermarketData(Supermarket supermarket, Row row, Row titleRow, Cell cell, LinkedHashMap<String, String> errorFields, int cellIndex) throws InvalidFormatException {
+    private static void validateAndGetSupermarketData(Supermarket supermarket, Row row, Row titleRow, Cell
+            cell, LinkedHashMap<String, String> errorFields, int cellIndex) {
         Pattern pattern;
         Matcher matcher;
         switch (titleRow.getCell(cellIndex).toString()) {
@@ -526,32 +505,7 @@ public class ProductServiceImpl implements ProductService {
                     if (supermarketName.length() > 50) {
                         putValidateDataError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString());
                     } else {
-                        supermarket.setName(supermarketName);
-                    }
-                } else {
-                    putFormatError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString(), CellType.STRING);
-                }
-                break;
-            case "Địa chỉ siêu thị":
-                if (cell.getCellType().equals(CellType.STRING)) {
-                    String supermarketAddress = cell.getStringCellValue();
-                    if (supermarketAddress.length() > 255) {
-                        putValidateDataError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString());
-                    } else {
-                        supermarket.setAddress(supermarketAddress);
-                    }
-                } else {
-                    putFormatError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString(), CellType.STRING);
-                }
-                break;
-            case "Hotline siêu thị":
-                if (cell.getCellType().equals(CellType.STRING)) {
-                    pattern = Pattern.compile("^(0|84)(2(0[3-9]|1[0-6|8|9]|2[0-2|5-9]|3[2-9]|4[0-9]|5[1|2|4-9]|6[0-3|9]|7[0-7]|8[0-9]|9[0-4|6|7|9])|3[2-9]|5[5|6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])([0-9]{7})$");
-                    matcher = pattern.matcher(cell.getStringCellValue());
-                    if (!matcher.matches()) {
-                        putValidateDataError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString());
-                    } else {
-                        supermarket.setPhone(cell.getStringCellValue());
+                        supermarket.setName(supermarketName.trim().replaceAll("\\s+", " "));
                     }
                 } else {
                     putFormatError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString(), CellType.STRING);
@@ -560,7 +514,8 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private static void putFormatError(LinkedHashMap<String, String> errorFields, String STT, String title, CellType cellType) {
+    private static void putFormatError(LinkedHashMap<String, String> errorFields, String STT, String
+            title, CellType cellType) {
         switch (cellType) {
             case STRING ->
                     errorFields.put("Lỗi định dạng " + title + " tại STT " + STT, title + " có định dạng không phải là Chữ");
@@ -590,42 +545,13 @@ public class ProductServiceImpl implements ProductService {
                 break;
             case "Ảnh sản phẩm":
                 break;
-            case "Tên loại sản phẩm":
-                errorFields.put("Lỗi xứ lí tên loại sản phẩm tại STT " + STT, title + " có quá 50 kí tự!");
-                break;
-            case "Số ngày quy định cho hàng cận hạn":
-                errorFields.put("Lỗi xứ lí số ngày quy định cho hàng cận hạn tại STT " + STT, title + " đang là số âm!");
-                break;
             case "Tên loại sản phẩm phụ":
                 errorFields.put("Lỗi xứ lí tên loại sản phẩm phụ tại STT " + STT, title + " có quá 50 kí tự!");
-                break;
-            case "Ảnh loại sản phẩm phụ":
                 break;
             case "Tên siêu thị":
                 errorFields.put("Lỗi xứ lí Tên siêu thị phụ tại STT " + STT, title + " có quá 50 kí tự!");
                 break;
-            case "Địa chỉ siêu thị":
-                errorFields.put("Lỗi xứ lí Địa chỉ siêu thị tại STT " + STT, title + " có quá 255 kí tự!");
-                break;
-            case "Hotline siêu thị":
-                errorFields.put("Lỗi nhập số điện thoại siêu thị tại STT " + STT, title + " không hợp lệ!");
-                break;
         }
-    }
-
-    private static byte[] getImageBytes(XSSFSheet sheet, String imageName) throws InvalidFormatException {
-        List<PackagePart> packageParts = sheet.getPackagePart().getPackage().getParts();
-        for (PackagePart part : packageParts) {
-            String partName = part.getPartName().getName();
-            if (partName.contains(imageName)) {
-                try {
-                    return part.getInputStream().readAllBytes();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return null;
     }
 
     private static LocalDateTime convertDateToLocalDateTime(Date date) {

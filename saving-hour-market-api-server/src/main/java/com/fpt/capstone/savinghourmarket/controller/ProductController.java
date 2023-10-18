@@ -159,8 +159,7 @@ public class ProductController {
             method = RequestMethod.POST,
             consumes = {"multipart/form-data"})
     @Operation(description = "Upload product by excel")
-    public ResponseEntity<List<Product>> uploadProduct(@RequestParam("file")  MultipartFile file) throws IOException, InvalidFormatException, InvalidExcelFileDataException {
-        log.info(file.getName());
+    public ResponseEntity<List<Product>> uploadProduct(@RequestParam("file")  MultipartFile file) throws IOException,InvalidExcelFileDataException {
         return ResponseEntity.status(HttpStatus.OK).body(productService.createProductByExcel(file));
     }
 

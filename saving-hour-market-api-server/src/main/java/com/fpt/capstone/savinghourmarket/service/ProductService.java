@@ -34,7 +34,7 @@ public interface ProductService {
 
     Product createProduct(ProductCreate productCreate) throws ResourceNotFoundException;
 
-    List<Product> createProductByExcel(MultipartFile file) throws IOException, InvalidFormatException, InvalidExcelFileDataException;
+    List<Product> createProductByExcel(MultipartFile file) throws IOException, InvalidExcelFileDataException;
 
     SaleReportResponseBody getSaleReportSupermarket(UUID supermarketId, Month month, Quarter quarter, Integer year);
 
