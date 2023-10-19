@@ -94,6 +94,26 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "WHERE p.supermarket.id = :supermarketId ")
     List<Product> getRawProductFromSupermarketId(UUID supermarketId);
 
+    @Query("SELECT NEW com.fpt.capstone.savinghourmarket.model.RevenueReportResponseBody(SUM(dt.boughtQuantity*dt.productPrice), SUM(dt.productOriginalPrice*dt.boughtQuantity), SUM(dt.boughtQuantity))  FROM Order ord " +
+            "JOIN ord.orderDetailList dt " +
+            "WHERE " +
+            "((:quarter IS NOT NULL) OR ((:monthValue IS NULL) OR EXTRACT(MONTH FROM ord.createdTime) =  :monthValue)) " +
+            "AND " +
+            "((:quarter IS NULL) " +
+            "OR " +
+            "((:quarter = 1) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 1 and 3)) " +
+            "OR " +
+            "((:quarter = 2) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 4 and 6)) " +
+            "OR " +
+            "((:quarter = 3) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 7 and 9)) " +
+            "OR " +
+            "((:quarter = 4) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 10 and 12)) " +
+            ")" +
+            "AND " +
+            "EXTRACT(YEAR FROM ord.createdTime) = :year " +
+            "AND ord.status = 4 ")
+    Object[] getRevenueReport(Integer monthValue, Integer quarter, Integer year);
+
 
 //    @Query(value = "SELECT * FROM product p " +
 //            "INNER JOIN product_sub_category subct ON p.product_sub_category_id = subct.id " +

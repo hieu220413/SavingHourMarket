@@ -42,7 +42,7 @@ public class ProductSubCategory {
     private List<Product> productList;
 
     @ManyToOne(
-            fetch = FetchType.LAZY
+            fetch = FetchType.EAGER
     )
     @JoinColumn(
             name = "product_category_id",
@@ -50,8 +50,8 @@ public class ProductSubCategory {
     )
     private ProductCategory productCategory;
 
-    @ManyToMany(
-            mappedBy = "productSubCategoryList",
+    @OneToMany(
+            mappedBy = "productSubCategory",
             fetch = FetchType.LAZY
     )
     @JsonIgnore
@@ -67,4 +67,19 @@ public class ProductSubCategory {
 
     @Transient
     private Integer totalDiscountUsage;
+
+    public ProductSubCategory(UUID id, String name, String imageUrl, Integer allowableDisplayThreshold, Long totalDiscountUsage) {
+        this.id = id;
+        this.name = name;
+        this.imageUrl = imageUrl;
+        this.allowableDisplayThreshold = allowableDisplayThreshold;
+        this.totalDiscountUsage = totalDiscountUsage.intValue();
+    }
+
+    public ProductSubCategory(UUID id, String name, String imageUrl, Integer allowableDisplayThreshold) {
+        this.id = id;
+        this.name = name;
+        this.imageUrl = imageUrl;
+        this.allowableDisplayThreshold = allowableDisplayThreshold;
+    }
 }

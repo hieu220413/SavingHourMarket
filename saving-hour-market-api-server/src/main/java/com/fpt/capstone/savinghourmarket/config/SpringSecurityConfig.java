@@ -8,9 +8,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -35,7 +38,11 @@ public class SpringSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable())
+        http.csrf(AbstractHttpConfigurer::disable).cors(httpSecurityCorsConfigurer -> {
+                new CorsRegistry().addMapping("/**")
+                        .allowedOrigins("*")
+                        .allowedMethods("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS");;
+                })
                 .authorizeHttpRequests((auth) -> {
                     auth.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
                             .requestMatchers("/swagger-ui/**").permitAll()
@@ -49,6 +56,7 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/product/getAllCategory").permitAll()
                             .requestMatchers("/api/product/getAllSubCategory").permitAll()
                             .requestMatchers("/api/product/getSaleReportSupermarket").hasAnyRole(selectionStaffAndAdmin)
+                            .requestMatchers("/api/product/getRevenueReport").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/product/createCategory").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/product/createSubCategory").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/product/updateSubCategory").hasAnyRole(selectionStaffAndAdmin)
@@ -56,6 +64,7 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/discount/getDiscountsForCustomer").permitAll()
                             .requestMatchers("/api/discount/getDiscountById").permitAll()
                             .requestMatchers("/api/discount/getDiscountUsageReport").hasAnyRole(marketingStaffAndAdmin)
+                            .requestMatchers("/api/discount/getCategoryWithSubCategoryDiscountUsageReport").hasAnyRole(marketingStaffAndAdmin)
                             .requestMatchers("/api/timeframe/getAll").permitAll()
                             .requestMatchers("/api/timeframe/getForPickupPoint").permitAll()
                             .requestMatchers("/api/timeframe/getForHomeDelivery").permitAll()
@@ -72,6 +81,7 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/product/upload").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/product/uploadByExcelFile").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/discount/getDiscountsForStaff").hasAnyRole(allStaffAndAdmin)
+                            .requestMatchers("/api/supermarket/getSupermarketForStaff").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/supermarket/create").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/supermarket/changeStatus").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/supermarket/updateInfo").hasAnyRole(selectionStaffAndAdmin)
@@ -84,7 +94,6 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/feedback/getFeedbackForStaff").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/order/sendNotification").permitAll()
                     ;
-
                     auth.anyRequest().authenticated();
                 });
 //        http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable()).authorizeHttpRequests((auth) -> auth

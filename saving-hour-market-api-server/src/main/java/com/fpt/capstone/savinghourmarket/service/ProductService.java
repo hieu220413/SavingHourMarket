@@ -6,6 +6,7 @@ import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
 import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
+import com.fpt.capstone.savinghourmarket.exception.InvalidExcelFileDataException;
 import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.ProductCateWithSubCate;
@@ -13,6 +14,7 @@ import com.fpt.capstone.savinghourmarket.model.ProductCreate;
 import com.fpt.capstone.savinghourmarket.model.ProductListResponseBody;
 import com.fpt.capstone.savinghourmarket.model.ProductSubCateOnly;
 import com.fpt.capstone.savinghourmarket.model.SaleReportResponseBody;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -32,7 +34,7 @@ public interface ProductService {
 
     Product createProduct(ProductCreate productCreate) throws ResourceNotFoundException;
 
-    List<Product> createProductByExcel(MultipartFile file) throws IOException;
+    List<Product> createProductByExcel(MultipartFile file) throws IOException, InvalidExcelFileDataException;
 
     SaleReportResponseBody getSaleReportSupermarket(UUID supermarketId, Month month, Quarter quarter, Integer year);
 
@@ -44,4 +46,5 @@ public interface ProductService {
 
     ProductSubCategory updateProductSubCategory(ProductSubCategoryUpdateBody productSubCategoryUpdateBody, UUID subCategoryId);
 
+    RevenueReportResponseBody getRevenueReport(Month month, Quarter quarter, Integer year);
 }

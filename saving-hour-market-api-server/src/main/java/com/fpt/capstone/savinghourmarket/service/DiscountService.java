@@ -3,6 +3,7 @@ package com.fpt.capstone.savinghourmarket.service;
 import com.fpt.capstone.savinghourmarket.common.Month;
 import com.fpt.capstone.savinghourmarket.common.Quarter;
 import com.fpt.capstone.savinghourmarket.entity.Discount;
+import com.fpt.capstone.savinghourmarket.model.CateWithSubCateDiscountUsageReport;
 import com.fpt.capstone.savinghourmarket.model.DiscountOnly;
 import com.fpt.capstone.savinghourmarket.model.DiscountsUsageReportResponseBody;
 
@@ -19,4 +20,6 @@ public interface DiscountService {
     Discount getDiscountById(String discountId);
 
     DiscountsUsageReportResponseBody getPerDiscountUsageReport(Month month, Quarter quarter, Integer year, Integer fromPercentage, Integer toPercentage, UUID productCategoryId, UUID productSubCategoryId);
+
+    CateWithSubCateDiscountUsageReport getCategoryWithSubCategoryDiscountUsageReport(Month month, Quarter quarter, Integer year, Integer fromPercentage, Integer toPercentage, UUID productCategoryId);
 }

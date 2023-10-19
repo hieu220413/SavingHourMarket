@@ -4,6 +4,7 @@ import com.fpt.capstone.savinghourmarket.common.FeedbackObject;
 import com.fpt.capstone.savinghourmarket.common.FeedbackStatus;
 import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.FeedBack;
+import com.fpt.capstone.savinghourmarket.exception.FeedBackNotFoundException;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.FeedbackCreate;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -17,10 +18,12 @@ public interface FeedBackService {
     String updateStatus(UUID feedbackId, FeedbackStatus feedbackStatus);
 
     List<FeedBack> getFeedbackForCustomer(String jwtToken,
+                                          SortType createTimeSortType,
                                           SortType rateSortType,
-                                          FeedbackObject feedbackObject, FeedbackStatus feedbackStatus, int page, int size) throws ResourceNotFoundException, FirebaseAuthException;
+                                          FeedbackObject feedbackObject, FeedbackStatus feedbackStatus, int page, int size) throws ResourceNotFoundException, FirebaseAuthException, FeedBackNotFoundException;
 
     List<FeedBack> getFeedbackForStaff(UUID customerId,
+                                       SortType createTimeSortType,
                                        SortType rateSortType,
-                                       FeedbackObject feedbackObject, FeedbackStatus feedbackStatus, int page, int size) throws ResourceNotFoundException, FirebaseAuthException;
+                                       FeedbackObject feedbackObject, FeedbackStatus feedbackStatus, int page, int size) throws ResourceNotFoundException, FirebaseAuthException, FeedBackNotFoundException;
 }

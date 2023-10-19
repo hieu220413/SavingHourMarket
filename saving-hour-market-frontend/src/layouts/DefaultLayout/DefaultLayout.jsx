@@ -8,8 +8,10 @@ import {
   faGear,
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
+import { useSelector } from "react-redux";
 
 const DefaultLayout = ({ children }) => {
+  const user = useSelector((state) => state.user.user);
   const adminMenuTabs = [
     {
       icon: faUser,
@@ -48,7 +50,11 @@ const DefaultLayout = ({ children }) => {
     <div className="layout-wrapper">
       <Header />
       <div className="layout-container">
-        <SideMenu menuTabs={productSelectionMenuTabs} />
+        {user?.role === "ADMIN" && <SideMenu menuTabs={adminMenuTabs} />}
+        {user?.role === "STAFF_SLT" && (
+          <SideMenu menuTabs={productSelectionMenuTabs} />
+        )}
+
         <div className="layout-children">{children}</div>
       </div>
     </div>

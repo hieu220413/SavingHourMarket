@@ -4,25 +4,29 @@ import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.Supermarket;
+import com.fpt.capstone.savinghourmarket.entity.SupermarketAddress;
 import com.fpt.capstone.savinghourmarket.exception.DisableSupermarketForbidden;
 import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.SupermarketCreateRequestBody;
+import com.fpt.capstone.savinghourmarket.model.SupermarketListResponseBody;
 import com.fpt.capstone.savinghourmarket.model.SupermarketUpdateRequestBody;
 import com.fpt.capstone.savinghourmarket.repository.ProductRepository;
+import com.fpt.capstone.savinghourmarket.repository.SupermarketAddressRepository;
 import com.fpt.capstone.savinghourmarket.repository.SupermarketRepository;
 import com.fpt.capstone.savinghourmarket.service.SupermarketService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +36,10 @@ public class SupermarketServiceImpl implements SupermarketService {
 
     private final ProductRepository productRepository;
 
+    private final SupermarketAddressRepository supermarketAddressRepository;
+
     @Override
+    @Transactional
     public Supermarket create(SupermarketCreateRequestBody supermarketCreateRequestBody) {
         Pattern pattern;
         Matcher matcher;
@@ -55,8 +62,19 @@ public class SupermarketServiceImpl implements SupermarketService {
             errorFields.put("phoneError", "Invalid phone number format");
         }
 
-        if(supermarketCreateRequestBody.getAddress().length() > 255 || supermarketCreateRequestBody.getAddress().isBlank()){
-            errorFields.put("addressError", "Maximum character is 255 and can not be empty");
+        // validate all address
+        HashMap<String,String> addressHashMap = new HashMap<>();
+        supermarketCreateRequestBody.getSupermarketAddressList().stream().forEach(s -> {
+            if(!addressHashMap.containsKey(s.toUpperCase())){
+                addressHashMap.put(s.toUpperCase(), s);
+            }
+        });
+        HashSet<String> addressHashSet = new HashSet<>();
+        addressHashSet.addAll(addressHashMap.values());
+        for(String address : addressHashSet) {
+            if((address.length() > 255 || address.isBlank()) && !errorFields.containsKey("addressError")){
+                errorFields.put("addressError", "Maximum character is 255 and can not be empty");
+            }
         }
 
         if(errorFields.size() > 0){
@@ -65,7 +83,13 @@ public class SupermarketServiceImpl implements SupermarketService {
 
         Supermarket supermarket = new Supermarket(supermarketCreateRequestBody);
 
-        return supermarketRepository.save(supermarket);
+        Supermarket persistedSupermarket = supermarketRepository.save(supermarket);
+
+        List<SupermarketAddress> supermarketAddressList = supermarketAddressRepository.saveAll(addressHashSet.stream().map(s -> new SupermarketAddress(s, persistedSupermarket)).collect(Collectors.toList()));
+
+        persistedSupermarket.setSupermarketAddressList(supermarketAddressList);
+
+        return persistedSupermarket;
     }
 
     @Override
@@ -86,7 +110,8 @@ public class SupermarketServiceImpl implements SupermarketService {
             if(supermarketUpdateRequestBody.getName().trim().length() < 2 || supermarketUpdateRequestBody.getName().trim().length() > 50){
                 errorFields.put("nameError", "Minimum character is 2 and maximum characters is 50");
             }
-            if(supermarketRepository.findByName(supermarketUpdateRequestBody.getName().trim()).isPresent()) {
+            Optional<Supermarket> duplicateSupermarket = supermarketRepository.findByName(supermarketUpdateRequestBody.getName().trim());
+            if(duplicateSupermarket.isPresent() && !duplicateSupermarket.get().getId().equals(supermarketId)) {
                 errorFields.put("nameError", "Duplicate supermarket name");
             }
             if(!errorFields.containsKey("nameError")){
@@ -104,15 +129,32 @@ public class SupermarketServiceImpl implements SupermarketService {
             if(!matcher.matches()){
                 errorFields.put("phoneError", "Invalid phone number format");
             } else {
-                supermarket.get().setAddress(supermarketUpdateRequestBody.getPhone());
+                supermarket.get().setPhone(supermarketUpdateRequestBody.getPhone());
             }
         }
 
-        if(supermarketUpdateRequestBody.getAddress() != null && !supermarketUpdateRequestBody.getAddress().isBlank()){
-            if(supermarketUpdateRequestBody.getAddress().length() > 255 || supermarketUpdateRequestBody.getAddress().isBlank()){
-                errorFields.put("addressError", "Maximum character is 255 and can not be empty");
-            } else {
-                supermarket.get().setAddress(supermarketUpdateRequestBody.getAddress());
+        // validate all address
+        if(supermarketUpdateRequestBody.getSupermarketAddressList() != null && !supermarketUpdateRequestBody.getSupermarketAddressList().isEmpty()){
+            HashMap<String,String> addressHashMap = new HashMap<>();
+            supermarketUpdateRequestBody.getSupermarketAddressList().stream().forEach(s -> {
+                if(!addressHashMap.containsKey(s.toUpperCase())){
+                    addressHashMap.put(s.toUpperCase(), s);
+                }
+            });
+            HashSet<String> addressHashSet = new HashSet<>();
+            addressHashSet.addAll(addressHashMap.values());
+            for(String address : addressHashSet) {
+                if((address.length() > 255 || address.isBlank()) && !errorFields.containsKey("addressError")){
+                    errorFields.put("addressError", "Maximum character is 255 and can not be empty");
+                }
+            }
+            if(!errorFields.containsKey("addressError")){
+                // delete all old address
+                supermarketAddressRepository.deleteAll(supermarket.get().getSupermarketAddressList());
+                supermarket.get().setSupermarketAddressList(null);
+                // add all new address
+                List<SupermarketAddress> supermarketAddressList = supermarketAddressRepository.saveAll(addressHashSet.stream().map(s -> new SupermarketAddress(s, supermarket.get())).collect(Collectors.toList()));
+                supermarket.get().setSupermarketAddressList(supermarketAddressList);
             }
         }
 
@@ -144,5 +186,15 @@ public class SupermarketServiceImpl implements SupermarketService {
             supermarket.get().setStatus(status.ordinal());
         }
         return supermarket.get();
+    }
+
+    @Override
+    public SupermarketListResponseBody getSupermarketForStaff(String name, Integer page, Integer limit) {
+        Pageable pageable = PageRequest.of(page, limit);
+        Page<Supermarket> result = supermarketRepository.getSupermarketForStaff(name, pageable);
+        int totalPage = result.getTotalPages();
+        long totalSupermarket = result.getTotalElements();
+        List<Supermarket> supermarketList = result.stream().toList();
+        return new SupermarketListResponseBody(supermarketList, totalPage, totalSupermarket);
     }
 }
