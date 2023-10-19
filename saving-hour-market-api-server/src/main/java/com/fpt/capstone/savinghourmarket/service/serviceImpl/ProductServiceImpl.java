@@ -299,7 +299,7 @@ public class ProductServiceImpl implements ProductService {
 
         return productsSaved;
     }
-    
+
     public RevenueReportResponseBody getRevenueReport(Month month, Quarter quarter, Integer year) {
         LocalDate currentDate = LocalDate.now();
 
@@ -318,6 +318,60 @@ public class ProductServiceImpl implements ProductService {
         revenueReportResponseBody.setTotalDifferentAmount(revenueReportResponseBody.getTotalIncome()- revenueReportResponseBody.getTotalPriceOriginal());
 
         return revenueReportResponseBody;
+    }
+
+    @Override
+    public Product updateProduct(Product product) throws ResourceNotFoundException {
+        HashMap<String, String> errorFields = new HashMap<>();
+
+        if (productRepository.findById(product.getId()).isEmpty()) {
+            throw new ResourceNotFoundException("Sản phảm không tìm thấy với id: " + product.getId());
+        }
+
+        if (product.getName().length() > 50) {
+            errorFields.put("Lỗi nhập tên sản phẩm", "Tên sản phẩm chỉ có tối đa 50 kí tự!");
+        }
+
+        if (product.getPrice() < 0 || product.getPriceOriginal() < 0) {
+            errorFields.put("Lỗi nhập giá", "Giá bán không thế âm!");
+        }
+
+        if (product.getQuantity() <= 0) {
+            errorFields.put("Lỗi nhập số lượng", "Số lượng sản phẩm không thể âm hoặc bằng 0!");
+        }
+
+        if (product.getExpiredDate().isBefore(LocalDateTime.now().plus(product.getProductSubCategory().getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
+            errorFields.put("Lỗi nhập ngày hết hạn", "Ngày hết hạn phải sau ngày hiện tại cộng thêm số ngày điều kiện cho hàng cận hạn sử dụng có trong SUBCATEGORY!");
+        }
+
+        if (errorFields.size() > 0) {
+            throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
+        }
+
+        UUID productSubCategoryId = product.getProductSubCategory().getId();
+        if (productSubCategoryRepository.findById(productSubCategoryId).isEmpty()) {
+            throw new ResourceNotFoundException("Loại sản phảm phụ không tìm thấy với id: " + productSubCategoryId);
+        }
+
+        UUID supermarketId = product.getSupermarket().getId();
+        if (supermarketRepository.findById(supermarketId).isEmpty()) {
+            throw new ResourceNotFoundException("Siêu thị không tìm thấy với id: " + productSubCategoryId);
+        }
+
+
+
+        return productRepository.save(product);
+    }
+
+    @Override
+    public Product disableProduct(UUID productId) throws ResourceNotFoundException {
+        Optional<Product> product = productRepository.findById(productId);
+        if (product.isEmpty()) {
+            throw new ResourceNotFoundException("Sản phảm không tìm thấy với id: " + productId);
+        }
+        product.get().setStatus(Status.DISABLE.ordinal());
+
+        return productRepository.save(product.get());
     }
 
     @Override

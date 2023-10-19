@@ -18,7 +18,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -118,7 +117,8 @@ public class ProductController {
     }
 
     @RequestMapping(value = "/createCategory", method = RequestMethod.POST)
-    public ResponseEntity<ProductCategory> createCategory(@RequestBody @Valid ProductCategoryCreateBody productCategoryCreateBody, @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
+    public ResponseEntity<ProductCategory> createCategory(@RequestBody @Valid ProductCategoryCreateBody productCategoryCreateBody,
+                                                          @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
         ProductCategory productCategory = productService.createCategory(productCategoryCreateBody);
@@ -126,7 +126,8 @@ public class ProductController {
     }
 
     @RequestMapping(value = "/createSubCategory", method = RequestMethod.POST)
-    public ResponseEntity<ProductSubCategory> createSubCategory(@RequestBody @Valid ProductSubCategoryCreateBody productSubCategoryCreateBody, @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
+    public ResponseEntity<ProductSubCategory> createSubCategory(@RequestBody @Valid ProductSubCategoryCreateBody productSubCategoryCreateBody,
+                                                                @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
         ProductSubCategory productSubCategory = productService.createSubCategory(productSubCategoryCreateBody);
@@ -134,7 +135,9 @@ public class ProductController {
     }
 
     @RequestMapping(value = "/updateCategory", method = RequestMethod.PUT)
-    public ResponseEntity<ProductCategory> updateCategory(@RequestBody @Valid ProductCategoryUpdateBody productCategoryUpdateBody, @RequestParam UUID categoryId, @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
+    public ResponseEntity<ProductCategory> updateCategory(@RequestBody @Valid ProductCategoryUpdateBody productCategoryUpdateBody,
+                                                          @RequestParam UUID categoryId,
+                                                          @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
         ProductCategory productCategory = productService.updateProductCategory(productCategoryUpdateBody, categoryId);
@@ -142,31 +145,55 @@ public class ProductController {
     }
 
     @RequestMapping(value = "/updateSubCategory", method = RequestMethod.PUT)
-    public ResponseEntity<ProductSubCategory> updateSubCategory(@RequestBody @Valid ProductSubCategoryUpdateBody productSubCategoryUpdateBody, @RequestParam UUID subCategoryId, @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
+    public ResponseEntity<ProductSubCategory> updateSubCategory(@RequestBody @Valid ProductSubCategoryUpdateBody productSubCategoryUpdateBody,
+                                                                @RequestParam UUID subCategoryId,
+                                                                @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
         ProductSubCategory productSubCategory = productService.updateProductSubCategory(productSubCategoryUpdateBody, subCategoryId);
         return ResponseEntity.status(HttpStatus.OK).body(productSubCategory);
     }
+
+    @RequestMapping(value = "/update", method = RequestMethod.PUT)
+    public ResponseEntity<Product> updateProduct(@Valid @RequestBody Product product,
+                                                 @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException, ResourceNotFoundException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        return ResponseEntity.status(HttpStatus.OK).body(productService.updateProduct(product));
+    }
+
+    @RequestMapping(value = "/disable", method = RequestMethod.PUT)
+    public ResponseEntity<Product> deleteProduct(@Valid @RequestBody UUID productId,
+                                                 @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException, ResourceNotFoundException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        return ResponseEntity.status(HttpStatus.OK).body(productService.disableProduct(productId));
+    }
     
-    @RequestMapping(value = "/upload", method = RequestMethod.POST)
+    @RequestMapping(value = "/create", method = RequestMethod.POST)
     @Operation(description = "Upload new product, if id of each entities (ex: subCategory, Category, Supermarket) in product is not null, it's mean to upload with existed entities.If not, it's mean to upload with new entities.")
-    public ResponseEntity<Product> uploadProduct(@Valid @RequestBody ProductCreate productCreate, @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws ResourceNotFoundException {
+    public ResponseEntity<Product> uploadProduct(@Valid @RequestBody ProductCreate productCreate,
+                                                 @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws ResourceNotFoundException, FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(productService.createProduct(productCreate));
     }
 
     @RequestMapping(value = "/uploadExcelFile",
             method = RequestMethod.POST,
             consumes = {"multipart/form-data"})
-    @Operation(description = "Upload product by excel")
-    public ResponseEntity<List<Product>> uploadProduct(@RequestParam("file")  MultipartFile file, @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws IOException, InvalidExcelFileDataException, FirebaseAuthException {
+    @Operation(description = "Upload product excel file")
+    public ResponseEntity<List<Product>> uploadProduct(@RequestParam("file")  MultipartFile file,
+                                                       @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws IOException, InvalidExcelFileDataException, FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(productService.createProductByExcel(file));
     }
 
-    @RequestMapping(value = "/list/save", method = RequestMethod.POST)
-    public ResponseEntity<List<Product>> uploadProductList(@Valid @RequestBody List<Product> productList, @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws ResourceNotFoundException, FirebaseAuthException {
+    @RequestMapping(value = "/create/list", method = RequestMethod.POST)
+    @Operation(description = "Save list of products to database")
+    public ResponseEntity<List<Product>> uploadProductList(@Valid @RequestBody List<Product> productList,
+                                                           @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws ResourceNotFoundException, FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(productService.createProductList(productList));

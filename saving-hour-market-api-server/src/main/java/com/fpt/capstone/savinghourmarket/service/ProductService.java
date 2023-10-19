@@ -14,7 +14,6 @@ import com.fpt.capstone.savinghourmarket.model.ProductCreate;
 import com.fpt.capstone.savinghourmarket.model.ProductListResponseBody;
 import com.fpt.capstone.savinghourmarket.model.ProductSubCateOnly;
 import com.fpt.capstone.savinghourmarket.model.SaleReportResponseBody;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -49,4 +48,8 @@ public interface ProductService {
     List<Product> createProductList(List<Product> productList) throws ResourceNotFoundException;
     
     RevenueReportResponseBody getRevenueReport(Month month, Quarter quarter, Integer year);
+
+    Product updateProduct(Product product) throws ResourceNotFoundException;
+
+    Product disableProduct(UUID product) throws ResourceNotFoundException;
 }
