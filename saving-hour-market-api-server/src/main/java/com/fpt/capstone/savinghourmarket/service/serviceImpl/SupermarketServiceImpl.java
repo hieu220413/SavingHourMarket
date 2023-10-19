@@ -110,7 +110,8 @@ public class SupermarketServiceImpl implements SupermarketService {
             if(supermarketUpdateRequestBody.getName().trim().length() < 2 || supermarketUpdateRequestBody.getName().trim().length() > 50){
                 errorFields.put("nameError", "Minimum character is 2 and maximum characters is 50");
             }
-            if(supermarketRepository.findByName(supermarketUpdateRequestBody.getName().trim()).isPresent()) {
+            Optional<Supermarket> duplicateSupermarket = supermarketRepository.findByName(supermarketUpdateRequestBody.getName().trim());
+            if(duplicateSupermarket.isPresent() && !duplicateSupermarket.get().getId().equals(supermarketId)) {
                 errorFields.put("nameError", "Duplicate supermarket name");
             }
             if(!errorFields.containsKey("nameError")){
