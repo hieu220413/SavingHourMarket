@@ -31,6 +31,7 @@ const Header = () => {
       <div className="header__container-logo">
         <h1>Saving Hour Market</h1>
       </div>
+
       {user && (
         <div className="header__container-profile">
           <div className="header__container-profile-img">

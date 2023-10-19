@@ -171,5 +171,16 @@ public class ProductController {
         Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(productService.createProductList(productList));
     }
+    
+    @RequestMapping(value = "/getRevenueReport", method = RequestMethod.GET)
+    public ResponseEntity<RevenueReportResponseBody> getRevenueReport(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @RequestParam(required = false) Month month
+            , @RequestParam(required = false) Quarter quarter
+            , @RequestParam(required = false) Integer year) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        RevenueReportResponseBody revenueReportResponseBody = productService.getRevenueReport(month, quarter, year);
+        return ResponseEntity.status(HttpStatus.OK).body(revenueReportResponseBody);
+    }
 
 }

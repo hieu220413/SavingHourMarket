@@ -299,6 +299,26 @@ public class ProductServiceImpl implements ProductService {
 
         return productsSaved;
     }
+    
+    public RevenueReportResponseBody getRevenueReport(Month month, Quarter quarter, Integer year) {
+        LocalDate currentDate = LocalDate.now();
+
+        if(year == null) {
+            year = currentDate.getYear();
+        }
+
+
+        Object[] revenueResult = productRepository.getRevenueReport(month == null ? null : month.getMonthInNumber(), quarter == null ? null : quarter.getQuarterInNumber(), year);
+
+        RevenueReportResponseBody revenueReportResponseBody = (RevenueReportResponseBody) revenueResult[0];
+//        revenueReportResponseBody.setTotalIncome((RevenueReportResponseBody) revenueResult[0]);
+//        revenueReportResponseBody.setTotalInvestment((Long) revenueResult[1]);
+//        revenueReportResponseBody.setTotalSale((Long) revenueResult[2]);
+
+        revenueReportResponseBody.setTotalDifferentAmount(revenueReportResponseBody.getTotalIncome()- revenueReportResponseBody.getTotalPriceOriginal());
+
+        return revenueReportResponseBody;
+    }
 
     @Override
     @Transactional
