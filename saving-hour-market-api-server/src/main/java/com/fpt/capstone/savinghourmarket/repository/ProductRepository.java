@@ -1,14 +1,11 @@
 package com.fpt.capstone.savinghourmarket.repository;
 
-import com.fpt.capstone.savinghourmarket.common.Month;
-import com.fpt.capstone.savinghourmarket.common.Quarter;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -94,25 +91,48 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "WHERE p.supermarket.id = :supermarketId ")
     List<Product> getRawProductFromSupermarketId(UUID supermarketId);
 
-    @Query("SELECT NEW com.fpt.capstone.savinghourmarket.model.RevenueReportResponseBody(SUM(dt.boughtQuantity*dt.productPrice), SUM(dt.productOriginalPrice*dt.boughtQuantity), SUM(dt.boughtQuantity))  FROM Order ord " +
+//    @Query("SELECT NEW com.fpt.capstone.savinghourmarket.model.RevenueReportResponseBody(SUM(dt.boughtQuantity*dt.productPrice), SUM(dt.productOriginalPrice*dt.boughtQuantity), SUM(dt.boughtQuantity))  FROM Order ord " +
+//            "JOIN ord.orderDetailList dt " +
+//            "WHERE " +
+//            "((:quarter IS NOT NULL) OR ((:monthValue IS NULL) OR EXTRACT(MONTH FROM ord.createdTime) =  :monthValue)) " +
+//            "AND " +
+//            "((:quarter IS NULL) " +
+//            "OR " +
+//            "((:quarter = 1) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 1 and 3)) " +
+//            "OR " +
+//            "((:quarter = 2) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 4 and 6)) " +
+//            "OR " +
+//            "((:quarter = 3) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 7 and 9)) " +
+//            "OR " +
+//            "((:quarter = 4) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 10 and 12)) " +
+//            ")" +
+//            "AND " +
+//            "EXTRACT(YEAR FROM ord.createdTime) = :year " +
+//            "AND ord.status = 4 ")
+//    Object[] getRevenueReport(Integer monthValue, Integer quarter, Integer year);
+
+    @Query("SELECT EXTRACT(MONTH FROM ord.createdTime), " +
+            "NEW com.fpt.capstone.savinghourmarket.model.RevenueReportMonthly(EXTRACT(MONTH FROM ord.createdTime), NEW com.fpt.capstone.savinghourmarket.model.RevenueReportResponseBody(SUM(dt.boughtQuantity*dt.productPrice), SUM(dt.productOriginalPrice*dt.boughtQuantity), SUM(dt.boughtQuantity)) )  FROM Order ord " +
             "JOIN ord.orderDetailList dt " +
             "WHERE " +
-            "((:quarter IS NOT NULL) OR ((:monthValue IS NULL) OR EXTRACT(MONTH FROM ord.createdTime) =  :monthValue)) " +
-            "AND " +
-            "((:quarter IS NULL) " +
-            "OR " +
-            "((:quarter = 1) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 1 and 3)) " +
-            "OR " +
-            "((:quarter = 2) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 4 and 6)) " +
-            "OR " +
-            "((:quarter = 3) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 7 and 9)) " +
-            "OR " +
-            "((:quarter = 4) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 10 and 12)) " +
-            ")" +
-            "AND " +
+//            "(EXTRACT(MONTH FROM ord.createdTime) =  :monthValue) " +
+//            "AND " +
             "EXTRACT(YEAR FROM ord.createdTime) = :year " +
-            "AND ord.status = 4 ")
-    Object[] getRevenueReport(Integer monthValue, Integer quarter, Integer year);
+            "AND ord.status = 4" +
+            "GROUP BY EXTRACT(MONTH FROM ord.createdTime) ")
+    List<Object[]> getRevenueReportMonthly(Integer year);
+
+    @Query("SELECT EXTRACT(YEAR FROM ord.createdTime), " +
+            "NEW com.fpt.capstone.savinghourmarket.model.RevenueReportYearly(EXTRACT(YEAR FROM ord.createdTime), NEW com.fpt.capstone.savinghourmarket.model.RevenueReportResponseBody(SUM(dt.boughtQuantity*dt.productPrice), SUM(dt.productOriginalPrice*dt.boughtQuantity), SUM(dt.boughtQuantity)) )  FROM Order ord " +
+            "JOIN ord.orderDetailList dt " +
+            "WHERE " +
+//            "(EXTRACT(MONTH FROM ord.createdTime) =  :monthValue) " +
+//            "AND " +
+            "EXTRACT(YEAR FROM ord.createdTime) BETWEEN :appBuildYear AND :currentYear " +
+            "AND " +
+            "ord.status = 4 " +
+            "GROUP BY EXTRACT(YEAR FROM ord.createdTime) ")
+    List<Object[]> getRevenueReportYearly(Integer appBuildYear, Integer currentYear);
 
 
 //    @Query(value = "SELECT * FROM product p " +
