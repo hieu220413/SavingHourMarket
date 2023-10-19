@@ -51,49 +51,61 @@ public class SpringSecurityConfig {
                             .requestMatchers("/swagger-ui.html").permitAll()
                             .requestMatchers(HttpMethod.POST, "/api/customer/registerWithEmailPassword").permitAll()
 //                            .requestMatchers("/api/customer/updateInfo").authenticated()
+
                             .requestMatchers("/api/product/getProductsForCustomer").permitAll()
                             .requestMatchers("/api/product/getById").permitAll()
                             .requestMatchers("/api/product/getAllCategory").permitAll()
                             .requestMatchers("/api/product/getAllSubCategory").permitAll()
+                            .requestMatchers("/api/product/getProductsForStaff").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/product/getSaleReportSupermarket").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/product/getRevenueReportForEachMonth").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/product/getRevenueReportForEachYear").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/product/createCategory").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/product/createSubCategory").hasAnyRole(selectionStaffAndAdmin)
+                            .requestMatchers("/api/product/update").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/product/updateSubCategory").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/product/updateCategory").hasAnyRole(selectionStaffAndAdmin)
+                            .requestMatchers("/api/product/uploadExcelFile").hasAnyRole(selectionStaffAndAdmin)
+                            .requestMatchers("/api/product/create").hasAnyRole(selectionStaffAndAdmin)
+                            .requestMatchers("/api/product/create/list").hasAnyRole(selectionStaffAndAdmin)
+                            .requestMatchers("/api/product/disable").hasAnyRole(selectionStaffAndAdmin)
+
                             .requestMatchers("/api/discount/getDiscountsForCustomer").permitAll()
                             .requestMatchers("/api/discount/getDiscountById").permitAll()
                             .requestMatchers("/api/discount/getDiscountUsageReport").hasAnyRole(marketingStaffAndAdmin)
                             .requestMatchers("/api/discount/getCategoryWithSubCategoryDiscountUsageReport").hasAnyRole(marketingStaffAndAdmin)
+                            .requestMatchers("/api/discount/getDiscountsForStaff").hasAnyRole(allStaffAndAdmin)
+
                             .requestMatchers("/api/timeframe/getAll").permitAll()
                             .requestMatchers("/api/timeframe/getForPickupPoint").permitAll()
                             .requestMatchers("/api/timeframe/getForHomeDelivery").permitAll()
+
                             .requestMatchers("/api/pickupPoint/getAll").permitAll()
                             .requestMatchers("/api/pickupPoint/getWithSortAndSuggestion").permitAll()
+
                             .requestMatchers("/api/transaction/processPaymentResult").permitAll()
 //                            .requestMatchers("/api/staff/getInfoAfterGoogleLogged").hasAnyRole(allStaffAndAdmin)
+
                             .requestMatchers("/api/staff/getInfo").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/staff/updateInfo").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/staff/getCustomerDetailByEmail").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/staff/createStaffAccount").hasRole("ADMIN")
                             .requestMatchers("/api/staff/getStaffByEmail").hasRole("ADMIN")
-                            .requestMatchers("/api/product/getProductsForStaff").hasAnyRole(allStaffAndAdmin)
-                            .requestMatchers("/api/product/upload").hasAnyRole(allStaffAndAdmin)
-                            .requestMatchers("/api/product/uploadByExcelFile").hasAnyRole(allStaffAndAdmin)
-                            .requestMatchers("/api/discount/getDiscountsForStaff").hasAnyRole(allStaffAndAdmin)
+
                             .requestMatchers("/api/supermarket/getSupermarketForStaff").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/supermarket/create").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/supermarket/changeStatus").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/supermarket/updateInfo").hasAnyRole(selectionStaffAndAdmin)
+
                             .requestMatchers("/api/order/getOrdersForStaff").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/order/getOrderGroupForStaff").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/order/getOrderBatchForStaff").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/order/assignDeliveryStaff").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/order/assignPackageStaff").hasAnyRole(allStaffAndAdmin)
+                            .requestMatchers("/api/order/sendNotification").permitAll()
+
                             .requestMatchers("/api/feedback/updateStatus").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/feedback/getFeedbackForStaff").hasAnyRole(allStaffAndAdmin)
-                            .requestMatchers("/api/order/sendNotification").permitAll()
                     ;
                     auth.anyRequest().authenticated();
                 });

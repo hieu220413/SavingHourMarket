@@ -144,7 +144,7 @@ public class OrderServiceImpl implements OrderService {
         if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_ORD.toString())) {
             order.setPackager(staff);
             order.setStatus(OrderStatus.PACKAGING.ordinal());
-            FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getEmail());
+            FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
         } else {
             return "Nhân viên này không phải là nhân Viên ĐÓNG GÓI!";
         }
@@ -161,7 +161,7 @@ public class OrderServiceImpl implements OrderService {
                 orderGroup.setDeliverer(staff);
                 for (Order order : orderGroup.getOrderList()) {
                     order.setStatus(OrderStatus.DELIVERING.ordinal());
-                    FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getEmail());
+                    FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getId().toString());
                 }
             } else if (orderGroupId == null && orderBatchId != null) {
                 OrderBatch orderBatch = orderBatchRepository.findById(orderBatchId)
