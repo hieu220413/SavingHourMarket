@@ -32,7 +32,8 @@
 }
 
 .dropdown {
-  width: 400px;
+  width: 280px;
+  margin-right: 2%;
   user-select: none;
   position: relative;
 
@@ -73,6 +74,7 @@
   }
 }
 .buttonSwitchSelectSuperMarket {
+  height: 46px;
   padding: 10px 20px;
   border-radius: 3px;
   font-size: 12px;
