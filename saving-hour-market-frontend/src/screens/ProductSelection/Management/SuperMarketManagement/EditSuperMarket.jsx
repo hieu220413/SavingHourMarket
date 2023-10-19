@@ -8,34 +8,39 @@ import {
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { API } from "../../../../contanst/api";
-
+import MuiAlert from "@mui/material/Alert";
+import { Snackbar } from "@mui/material";
 import { auth } from "../../../../firebase/firebase.config";
 
-const CreateSuperMarket = ({
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
+
+const EditSuperMarket = ({
   handleClose,
+  supermarket,
   setSuperMarketList,
   setTotalPage,
-  page,
   searchValue,
-  openSnackbar,
   setOpenSnackbar,
+  page,
   setError,
+  openSnackbar,
 }) => {
   const [locationData, setLocationData] = useState([]);
 
-  const [addressList, setAddressList] = useState([
-    {
+  const list = supermarket.supermarketAddressList.map((item) => {
+    return {
       isFocused: false,
-      selectAddress: "",
-      searchAddress: "",
-    },
-  ]);
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-
+      selectAddress: item.address,
+      searchAddress: item.address,
+    };
+  });
+  const [addressList, setAddressList] = useState(list);
+  const [name, setName] = useState(supermarket.name);
+  const [phone, setPhone] = useState(supermarket.phone);
   const typingTimeoutRef = useRef(null);
-
-  const handleCreate = async () => {
+  const handleEdit = async () => {
     if (!name) {
       setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
       setError("Vui lòng không để trống tên");
@@ -62,28 +67,34 @@ const CreateSuperMarket = ({
       setError("Địa chỉ không hợp lệ");
       return;
     }
-
     const listAddress = addressList.map((item) => item.selectAddress);
     const submitSupermarket = {
       name: name,
       supermarketAddressList: listAddress,
       phone: phone,
     };
-
     const tokenId = await auth.currentUser.getIdToken();
-    fetch(`${API.baseURL}/api/supermarket/create`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${tokenId}`,
-      },
-      body: JSON.stringify(submitSupermarket),
-    })
+    fetch(
+      `${API.baseURL}/api/supermarket/updateInfo?supermarketId=${supermarket.id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenId}`,
+        },
+        body: JSON.stringify(submitSupermarket),
+      }
+    )
       .then((res) => res.json())
       .then((respond) => {
         if (respond?.code === 422) {
           setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
           setError("Tên siêu thị đã tồn tại");
+          return;
+        }
+        if (respond?.error) {
+          setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
+          setError(respond.error);
           return;
         }
         fetch(
@@ -99,31 +110,29 @@ const CreateSuperMarket = ({
           }
         )
           .then((res) => res.json())
-          .then((respond) => {
-            setSuperMarketList(respond.supermarketList);
-            setTotalPage(respond.totalPage);
+          .then((data) => {
+            setSuperMarketList(data.supermarketList);
+            setTotalPage(data.totalPage);
             handleClose();
             setOpenSnackbar({
               ...openSnackbar,
               open: true,
               severity: "success",
             });
-            setError("Thêm siêu thị thành công");
+            setError("Chỉnh sửa thành công");
           })
           .catch((err) => console.log(err));
       })
       .catch((err) => console.log(err));
   };
-
   return (
-    // modal header
     <div
       className={`modal__container ${
         addressList.length >= 6 ? "modal-scroll" : ""
       }`}
     >
       <div className="modal__container-header">
-        <h3 className="modal__container-header-title">Thêm siêu thị</h3>
+        <h3 className="modal__container-header-title">Sửa siêu thị</h3>
         <FontAwesomeIcon onClick={handleClose} icon={faXmark} />
       </div>
       {/* ****************** */}
@@ -143,13 +152,13 @@ const CreateSuperMarket = ({
               className="modal__container-body-inputcontrol-input"
             />
             {/* {error.errName && (
-              <p
-                style={{ fontSize: "14px", marginBottom: "-10px" }}
-                className="text-danger"
-              >
-                {error.errName}
-              </p>
-            )} */}
+            <p
+              style={{ fontSize: "14px", marginBottom: "-10px" }}
+              className="text-danger"
+            >
+              {error.errName}
+            </p>
+          )} */}
           </div>
         </div>
 
@@ -166,13 +175,13 @@ const CreateSuperMarket = ({
               className="modal__container-body-inputcontrol-input"
             />
             {/* {error.errPhone && (
-              <p
-                style={{ fontSize: "14px", marginBottom: "-10px" }}
-                className="text-danger"
-              >
-                {error.errPhone}
-              </p>
-            )} */}
+            <p
+              style={{ fontSize: "14px", marginBottom: "-10px" }}
+              className="text-danger"
+            >
+              {error.errPhone}
+            </p>
+          )} */}
           </div>
         </div>
 
@@ -248,13 +257,13 @@ const CreateSuperMarket = ({
                   className="modal__container-body-inputcontrol-input"
                 />
                 {/* {item.error && (
-                  <p
-                    style={{ fontSize: "14px", marginBottom: "-10px" }}
-                    className="text-danger"
-                  >
-                    {item.error}
-                  </p>
-                )} */}
+                <p
+                  style={{ fontSize: "14px", marginBottom: "-10px" }}
+                  className="text-danger"
+                >
+                  {item.error}
+                </p>
+              )} */}
                 {item.searchAddress && (
                   <FontAwesomeIcon
                     onClick={() => {
@@ -334,10 +343,10 @@ const CreateSuperMarket = ({
             Đóng
           </button>
           <button
-            onClick={handleCreate}
+            onClick={handleEdit}
             className="modal__container-footer-buttons-create"
           >
-            Tạo mới
+            Chỉnh sửa
           </button>
         </div>
       </div>
@@ -346,4 +355,4 @@ const CreateSuperMarket = ({
   );
 };
 
-export default CreateSuperMarket;
+export default EditSuperMarket;

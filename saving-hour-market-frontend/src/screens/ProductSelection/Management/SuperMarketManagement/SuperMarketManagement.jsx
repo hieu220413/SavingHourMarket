@@ -2,11 +2,23 @@ import React, { useEffect, useState } from "react";
 import ManagementMenu from "../../../../components/ManagementMenu/ManagementMenu";
 import "./SuperMarketManagement.scss";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMagnifyingGlass, faPlus } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowDown,
+  faMagnifyingGlass,
+  faPlus,
+} from "@fortawesome/free-solid-svg-icons";
 import { Dialog } from "@mui/material";
 import CreateSuperMarket from "./CreateSuperMarket";
 import { API } from "../../../../contanst/api";
 import { auth } from "../../../../firebase/firebase.config";
+import EditSuperMarket from "./EditSuperMarket";
+import SupermarketItem from "./SupermarketItem";
+import MuiAlert from "@mui/material/Alert";
+import { Snackbar } from "@mui/material";
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 const SuperMarketManagement = () => {
   const [open, setOpen] = useState(false);
@@ -16,6 +28,18 @@ const SuperMarketManagement = () => {
   const [textPage, setTextPage] = useState(1);
   const [textSearch, setTextSearch] = useState("");
   const [searchValue, setSearchValue] = useState("");
+  const [error, setError] = useState("");
+
+  const [openSnackbar, setOpenSnackbar] = useState({
+    open: false,
+    vertical: "top",
+    horizontal: "right",
+    severity: "error",
+  });
+  const { vertical, horizontal } = openSnackbar;
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar({ ...openSnackbar, open: false });
+  };
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -37,7 +61,6 @@ const SuperMarketManagement = () => {
       )
         .then((res) => res.json())
         .then((respond) => {
-          console.log(respond);
           setSuperMarketList(respond.supermarketList);
           setTotalPage(respond.totalPage);
         })
@@ -104,16 +127,16 @@ const SuperMarketManagement = () => {
             </thead>
             <tbody>
               {superMarketList.map((item, i) => (
-                <tr key={i} className="table-body-row">
-                  <td>{i + 1}</td>
-                  <td>{item.name}</td>
-                  <td>{item.supermarketAddressList[0].address}</td>
-                  <td>{item.phone}</td>
-                  <td>
-                    <i class="bi bi-pencil-square"></i>
-                    <i class="bi bi-trash-fill"></i>
-                  </td>
-                </tr>
+                <SupermarketItem
+                  setTotalPage={setTotalPage}
+                  page={page}
+                  searchValue={searchValue}
+                  setSuperMarketList={setSuperMarketList}
+                  i={i}
+                  item={item}
+                  setError={setError}
+                  error={error}
+                />
               ))}
             </tbody>
           </table>
@@ -223,8 +246,35 @@ const SuperMarketManagement = () => {
         aria-labelledby="customized-dialog-title"
         open={open}
       >
-        <CreateSuperMarket handleClose={handleClose} />
+        <CreateSuperMarket
+          page={page}
+          setTotalPage={setTotalPage}
+          setSuperMarketList={setSuperMarketList}
+          handleClose={handleClose}
+          searchValue={searchValue}
+          openSnackbar={openSnackbar}
+          setOpenSnackbar={setOpenSnackbar}
+          setError={setError}
+        />
       </Dialog>
+      <Snackbar
+        open={openSnackbar.open}
+        autoHideDuration={1000}
+        anchorOrigin={{ vertical, horizontal }}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={openSnackbar.severity}
+          sx={{
+            width: "100%",
+            fontSize: "15px",
+            alignItem: "center",
+          }}
+        >
+          {error}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
