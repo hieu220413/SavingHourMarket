@@ -46,4 +46,5 @@ public interface ProductService {
 
     ProductSubCategory updateProductSubCategory(ProductSubCategoryUpdateBody productSubCategoryUpdateBody, UUID subCategoryId);
 
+    RevenueReportResponseBody getRevenueReport(Month month, Quarter quarter, Integer year);
 }
