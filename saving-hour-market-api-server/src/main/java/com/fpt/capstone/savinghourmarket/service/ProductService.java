@@ -46,4 +46,5 @@ public interface ProductService {
 
     ProductSubCategory updateProductSubCategory(ProductSubCategoryUpdateBody productSubCategoryUpdateBody, UUID subCategoryId);
 
+    List<Product> createProductList(List<Product> productList) throws ResourceNotFoundException;
 }

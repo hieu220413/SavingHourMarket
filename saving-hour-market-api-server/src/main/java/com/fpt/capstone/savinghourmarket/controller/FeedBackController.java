@@ -8,8 +8,11 @@ import com.fpt.capstone.savinghourmarket.exception.FeedBackNotFoundException;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.FeedbackCreate;
 import com.fpt.capstone.savinghourmarket.service.FeedBackService;
+import com.fpt.capstone.savinghourmarket.util.Utils;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import io.swagger.v3.oas.annotations.Parameter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -22,10 +25,13 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("api/feedback")
+@RequiredArgsConstructor
 public class FeedBackController {
 
     @Autowired
     private FeedBackService feedBackService;
+
+    private final FirebaseAuth firebaseAuth;
 
     @PutMapping("/create")
     public ResponseEntity<String> createFeedback(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
@@ -34,7 +40,9 @@ public class FeedBackController {
     }
 
     @PutMapping("/updateStatus")
-    public ResponseEntity<String> updateStatus(@RequestParam UUID feedbackId, @RequestParam FeedbackStatus status) {
+    public ResponseEntity<String> updateStatus(@RequestParam UUID feedbackId, @RequestParam FeedbackStatus status,@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(feedBackService.updateStatus(feedbackId, status));
     }
 

@@ -151,16 +151,25 @@ public class ProductController {
     
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     @Operation(description = "Upload new product, if id of each entities (ex: subCategory, Category, Supermarket) in product is not null, it's mean to upload with existed entities.If not, it's mean to upload with new entities.")
-    public ResponseEntity<Product> uploadProduct(@Valid @RequestBody ProductCreate productCreate) throws ResourceNotFoundException {
+    public ResponseEntity<Product> uploadProduct(@Valid @RequestBody ProductCreate productCreate, @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws ResourceNotFoundException {
         return ResponseEntity.status(HttpStatus.OK).body(productService.createProduct(productCreate));
     }
 
-    @RequestMapping(value = "/uploadByExcelFile",
+    @RequestMapping(value = "/uploadExcelFile",
             method = RequestMethod.POST,
             consumes = {"multipart/form-data"})
     @Operation(description = "Upload product by excel")
-    public ResponseEntity<List<Product>> uploadProduct(@RequestParam("file")  MultipartFile file) throws IOException,InvalidExcelFileDataException {
+    public ResponseEntity<List<Product>> uploadProduct(@RequestParam("file")  MultipartFile file, @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws IOException, InvalidExcelFileDataException, FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(productService.createProductByExcel(file));
+    }
+
+    @RequestMapping(value = "/list/save", method = RequestMethod.POST)
+    public ResponseEntity<List<Product>> uploadProductList(@Valid @RequestBody List<Product> productList, @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws ResourceNotFoundException, FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        return ResponseEntity.status(HttpStatus.OK).body(productService.createProductList(productList));
     }
 
 }
