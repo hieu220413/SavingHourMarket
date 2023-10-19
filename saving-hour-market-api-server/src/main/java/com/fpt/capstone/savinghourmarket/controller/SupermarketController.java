@@ -3,18 +3,21 @@ package com.fpt.capstone.savinghourmarket.controller;
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.entity.Supermarket;
 import com.fpt.capstone.savinghourmarket.model.SupermarketCreateRequestBody;
+import com.fpt.capstone.savinghourmarket.model.SupermarketListResponseBody;
 import com.fpt.capstone.savinghourmarket.model.SupermarketUpdateRequestBody;
 import com.fpt.capstone.savinghourmarket.service.SupermarketService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -27,7 +30,7 @@ public class SupermarketController {
     private final FirebaseAuth firebaseAuth;
 
     @RequestMapping(value = "/create", method = RequestMethod.POST)
-    public ResponseEntity<Supermarket> create(@RequestBody SupermarketCreateRequestBody supermarketCreateRequestBody, @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken) throws FirebaseAuthException {
+    public ResponseEntity<Supermarket> create(@RequestBody @Valid SupermarketCreateRequestBody supermarketCreateRequestBody, @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
         Supermarket supermarket = supermarketService.create(supermarketCreateRequestBody);
@@ -48,5 +51,16 @@ public class SupermarketController {
         Utils.validateIdToken(idToken, firebaseAuth);
         Supermarket supermarket = supermarketService.changeStatus(supermarketId, status);
         return ResponseEntity.status(HttpStatus.OK).body(supermarket);
+    }
+
+    @RequestMapping(value = "/getSupermarketForStaff", method = RequestMethod.GET)
+    public ResponseEntity<SupermarketListResponseBody> getSupermarketForStaff(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken
+            , @RequestParam(defaultValue = "") String name
+            , @RequestParam(defaultValue = "0") Integer page
+            , @RequestParam(defaultValue = "5") Integer limit) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        SupermarketListResponseBody supermarketList = supermarketService.getSupermarketForStaff(name, page, limit);
+        return ResponseEntity.status(HttpStatus.OK).body(supermarketList);
     }
 }

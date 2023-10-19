@@ -1,10 +1,51 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ManagementMenu from "../../../../components/ManagementMenu/ManagementMenu";
 import "./SuperMarketManagement.scss";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { Dialog } from "@mui/material";
+import CreateSuperMarket from "./CreateSuperMarket";
+import { API } from "../../../../contanst/api";
+import { auth } from "../../../../firebase/firebase.config";
 
 const SuperMarketManagement = () => {
+  const [open, setOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(1);
+  const [superMarketList, setSuperMarketList] = useState([]);
+  const [textPage, setTextPage] = useState(1);
+  const [textSearch, setTextSearch] = useState("");
+  const [searchValue, setSearchValue] = useState("");
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  useEffect(() => {
+    const fetchSupermarket = async () => {
+      const tokenId = await auth.currentUser.getIdToken();
+      fetch(
+        `${API.baseURL}/api/supermarket/getSupermarketForStaff?page=${
+          page - 1
+        }&limit=6&name=${searchValue}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${tokenId}`,
+          },
+        }
+      )
+        .then((res) => res.json())
+        .then((respond) => {
+          console.log(respond);
+          setSuperMarketList(respond.supermarketList);
+          setTotalPage(respond.totalPage);
+        })
+        .catch((err) => console.log(err));
+    };
+    fetchSupermarket();
+  }, [page, searchValue]);
+
   const menuTabs = [
     {
       display: "Siêu thị",
@@ -15,6 +56,12 @@ const SuperMarketManagement = () => {
       to: "/productmanagement",
     },
   ];
+
+  const onSubmitSearch = (e) => {
+    e.preventDefault();
+    setSearchValue(textSearch);
+    setPage(1);
+  };
   return (
     <div>
       <ManagementMenu menuTabs={menuTabs} />
@@ -22,14 +69,21 @@ const SuperMarketManagement = () => {
         <div className="supermarket__header">
           {/* search bar */}
           <div className="search">
-            <div className="search-icon">
-              <FontAwesomeIcon icon={faMagnifyingGlass} />
-            </div>
-            <input type="text" placeholder="Từ khóa tìm kiếm" />
+            <form onSubmit={(e) => onSubmitSearch(e)}>
+              <div onClick={(e) => onSubmitSearch(e)} className="search-icon">
+                <FontAwesomeIcon icon={faMagnifyingGlass} />
+              </div>
+              <input
+                value={textSearch}
+                onChange={(e) => setTextSearch(e.target.value)}
+                type="text"
+                placeholder="Từ khóa tìm kiếm"
+              />
+            </form>
           </div>
           {/* ****************** */}
 
-          <div className="supermarket__header-button">
+          <div onClick={handleOpen} className="supermarket__header-button">
             <FontAwesomeIcon icon={faPlus} />
             Thêm siêu thị
           </div>
@@ -49,66 +103,18 @@ const SuperMarketManagement = () => {
               </tr>
             </thead>
             <tbody>
-              <tr className="table-body-row">
-                <td>1</td>
-                <td>SuperMarket</td>
-                <td>121 Tran Van Du P.13, Q.Tan Binh, TP.HCM</td>
-                <td>0898449505</td>
-                <td>
-                  <i class="bi bi-pencil-square"></i>
-                  <i class="bi bi-trash-fill"></i>
-                </td>
-              </tr>
-              <tr className="table-body-row">
-                <td>2</td>
-                <td>SuperMarket</td>
-                <td>121 Tran Van Du P.13, Q.Tan Binh, TP.HCM</td>
-                <td>0898449505</td>
-                <td>
-                  <i class="bi bi-pencil-square"></i>
-                  <i class="bi bi-trash-fill"></i>
-                </td>
-              </tr>
-              <tr className="table-body-row">
-                <td>3</td>
-                <td>SuperMarket</td>
-                <td>121 Tran Van Du P.13, Q.Tan Binh, TP.HCM</td>
-                <td>0898449505</td>
-                <td>
-                  <i class="bi bi-pencil-square"></i>
-                  <i class="bi bi-trash-fill"></i>
-                </td>
-              </tr>
-              <tr className="table-body-row">
-                <td>4</td>
-                <td>SuperMarket</td>
-                <td>121 Tran Van Du P.13, Q.Tan Binh, TP.HCM</td>
-                <td>0898449505</td>
-                <td>
-                  <i class="bi bi-pencil-square"></i>
-                  <i class="bi bi-trash-fill"></i>
-                </td>
-              </tr>
-              <tr className="table-body-row">
-                <td>5</td>
-                <td>SuperMarket</td>
-                <td>121 Tran Van Du P.13, Q.Tan Binh, TP.HCM</td>
-                <td>0898449505</td>
-                <td>
-                  <i class="bi bi-pencil-square"></i>
-                  <i class="bi bi-trash-fill"></i>
-                </td>
-              </tr>
-              <tr className="table-body-row">
-                <td>6</td>
-                <td>SuperMarket</td>
-                <td>121 Tran Van Du P.13, Q.Tan Binh, TP.HCM</td>
-                <td>0898449505</td>
-                <td>
-                  <i class="bi bi-pencil-square"></i>
-                  <i class="bi bi-trash-fill"></i>
-                </td>
-              </tr>
+              {superMarketList.map((item, i) => (
+                <tr key={i} className="table-body-row">
+                  <td>{i + 1}</td>
+                  <td>{item.name}</td>
+                  <td>{item.supermarketAddressList[0].address}</td>
+                  <td>{item.phone}</td>
+                  <td>
+                    <i class="bi bi-pencil-square"></i>
+                    <i class="bi bi-trash-fill"></i>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
           {/* ********************** */}
@@ -120,6 +126,11 @@ const SuperMarketManagement = () => {
               <form action="">
                 <button
                   type="submit"
+                  disabled={page === 1}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setPage(1);
+                  }}
                   className="btn btn-success  "
                   name="op"
                   value="FirstPage"
@@ -129,6 +140,11 @@ const SuperMarketManagement = () => {
                 </button>
                 <button
                   type="submit"
+                  disabled={page === 1}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setPage(page - 1);
+                  }}
                   className="btn btn-success  "
                   name="op"
                   value="PreviousPage"
@@ -138,6 +154,11 @@ const SuperMarketManagement = () => {
                 </button>
                 <button
                   type="submit"
+                  disabled={page === totalPage}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setPage(page + 1);
+                  }}
                   className="btn btn-success  "
                   name="op"
                   value="NextPage"
@@ -147,6 +168,11 @@ const SuperMarketManagement = () => {
                 </button>
                 <button
                   type="submit"
+                  disabled={page === totalPage}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setPage(totalPage);
+                  }}
                   className="btn btn-success  "
                   name="op"
                   value="LastPage"
@@ -157,7 +183,11 @@ const SuperMarketManagement = () => {
                 <input
                   type="number"
                   name="gotoPage"
-                  value="1"
+                  value={textPage}
+                  onChange={(e) => {
+                    if (e.target.value >= page && e.target.value <= totalPage)
+                      setTextPage(e.target.value);
+                  }}
                   className=" "
                   style={{
                     padding: "12px",
@@ -169,6 +199,10 @@ const SuperMarketManagement = () => {
                 />
                 <button
                   type="submit"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setPage(textPage);
+                  }}
                   className="btn btn-success  "
                   name="op"
                   value="GotoPage"
@@ -177,13 +211,20 @@ const SuperMarketManagement = () => {
                   <i className="bi bi-arrow-up-right-circle"></i>
                 </button>
               </form>
-              Page 1/10
+              Page {page}/{totalPage}
             </div>
           </div>
           {/* ********************** */}
         </div>
         {/* ***************** */}
       </div>
+      <Dialog
+        onClose={handleClose}
+        aria-labelledby="customized-dialog-title"
+        open={open}
+      >
+        <CreateSuperMarket handleClose={handleClose} />
+      </Dialog>
     </div>
   );
 };

@@ -1,10 +1,14 @@
 package com.fpt.capstone.savinghourmarket.model;
 
+import com.fpt.capstone.savinghourmarket.entity.SupermarketAddress;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -16,7 +20,8 @@ public class SupermarketCreateRequestBody {
     private String name;
 
     @NotNull
-    private String address;
+    @Size(min = 1)
+    private List<String> supermarketAddressList;
 
     @NotNull
     private String phone;

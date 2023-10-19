@@ -3,6 +3,7 @@ package com.fpt.capstone.savinghourmarket.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.util.UUID;
 
@@ -15,6 +16,7 @@ import java.util.UUID;
 public class FeedBackImage {
 
     @Id
+    @UuidGenerator
     private UUID id;
 
     @Column(columnDefinition = "text")

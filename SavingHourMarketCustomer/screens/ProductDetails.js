@@ -13,11 +13,21 @@ import Modal, {
   SlideAnimation,
   ScaleAnimation,
 } from 'react-native-modals';
+import Toast from 'react-native-toast-message';
 
 const ProductDetails = ({navigation, route}) => {
   const product = route.params.product;
   const [cartList, setCartList] = useState([]);
   const [openAuthModal, setOpenAuthModal] = useState(false);
+
+  const showToast = () => {
+    Toast.show({
+      type: 'success',
+      text1: 'Thành công',
+      text2: 'Thêm sản phẩm vào giỏ hàng thành công 👋',
+      visibilityTime: 1000,
+    });
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -76,6 +86,7 @@ const ProductDetails = ({navigation, route}) => {
         newCartList[index].cartQuantity = newCartList[index].cartQuantity + 1;
         setCartList(newCartList);
         await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
+        showToast();
         return;
       }
 
@@ -83,6 +94,7 @@ const ProductDetails = ({navigation, route}) => {
       newCartList = [...newCartList, cartData];
       setCartList(newCartList);
       await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
+      showToast();
     } catch (error) {
       console.log(error);
     }
