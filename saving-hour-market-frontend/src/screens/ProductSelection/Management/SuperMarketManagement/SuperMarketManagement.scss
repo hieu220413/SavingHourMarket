@@ -30,4 +30,24 @@
       }
     }
   }
+  .dropdown-menu {
+    left: 15px !important;
+    top: 10px !important;
+
+    li {
+      font-size: 14px;
+      color: black;
+      padding: 10px;
+      // border: 1px solid black;
+    }
+  }
+}
+
+.arrow-down {
+  color: var(--primary);
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+  }
 }
