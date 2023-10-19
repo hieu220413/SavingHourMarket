@@ -38,6 +38,23 @@ public interface FirebaseService {
         }
     }
 
+    static String uploadImageToStorage(ByteArrayOutputStream qrCodeStream, String imageName) {
+        try {
+            Storage storage = StorageOptions.newBuilder().setProjectId("capstone-project-398104").build().getService();
+            Bucket bucket = StorageClient.getInstance().bucket();
+
+            byte[] qrCodeBytes = qrCodeStream.toByteArray();
+            String objectName = "public/" + imageName + ".png"; // Set the desired object name
+
+            bucket.create(objectName, qrCodeBytes, "image/png");
+
+            return Utils.generatePublicImageUrlFirebaseStorage(objectName);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     static HttpResponse sendPushNotification(String title, String messageSend, String topic) throws IOException {
         // Define the topic (channel) you want to send the notification to
         HttpClient client = HttpClientBuilder.create().build();
