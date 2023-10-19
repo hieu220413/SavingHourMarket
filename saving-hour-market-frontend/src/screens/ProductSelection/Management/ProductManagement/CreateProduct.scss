@@ -1,0 +1,107 @@
+.textareaFocus:focus {
+  outline: none !important;
+  border: 2px solid var(--primary);
+}
+
+.imgWrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  width: 400px;
+  border: 2px dashed var(--primary);
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.uploaded-row {
+  margin: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-radius: 5px;
+  background-color: #e9f0ff;
+  font-size: 12px;
+
+  .upload-content {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.dropdown {
+  width: 400px;
+  user-select: none;
+  position: relative;
+
+  .dropdown-btn {
+    padding: 15px 20px;
+    background: #fff;
+    border: 1px solid rgb(118, 118, 118);
+    border-radius: 3px;
+    font-weight: bold;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+  }
+
+  .dropdown-content {
+    position: absolute;
+    top: 110%;
+    left: 0;
+    padding: 10px;
+    background: #fff;
+    box-shadow: 3px 3px 10px 6px rgba(0, 0, 0, 0.06);
+    font-weight: 500;
+    color: #333;
+    width: 100%;
+    z-index: 9999;
+
+    .dropdown-item {
+      padding: 10px;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .dropdown-item:hover {
+      background: #fcfcfc;
+    }
+  }
+}
+.buttonSwitchSelectSuperMarket {
+  padding: 10px 20px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 16px;
+  transition: 0.3s linear all;
+  cursor: pointer;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+}
+.buttonSwitchSelectSuperMarket:hover {
+  background-color: #157347;
+}
+.buttonAddSupermarkerAddress {
+  padding: 10px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 16px;
+  transition: 0.3s linear all;
+  cursor: pointer;
+  background-color: white;
+  border: 1px solid var(--primary);
+  color: var(--primary);
+}
+.buttonAddSupermarkerAddress:hover {
+  background-color: var(--primary);
+  color: white;
+}
