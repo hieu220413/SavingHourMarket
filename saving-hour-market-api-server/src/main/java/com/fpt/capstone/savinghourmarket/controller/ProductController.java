@@ -163,15 +163,24 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(productService.createProductByExcel(file));
     }
 
-    @RequestMapping(value = "/getRevenueReport", method = RequestMethod.GET)
-    public ResponseEntity<RevenueReportResponseBody> getRevenueReport(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
-            , @RequestParam(required = false) Month month
-            , @RequestParam(required = false) Quarter quarter
+    @RequestMapping(value = "/getRevenueReportForEachMonth", method = RequestMethod.GET)
+    public ResponseEntity<List<RevenueReportMonthly>> getRevenueReportForEachMonth(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+//            , @RequestParam(required = false) Month month
+//            , @RequestParam(required = false) Quarter quarter
             , @RequestParam(required = false) Integer year) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        RevenueReportResponseBody revenueReportResponseBody = productService.getRevenueReport(month, quarter, year);
-        return ResponseEntity.status(HttpStatus.OK).body(revenueReportResponseBody);
+//        RevenueReportResponseBody revenueReportResponseBody = productService.getRevenueReport(month, quarter, year);
+        List<RevenueReportMonthly> revenueReportMonthlyList = productService.getRevenueReportForEachMonth(year);
+        return ResponseEntity.status(HttpStatus.OK).body(revenueReportMonthlyList);
+    }
+
+    @RequestMapping(value = "/getRevenueReportForEachYear", method = RequestMethod.GET)
+    public ResponseEntity<List<RevenueReportYearly>> getRevenueReportForEachYear(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        List<RevenueReportYearly> revenueReportYearlyList = productService.getRevenueReportForEachYear();
+        return ResponseEntity.status(HttpStatus.OK).body(revenueReportYearlyList);
     }
 
 }

@@ -1,0 +1,141 @@
+.chart_container {
+  display: flex;
+  flex-direction: row;
+  height: 490px;
+  justify-content: space-between;
+  margin-top: 10px;
+  .barchart {
+    width: 73%;
+    border-radius: 30px;
+    height: 100%;
+    background-color: white;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding-top: 20px;
+    .column_1 {
+      height: 100%;
+      width: 75%;
+      .text {
+        font-weight: 600;
+        font-size: 18px;
+        margin-left: 90px;
+        color: rgb(73, 148, 94);
+      }
+    }
+    .column_2 {
+      height: 100%;
+      width: 25%;
+      .text {
+        font-weight: 600;
+        font-size: 18px;
+        margin-left: 10px;
+        color: rgb(73, 148, 94);
+      }
+      .detail_text,
+      .num {
+        font-size: 16px;
+        font-weight: bold;
+        color: rgb(73, 148, 94);
+        margin-left: 16px;
+      }
+      .num {
+        font-size: 20px;
+        margin-top: 10px;
+      }
+      .detail_card {
+        width: 90%;
+        height: 100px;
+        margin-top: 10px;
+        background-color: rgb(214, 255, 214);
+        margin-bottom: 10px;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .donvi {
+        padding-top: 20px;
+        padding-left: 10px;
+        .text_donvi {
+          font-size: 14px;
+          font-weight: 500;
+          color: rgb(73, 148, 94);
+        }
+      }
+    }
+  }
+  .piechart {
+    width: 23%;
+    height: 100%;
+    margin-right: 25px;
+    border-radius: 30px;
+    background-color: white;
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .title {
+      justify-content: center;
+      display: flex;
+      .title_text {
+        font-weight: 600;
+        font-size: 18px;
+        color: rgb(73, 148, 94);
+      }
+    }
+    .quarter_detail {
+      height: 150px;
+      margin-top: 10px;
+      width: 90%;
+      border-radius: 30px;
+      background-color: rgb(214, 255, 214);
+      .list {
+        display: flex;
+        flex-direction: column;
+        padding-left: 30px;
+        padding-top: 5px;
+        .items_text {
+          font-size: 16px;
+          font-weight: 500;
+          color: rgb(73, 148, 94);
+        }
+      }
+    }
+  }
+}
+.areachart {
+  height: 320px;
+  width: 98%;
+  background-color: white;
+  border-radius: 30px;
+  margin-top: 30px;
+  padding-top: 20px;
+  .chart {
+    height: 100%;
+    width: 98%;
+    .title {
+      padding-bottom: 10px;
+    }
+    .title_text {
+      font-weight: 600;
+      font-size: 18px;
+      color: rgb(73, 148, 94);
+      margin-left: 90px;
+    }
+  }
+  .donvi {
+    padding-left: 60px;
+    .text_donvi {
+      font-size: 14px;
+      font-weight: 500;
+      color: rgb(73, 148, 94);
+    }
+  }
+}
+.year_picker{
+    margin-top: 10px;
+    // background-color: white;
+    width: 100%;
+    padding-left: 84%;
+}

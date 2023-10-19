@@ -24,10 +24,10 @@ public enum Month {
         return this.monthInNumber;
     }
 
-//    public static Month getMonthEnumFromNumber(Integer number) {
-//        for(Month month : values()) {
-//            if(month.getMonthInNumber() == number) return month;
-//        }
-//        return null;
-//    }
+    public static String getMonthNameFromNumber(Integer number) {
+        for(Month month : values()) {
+            if(month.getMonthInNumber() == number) return month.toString();
+        }
+        return null;
+    }
 }

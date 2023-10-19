@@ -436,7 +436,7 @@ INSERT INTO `saving_hour_market`.`discount` (`id`, `name`, `percentage`, `quanti
 -- Order new
 INSERT INTO `saving_hour_market`.`orders` (`id`, `total_price`, `total_discount_price`, `shipping_fee`, `created_time`, `delivery_date`, `payment_method`, `payment_status`, `address_deliver`, `receiver_phone`, `receiver_name`, `latitude`, `longitude`, `qr_code_url`, `status`, `customer_id`, `packager_id`, `order_group_id`, `order_batch_id`, `time_frame_id`)
 --     VALUES (`id`, `total_price`, `shipping_fee`, `created_time`, `delivery_date`, `payment_method`, `address_deliver`, `qr_code_url`, `status`, `customer_id`, `packager_id`, `order_group_id`, `order_batch_id`);
-    VALUES  (UUID_TO_BIN('accf7b01-5541-11ee-8a50-a85e45c41921'), 274350, 77650, 19000, '2023-10-17 14:20:00','2023-09-19 14:20:00', @cod, @paid, '240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.827628, 106.721636, 'qr code url here', @success,
+    VALUES  (UUID_TO_BIN('accf7b01-5541-11ee-8a50-a85e45c41921'), 274350, 77650, 19000, '2023-10-17 14:20:00','2023-10-19 14:20:00', @cod, @paid, '240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.827628, 106.721636, 'qr code url here', @success,
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf4d19-5541-11ee-8a50-a85e45c41921'), null, null, UUID_TO_BIN('ec5e070b-56dc-11ee-8a50-a85e45c41921')),
 
             (UUID_TO_BIN('accf7c79-5541-11ee-8a50-a85e45c41921'), 208800, 139200, 0, '2023-09-14 15:00:00', '2023-09-16 21:00:00', @vnpay, @paid, null, null, null, null, null, 'qr code url here', @success,
