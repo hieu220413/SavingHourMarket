@@ -300,24 +300,63 @@ public class ProductServiceImpl implements ProductService {
         return productsSaved;
     }
 
-    public RevenueReportResponseBody getRevenueReport(Month month, Quarter quarter, Integer year) {
+    public List<RevenueReportMonthly> getRevenueReportForEachMonth(Integer year) {
         LocalDate currentDate = LocalDate.now();
 
         if(year == null) {
             year = currentDate.getYear();
         }
 
+        List<Object[]> revenueResult = productRepository.getRevenueReportMonthly(year);
+        // map result
+        List<RevenueReportMonthly> revenueReportMonthlyList = revenueResult.stream().map(result -> (RevenueReportMonthly) result[1]).collect(Collectors.toList());
+        HashMap<Integer, RevenueReportMonthly> reportMonthlyHashMap = new HashMap<>();
+        revenueReportMonthlyList.stream().forEach(revenueReportMonthly -> {
+            reportMonthlyHashMap.put(revenueReportMonthly.getMonthValue(), revenueReportMonthly);
+        });
 
-        Object[] revenueResult = productRepository.getRevenueReport(month == null ? null : month.getMonthInNumber(), quarter == null ? null : quarter.getQuarterInNumber(), year);
+        // 12 months
+        for(int i = 1 ; i <= 12; i++){
+            if(!reportMonthlyHashMap.containsKey(i)){
+                RevenueReportResponseBody revenueReportResponseBody = new RevenueReportResponseBody(null, null, null);
+                revenueReportMonthlyList.add(new RevenueReportMonthly(i, revenueReportResponseBody));
+            }
+        }
 
-        RevenueReportResponseBody revenueReportResponseBody = (RevenueReportResponseBody) revenueResult[0];
+        revenueReportMonthlyList.sort((o1, o2) -> o1.getMonthValue() - o2.getMonthValue());
 //        revenueReportResponseBody.setTotalIncome((RevenueReportResponseBody) revenueResult[0]);
 //        revenueReportResponseBody.setTotalInvestment((Long) revenueResult[1]);
 //        revenueReportResponseBody.setTotalSale((Long) revenueResult[2]);
 
-        revenueReportResponseBody.setTotalDifferentAmount(revenueReportResponseBody.getTotalIncome()- revenueReportResponseBody.getTotalPriceOriginal());
+//        revenueReportResponseBody.setTotalDifferentAmount(revenueReportResponseBody.getTotalIncome()- revenueReportResponseBody.getTotalPriceOriginal());
 
-        return revenueReportResponseBody;
+        return revenueReportMonthlyList;
+    }
+
+    @Override
+    public List<RevenueReportYearly> getRevenueReportForEachYear() {
+        Integer appBuildYear = 2023;
+        Integer currentYear = LocalDate.now().getYear();
+
+        List<Object[]> revenueResult = productRepository.getRevenueReportYearly(appBuildYear, currentYear);
+        // map result
+        List<RevenueReportYearly> revenueReportYearlyList = revenueResult.stream().map(result -> (RevenueReportYearly) result[1]).collect(Collectors.toList());
+        HashMap<Integer, RevenueReportYearly> reportYearlyHashMap = new HashMap<>();
+        revenueReportYearlyList.stream().forEach(revenueReportYearly -> {
+            reportYearlyHashMap.put(revenueReportYearly.getYearValue(), revenueReportYearly);
+        });
+
+        // 12 months
+        for(int i = appBuildYear ; i <= currentYear; i++){
+            if(!reportYearlyHashMap.containsKey(i)){
+                RevenueReportResponseBody revenueReportResponseBody = new RevenueReportResponseBody(null, null, null);
+                revenueReportYearlyList.add(new RevenueReportYearly(i, revenueReportResponseBody));
+            }
+        }
+
+        revenueReportYearlyList.sort((o1, o2) -> o1.getYearValue() - o2.getYearValue());
+
+        return revenueReportYearlyList;
     }
 
     @Override

@@ -47,9 +47,11 @@ public interface ProductService {
 
     List<Product> createProductList(List<Product> productList) throws ResourceNotFoundException;
     
-    RevenueReportResponseBody getRevenueReport(Month month, Quarter quarter, Integer year);
-
     Product updateProduct(Product product) throws ResourceNotFoundException;
 
     Product disableProduct(UUID product) throws ResourceNotFoundException;
+    
+    List<RevenueReportMonthly> getRevenueReportForEachMonth(Integer year);
+
+    List<RevenueReportYearly> getRevenueReportForEachYear();
 }
