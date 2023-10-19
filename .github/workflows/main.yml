@@ -55,8 +55,8 @@ jobs:
       - name: Deploy to EB
         uses: einaregilsson/beanstalk-deploy@v13
         with:
-          aws_access_key: AKIAQ3E6OMK6LGBFUWR4 #This is referred from Github Secrets
-          aws_secret_key: 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 #This is referred from Github Secrets
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY }} #This is referred from Github Secrets
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} #This is referred from Github Secrets
           use_existing_version_if_available: true
           application_name: Saving Hour Market #Application name we created in Elastic BeanStalk
           environment_name: SavingHourMarket-env-1 #Environment name we created in Elastic BeanStalk
