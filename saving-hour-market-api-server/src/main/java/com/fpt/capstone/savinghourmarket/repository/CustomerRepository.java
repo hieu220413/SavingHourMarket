@@ -1,6 +1,8 @@
 package com.fpt.capstone.savinghourmarket.repository;
 
 import com.fpt.capstone.savinghourmarket.entity.Customer;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -20,4 +22,8 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
     @Modifying
     @Query("delete from Customer c where c.email in ?1")
     void deleteCustomersWithIds(List<String> ids);
+
+    @Query("SELECT c FROM Customer c " +
+            "WHERE UPPER(c.fullName) LIKE UPPER(CONCAT('%',:name,'%')) ")
+    Page<Customer> getCustomerForAdmin(String name, Pageable pageable);
 }
