@@ -1,17 +1,13 @@
 package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
 import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
+import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
+import com.fpt.capstone.savinghourmarket.common.OrderStatus;
 import com.fpt.capstone.savinghourmarket.common.StaffRole;
-import com.fpt.capstone.savinghourmarket.entity.Customer;
-import com.fpt.capstone.savinghourmarket.entity.Staff;
-import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
-import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
-import com.fpt.capstone.savinghourmarket.model.CustomerListResponseBody;
-import com.fpt.capstone.savinghourmarket.model.StaffCreateRequestBody;
-import com.fpt.capstone.savinghourmarket.model.StaffListResponseBody;
-import com.fpt.capstone.savinghourmarket.model.StaffUpdateRequestBody;
-import com.fpt.capstone.savinghourmarket.repository.CustomerRepository;
-import com.fpt.capstone.savinghourmarket.repository.StaffRepository;
+import com.fpt.capstone.savinghourmarket.entity.*;
+import com.fpt.capstone.savinghourmarket.exception.*;
+import com.fpt.capstone.savinghourmarket.model.*;
+import com.fpt.capstone.savinghourmarket.repository.*;
 import com.fpt.capstone.savinghourmarket.service.StaffService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
@@ -28,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +40,13 @@ public class StaffServiceImpl implements StaffService {
 
     private final CustomerRepository customerRepository;
 
+    private final OrderRepository orderRepository;
+
     private final FirebaseAuth firebaseAuth;
+
+    private final OrderBatchRepository orderBatchRepository;
+
+    private final OrderGroupRepository orderGroupRepositorys;
 
 //    @Override
 //    public Staff getInfoGoogleLogged(String email) throws FirebaseAuthException {
@@ -183,5 +186,51 @@ public class StaffServiceImpl implements StaffService {
         List<Staff> staffList = result.stream().toList();
 
         return new StaffListResponseBody(staffList, totalPage, totalCustomer);
+    }
+
+    @Override
+    public Staff updateStaffAccountStatus(AccountStatusChangeBody accountStatusChangeBody, String email) throws FirebaseAuthException {
+        Optional<Staff> staff = staffRepository.findById(accountStatusChangeBody.getAccountId());
+
+        if(!staff.isPresent()){
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_NOT_FOUND.getCode()), AdditionalResponseCode.STAFF_NOT_FOUND.toString());
+        }
+
+        if(staff.get().getEmail().equals(email)){
+            throw new SelfStatusChangeNotAllowedException(HttpStatus.valueOf(AdditionalResponseCode.SELF_STATUS_CHANGE_NOT_ALLOWED.getCode()), AdditionalResponseCode.SELF_STATUS_CHANGE_NOT_ALLOWED.toString());
+        }
+
+
+
+        if(accountStatusChangeBody.getEnableDisableStatus().ordinal() == EnableDisableStatus.ENABLE.ordinal()){
+            staff.get().setStatus(EnableDisableStatus.ENABLE.ordinal());
+            UserRecord userRecord = firebaseAuth.getUserByEmail(staff.get().getEmail());
+            UserRecord.UpdateRequest updateRequest = new UserRecord.UpdateRequest(userRecord.getUid()).setDisabled(false);
+            firebaseAuth.updateUser(updateRequest);
+        } else {
+            UserRecord userRecord = firebaseAuth.getUserByEmail(staff.get().getEmail());
+            String staffRole = (String) userRecord.getCustomClaims().get("user_role");
+
+            if(StaffRole.STAFF_ORD.toString().equals(staffRole)){
+                List<Order> processingOrderList = orderRepository.findStaffProcessingOrderById(staff.get().getId(), PageRequest.of(0,1), List.of(OrderStatus.PROCESSING.ordinal(), OrderStatus.DELIVERING.ordinal(), OrderStatus.PACKAGING.ordinal(), OrderStatus.PACKAGED.ordinal()));
+                if(processingOrderList.size() > 0){
+                    throw new DisableStaffForbiddenException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_IS_IN_PROCESSING_ORDER.getCode()), AdditionalResponseCode.STAFF_IS_IN_PROCESSING_ORDER.toString());
+                }
+            }
+
+            if(StaffRole.STAFF_DLV_1.toString().equals(staffRole) || StaffRole.STAFF_DLV_0.toString().equals(staffRole)) {
+                List<OrderBatch> processingUpcomingBatch = orderBatchRepository.findStaffUpcomingOrderBatchById(staff.get().getId(), PageRequest.of(0,1));
+                List<OrderGroup> processingUpcomingOrderGroup = orderGroupRepositorys.findStaffUpcomingOrderGroupById(staff.get().getId(), PageRequest.of(0,1), LocalTime.now());
+                if(processingUpcomingBatch.size() > 0 || processingUpcomingOrderGroup.size() > 0) {
+                    throw new DisableStaffForbiddenException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_IS_IN_PROCESSING_ORDER.getCode()), AdditionalResponseCode.STAFF_IS_IN_PROCESSING_ORDER.toString());
+                }
+            }
+
+            staff.get().setStatus(EnableDisableStatus.DISABLE.ordinal());
+            UserRecord.UpdateRequest updateRequest = new UserRecord.UpdateRequest(userRecord.getUid()).setDisabled(true);
+            firebaseAuth.updateUser(updateRequest);
+            firebaseAuth.revokeRefreshTokens(userRecord.getUid());
+        }
+        return staff.get();
     }
 }

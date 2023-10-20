@@ -60,5 +60,12 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "JOIN o.customer cs " +
             "WHERE cs.id = :customerId " +
             "AND o.status IN :statusList")
-    Optional<Order> findCustomerProcessingOrderById(UUID customerId, PageRequest of, List<Integer> statusList);
+    List<Order> findCustomerProcessingOrderById(UUID customerId, Pageable pageable, List<Integer> statusList);
+
+
+    @Query("SELECT o FROM Order o " +
+            "JOIN o.packager pk " +
+            "WHERE pk.id = :staffId " +
+            "AND o.status IN :statusList")
+    List<Order> findStaffProcessingOrderById(UUID staffId, Pageable pageable, List<Integer> statusList);
 }

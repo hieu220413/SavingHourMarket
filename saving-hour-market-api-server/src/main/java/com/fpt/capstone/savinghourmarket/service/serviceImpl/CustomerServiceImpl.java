@@ -282,7 +282,7 @@ public class CustomerServiceImpl implements CustomerService {
         if(!customer.isPresent()){
             throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.CUSTOMER_NOT_FOUND.getCode()), AdditionalResponseCode.CUSTOMER_NOT_FOUND.toString());
         }
-        Optional<Order> processingOrder = orderRepository.findCustomerProcessingOrderById(customer.get().getId(), PageRequest.of(0,1), List.of(OrderStatus.PROCESSING.ordinal(), OrderStatus.DELIVERING.ordinal(), OrderStatus.PACKAGING.ordinal(), OrderStatus.PACKAGED.ordinal()));
+        List<Order> processingOrderList = orderRepository.findCustomerProcessingOrderById(customer.get().getId(), PageRequest.of(0,1), List.of(OrderStatus.PROCESSING.ordinal(), OrderStatus.DELIVERING.ordinal(), OrderStatus.PACKAGING.ordinal(), OrderStatus.PACKAGED.ordinal()));
 
         if(accountStatusChangeBody.getEnableDisableStatus().ordinal() == EnableDisableStatus.ENABLE.ordinal()){
             customer.get().setStatus(EnableDisableStatus.ENABLE.ordinal());
@@ -290,7 +290,7 @@ public class CustomerServiceImpl implements CustomerService {
             UserRecord.UpdateRequest updateRequest = new UserRecord.UpdateRequest(userRecord.getUid()).setDisabled(false);
             firebaseAuth.updateUser(updateRequest);
         } else {
-            if(processingOrder.isPresent()){
+            if(processingOrderList.size() > 0){
                 throw new DisableCustomerForbiddenException(HttpStatus.valueOf(AdditionalResponseCode.CUSTOMER_HAVING_PROCESSING_ORDER.getCode()), AdditionalResponseCode.CUSTOMER_HAVING_PROCESSING_ORDER.toString());
             };
             customer.get().setStatus(EnableDisableStatus.DISABLE.ordinal());

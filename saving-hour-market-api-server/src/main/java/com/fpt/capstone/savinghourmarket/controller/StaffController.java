@@ -3,12 +3,16 @@ package com.fpt.capstone.savinghourmarket.controller;
 import com.fpt.capstone.savinghourmarket.common.StaffRole;
 import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.entity.Staff;
-import com.fpt.capstone.savinghourmarket.model.*;
+import com.fpt.capstone.savinghourmarket.model.AccountStatusChangeBody;
+import com.fpt.capstone.savinghourmarket.model.StaffCreateRequestBody;
+import com.fpt.capstone.savinghourmarket.model.StaffListResponseBody;
+import com.fpt.capstone.savinghourmarket.model.StaffUpdateRequestBody;
 import com.fpt.capstone.savinghourmarket.service.StaffService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -86,6 +90,15 @@ public class StaffController {
         Utils.validateIdToken(idToken, firebaseAuth);
         StaffListResponseBody staffListResponseBody = staffService.getStaffForAdmin(name, page, limit);
         return ResponseEntity.status(HttpStatus.OK).body(staffListResponseBody);
+    }
+
+    @RequestMapping(value = "/updateStaffAccountStatus", method = RequestMethod.PUT)
+    public ResponseEntity<Staff> updateCustomerAccountStatus(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            ,@RequestBody @Valid AccountStatusChangeBody accountStatusChangeBody) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        String email = Utils.validateIdToken(idToken, firebaseAuth);
+        Staff staff = staffService.updateStaffAccountStatus(accountStatusChangeBody, email);
+        return ResponseEntity.status(HttpStatus.OK).body(staff);
     }
 
 }

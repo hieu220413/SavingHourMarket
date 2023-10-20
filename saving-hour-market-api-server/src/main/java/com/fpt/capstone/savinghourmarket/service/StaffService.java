@@ -3,6 +3,7 @@ package com.fpt.capstone.savinghourmarket.service;
 import com.fpt.capstone.savinghourmarket.common.StaffRole;
 import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.entity.Staff;
+import com.fpt.capstone.savinghourmarket.model.AccountStatusChangeBody;
 import com.fpt.capstone.savinghourmarket.model.StaffCreateRequestBody;
 import com.fpt.capstone.savinghourmarket.model.StaffListResponseBody;
 import com.fpt.capstone.savinghourmarket.model.StaffUpdateRequestBody;
@@ -26,4 +27,6 @@ public interface StaffService {
     Staff getStaffByEmail(String email);
 
     StaffListResponseBody getStaffForAdmin(String name, Integer page, Integer limit);
+
+    Staff updateStaffAccountStatus(AccountStatusChangeBody accountStatusChangeBody, String email) throws FirebaseAuthException;
 }

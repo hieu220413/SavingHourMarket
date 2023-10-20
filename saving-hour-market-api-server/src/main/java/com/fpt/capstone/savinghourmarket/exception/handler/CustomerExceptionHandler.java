@@ -34,7 +34,7 @@ public class CustomerExceptionHandler {
     }
 
     @ExceptionHandler(DisableCustomerForbiddenException.class)
-    public ResponseEntity<ApiError> invalidUserInputExceptionHandler(DisableCustomerForbiddenException e) {
+    public ResponseEntity<ApiError> disableCustomerForbiddenExceptionHandler(DisableCustomerForbiddenException e) {
         ApiError apiError = new ApiError(LocalDateTime.now().toString(), e.getStatusCode().value(), e.getReason());
         return ResponseEntity.status(e.getStatusCode().value()).body(apiError);
     }
