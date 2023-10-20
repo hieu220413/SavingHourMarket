@@ -3,9 +3,7 @@ package com.fpt.capstone.savinghourmarket.controller;
 import com.fpt.capstone.savinghourmarket.common.StaffRole;
 import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.entity.Staff;
-import com.fpt.capstone.savinghourmarket.model.PasswordRequestBody;
-import com.fpt.capstone.savinghourmarket.model.StaffCreateRequestBody;
-import com.fpt.capstone.savinghourmarket.model.StaffUpdateRequestBody;
+import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.service.StaffService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
@@ -77,6 +75,17 @@ public class StaffController {
         Utils.validateIdToken(idToken, firebaseAuth);
         Staff staff = staffService.getStaffByEmail(email);
         return ResponseEntity.status(HttpStatus.OK).body(staff);
+    }
+
+    @RequestMapping(value = "/getStaffForAdmin", method = RequestMethod.GET)
+    public ResponseEntity<StaffListResponseBody> getStaffForAdmin(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @RequestParam(defaultValue = "") String name
+            , @RequestParam(defaultValue = "0") Integer page
+            , @RequestParam(defaultValue = "5") Integer limit) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        StaffListResponseBody staffListResponseBody = staffService.getStaffForAdmin(name, page, limit);
+        return ResponseEntity.status(HttpStatus.OK).body(staffListResponseBody);
     }
 
 }

@@ -3,10 +3,12 @@ package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.entity.Customer;
+import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.Staff;
 import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.exception.StaffAccessForbiddenException;
+import com.fpt.capstone.savinghourmarket.model.CustomerListResponseBody;
 import com.fpt.capstone.savinghourmarket.model.PasswordRequestBody;
 import com.fpt.capstone.savinghourmarket.model.CustomerRegisterRequestBody;
 import com.fpt.capstone.savinghourmarket.model.CustomerUpdateRequestBody;
@@ -18,6 +20,9 @@ import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserInfo;
 import com.google.firebase.auth.UserRecord;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +31,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -251,5 +257,17 @@ public class CustomerServiceImpl implements CustomerService {
                 .setPassword(passwordRequestBody.getPassword());
         firebaseAuth.updateUser(request);
         firebaseAuth.revokeRefreshTokens(uid);
+    }
+
+    @Override
+    public CustomerListResponseBody getCustomerForAdmin(String name, Integer page, Integer limit) {
+        Pageable pageable = PageRequest.of(page, limit);
+        Page<Customer> result = customerRepository.getCustomerForAdmin(name, pageable);
+        int totalPage = result.getTotalPages();
+        long totalCustomer = result.getTotalElements();
+
+        List<Customer> customerList = result.stream().toList();
+
+        return new CustomerListResponseBody(customerList, totalPage, totalCustomer);
     }
 }

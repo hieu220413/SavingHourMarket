@@ -6,7 +6,9 @@ import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.entity.Staff;
 import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
+import com.fpt.capstone.savinghourmarket.model.CustomerListResponseBody;
 import com.fpt.capstone.savinghourmarket.model.StaffCreateRequestBody;
+import com.fpt.capstone.savinghourmarket.model.StaffListResponseBody;
 import com.fpt.capstone.savinghourmarket.model.StaffUpdateRequestBody;
 import com.fpt.capstone.savinghourmarket.repository.CustomerRepository;
 import com.fpt.capstone.savinghourmarket.repository.StaffRepository;
@@ -16,6 +18,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -165,5 +171,17 @@ public class StaffServiceImpl implements StaffService {
             throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_NOT_FOUND.getCode()), AdditionalResponseCode.STAFF_NOT_FOUND.toString());
         }
         return staff.get();
+    }
+
+    @Override
+    public StaffListResponseBody getStaffForAdmin(String name, Integer page, Integer limit) {
+        Pageable pageable = PageRequest.of(page, limit);
+        Page<Staff> result = staffRepository.getStaffForAdmin(name, pageable);
+        int totalPage = result.getTotalPages();
+        long totalCustomer = result.getTotalElements();
+
+        List<Staff> staffList = result.stream().toList();
+
+        return new StaffListResponseBody(staffList, totalPage, totalCustomer);
     }
 }

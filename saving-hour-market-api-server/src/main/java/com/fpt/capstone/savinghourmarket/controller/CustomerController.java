@@ -1,6 +1,7 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
 import com.fpt.capstone.savinghourmarket.entity.Customer;
+import com.fpt.capstone.savinghourmarket.model.CustomerListResponseBody;
 import com.fpt.capstone.savinghourmarket.model.PasswordRequestBody;
 import com.fpt.capstone.savinghourmarket.model.CustomerRegisterRequestBody;
 import com.fpt.capstone.savinghourmarket.model.CustomerUpdateRequestBody;
@@ -20,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/customer")
@@ -66,6 +68,17 @@ public class CustomerController {
         String email = Utils.validateIdToken(idToken, firebaseAuth);
         customerService.updatePassword(passwordRequestBody, email);
         return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
+
+    @RequestMapping(value = "/getCustomerForAdmin", method = RequestMethod.GET)
+    public ResponseEntity<CustomerListResponseBody> getCustomerForAdmin(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @RequestParam(defaultValue = "") String name
+            , @RequestParam(defaultValue = "0") Integer page
+            , @RequestParam(defaultValue = "5") Integer limit) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        CustomerListResponseBody customerListResponseBody = customerService.getCustomerForAdmin(name, page, limit);
+        return ResponseEntity.status(HttpStatus.OK).body(customerListResponseBody);
     }
 
 }

@@ -91,6 +91,9 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/staff/getCustomerDetailByEmail").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/staff/createStaffAccount").hasRole("ADMIN")
                             .requestMatchers("/api/staff/getStaffByEmail").hasRole("ADMIN")
+                            .requestMatchers("/api/staff/getStaffForAdmin").hasRole("ADMIN")
+
+                            .requestMatchers("/api/customer/getCustomerForAdmin").hasRole("ADMIN")
 
                             .requestMatchers("/api/supermarket/getSupermarketForStaff").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/supermarket/create").hasAnyRole(selectionStaffAndAdmin)
