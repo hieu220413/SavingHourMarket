@@ -1,9 +1,7 @@
 package com.fpt.capstone.savinghourmarket.service;
 
 import com.fpt.capstone.savinghourmarket.entity.Customer;
-import com.fpt.capstone.savinghourmarket.model.PasswordRequestBody;
-import com.fpt.capstone.savinghourmarket.model.CustomerRegisterRequestBody;
-import com.fpt.capstone.savinghourmarket.model.CustomerUpdateRequestBody;
+import com.fpt.capstone.savinghourmarket.model.*;
 import com.google.firebase.auth.FirebaseAuthException;
 
 import java.io.IOException;
@@ -19,4 +17,8 @@ public interface CustomerService {
     Customer updateInfo(CustomerUpdateRequestBody customerUpdateRequestBody, String email) throws IOException;
 
     void updatePassword(PasswordRequestBody passwordRequestBody, String email) throws FirebaseAuthException;
+
+    CustomerListResponseBody getCustomerForAdmin(String name, Integer page, Integer limit);
+
+    Customer updateCustomerAccountStatus(AccountStatusChangeBody accountStatusChangeBody) throws FirebaseAuthException;
 }
