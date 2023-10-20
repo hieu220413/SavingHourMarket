@@ -10,6 +10,18 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RevenueReportYearly {
+    public RevenueReportYearly(Integer yearValue, RevenueReportResponseBody revenueReportResponseBody) {
+        this.yearValue = yearValue;
+        this.totalIncome = revenueReportResponseBody.getTotalIncome();
+        this.totalPriceOriginal = revenueReportResponseBody.getTotalPriceOriginal();
+        this.totalDifferentAmount = revenueReportResponseBody.getTotalDifferentAmount();
+        this.totalSale = revenueReportResponseBody.getTotalSale();
+    }
+
     private Integer yearValue;
-    private RevenueReportResponseBody revenue;
+//    private RevenueReportResponseBody revenue;
+    private Long totalIncome;
+    private Long totalPriceOriginal;
+    private Long totalDifferentAmount;
+    private Long totalSale;
 }
