@@ -2,17 +2,18 @@ package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
 import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
+import com.fpt.capstone.savinghourmarket.common.OrderStatus;
 import com.fpt.capstone.savinghourmarket.entity.Customer;
+import com.fpt.capstone.savinghourmarket.entity.Order;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.Staff;
+import com.fpt.capstone.savinghourmarket.exception.DisableCustomerForbiddenException;
 import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.exception.StaffAccessForbiddenException;
-import com.fpt.capstone.savinghourmarket.model.CustomerListResponseBody;
-import com.fpt.capstone.savinghourmarket.model.PasswordRequestBody;
-import com.fpt.capstone.savinghourmarket.model.CustomerRegisterRequestBody;
-import com.fpt.capstone.savinghourmarket.model.CustomerUpdateRequestBody;
+import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.repository.CustomerRepository;
+import com.fpt.capstone.savinghourmarket.repository.OrderRepository;
 import com.fpt.capstone.savinghourmarket.repository.StaffRepository;
 import com.fpt.capstone.savinghourmarket.service.CustomerService;
 import com.google.firebase.auth.FirebaseAuth;
@@ -45,6 +46,8 @@ public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
 
     private final StaffRepository staffRepository;
+
+    private final OrderRepository orderRepository;
 
     @Override
     public String register(CustomerRegisterRequestBody customerRegisterRequestBody) throws FirebaseAuthException, UnsupportedEncodingException {
@@ -269,5 +272,34 @@ public class CustomerServiceImpl implements CustomerService {
         List<Customer> customerList = result.stream().toList();
 
         return new CustomerListResponseBody(customerList, totalPage, totalCustomer);
+    }
+
+    @Override
+    @Transactional(rollbackFor = FirebaseAuthException.class)
+    public Customer updateCustomerAccountStatus(AccountStatusChangeBody accountStatusChangeBody) throws FirebaseAuthException {
+        Optional<Customer> customer = customerRepository.findById(accountStatusChangeBody.getAccountId());
+
+        if(!customer.isPresent()){
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.CUSTOMER_NOT_FOUND.getCode()), AdditionalResponseCode.CUSTOMER_NOT_FOUND.toString());
+        }
+        Optional<Order> processingOrder = orderRepository.findCustomerProcessingOrderById(customer.get().getId(), PageRequest.of(0,1), List.of(OrderStatus.PROCESSING.ordinal(), OrderStatus.DELIVERING.ordinal(), OrderStatus.PACKAGING.ordinal(), OrderStatus.PACKAGED.ordinal()));
+
+        if(accountStatusChangeBody.getEnableDisableStatus().ordinal() == EnableDisableStatus.ENABLE.ordinal()){
+            customer.get().setStatus(EnableDisableStatus.ENABLE.ordinal());
+            UserRecord userRecord = firebaseAuth.getUserByEmail(customer.get().getEmail());
+            UserRecord.UpdateRequest updateRequest = new UserRecord.UpdateRequest(userRecord.getUid()).setDisabled(false);
+            firebaseAuth.updateUser(updateRequest);
+        } else {
+            if(processingOrder.isPresent()){
+                throw new DisableCustomerForbiddenException(HttpStatus.valueOf(AdditionalResponseCode.CUSTOMER_HAVING_PROCESSING_ORDER.getCode()), AdditionalResponseCode.CUSTOMER_HAVING_PROCESSING_ORDER.toString());
+            };
+            customer.get().setStatus(EnableDisableStatus.DISABLE.ordinal());
+            UserRecord userRecord = firebaseAuth.getUserByEmail(customer.get().getEmail());
+            UserRecord.UpdateRequest updateRequest = new UserRecord.UpdateRequest(userRecord.getUid()).setDisabled(true);
+            firebaseAuth.updateUser(updateRequest);
+            firebaseAuth.revokeRefreshTokens(userRecord.getUid());
+        }
+
+        return customer.get();
     }
 }
