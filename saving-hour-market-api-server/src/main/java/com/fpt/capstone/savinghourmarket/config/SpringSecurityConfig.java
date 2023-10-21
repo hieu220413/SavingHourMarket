@@ -93,6 +93,7 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/staff/getStaffByEmail").hasRole("ADMIN")
                             .requestMatchers("/api/staff/getStaffForAdmin").hasRole("ADMIN")
                             .requestMatchers("/api/staff/updateStaffAccountStatus").hasRole("ADMIN")
+                            .requestMatchers("/api/staff/updateStaffRole").hasRole("ADMIN")
 
                             .requestMatchers("/api/customer/getCustomerForAdmin").hasRole("ADMIN")
                             .requestMatchers("/api/customer/updateCustomerAccountStatus").hasRole("ADMIN")
