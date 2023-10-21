@@ -451,14 +451,8 @@ const Orders = ({navigation}) => {
         footer={
           <ModalFooter>
             <ModalButton
-              text="Ở lại trang"
-              textStyle={{color: 'red'}}
-              onPress={() => {
-                setOpenAuthModal(false);
-              }}
-            />
-            <ModalButton
               text="Đăng nhập"
+              textStyle={{color: COLORS.primary}}
               onPress={async () => {
                 try {
                   setOpenAuthModal(false);
