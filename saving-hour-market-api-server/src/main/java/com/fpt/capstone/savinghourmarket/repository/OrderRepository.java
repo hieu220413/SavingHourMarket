@@ -2,6 +2,7 @@ package com.fpt.capstone.savinghourmarket.repository;
 
 import com.fpt.capstone.savinghourmarket.entity.Order;
 import com.fpt.capstone.savinghourmarket.entity.TimeFrame;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -68,4 +70,16 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "AND o.customer.email = :customerEmail")
     List<Order> getOrdersProcessing(String customerEmail);
 
+    @Query("SELECT o FROM Order o " +
+            "JOIN o.customer cs " +
+            "WHERE cs.id = :customerId " +
+            "AND o.status IN :statusList")
+    List<Order> findCustomerProcessingOrderById(UUID customerId, Pageable pageable, List<Integer> statusList);
+
+
+    @Query("SELECT o FROM Order o " +
+            "JOIN o.packager pk " +
+            "WHERE pk.id = :staffId " +
+            "AND o.status IN :statusList")
+    List<Order> findStaffProcessingOrderById(UUID staffId, Pageable pageable, List<Integer> statusList);
 }
