@@ -450,7 +450,7 @@ public class ProductServiceImpl implements ProductService {
             errorFields.put("Lỗi nhập số lượng", "Số lượng sản phẩm không thể âm hoặc bằng 0!");
         }
 
-        if (productCreate.getExpiredDate().isBefore(LocalDateTime.now().plus(productCreate.getProductSubCategory().getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
+        if (productCreate.getExpiredDate().isBefore(LocalDate.now().plus(productCreate.getProductSubCategory().getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
             errorFields.put("Lỗi nhập ngày hết hạn", "Ngày hết hạn phải sau ngày hiện tại cộng thêm số ngày điều kiện cho hàng cận hạn sử dụng có trong SUBCATEGORY!");
         }
 
