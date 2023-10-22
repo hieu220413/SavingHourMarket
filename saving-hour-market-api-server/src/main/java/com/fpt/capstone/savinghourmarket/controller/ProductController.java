@@ -219,4 +219,13 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(revenueReportYearlyList);
     }
 
+    @RequestMapping(value = "/getAllSupermarketSaleReport", method = RequestMethod.GET)
+    public ResponseEntity<List<SupermarketSaleReportResponseBody>> getAllSupermarketSaleReport(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @RequestParam(required = false) Integer year) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        List<SupermarketSaleReportResponseBody> supermarketSaleReportResponseBodyList = productService.getAllSupermarketSaleReport(year);
+        return ResponseEntity.status(HttpStatus.OK).body(supermarketSaleReportResponseBodyList);
+    }
+
 }
