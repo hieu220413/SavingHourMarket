@@ -54,4 +54,6 @@ public interface ProductService {
     List<RevenueReportMonthly> getRevenueReportForEachMonth(Integer year);
 
     List<RevenueReportYearly> getRevenueReportForEachYear();
+
+    List<SupermarketSaleReportResponseBody> getAllSupermarketSaleReport(Integer year);
 }

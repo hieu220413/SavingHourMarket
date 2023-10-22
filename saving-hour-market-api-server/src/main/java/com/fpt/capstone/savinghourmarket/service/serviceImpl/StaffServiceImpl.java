@@ -189,6 +189,7 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
+    @Transactional(rollbackFor = FirebaseAuthException.class)
     public Staff updateStaffAccountStatus(AccountStatusChangeBody accountStatusChangeBody, String email) throws FirebaseAuthException {
         Optional<Staff> staff = staffRepository.findById(accountStatusChangeBody.getAccountId());
 
@@ -200,37 +201,62 @@ public class StaffServiceImpl implements StaffService {
             throw new SelfStatusChangeNotAllowedException(HttpStatus.valueOf(AdditionalResponseCode.SELF_STATUS_CHANGE_NOT_ALLOWED.getCode()), AdditionalResponseCode.SELF_STATUS_CHANGE_NOT_ALLOWED.toString());
         }
 
-
-
         if(accountStatusChangeBody.getEnableDisableStatus().ordinal() == EnableDisableStatus.ENABLE.ordinal()){
             staff.get().setStatus(EnableDisableStatus.ENABLE.ordinal());
             UserRecord userRecord = firebaseAuth.getUserByEmail(staff.get().getEmail());
             UserRecord.UpdateRequest updateRequest = new UserRecord.UpdateRequest(userRecord.getUid()).setDisabled(false);
             firebaseAuth.updateUser(updateRequest);
         } else {
-            UserRecord userRecord = firebaseAuth.getUserByEmail(staff.get().getEmail());
-            String staffRole = (String) userRecord.getCustomClaims().get("user_role");
-
-            if(StaffRole.STAFF_ORD.toString().equals(staffRole)){
-                List<Order> processingOrderList = orderRepository.findStaffProcessingOrderById(staff.get().getId(), PageRequest.of(0,1), List.of(OrderStatus.PROCESSING.ordinal(), OrderStatus.DELIVERING.ordinal(), OrderStatus.PACKAGING.ordinal(), OrderStatus.PACKAGED.ordinal()));
-                if(processingOrderList.size() > 0){
-                    throw new DisableStaffForbiddenException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_IS_IN_PROCESSING_ORDER.getCode()), AdditionalResponseCode.STAFF_IS_IN_PROCESSING_ORDER.toString());
-                }
-            }
-
-            if(StaffRole.STAFF_DLV_1.toString().equals(staffRole) || StaffRole.STAFF_DLV_0.toString().equals(staffRole)) {
-                List<OrderBatch> processingUpcomingBatch = orderBatchRepository.findStaffUpcomingOrderBatchById(staff.get().getId(), PageRequest.of(0,1));
-                List<OrderGroup> processingUpcomingOrderGroup = orderGroupRepositorys.findStaffUpcomingOrderGroupById(staff.get().getId(), PageRequest.of(0,1), LocalTime.now());
-                if(processingUpcomingBatch.size() > 0 || processingUpcomingOrderGroup.size() > 0) {
-                    throw new DisableStaffForbiddenException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_IS_IN_PROCESSING_ORDER.getCode()), AdditionalResponseCode.STAFF_IS_IN_PROCESSING_ORDER.toString());
-                }
-            }
-
+            UserRecord userRecord = checkIsStaffInOrderProcess(staff);
             staff.get().setStatus(EnableDisableStatus.DISABLE.ordinal());
             UserRecord.UpdateRequest updateRequest = new UserRecord.UpdateRequest(userRecord.getUid()).setDisabled(true);
             firebaseAuth.updateUser(updateRequest);
             firebaseAuth.revokeRefreshTokens(userRecord.getUid());
         }
         return staff.get();
+    }
+
+    @Override
+    public Staff updateStaffRole(StaffRoleUpdateRequestBody staffRoleUpdateRequestBody, String email) throws FirebaseAuthException {
+        Optional<Staff> staff = staffRepository.findById(staffRoleUpdateRequestBody.getId());
+
+        if(!staff.isPresent()){
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_NOT_FOUND.getCode()), AdditionalResponseCode.STAFF_NOT_FOUND.toString());
+        }
+
+        if(staff.get().getEmail().equals(email)){
+            throw new SelfRoleChangeNotAllowedException(HttpStatus.valueOf(AdditionalResponseCode.SELF_ROLE_CHANGE_NOT_ALLOWED.getCode()), AdditionalResponseCode.SELF_ROLE_CHANGE_NOT_ALLOWED.toString());
+        }
+
+        UserRecord userRecord = checkIsStaffInOrderProcess(staff);
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("user_role", staffRoleUpdateRequestBody.getRole().toString());
+        firebaseAuth.setCustomUserClaims(userRecord.getUid(), claims);
+        staff.get().setRole(staffRoleUpdateRequestBody.getRole().toString());
+
+        return staff.get();
+    }
+
+    private UserRecord checkIsStaffInOrderProcess(Optional<Staff> staff) throws FirebaseAuthException {
+        UserRecord userRecord = firebaseAuth.getUserByEmail(staff.get().getEmail());
+        String staffRole = (String) userRecord.getCustomClaims().get("user_role");
+
+        if(StaffRole.STAFF_ORD.toString().equals(staffRole)){
+            List<Order> processingOrderList = orderRepository.findStaffProcessingOrderById(staff.get().getId(), PageRequest.of(0,1), List.of(OrderStatus.PROCESSING.ordinal(), OrderStatus.DELIVERING.ordinal(), OrderStatus.PACKAGING.ordinal(), OrderStatus.PACKAGED.ordinal()));
+            if(processingOrderList.size() > 0){
+                throw new DisableStaffForbiddenException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_IS_IN_PROCESSING_ORDER.getCode()), AdditionalResponseCode.STAFF_IS_IN_PROCESSING_ORDER.toString());
+            }
+        }
+
+        if(StaffRole.STAFF_DLV_1.toString().equals(staffRole) || StaffRole.STAFF_DLV_0.toString().equals(staffRole)) {
+            List<OrderBatch> processingUpcomingBatch = orderBatchRepository.findStaffUpcomingOrderBatchById(staff.get().getId(), PageRequest.of(0,1));
+            List<OrderGroup> processingUpcomingOrderGroup = orderGroupRepositorys.findStaffUpcomingOrderGroupById(staff.get().getId(), PageRequest.of(0,1), LocalTime.now());
+            if(processingUpcomingBatch.size() > 0 || processingUpcomingOrderGroup.size() > 0) {
+                throw new DisableStaffForbiddenException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_IS_IN_PROCESSING_ORDER.getCode()), AdditionalResponseCode.STAFF_IS_IN_PROCESSING_ORDER.toString());
+            }
+        }
+
+        return userRecord;
     }
 }

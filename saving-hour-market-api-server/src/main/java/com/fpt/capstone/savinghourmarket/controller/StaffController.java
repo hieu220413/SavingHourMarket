@@ -3,10 +3,7 @@ package com.fpt.capstone.savinghourmarket.controller;
 import com.fpt.capstone.savinghourmarket.common.StaffRole;
 import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.entity.Staff;
-import com.fpt.capstone.savinghourmarket.model.AccountStatusChangeBody;
-import com.fpt.capstone.savinghourmarket.model.StaffCreateRequestBody;
-import com.fpt.capstone.savinghourmarket.model.StaffListResponseBody;
-import com.fpt.capstone.savinghourmarket.model.StaffUpdateRequestBody;
+import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.service.StaffService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
@@ -98,6 +95,15 @@ public class StaffController {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         String email = Utils.validateIdToken(idToken, firebaseAuth);
         Staff staff = staffService.updateStaffAccountStatus(accountStatusChangeBody, email);
+        return ResponseEntity.status(HttpStatus.OK).body(staff);
+    }
+
+    @RequestMapping(value = "/updateStaffRole", method = RequestMethod.PUT)
+    public ResponseEntity<Staff> updateStaffRole(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @RequestBody @Valid StaffRoleUpdateRequestBody staffRoleUpdateRequestBody) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        String email = Utils.validateIdToken(idToken, firebaseAuth);
+        Staff staff = staffService.updateStaffRole(staffRoleUpdateRequestBody, email);
         return ResponseEntity.status(HttpStatus.OK).body(staff);
     }
 

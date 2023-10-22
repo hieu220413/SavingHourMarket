@@ -131,6 +131,12 @@ const Signup = ({navigation}) => {
       Alert.alert('This email has already been registered');
       return null;
     }
+    if (registerWithEmailPasswordRequest.status === 403) {
+      const response = await registerWithEmailPasswordRequest.json();
+      if (response.message && response.message === 'EMAIL_ALREADY_EXISTS') {
+        Alert.alert('This email has already been registered');
+      }
+    }
     // Handle register success
     if (registerWithEmailPasswordRequest.status === 200) {
       const customToken = await registerWithEmailPasswordRequest.text();
