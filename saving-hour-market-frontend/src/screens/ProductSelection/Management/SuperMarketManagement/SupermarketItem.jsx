@@ -103,10 +103,10 @@ const SupermarketItem = ({
           className="arrow-down"
           icon={faArrowDown}
         />
-        {item.supermarketAddressList[0].address}
+        {item.supermarketAddressList[0]?.address}
         <ul class="dropdown-menu">
-          {item.supermarketAddressList.map((address) => (
-            <li>{address.address}</li>
+          {item.supermarketAddressList.map((addressItem) => (
+            <li>{addressItem?.address}</li>
           ))}
         </ul>
       </td>

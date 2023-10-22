@@ -1,12 +1,14 @@
 package com.fpt.capstone.savinghourmarket.repository;
 
 import com.fpt.capstone.savinghourmarket.entity.Order;
+import com.fpt.capstone.savinghourmarket.entity.TimeFrame;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,6 +37,18 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
                                   Boolean isGrouped,
                                   Boolean isPaid,
                                   Pageable pageable);
+
+    @Query("SELECT o FROM Order o " +
+            "WHERE " +
+            "(o.status = 2) " +
+            "AND " +
+            "(o.orderGroup IS NULL) " +
+            "AND " +
+            "(o.timeFrame = :timeFrame) " +
+            "AND " +
+            "(o.deliveryDate = :deliveryDate) "
+    )
+    List<Order> findOrderWithoutGroups(TimeFrame timeFrame, Date deliveryDate);
 
     @Query("SELECT o FROM Order o " +
             "WHERE " +

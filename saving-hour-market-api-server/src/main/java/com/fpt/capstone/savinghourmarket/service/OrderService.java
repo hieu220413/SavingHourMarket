@@ -14,6 +14,7 @@ import com.google.firebase.auth.FirebaseAuthException;
 import com.google.maps.errors.ApiException;
 
 import java.io.IOException;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -50,7 +51,7 @@ public interface OrderService {
 
     String deleteOrder(String jwtToken, UUID id) throws FirebaseAuthException, ResourceNotFoundException, OrderDeletionNotAllowedException;
 
-    List<OrderBatch> batchingForStaff(LocalDate deliverDate, UUID timeFrameId, Integer batchQuantity);
+    List<OrderBatch> batchingForStaff(Date deliverDate, UUID timeFrameId, Integer batchQuantity) throws ResourceNotFoundException;
     
     ShippingFeeDetailResponseBody getShippingFeeDetail(Double latitude, Double longitude) throws IOException, InterruptedException, ApiException;
 }
