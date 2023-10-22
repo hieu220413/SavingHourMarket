@@ -360,6 +360,31 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public List<SupermarketSaleReportResponseBody> getAllSupermarketSaleReport(Integer year) {
+        LocalDate currentDate = LocalDate.now();
+        if (year == null) {
+            year = currentDate.getYear();
+        }
+        List<Supermarket> rawSupermarketList = supermarketRepository.findAll();
+        List<SupermarketSaleReportResponseBody> allSupermarketSaleReportResponseBodyList = new ArrayList<>();
+        allSupermarketSaleReportResponseBodyList.addAll(rawSupermarketList.stream().map(SupermarketSaleReportResponseBody::new).collect(Collectors.toList()));
+
+        List<SupermarketSaleReportResponseBody> result = productRepository.getSupermarketsSaleReport(year);
+        HashMap<UUID,SupermarketSaleReportResponseBody> resultHashmap = new HashMap<>();
+        result.stream().forEach(supermarketSaleReportResponseBody -> {
+            resultHashmap.put(supermarketSaleReportResponseBody.getId(), supermarketSaleReportResponseBody);
+        });
+        for (SupermarketSaleReportResponseBody saleReportResponseBody : allSupermarketSaleReportResponseBodyList) {
+            if(resultHashmap.containsKey(saleReportResponseBody.getId())){
+                saleReportResponseBody.setTotalSale(resultHashmap.get(saleReportResponseBody.getId()).getTotalSale());
+                saleReportResponseBody.setTotalIncome(resultHashmap.get(saleReportResponseBody.getId()).getTotalIncome());
+            }
+        }
+
+        return allSupermarketSaleReportResponseBodyList;
+    }
+
+    @Override
     public Product updateProduct(Product product) throws ResourceNotFoundException {
         HashMap<String, String> errorFields = new HashMap<>();
 

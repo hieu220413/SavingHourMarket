@@ -1,9 +1,6 @@
 package com.fpt.capstone.savinghourmarket.exception.handler;
 
-import com.fpt.capstone.savinghourmarket.exception.DisableCustomerForbiddenException;
-import com.fpt.capstone.savinghourmarket.exception.DisableStaffForbiddenException;
-import com.fpt.capstone.savinghourmarket.exception.SelfStatusChangeNotAllowedException;
-import com.fpt.capstone.savinghourmarket.exception.StaffAccessForbiddenException;
+import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.ApiError;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -20,7 +17,13 @@ public class StaffExceptionHandler {
     }
 
     @ExceptionHandler(SelfStatusChangeNotAllowedException.class)
-    public ResponseEntity<ApiError> selfStatusChangeNotAllowedException(SelfStatusChangeNotAllowedException e) {
+    public ResponseEntity<ApiError> handleSelfStatusChangeNotAllowedException(SelfStatusChangeNotAllowedException e) {
+        ApiError apiError = new ApiError(LocalDateTime.now().toString(), e.getStatusCode().value(), e.getReason());
+        return ResponseEntity.status(e.getStatusCode().value()).body(apiError);
+    }
+
+    @ExceptionHandler(SelfRoleChangeNotAllowedException.class)
+    public ResponseEntity<ApiError> handleSelfRoleChangeNotAllowedException(SelfRoleChangeNotAllowedException e) {
         ApiError apiError = new ApiError(LocalDateTime.now().toString(), e.getStatusCode().value(), e.getReason());
         return ResponseEntity.status(e.getStatusCode().value()).body(apiError);
     }

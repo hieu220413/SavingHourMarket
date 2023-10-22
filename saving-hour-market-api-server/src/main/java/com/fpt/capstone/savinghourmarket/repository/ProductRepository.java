@@ -1,6 +1,7 @@
 package com.fpt.capstone.savinghourmarket.repository;
 
 import com.fpt.capstone.savinghourmarket.entity.Product;
+import com.fpt.capstone.savinghourmarket.model.SupermarketSaleReportResponseBody;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -133,6 +134,16 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "ord.status = 4 " +
             "GROUP BY EXTRACT(YEAR FROM ord.createdTime) ")
     List<Object[]> getRevenueReportYearly(Integer appBuildYear, Integer currentYear);
+
+
+    @Query("SELECT NEW com.fpt.capstone.savinghourmarket.model.SupermarketSaleReportResponseBody(sp.id, SUM(dt.boughtQuantity), SUM(dt.boughtQuantity*dt.productPrice)) FROM Order ord " +
+            "JOIN ord.orderDetailList dt " +
+            "JOIN dt.product pd " +
+            "JOIN pd.supermarket sp " +
+            "WHERE EXTRACT(YEAR FROM ord.createdTime) = :year " +
+            "AND ord.status = 4" +
+            "GROUP BY sp.id")
+    List<SupermarketSaleReportResponseBody> getSupermarketsSaleReport(Integer year);
 
 
 //    @Query(value = "SELECT * FROM product p " +
