@@ -15,6 +15,7 @@ import EditSuperMarket from "./EditSuperMarket";
 import SupermarketItem from "./SupermarketItem";
 import MuiAlert from "@mui/material/Alert";
 import { Snackbar } from "@mui/material";
+import { onAuthStateChanged } from "firebase/auth";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -46,25 +47,29 @@ const SuperMarketManagement = () => {
 
   useEffect(() => {
     const fetchSupermarket = async () => {
-      const tokenId = await auth.currentUser.getIdToken();
-      fetch(
-        `${API.baseURL}/api/supermarket/getSupermarketForStaff?page=${
-          page - 1
-        }&limit=6&name=${searchValue}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${tokenId}`,
-          },
+      onAuthStateChanged(auth, async (userAuth) => {
+        if (userAuth) {
+          const tokenId = await auth.currentUser.getIdToken();
+          fetch(
+            `${API.baseURL}/api/supermarket/getSupermarketForStaff?page=${
+              page - 1
+            }&limit=6&name=${searchValue}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${tokenId}`,
+              },
+            }
+          )
+            .then((res) => res.json())
+            .then((respond) => {
+              setSuperMarketList(respond.supermarketList);
+              setTotalPage(respond.totalPage);
+            })
+            .catch((err) => console.log(err));
         }
-      )
-        .then((res) => res.json())
-        .then((respond) => {
-          setSuperMarketList(respond.supermarketList);
-          setTotalPage(respond.totalPage);
-        })
-        .catch((err) => console.log(err));
+      });
     };
     fetchSupermarket();
   }, [page, searchValue]);

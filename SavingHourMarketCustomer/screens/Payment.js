@@ -1756,8 +1756,8 @@ const Payment = ({navigation, route}) => {
                     .then(async () => {
                       await AsyncStorage.removeItem('userInfo');
                       await AsyncStorage.removeItem('CartList');
-                      navigation.navigate('Login');
                       setOpenAuthModal(false);
+                      navigation.navigate('Login');
                     })
                     .catch(e => console.log(e));
                 } catch (error) {
