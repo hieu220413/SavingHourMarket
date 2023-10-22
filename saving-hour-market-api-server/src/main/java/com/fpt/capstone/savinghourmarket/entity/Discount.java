@@ -72,6 +72,7 @@ public class Discount {
             name = "product_category_id",
             referencedColumnName = "id"
     )
+    @JsonIgnore
     private ProductCategory productCategory;
 
 //    @ManyToMany(
@@ -89,5 +90,6 @@ public class Discount {
             name = "product_sub_category_id",
             referencedColumnName = "id"
     )
+    @JsonIgnore
     private ProductSubCategory productSubCategory;
 }

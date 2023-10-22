@@ -23,6 +23,12 @@ public class FirebaseExceptionHandler {
         if(e.getAuthErrorCode() == AuthErrorCode.EMAIL_ALREADY_EXISTS) {
             return ResponseEntity.status(HttpStatus.valueOf(AdditionalResponseCode.EMAIL_ALREADY_EXISTS.getCode())).body(new ApiError(LocalDateTime.now().toString(), AdditionalResponseCode.EMAIL_ALREADY_EXISTS.getCode(), AdditionalResponseCode.EMAIL_ALREADY_EXISTS.toString()));
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiError(LocalDateTime.now().toString(), HttpStatus.UNAUTHORIZED.value(), e.getAuthErrorCode().toString()));
+        if(e.getAuthErrorCode() == AuthErrorCode.USER_NOT_FOUND) {
+            return ResponseEntity.status(HttpStatus.valueOf(AdditionalResponseCode.CUSTOMER_NOT_FOUND.getCode())).body(new ApiError(LocalDateTime.now().toString(), AdditionalResponseCode.CUSTOMER_NOT_FOUND.getCode(), e.getAuthErrorCode().toString()));
+        }
+        if(e.getAuthErrorCode() == AuthErrorCode.USER_DISABLED) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiError(LocalDateTime.now().toString(), HttpStatus.FORBIDDEN.value(), e.getAuthErrorCode().toString()));
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiError(LocalDateTime.now().toString(), HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getAuthErrorCode().toString()));
     }
 }

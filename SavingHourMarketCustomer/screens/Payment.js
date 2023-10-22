@@ -1799,6 +1799,7 @@ const Payment = ({navigation, route}) => {
           <ModalFooter>
             <ModalButton
               text="Tôi đã hiểu"
+              textStyle={{color: COLORS.primary}}
               onPress={() => {
                 setHelpModal(false);
               }}
