@@ -89,12 +89,10 @@ const Orders = ({navigation}) => {
     }, []),
   );
 
-  console.log(orderList);
   useFocusEffect(
     useCallback(() => {
       const fetchData = async () => {
         const tokenId = await auth().currentUser.getIdToken();
-
         if (tokenId) {
           if (currentStatus.display !== 'Đóng gói') {
             setLoading(true);
@@ -110,10 +108,12 @@ const Orders = ({navigation}) => {
             )
               .then(res => res.json())
               .then(respond => {
+                console.log(respond);
                 if (respond.error) {
                   setLoading(false);
                   return;
                 }
+
                 setOrderList(respond);
                 setLoading(false);
               })
@@ -136,7 +136,6 @@ const Orders = ({navigation}) => {
             )
               .then(res => res.json())
               .then(respond => {
-                console.log(respond);
                 if (respond.error) {
                   setLoading(false);
                   return;

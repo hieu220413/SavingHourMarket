@@ -107,3 +107,13 @@
   background-color: var(--primary);
   color: white;
 }
+
+.disabled {
+  background-color: #cccccc;
+  color: #666666;
+
+  &:hover {
+    background-color: #cccccc;
+    color: #666666;
+  }
+}

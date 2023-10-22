@@ -1,0 +1,19 @@
+.modal__container-body-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  .template-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+
+    a {
+      font-size: 12px;
+    }
+  }
+  .list-error {
+    margin-top: 10px;
+  }
+}

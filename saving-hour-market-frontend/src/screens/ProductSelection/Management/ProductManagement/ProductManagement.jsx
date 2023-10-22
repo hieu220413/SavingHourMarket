@@ -4,34 +4,79 @@ import "./ProductManagement.scss";
 import CreateProduct from "./CreateProduct";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass, faPlus } from "@fortawesome/free-solid-svg-icons";
-import { Dialog } from "@mui/material";
+import { Dialog, Menu, MenuItem } from "@mui/material";
 import dayjs from "dayjs";
 import { auth } from "../../../../firebase/firebase.config";
 import { API } from "../../../../contanst/api";
+import CreateProductByExcel from "./CreateProductByExcel";
+import { onAuthStateChanged } from "firebase/auth";
+import ConfirmProductUploadByExcel from "./ConfirmProductUploadByExcel";
+import MuiAlert from "@mui/material/Alert";
+import { Snackbar } from "@mui/material";
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 const ProductManagement = () => {
   const [products, setProducts] = useState([]);
   const [open, setOpen] = useState(false);
+  const [confirmProductList, setConfirmProductList] = useState([]);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
+  const [openCreateByExcel, setOpenCreateByExcel] = useState(false);
+  const handleOpenCreateByExcel = () => setOpenCreateByExcel(true);
+  const handleCloseCreateByExcel = () => setOpenCreateByExcel(false);
+
+  const [openConfirmCreate, setOpenConfirmCreate] = useState(false);
+  const handleOpenConfirmCreate = () => setOpenConfirmCreate(true);
+  const handleCloseConfirmCreate = () => setOpenConfirmCreate(false);
+
+  const [openSnackbar, setOpenSnackbar] = useState({
+    open: false,
+    vertical: "top",
+    horizontal: "right",
+    severity: "success",
+  });
+  const { vertical, horizontal } = openSnackbar;
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar({ ...openSnackbar, open: false });
+  };
+
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const openDropdown = Boolean(anchorEl);
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleCloseDropdown = () => {
+    setAnchorEl(null);
+  };
+
   useEffect(() => {
     const fetchProduct = async () => {
-      const tokenId = await auth.currentUser.getIdToken();
-      fetch(`${API.baseURL}/api/product/getProductsForStaff?page=0&limit=5`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${tokenId}`,
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          setProducts(data.productList);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+      onAuthStateChanged(auth, async (userAuth) => {
+        if (userAuth) {
+          const tokenId = await auth.currentUser.getIdToken();
+          fetch(
+            `${API.baseURL}/api/product/getProductsForStaff?page=0&limit=5`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${tokenId}`,
+              },
+            }
+          )
+            .then((res) => res.json())
+            .then((data) => {
+              setProducts(data.productList);
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        }
+      });
     };
     fetchProduct();
   }, []);
@@ -89,10 +134,39 @@ const ProductManagement = () => {
           </div>
           {/* ****************** */}
 
-          <div onClick={handleOpen} className="supermarket__header-button">
+          <div onClick={handleClick} className="supermarket__header-button">
             <FontAwesomeIcon icon={faPlus} />
             Thêm sản phẩm
           </div>
+          <Menu
+            style={{ top: "5px" }}
+            id="basic-menu"
+            anchorEl={anchorEl}
+            open={openDropdown}
+            onClose={handleCloseDropdown}
+            MenuListProps={{
+              "aria-labelledby": "basic-button",
+            }}
+          >
+            <MenuItem
+              style={{ fontSize: "14px" }}
+              onClick={() => {
+                handleOpen();
+                handleCloseDropdown();
+              }}
+            >
+              Thêm thủ công
+            </MenuItem>
+            <MenuItem
+              style={{ fontSize: "14px" }}
+              onClick={() => {
+                handleOpenCreateByExcel();
+                handleCloseDropdown();
+              }}
+            >
+              Thêm bằng file excel
+            </MenuItem>
+          </Menu>
         </div>
 
         {/* data table + pagination*/}
@@ -197,6 +271,47 @@ const ProductManagement = () => {
       >
         <CreateProduct />
       </Dialog>
+      <Dialog
+        onClose={handleCloseCreateByExcel}
+        aria-labelledby="customized-dialog-title"
+        open={openCreateByExcel}
+      >
+        <CreateProductByExcel
+          handleOpenConfirmCreate={handleOpenConfirmCreate}
+          setConfirmProductList={setConfirmProductList}
+          handleClose={handleCloseCreateByExcel}
+        />
+      </Dialog>
+      <Dialog
+        aria-labelledby="customized-dialog-title"
+        open={openConfirmCreate}
+      >
+        <ConfirmProductUploadByExcel
+          confirmProductList={confirmProductList}
+          setConfirmProductList={setConfirmProductList}
+          handleClose={handleCloseConfirmCreate}
+          setOpenSuccessSnackbar={setOpenSnackbar}
+          openSuccessSnackbar={openSnackbar}
+        />
+      </Dialog>
+      <Snackbar
+        open={openSnackbar.open}
+        autoHideDuration={1000}
+        anchorOrigin={{ vertical, horizontal }}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={openSnackbar.severity}
+          sx={{
+            width: "100%",
+            fontSize: "15px",
+            alignItem: "center",
+          }}
+        >
+          Thêm mới thành công
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
