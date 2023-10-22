@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -33,7 +34,7 @@ public class ProductCreate {
     private String description;
 
     @NotNull
-    private LocalDateTime expiredDate;
+    private LocalDate expiredDate;
 
     @NotNull
     private Integer quantity;
