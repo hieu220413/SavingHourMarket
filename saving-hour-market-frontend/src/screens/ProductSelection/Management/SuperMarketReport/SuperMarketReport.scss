@@ -1,0 +1,78 @@
+.supermarketReport__container {
+  margin-top: 10px;
+  //   background-color: white;
+  .barchart {
+    height: 460px;
+    width: 98%;
+    background-color: white;
+    border-radius: 30px;
+    padding-top: 20px;
+    .title {
+      margin-bottom: 10px;
+      .title_text {
+        font-weight: 600;
+        font-size: 18px;
+        margin-left: 90px;
+        color: rgb(73, 148, 94);
+      }
+    }
+    .donvi {
+      padding-left: 60px;
+      position: relative;
+      top: -26px;
+      .text_donvi {
+        font-size: 12px;
+        font-weight: 500;
+        color: rgb(73, 148, 94);
+      }
+    }
+  }
+  .chart_container {
+    display: flex;
+    border-radius: 30px;
+    flex-direction: row;
+    justify-content: space-between;
+    padding-top: 10px;
+    height: 370px;
+    width: 98%;
+    margin-top: 25px;
+    background-color: rgb(238, 236, 236);
+    .row1 {
+      width: 75%;
+      .title {
+        margin-bottom: 10px;
+        .title_text {
+          font-weight: 600;
+          font-size: 18px;
+          margin-left: 90px;
+          color: rgb(73, 148, 94);
+        }
+      }
+      .linechart {
+        border-radius: 30px;
+        height: 310px;
+        box-shadow: 10px 10px 5px rgb(209, 224, 229);
+        margin-left: 15px;
+        background-color: white;
+        padding-top: 20px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+      }
+    }
+    .row2 {
+      width: 23.5%;
+      .supermarket_picker{
+        margin-left: 80px;
+      }
+      .radarchart {
+        height: 310px;
+        background-color: white;
+        border-radius: 30px;
+        box-shadow: 10px 10px 5px rgb(209, 224, 229);
+        margin-top: 10px;
+        margin-right: 15px;
+      }
+    }
+  }
+}

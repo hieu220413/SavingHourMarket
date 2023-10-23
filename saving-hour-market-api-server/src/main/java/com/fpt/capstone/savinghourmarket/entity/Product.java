@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -42,7 +43,7 @@ public class Product {
     private String description;
 
     @Column(columnDefinition = "datetime(0)")
-    private LocalDateTime expiredDate;
+    private LocalDate expiredDate;
 
     private Integer quantity;
 
@@ -59,9 +60,7 @@ public class Product {
     )
     private ProductSubCategory productSubCategory;
 
-    @ManyToOne(
-            cascade = CascadeType.ALL
-    )
+    @ManyToOne()
     @JoinColumn(
             name = "supermarket_id",
             referencedColumnName = "id"

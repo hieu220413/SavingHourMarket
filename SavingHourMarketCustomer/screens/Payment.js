@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import {ScrollView, TextInput} from 'react-native-gesture-handler';
 import {icons} from '../constants';
-import {COLORS} from '../constants/theme';
+import {COLORS, FONTS} from '../constants/theme';
 import CheckBox from 'react-native-check-box';
 import DatePicker from 'react-native-date-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -82,9 +82,10 @@ const Payment = ({navigation, route}) => {
   const [shippingFee, setShippingFee] = useState(0);
 
   const [customerLocation, setCustomerLocation] = useState({
-    address: 'Số 121, Trần Văn Dư, Phường 13, Tân Bình,TP.HCM',
-    long: 106.644295,
-    lat: 10.8022319,
+    address:
+      'Đại học FPT Thành phố Hồ Chí Minh, Lô E2A-7, Khu Công nghệ Cao, Đường D1, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh',
+    long: 106.80963049400003,
+    lat: 10.841264169000063,
   });
 
   const [keyboard, setKeyboard] = useState(Boolean);
@@ -1209,15 +1210,6 @@ const Payment = ({navigation, route}) => {
                         </View>
                       </View>
                     </View>
-
-                    <Image
-                      resizeMode="contain"
-                      style={{
-                        width: 25,
-                        height: 25,
-                      }}
-                      source={icons.rightArrow}
-                    />
                   </View>
                 </TouchableOpacity>
 
@@ -1618,6 +1610,22 @@ const Payment = ({navigation, route}) => {
                 </Text>
               </View>
             </View>
+            <View
+              style={{
+                marginTop: 20,
+                backgroundColor: 'white',
+                padding: 20,
+              }}>
+              <Text
+                style={{
+                  fontSize: 17,
+                  fontFamily: FONTS.fontFamily,
+                  color: 'black',
+                }}>
+                Nhấn "Đặt hàng" đồng nghĩa với việc bạn đồng ý tuân theo{' '}
+                <Text style={{color: 'blue'}}>Điều khoản của chúng tôi</Text>
+              </Text>
+            </View>
           </View>
         </ScrollView>
       </View>
@@ -1741,13 +1749,13 @@ const Payment = ({navigation, route}) => {
           <ModalFooter>
             <ModalButton
               text="Ở lại trang"
-              textStyle={{color: 'red'}}
               onPress={() => {
                 setOpenAuthModal(false);
               }}
             />
             <ModalButton
               text="Đăng nhập"
+              textStyle={{color: COLORS.primary}}
               onPress={async () => {
                 try {
                   await GoogleSignin.signOut();
@@ -1756,8 +1764,8 @@ const Payment = ({navigation, route}) => {
                     .then(async () => {
                       await AsyncStorage.removeItem('userInfo');
                       await AsyncStorage.removeItem('CartList');
-                      navigation.navigate('Login');
                       setOpenAuthModal(false);
+                      navigation.navigate('Login');
                     })
                     .catch(e => console.log(e));
                 } catch (error) {
@@ -1799,6 +1807,7 @@ const Payment = ({navigation, route}) => {
           <ModalFooter>
             <ModalButton
               text="Tôi đã hiểu"
+              textStyle={{color: COLORS.primary}}
               onPress={() => {
                 setHelpModal(false);
               }}

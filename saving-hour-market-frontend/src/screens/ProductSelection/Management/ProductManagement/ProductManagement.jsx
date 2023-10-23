@@ -9,10 +9,13 @@ import {
   faPlus,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
-import { Dialog } from "@mui/material";
 import dayjs from "dayjs";
 import { auth } from "../../../../firebase/firebase.config";
 import { API } from "../../../../contanst/api";
+import { Dialog, Menu, MenuItem } from "@mui/material";
+import CreateProductByExcel from "./CreateProductByExcel";
+import { onAuthStateChanged } from "firebase/auth";
+import ConfirmProductUploadByExcel from "./ConfirmProductUploadByExcel";
 import MuiAlert from "@mui/material/Alert";
 import { Snackbar } from "@mui/material";
 
@@ -28,7 +31,7 @@ const ProductManagement = () => {
   const [textPage, setTextPage] = useState(1);
   const [textSearch, setTextSearch] = useState("");
   const [searchValue, setSearchValue] = useState("");
-  const [msg, setMsg] = useState("");
+  const [msg, setMsg] = useState("TThêm mới thành công");
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -42,41 +45,60 @@ const ProductManagement = () => {
   const handleOpenEdit = () => setOpenEdit(true);
   const handleCloseEdit = () => setOpenEdit(false);
   const [productToEdit, setProductToEdit] = useState(null);
+  const [confirmProductList, setConfirmProductList] = useState([]);
+
+  const [openCreateByExcel, setOpenCreateByExcel] = useState(false);
+  const handleOpenCreateByExcel = () => setOpenCreateByExcel(true);
+  const handleCloseCreateByExcel = () => setOpenCreateByExcel(false);
+
+  const [openConfirmCreate, setOpenConfirmCreate] = useState(false);
+  const handleOpenConfirmCreate = () => setOpenConfirmCreate(true);
+  const handleCloseConfirmCreate = () => setOpenConfirmCreate(false);
 
   const [openSnackbar, setOpenSnackbar] = useState({
     open: false,
     vertical: "top",
     horizontal: "right",
-    severity: "error",
+    severity: "success",
   });
   const { vertical, horizontal } = openSnackbar;
   const handleCloseSnackbar = () => {
     setOpenSnackbar({ ...openSnackbar, open: false });
   };
 
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const openDropdown = Boolean(anchorEl);
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleCloseDropdown = () => {
+    setAnchorEl(null);
+  };
+
   useEffect(() => {
     const fetchProduct = async () => {
-      const tokenId = await auth.currentUser.getIdToken();
-      fetch(
-        `${API.baseURL}/api/product/getProductsForStaff?page=${
-          page - 1
-        }&limit=5&name=${searchValue}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${tokenId}`,
-          },
+      onAuthStateChanged(auth, async (userAuth) => {
+        if (userAuth) {
+          const tokenId = await auth.currentUser.getIdToken();
+          fetch(
+            `${API.baseURL}/api/product/getProductsForStaff?page=0&limit=5`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${tokenId}`,
+              },
+            }
+          )
+            .then((res) => res.json())
+            .then((data) => {
+              setProducts(data.productList);
+            })
+            .catch((err) => {
+              console.log(err);
+            });
         }
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          setProducts(data.productList);
-          setTotalPage(data.totalPage);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+      });
     };
     fetchProduct();
   }, [page, searchValue]);
@@ -217,10 +239,39 @@ const ProductManagement = () => {
           </div>
           {/* ****************** */}
 
-          <div onClick={handleOpen} className="supermarket__header-button">
+          <div onClick={handleClick} className="supermarket__header-button">
             <FontAwesomeIcon icon={faPlus} />
             Thêm sản phẩm
           </div>
+          <Menu
+            style={{ top: "5px" }}
+            id="basic-menu"
+            anchorEl={anchorEl}
+            open={openDropdown}
+            onClose={handleCloseDropdown}
+            MenuListProps={{
+              "aria-labelledby": "basic-button",
+            }}
+          >
+            <MenuItem
+              style={{ fontSize: "14px" }}
+              onClick={() => {
+                handleOpen();
+                handleCloseDropdown();
+              }}
+            >
+              Thêm thủ công
+            </MenuItem>
+            <MenuItem
+              style={{ fontSize: "14px" }}
+              onClick={() => {
+                handleOpenCreateByExcel();
+                handleCloseDropdown();
+              }}
+            >
+              Thêm bằng file excel
+            </MenuItem>
+          </Menu>
         </div>
 
         {/* data table + pagination*/}
@@ -416,7 +467,29 @@ const ProductManagement = () => {
           </div>
         </div>
       </Dialog>
-
+      <Dialog
+        onClose={handleCloseCreateByExcel}
+        aria-labelledby="customized-dialog-title"
+        open={openCreateByExcel}
+      >
+        <CreateProductByExcel
+          handleOpenConfirmCreate={handleOpenConfirmCreate}
+          setConfirmProductList={setConfirmProductList}
+          handleClose={handleCloseCreateByExcel}
+        />
+      </Dialog>
+      <Dialog
+        aria-labelledby="customized-dialog-title"
+        open={openConfirmCreate}
+      >
+        <ConfirmProductUploadByExcel
+          confirmProductList={confirmProductList}
+          setConfirmProductList={setConfirmProductList}
+          handleClose={handleCloseConfirmCreate}
+          setOpenSuccessSnackbar={setOpenSnackbar}
+          openSuccessSnackbar={openSnackbar}
+        />
+      </Dialog>
       <Snackbar
         open={openSnackbar.open}
         autoHideDuration={1000}

@@ -526,6 +526,7 @@ const Home = ({ navigation }) => {
             />
             <ModalButton
               text="Đăng nhập"
+              textStyle={{ color: COLORS.primary }}
               onPress={async () => {
                 try {
                   await AsyncStorage.removeItem('userInfo');

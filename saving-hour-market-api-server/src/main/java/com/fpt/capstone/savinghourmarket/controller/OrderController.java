@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.io.IOException;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -63,7 +64,8 @@ public class OrderController {
     }
 
     @GetMapping("/getOrdersForStaff")
-    public ResponseEntity<List<Order>> getOrdersForStaff(@RequestParam(required = false) SortType totalPriceSortType,
+    public ResponseEntity<List<Order>> getOrdersForStaff(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
+                                                         @RequestParam(required = false) SortType totalPriceSortType,
                                                          @RequestParam(required = false) SortType createdTimeSortType,
                                                          @RequestParam(required = false) SortType deliveryDateSortType,
                                                          @RequestParam(required = false) OrderStatus orderStatus,
@@ -72,6 +74,8 @@ public class OrderController {
                                                          @RequestParam(required = false) Boolean isGrouped,
                                                          @RequestParam(defaultValue = "0") Integer page,
                                                          @RequestParam(defaultValue = "10") Integer size) throws ResourceNotFoundException, NoSuchOrderException, FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrdersForStaff(
                 totalPriceSortType == null ? null : totalPriceSortType.name(),
                 createdTimeSortType == null ? null : createdTimeSortType.name(),
@@ -86,15 +90,22 @@ public class OrderController {
     }
 
     @GetMapping("/getOrderGroupForStaff")
-    public ResponseEntity<List<OrderGroup>> getOrderGroupForStaff(@RequestParam(required = false) LocalDate deliverDate,
+    public ResponseEntity<List<OrderGroup>> getOrderGroupForStaff(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
+                                                                  @RequestParam(required = false) LocalDate deliverDate,
                                                                   @RequestParam(required = false) UUID timeFrameId,
                                                                   @RequestParam(required = false) UUID pickupPointId,
                                                                   @RequestParam(required = false) UUID delivererId) throws NoSuchOrderException, FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderGroups(deliverDate, timeFrameId, pickupPointId, delivererId));
     }
 
     @GetMapping("/getOrderBatchForStaff")
-    public ResponseEntity<List<OrderBatch>> getOrderBatchForStaff(@RequestParam(required = false) District district, @RequestParam(required = false) LocalDate deliveryDate) throws NoSuchOrderException, FirebaseAuthException {
+    public ResponseEntity<List<OrderBatch>> getOrderBatchForStaff(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
+                                                                  @RequestParam(required = false) District district,
+                                                                  @RequestParam(required = false) LocalDate deliveryDate) throws NoSuchOrderException, FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderBatches(district, deliveryDate));
     }
 
@@ -120,14 +131,20 @@ public class OrderController {
     }
 
     @PutMapping("/assignPackageStaff")
-    public ResponseEntity<String> assignStaff(@RequestParam UUID orderId, @RequestParam UUID staffId) throws NoSuchOrderException, IOException {
+    public ResponseEntity<String> assignStaff(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
+                                              @RequestParam UUID orderId, @RequestParam UUID staffId) throws NoSuchOrderException, IOException, FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(orderService.assignPackager(orderId, staffId));
     }
 
     @PutMapping("/assignDeliveryStaff")
-    public ResponseEntity<String> assignDeliveryStaffToGroupOrBatch(@RequestParam(required = false) UUID orderGroupId,
+    public ResponseEntity<String> assignDeliveryStaffToGroupOrBatch(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
+                                                                    @RequestParam(required = false) UUID orderGroupId,
                                                                     @RequestParam(required = false) UUID orderBatchId,
-                                                                    @RequestParam UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException, IOException {
+                                                                    @RequestParam UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException, IOException, FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(orderService.assignDeliverToOrderGroupOrBatch(orderGroupId, orderBatchId, staffId));
     }
 
@@ -150,7 +167,7 @@ public class OrderController {
     }
 
     @GetMapping("/batchingForStaff")
-    public ResponseEntity<List<OrderBatch>> batchingForStaff(@RequestParam LocalDate deliverDate, @RequestParam UUID timeFrameId, @RequestParam Integer batchQuantity) {
+    public ResponseEntity<List<OrderBatch>> batchingForStaff(@RequestParam Date deliverDate, @RequestParam UUID timeFrameId, @RequestParam Integer batchQuantity) throws ResourceNotFoundException {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.batchingForStaff(deliverDate, timeFrameId, batchQuantity));
     }
 

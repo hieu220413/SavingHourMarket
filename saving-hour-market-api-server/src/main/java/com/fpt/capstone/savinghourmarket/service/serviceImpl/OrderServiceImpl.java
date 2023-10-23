@@ -25,6 +25,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.glxn.qrgen.QRCode;
 import net.glxn.qrgen.image.ImageType;
+import org.apache.commons.math3.exception.DimensionMismatchException;
+import org.apache.commons.math3.ml.clustering.Cluster;
+import org.apache.commons.math3.ml.clustering.DBSCANClusterer;
+import org.apache.commons.math3.ml.distance.DistanceMeasure;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,9 +105,6 @@ public class OrderServiceImpl implements OrderService {
     @Value("${goong-distance-matrix-url}")
     private String goongDistanceMatrixUrl;
 
-
-
-
     @Override
     public List<OrderGroup> fetchOrderGroups(LocalDate deliverDate, UUID timeFrameId, UUID pickupPointId, UUID delivererId) throws NoSuchOrderException, FirebaseAuthException {
         List<OrderGroup> orderGroups = orderGroupRepository.findByTimeFrameOrPickupPointOrDeliverDate(timeFrameId, pickupPointId, delivererId, deliverDate);
@@ -144,7 +145,7 @@ public class OrderServiceImpl implements OrderService {
         if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_ORD.toString())) {
             order.setPackager(staff);
             order.setStatus(OrderStatus.PACKAGING.ordinal());
-            FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getEmail());
+            FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
         } else {
             return "Nhân viên này không phải là nhân Viên ĐÓNG GÓI!";
         }
@@ -161,7 +162,7 @@ public class OrderServiceImpl implements OrderService {
                 orderGroup.setDeliverer(staff);
                 for (Order order : orderGroup.getOrderList()) {
                     order.setStatus(OrderStatus.DELIVERING.ordinal());
-                    FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getEmail());
+                    FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getId().toString());
                 }
             } else if (orderGroupId == null && orderBatchId != null) {
                 OrderBatch orderBatch = orderBatchRepository.findById(orderBatchId)
@@ -272,6 +273,19 @@ public class OrderServiceImpl implements OrderService {
         }
         Order order = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
+
+        if(order.getOrderGroup() != null){
+            OrderGroup orderGroup = order.getOrderGroup();
+            orderGroup.getOrderList().remove(order);
+            orderGroupRepository.save(orderGroup);
+        }
+
+        if(order.getOrderBatch() != null){
+            OrderBatch orderBatch = order.getOrderBatch();
+            orderBatch.getOrderList().remove(order);
+            orderBatchRepository.save(orderBatch);
+        }
+
         if (order.getStatus() == OrderStatus.PROCESSING.ordinal()) {
             order.setStatus(OrderStatus.CANCEL.ordinal());
             List<OrderDetail> orderDetails = order.getOrderDetailList();
@@ -298,6 +312,19 @@ public class OrderServiceImpl implements OrderService {
         }
         Order order = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
+
+        if(order.getOrderGroup() != null){
+            OrderGroup orderGroup = order.getOrderGroup();
+            orderGroup.getOrderList().remove(order);
+            orderGroupRepository.save(orderGroup);
+        }
+
+        if(order.getOrderBatch() != null){
+            OrderBatch orderBatch = order.getOrderBatch();
+            orderBatch.getOrderList().remove(order);
+            orderBatchRepository.save(orderBatch);
+        }
+
         if (order.getStatus() == OrderStatus.PROCESSING.ordinal()) {
             List<OrderDetail> orderDetails = order.getOrderDetailList();
             increaseProductQuantity(orderDetails);
@@ -313,61 +340,41 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderBatch> batchingForStaff(LocalDate deliverDate, UUID timeFrameId, Integer batchQuantity) {
+    public List<OrderBatch> batchingForStaff(Date deliverDate, UUID timeFrameId, Integer batchQuantity) throws ResourceNotFoundException {
+//        TimeFrame timeFrame = timeFrameRepository.findById(timeFrameId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy time-frame với id: " + timeFrameId));
 //
+//        List<Order> ordersWithoutGroups = repository.findOrderWithoutGroups(timeFrame, deliverDate);
 //
-//        private static final int MIN_POINTS = 5; // Minimum number of points for a cluster
-//
+//        int MIN_POINTS = batchQuantity; // Minimum number of points for a cluster
 //
 //        // Define the epsilon (ε) value in degrees for a 10 km radius
 //        double epsilonInDegrees = 0.0897;
 //
 //        // Create a DBSCAN clusterer with the specified epsilon and distance measure
-//        DBSCANClusterer<DataPoint> clusterer = new DBSCANClusterer<>(epsilonInDegrees, MIN_POINTS, new DistanceMeasure() {
+//        DBSCANClusterer<Order> clusterer = new DBSCANClusterer<>(epsilonInDegrees, MIN_POINTS, new DistanceMeasure() {
 //            @Override
-//            public double compute(double[] a, double[] b) {
-//                // Implement the Haversine distance calculation
-//                double lat1 = a[0];
-//                double lon1 = a[1];
-//                double lat2 = b[0];
-//                double lon2 = b[1];
-//
-//                // Convert latitude and longitude from degrees to radians
-//                lat1 = Math.toRadians(lat1);
-//                lon1 = Math.toRadians(lon1);
-//                lat2 = Math.toRadians(lat2);
-//                lon2 = Math.toRadians(lon2);
-//
-//                // Haversine formula
-//                double dLat = lat2 - lat1;
-//                double dLon = lon2 - lon1;
-//
-//                double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-//                        Math.cos(lat1) * Math.cos(lat2) *
-//                                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-//
-//                double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-//
-//                // Radius of the Earth in kilometers
-//                double earthRadiusKm = 6371.0;
-//
-//                // Calculate the distance
-//                double distance = earthRadiusKm * c;
-//
-//                return distance;
+//            public double compute(double[] doubles, double[] doubles1) throws DimensionMismatchException {
+//                return 0;
 //            }
 //        });
-//
 //        // Perform clustering
-//        List<Cluster<DataPoint>> clusters = clusterer.cluster(dataPoints);
+//        List<Cluster<Order>> clusters = clusterer.cluster(ordersWithoutGroups);
 //
+//        List<OrderBatch> orderBatches = new ArrayList<>();
 //        // Process the clusters as needed
-//        for (Cluster<DataPoint> cluster : clusters) {
-//            List<DataPoint> clusterPoints = cluster.getPoints();
-//            // Handle each cluster of data points
+//        for (Cluster<Order> cluster : clusters) {
+//            List<Order> clusterOrders = cluster.getPoints();
+//            OrderBatch orderBatch = new OrderBatch();
+//            orderBatch.setOrderList(clusterOrders);
+//            orderBatches.add(orderBatch);
+//            // Handle each cluster of orders
 //        }
+//
+//        return orderBatches;
         return null;
     }
+
 
 
     // GOONG IMPLEMENT
@@ -517,8 +524,8 @@ public class OrderServiceImpl implements OrderService {
 
         List<OrderDetail> orderDetails = getOrderDetails(order, orderCreate);
         order.setOrderDetailList(orderDetails);
+        mapDiscountsToOrder(order, orderCreate.getDiscountID());
         Order orderSaved = repository.save(order);
-        mapDiscountsToOrder(orderSaved, orderCreate.getDiscountID());
         mapTransactionToOrder(orderSaved, orderCreate.getTransaction());
         String qrCodeUrl = generateAndUploadQRCode(orderSaved);
         orderSaved.setQrCodeUrl(qrCodeUrl);
@@ -542,7 +549,6 @@ public class OrderServiceImpl implements OrderService {
         order.setLongitude(orderCreate.getLongitude());
         order.setLatitude(orderCreate.getLatitude());
         order.setCreatedTime(LocalDateTime.now());
-
         return order;
     }
 
@@ -579,7 +585,7 @@ public class OrderServiceImpl implements OrderService {
         return orderGroupNew;
     }
 
-    private void mapDiscountsToOrder(Order order, List<UUID> discountIds) throws ResourceNotFoundException, InterruptedException {
+    private void mapDiscountsToOrder(Order order, List<UUID> discountIds) throws ResourceNotFoundException, OutOfProductQuantityException {
         if (!discountIds.isEmpty()) {
             List<Discount> discounts = new ArrayList<>();
             for (UUID discountId : discountIds) {
@@ -593,10 +599,13 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-    private void decrementDiscountQuantity(Discount discount) {
+    private void decrementDiscountQuantity(Discount discount) throws OutOfProductQuantityException {
         Integer quantity = discount.getQuantity();
-        discount.setQuantity(quantity - 1);
-        discountRepository.save(discount);
+        if(discount.getQuantity() == 0){
+            throw new OutOfProductQuantityException(discount.getName() + "đã hết lượt sử dụng!");
+        }else{
+            discount.setQuantity(quantity - 1);
+        }
     }
 
     private String generateAndUploadQRCode(Order order) throws IOException {
@@ -676,54 +685,6 @@ public class OrderServiceImpl implements OrderService {
             throw new IOException("Error generating QR code");
         }
     }
-
-    private String extractDistrict(String address) {
-        // Define a list of common district names in HCMC (you can expand this list).
-        String[] districtNames = {
-                "District 1",
-                "District 2",
-                "District 3",
-                "District 4",
-                "District 5",
-                "District 6",
-                "District 7",
-                "District 8",
-                "District 9",
-                "District 10",
-                "District 11",
-                "District 12",
-                "Bình Tân",
-                "Bình Thạnh",
-                "Gò Vấp",
-                "Phú Nhuận",
-                "Tân Bình",
-                "Tân Phú",
-                "Thủ Đức",
-                "Bình Chánh",
-                "Cần Giờ",
-                "Củ Chi",
-                "Hóc Môn",
-                "Nhà Bè"
-                /* Add more districts as needed */
-        };
-
-        // Create a regular expression pattern to match district names.
-        String pattern = "\\b(" + String.join("|", districtNames) + ")\\b";
-
-        // Compile the pattern.
-        Pattern districtPattern = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
-
-        // Create a Matcher to find the district name in the address.
-        Matcher matcher = districtPattern.matcher(address);
-
-        // Find the first matching district name.
-        if (matcher.find()) {
-            return matcher.group(0);
-        } else {
-            return null;
-        }
-    }
-
 
     private void increaseProductQuantity(List<OrderDetail> orderDetails) {
         for (OrderDetail orderDetail : orderDetails) {

@@ -21,8 +21,7 @@ import com.fpt.capstone.savinghourmarket.service.ProductService;
 import com.fpt.capstone.savinghourmarket.service.ProductSubCategoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.openxml4j.opc.PackagePart;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.*;
 import org.modelmapper.ModelMapper;
@@ -219,24 +218,219 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public RevenueReportResponseBody getRevenueReport(Month month, Quarter quarter, Integer year) {
+    public List<Product> createProductList(List<Product> productList) throws ResourceNotFoundException {
+        LinkedHashMap<String, String> errorFields = new LinkedHashMap<>();
+        List<Product> productsSaved = new ArrayList<>();
+        for (Product product : productList) {
+            if (product.getName().length() > 50) {
+                errorFields.put("Lỗi nhập tên sản phẩm của sản phẩm " + product.getName(), "Tên sản phẩm chỉ có tối đa 50 kí tự!");
+            }
+
+            if (product.getPrice() < 0) {
+                errorFields.put("Lỗi nhập giá bán của sản phẩm " + product.getName(), "Giá bán không thế âm!");
+            }
+
+            if (product.getPriceOriginal() < 0) {
+                errorFields.put("Lỗi nhập giá gốc của sản phẩm " + product.getName(), "Giá gốc không thế âm!");
+            }
+
+            if (product.getQuantity() <= 0) {
+                errorFields.put("Lỗi nhập số lượng của sản phẩm " + product.getName(), "Số lượng sản phẩm không thể âm hoặc bằng 0!");
+            }
+
+            if (product.getExpiredDate().isBefore(LocalDate.now().plus(product.getProductSubCategory().getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
+                errorFields.put("Lỗi nhập ngày hết hạn của sản phẩm " + product.getName(), "Ngày hết hạn phải sau ngày hiện tại cộng thêm số ngày điều kiện cho hàng cận hạn sử dụng có trong SUBCATEGORY!");
+            }
+
+            if (product.getProductSubCategory().getId() == null && product.getProductSubCategory().getName().length() > 50) {
+                errorFields.put("Lỗi nhập tên SubCategory của sản phẩm " + product.getName(), "Tên sản phẩm chỉ có tối đa 50 kí tự!");
+            }
+
+            if (product.getProductSubCategory().getId() == null && product.getProductSubCategory().getAllowableDisplayThreshold() <= 0) {
+                errorFields.put("Lỗi nhập AllowableDisplayThreshold của sản phẩm " + product.getName(), "AllowableDisplayThreshold không thể âm hoặc bằng 0!");
+            }
+
+            if (product.getProductSubCategory().getId() == null && product.getProductSubCategory().getProductCategory().getName().length() > 50) {
+                errorFields.put("Lỗi nhập tên category của sản phẩm " + product.getName(), "Tên category chỉ có tối đa 50 kí tự!");
+            }
+
+            if (product.getSupermarket().getId() == null && product.getSupermarket().getName().length() > 50) {
+                errorFields.put("Lỗi nhập tên siêu thị của sản phẩm " + product.getName(), "Tên siêu thị chỉ có tối đa 50 kí tự!");
+            }
+
+            List<SupermarketAddress> supermarketAddressList = product.getSupermarket().getSupermarketAddressList();
+            for (SupermarketAddress address : supermarketAddressList) {
+                if (address.getAddress().length() > 255) {
+                    errorFields.put("Lỗi nhập địa chỉ siêu thị của sản phẩm " + product.getName() + address.getAddress(), "Địa chỉ siêu thị chỉ có tối đa 255 kí tự!");
+                }
+            }
+
+            Pattern pattern;
+            Matcher matcher;
+            pattern = Pattern.compile("^(0|84)(2(0[3-9]|1[0-6|8|9]|2[0-2|5-9]|3[2-9]|4[0-9]|5[1|2|4-9]|6[0-3|9]|7[0-7]|8[0-9]|9[0-4|6|7|9])|3[2-9]|5[5|6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])([0-9]{7})$");
+            matcher = pattern.matcher(product.getSupermarket().getPhone());
+            if (!matcher.matches()) {
+                errorFields.put("Lỗi nhập số điện thoại siêu thị của sản phẩm " + product.getName(), "Số điện thoại siêu thị không hợp lệ!");
+            }
+
+            UUID productSubCategoryId = product.getProductSubCategory().getId();
+            if (!productSubCategoryRepository.findById(productSubCategoryId).isPresent()) {
+                errorFields.put("Lỗi loại sản phảm phụ của sản phẩm " + product.getName(), "Loại sản phảm phụ không tìm thấy với id: " + productSubCategoryId);
+            }
+
+            UUID supermarketId = product.getSupermarket().getId();
+            if (!supermarketRepository.findById(supermarketId).isPresent()) {
+                errorFields.put("Lỗi thông tin siêu thị của sản phẩm " + product.getName(), "Siêu thị không tìm thấy với id: " + productSubCategoryId);
+            }
+
+        }
+
+        if (errorFields.size() > 0) {
+            throw new InvalidExcelFileDataException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
+        }
+
+        productList.stream().forEach(product -> {
+            Product productSaved = productRepository.save(product);
+            productsSaved.add(productSaved);
+        });
+
+        return productsSaved;
+    }
+
+    public List<RevenueReportMonthly> getRevenueReportForEachMonth(Integer year) {
         LocalDate currentDate = LocalDate.now();
 
-        if(year == null) {
+        if (year == null) {
             year = currentDate.getYear();
         }
 
+        List<Object[]> revenueResult = productRepository.getRevenueReportMonthly(year);
+        // map result
+        List<RevenueReportMonthly> revenueReportMonthlyList = revenueResult.stream().map(result -> (RevenueReportMonthly) result[1]).collect(Collectors.toList());
+        HashMap<Integer, RevenueReportMonthly> reportMonthlyHashMap = new HashMap<>();
+        revenueReportMonthlyList.stream().forEach(revenueReportMonthly -> {
+            reportMonthlyHashMap.put(revenueReportMonthly.getMonthValue(), revenueReportMonthly);
+        });
 
-        Object[] revenueResult = productRepository.getRevenueReport(month == null ? null : month.getMonthInNumber(), quarter == null ? null : quarter.getQuarterInNumber(), year);
+        // 12 months
+        for (int i = 1; i <= 12; i++) {
+            if (!reportMonthlyHashMap.containsKey(i)) {
+                RevenueReportResponseBody revenueReportResponseBody = new RevenueReportResponseBody(null, null, null);
+                revenueReportMonthlyList.add(new RevenueReportMonthly(i, revenueReportResponseBody));
+            }
+        }
 
-        RevenueReportResponseBody revenueReportResponseBody = (RevenueReportResponseBody) revenueResult[0];
+        revenueReportMonthlyList.sort((o1, o2) -> o1.getMonthValue() - o2.getMonthValue());
 //        revenueReportResponseBody.setTotalIncome((RevenueReportResponseBody) revenueResult[0]);
 //        revenueReportResponseBody.setTotalInvestment((Long) revenueResult[1]);
 //        revenueReportResponseBody.setTotalSale((Long) revenueResult[2]);
 
-        revenueReportResponseBody.setTotalDifferentAmount(revenueReportResponseBody.getTotalIncome()- revenueReportResponseBody.getTotalPriceOriginal());
+//        revenueReportResponseBody.setTotalDifferentAmount(revenueReportResponseBody.getTotalIncome()- revenueReportResponseBody.getTotalPriceOriginal());
 
-        return revenueReportResponseBody;
+        return revenueReportMonthlyList;
+    }
+
+    @Override
+    public List<RevenueReportYearly> getRevenueReportForEachYear() {
+        Integer appBuildYear = 2023;
+        Integer currentYear = LocalDate.now().getYear();
+
+        List<Object[]> revenueResult = productRepository.getRevenueReportYearly(appBuildYear, currentYear);
+        // map result
+        List<RevenueReportYearly> revenueReportYearlyList = revenueResult.stream().map(result -> (RevenueReportYearly) result[1]).collect(Collectors.toList());
+        HashMap<Integer, RevenueReportYearly> reportYearlyHashMap = new HashMap<>();
+        revenueReportYearlyList.stream().forEach(revenueReportYearly -> {
+            reportYearlyHashMap.put(revenueReportYearly.getYearValue(), revenueReportYearly);
+        });
+
+        // 12 months
+        for (int i = appBuildYear; i <= currentYear; i++) {
+            if (!reportYearlyHashMap.containsKey(i)) {
+                RevenueReportResponseBody revenueReportResponseBody = new RevenueReportResponseBody(null, null, null);
+                revenueReportYearlyList.add(new RevenueReportYearly(i, revenueReportResponseBody));
+            }
+        }
+
+        revenueReportYearlyList.sort((o1, o2) -> o1.getYearValue() - o2.getYearValue());
+
+        return revenueReportYearlyList;
+    }
+
+    @Override
+    public List<SupermarketSaleReportResponseBody> getAllSupermarketSaleReport(Integer year) {
+        LocalDate currentDate = LocalDate.now();
+        if (year == null) {
+            year = currentDate.getYear();
+        }
+        List<Supermarket> rawSupermarketList = supermarketRepository.findAll();
+        List<SupermarketSaleReportResponseBody> allSupermarketSaleReportResponseBodyList = new ArrayList<>();
+        allSupermarketSaleReportResponseBodyList.addAll(rawSupermarketList.stream().map(SupermarketSaleReportResponseBody::new).collect(Collectors.toList()));
+
+        List<SupermarketSaleReportResponseBody> result = productRepository.getSupermarketsSaleReport(year);
+        HashMap<UUID, SupermarketSaleReportResponseBody> resultHashmap = new HashMap<>();
+        result.stream().forEach(supermarketSaleReportResponseBody -> {
+            resultHashmap.put(supermarketSaleReportResponseBody.getId(), supermarketSaleReportResponseBody);
+        });
+        for (SupermarketSaleReportResponseBody saleReportResponseBody : allSupermarketSaleReportResponseBodyList) {
+            if (resultHashmap.containsKey(saleReportResponseBody.getId())) {
+                saleReportResponseBody.setTotalSale(resultHashmap.get(saleReportResponseBody.getId()).getTotalSale());
+                saleReportResponseBody.setTotalIncome(resultHashmap.get(saleReportResponseBody.getId()).getTotalIncome());
+            }
+        }
+
+        return allSupermarketSaleReportResponseBodyList;
+    }
+
+    @Override
+    public Product updateProduct(Product product) throws ResourceNotFoundException {
+        HashMap<String, String> errorFields = new HashMap<>();
+
+        if (productRepository.findById(product.getId()).isEmpty()) {
+            throw new ResourceNotFoundException("Sản phảm không tìm thấy với id: " + product.getId());
+        }
+
+        if (product.getName().length() > 50) {
+            errorFields.put("Lỗi nhập tên sản phẩm", "Tên sản phẩm chỉ có tối đa 50 kí tự!");
+        }
+
+        if (product.getPrice() < 0 || product.getPriceOriginal() < 0) {
+            errorFields.put("Lỗi nhập giá", "Giá bán không thế âm!");
+        }
+
+        if (product.getQuantity() <= 0) {
+            errorFields.put("Lỗi nhập số lượng", "Số lượng sản phẩm không thể âm hoặc bằng 0!");
+        }
+
+        if (product.getExpiredDate().isBefore(LocalDate.now().plus(product.getProductSubCategory().getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
+            errorFields.put("Lỗi nhập ngày hết hạn", "Ngày hết hạn phải sau ngày hiện tại cộng thêm số ngày điều kiện cho hàng cận hạn sử dụng có trong SUBCATEGORY!");
+        }
+
+        if (errorFields.size() > 0) {
+            throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
+        }
+
+        UUID productSubCategoryId = product.getProductSubCategory().getId();
+        if (productSubCategoryRepository.findById(productSubCategoryId).isEmpty()) {
+            throw new ResourceNotFoundException("Loại sản phảm phụ không tìm thấy với id: " + productSubCategoryId);
+        }
+
+        UUID supermarketId = product.getSupermarket().getId();
+        if (supermarketRepository.findById(supermarketId).isEmpty()) {
+            throw new ResourceNotFoundException("Siêu thị không tìm thấy với id: " + productSubCategoryId);
+        }
+        
+        return productRepository.save(product);
+    }
+
+    @Override
+    public Product disableProduct(UUID productId) throws ResourceNotFoundException {
+        Optional<Product> product = productRepository.findById(productId);
+        if (product.isEmpty()) {
+            throw new ResourceNotFoundException("Sản phảm không tìm thấy với id: " + productId);
+        }
+        product.get().setStatus(Status.DISABLE.ordinal());
+
+        return productRepository.save(product.get());
     }
 
     @Override
@@ -256,7 +450,7 @@ public class ProductServiceImpl implements ProductService {
             errorFields.put("Lỗi nhập số lượng", "Số lượng sản phẩm không thể âm hoặc bằng 0!");
         }
 
-        if (productCreate.getExpiredDate().isBefore(LocalDateTime.now().plus(productCreate.getProductSubCategory().getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
+        if (productCreate.getExpiredDate().isBefore(LocalDate.now().plus(productCreate.getProductSubCategory().getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
             errorFields.put("Lỗi nhập ngày hết hạn", "Ngày hết hạn phải sau ngày hiện tại cộng thêm số ngày điều kiện cho hàng cận hạn sử dụng có trong SUBCATEGORY!");
         }
 
@@ -332,11 +526,20 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<Product> createProductByExcel(MultipartFile file) throws IOException, InvalidExcelFileDataException {
-        List<Product> productList = new ArrayList();
         LinkedHashMap<String, String> errorFields = new LinkedHashMap<>();
-        LinkedHashMap<Integer, ByteArrayOutputStream> productImages = new LinkedHashMap<>();
 
-        Workbook workbook = new XSSFWorkbook(file.getInputStream());
+        Workbook workbook;
+        if (isXLSFile(file)) {
+            workbook = new HSSFWorkbook(file.getInputStream());
+        } else if (isXLSXFile(file)) {
+            workbook = new XSSFWorkbook(file.getInputStream());
+        } else {
+            errorFields.put("Invalid file type", "File này có định dạng không phải excel!");
+            throw new InvalidExcelFileDataException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
+        }
+
+        List<Product> productList = new ArrayList();
+        LinkedHashMap<Integer, ByteArrayOutputStream> productImages = new LinkedHashMap<>();
         Sheet sheet = workbook.getSheetAt(0);
         //Get first row as title
         Row titleRow = sheet.getRow(0);
@@ -393,7 +596,7 @@ public class ProductServiceImpl implements ProductService {
                         errorFields.put("Lỗi xử lí tên siêu thị tại STT " + row.getCell(0), supermarket.getName() + " không tìm thấy trong hệ thống!");
                     }
 
-                    if (productSubCategory.getAllowableDisplayThreshold() != null && product.getExpiredDate() != null && product.getExpiredDate().isBefore(LocalDateTime.now().plus(productSubCategory.getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
+                    if (productSubCategory.getAllowableDisplayThreshold() != null && product.getExpiredDate() != null && product.getExpiredDate().isBefore(LocalDate.now().plus(productSubCategory.getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
                         errorFields.put("Lỗi xử lí HSD tại STT " + row.getCell(0), "HSD phải sau ngày hiện tại cộng thêm số ngày điều kiện cho hàng cận hạn sử dụng có trong SUBCATEGORY!");
                     }
 
@@ -416,6 +619,24 @@ public class ProductServiceImpl implements ProductService {
         }
 
         return productList;
+    }
+
+    private static boolean isXLSXFile(MultipartFile file) {
+        try {
+            new XSSFWorkbook(file.getInputStream());
+            return true; // Successfully opened as XLSX workbook
+        } catch (Exception e) {
+            return false; // Failed to open as XLSX workbook
+        }
+    }
+
+    private static boolean isXLSFile(MultipartFile file) {
+        try {
+            new HSSFWorkbook(file.getInputStream());
+            return true; // Successfully opened as XLS workbook
+        } catch (Exception e) {
+            return false; // Failed to open as XLS workbook
+        }
     }
 
     private static void validateAndGetProductData(Sheet sheet, Product product, Row row, Row titleRow,
@@ -471,7 +692,7 @@ public class ProductServiceImpl implements ProductService {
             case "Ngày HSD":
                 if (cell.getCellType().equals(CellType.NUMERIC)) {
                     if (DateUtil.isCellDateFormatted(cell)) {
-                        product.setExpiredDate(convertDateToLocalDateTime(cell.getDateCellValue()));
+                        product.setExpiredDate(convertDateToLocalDate(cell.getDateCellValue()));
                     } else {
                         putValidateDataError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString());
                     }
@@ -576,7 +797,7 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private static LocalDateTime convertDateToLocalDateTime(Date date) {
+    private static LocalDate convertDateToLocalDate(Date date) {
         // Convert Date to GregorianCalendar
         GregorianCalendar calendar = new GregorianCalendar();
         calendar.setTime(date);
@@ -585,9 +806,9 @@ public class ProductServiceImpl implements ProductService {
         Instant instant = calendar.toInstant();
 
         // Convert Instant to LocalDateTime
-        LocalDateTime localDateTime = instant.atZone(ZoneId.systemDefault()).toLocalDateTime();
+        LocalDate localDate = LocalDate.from(instant.atZone(ZoneId.systemDefault()).toLocalDateTime());
 
-        return localDateTime;
+        return localDate;
     }
 
 }

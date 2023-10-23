@@ -1,13 +1,14 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getStorage } from 'firebase/storage';
+import { getStorage } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCwMbYNwd_Z7qSJ8oyXKdxjF57iolO4UUE",
   authDomain: "capstone-project-398104.firebaseapp.com",
-  databaseURL: "https://capstone-project-398104-default-rtdb.asia-southeast1.firebasedatabase.app",
+  databaseURL:
+    "https://capstone-project-398104-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "capstone-project-398104",
   storageBucket: "capstone-project-398104.appspot.com",
   messagingSenderId: "857253936194",

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -27,7 +28,7 @@ public class OrderProduct {
 
     private String description;
 
-    private LocalDateTime expiredDate;
+    private LocalDate expiredDate;
 
     private String imageUrl;
 
