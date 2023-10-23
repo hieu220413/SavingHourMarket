@@ -1,10 +1,14 @@
-import { Dialog } from "@mui/material";
+import { Dialog, Tooltip } from "@mui/material";
 import React, { useState } from "react";
 import EditSuperMarket from "./EditSuperMarket";
 import MuiAlert from "@mui/material/Alert";
 import { Snackbar } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowDown, faXmark } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowDown,
+  faReceipt,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 import { auth } from "../../../../firebase/firebase.config";
 import { API } from "../../../../contanst/api";
 
@@ -96,13 +100,16 @@ const SupermarketItem = ({
           position: "relative",
         }}
       >
-        <FontAwesomeIcon
-          style={{ marginRight: 10 }}
-          data-bs-toggle="dropdown"
-          aria-expanded="false"
-          className="arrow-down"
-          icon={faArrowDown}
-        />
+        <Tooltip title="Danh sách chi nhánh">
+          <FontAwesomeIcon
+            style={{ marginRight: 10 }}
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            className="arrow-down"
+            icon={faReceipt}
+          />
+        </Tooltip>
+
         {item.supermarketAddressList[0]?.address}
         <ul class="dropdown-menu">
           {item.supermarketAddressList.map((addressItem) => (
