@@ -22,9 +22,6 @@ import com.fpt.capstone.savinghourmarket.service.ProductSubCategoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.openxml4j.opc.PackagePart;
-import org.apache.poi.poifs.filesystem.OfficeXmlFileException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.*;
 import org.modelmapper.ModelMapper;
@@ -229,7 +226,7 @@ public class ProductServiceImpl implements ProductService {
                 errorFields.put("Lỗi nhập tên sản phẩm của sản phẩm " + product.getName(), "Tên sản phẩm chỉ có tối đa 50 kí tự!");
             }
 
-            if (product.getPrice() < 0 ) {
+            if (product.getPrice() < 0) {
                 errorFields.put("Lỗi nhập giá bán của sản phẩm " + product.getName(), "Giá bán không thế âm!");
             }
 
@@ -241,7 +238,7 @@ public class ProductServiceImpl implements ProductService {
                 errorFields.put("Lỗi nhập số lượng của sản phẩm " + product.getName(), "Số lượng sản phẩm không thể âm hoặc bằng 0!");
             }
 
-            if (product.getExpiredDate().isBefore(LocalDateTime.now().plus(product.getProductSubCategory().getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
+            if (product.getExpiredDate().isBefore(LocalDate.now().plus(product.getProductSubCategory().getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
                 errorFields.put("Lỗi nhập ngày hết hạn của sản phẩm " + product.getName(), "Ngày hết hạn phải sau ngày hiện tại cộng thêm số ngày điều kiện cho hàng cận hạn sử dụng có trong SUBCATEGORY!");
             }
 
@@ -303,7 +300,7 @@ public class ProductServiceImpl implements ProductService {
     public List<RevenueReportMonthly> getRevenueReportForEachMonth(Integer year) {
         LocalDate currentDate = LocalDate.now();
 
-        if(year == null) {
+        if (year == null) {
             year = currentDate.getYear();
         }
 
@@ -316,8 +313,8 @@ public class ProductServiceImpl implements ProductService {
         });
 
         // 12 months
-        for(int i = 1 ; i <= 12; i++){
-            if(!reportMonthlyHashMap.containsKey(i)){
+        for (int i = 1; i <= 12; i++) {
+            if (!reportMonthlyHashMap.containsKey(i)) {
                 RevenueReportResponseBody revenueReportResponseBody = new RevenueReportResponseBody(null, null, null);
                 revenueReportMonthlyList.add(new RevenueReportMonthly(i, revenueReportResponseBody));
             }
@@ -347,8 +344,8 @@ public class ProductServiceImpl implements ProductService {
         });
 
         // 12 months
-        for(int i = appBuildYear ; i <= currentYear; i++){
-            if(!reportYearlyHashMap.containsKey(i)){
+        for (int i = appBuildYear; i <= currentYear; i++) {
+            if (!reportYearlyHashMap.containsKey(i)) {
                 RevenueReportResponseBody revenueReportResponseBody = new RevenueReportResponseBody(null, null, null);
                 revenueReportYearlyList.add(new RevenueReportYearly(i, revenueReportResponseBody));
             }
@@ -370,12 +367,12 @@ public class ProductServiceImpl implements ProductService {
         allSupermarketSaleReportResponseBodyList.addAll(rawSupermarketList.stream().map(SupermarketSaleReportResponseBody::new).collect(Collectors.toList()));
 
         List<SupermarketSaleReportResponseBody> result = productRepository.getSupermarketsSaleReport(year);
-        HashMap<UUID,SupermarketSaleReportResponseBody> resultHashmap = new HashMap<>();
+        HashMap<UUID, SupermarketSaleReportResponseBody> resultHashmap = new HashMap<>();
         result.stream().forEach(supermarketSaleReportResponseBody -> {
             resultHashmap.put(supermarketSaleReportResponseBody.getId(), supermarketSaleReportResponseBody);
         });
         for (SupermarketSaleReportResponseBody saleReportResponseBody : allSupermarketSaleReportResponseBodyList) {
-            if(resultHashmap.containsKey(saleReportResponseBody.getId())){
+            if (resultHashmap.containsKey(saleReportResponseBody.getId())) {
                 saleReportResponseBody.setTotalSale(resultHashmap.get(saleReportResponseBody.getId()).getTotalSale());
                 saleReportResponseBody.setTotalIncome(resultHashmap.get(saleReportResponseBody.getId()).getTotalIncome());
             }
@@ -404,7 +401,7 @@ public class ProductServiceImpl implements ProductService {
             errorFields.put("Lỗi nhập số lượng", "Số lượng sản phẩm không thể âm hoặc bằng 0!");
         }
 
-        if (product.getExpiredDate().isBefore(LocalDateTime.now().plus(product.getProductSubCategory().getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
+        if (product.getExpiredDate().isBefore(LocalDate.now().plus(product.getProductSubCategory().getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
             errorFields.put("Lỗi nhập ngày hết hạn", "Ngày hết hạn phải sau ngày hiện tại cộng thêm số ngày điều kiện cho hàng cận hạn sử dụng có trong SUBCATEGORY!");
         }
 
@@ -421,9 +418,7 @@ public class ProductServiceImpl implements ProductService {
         if (supermarketRepository.findById(supermarketId).isEmpty()) {
             throw new ResourceNotFoundException("Siêu thị không tìm thấy với id: " + productSubCategoryId);
         }
-
-
-
+        
         return productRepository.save(product);
     }
 
@@ -455,7 +450,7 @@ public class ProductServiceImpl implements ProductService {
             errorFields.put("Lỗi nhập số lượng", "Số lượng sản phẩm không thể âm hoặc bằng 0!");
         }
 
-        if (productCreate.getExpiredDate().isBefore(LocalDateTime.now().plus(productCreate.getProductSubCategory().getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
+        if (productCreate.getExpiredDate().isBefore(LocalDate.now().plus(productCreate.getProductSubCategory().getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
             errorFields.put("Lỗi nhập ngày hết hạn", "Ngày hết hạn phải sau ngày hiện tại cộng thêm số ngày điều kiện cho hàng cận hạn sử dụng có trong SUBCATEGORY!");
         }
 
@@ -601,7 +596,7 @@ public class ProductServiceImpl implements ProductService {
                         errorFields.put("Lỗi xử lí tên siêu thị tại STT " + row.getCell(0), supermarket.getName() + " không tìm thấy trong hệ thống!");
                     }
 
-                    if (productSubCategory.getAllowableDisplayThreshold() != null && product.getExpiredDate() != null && product.getExpiredDate().isBefore(LocalDateTime.now().plus(productSubCategory.getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
+                    if (productSubCategory.getAllowableDisplayThreshold() != null && product.getExpiredDate() != null && product.getExpiredDate().isBefore(LocalDate.now().plus(productSubCategory.getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
                         errorFields.put("Lỗi xử lí HSD tại STT " + row.getCell(0), "HSD phải sau ngày hiện tại cộng thêm số ngày điều kiện cho hàng cận hạn sử dụng có trong SUBCATEGORY!");
                     }
 
@@ -697,7 +692,7 @@ public class ProductServiceImpl implements ProductService {
             case "Ngày HSD":
                 if (cell.getCellType().equals(CellType.NUMERIC)) {
                     if (DateUtil.isCellDateFormatted(cell)) {
-                        product.setExpiredDate(convertDateToLocalDateTime(cell.getDateCellValue()));
+                        product.setExpiredDate(convertDateToLocalDate(cell.getDateCellValue()));
                     } else {
                         putValidateDataError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString());
                     }
@@ -802,7 +797,7 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private static LocalDateTime convertDateToLocalDateTime(Date date) {
+    private static LocalDate convertDateToLocalDate(Date date) {
         // Convert Date to GregorianCalendar
         GregorianCalendar calendar = new GregorianCalendar();
         calendar.setTime(date);
@@ -811,9 +806,9 @@ public class ProductServiceImpl implements ProductService {
         Instant instant = calendar.toInstant();
 
         // Convert Instant to LocalDateTime
-        LocalDateTime localDateTime = instant.atZone(ZoneId.systemDefault()).toLocalDateTime();
+        LocalDate localDate = LocalDate.from(instant.atZone(ZoneId.systemDefault()).toLocalDateTime());
 
-        return localDateTime;
+        return localDate;
     }
 
 }

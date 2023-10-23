@@ -25,12 +25,19 @@ import {useFocusEffect} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoadingScreen from '../components/LoadingScreen';
 import messaging from '@react-native-firebase/messaging';
+import Modal, {
+  ModalFooter,
+  ModalButton,
+  SlideAnimation,
+  ScaleAnimation,
+} from 'react-native-modals';
 
 const Profile = ({navigation}) => {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isEnable, setIsEnable] = useState(true);
+  const [openAuthModal, setOpenAuthModal] = useState(false);
   useFocusEffect(
     useCallback(() => {
       (async () => {
@@ -296,21 +303,8 @@ const Profile = ({navigation}) => {
           activeOpacity={0.8}
           onPress={() => {
             if (user == null) {
-              Alert.alert('Unauthorized !!!', 'Login to your account', [
-                {
-                  text: 'Cancel',
-                  onPress: () => {
-                    console.log('cancel');
-                  },
-                  style: 'cancel',
-                },
-                {
-                  text: 'Ok',
-                  onPress: () => {
-                    navigation.navigate('Login');
-                  },
-                },
-              ]);
+              setOpenAuthModal(true);
+              return;
             } else {
               navigation.navigate('Edit Profile', {user});
             }
@@ -424,13 +418,14 @@ const Profile = ({navigation}) => {
             </Text>
           </View>
           <Switch
+            disabled={user ? false : true}
             trackColor={{false: 'grey', true: 'tomato'}}
             thumbColor={isEnable ? '#f4f3f4' : '#f4f3f4'}
             // ios_backgroundColor="#3e3e3e"
             onValueChange={value => {
               toggleSwitch(value);
             }}
-            value={isEnable}
+            value={user ? isEnable : false}
           />
         </View>
         {/* <TouchableOpacity
@@ -469,21 +464,8 @@ const Profile = ({navigation}) => {
           }}
           onPress={() => {
             if (user == null) {
-              Alert.alert('Unauthorized !!!', 'Login to your account', [
-                {
-                  text: 'Cancel',
-                  onPress: () => {
-                    console.log('cancel');
-                  },
-                  style: 'cancel',
-                },
-                {
-                  text: 'ok',
-                  onPress: () => {
-                    navigation.navigate('Login');
-                  },
-                },
-              ]);
+              setOpenAuthModal(true);
+              return;
             } else {
               navigation.navigate('List Feedback');
             }
@@ -571,6 +553,53 @@ const Profile = ({navigation}) => {
           </TouchableOpacity>
         )}
       </View>
+      {/* auth modal */}
+      <Modal
+        width={0.8}
+        visible={openAuthModal}
+        dialogAnimation={
+          new ScaleAnimation({
+            initialValue: 0, // optional
+            useNativeDriver: true, // optional
+          })
+        }
+        footer={
+          <ModalFooter>
+            <ModalButton
+              text="Ở lại trang"
+              textStyle={{color: 'red'}}
+              onPress={() => {
+                setOpenAuthModal(false);
+              }}
+            />
+            <ModalButton
+              text="Đăng nhập"
+              onPress={async () => {
+                try {
+                  await AsyncStorage.removeItem('userInfo');
+                  await AsyncStorage.removeItem('CartList');
+                  navigation.navigate('Login');
+                  setOpenAuthModal(false);
+                } catch (error) {
+                  console.log(error);
+                }
+              }}
+            />
+          </ModalFooter>
+        }>
+        <View
+          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
+          <Text
+            style={{
+              fontSize: 20,
+              fontFamily: 'Roboto',
+              color: 'black',
+              textAlign: 'center',
+            }}>
+            Vui lòng đăng nhập để thực hiện thao tác này
+          </Text>
+        </View>
+      </Modal>
       {loading && <LoadingScreen />}
     </SafeAreaView>
   );

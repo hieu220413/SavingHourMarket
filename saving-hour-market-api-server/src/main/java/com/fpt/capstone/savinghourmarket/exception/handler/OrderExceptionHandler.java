@@ -39,6 +39,12 @@ public class OrderExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiError(LocalDateTime.now().toString(), HttpStatus.CONFLICT.value(),e.getMessage()));
     }
 
+    @ExceptionHandler(OutOfDiscountQuantityException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ResponseEntity<ApiError> handleOrderOutOfDiscountQuantityException (Exception e){
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiError(LocalDateTime.now().toString(), HttpStatus.CONFLICT.value(),e.getMessage()));
+    }
+
 
     @ExceptionHandler(CustomerLimitOrderProcessingException.class)
     @ResponseStatus(HttpStatus.CONFLICT)

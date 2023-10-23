@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.io.IOException;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -166,7 +167,7 @@ public class OrderController {
     }
 
     @GetMapping("/batchingForStaff")
-    public ResponseEntity<List<OrderBatch>> batchingForStaff(@RequestParam LocalDate deliverDate, @RequestParam UUID timeFrameId, @RequestParam Integer batchQuantity) {
+    public ResponseEntity<List<OrderBatch>> batchingForStaff(@RequestParam Date deliverDate, @RequestParam UUID timeFrameId, @RequestParam Integer batchQuantity) throws ResourceNotFoundException {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.batchingForStaff(deliverDate, timeFrameId, batchQuantity));
     }
 
