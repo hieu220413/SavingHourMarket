@@ -1,7 +1,6 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
-import com.fpt.capstone.savinghourmarket.common.Month;
-import com.fpt.capstone.savinghourmarket.common.Quarter;
+import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
@@ -42,6 +41,7 @@ public class ProductController {
             , @RequestParam(required = false) String supermarketId
             , @RequestParam(required = false) String productCategoryId
             , @RequestParam(required = false) String productSubCategoryId
+            , @RequestParam(required = false) EnableDisableStatus status
             , @RequestParam(defaultValue = "0") Integer page
             , @RequestParam(defaultValue = "5") Integer limit
             , @RequestParam(required = false) SortType quantitySortType
@@ -55,6 +55,7 @@ public class ProductController {
                 , supermarketId
                 , productCategoryId
                 , productSubCategoryId
+                , status
                 , page
                 , limit
                 , quantitySortType
@@ -87,15 +88,15 @@ public class ProductController {
 
 
     @RequestMapping(value = "/getSaleReportSupermarket", method = RequestMethod.GET)
-    public ResponseEntity<SaleReportResponseBody> getSaleReportSupermarket(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+    public ResponseEntity<List<SaleReportSupermarketMonthlyResponseBody>> getSaleReportSupermarket(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
             , @RequestParam UUID supermarketId
-            , @RequestParam(required = false) Month month
-            , @RequestParam(required = false) Quarter quarter
+//            , @RequestParam(required = false) Month month
+//            , @RequestParam(required = false) Quarter quarter
             , @RequestParam(required = false) Integer year) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        SaleReportResponseBody saleReportResponseBody = productService.getSaleReportSupermarket(supermarketId, month, quarter, year);
-        return ResponseEntity.status(HttpStatus.OK).body(saleReportResponseBody);
+        List<SaleReportSupermarketMonthlyResponseBody> saleReportSupermarketMonthlyResponseBodyList = productService.getSaleReportSupermarket(supermarketId, year);
+        return ResponseEntity.status(HttpStatus.OK).body(saleReportSupermarketMonthlyResponseBodyList);
     }
 
     @RequestMapping(value = "/getById", method = RequestMethod.GET)

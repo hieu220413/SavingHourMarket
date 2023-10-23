@@ -37,7 +37,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -62,7 +61,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductSubCategoryService productSubCategoryService;
 
     @Override
-    public ProductListResponseBody getProductsForStaff(Boolean isExpiredShown, String name, String supermarketId, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, SortType quantitySortType, SortType expiredSortType, SortType priceSort) {
+    public ProductListResponseBody getProductsForStaff(Boolean isExpiredShown, String name, String supermarketId, String productCategoryId, String productSubCategoryId, EnableDisableStatus status, Integer page, Integer limit, SortType quantitySortType, SortType expiredSortType, SortType priceSort) {
         Sort sortable = Sort.by("expiredDate").ascending();
 //        if(quantitySortType.equals("ASC") ){
 //            sortable = Sort.by("expiredDate").ascending();
@@ -91,6 +90,7 @@ public class ProductServiceImpl implements ProductService {
                 , name
                 , productCategoryId == null ? null : UUID.fromString(productCategoryId)
                 , productSubCategoryId == null ? null : UUID.fromString(productSubCategoryId)
+                , status == null ? EnableDisableStatus.ENABLE.ordinal() : status.ordinal()
                 , isExpiredShown
                 , pageableWithSort);
 
@@ -134,7 +134,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public SaleReportResponseBody getSaleReportSupermarket(UUID supermarketId, Month month, Quarter quarter, Integer year) {
+    public List<SaleReportSupermarketMonthlyResponseBody> getSaleReportSupermarket(UUID supermarketId, Integer year) {
         LocalDate currentDate = LocalDate.now();
         if (!supermarketRepository.findById(supermarketId).isPresent()) {
             throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.SUPERMARKET_NOT_FOUND.getCode()), AdditionalResponseCode.SUPERMARKET_NOT_FOUND.toString());
@@ -143,35 +143,31 @@ public class ProductServiceImpl implements ProductService {
             year = currentDate.getYear();
         }
 
-        HashMap<UUID, Product> productSaleReportHashMap = new HashMap<>();
-        List<Product> rawProudProductList = productRepository.getRawProductFromSupermarketId(supermarketId);
+        List<Object[]> resultList = productRepository.getProductsReportForSupermarket(supermarketId, year);
 
+        // map result
+        List<SaleReportSupermarketMonthlyResponseBody> saleReportSupermarketMonthlyList = resultList.stream().map(result -> (SaleReportSupermarketMonthlyResponseBody) result[1]).collect(Collectors.toList());
+        HashMap<Integer, SaleReportSupermarketMonthlyResponseBody> saleReportSupermarketMonthHashMap = new HashMap<>();
 
-        SaleReportResponseBody saleReportResponseBody = new SaleReportResponseBody();
-        List<Product> productEntityReportList = productRepository.getProductsReportForSupermarket(supermarketId, month == null ? null : month.getMonthInNumber(), quarter == null ? null : quarter.getQuarterInNumber(), year);
-        for (Product product : productEntityReportList) {
-            productSaleReportHashMap.put(product.getId(), product);
-        }
+        saleReportSupermarketMonthlyList.stream().forEach(saleReportSupermarketMonthlyResponseBody -> {
+            saleReportSupermarketMonthHashMap.put(saleReportSupermarketMonthlyResponseBody.getMonthValue(), saleReportSupermarketMonthlyResponseBody);
+        });
 
-        for (Product rawProduct : rawProudProductList) {
-            // product sale map
-            if (productSaleReportHashMap.containsKey(rawProduct.getId())) {
-                saleReportResponseBody.getProductSaleReportList().add(new ProductSaleReport(rawProduct, productSaleReportHashMap.get(rawProduct.getId()).getPrice(), productSaleReportHashMap.get(rawProduct.getId()).getQuantity()));
-                saleReportResponseBody.setTotalSale(saleReportResponseBody.getTotalSale() + productSaleReportHashMap.get(rawProduct.getId()).getQuantity());
-                saleReportResponseBody.setTotalIncome(saleReportResponseBody.getTotalIncome() + productSaleReportHashMap.get(rawProduct.getId()).getPrice());
-            } else {
-                saleReportResponseBody.getProductSaleReportList().add(new ProductSaleReport(rawProduct, 0, 0));
+        for (int i = 1; i <= 12; i++) {
+            if (!saleReportSupermarketMonthHashMap.containsKey(i)) {
+                SaleReportSupermarketMonthlyResponseBody saleReportSupermarketMonthlyResponseBody = new SaleReportSupermarketMonthlyResponseBody(i, Long.parseLong("0"), Long.parseLong("0"));
+                saleReportSupermarketMonthlyList.add(saleReportSupermarketMonthlyResponseBody);
             }
         }
 
-        saleReportResponseBody.getProductSaleReportList().sort((o1, o2) -> o2.getSoldQuantity() - o1.getSoldQuantity());
+        saleReportSupermarketMonthlyList.sort((o1, o2) -> o1.getMonthValue() - o2.getMonthValue());
 
 //        productEntityReportList.stream().forEach(product -> {
 //            saleReportResponseBody.getProductSaleReportList().add(new ProductSaleReport(product));
 //            saleReportResponseBody.setTotalSale(saleReportResponseBody.getTotalSale() + product.getQuantity());
 //            saleReportResponseBody.setTotalIncome(saleReportResponseBody.getTotalIncome() + product.getPrice());
 //        });
-        return saleReportResponseBody;
+        return saleReportSupermarketMonthlyList;
     }
 
 

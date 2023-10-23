@@ -189,9 +189,9 @@ public class SupermarketServiceImpl implements SupermarketService {
     }
 
     @Override
-    public SupermarketListResponseBody getSupermarketForStaff(String name, Integer page, Integer limit) {
+    public SupermarketListResponseBody getSupermarketForStaff(String name, EnableDisableStatus status, Integer page, Integer limit) {
         Pageable pageable = PageRequest.of(page, limit);
-        Page<Supermarket> result = supermarketRepository.getSupermarketForStaff(name, pageable);
+        Page<Supermarket> result = supermarketRepository.getSupermarketForStaff(name, status == null ? EnableDisableStatus.ENABLE.ordinal() : status.ordinal(), pageable);
         int totalPage = result.getTotalPages();
         long totalSupermarket = result.getTotalElements();
         List<Supermarket> supermarketList = result.stream().toList();

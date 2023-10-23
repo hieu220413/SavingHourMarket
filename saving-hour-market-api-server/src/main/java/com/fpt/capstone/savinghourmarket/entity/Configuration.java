@@ -31,6 +31,9 @@ public class Configuration {
     @Column(columnDefinition = "tinyint")
     private Integer numberOfSuggestedPickupPoint;
 
+    @Column(columnDefinition = "tinyint")
+    private Integer deleteUnpaidOrderTime;
+
     private Integer initialShippingFee;
 
     @Column(columnDefinition = "tinyint")
