@@ -153,14 +153,18 @@ const Discount = ({ navigation }) => {
     </View>
   );
   return (
-    <View>
+    <View
+      style={{
+        paddingHorizontal: 15,
+        paddingTop: 15,
+      }}
+    >
       <View
         style={{
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginVertical: 15,
-          marginHorizontal: 15,
+          marginBottom: 30,
         }}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Image
@@ -179,6 +183,7 @@ const Discount = ({ navigation }) => {
             fontFamily: FONTS.fontFamily,
             fontSize: 24,
             color: 'black',
+            fontWeight: 'bold',
           }}>
           Mã giảm giá
         </Text>

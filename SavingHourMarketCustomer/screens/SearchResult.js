@@ -361,7 +361,6 @@ const SearchResult = ({
                 <Text
                     style={item.active == true ? {
                         width: 150,
-                        paddingHorizontal: 20,
                         paddingVertical: 10,
                         textAlign: 'center',
                         color: COLORS.primary,
@@ -369,7 +368,6 @@ const SearchResult = ({
                         fontSize: 12,
                     } : {
                         width: 150,
-                        paddingHorizontal: 20,
                         paddingVertical: 10,
                         textAlign: 'center',
                         color: 'black',
@@ -416,7 +414,6 @@ const SearchResult = ({
                 <Text
                     style={item.active == true ? {
                         width: 150,
-                        paddingHorizontal: 20,
                         paddingVertical: 10,
                         textAlign: 'center',
                         color: COLORS.primary,
@@ -424,7 +421,6 @@ const SearchResult = ({
                         fontSize: 12,
                     } : {
                         width: 150,
-                        paddingHorizontal: 20,
                         paddingVertical: 10,
                         textAlign: 'center',
                         color: 'black',
@@ -505,7 +501,7 @@ const SearchResult = ({
                             height: 45,
                             tintColor: COLORS.primary,
                             width: 35,
-                            marginHorizontal: 10,
+                            marginHorizontal: '2%',
                         }}
                         source={icons.filter}
                     />
