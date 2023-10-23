@@ -100,15 +100,13 @@ const SupermarketItem = ({
           position: "relative",
         }}
       >
-        <Tooltip title="Danh sách chi nhánh">
-          <FontAwesomeIcon
-            style={{ marginRight: 10 }}
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-            className="arrow-down"
-            icon={faReceipt}
-          />
-        </Tooltip>
+        <FontAwesomeIcon
+          style={{ marginRight: 10 }}
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+          className="arrow-down"
+          icon={faReceipt}
+        />
 
         {item.supermarketAddressList[0]?.address}
         <ul class="dropdown-menu">

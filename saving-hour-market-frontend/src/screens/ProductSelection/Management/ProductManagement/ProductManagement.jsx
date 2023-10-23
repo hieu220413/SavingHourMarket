@@ -31,7 +31,7 @@ const ProductManagement = () => {
   const [textPage, setTextPage] = useState(1);
   const [textSearch, setTextSearch] = useState("");
   const [searchValue, setSearchValue] = useState("");
-  const [msg, setMsg] = useState("TThêm mới thành công");
+  const [msg, setMsg] = useState("Thêm mới thành công");
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -81,7 +81,7 @@ const ProductManagement = () => {
         if (userAuth) {
           const tokenId = await auth.currentUser.getIdToken();
           fetch(
-            `${API.baseURL}/api/product/getProductsForStaff?page=0&limit=5`,
+            `${API.baseURL}/api/product/getProductsForStaff?page=${page}&limit=5&name=${searchValue}`,
             {
               method: "GET",
               headers: {
@@ -93,6 +93,7 @@ const ProductManagement = () => {
             .then((res) => res.json())
             .then((data) => {
               setProducts(data.productList);
+              setTotalPage(data.totalPage);
             })
             .catch((err) => {
               console.log(err);
@@ -483,6 +484,7 @@ const ProductManagement = () => {
         open={openConfirmCreate}
       >
         <ConfirmProductUploadByExcel
+          setMsg={setMsg}
           confirmProductList={confirmProductList}
           setConfirmProductList={setConfirmProductList}
           handleClose={handleCloseConfirmCreate}
