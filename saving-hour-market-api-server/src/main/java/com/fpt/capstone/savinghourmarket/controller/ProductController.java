@@ -229,4 +229,14 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(supermarketSaleReportResponseBodyList);
     }
 
+    @RequestMapping(value = "/getOrderTotalAllCategorySupermarketReport", method = RequestMethod.GET)
+    public ResponseEntity<List<CateOderQuantityResponseBody>> getOrderTotalAllCategorySupermarketReport(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @RequestParam UUID supermarketId
+            , @RequestParam(required = false) Integer year) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        List<CateOderQuantityResponseBody> cateOderQuantityResponseBodyList = productService.getOrderTotalAllCategorySupermarket(supermarketId, year);
+        return ResponseEntity.status(HttpStatus.OK).body(cateOderQuantityResponseBodyList);
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.fpt.capstone.savinghourmarket.repository;
 
 import com.fpt.capstone.savinghourmarket.entity.Product;
+import com.fpt.capstone.savinghourmarket.model.CateOderQuantityResponseBody;
 import com.fpt.capstone.savinghourmarket.model.SupermarketSaleReportResponseBody;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -155,6 +156,18 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "AND ord.status = 4" +
             "GROUP BY sp.id")
     List<SupermarketSaleReportResponseBody> getSupermarketsSaleReport(Integer year);
+
+    @Query("SELECT DISTINCT NEW com.fpt.capstone.savinghourmarket.model.CateOderQuantityResponseBody(ct.id, ct.name, COUNT(ct.id)) FROM Order ord " +
+            "JOIN ord.orderDetailList dt " +
+            "JOIN dt.product pd " +
+            "JOIN pd.supermarket sp " +
+            "JOIN pd.productSubCategory sct " +
+            "JOIN sct.productCategory ct " +
+            "WHERE EXTRACT(YEAR FROM ord.createdTime) = :year " +
+            "AND pd.supermarket.id = :supermarketId " +
+            "AND ord.status = 4" +
+            "GROUP BY ord.id, ct.name, ct.id")
+    List<CateOderQuantityResponseBody> getOrderTotalAllCategoryReport(UUID supermarketId, Integer year);
 
 
 //    @Query(value = "SELECT * FROM product p " +

@@ -378,6 +378,39 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public List<CateOderQuantityResponseBody> getOrderTotalAllCategorySupermarket(UUID supermarketId, Integer year) {
+        LocalDate currentDate = LocalDate.now();
+
+        if (!supermarketRepository.findById(supermarketId).isPresent()) {
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.SUPERMARKET_NOT_FOUND.getCode()), AdditionalResponseCode.SUPERMARKET_NOT_FOUND.toString());
+        }
+
+        if (year == null) {
+            year = currentDate.getYear();
+        }
+
+        List<ProductCategory> rawProductCategoryList = productCategoryRepository.findAll();
+        List<CateOderQuantityResponseBody> cateOderQuantityResponseList = rawProductCategoryList.stream().map(productCategory -> new CateOderQuantityResponseBody(productCategory.getId(), productCategory.getName(), Long.parseLong("0"))).collect(Collectors.toList());
+
+
+        List<CateOderQuantityResponseBody> result = productRepository.getOrderTotalAllCategoryReport(supermarketId, year);
+        HashMap<UUID, CateOderQuantityResponseBody> cateOderQuantityResponseHashmap = new HashMap<>();
+        result.stream().forEach(cateOderQuantityResponseBody -> {
+            cateOderQuantityResponseHashmap.put(cateOderQuantityResponseBody.getCategoryId(), cateOderQuantityResponseBody);
+        });
+
+        for (CateOderQuantityResponseBody cateOderQuantityResponseBody : cateOderQuantityResponseList) {
+            if(cateOderQuantityResponseHashmap.containsKey(cateOderQuantityResponseBody.getCategoryId())){
+                cateOderQuantityResponseBody.setTotalOrderQuantity(cateOderQuantityResponseHashmap.get(cateOderQuantityResponseBody.getCategoryId()).getTotalOrderQuantity());
+            }
+        }
+
+        cateOderQuantityResponseList.sort((o1, o2) -> o2.getTotalOrderQuantity()-o1.getTotalOrderQuantity());
+
+        return cateOderQuantityResponseList;
+    }
+
+    @Override
     public Product updateProduct(Product product) throws ResourceNotFoundException {
         HashMap<String, String> errorFields = new HashMap<>();
 
