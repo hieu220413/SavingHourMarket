@@ -78,6 +78,10 @@ const SuperMarketManagement = () => {
       display: "Sản phẩm",
       to: "/productmanagement",
     },
+    {
+      display: "Loại sản phẩm",
+      to: "/categorymanagement",
+    },
   ];
 
   const onSubmitSearch = (e) => {
