@@ -13,23 +13,14 @@ import com.fpt.capstone.savinghourmarket.service.OrderService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
-import com.google.maps.DistanceMatrixApi;
-import com.google.maps.DistanceMatrixApiRequest;
 import com.google.maps.GeoApiContext;
 import com.google.maps.errors.ApiException;
-import com.google.maps.model.DistanceMatrix;
-import com.google.maps.model.DistanceMatrixElement;
-import com.google.maps.model.DistanceMatrixRow;
-import com.google.maps.model.LatLng;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.glxn.qrgen.QRCode;
 import net.glxn.qrgen.image.ImageType;
-import org.apache.commons.math3.exception.DimensionMismatchException;
-import org.apache.commons.math3.ml.clustering.Cluster;
-import org.apache.commons.math3.ml.clustering.DBSCANClusterer;
-import org.apache.commons.math3.ml.distance.DistanceMeasure;
 import org.redisson.api.RLock;
+import org.redisson.api.RMapCache;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,8 +40,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -62,8 +51,12 @@ public class OrderServiceImpl implements OrderService {
 
     private final GeoApiContext geoApiContext;
 
+    private  RedissonClient redissonClient;
+
     @Autowired
-    private final RedissonClient redissonClient;
+    public void setRedissonClient(RedissonClient redissonClient) {
+        this.redissonClient = redissonClient;
+    }
 
     @Autowired
     private OrderRepository repository;
@@ -302,6 +295,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public String deleteOrder(String jwtToken, UUID id) throws FirebaseAuthException, ResourceNotFoundException, OrderDeletionNotAllowedException {
         String email = Utils.getCustomerEmail(jwtToken, firebaseAuth);
         Customer customer = customerRepository
@@ -310,6 +304,38 @@ public class OrderServiceImpl implements OrderService {
         if (customer == null) {
             return "Fail to delete order " + id;
         }
+        Order order = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
+
+        if(order.getOrderGroup() != null){
+            OrderGroup orderGroup = order.getOrderGroup();
+            orderGroup.getOrderList().remove(order);
+            orderGroupRepository.save(orderGroup);
+        }
+
+        if(order.getOrderBatch() != null){
+            OrderBatch orderBatch = order.getOrderBatch();
+            orderBatch.getOrderList().remove(order);
+            orderBatchRepository.save(orderBatch);
+        }
+
+        if (order.getStatus() == OrderStatus.PROCESSING.ordinal()) {
+            List<OrderDetail> orderDetails = order.getOrderDetailList();
+            increaseProductQuantity(orderDetails);
+            if (order.getDiscountList() != null & order.getDiscountList().size() > 0) {
+                increaseDiscountQuantity(order.getDiscountList());
+            }
+
+        } else {
+            throw new OrderDeletionNotAllowedException("Order with id " + id + " is already in " + order.getStatus().toString() + " process");
+        }
+        repository.deleteById(order.getId());
+        return "Successfully deleted  order " + id;
+    }
+
+    @Override
+    @Transactional
+    public String deleteOrderWithoutAuthen(UUID id) throws FirebaseAuthException, ResourceNotFoundException, OrderDeletionNotAllowedException {
         Order order = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
 
@@ -508,6 +534,10 @@ public class OrderServiceImpl implements OrderService {
         } else {
             throw new CustomerLimitOrderProcessingException("Bạn hiện đang có 3 đơn hàng đang chờ xác nhận!");
         }
+
+        RMapCache<UUID, Object> map = redissonClient.getMapCache("orderCreatedMap");
+        map.put(orderCreated.getId(), 0, 2, TimeUnit.MINUTES);
+
         return orderCreated;
     }
 
