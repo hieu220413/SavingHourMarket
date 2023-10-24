@@ -1,8 +1,9 @@
 package com.fpt.capstone.savinghourmarket.repository;
 
-import com.fpt.capstone.savinghourmarket.entity.Discount;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
 import com.fpt.capstone.savinghourmarket.model.ProductCateWithSubCate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -53,6 +54,7 @@ public interface ProductCategoryRepository extends JpaRepository<ProductCategory
     ProductCategory getCategoryDiscountUsageByCategoryId(Integer monthValue, Integer quarter, Integer year, Integer fromPercentage, Integer toPercentage, UUID productCategoryId);
 
     @Query("SELECT DISTINCT pct from ProductCategory pct " +
-            "LEFT JOIN FETCH pct.productSubCategories psct ")
-    List<ProductCateWithSubCate> getAllProductCategoryWithSubCateForStaff();
+            "LEFT JOIN FETCH pct.productSubCategories psct " +
+            "WHERE UPPER(pct.name) LIKE UPPER(CONCAT('%',:name,'%'))")
+    Page<ProductCateWithSubCate> getAllProductCategoryWithSubCateForStaff(String name, Pageable pageable);
 }
