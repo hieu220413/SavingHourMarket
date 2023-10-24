@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./CreateProduct.scss";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -6,22 +6,27 @@ import {
   faCaretDown,
   faRepeat,
   faPlusCircle,
+  faMinus,
+  faX,
 } from "@fortawesome/free-solid-svg-icons";
 import { MdCloudUpload, MdDelete } from "react-icons/md";
 import { AiFillFileImage } from "react-icons/ai";
 import dayjs from "dayjs";
-import MuiAlert from "@mui/material/Alert";
-import { Snackbar } from "@mui/material";
 import { auth, imageDB } from "../../../../firebase/firebase.config";
-import { getDownloadURL, listAll, ref, uploadBytes } from "firebase/storage";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { v4 } from "uuid";
 import { API } from "../../../../contanst/api";
 
-const Alert = React.forwardRef(function Alert(props, ref) {
-  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-});
-
-const CreateProduct = () => {
+const CreateProduct = ({
+  handleClose,
+  setProducts,
+  setTotalPage,
+  page,
+  searchValue,
+  openSnackbar,
+  setOpenSnackbar,
+  setMsg,
+}) => {
   const [image, setImage] = useState(null);
   const [fileName, setFileName] = useState("Chưa có hình ảnh sản phẩm");
   const [imgToFirebase, setImgToFirebase] = useState("");
@@ -50,6 +55,21 @@ const CreateProduct = () => {
     useState("Chọn loại sản phẩm phụ");
   const [isCreateNewSubCate, setIsCreateNewSubCate] = useState(false);
 
+  const [allowableDate, setAllowableDate] = useState("");
+
+  const [locationData, setLocationData] = useState([]);
+
+  const [addressList, setAddressList] = useState([
+    {
+      isFocused: false,
+      selectAddress: "",
+      searchAddress: "",
+      isCreateNew: true,
+    },
+  ]);
+
+  const typingTimeoutRef = useRef(null);
+
   // validate data
   const [productName, setProductName] = useState("");
   const [price, setPrice] = useState(0);
@@ -58,10 +78,13 @@ const CreateProduct = () => {
   const [expiredDate, setExpiredDate] = useState(null);
   const [quantity, setQuantity] = useState(0);
   const [imageUrl, setImageUrl] = useState("");
+  const [supermarketId, setSupermarketId] = useState("");
   const [supermarket, setSupermarket] = useState("");
   const [supermarketHotline, setSuperMarketHotline] = useState("");
   const [supermarketAddress, setSupermarketAddress] = useState([]);
+  const [categoryId, setCategoryId] = useState("");
   const [category, setCategory] = useState("");
+  const [subCategoryId, setSubcategoryId] = useState("");
   const [subCateName, setSubCateName] = useState("");
   const [allowableDisplayThreshold, setAllowableDisplayThreshold] = useState(0);
   const [imageUrlSubCate, setImageUrlSubCate] = useState("");
@@ -110,48 +133,28 @@ const CreateProduct = () => {
         .then((res) => res.json())
         .then((data) => {
           setCategories(data);
+        })
+        .catch((err) => {
+          console.log(err);
         });
     };
     fetchData();
   }, []);
 
-  const handleCloseSnackbar = () => {
-    setOpenSnackbar({ ...openSnackbar, open: false });
-  };
-
-  const [openSnackbar, setOpenSnackbar] = useState({
-    open: false,
-    vertical: "top",
-    horizontal: "right",
-  });
-  // const { open, vertical, horizontal, feature } = openSnackbar;
-
-  const [openErrorSnackbar, setOpenErrorSnackbar] = useState({
-    open: false,
-    vertical: "top",
-    horizontal: "right",
-    error: "",
-  });
-
-  const handleCloseErrorSnackbar = () => {
-    setOpenErrorSnackbar({ ...openSnackbar, open: false });
-  };
-
-  const handleAddSupermarketAddress = () => {
-    console.log("add");
-  };
-
-  const handleUploadImageToFirebase = async () => {
+  const uploadProductImgToFirebase = async () => {
     if (imgToFirebase !== "") {
       const imgRef = ref(imageDB, `productImage/${v4()}`);
       await uploadBytes(imgRef, imgToFirebase);
       try {
         const url = await getDownloadURL(imgRef);
-        setImageUrl(url);
+        return url;
       } catch (error) {
         console.log(error);
       }
     }
+  };
+
+  const uploadSubCateImgToFireBase = async () => {
     if (imgSubCateToFirebase !== "") {
       const imgRefSubCate = ref(imageDB, `subCateImage/${v4()}`);
       await uploadBytes(imgRefSubCate, imgSubCateToFirebase);
@@ -164,17 +167,68 @@ const CreateProduct = () => {
     }
   };
 
-  const handleSubmit = () => {
-    handleUploadImageToFirebase();
+  const handleSubmit = async () => {
+    if (supermarket === "") {
+      setError({ ...error, supermarket: "Vui lòng không để trống" });
+      return;
+    }
+
+    if (supermarketHotline === "") {
+      setError({
+        ...error,
+        supermarketHotline: "Vui lòng không để trống số điện thoại",
+      });
+      return;
+    }
+
+    if (
+      !/^[(]{0,1}[0-9]{3}[)]{0,1}[-s.]{0,1}[0-9]{3}[-s.]{0,1}[0-9]{4}$/.test(
+        supermarketHotline
+      )
+    ) {
+      setError({ ...error, supermarketHotline: "Số điện thoại không hợp lệ" });
+      return;
+    }
+    const addressListValidate = addressList.some(
+      (item) => !item.selectAddress && item.isCreateNew === true
+    );
+    if (addressListValidate) {
+      setError({ ...error, supermarketAddress: "Địa chỉ không hợp lệ" });
+      return;
+    }
+
+    if (category === "") {
+      setError({ ...error, category: "Vui lòng không để trống" });
+      return;
+    }
+
+    if (error.subCateName !== "") {
+      console.log("Chưa chọn loại sản phẩm");
+      return;
+    }
+
+    if (subCateName === "") {
+      setError({ ...error, subCateName: "Vui lòng không để trống" });
+      return;
+    }
+
+    if (allowableDisplayThreshold <= 0 || !allowableDisplayThreshold) {
+      setError({
+        ...error,
+        allowableDisplayThreshold: "Số ngày trước hạn sử dụng phải lớn hơn 0",
+      });
+      return;
+    }
+
     if (productName === "") {
       setError({ ...error, productName: "Vui lòng không để trống" });
       return;
     }
-    if (price < 0 || !price) {
+    if (price <= 0 || !price) {
       setError({ ...error, price: "Số tiền nhập vào phải lớn hớn 0" });
       return;
     }
-    if (priceOriginal < 0 || !priceOriginal) {
+    if (priceOriginal <= 0 || !priceOriginal) {
       setError({ ...error, priceOriginal: "Số tiền nhập vào phải lớn hớn 0" });
       return;
     }
@@ -182,13 +236,125 @@ const CreateProduct = () => {
       setError({ ...error, description: "Vui lòng không để trống" });
       return;
     }
-    if (quantity < 0 || !quantity) {
+    if (error.expiredDate !== "") {
+      return;
+    }
+    if (allowableDate < allowableDisplayThreshold) {
+      setError({
+        ...error,
+        expiredDate: `Ngày hết hạn bạn nhập đã bé hơn giới hạn số ngày trước HSD`,
+      });
+      return;
+    }
+    if (quantity <= 0 || !quantity) {
       setError({ ...error, quantity: "Số lượng nhập vào phải lớn hớn 0" });
       return;
     }
+
+    let imageUrlSubCate = await uploadSubCateImgToFireBase();
+    if (imageUrlSubCate === "") {
+      setError({ ...error, imageUrlSubCate: "Chưa có ảnh sản phẩm" });
+      return;
+    }
+
+    let imageUrl = await uploadProductImgToFirebase();
     if (imageUrl === "") {
       setError({ ...error, imageUrl: "Chưa có ảnh sản phẩm" });
+      return;
     }
+
+    // Create Product
+    let listAddress = addressList.map((item) => item.selectAddress);
+    listAddress = listAddress.map((item) => ({
+      id: "",
+      address: item,
+    }));
+
+    let listSupermarketAddress = supermarketAddress.map((item) => item.address);
+    listSupermarketAddress = listSupermarketAddress.map((item) => ({
+      id: "",
+      address: item,
+    }));
+    const submitSupermarket = {
+      id: supermarketId ? supermarketId : "",
+      name: supermarket,
+      status: 1,
+      phone: supermarketHotline,
+      supermarketAddressList:
+        listSupermarketAddress.length !== 0
+          ? listSupermarketAddress
+          : listAddress,
+    };
+    // -----------------------------------------------------------------
+    // Category & Subcategory Data
+    const submitProductSubCategory = {
+      id: subCategoryId ? subCategoryId : "",
+      name: subCateName,
+      imageUrl: imageUrlSubCate,
+      allowableDisplayThreshold: allowableDisplayThreshold,
+      productCategory: {
+        id: categoryId ? categoryId : "",
+        name: category,
+        totalDiscountUsage: 0,
+      },
+      totalDiscountUsage: 0,
+    };
+    // -----------------------------------------------------------------
+    const productToCreate = {
+      name: productName,
+      price: price,
+      priceOriginal: priceOriginal,
+      description: description,
+      expiredDate: expiredDate,
+      quantity: quantity,
+      imageUrl: imageUrl,
+      productSubCategory: submitProductSubCategory,
+      supermarket: submitSupermarket,
+    };
+
+    const tokenId = await auth.currentUser.getIdToken();
+    fetch(`${API.baseURL}/api/product/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${tokenId}`,
+      },
+      body: JSON.stringify(productToCreate),
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        console.log(res);
+        fetch(
+          `${API.baseURL}/api/product/getProductsForStaff?page=${
+            page - 1
+          }&limit=5&name=${searchValue}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${tokenId}`,
+            },
+          }
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            setProducts(data.productList);
+            setTotalPage(data.totalPage);
+            handleClose();
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "success",
+            });
+            setMsg("Thêm sản phẩm thành công");
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   return (
@@ -196,7 +362,7 @@ const CreateProduct = () => {
     <div className="modal__container">
       <div className="modal__container-header">
         <h3 className="modal__container-header-title">Thêm sản phẩm mới</h3>
-        <FontAwesomeIcon icon={faXmark} />
+        <FontAwesomeIcon icon={faXmark} onClick={handleClose} />
       </div>
       {/* ****************** */}
 
@@ -212,51 +378,84 @@ const CreateProduct = () => {
               <h4 className="modal__container-body-inputcontrol-label">
                 Tên siêu thị
               </h4>
-              <div
-                style={{
-                  display: "flex",
-                }}
-              >
-                <div className="dropdown">
-                  <div
-                    className="dropdown-btn"
-                    onClick={(e) => setIsActiveDropdown(!isActiveDropdown)}
-                  >
-                    {selectedDropdownItem}
-                    <FontAwesomeIcon icon={faCaretDown} />
-                  </div>
-                  {isActiveDropdown && (
-                    <div className="dropdown-content">
-                      {supermarkets.map((item, index) => (
-                        <div
-                          onClick={(e) => {
-                            setSelectedDropdownItem(item.name);
-                            setIsActiveDropdown(false);
-                          }}
-                          className="dropdown-item"
-                          key={index}
-                        >
-                          {item.name}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <button
+              <div>
+                <div
                   style={{
-                    width: "120px",
-                  }}
-                  className="buttonSwitchSelectSuperMarket"
-                  onClick={(e) => {
-                    setIsCreateNewSupermarket(true);
+                    display: "flex",
                   }}
                 >
-                  Thêm mới
-                  <FontAwesomeIcon
-                    icon={faRepeat}
-                    style={{ paddingLeft: 10 }}
-                  />
-                </button>
+                  <div className="dropdown">
+                    <div
+                      className="dropdown-btn"
+                      onClick={(e) => setIsActiveDropdown(!isActiveDropdown)}
+                    >
+                      {selectedDropdownItem}
+                      <FontAwesomeIcon icon={faCaretDown} />
+                    </div>
+                    {isActiveDropdown && (
+                      <div className="dropdown-content">
+                        {supermarkets.map((item, index) => (
+                          <div
+                            onClick={(e) => {
+                              setSelectedDropdownItem(item.name);
+                              setIsActiveDropdown(false);
+                              setSupermarketId(item.id);
+                              setSupermarket(item.name);
+                              setError({ ...error, supermarket: "" });
+                              setSupermarketAddress(
+                                item.supermarketAddressList
+                              );
+                              setSuperMarketHotline(item.phone);
+                              const tempArrAddressList = addressList.map(
+                                (data) => {
+                                  return { ...data, isCreateNew: false };
+                                }
+                              );
+                              setAddressList(tempArrAddressList);
+                            }}
+                            className="dropdown-item"
+                            key={index}
+                          >
+                            {item.name}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    style={{
+                      width: "120px",
+                    }}
+                    className="buttonSwitchSelectSuperMarket"
+                    onClick={(e) => {
+                      setIsCreateNewSupermarket(true);
+                      setSupermarket("");
+                      setSuperMarketHotline("");
+                      setSupermarketAddress([]);
+                      setAddressList([
+                        {
+                          isFocused: false,
+                          selectAddress: "",
+                          searchAddress: "",
+                        },
+                      ]);
+                    }}
+                  >
+                    Thêm mới
+                    <FontAwesomeIcon
+                      icon={faRepeat}
+                      style={{ paddingLeft: 10 }}
+                    />
+                  </button>
+                </div>
+                {error.supermarket && (
+                  <p
+                    style={{ fontSize: "14px", marginBottom: "-10px" }}
+                    className="text-danger"
+                  >
+                    {error.supermarket}
+                  </p>
+                )}
               </div>
             </div>
           </>
@@ -268,6 +467,8 @@ const CreateProduct = () => {
               className="buttonSwitchSelectSuperMarket"
               onClick={(e) => {
                 setIsCreateNewSupermarket(false);
+                setSupermarket("");
+                setSelectedDropdownItem("Chọn siêu thị");
               }}
             >
               Thêm siêu thị có sẵn
@@ -277,43 +478,209 @@ const CreateProduct = () => {
               <h4 className="modal__container-body-inputcontrol-label">
                 Tên siêu thị
               </h4>
-              <input
-                placeholder="Nhập tên siêu thị"
-                type="text"
-                className="modal__container-body-inputcontrol-input"
-              />
+              <div>
+                <input
+                  placeholder="Nhập tên siêu thị"
+                  type="text"
+                  className="modal__container-body-inputcontrol-input"
+                  value={supermarket}
+                  onChange={(e) => {
+                    setSupermarket(e.target.value);
+                    setError({ ...error, supermarket: "" });
+                  }}
+                />
+                {error.supermarket && (
+                  <p
+                    style={{ fontSize: "14px", marginBottom: "-10px" }}
+                    className="text-danger"
+                  >
+                    {error.supermarket}
+                  </p>
+                )}
+              </div>
             </div>
 
             <div className="modal__container-body-inputcontrol">
               <h4 className="modal__container-body-inputcontrol-label">
                 Hotline siêu thị
               </h4>
-              <input
-                placeholder="Nhập Hotline siêu thị"
-                type="text"
-                className="modal__container-body-inputcontrol-input"
-              />
+              <div>
+                <input
+                  placeholder="Nhập Hotline siêu thị"
+                  type="text"
+                  className="modal__container-body-inputcontrol-input"
+                  value={supermarketHotline}
+                  onChange={(e) => {
+                    setSuperMarketHotline(e.target.value);
+                    setError({ ...error, supermarketHotline: "" });
+                  }}
+                />
+                {error.supermarketHotline && (
+                  <p
+                    style={{ fontSize: "14px", marginBottom: "-10px" }}
+                    className="text-danger"
+                  >
+                    {error.supermarketHotline}
+                  </p>
+                )}
+              </div>
             </div>
 
-            <div className="modal__container-body-inputcontrol">
-              <h4 className="modal__container-body-inputcontrol-label">
-                Địa chỉ chi nhánh
-              </h4>
-              <input
-                placeholder="Nhập địa chỉ chi nhánh"
-                type="text"
-                className="modal__container-body-inputcontrol-input"
-              />
-            </div>
+            {addressList.map((item, i) => {
+              return (
+                <div className="modal__container-body-inputcontrol input-address">
+                  <div className="modal__container-body-inputcontrol-label-icon">
+                    {addressList.length !== 1 && (
+                      <div
+                        onClick={() => {
+                          setAddressList(
+                            addressList.filter((address) => address !== item)
+                          );
+                          setError({ ...error, supermarketAddress: "" });
+                        }}
+                        className="button__minus"
+                      >
+                        <FontAwesomeIcon icon={faMinus} />
+                      </div>
+                    )}
+
+                    <h4 className="modal__container-body-inputcontrol-label">
+                      Chi nhánh {i + 1}
+                    </h4>
+                  </div>
+
+                  <div>
+                    <input
+                      style={{ paddingRight: 20 }}
+                      value={item.searchAddress}
+                      onChange={(e) => {
+                        const newAddressList1 = addressList.map(
+                          (data, index) => {
+                            if (index === i) {
+                              return {
+                                ...data,
+                                searchAddress: e.target.value,
+                                selectAddress: "",
+                              };
+                            }
+                            return data;
+                          }
+                        );
+                        setAddressList(newAddressList1);
+                        setError({ ...error, supermarketAddress: "" });
+
+                        if (typingTimeoutRef.current) {
+                          clearTimeout(typingTimeoutRef.current);
+                        }
+                        typingTimeoutRef.current = setTimeout(() => {
+                          fetch(
+                            `https://rsapi.goong.io/Place/AutoComplete?api_key=${API.GoongAPIKey}&limit=4&input=${item.searchAddress}`
+                          )
+                            .then((res) => res.json())
+                            .then((respond) => {
+                              if (!respond.predictions) {
+                                setLocationData([]);
+                                return;
+                              }
+                              setLocationData(respond.predictions);
+                            })
+                            .catch((err) => console.log(err));
+                        }, 400);
+                      }}
+                      onFocus={() => {
+                        setLocationData([]);
+                        const newAddressList1 = addressList.map(
+                          (data, index) => {
+                            if (index === i) {
+                              return { ...data, isFocused: true };
+                            }
+                            return { ...data, isFocused: false };
+                          }
+                        );
+                        setAddressList(newAddressList1);
+                      }}
+                      placeholder="Nhập địa chỉ"
+                      type="text"
+                      className="modal__container-body-inputcontrol-input"
+                    />
+                    {item.searchAddress && (
+                      <FontAwesomeIcon
+                        onClick={() => {
+                          const newAddressList1 = addressList.map(
+                            (data, index) => {
+                              if (index === i) {
+                                return {
+                                  ...data,
+                                  searchAddress: "",
+                                  selectAddress: "",
+                                };
+                              }
+                              return data;
+                            }
+                          );
+                          setAddressList(newAddressList1);
+                        }}
+                        className="input-icon-x"
+                        icon={faX}
+                      />
+                    )}
+
+                    {item.isFocused && locationData.length !== 0 && (
+                      <div className="suggest-location">
+                        {locationData.map((data) => (
+                          <div
+                            onClick={() => {
+                              const newAddressList1 = addressList.map(
+                                (address, index) => {
+                                  if (index === i) {
+                                    return {
+                                      isFocused: false,
+                                      searchAddress: data.description,
+                                      selectAddress: data.description,
+                                    };
+                                  }
+                                  return address;
+                                }
+                              );
+                              setAddressList(newAddressList1);
+                            }}
+                            className="suggest-location-item"
+                          >
+                            <h4>{data.description}</h4>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+
+            {error.supermarketAddress && (
+              <p
+                style={{ fontSize: "14px", marginBottom: "-10px" }}
+                className="text-danger"
+              >
+                {error.supermarketAddress}
+              </p>
+            )}
 
             <div className="modal__container-body-inputcontrol">
               <button
-                onClick={(e) => {
-                  handleAddSupermarketAddress();
+                onClick={() => {
+                  setAddressList([
+                    ...addressList,
+                    {
+                      isFocused: false,
+                      selectAddress: "",
+                      searchAddress: "",
+                    },
+                  ]);
+                  setError({ ...error, supermarketAddress: "" });
                 }}
                 className="buttonAddSupermarkerAddress"
               >
-                Thêm chi nhánh thứ
+                Thêm chi nhánh mới
                 <FontAwesomeIcon
                   icon={faPlusCircle}
                   style={{ paddingLeft: 10 }}
@@ -330,50 +697,69 @@ const CreateProduct = () => {
               <h4 className="modal__container-body-inputcontrol-label">
                 Tên loại sản phẩm
               </h4>
-              <div style={{ display: "flex" }}>
-                <div className="dropdown">
-                  <div
-                    className="dropdown-btn"
-                    onClick={(e) =>
-                      setIsActiveDropdownCate(!isActiveDropdownCate)
-                    }
-                  >
-                    {selectedDropdownItemCate}
-                    <FontAwesomeIcon icon={faCaretDown} />
-                  </div>
-                  {isActiveDropdownCate && (
-                    <div className="dropdown-content">
-                      {categories.map((item, index) => (
-                        <div
-                          onClick={(e) => {
-                            setSelectedDropdownItemCate(item.name);
-                            setIsActiveDropdownCate(false);
-                            setSubCategories(item.productSubCategories);
-                          }}
-                          className="dropdown-item"
-                          key={index}
-                        >
-                          {item.name}
-                        </div>
-                      ))}
+              <div>
+                <div style={{ display: "flex" }}>
+                  <div className="dropdown">
+                    <div
+                      className="dropdown-btn"
+                      onClick={(e) =>
+                        setIsActiveDropdownCate(!isActiveDropdownCate)
+                      }
+                    >
+                      {selectedDropdownItemCate}
+                      <FontAwesomeIcon icon={faCaretDown} />
                     </div>
-                  )}
+                    {isActiveDropdownCate && (
+                      <div className="dropdown-content">
+                        {categories.map((item, index) => (
+                          <div
+                            onClick={(e) => {
+                              setSelectedDropdownItemCate(item.name);
+                              setIsActiveDropdownCate(false);
+                              setCategoryId(item.id);
+                              setSubCategories(item.productSubCategories);
+                              setCategory(item.name);
+                              setError({ ...error, category: "" });
+                            }}
+                            className="dropdown-item"
+                            key={index}
+                          >
+                            {item.name}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    style={{
+                      width: "120px",
+                    }}
+                    className="buttonSwitchSelectSuperMarket"
+                    onClick={(e) => {
+                      setIsCreateNewCate(true);
+                      setCategory("");
+                      setSubCateName("");
+                      setAllowableDisplayThreshold(0);
+                      setImageUrlSubCate("");
+                      setImageSubCate(null);
+                      setFileNameSubCate("Chưa có hình ảnh loại sản phẩm phụ");
+                    }}
+                  >
+                    Thêm mới
+                    <FontAwesomeIcon
+                      icon={faRepeat}
+                      style={{ paddingLeft: 10 }}
+                    />
+                  </button>
                 </div>
-                <button
-                  style={{
-                    width: "120px",
-                  }}
-                  className="buttonSwitchSelectSuperMarket"
-                  onClick={(e) => {
-                    setIsCreateNewCate(true);
-                  }}
-                >
-                  Thêm mới
-                  <FontAwesomeIcon
-                    icon={faRepeat}
-                    style={{ paddingLeft: 10 }}
-                  />
-                </button>
+                {error.category && (
+                  <p
+                    style={{ fontSize: "14px", marginBottom: "-10px" }}
+                    className="text-danger"
+                  >
+                    {error.category}
+                  </p>
+                )}
               </div>
             </div>
             {/* Sub cate */}
@@ -383,70 +769,91 @@ const CreateProduct = () => {
                   <h4 className="modal__container-body-inputcontrol-label">
                     Tên loại sản phẩm phụ
                   </h4>
-                  <div
-                    style={{
-                      display: "flex",
-                    }}
-                  >
-                    <div className="dropdown">
-                      <div
-                        className="dropdown-btn"
-                        onClick={(e) => {
-                          const isSelected = categories.some(
-                            (item) => item.name === selectedDropdownItemCate
-                          );
-                          setCheckCategorySelected(isSelected);
-                          if (isSelected === true) {
-                            setIsActiveDropdownSubCate(
-                              !isActiveDropdownSubCate
-                            );
-                          }
-                        }}
-                      >
-                        {selectedDropdownItemSubCate}
-                        <FontAwesomeIcon icon={faCaretDown} />
-                      </div>
-                      {!checkCategorySelected && (
-                        <span
-                          style={{
-                            color: "red",
-                            fontSize: "14px",
-                          }}
-                          className="text-danger"
-                        >
-                          Hãy chọn loại sản phẩm trước
-                        </span>
-                      )}
-                      {isActiveDropdownSubCate && (
-                        <div className="dropdown-content">
-                          {subCategories.map((item, index) => (
-                            <div
-                              onClick={(e) => {
-                                setSelectedDropdownItemSubCate(item.name);
-                                setIsActiveDropdownSubCate(false);
-                              }}
-                              className="dropdown-item"
-                              key={index}
-                            >
-                              {item.name}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <button
-                      style={{ width: "120px" }}
-                      className="buttonSwitchSelectSuperMarket"
-                      onClick={(e) => {
-                        setIsCreateNewSubCate(true);
+                  <div>
+                    <div
+                      style={{
+                        display: "flex",
                       }}
                     >
-                      Thêm mới
-                      <FontAwesomeIcon
-                        icon={faRepeat}
-                        style={{ paddingLeft: 10 }}
-                      />
-                    </button>
+                      <div className="dropdown">
+                        <div
+                          className="dropdown-btn"
+                          onClick={(e) => {
+                            const isSelected = categories.some(
+                              (item) => item.name === selectedDropdownItemCate
+                            );
+                            setCheckCategorySelected(isSelected);
+                            if (isSelected === true) {
+                              setIsActiveDropdownSubCate(
+                                !isActiveDropdownSubCate
+                              );
+                            }
+                          }}
+                        >
+                          {selectedDropdownItemSubCate}
+                          <FontAwesomeIcon icon={faCaretDown} />
+                        </div>
+                        {!checkCategorySelected && (
+                          <span
+                            style={{
+                              color: "red",
+                              fontSize: "14px",
+                            }}
+                            className="text-danger"
+                          >
+                            Hãy chọn loại sản phẩm trước
+                          </span>
+                        )}
+                        {isActiveDropdownSubCate && (
+                          <div className="dropdown-content">
+                            {subCategories.map((item, index) => (
+                              <div
+                                onClick={(e) => {
+                                  setSelectedDropdownItemSubCate(item.name);
+                                  setIsActiveDropdownSubCate(false);
+                                  setSubcategoryId(item.id);
+                                  setSubCateName(item.name);
+                                  setError({ ...error, subCateName: "" });
+                                  setImageUrlSubCate(item.imageUrl);
+                                  setAllowableDisplayThreshold(
+                                    item.allowableDisplayThreshold
+                                  );
+                                }}
+                                className="dropdown-item"
+                                key={index}
+                              >
+                                {item.name}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        style={{ width: "120px" }}
+                        className="buttonSwitchSelectSuperMarket"
+                        onClick={(e) => {
+                          setIsCreateNewSubCate(true);
+                          setImageSubCate(null);
+                          setFileNameSubCate(
+                            "Chưa có hình ảnh loại sản phẩm phụ"
+                          );
+                        }}
+                      >
+                        Thêm mới
+                        <FontAwesomeIcon
+                          icon={faRepeat}
+                          style={{ paddingLeft: 10 }}
+                        />
+                      </button>
+                    </div>
+                    {error.subCateName && (
+                      <p
+                        style={{ fontSize: "14px", marginBottom: "-10px" }}
+                        className="text-danger"
+                      >
+                        {error.subCateName}
+                      </p>
+                    )}
                   </div>
                 </div>
               </>
@@ -458,6 +865,11 @@ const CreateProduct = () => {
                   className="buttonSwitchSelectSuperMarket"
                   onClick={(e) => {
                     setIsCreateNewSubCate(false);
+                    setSubCateName("");
+                    setAllowableDisplayThreshold(0);
+                    setImageUrlSubCate("");
+                    setSelectedDropdownItemSubCate("Chọn loại sản phẩm phụ");
+                    setImageSubCate(null);
                   }}
                 >
                   Thêm loại sản phẩm phụ có sẵn
@@ -470,28 +882,65 @@ const CreateProduct = () => {
                   <h4 className="modal__container-body-inputcontrol-label">
                     Tên loại sản phẩm phụ
                   </h4>
-                  <input
-                    placeholder="Nhập tên loại sản phẩm phụ"
-                    type="text"
-                    className="modal__container-body-inputcontrol-input"
-                  />
+                  <div>
+                    {" "}
+                    <input
+                      placeholder="Nhập tên loại sản phẩm phụ"
+                      type="text"
+                      className="modal__container-body-inputcontrol-input"
+                      value={subCateName}
+                      onChange={(e) => {
+                        setSubCateName(e.target.value);
+                        setError({ ...error, subCateName: "" });
+                        if (category === "") {
+                          setError({
+                            ...error,
+                            subCateName: "Vui lòng chọn loại sản phẩm trước",
+                          });
+                        }
+                      }}
+                    />
+                    {error.subCateName && (
+                      <p
+                        style={{ fontSize: "14px", marginBottom: "-10px" }}
+                        className="text-danger"
+                      >
+                        {error.subCateName}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 <div className="modal__container-body-inputcontrol">
                   <h4 className="modal__container-body-inputcontrol-label">
                     Số ngày trước hạn HSD
                   </h4>
-                  <input
-                    min={0}
-                    placeholder="Nhập số ngày tối thiểu trước HSD"
-                    type="number"
-                    className="modal__container-body-inputcontrol-input"
-                  />
+                  <div>
+                    <input
+                      min={0}
+                      placeholder="Nhập số ngày tối thiểu trước HSD"
+                      type="number"
+                      className="modal__container-body-inputcontrol-input"
+                      value={allowableDisplayThreshold}
+                      onChange={(e) => {
+                        setAllowableDisplayThreshold(e.target.value);
+                        setError({ ...error, allowableDisplayThreshold: "" });
+                      }}
+                    />
+                    {error.allowableDisplayThreshold && (
+                      <p
+                        style={{ fontSize: "14px", marginBottom: "-10px" }}
+                        className="text-danger"
+                      >
+                        {error.allowableDisplayThreshold}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 <div className="modal__container-body-inputcontrol">
                   <h4 className="modal__container-body-inputcontrol-label">
                     Tải ảnh
                   </h4>
-                  <div>
+                  <div style={{ maxWidth: "400px" }}>
                     <div
                       className="imgWrapper"
                       onClick={() =>
@@ -508,6 +957,7 @@ const CreateProduct = () => {
                           if (files && files[0]) {
                             setImageSubCate(URL.createObjectURL(files[0]));
                             setImgSubCateToFirebase(files[0]);
+                            setError({ ...error, imageUrlSubCate: "" });
                           }
                         }}
                       />
@@ -559,6 +1009,13 @@ const CreateProduct = () => {
               className="buttonSwitchSelectSuperMarket"
               onClick={(e) => {
                 setIsCreateNewCate(false);
+                setCategory("");
+                setSubCateName("");
+                setAllowableDisplayThreshold(0);
+                setImageUrlSubCate("");
+                setSelectedDropdownItemCate("Chọn loại sản phẩm");
+                setSelectedDropdownItemSubCate("Chọn loại sản phẩm phụ");
+                setImageSubCate(null);
               }}
             >
               Thêm loại sản phẩm có sẵn
@@ -568,39 +1025,84 @@ const CreateProduct = () => {
               <h4 className="modal__container-body-inputcontrol-label">
                 Tên loại sản phẩm
               </h4>
-              <input
-                placeholder="Nhập tên loại sản phẩm"
-                type="text"
-                className="modal__container-body-inputcontrol-input"
-              />
+              <div>
+                <input
+                  placeholder="Nhập tên loại sản phẩm"
+                  type="text"
+                  className="modal__container-body-inputcontrol-input"
+                  value={category}
+                  onChange={(e) => {
+                    setCategory(e.target.value);
+                    setError({ ...error, category: "" });
+                  }}
+                />
+                {error.category && (
+                  <p
+                    style={{ fontSize: "14px", marginBottom: "-10px" }}
+                    className="text-danger"
+                  >
+                    {error.category}
+                  </p>
+                )}
+              </div>
             </div>
-            {/* Create Sub categoris */}
+            {/* Create Sub categories */}
             <div className="modal__container-body-inputcontrol">
               <h4 className="modal__container-body-inputcontrol-label">
                 Tên loại sản phẩm phụ
               </h4>
-              <input
-                placeholder="Nhập tên loại sản phẩm phụ"
-                type="text"
-                className="modal__container-body-inputcontrol-input"
-              />
+              <div>
+                <input
+                  placeholder="Nhập tên loại sản phẩm phụ"
+                  type="text"
+                  className="modal__container-body-inputcontrol-input"
+                  value={subCateName}
+                  onChange={(e) => {
+                    setSubCateName(e.target.value);
+                    setError({ ...error, subCateName: "" });
+                  }}
+                />
+                {error.subCateName && (
+                  <p
+                    style={{ fontSize: "14px", marginBottom: "-10px" }}
+                    className="text-danger"
+                  >
+                    {error.subCateName}
+                  </p>
+                )}
+              </div>
             </div>
             <div className="modal__container-body-inputcontrol">
               <h4 className="modal__container-body-inputcontrol-label">
                 Số ngày trước hạn HSD
               </h4>
-              <input
-                min={0}
-                placeholder="Nhập số ngày tối thiểu trước HSD"
-                type="number"
-                className="modal__container-body-inputcontrol-input"
-              />
+              <div>
+                <input
+                  min={0}
+                  placeholder="Nhập số ngày tối thiểu trước HSD"
+                  type="number"
+                  className="modal__container-body-inputcontrol-input"
+                  value={allowableDisplayThreshold}
+                  onChange={(e) => {
+                    setAllowableDisplayThreshold(e.target.value);
+                    setError({ ...error, allowableDisplayThreshold: "" });
+                  }}
+                />
+                {error.allowableDisplayThreshold && (
+                  <p
+                    style={{ fontSize: "14px", marginBottom: "-10px" }}
+                    className="text-danger"
+                  >
+                    {error.allowableDisplayThreshold}
+                  </p>
+                )}
+              </div>
             </div>
             <div className="modal__container-body-inputcontrol">
               <h4 className="modal__container-body-inputcontrol-label">
                 Tải ảnh
               </h4>
-              <div>
+              <div style={{ maxWidth: "400px" }}>
                 <div
                   className="imgWrapper"
                   onClick={() =>
@@ -617,6 +1119,7 @@ const CreateProduct = () => {
                       if (files && files[0]) {
                         setImageSubCate(URL.createObjectURL(files[0]));
                         setImgSubCateToFirebase(files[0]);
+                        setError({ ...error, imageUrlSubCate: "" });
                       }
                     }}
                   />
@@ -655,6 +1158,14 @@ const CreateProduct = () => {
                     />
                   </span>
                 </section>
+                {error.imageUrlSubCate && (
+                  <p
+                    style={{ fontSize: "14px", marginBottom: "-10px" }}
+                    className="text-danger"
+                  >
+                    {error.imageUrlSubCate}
+                  </p>
+                )}
               </div>
             </div>
           </>
@@ -768,17 +1279,53 @@ const CreateProduct = () => {
           <h4 className="modal__container-body-inputcontrol-label">
             Ngày hết hạn
           </h4>
-          <input
-            placeholder="Nhập Ngày hết hạn"
-            type="date"
-            className="modal__container-body-inputcontrol-input"
-            value={expiredDate}
-            onChange={(e) => {
-              console.log(e.target.value);
-              // console.log("format", dayjs(e.target.value).$d);
-              setExpiredDate(e.target.value);
-            }}
-          />
+          <div>
+            <input
+              placeholder="Nhập Ngày hết hạn"
+              type="date"
+              className="modal__container-body-inputcontrol-input"
+              value={expiredDate}
+              onChange={(e) => {
+                const date = new Date();
+                let day = date.getDate();
+                let month = date.getMonth() + 1;
+                let year = date.getFullYear();
+                let currentDate = `${year}-${month}-${day}`;
+                setExpiredDate(e.target.value);
+                setAllowableDate(dayjs(e.target.value).$D - day);
+                let allowableThresholdDate =
+                  parseInt(allowableDisplayThreshold) + day;
+                if (currentDate > e.target.value) {
+                  setError({
+                    ...error,
+                    expiredDate: "Ngày hết hạn không thể bé hơn ngày hiện tại",
+                  });
+                } else if (
+                  dayjs(e.target.value).$D - day <
+                  allowableDisplayThreshold
+                ) {
+                  setError({
+                    ...error,
+                    expiredDate: `Ngày hết hạn bạn nhập đã bé hơn giới hạn số ngày trước HSD. \n Số ngày tổi thiểu của ${subCateName} là ${allowableThresholdDate}/${month}/${year}`,
+                  });
+                } else {
+                  setError({ ...error, expiredDate: "" });
+                }
+              }}
+            />
+            {error.expiredDate && (
+              <p
+                style={{
+                  fontSize: "14px",
+                  marginBottom: "-10px",
+                  maxWidth: "400px",
+                }}
+                className="text-danger"
+              >
+                {error.expiredDate}
+              </p>
+            )}
+          </div>
         </div>
         {/* Quantity */}
         <div className="modal__container-body-inputcontrol">
@@ -808,7 +1355,7 @@ const CreateProduct = () => {
         {/* Image Upload */}
         <div className="modal__container-body-inputcontrol">
           <h4 className="modal__container-body-inputcontrol-label">Tải ảnh</h4>
-          <div>
+          <div style={{ maxWidth: "400px" }}>
             <div
               className="imgWrapper"
               onClick={() => document.querySelector("#imgUpload").click()}
@@ -823,6 +1370,7 @@ const CreateProduct = () => {
                   if (files && files[0]) {
                     setImage(URL.createObjectURL(files[0]));
                     setImgToFirebase(files[0]);
+                    console.log(files[0]);
                     setError({ ...error, imageUrl: "" });
                   }
                 }}
@@ -833,7 +1381,7 @@ const CreateProduct = () => {
                   width={360}
                   height={160}
                   alt={fileName}
-                  style={{ borderRadius: "5px" }}
+                  style={{ borderRadius: "5px", maxWidth: 360 }}
                 />
               ) : (
                 <>
@@ -874,7 +1422,10 @@ const CreateProduct = () => {
       {/* modal footer */}
       <div className="modal__container-footer">
         <div className="modal__container-footer-buttons">
-          <button className="modal__container-footer-buttons-close">
+          <button
+            className="modal__container-footer-buttons-close"
+            onClick={handleClose}
+          >
             Đóng
           </button>
           <button
@@ -886,28 +1437,6 @@ const CreateProduct = () => {
         </div>
       </div>
       {/* *********************** */}
-      {/* Alert */}
-      <Snackbar
-        open={openErrorSnackbar.open}
-        autoHideDuration={3000}
-        anchorOrigin={{
-          vertical: openErrorSnackbar.vertical,
-          horizontal: openErrorSnackbar.horizontal,
-        }}
-        onClose={handleCloseErrorSnackbar}
-      >
-        <Alert
-          onClose={handleCloseErrorSnackbar}
-          severity="error"
-          sx={{
-            width: "100%",
-            fontSize: "15px",
-            alignItem: "center",
-          }}
-        >
-          {openErrorSnackbar.error}
-        </Alert>
-      </Snackbar>
     </div>
   );
 };
