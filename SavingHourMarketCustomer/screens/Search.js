@@ -32,16 +32,13 @@ const Search = ({ navigation }) => {
     // fetch search suggestion
     useFocusEffect(
         useCallback(() => {
-            setLoading(true);
             fetch(`${API.baseURL}/api/product/getProductsForCustomer?name=${productName}&quantitySortType=DESC&expiredSortType=DESC`)
                 .then(res => res.json())
                 .then(data => {
                     setResult(data.productList);
-                    setLoading(false);
                 })
                 .catch(err => {
                     console.log(err);
-                    setLoading(false);
                 });
 
             (async () => {
@@ -51,7 +48,6 @@ const Search = ({ navigation }) => {
                     setSearchHistory(newSearchHistoryList);
                 } catch (err) {
                     console.log(err);
-                    setLoading(false);
                 }
             })();
         }, [productName]

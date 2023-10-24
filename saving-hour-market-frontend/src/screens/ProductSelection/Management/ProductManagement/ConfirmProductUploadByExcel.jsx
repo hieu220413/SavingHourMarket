@@ -19,6 +19,7 @@ const ConfirmProductUploadByExcel = ({
   setConfirmProductList,
   setOpenSuccessSnackbar,
   openSuccessSnackbar,
+  setMsg,
 }) => {
   const [openSnackbar, setOpenSnackbar] = useState({
     open: false,
@@ -43,8 +44,8 @@ const ConfirmProductUploadByExcel = ({
     })
       .then((res) => res.json())
       .then((res) => {
-        console.log(res);
         handleClose();
+        setMsg("Thêm mới thành công");
         setOpenSuccessSnackbar({
           ...openSuccessSnackbar,
           open: true,

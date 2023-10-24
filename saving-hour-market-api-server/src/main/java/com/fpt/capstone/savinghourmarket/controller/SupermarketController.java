@@ -56,11 +56,12 @@ public class SupermarketController {
     @RequestMapping(value = "/getSupermarketForStaff", method = RequestMethod.GET)
     public ResponseEntity<SupermarketListResponseBody> getSupermarketForStaff(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken
             , @RequestParam(defaultValue = "") String name
+            , @RequestParam(required = false) EnableDisableStatus status
             , @RequestParam(defaultValue = "0") Integer page
             , @RequestParam(defaultValue = "5") Integer limit) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        SupermarketListResponseBody supermarketList = supermarketService.getSupermarketForStaff(name, page, limit);
+        SupermarketListResponseBody supermarketList = supermarketService.getSupermarketForStaff(name, status, page, limit);
         return ResponseEntity.status(HttpStatus.OK).body(supermarketList);
     }
 }
