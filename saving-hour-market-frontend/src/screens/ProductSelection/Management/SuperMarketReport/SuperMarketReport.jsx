@@ -26,10 +26,100 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
 } from "recharts";
+import { API } from "../../../../contanst/api";
+import { auth } from "../../../../firebase/firebase.config";
 
 import { Box, Stack, Typography } from "@mui/material";
 
 function SuperMarketReport() {
+  const [years, setYears] = useState([]);
+  const thisYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(thisYear);
+  const [allSuperData, setAllSuperData] = useState([]);
+  const [selectedSupermarket, setSelectedSupermarket] = useState();
+
+  useEffect(() => {
+    const fetchYearData = async () => {
+      const tokenId = await auth.currentUser.getIdToken();
+      fetch(`${API.baseURL}/api/product/getRevenueReportForEachYear`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${tokenId}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((respond) => {
+          setYears(respond);
+        })
+        .catch((err) => console.log(err));
+    };
+    let supermarketList = [];
+    let firstSupermarket = [];
+    const fetchAllSupermarketSaleReport = async () => {
+      const tokenId = await auth.currentUser.getIdToken();
+
+      fetch(
+        `${API.baseURL}/api/product/getAllSupermarketSaleReport?year=${selectedYear}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${tokenId}`,
+          },
+        }
+      )
+        .then((res) => res.json())
+        .then((respond) => {
+          setAllSuperData(respond);
+          supermarketList = respond;
+        })
+        .catch((err) => console.log(err));
+    };
+    const fetchSupermarketSaleReport = async () => {
+      const tokenId = await auth.currentUser.getIdToken();
+      fetch(
+        `${API.baseURL}/api/product/getAllSupermarketSaleReport?year=${selectedYear}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${tokenId}`,
+          },
+        }
+      )
+        .then((res) => res.json())
+        .then((respond) => {
+          let supermarket;
+          if (selectedSupermarket) {
+            supermarket = supermarketList.filter(
+              (item) => item.name === selectedSupermarket
+            );
+          } else {
+            supermarket = supermarketList.filter(
+              (item) => item.name === respond[0].name
+            );
+          }
+          const id = supermarket[0].id;
+        //   console.log(id);
+          fetch(
+            `${API.baseURL}/api/product/getSaleReportSupermarket?supermarketId=${id}&year=${selectedYear}`,
+            {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${tokenId}`,
+              },
+            }
+          )
+            .then((res) => res.json())
+            .then((respond) => {
+              console.log(respond);
+            })
+            .catch((err) => console.log(err));
+        })
+        .catch((err) => console.log(err));
+    };
+    fetchYearData();
+    fetchAllSupermarketSaleReport();
+    fetchSupermarketSaleReport();
+  }, [selectedYear, selectedSupermarket]);
   const menuTabs = [
     {
       display: "Hệ thống",
@@ -38,51 +128,6 @@ function SuperMarketReport() {
     {
       display: "Siêu thị",
       to: "/supermarketreport",
-    },
-  ];
-
-  const data = [
-    {
-      name: "Page A",
-      uv: 4000,
-      pv: 2400,
-      amt: 2400,
-    },
-    {
-      name: "Page B",
-      uv: 3000,
-      pv: 1398,
-      amt: 2210,
-    },
-    {
-      name: "Page C",
-      uv: 2000,
-      pv: 9800,
-      amt: 2290,
-    },
-    {
-      name: "Page D",
-      uv: 2780,
-      pv: 3908,
-      amt: 2000,
-    },
-    {
-      name: "Page E",
-      uv: 1890,
-      pv: 4800,
-      amt: 2181,
-    },
-    {
-      name: "Page F",
-      uv: 2390,
-      pv: 3800,
-      amt: 2500,
-    },
-    {
-      name: "Page G",
-      uv: 3490,
-      pv: 4300,
-      amt: 2100,
     },
   ];
 
@@ -148,31 +193,22 @@ function SuperMarketReport() {
       Nhập: 62.9,
     },
   ];
-  const minOffset = 0;
-  const maxOffset = 10;
-  const thisYear = new Date().getFullYear();
-  const [selectedYear, setSelectedYear] = useState(thisYear);
-  const options = [];
-  for (let i = minOffset; i <= maxOffset; i++) {
-    const year = thisYear - i;
-    options.push(<option value={year}>{year}</option>);
-  }
-  const superMarkets = [
-    { name: "Co.opmart" },
-    { name: "Bách hóa xanh" },
-    { name: "Vinmart+" },
-    { name: "Satrafoods" },
-    { name: "Vissan" },
-  ];
 
-  const [selectedSupermarket, setSelectedSupermarket] = useState(
-    superMarkets[0].name
-  );
+  const options = [];
+  years.map((i) => {
+    options.push(<option value={i.yearValue}>{i.yearValue}</option>);
+  });
 
   const onHandleChange = (evt) => {
     // Handle Change Here
     // alert(evt.target.value);
     setSelectedYear(evt.target.value);
+  };
+
+  const onHandleSuperChange = (evt) => {
+    // Handle Change Here
+    // alert(evt.target.value);
+    setSelectedSupermarket(evt.target.value);
   };
 
   const data02 = [
@@ -264,6 +300,7 @@ function SuperMarketReport() {
           onChange={onHandleChange}
         >
           {options}
+          {/* <option value={0}>{0}</option> */}
         </select>
       </div>
       <div className="supermarketReport__container">
@@ -272,13 +309,13 @@ function SuperMarketReport() {
             <text className="title_text">DOANH THU TỪNG SIÊU THỊ</text>
           </div>
           <ResponsiveContainer width="90%" height="90%">
-            <BarChart data={data} barSize={20}>
+            <BarChart data={allSuperData} barSize={20}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="uv" fill="#8884d8" />
+              <Bar dataKey="totalIncome" fill="#8884d8" />
             </BarChart>
           </ResponsiveContainer>
           <div className="donvi">
@@ -336,7 +373,7 @@ function SuperMarketReport() {
                       fill="#8884d8"
                       dataKey="value"
                     >
-                      {data.map((entry, index) => (
+                      {data02.map((entry, index) => (
                         <Cell
                           key={`cell-${index}`}
                           fill={COLORS[index % COLORS.length]}
@@ -385,10 +422,10 @@ function SuperMarketReport() {
                   position: "relative",
                   top: "-3px",
                 }}
-                //   value={selectedYear}
-                //   onChange={onHandleChange}
+                value={selectedSupermarket}
+                onChange={onHandleSuperChange}
               >
-                {superMarkets.map((market) => (
+                {allSuperData.map((market) => (
                   <option value={market.name}>{market.name}</option>
                 ))}
               </select>

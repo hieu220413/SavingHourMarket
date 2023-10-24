@@ -125,9 +125,7 @@ const EditConfirmProduct = ({
         price: parseInt(price),
         priceOriginal: priceOriginal,
         description: description,
-        expiredDate: format(new Date(expiredDate), "yyyy-MM-dd").concat(
-          "T00:00:00Z"
-        ),
+        expiredDate: format(new Date(expiredDate), "yyyy-MM-dd"),
         quantity: quantity,
         status: 1,
         imageUrl: image,
@@ -152,9 +150,7 @@ const EditConfirmProduct = ({
           price: parseInt(price),
           priceOriginal: priceOriginal,
           description: description,
-          expiredDate: format(new Date(expiredDate), "yyyy-MM-dd").concat(
-            "T00:00:00Z"
-          ),
+          expiredDate: format(new Date(expiredDate), "yyyy-MM-dd"),
           quantity: quantity,
           status: 1,
           imageUrl: url,

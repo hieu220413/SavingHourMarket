@@ -59,6 +59,7 @@ const CreateProductByExcel = ({
       .then((res) => res.json())
       .then((res) => {
         console.log(res);
+
         if (res.status === 500) {
           setError(res.error);
           setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });

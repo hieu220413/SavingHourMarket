@@ -272,7 +272,6 @@ const ProductsBySubCategories = ({ navigation, route }) => {
                 <Text
                     style={item.active == true ? {
                         width: 150,
-                        paddingHorizontal: 20,
                         paddingVertical: 10,
                         textAlign: 'center',
                         color: COLORS.primary,
@@ -280,7 +279,6 @@ const ProductsBySubCategories = ({ navigation, route }) => {
                         fontSize: 12,
                     } : {
                         width: 150,
-                        paddingHorizontal: 20,
                         paddingVertical: 10,
                         textAlign: 'center',
                         color: 'black',
@@ -338,7 +336,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
                                     height: 45,
                                     tintColor: COLORS.primary,
                                     width: 35,
-                                    marginRight: 10,
+                                    marginHorizontal: '1%',
                                 }}
                                 source={icons.filter}
                             />

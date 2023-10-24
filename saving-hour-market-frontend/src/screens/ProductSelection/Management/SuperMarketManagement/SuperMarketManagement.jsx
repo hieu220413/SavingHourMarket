@@ -16,6 +16,7 @@ import SupermarketItem from "./SupermarketItem";
 import MuiAlert from "@mui/material/Alert";
 import { Snackbar } from "@mui/material";
 import { onAuthStateChanged } from "firebase/auth";
+import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -30,6 +31,7 @@ const SuperMarketManagement = () => {
   const [textSearch, setTextSearch] = useState("");
   const [searchValue, setSearchValue] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const [openSnackbar, setOpenSnackbar] = useState({
     open: false,
@@ -48,6 +50,7 @@ const SuperMarketManagement = () => {
   useEffect(() => {
     const fetchSupermarket = async () => {
       onAuthStateChanged(auth, async (userAuth) => {
+        setLoading(true);
         if (userAuth) {
           const tokenId = await auth.currentUser.getIdToken();
           fetch(
@@ -66,6 +69,7 @@ const SuperMarketManagement = () => {
             .then((respond) => {
               setSuperMarketList(respond.supermarketList);
               setTotalPage(respond.totalPage);
+              setLoading(false);
             })
             .catch((err) => console.log(err));
         }
@@ -82,6 +86,10 @@ const SuperMarketManagement = () => {
     {
       display: "Sản phẩm",
       to: "/productmanagement",
+    },
+    {
+      display: "Loại sản phẩm",
+      to: "/categorymanagement",
     },
   ];
 
@@ -280,6 +288,7 @@ const SuperMarketManagement = () => {
           {error}
         </Alert>
       </Snackbar>
+      {loading && <LoadingScreen />}
     </div>
   );
 };

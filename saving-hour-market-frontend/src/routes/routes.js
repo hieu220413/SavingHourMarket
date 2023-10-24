@@ -11,6 +11,7 @@ import PickuppointManagement from "../screens/Admin/Management/PickuppointManage
 import TransactionManagement from "../screens/Admin/Management/TransactionManagement/TransactionManagement";
 import SuperMarketManagement from "../screens/ProductSelection/Management/SuperMarketManagement/SuperMarketManagement";
 import ProductManagement from "../screens/ProductSelection/Management/ProductManagement/ProductManagement";
+import CategoryManagement from "../screens/ProductSelection/Management/CategoryManagement/CategoryManagement";
 import Report from "../screens/ProductSelection/Report/Report";
 import SuperMarketReport from "../screens/ProductSelection/Management/SuperMarketReport/SuperMarketReport";
 
@@ -60,6 +61,13 @@ export const routes = [
   {
     path: "/productmanagement",
     component: ProductManagement,
+    layout: DefaultLayout,
+    private: true,
+    role: "STAFF_SLT",
+  },
+  {
+    path: "/categorymanagement",
+    component: CategoryManagement,
     layout: DefaultLayout,
     private: true,
     role: "STAFF_SLT",
