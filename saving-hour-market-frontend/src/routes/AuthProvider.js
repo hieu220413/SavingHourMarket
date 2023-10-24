@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import React, { useEffect, useState } from "react";
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { useLocation, useNavigate } from "react-router";
 import { routes } from "./routes";
 import { useDispatch, useSelector } from "react-redux";
@@ -13,6 +13,7 @@ const AuthProvider = ({ children }) => {
   const location = useLocation();
   const appRoute = routes;
   const user = useSelector((state) => state.user.user);
+  const [timeoutId, setTimeoutId] = useState(null);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -43,6 +44,58 @@ const AuthProvider = ({ children }) => {
       }
     });
   }, []);
+
+  const events = [
+    "load",
+    "mousemove",
+    "mousedown",
+    "click",
+    "scroll",
+    "keypress",
+  ];
+
+  let timer;
+
+  const handleLogoutTimer = () => {
+    timer = setTimeout(() => {
+      // clears any pending timer.
+      resetTimer();
+      // Listener clean up. Removes the existing event listener from the window
+      events.forEach((item) => {
+        window.removeEventListener(item, resetTimer);
+      });
+      // logs out user
+      handleLogout();
+    }, 30 * 60 * 1000); // 10000ms = 10secs
+  };
+
+  const resetTimer = () => {
+    if (timer) clearTimeout(timer);
+  };
+
+  useEffect(() => {
+    events.forEach((item) => {
+      window.addEventListener(item, () => {
+        resetTimer();
+        handleLogoutTimer();
+      });
+    });
+  }, []);
+
+  const handleLogout = () => {
+    signOut(auth)
+      .then(() => {
+        // Sign-out successful.
+        localStorage.clear();
+        const action = setUser(null);
+        dispatch(action);
+        clearTimeout(timeoutId);
+        navigate("/login");
+      })
+      .catch((error) => {
+        // An error happened.
+      });
+  };
 
   const currentRoute = appRoute.find((item) => item.path === location.pathname);
 
