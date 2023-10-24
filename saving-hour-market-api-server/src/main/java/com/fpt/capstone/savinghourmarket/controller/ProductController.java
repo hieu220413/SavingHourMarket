@@ -117,6 +117,18 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(productSubCateOnlyList);
     }
 
+    @RequestMapping(value = "/getAllCategoryForStaff", method = RequestMethod.GET)
+    public ResponseEntity<List<ProductCateWithSubCate>> getAllCategoryForStaff() {
+        List<ProductCateWithSubCate> productCategoryList = productService.getAllCategoryForStaff();
+        return ResponseEntity.status(HttpStatus.OK).body(productCategoryList);
+    }
+
+    @RequestMapping(value = "/getAllSubCategoryForStaff", method = RequestMethod.GET)
+    public ResponseEntity<List<ProductSubCateOnly>> getAllSubCategoryForStaff() {
+        List<ProductSubCateOnly> productSubCateOnlyList = productService.getAllSubCategoryForStaff();
+        return ResponseEntity.status(HttpStatus.OK).body(productSubCateOnlyList);
+    }
+
     @RequestMapping(value = "/createCategory", method = RequestMethod.POST)
     public ResponseEntity<ProductCategory> createCategory(@RequestBody @Valid ProductCategoryCreateBody productCategoryCreateBody,
                                                           @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
