@@ -66,6 +66,9 @@
         margin-left: 80px;
       }
       .radarchart {
+        display: flex;
+        justify-content: center;
+        align-items: center;
         height: 310px;
         background-color: white;
         border-radius: 30px;

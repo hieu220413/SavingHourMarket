@@ -21,6 +21,7 @@ import ManagementMenu from "../../../components/ManagementMenu/ManagementMenu";
 import "./Report.scss";
 import { Box, Stack, Typography } from "@mui/material";
 import { API } from "../../../contanst/api";
+import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../../firebase/firebase.config";
 
 const Report = () => {
@@ -38,60 +39,68 @@ const Report = () => {
   const [quaterData, setQuaterData] = useState([]);
   useEffect(() => {
     const fetchYearDta = async () => {
-      const tokenId = await auth.currentUser.getIdToken();
-      fetch(`${API.baseURL}/api/product/getRevenueReportForEachYear`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${tokenId}`,
-        },
-      })
-        .then((res) => res.json())
-        .then((respond) => {
-          // console.log(respond);
-          setInitial({ ...initial, data: respond });
-          // console.log(initial);
-        })
-        .catch((err) => console.log(err));
+      onAuthStateChanged(auth, async (userAuth) => {
+        if (userAuth) {
+          const tokenId = await auth.currentUser.getIdToken();
+          fetch(`${API.baseURL}/api/product/getRevenueReportForEachYear`, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${tokenId}`,
+            },
+          })
+            .then((res) => res.json())
+            .then((respond) => {
+              // console.log(respond);
+              setInitial({ ...initial, data: respond });
+              // console.log(initial);
+            })
+            .catch((err) => console.log(err));
+        }
+      });
     };
     const fetchMonthData = async () => {
-      const tokenId = await auth.currentUser.getIdToken();
-      fetch(
-        `${API.baseURL}/api/product/getRevenueReportForEachMonth?year=${selectedYear}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${tokenId}`,
-          },
+      onAuthStateChanged(auth, async (userAuth) => {
+        if (userAuth) {
+          const tokenId = await auth.currentUser.getIdToken();
+          fetch(
+            `${API.baseURL}/api/product/getRevenueReportForEachMonth?year=${selectedYear}`,
+            {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${tokenId}`,
+              },
+            }
+          )
+            .then((res) => res.json())
+            .then((respond) => {
+              console.log(respond);
+              setMonthData(respond);
+              let Quater1 = 0;
+              for (let i = 0; i < 3; i++) {
+                Quater1 += respond[i]?.totalDifferentAmount;
+              }
+              let Quater2 = 0;
+              for (let i = 3; i < 6; i++) {
+                Quater2 += respond[i]?.totalDifferentAmount;
+              }
+              let Quater3 = 0;
+              for (let i = 6; i < 9; i++) {
+                Quater3 += respond[i]?.totalDifferentAmount;
+              }
+              let Quater4 = 0;
+              for (let i = 9; i < 11; i++) {
+                Quater4 += respond[i]?.totalDifferentAmount;
+              }
+              setQuaterData([
+                { name: "Quý 1", value: Quater1 },
+                { name: "Quý 2", value: Quater2 },
+                { name: "Quý 3", value: Quater3 },
+                { name: "Quý 4", value: Quater4 },
+              ]);
+            })
+            .catch((err) => console.log(err));
         }
-      )
-        .then((res) => res.json())
-        .then((respond) => {
-          console.log(respond);
-          setMonthData(respond);
-          let Quater1 = 0;
-          for (let i = 0; i < 3; i++) {
-            Quater1 += respond[i]?.totalDifferentAmount;
-          }
-          let Quater2 = 0;
-          for (let i = 3; i < 6; i++) {
-            Quater2 += respond[i]?.totalDifferentAmount;
-          }
-          let Quater3 = 0;
-          for (let i = 6; i < 9; i++) {
-            Quater3 += respond[i]?.totalDifferentAmount;
-          }
-          let Quater4 = 0;
-          for (let i = 9; i < 11; i++) {
-            Quater4 += respond[i]?.totalDifferentAmount;
-          }
-          setQuaterData([
-            { name: "Quý 1", value: Quater1 },
-            { name: "Quý 2", value: Quater2 },
-            { name: "Quý 3", value: Quater3 },
-            { name: "Quý 4", value: Quater4 },
-          ]);
-        })
-        .catch((err) => console.log(err));
+      });
     };
 
     fetchMonthData();
@@ -299,6 +308,7 @@ const Report = () => {
                   />
                 ))}
               </Pie>
+              <Tooltip />
             </PieChart>
 
             <Box
