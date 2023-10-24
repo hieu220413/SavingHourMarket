@@ -60,4 +60,7 @@ public interface ProductSubCategoryRepository extends JpaRepository<ProductSubCa
             "JOIN sct.productCategory ct " +
             "WHERE ct.id = :productCategoryId")
     List<ProductSubCategory> getAllSubCategoryByCategoryId(UUID productCategoryId);
+
+    @Query("SELECT DISTINCT psct FROM ProductSubCategory psct ")
+    List<ProductSubCateOnly> findAllSubCategoryOnlyForStaff();
 }

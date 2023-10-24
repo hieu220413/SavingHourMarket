@@ -51,4 +51,8 @@ public interface ProductCategoryRepository extends JpaRepository<ProductCategory
             "AND ord.status = 4 " +
             "GROUP BY ct.id, ct.name")
     ProductCategory getCategoryDiscountUsageByCategoryId(Integer monthValue, Integer quarter, Integer year, Integer fromPercentage, Integer toPercentage, UUID productCategoryId);
+
+    @Query("SELECT DISTINCT pct from ProductCategory pct " +
+            "LEFT JOIN FETCH pct.productSubCategories psct ")
+    List<ProductCateWithSubCate> getAllProductCategoryWithSubCateForStaff();
 }
