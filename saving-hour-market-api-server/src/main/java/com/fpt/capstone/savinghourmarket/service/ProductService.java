@@ -57,4 +57,8 @@ public interface ProductService {
     List<SupermarketSaleReportResponseBody> getAllSupermarketSaleReport(Integer year);
 
     List<CateOderQuantityResponseBody> getOrderTotalAllCategorySupermarket(UUID supermarketId, Integer year);
+
+    List<ProductCateWithSubCate> getAllCategoryForStaff();
+
+    List<ProductSubCateOnly> getAllSubCategoryForStaff();
 }
