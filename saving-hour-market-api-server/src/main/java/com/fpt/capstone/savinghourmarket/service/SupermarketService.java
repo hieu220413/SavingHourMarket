@@ -14,5 +14,5 @@ public interface SupermarketService {
 
     Supermarket changeStatus(UUID supermarketId, EnableDisableStatus status);
 
-    SupermarketListResponseBody getSupermarketForStaff(String name, Integer page, Integer limit);
+    SupermarketListResponseBody getSupermarketForStaff(String name, EnableDisableStatus status, Integer page, Integer limit);
 }
