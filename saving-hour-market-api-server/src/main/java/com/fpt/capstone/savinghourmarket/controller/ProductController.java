@@ -117,16 +117,31 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(productSubCateOnlyList);
     }
 
-    @RequestMapping(value = "/getAllCategoryForStaff", method = RequestMethod.GET)
-    public ResponseEntity<List<ProductCateWithSubCate>> getAllCategoryForStaff() {
-        List<ProductCateWithSubCate> productCategoryList = productService.getAllCategoryForStaff();
-        return ResponseEntity.status(HttpStatus.OK).body(productCategoryList);
+    @RequestMapping(value = "/getCategoryForStaff", method = RequestMethod.GET)
+    public ResponseEntity<CategoryListResponseBody> getCategoryForStaff(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @RequestParam(defaultValue = "") String name
+            // just in case need status
+            , @Parameter(hidden = true) @RequestParam(required = false) EnableDisableStatus status
+            , @RequestParam(defaultValue = "0") Integer page
+            , @RequestParam(defaultValue = "5") Integer limit) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        CategoryListResponseBody categoryListResponseBody = productService.getCategoryForStaff(name, status, page, limit);
+        return ResponseEntity.status(HttpStatus.OK).body(categoryListResponseBody);
     }
 
-    @RequestMapping(value = "/getAllSubCategoryForStaff", method = RequestMethod.GET)
-    public ResponseEntity<List<ProductSubCateOnly>> getAllSubCategoryForStaff() {
-        List<ProductSubCateOnly> productSubCateOnlyList = productService.getAllSubCategoryForStaff();
-        return ResponseEntity.status(HttpStatus.OK).body(productSubCateOnlyList);
+    @RequestMapping(value = "/getSubCategoryForStaff", method = RequestMethod.GET)
+    public ResponseEntity<SubCategoryListResponseBody> getSubCategoryForStaff(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @RequestParam(defaultValue = "") String name
+            // just in case need status
+            , @Parameter(hidden = true) @RequestParam(required = false) EnableDisableStatus status
+            , @RequestParam(required = false) UUID productCategoryId
+            , @RequestParam(defaultValue = "0") Integer page
+            , @RequestParam(defaultValue = "5") Integer limit) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        SubCategoryListResponseBody subCategoryListResponseBody = productService.getSubCategoryForStaff(name, status, productCategoryId, page, limit);
+        return ResponseEntity.status(HttpStatus.OK).body(subCategoryListResponseBody);
     }
 
     @RequestMapping(value = "/createCategory", method = RequestMethod.POST)
