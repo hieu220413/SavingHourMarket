@@ -168,6 +168,7 @@ public class SupermarketServiceImpl implements SupermarketService {
     }
 
     @Override
+    @Transactional
     public Supermarket changeStatus(UUID supermarketId, EnableDisableStatus status) {
         Optional<Supermarket> supermarket = supermarketRepository.findById(supermarketId);
 
