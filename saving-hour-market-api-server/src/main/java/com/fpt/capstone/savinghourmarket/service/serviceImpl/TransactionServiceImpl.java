@@ -68,7 +68,7 @@ public class TransactionServiceImpl implements TransactionService {
 
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("YYYYMMddHHmmss");
         LocalDateTime today = LocalDateTime.now();
-        LocalDateTime expiredDateTime = today.plusHours(1);
+        LocalDateTime expiredDateTime = today.plusMinutes(30);
         String vpn_Version = "2.1.0";
         String vnp_Command = "pay";
         String vnp_TmnCode = vnpayTmnCode;
