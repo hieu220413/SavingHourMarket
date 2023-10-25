@@ -411,15 +411,25 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductCateWithSubCate> getAllCategoryForStaff() {
-        List<ProductCateWithSubCate> productCategoryList = productCategoryRepository.getAllProductCategoryWithSubCateForStaff();
-        return productCategoryList;
+    public CategoryListResponseBody getCategoryForStaff(String name, EnableDisableStatus status, Integer page, Integer limit) {
+        Pageable pageable = PageRequest.of(page, limit);
+        Page<ProductCateWithSubCate> result = productCategoryRepository.getAllProductCategoryWithSubCateForStaff(name, pageable);
+        int totalPage = result.getTotalPages();
+        long totalCategory = result.getTotalElements();
+        List<ProductCateWithSubCate> productCateWithSubCateList = result.stream().toList();
+
+        return new CategoryListResponseBody(productCateWithSubCateList, totalPage, totalCategory);
     }
 
     @Override
-    public List<ProductSubCateOnly> getAllSubCategoryForStaff() {
-        List<ProductSubCateOnly> productSubCateOnlyList = productSubCategoryRepository.findAllSubCategoryOnlyForStaff();
-        return productSubCateOnlyList;
+    public SubCategoryListResponseBody getSubCategoryForStaff(String name, EnableDisableStatus status, UUID productCategoryId, Integer page, Integer limit) {
+        Pageable pageable = PageRequest.of(page, limit);
+        Page<ProductSubCateOnly> result = productSubCategoryRepository.findAllSubCategoryOnlyForStaff(name, productCategoryId == null ? null : productCategoryId, pageable);
+        int totalPage = result.getTotalPages();
+        long totalSubCategory = result.getTotalElements();
+        List<ProductSubCateOnly> productSubCateOnlyList = result.stream().toList();
+
+        return new SubCategoryListResponseBody(productSubCateOnlyList, totalPage, totalSubCategory);
     }
 
     @Override
