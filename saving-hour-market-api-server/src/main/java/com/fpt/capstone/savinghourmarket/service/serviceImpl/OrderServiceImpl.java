@@ -2,6 +2,7 @@ package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
 import com.fpt.capstone.savinghourmarket.common.District;
 import com.fpt.capstone.savinghourmarket.common.OrderStatus;
+import com.fpt.capstone.savinghourmarket.common.PaymentMethod;
 import com.fpt.capstone.savinghourmarket.common.StaffRole;
 import com.fpt.capstone.savinghourmarket.entity.*;
 import com.fpt.capstone.savinghourmarket.exception.*;
@@ -535,8 +536,10 @@ public class OrderServiceImpl implements OrderService {
             throw new CustomerLimitOrderProcessingException("Bạn hiện đang có 3 đơn hàng đang chờ xác nhận!");
         }
 
-        RMapCache<UUID, Object> map = redissonClient.getMapCache("orderCreatedMap");
-        map.put(orderCreated.getId(), 0, 2, TimeUnit.MINUTES);
+        if(orderCreated.getPaymentMethod() == PaymentMethod.VNPAY.ordinal()){
+            RMapCache<UUID, Object> map = redissonClient.getMapCache("orderCreatedMap");
+            map.put(orderCreated.getId(), 0, 31, TimeUnit.MINUTES);
+        }
 
         return orderCreated;
     }
