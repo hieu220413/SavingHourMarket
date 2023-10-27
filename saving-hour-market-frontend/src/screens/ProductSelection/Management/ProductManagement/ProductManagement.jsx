@@ -21,6 +21,7 @@ import ConfirmProductUploadByExcel from "./ConfirmProductUploadByExcel";
 import MuiAlert from "@mui/material/Alert";
 import { Snackbar } from "@mui/material";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
+import Empty from "../../../../assets/Empty.png";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -196,6 +197,7 @@ const ProductManagement = () => {
             setProducts(data.productList);
             setTotalPage(data.totalPage);
             setLoading(false);
+            setIsSwitchRecovery(!isSwitchRecovery);
           })
           .catch((err) => {
             console.log(err);
@@ -399,19 +401,21 @@ const ProductManagement = () => {
       <div className="supermarket__container">
         <div className="supermarket__header">
           {/* search bar */}
-          <div className="search">
-            <form onSubmit={(e) => onSubmitSearch(e)}>
-              <div onClick={(e) => onSubmitSearch(e)} className="search-icon">
-                <FontAwesomeIcon icon={faMagnifyingGlass} />
-              </div>
-              <input
-                value={textSearch}
-                onChange={(e) => setTextSearch(e.target.value)}
-                type="text"
-                placeholder="Từ khóa tìm kiếm"
-              />
-            </form>
-          </div>
+          {products.length !== 0 && (
+            <div className="search">
+              <form onSubmit={(e) => onSubmitSearch(e)}>
+                <div onClick={(e) => onSubmitSearch(e)} className="search-icon">
+                  <FontAwesomeIcon icon={faMagnifyingGlass} />
+                </div>
+                <input
+                  value={textSearch}
+                  onChange={(e) => setTextSearch(e.target.value)}
+                  type="text"
+                  placeholder="Từ khóa tìm kiếm"
+                />
+              </form>
+            </div>
+          )}
           {/* ****************** */}
           {!isSwitchRecovery && (
             <div onClick={handleClick} className="supermarket__header-button">
@@ -479,7 +483,6 @@ const ProductManagement = () => {
             <div>
               <button
                 onClick={() => {
-                  setIsSwitchRecovery(!isSwitchRecovery);
                   handleSwitchRecoveryTable(!isSwitchRecovery);
                 }}
                 className=" buttonRecovery"
@@ -589,139 +592,169 @@ const ProductManagement = () => {
         )}
 
         {isSwitchRecovery && (
-          <div className="table__container" style={{ height: "650px" }}>
-            {/* data table */}
-            <table class="table ">
-              <thead>
-                <tr className="table-header-row">
-                  <th>No.</th>
-                  <th>Hình ảnh</th>
-                  <th>Tên Sản phẩm</th>
-                  <th>Ngày hết hạn</th>
-                  <th>Giá tiền</th>
-                  <th>Số lượng</th>
-                  <th>Tên loại sản phẩm</th>
-                  <th>Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.map((item, index) => (
-                  <ProductRowRecovery item={item} index={index} key={index} />
-                ))}
-              </tbody>
-            </table>
-            {/* ********************** */}
+          <>
+            <div className="table__container" style={{ height: "650px" }}>
+              {/* data table */}
+              <table class="table ">
+                <thead>
+                  <tr className="table-header-row">
+                    <th>No.</th>
+                    <th>Hình ảnh</th>
+                    <th>Tên Sản phẩm</th>
+                    <th>Ngày hết hạn</th>
+                    <th>Giá tiền</th>
+                    <th>Số lượng</th>
+                    <th>Tên loại sản phẩm</th>
+                    <th>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.map((item, index) => (
+                    <ProductRowRecovery item={item} index={index} key={index} />
+                  ))}
+                </tbody>
+              </table>
 
-            <div>
-              <button
-                onClick={() => {
-                  setIsSwitchRecovery(!isSwitchRecovery);
-                  handleSwitchRecoveryTable(!isSwitchRecovery);
-                }}
-                className=" buttonRecovery"
-              >
-                Danh sách sản phẩm
-                <FontAwesomeIcon icon={faClipboard} />
-              </button>
-            </div>
-
-            {/* pagination */}
-            <div className="row pageBtn">
-              <div className="col" style={{ textAlign: "right" }}>
-                <br />
-                <form action="">
-                  <button
-                    type="submit"
-                    disabled={page === 1}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setPage(1);
-                    }}
-                    className="btn btn-success  "
-                    name="op"
-                    value="FirstPage"
-                    title="First Page"
-                  >
-                    <i className="bi bi-chevron-bar-left"></i>
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={page === 1}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setPage(page - 1);
-                    }}
-                    className="btn btn-success  "
-                    name="op"
-                    value="PreviousPage"
-                    title="Previous Page"
-                  >
-                    <i className="bi bi-chevron-left"></i>
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={page === totalPage}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setPage(page + 1);
-                    }}
-                    className="btn btn-success  "
-                    name="op"
-                    value="NextPage"
-                    title="Next Page"
-                  >
-                    <i className="bi bi-chevron-right"></i>
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={page === totalPage}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setPage(totalPage);
-                    }}
-                    className="btn btn-success  "
-                    name="op"
-                    value="LastPage"
-                    title="Last Page"
-                  >
-                    <i className="bi bi-chevron-bar-right"></i>
-                  </button>
-                  <input
-                    type="number"
-                    name="gotoPage"
-                    value={textPage}
-                    onChange={(e) => {
-                      if (e.target.value >= page && e.target.value <= totalPage)
-                        setTextPage(e.target.value);
-                    }}
-                    className=" "
+              {products.length === 0 && (
+                <div>
+                  <div
                     style={{
-                      padding: "12px",
-                      textAlign: "center",
-                      color: "#000",
-                      width: "40px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
                     }}
-                    title="Enter page number"
-                  />
-                  <button
-                    type="submit"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setPage(textPage);
-                    }}
-                    className="btn btn-success  "
-                    name="op"
-                    value="GotoPage"
-                    title="Goto Page"
                   >
-                    <i className="bi bi-arrow-up-right-circle"></i>
-                  </button>
-                </form>
-                Page {page}/{totalPage}
+                    <img src={Empty} alt="" />
+                  </div>
+                  <p
+                    style={{
+                      textAlign: "center",
+                      color: "grey",
+                      fontSize: 24,
+                    }}
+                  >
+                    Không có sản phẩm nào
+                  </p>
+                </div>
+              )}
+
+              {/* ********************** */}
+
+              <div>
+                <button
+                  onClick={() => {
+                    handleSwitchRecoveryTable(!isSwitchRecovery);
+                  }}
+                  className=" buttonRecovery"
+                >
+                  Danh sách sản phẩm
+                  <FontAwesomeIcon icon={faClipboard} />
+                </button>
               </div>
+
+              {/* pagination */}
+              {products.length !== 0 && (
+                <div className="row pageBtn">
+                  <div className="col" style={{ textAlign: "right" }}>
+                    <br />
+                    <form action="">
+                      <button
+                        type="submit"
+                        disabled={page === 1}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setPage(1);
+                        }}
+                        className="btn btn-success  "
+                        name="op"
+                        value="FirstPage"
+                        title="First Page"
+                      >
+                        <i className="bi bi-chevron-bar-left"></i>
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={page === 1}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setPage(page - 1);
+                        }}
+                        className="btn btn-success  "
+                        name="op"
+                        value="PreviousPage"
+                        title="Previous Page"
+                      >
+                        <i className="bi bi-chevron-left"></i>
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={page === totalPage}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setPage(page + 1);
+                        }}
+                        className="btn btn-success  "
+                        name="op"
+                        value="NextPage"
+                        title="Next Page"
+                      >
+                        <i className="bi bi-chevron-right"></i>
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={page === totalPage}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setPage(totalPage);
+                        }}
+                        className="btn btn-success  "
+                        name="op"
+                        value="LastPage"
+                        title="Last Page"
+                      >
+                        <i className="bi bi-chevron-bar-right"></i>
+                      </button>
+                      <input
+                        type="number"
+                        name="gotoPage"
+                        value={textPage}
+                        onChange={(e) => {
+                          if (
+                            e.target.value >= page &&
+                            e.target.value <= totalPage
+                          )
+                            setTextPage(e.target.value);
+                        }}
+                        className=" "
+                        style={{
+                          padding: "12px",
+                          textAlign: "center",
+                          color: "#000",
+                          width: "40px",
+                        }}
+                        title="Enter page number"
+                      />
+                      <button
+                        type="submit"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setPage(textPage);
+                        }}
+                        className="btn btn-success  "
+                        name="op"
+                        value="GotoPage"
+                        title="Goto Page"
+                      >
+                        <i className="bi bi-arrow-up-right-circle"></i>
+                      </button>
+                    </form>
+                    Page {page}/{totalPage}
+                  </div>
+                </div>
+              )}
+              {/* ********************** */}
             </div>
-            {/* ********************** */}
-          </div>
+          </>
         )}
 
         {/* ***************** */}

@@ -4,7 +4,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark, faCaretDown } from "@fortawesome/free-solid-svg-icons";
 import { MdCloudUpload, MdDelete } from "react-icons/md";
 import { AiFillFileImage } from "react-icons/ai";
-import dayjs from "dayjs";
 import { auth, imageDB } from "../../../../firebase/firebase.config";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { v4 } from "uuid";
@@ -45,7 +44,7 @@ const EditSubCategory = ({
       await uploadBytes(imgRefSubCate, imgSubCateToFirebase);
       try {
         const url = await getDownloadURL(imgRefSubCate);
-        setImageUrlSubCate(url);
+        return url;
       } catch (error) {
         console.log(error);
       }
@@ -84,6 +83,7 @@ const EditSubCategory = ({
     };
 
     const tokenId = await auth.currentUser.getIdToken();
+    setLoading(true);
     fetch(
       `${API.baseURL}/api/product/updateSubCategory?subCategoryId=${subCateId}`,
       {
