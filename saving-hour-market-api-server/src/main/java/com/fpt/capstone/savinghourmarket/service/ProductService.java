@@ -57,4 +57,8 @@ public interface ProductService {
     List<SupermarketSaleReportResponseBody> getAllSupermarketSaleReport(Integer year);
 
     List<CateOderQuantityResponseBody> getOrderTotalAllCategorySupermarket(UUID supermarketId, Integer year);
+
+    CategoryListResponseBody getCategoryForStaff(String name, EnableDisableStatus status, Integer page, Integer limit);
+
+    SubCategoryListResponseBody getSubCategoryForStaff(String name, EnableDisableStatus status, UUID productCategoryId, Integer page, Integer limit);
 }

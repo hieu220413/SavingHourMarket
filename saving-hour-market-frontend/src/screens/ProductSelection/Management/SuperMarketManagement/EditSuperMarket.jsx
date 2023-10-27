@@ -39,6 +39,7 @@ const EditSuperMarket = ({
   const [addressList, setAddressList] = useState(list);
   const [name, setName] = useState(supermarket.name);
   const [phone, setPhone] = useState(supermarket.phone);
+  const [loading, setLoading] = useState(false);
   const typingTimeoutRef = useRef(null);
   const handleEdit = async () => {
     if (!name) {

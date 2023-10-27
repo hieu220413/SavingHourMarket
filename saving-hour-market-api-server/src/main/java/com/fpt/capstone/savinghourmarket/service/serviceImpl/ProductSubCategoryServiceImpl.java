@@ -94,7 +94,10 @@ public class ProductSubCategoryServiceImpl implements ProductSubCategoryService 
                 errorFields.put("nameError", "Contain only alphabet en/vn and space. Minimum characters is 2 and maximum is 50");
             }
 
-            if(productSubCategoryRepository.findByName(productSubCategoryUpdateBody.getName().trim()).isPresent()){
+            Optional<ProductSubCategory> duplicatedProductSubCategory = productSubCategoryRepository.findByName(productSubCategoryUpdateBody.getName().trim());
+
+
+            if(duplicatedProductSubCategory.isPresent() && !duplicatedProductSubCategory.get().getId().equals(subCategoryId)){
                 errorFields.put("nameError", "Duplicate sub category name");
             }
             productSubCategory.get().setName(productSubCategoryUpdateBody.getName());

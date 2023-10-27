@@ -66,7 +66,9 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             errorFields.put("nameError", "Contain only alphabet en/vn and space. Minimum characters is 2 and maximum is 50");
         }
 
-        if(productCategoryRepository.findByName(productCategoryUpdateBody.getName().trim()).isPresent()){
+        Optional<ProductCategory> duplicatedProductCategory = productCategoryRepository.findByName(productCategoryUpdateBody.getName().trim());
+
+        if(duplicatedProductCategory.isPresent() && !duplicatedProductCategory.get().getId().equals(categoryId)){
             errorFields.put("nameError", "Duplicate category name");
         }
 
