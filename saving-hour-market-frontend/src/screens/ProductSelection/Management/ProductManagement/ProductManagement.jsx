@@ -483,6 +483,7 @@ const ProductManagement = () => {
             <div>
               <button
                 onClick={() => {
+                  setPage(1);
                   handleSwitchRecoveryTable(!isSwitchRecovery);
                 }}
                 className=" buttonRecovery"
@@ -647,6 +648,7 @@ const ProductManagement = () => {
               <div>
                 <button
                   onClick={() => {
+                    setPage(1);
                     handleSwitchRecoveryTable(!isSwitchRecovery);
                   }}
                   className=" buttonRecovery"
