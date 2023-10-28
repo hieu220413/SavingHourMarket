@@ -598,14 +598,18 @@ const ProductManagement = () => {
               <table class="table ">
                 <thead>
                   <tr className="table-header-row">
-                    <th>No.</th>
-                    <th>Hình ảnh</th>
-                    <th>Tên Sản phẩm</th>
-                    <th>Ngày hết hạn</th>
-                    <th>Giá tiền</th>
-                    <th>Số lượng</th>
-                    <th>Tên loại sản phẩm</th>
-                    <th>Thao tác</th>
+                    {products.length !== 0 && (
+                      <>
+                        <th>No.</th>
+                        <th>Hình ảnh</th>
+                        <th>Tên Sản phẩm</th>
+                        <th>Ngày hết hạn</th>
+                        <th>Giá tiền</th>
+                        <th>Số lượng</th>
+                        <th>Tên loại sản phẩm</th>
+                        <th>Thao tác</th>
+                      </>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
@@ -633,7 +637,7 @@ const ProductManagement = () => {
                       fontSize: 24,
                     }}
                   >
-                    Không có sản phẩm nào
+                    Không có sản phẩm bị xóa nào
                   </p>
                 </div>
               )}
