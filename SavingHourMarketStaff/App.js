@@ -5,9 +5,19 @@ import {NavigationContainer} from '@react-navigation/native';
 import 'react-native-gesture-handler';
 import Tabs from './src/navigations/tabs';
 import Login from './src/screens/Login';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const Stack = createStackNavigator();
 export default function App() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const currentUser = await AsyncStorage.getItem('userInfo');
+      setUser(currentUser ? JSON.parse(currentUser) : null);
+    };
+    getUser();
+  }, []);
+
   return (
     <>
       <NavigationContainer>
@@ -15,7 +25,7 @@ export default function App() {
           screenOptions={{
             headerShown: false,
           }}
-          initialRouteName={'Start'}>
+          initialRouteName={'Login'}>
           <Stack.Screen name="Start" component={Tabs} />
           <Stack.Screen name="Login" component={Login} />
         </Stack.Navigator>
