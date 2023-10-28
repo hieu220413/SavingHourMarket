@@ -3,10 +3,8 @@ package com.fpt.capstone.savinghourmarket.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.apache.commons.math3.ml.clustering.Clusterable;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 
@@ -20,8 +18,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @Setter
 @Getter
+@Builder
 @Table(name = "orders")
-public class Order {
+public class Order implements Clusterable {
     @Id
     @UuidGenerator
     private UUID id;
@@ -84,7 +83,9 @@ public class Order {
     )
     private TimeFrame timeFrame;
 
-    @ManyToMany
+    @ManyToMany(
+            cascade = CascadeType.ALL
+    )
     @JoinTable(
             name = "discount_order",
             joinColumns = @JoinColumn(name = "order_id"),
@@ -122,4 +123,9 @@ public class Order {
     )
     @JsonIgnore
     private List<OrderDetail> orderDetailList;
+
+    @Override
+    public double[] getPoint() {
+        return new double[]{this.latitude,this.longitude};
+    }
 }

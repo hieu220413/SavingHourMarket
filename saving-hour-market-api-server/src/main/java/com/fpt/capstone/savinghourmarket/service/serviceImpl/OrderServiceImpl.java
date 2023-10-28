@@ -1,8 +1,6 @@
 package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
-import com.fpt.capstone.savinghourmarket.common.District;
-import com.fpt.capstone.savinghourmarket.common.OrderStatus;
-import com.fpt.capstone.savinghourmarket.common.StaffRole;
+import com.fpt.capstone.savinghourmarket.common.*;
 import com.fpt.capstone.savinghourmarket.entity.*;
 import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.*;
@@ -341,38 +339,71 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderBatch> batchingForStaff(Date deliverDate, UUID timeFrameId, Integer batchQuantity) throws ResourceNotFoundException {
-//        TimeFrame timeFrame = timeFrameRepository.findById(timeFrameId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy time-frame với id: " + timeFrameId));
-//
-//        List<Order> ordersWithoutGroups = repository.findOrderWithoutGroups(timeFrame, deliverDate);
-//
-//        int MIN_POINTS = batchQuantity; // Minimum number of points for a cluster
-//
-//        // Define the epsilon (ε) value in degrees for a 10 km radius
-//        double epsilonInDegrees = 0.0897;
-//
-//        // Create a DBSCAN clusterer with the specified epsilon and distance measure
-//        DBSCANClusterer<Order> clusterer = new DBSCANClusterer<>(epsilonInDegrees, MIN_POINTS, new DistanceMeasure() {
-//            @Override
-//            public double compute(double[] doubles, double[] doubles1) throws DimensionMismatchException {
-//                return 0;
-//            }
-//        });
-//        // Perform clustering
-//        List<Cluster<Order>> clusters = clusterer.cluster(ordersWithoutGroups);
-//
-//        List<OrderBatch> orderBatches = new ArrayList<>();
-//        // Process the clusters as needed
-//        for (Cluster<Order> cluster : clusters) {
-//            List<Order> clusterOrders = cluster.getPoints();
-//            OrderBatch orderBatch = new OrderBatch();
-//            orderBatch.setOrderList(clusterOrders);
-//            orderBatches.add(orderBatch);
-//            // Handle each cluster of orders
-//        }
-//
-//        return orderBatches;
-        return null;
+        TimeFrame timeFrame = timeFrameRepository.findById(timeFrameId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy time-frame với id: " + timeFrameId));
+
+        List<Order> ordersWithoutGroups = repository.findOrderWithoutGroups(timeFrame, deliverDate);
+        List<Order> dummies = new ArrayList<>();
+        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh").receiverPhone("0972779175").latitude((float) 10.827628).longitude((float) 106.721636).status(OrderStatus.PROCESSING.ordinal()).build());
+        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("30a Ấp 7, Xuân Thới Thượng, Hóc Môn, Thành phố Hồ Chí Minh, Việt Nam").receiverPhone("0972779175").latitude((float) 10.8419923).longitude((float) 106.5866278).status(OrderStatus.PROCESSING.ordinal()).build());
+        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("Đường Bà Điểm 4/21 Ấp Tiền Lân, Tiền Lân, Hóc Môn, Thành phố Hồ Chí Minh, Việt Nam").receiverPhone("0972779175").latitude((float) 10.8419923).longitude((float) 106.5866278).status(OrderStatus.PROCESSING.ordinal()).build());
+        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("5/15V XTT4, Bà Điểm, Hóc Môn, Thành phố Hồ Chí Minh 71700, Việt Nam").receiverPhone("0972779175").latitude((float) 10.8393158).longitude((float) 106.5853618).status(OrderStatus.PROCESSING.ordinal()).build());
+        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("311 Tân Kỳ Tân Quý, Tân Sơn Nhì, Tân Phú, Thành phố Hồ Chí Minh, Việt Nam").receiverPhone("0972779175").latitude((float) 10.80004).longitude((float) 106.6227574).status(OrderStatus.PROCESSING.ordinal()).build());
+        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("155 Nguyễn Cửu Đàm, Tân Sơn Nhì, Tân Phú, Thành phố Hồ Chí Minh 700000, Việt Nam").receiverPhone("0972779175").latitude((float) 10.80004).longitude((float) 106.6227574).status(OrderStatus.PROCESSING.ordinal()).build());
+//        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh").receiverPhone("0972779175").latitude((float) 10.827628).longitude((float) 106.721636).status(OrderStatus.PROCESSING.ordinal()).build());
+//        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh").receiverPhone("0972779175").latitude((float) 10.827628).longitude((float) 106.721636).status(OrderStatus.PROCESSING.ordinal()).build());
+//        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh").receiverPhone("0972779175").latitude((float) 10.827628).longitude((float) 106.721636).status(OrderStatus.PROCESSING.ordinal()).build());
+//        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh").receiverPhone("0972779175").latitude((float) 10.827628).longitude((float) 106.721636).status(OrderStatus.PROCESSING.ordinal()).build());
+//        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh").receiverPhone("0972779175").latitude((float) 10.827628).longitude((float) 106.721636).status(OrderStatus.PROCESSING.ordinal()).build());
+//        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh").receiverPhone("0972779175").latitude((float) 10.827628).longitude((float) 106.721636).status(OrderStatus.PROCESSING.ordinal()).build());
+//        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh").receiverPhone("0972779175").latitude((float) 10.827628).longitude((float) 106.721636).status(OrderStatus.PROCESSING.ordinal()).build());
+        int MIN_POINTS = batchQuantity; // Minimum number of points for a cluster
+
+        // Define the epsilon (ε) value in degrees for a 10 km radius
+        double epsilonInDegrees = 0.0897;
+
+        // Create a DBSCAN clusterer with the specified epsilon and distance measure
+        DBSCANClusterer<Order> clusterer = new DBSCANClusterer<Order>(epsilonInDegrees, MIN_POINTS, new DistanceMeasure() {
+            @Override
+            public double compute(double[] doubles, double[] doubles1) throws DimensionMismatchException {
+                double lat1 = Math.toRadians(doubles[0]);  // Latitude of order 'a' in radians
+                double lon1 = Math.toRadians(doubles[1]);  // Longitude of order 'a' in radians
+                double lat2 = Math.toRadians(doubles1[0]);  // Latitude of order 'b' in radians
+                double lon2 = Math.toRadians(doubles1[1]);  // Longitude of order 'b' in radians
+
+                // Haversine formula
+                double dLat = lat2 - lat1;
+                double dLon = lon2 - lon1;
+
+                double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                        Math.cos(lat1) * Math.cos(lat2) *
+                                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+                double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+                // Radius of the Earth in kilometers
+                double earthRadiusKm = 6371.0;
+
+                // Calculate the distance in kilometers
+                double distance = earthRadiusKm * c;
+
+                return distance;
+            }
+        });
+        // Perform clustering
+        List<Cluster<Order>> clusters = clusterer.cluster(dummies);
+
+        List<OrderBatch> orderBatches = new ArrayList<>();
+        // Process the clusters as needed
+        for (Cluster<Order> cluster : clusters) {
+            List<Order> clusterOrders = cluster.getPoints();
+            OrderBatch orderBatch = new OrderBatch();
+            orderBatch.setOrderList(clusterOrders);
+            orderBatches.add(orderBatch);
+            // Handle each cluster of orders
+        }
+
+        return orderBatches;
     }
 
 
