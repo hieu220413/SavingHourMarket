@@ -2,11 +2,16 @@ import React, { useEffect, useState } from "react";
 import LoginImg from "../../../assets/LoginImg.png";
 import "./Login.scss";
 import { Link, useNavigate } from "react-router-dom";
-import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
 import { API } from "../../../contanst/api";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../../../feature/userSlice";
 import { auth } from "../../../firebase/firebase.config";
+import { routes } from "../../../routes/routes";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -16,17 +21,17 @@ const Login = () => {
   const [error, setError] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const user = useSelector((state) => state.user.user);
 
   useEffect(() => {
-    onAuthStateChanged(auth, (userAuth) => {
-      if (userAuth) {
-        navigate("/");
-        return;
-      }
-    });
+    if (user) {
+      navigate("/");
+      return;
+    }
   }, []);
 
   const handleLogin = async (e) => {
+    debugger;
     e.preventDefault();
     if (email === "") {
       setErrEmail("Vui lòng không để trống");
@@ -39,8 +44,6 @@ const Login = () => {
 
     signInWithEmailAndPassword(auth, email, password)
       .then(async (userCredential) => {
-        console.log(userCredential);
-
         // Signed in
         const user = userCredential.user;
         const tokenId = await auth.currentUser.getIdToken();
@@ -53,10 +56,46 @@ const Login = () => {
         })
           .then((res) => res.json())
           .then((respond) => {
+            if (respond.code === 403) {
+              signOut(auth)
+                .then(() => {
+                  // Sign-out successful
+                  localStorage.clear();
+                  const action = setUser(null);
+                  dispatch(action);
+                })
+                .catch((error) => {
+                  // An error happened.
+                });
+              setError("Tài khoản của bạn không có quyền truy cập");
+              setErrEmail("");
+              setErrPassword("");
+              return;
+            }
+            if (
+              respond.role !== "ADMIN" ||
+              respond.role !== "STAFF_SLT" ||
+              respond.role !== "STAFF_MKT"
+            ) {
+              signOut(auth)
+                .then(() => {
+                  // Sign-out successful.
+                  localStorage.clear();
+                  const action = setUser(null);
+                  dispatch(action);
+                })
+                .catch((error) => {
+                  // An error happened.
+                });
+              setError("Tài khoản của bạn không có quyền truy cập");
+              setErrEmail("");
+              setErrPassword("");
+              return;
+            }
             const action = setUser(respond);
             dispatch(action);
             localStorage.setItem("user", JSON.stringify(respond));
-            navigate("/");
+            navigate("/productmanagement");
           })
           .catch((err) => {
             console.log(err);
