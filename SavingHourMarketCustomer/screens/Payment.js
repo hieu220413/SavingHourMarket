@@ -14,6 +14,7 @@ import {
   LogBox,
   NativeEventEmitter,
   Alert,
+  AppState
 } from 'react-native';
 import {ScrollView, TextInput} from 'react-native-gesture-handler';
 import {icons} from '../constants';
@@ -46,6 +47,8 @@ const Payment = ({navigation, route}) => {
   const [pickUpPointIsChecked, setpickUpPointIsChecked] = useState(true);
   const [date, setDate] = useState(null);
   const [open, setOpen] = useState(false);
+
+  const appState = useRef(AppState.currentState);
 
   const [pickupPoint, setPickupPoint] = useState(null);
 
@@ -186,23 +189,25 @@ const Payment = ({navigation, route}) => {
           console.log('e.resultCode = ' + e.resultCode);
           switch (e.resultCode) {
             case -1:
-              await fetch(`${API.baseURL}/api/order/deleteOrder/${orderId}`, {
-                method: 'DELETE',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${idToken}`,
-                },
-              })
-                .then(res => {
-                  return res.json();
-                })
-                .then(respond => {
-                  console.log(respond);
-                  setValidateMessage('Thanh toán thất bại ');
-                  setOpenValidateDialog(true);
-                  // setItem(respond);
-                })
-                .catch(err => console.log(err));
+              // await fetch(`${API.baseURL}/api/order/deleteOrder/${orderId}`, {
+              //   method: 'DELETE',
+              //   headers: {
+              //     'Content-Type': 'application/json',
+              //     Authorization: `Bearer ${idToken}`,
+              //   },
+              // })
+              //   .then(res => {
+              //     return res.json();
+              //   })
+              //   .then(respond => {
+              //     console.log(respond);
+              //     setValidateMessage('Thanh toán thất bại ');
+              //     setOpenValidateDialog(true);
+              //     // setItem(respond);
+              //   })
+              //   .catch(err => console.log(err));
+              setValidateMessage('Thanh toán thất bại ');
+              setOpenValidateDialog(true);
 
               console.log('nguoi dung nhan nut back tu device');
 
@@ -213,24 +218,25 @@ const Payment = ({navigation, route}) => {
               break;
             case 98:
               // Giao dich khong thanh cong. (bao gom case nguoi dung an nut back tu VNPAY UI)
-              await fetch(`${API.baseURL}/api/order/deleteOrder/${orderId}`, {
-                method: 'DELETE',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${idToken}`,
-                },
-              })
-                .then(res => {
-                  return res.json();
-                })
-                .then(respond => {
-                  console.log(respond);
-                  setValidateMessage('Thanh toán thất bại ');
-                  setOpenValidateDialog(true);
-                  // setItem(respond);
-                })
-                .catch(err => console.log(err));
-
+              // await fetch(`${API.baseURL}/api/order/deleteOrder/${orderId}`, {
+              //   method: 'DELETE',
+              //   headers: {
+              //     'Content-Type': 'application/json',
+              //     Authorization: `Bearer ${idToken}`,
+              //   },
+              // })
+              //   .then(res => {
+              //     return res.json();
+              //   })
+              //   .then(respond => {
+              //     console.log(respond);
+              //     setValidateMessage('Thanh toán thất bại ');
+              //     setOpenValidateDialog(true);
+              //     // setItem(respond);
+              //   })
+              //   .catch(err => console.log(err));
+              setValidateMessage('Thanh toán thất bại ');
+              setOpenValidateDialog(true)
               break;
           }
 
@@ -295,6 +301,7 @@ const Payment = ({navigation, route}) => {
       console.log('user is logged in');
       const json = await AsyncStorage.getItem('userInfo');
       const user = JSON.parse(json);
+      await deleteUserUnpaidVnpayOrders();
 
       setName(user.fullName);
       setPhone(user.phone);
@@ -309,6 +316,65 @@ const Payment = ({navigation, route}) => {
     }
   };
 
+  // delete user unpaid vnpay order
+  const deleteUserUnpaidVnpayOrders = async () => {
+    if (auth().currentUser) {
+      const tokenId = await auth().currentUser.getIdToken(true).catch(e => {
+        console.log(e);
+        return null;
+      });
+      if (tokenId) {
+        // delete vnpay fail payment order
+        const getProcessingUnpaidOrderRequest = await fetch(
+          `${API.baseURL}/api/order/getOrdersForCustomer?orderStatus=PROCESSING&isPaid=false`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${tokenId}`,
+            },
+          },
+        ).catch(e => {
+          console.log(e)
+          return null;
+        });
+
+        if (!getProcessingUnpaidOrderRequest) {
+          return;
+        }
+
+        if (getProcessingUnpaidOrderRequest.status === 200) {
+          const orderFailList = await getProcessingUnpaidOrderRequest.json();
+          orderFailList.forEach(async order => {
+            // if order paymentMethod is vnpay
+            if (order.paymentMethod === 1) {
+              const deleteOrderRequest = await fetch(
+                `${API.baseURL}/api/order/deleteOrder/${order.id}`,
+                {
+                  method: 'DELETE',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${tokenId}`,
+                  },
+                },
+              ).catch(err => {
+                console.log(err)
+                return null;
+              });
+              if (!deleteOrderRequest){
+                return;
+              }
+              if (deleteOrderRequest.status === 200) {
+                console.log(await deleteOrderRequest.text());
+              }
+            }
+          });
+        }
+        //
+      }
+    }
+  }
+
   useEffect(() => {
     // auth().currentUser.reload()
     const subscriber = auth().onAuthStateChanged(
@@ -321,6 +387,20 @@ const Payment = ({navigation, route}) => {
     return subscriber;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('focus', async () => {
+      if (appState.current === 'active') {
+                // console.log('App has come to focus!');
+        await deleteUserUnpaidVnpayOrders();
+      }
+
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [])
 
   const _keyboardDidShow = () => {
     setKeyboard(true);

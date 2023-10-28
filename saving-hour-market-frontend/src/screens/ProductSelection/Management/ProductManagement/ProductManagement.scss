@@ -1,0 +1,27 @@
+.buttonRecovery {
+  position: absolute;
+  bottom: 4%;
+  outline: none;
+  width: 185px;
+  height: 36px;
+  padding: 7px 0px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid var(--primary);
+  gap: 10px;
+  border-radius: 3px;
+  background: white;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--primary);
+  cursor: pointer;
+  transition: 0.3s linear all;
+}
+
+.buttonRecovery:hover {
+  background: var(--primary-light);
+  color: white;
+}

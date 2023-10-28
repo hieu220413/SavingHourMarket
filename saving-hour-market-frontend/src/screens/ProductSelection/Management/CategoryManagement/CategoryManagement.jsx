@@ -14,6 +14,8 @@ import { Snackbar } from "@mui/material";
 import ViewSubCategory from "./ViewSubCategory";
 import EditCategory from "./EditCategory";
 import CreateCategory from "./CreateCategory";
+import { onAuthStateChanged } from "firebase/auth";
+import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
@@ -28,6 +30,8 @@ const CategoryManagement = () => {
   const [textSearch, setTextSearch] = useState("");
   const [searchValue, setSearchValue] = useState("");
   const [msg, setMsg] = useState("");
+
+  const [loading, setLoading] = useState(false);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -44,7 +48,35 @@ const CategoryManagement = () => {
 
   const [openView, setOpenView] = useState(false);
   const handleOpenView = () => setOpenView(true);
-  const handleCloseView = () => setOpenView(false);
+  const handleCloseView = async () => {
+    setLoading(true);
+    const tokenId = await auth.currentUser.getIdToken();
+    fetch(
+      `${
+        API.baseURL
+      }/api/product/getCategoryForStaff?name=${searchValue}&page=${
+        page - 1
+      }&limit=5`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenId}`,
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        setCategories(data.productCategoryList);
+        setTotalPage(data.totalPage);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.log(err);
+        setLoading(false);
+      });
+    setOpenView(false);
+  };
   const [subCategoryToView, setSubCategoryToView] = useState(null);
 
   const [openSnackbar, setOpenSnackbar] = useState({
@@ -60,26 +92,45 @@ const CategoryManagement = () => {
 
   useEffect(() => {
     const fetchCategory = async () => {
-      const tokenId = await auth.currentUser.getIdToken();
-      fetch(`${API.baseURL}/api/product/getAllCategory`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${tokenId}`,
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          console.log(data);
-          setCategories(data);
-          setSubCategory(data.productSubCategories);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+      onAuthStateChanged(auth, async (userAuth) => {
+        setLoading(true);
+        if (userAuth) {
+          const tokenId = await auth.currentUser.getIdToken();
+          fetch(
+            `${
+              API.baseURL
+            }/api/product/getCategoryForStaff?name=${searchValue}&page=${
+              page - 1
+            }&limit=5`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${tokenId}`,
+              },
+            }
+          )
+            .then((res) => res.json())
+            .then((data) => {
+              setCategories(data.productCategoryList);
+              setTotalPage(data.totalPage);
+              setLoading(false);
+            })
+            .catch((err) => {
+              console.log(err);
+              setLoading(false);
+            });
+        }
+      });
     };
     fetchCategory();
-  }, []);
+  }, [page, searchValue]);
+
+  const onSubmitSearch = (e) => {
+    e.preventDefault();
+    setSearchValue(textSearch);
+    setPage(1);
+  };
 
   const menuTabs = [
     {
@@ -97,7 +148,6 @@ const CategoryManagement = () => {
   ];
 
   const handleDelete = async () => {
-    const tokenId = await auth.currentUser.getIdToken();
     console.log("click");
   };
 
@@ -110,8 +160,7 @@ const CategoryManagement = () => {
           <td style={{ paddingTop: 30 }}>
             <i
               onClick={() => {
-                console.log("click");
-                setSubCategoryToView(item.productSubCategories);
+                setSubCategoryToView(item);
                 handleOpenView();
               }}
               className="bi bi-eye"
@@ -123,13 +172,13 @@ const CategoryManagement = () => {
               }}
               class="bi bi-pencil-square"
             ></i>
-            <i
+            {/* <i
               onClick={() => {
                 setIdToDelete(item.id);
                 handleOpenDelete();
               }}
               class="bi bi-trash-fill"
-            ></i>
+            ></i> */}
           </td>
         </tr>
       </>
@@ -141,24 +190,21 @@ const CategoryManagement = () => {
         <ManagementMenu menuTabs={menuTabs} />
         {/* Table */}
         <div className="supermarket__container">
-          <div
-            className="supermarket__header"
-            style={{ justifyContent: "flex-end" }}
-          >
+          <div className="supermarket__header">
             {/* search bar */}
-            {/* <div className="search">
-          <form onSubmit={(e) => onSubmitSearch(e)}>
-            <div onClick={(e) => onSubmitSearch(e)} className="search-icon">
-              <FontAwesomeIcon icon={faMagnifyingGlass} />
+            <div className="search">
+              <form onSubmit={(e) => onSubmitSearch(e)}>
+                <div onClick={(e) => onSubmitSearch(e)} className="search-icon">
+                  <FontAwesomeIcon icon={faMagnifyingGlass} />
+                </div>
+                <input
+                  value={textSearch}
+                  onChange={(e) => setTextSearch(e.target.value)}
+                  type="text"
+                  placeholder="Từ khóa tìm kiếm"
+                />
+              </form>
             </div>
-            <input
-              value={textSearch}
-              onChange={(e) => setTextSearch(e.target.value)}
-              type="text"
-              placeholder="Từ khóa tìm kiếm"
-            />
-          </form>
-        </div> */}
             {/* ****************** */}
 
             <div onClick={handleOpen} className="supermarket__header-button">
@@ -293,6 +339,7 @@ const CategoryManagement = () => {
         >
           <ViewSubCategory
             handleClose={handleCloseView}
+            setSubCategoryToView={setSubCategoryToView}
             subCategoryToView={subCategoryToView}
           />
         </Dialog>
@@ -304,8 +351,11 @@ const CategoryManagement = () => {
         >
           <CreateCategory
             handleClose={handleClose}
-            setCategories={setCategories}
+            setCategory={setCategories}
             setSubCategory={setSubCategory}
+            page={page}
+            setTotalPage={setTotalPage}
+            searchValue={searchValue}
             openSnackbar={openSnackbar}
             setOpenSnackbar={setOpenSnackbar}
             setMsg={setMsg}
@@ -319,8 +369,11 @@ const CategoryManagement = () => {
         >
           <EditCategory
             handleClose={handleCloseEdit}
-            product={categoryToEdit}
-            setCategories={setCategories}
+            categoryToEdit={categoryToEdit}
+            setCategory={setCategories}
+            page={page}
+            setTotalPage={setTotalPage}
+            searchValue={searchValue}
             setSubCategory={setSubCategory}
             openSnackbar={openSnackbar}
             setOpenSnackbar={setOpenSnackbar}
@@ -383,6 +436,7 @@ const CategoryManagement = () => {
           </Alert>
         </Snackbar>
       </div>
+      {loading && <LoadingScreen />}
     </div>
   );
 };
