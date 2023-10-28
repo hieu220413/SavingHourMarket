@@ -25,6 +25,7 @@ const SupermarketItem = ({
   searchValue,
   setError,
   error,
+  setLoading,
 }) => {
   const [openEdit, setOpenEdit] = useState(false);
   const handleOpenEdit = () => setOpenEdit(true);
@@ -45,6 +46,7 @@ const SupermarketItem = ({
   };
 
   const handleDelete = async () => {
+    setLoading(true);
     const tokenId = await auth.currentUser.getIdToken();
     fetch(
       `${API.baseURL}/api/supermarket/changeStatus?supermarketId=${item.id}&status=DISABLE`,
@@ -58,9 +60,11 @@ const SupermarketItem = ({
     )
       .then((res) => res.json())
       .then((respond) => {
+        console.log(respond);
         if (respond?.error) {
           setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
           setError(respond.error);
+          setLoading(false);
           return;
         }
         fetch(
@@ -77,6 +81,7 @@ const SupermarketItem = ({
         )
           .then((res) => res.json())
           .then((data) => {
+            console.log(data);
             setSuperMarketList(data.supermarketList);
             setTotalPage(data.totalPage);
             handleCloseDelete();
@@ -86,6 +91,7 @@ const SupermarketItem = ({
               severity: "success",
             });
             setError("Vô hiệu hóa thành công");
+            setLoading(false);
           })
           .catch((err) => console.log(err));
       })
