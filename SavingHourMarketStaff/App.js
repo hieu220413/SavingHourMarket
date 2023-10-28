@@ -8,16 +8,6 @@ import Login from './src/screens/Login';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const Stack = createStackNavigator();
 export default function App() {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const getUser = async () => {
-      const currentUser = await AsyncStorage.getItem('userInfo');
-      setUser(currentUser ? JSON.parse(currentUser) : null);
-    };
-    getUser();
-  }, []);
-
   return (
     <>
       <NavigationContainer>
