@@ -36,8 +36,8 @@ public class OrderDetail {
 
     @ManyToOne
     @JoinColumn(
-            name = "product_id",
+            name = "product_batch_id",
             referencedColumnName = "id"
     )
-    private Product product;
+    private ProductBatch productBatch;
 }

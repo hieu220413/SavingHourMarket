@@ -10,6 +10,7 @@ import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -23,9 +24,9 @@ public class Product {
         this.id = id;
         this.name = name;
         this.imageUrl = imageUrl;
-        this.price = price.intValue();
-        this.priceOriginal = priceOriginal.intValue();
-        this.quantity = quantity.intValue();
+//        this.price = price.intValue();
+//        this.priceOriginal = priceOriginal.intValue();
+//        this.quantity = quantity.intValue();
     }
 
     @Id
@@ -35,17 +36,17 @@ public class Product {
     @Column(columnDefinition = "varchar(50) CHARACTER SET utf8 COLLATE utf8_bin")
     private String name;
 
-    private Integer price;
-
-    private Integer priceOriginal;
+//    private Integer price;
+//
+//    private Integer priceOriginal;
 
     @Column(columnDefinition = "text")
     private String description;
 
-    @Column(columnDefinition = "datetime(0)")
-    private LocalDate expiredDate;
-
-    private Integer quantity;
+//    @Column(columnDefinition = "datetime(0)")
+//    private LocalDate expiredDate;
+//
+//    private Integer quantity;
 
     @Column(columnDefinition = "text")
     private String imageUrl;
@@ -60,10 +61,16 @@ public class Product {
     )
     private ProductSubCategory productSubCategory;
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(
             name = "supermarket_id",
             referencedColumnName = "id"
     )
     private Supermarket supermarket;
+
+    @OneToMany(
+            fetch = FetchType.LAZY,
+            mappedBy = "product"
+    )
+    private List<ProductBatch> productBatchList;
 }

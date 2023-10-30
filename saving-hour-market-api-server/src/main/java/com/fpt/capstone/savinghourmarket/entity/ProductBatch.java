@@ -1,6 +1,5 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -15,35 +15,39 @@ import java.util.UUID;
 @NoArgsConstructor
 @Setter
 @Getter
-public class SupermarketAddress {
+public class ProductBatch {
+
     @Id
     @UuidGenerator
     private UUID id;
 
-    @Column(columnDefinition = "varchar(255)")
-    private String address;
+    private Integer price;
+
+    private Integer priceOriginal;
+
+    @Column(columnDefinition = "datetime(0)")
+    private LocalDate expiredDate;
+
+    private Integer quantity;
+
+//    @Column(columnDefinition = "tinyint")
+//    private Integer status;
 
     @ManyToOne(
             fetch = FetchType.LAZY
     )
     @JoinColumn(
-            name = "supermarket_id",
+            name = "product_id",
             referencedColumnName = "id"
     )
-    @JsonIgnore
-    private Supermarket supermarket;
+    private Product product;
 
     @ManyToOne(
             fetch = FetchType.LAZY
     )
     @JoinColumn(
-            name = "pickup_point_id",
+            name = "supermarket_address_id",
             referencedColumnName = "id"
     )
-    private PickupPoint pickupPoint;
-
-    public SupermarketAddress(String address, Supermarket supermarket) {
-        this.address = address;
-        this.supermarket = supermarket;
-    }
+    private SupermarketAddress supermarketAddress;
 }
