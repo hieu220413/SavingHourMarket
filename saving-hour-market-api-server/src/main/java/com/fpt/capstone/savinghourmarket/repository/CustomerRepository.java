@@ -24,6 +24,8 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
     void deleteCustomersWithIds(List<String> ids);
 
     @Query("SELECT c FROM Customer c " +
-            "WHERE UPPER(c.fullName) LIKE UPPER(CONCAT('%',:name,'%')) ")
-    Page<Customer> getCustomerForAdmin(String name, Pageable pageable);
+            "WHERE UPPER(c.fullName) LIKE UPPER(CONCAT('%',:name,'%')) " +
+            "AND " +
+            "((:status IS NULL) OR (c.status = :status)) ")
+    Page<Customer> getCustomerForAdmin(String name, Integer status, Pageable pageable);
 }

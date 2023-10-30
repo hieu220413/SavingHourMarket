@@ -17,6 +17,11 @@ public interface StaffRepository extends JpaRepository<Staff, UUID> {
     Optional<Staff> findByEmail(String email);
 
     @Query("SELECT s FROM Staff s " +
-            "WHERE UPPER(s.fullName) LIKE UPPER(CONCAT('%',:name,'%')) ")
-    Page<Staff> getStaffForAdmin(String name, Pageable pageable);
+            "WHERE UPPER(s.fullName) LIKE UPPER(CONCAT('%',:name,'%')) " +
+            "AND " +
+            "((:status IS NULL) OR (s.status = :status)) " +
+            "AND " +
+            "((:role IS NULL) OR (s.role = :role))")
+
+    Page<Staff> getStaffForAdmin(String name, String role, Integer status, Pageable pageable);
 }

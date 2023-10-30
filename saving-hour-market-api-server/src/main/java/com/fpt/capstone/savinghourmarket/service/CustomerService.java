@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.service;
 
+import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.model.*;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -18,7 +19,7 @@ public interface CustomerService {
 
     void updatePassword(PasswordRequestBody passwordRequestBody, String email) throws FirebaseAuthException;
 
-    CustomerListResponseBody getCustomerForAdmin(String name, Integer page, Integer limit);
+    CustomerListResponseBody getCustomerForAdmin(String name, EnableDisableStatus status, Integer page, Integer limit);
 
     Customer updateCustomerAccountStatus(AccountStatusChangeBody accountStatusChangeBody) throws FirebaseAuthException;
 }

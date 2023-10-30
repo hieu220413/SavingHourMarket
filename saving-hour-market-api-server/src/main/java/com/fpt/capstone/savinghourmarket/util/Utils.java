@@ -1,21 +1,30 @@
 package com.fpt.capstone.savinghourmarket.util;
 
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
+import com.fpt.capstone.savinghourmarket.entity.Configuration;
 import com.fpt.capstone.savinghourmarket.exception.UnverifiedEmailException;
 import com.google.cloud.storage.*;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.cloud.StorageClient;
+import jakarta.json.*;
+import jakarta.json.stream.JsonGenerator;
 import lombok.RequiredArgsConstructor;
 import org.apache.tomcat.util.http.fileupload.ByteArrayOutputStream;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -24,9 +33,22 @@ import java.util.UUID;
 
 public final class Utils {
 
+    public static Configuration getAdminConfiguration() throws IOException {
+        JsonReader reader = Json.createReader(new ClassPathResource("admin_configuration.json").getInputStream());
 
-    private Utils() {
+        JsonObject jsonObject = reader.readObject();
 
+        reader.close();
+
+        Configuration configuration = new Configuration();
+        configuration.setSystemStatus(jsonObject.getInt("systemStatus"));
+        configuration.setLimitOfOrders(jsonObject.getInt("limitOfOrders"));
+        configuration.setNumberOfSuggestedPickupPoint(jsonObject.getInt("numberOfSuggestedPickupPoint"));
+        configuration.setDeleteUnpaidOrderTime(jsonObject.getInt("deleteUnpaidOrderTime"));
+        configuration.setInitialShippingFee(jsonObject.getInt("initialShippingFee"));
+        configuration.setMinKmDistanceForExtraShippingFee(jsonObject.getInt("minKmDistanceForExtraShippingFee"));
+        configuration.setExtraShippingFeePerKilometer(jsonObject.getInt("extraShippingFeePerKilometer"));
+        return configuration;
     }
 
     public static String validateIdToken(String idToken, FirebaseAuth firebaseAuth) throws FirebaseAuthException {
