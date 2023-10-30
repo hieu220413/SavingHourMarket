@@ -4,7 +4,7 @@ import com.fpt.capstone.savinghourmarket.entity.Configuration;
 
 import java.io.IOException;
 
-public interface ConfigurationService {
+public interface SystemConfigurationService {
     Configuration getConfiguration() throws IOException;
 
     Configuration updateConfiguration(Configuration configurationUpdateBody) throws IOException;

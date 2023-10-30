@@ -2,7 +2,7 @@ package com.fpt.capstone.savinghourmarket.controller;
 
 
 import com.fpt.capstone.savinghourmarket.entity.Configuration;
-import com.fpt.capstone.savinghourmarket.service.ConfigurationService;
+import com.fpt.capstone.savinghourmarket.service.SystemConfigurationService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -24,7 +24,7 @@ public class ConfigurationController {
 
     private final FirebaseAuth firebaseAuth;
 
-    private final ConfigurationService configurationService;
+    private final SystemConfigurationService configurationService;
 
     @RequestMapping(value = "/getConfiguration", method = RequestMethod.GET)
     public ResponseEntity<Configuration> getConfiguration(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException, IOException {

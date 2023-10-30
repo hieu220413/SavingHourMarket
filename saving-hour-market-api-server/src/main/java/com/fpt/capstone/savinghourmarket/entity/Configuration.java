@@ -13,38 +13,38 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.UUID;
 
-@Entity
+//@Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Getter
 @Validated
 public class Configuration {
+//
+//    @Id
+//    @UuidGenerator
+//    private UUID id;
 
-    @Id
-    @UuidGenerator
-    private UUID id;
-
-    @Column(columnDefinition = "tinyint")
+//    @Column(columnDefinition = "tinyint")
     @NotNull
     private Integer systemStatus;
 
-    @Column(columnDefinition = "tinyint")
+//    @Column(columnDefinition = "tinyint")
     @NotNull
     private Integer limitOfOrders;
 
-    @Column(columnDefinition = "tinyint")
+//    @Column(columnDefinition = "tinyint")
     @NotNull
     private Integer numberOfSuggestedPickupPoint;
 
-    @Column(columnDefinition = "tinyint")
+//    @Column(columnDefinition = "tinyint")
     @NotNull
     private Integer deleteUnpaidOrderTime;
 
     @NotNull
     private Integer initialShippingFee;
 
-    @Column(columnDefinition = "tinyint")
+//    @Column(columnDefinition = "tinyint")
     @NotNull
     private Integer minKmDistanceForExtraShippingFee;
 

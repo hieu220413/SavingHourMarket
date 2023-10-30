@@ -3,12 +3,11 @@ package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
 import com.fpt.capstone.savinghourmarket.entity.Configuration;
 import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
-import com.fpt.capstone.savinghourmarket.service.ConfigurationService;
+import com.fpt.capstone.savinghourmarket.service.SystemConfigurationService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import jakarta.json.*;
 import jakarta.json.stream.JsonGenerator;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,7 +20,7 @@ import java.util.Map;
 
 
 @Service
-public class ConfigurationServiceImpl implements ConfigurationService {
+public class ConfigurationSystemServiceImpl implements SystemConfigurationService {
 
     @Value("classpath:admin_configuration.json")
     private Resource adminConfigurationResource;
