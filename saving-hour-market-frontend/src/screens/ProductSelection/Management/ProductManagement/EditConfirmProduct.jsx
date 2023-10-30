@@ -45,6 +45,10 @@ const EditConfirmProduct = ({
   const [image, setImage] = useState(product.imageUrl);
   const [imageToFireBase, setImageToFireBase] = useState("");
 
+  const [allowableDisplayThreshold, setAllowableDisplayThreshold] = useState(
+    product.productSubCategory.allowableDisplayThreshold
+  );
+
   const [error, setError] = useState({
     productName: "",
     price: "",
@@ -96,6 +100,13 @@ const EditConfirmProduct = ({
     fetchData();
   }, []);
 
+  const getDateAfterToday = (numberOfDays) => {
+    const today = new Date();
+    const nextDate = new Date(today);
+    nextDate.setDate(today.getDate() + numberOfDays);
+    return nextDate;
+  };
+
   const onConfirm = async () => {
     if (productName === "") {
       setError({ ...error, productName: "Vui lòng không để trống" });
@@ -115,6 +126,16 @@ const EditConfirmProduct = ({
     }
     if (quantity < 0 || !quantity) {
       setError({ ...error, quantity: "Số lượng nhập vào phải lớn hớn 0" });
+      return;
+    }
+    if (
+      new Date(expiredDate).getTime() <
+      getDateAfterToday(allowableDisplayThreshold).getTime()
+    ) {
+      setError({
+        ...error,
+        expiredDate: `Ngày hết hạn bạn nhập đã bé hơn giới hạn số ngày trước HSD`,
+      });
       return;
     }
     let submitUpdate = {};
@@ -446,16 +467,26 @@ const EditConfirmProduct = ({
           <h4 className="modal__container-body-inputcontrol-label">
             Ngày hết hạn
           </h4>
-          <input
-            placeholder="Nhập Ngày hết hạn"
-            type="date"
-            className="modal__container-body-inputcontrol-input"
-            value={expiredDate}
-            onChange={(e) => {
-              // console.log("format", dayjs(e.target.value).$d);
-              setExpiredDate(e.target.value);
-            }}
-          />
+          <div>
+            <input
+              placeholder="Nhập Ngày hết hạn"
+              type="date"
+              className="modal__container-body-inputcontrol-input"
+              value={expiredDate}
+              onChange={(e) => {
+                // console.log("format", dayjs(e.target.value).$d);
+                setExpiredDate(e.target.value);
+              }}
+            />
+            {error.expiredDate && (
+              <p
+                style={{ fontSize: "14px", marginBottom: "-10px" }}
+                className="text-danger"
+              >
+                {error.expiredDate}
+              </p>
+            )}
+          </div>
         </div>
         {/* Quantity */}
         <div className="modal__container-body-inputcontrol">
