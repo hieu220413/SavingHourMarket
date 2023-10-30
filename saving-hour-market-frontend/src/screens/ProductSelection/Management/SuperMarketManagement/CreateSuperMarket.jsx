@@ -10,6 +10,7 @@ import {
 import { API } from "../../../../contanst/api";
 
 import { auth } from "../../../../firebase/firebase.config";
+import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 
 const CreateSuperMarket = ({
   handleClose,
@@ -22,6 +23,7 @@ const CreateSuperMarket = ({
   setError,
 }) => {
   const [locationData, setLocationData] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const [addressList, setAddressList] = useState([
     {
@@ -70,6 +72,8 @@ const CreateSuperMarket = ({
       phone: phone,
     };
 
+    setLoading(true);
+
     const tokenId = await auth.currentUser.getIdToken();
     fetch(`${API.baseURL}/api/supermarket/create`, {
       method: "POST",
@@ -84,6 +88,7 @@ const CreateSuperMarket = ({
         if (respond?.code === 422) {
           setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
           setError("Tên siêu thị đã tồn tại");
+          setLoading(false);
           return;
         }
         fetch(
@@ -109,6 +114,7 @@ const CreateSuperMarket = ({
               severity: "success",
             });
             setError("Thêm siêu thị thành công");
+            setLoading(false);
           })
           .catch((err) => console.log(err));
       })
@@ -342,6 +348,7 @@ const CreateSuperMarket = ({
         </div>
       </div>
       {/* *********************** */}
+      {loading && <LoadingScreen />}
     </div>
   );
 };

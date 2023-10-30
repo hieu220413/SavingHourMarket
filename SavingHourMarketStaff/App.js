@@ -1,23 +1,25 @@
-import {StyleSheet, Text, View} from 'react-native';
+/* eslint-disable prettier/prettier */
 import React, {useEffect, useState} from 'react';
-import 'react-native-gesture-handler';
 import {createStackNavigator} from '@react-navigation/stack';
 import {NavigationContainer} from '@react-navigation/native';
-
+import 'react-native-gesture-handler';
+import Tabs from './src/navigations/tabs';
+import Login from './src/screens/Login';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const Stack = createStackNavigator();
-
-const App = () => {
+export default function App() {
   return (
     <>
       <NavigationContainer>
-        <Stack.Navigator>
-          
+        <Stack.Navigator
+          screenOptions={{
+            headerShown: false,
+          }}
+          initialRouteName={'Login'}>
+          <Stack.Screen name="Start" component={Tabs} />
+          <Stack.Screen name="Login" component={Login} />
         </Stack.Navigator>
       </NavigationContainer>
     </>
   );
-};
-
-export default App;
-
-const styles = StyleSheet.create({});
+}

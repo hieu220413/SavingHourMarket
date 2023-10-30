@@ -92,7 +92,7 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private DiscountRepository discountRepository;
 
-    private final ConfigurationRepository configurationRepository;
+//    private final ConfigurationRepository configurationRepository;
 
     @Value("${goong-api-key}")
     private String goongApiKey;
@@ -409,7 +409,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public ShippingFeeDetailResponseBody getShippingFeeDetail(Double latitude, Double longitude) throws IOException, InterruptedException, ApiException {
 //        int numberOfSuggestion = 3;
-        Configuration configuration = configurationRepository.findAll().get(0);
+        Configuration configuration = Utils.getAdminConfiguration();
         PickupPointSuggestionResponseBody closetPickupPoint;
         Integer shippingFee = configuration.getInitialShippingFee();
         List<PickupPoint> pickupPoints = pickupPointRepository.getAllSortByDistance(latitude, longitude);

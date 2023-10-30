@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
+import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.service.CustomerService;
@@ -69,12 +70,13 @@ public class CustomerController {
 
     @RequestMapping(value = "/getCustomerForAdmin", method = RequestMethod.GET)
     public ResponseEntity<CustomerListResponseBody> getCustomerForAdmin(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @RequestParam(required = false) EnableDisableStatus status
             , @RequestParam(defaultValue = "") String name
             , @RequestParam(defaultValue = "0") Integer page
             , @RequestParam(defaultValue = "5") Integer limit) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        CustomerListResponseBody customerListResponseBody = customerService.getCustomerForAdmin(name, page, limit);
+        CustomerListResponseBody customerListResponseBody = customerService.getCustomerForAdmin(name, status, page, limit);
         return ResponseEntity.status(HttpStatus.OK).body(customerListResponseBody);
     }
 

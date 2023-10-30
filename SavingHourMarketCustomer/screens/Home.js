@@ -251,8 +251,8 @@ const Home = ({ navigation }) => {
         }}
         style={{
           marginTop: 20,
-          marginLeft: 15,
-          marginRight: 20,
+          // marginLeft: 15,
+          // marginRight: 20,
           alignItems: 'center',
           maxWidth: '20%',
         }}>
@@ -262,15 +262,15 @@ const Home = ({ navigation }) => {
             uri: data?.imageUrl,
           }}
           style={{
-            width: 60,
-            height: 60,
+            width: 50,
+            height: 50,
           }}
         />
         <Text
           style={{
             color: 'black',
             fontFamily: FONTS.fontFamily,
-            fontSize: 14,
+            fontSize: 13,
             marginTop: 8,
             textAlign: 'center',
           }}>
@@ -395,6 +395,10 @@ const Home = ({ navigation }) => {
             flexDirection: 'row',
             flexWrap: 'wrap',
             marginVertical: 5,
+            alignItems:'center',
+            gap:20,
+            paddingHorizontal:20
+
           }}>
           {subCategories.map((item, index) => (
             <SubCategory data={item} key={index} />

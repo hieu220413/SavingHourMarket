@@ -11,6 +11,7 @@ import { API } from "../../../../contanst/api";
 import MuiAlert from "@mui/material/Alert";
 import { Snackbar } from "@mui/material";
 import { auth } from "../../../../firebase/firebase.config";
+import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -74,6 +75,7 @@ const EditSuperMarket = ({
       supermarketAddressList: listAddress,
       phone: phone,
     };
+    setLoading(true);
     const tokenId = await auth.currentUser.getIdToken();
     fetch(
       `${API.baseURL}/api/supermarket/updateInfo?supermarketId=${supermarket.id}`,
@@ -91,11 +93,13 @@ const EditSuperMarket = ({
         if (respond?.code === 422) {
           setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
           setError("Tên siêu thị đã tồn tại");
+          setLoading(false);
           return;
         }
         if (respond?.error) {
           setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
           setError(respond.error);
+          setLoading(false);
           return;
         }
         fetch(
@@ -121,6 +125,7 @@ const EditSuperMarket = ({
               severity: "success",
             });
             setError("Chỉnh sửa thành công");
+            setLoading(false);
           })
           .catch((err) => console.log(err));
       })
@@ -352,6 +357,7 @@ const EditSuperMarket = ({
         </div>
       </div>
       {/* *********************** */}
+      {loading && <LoadingScreen />}
     </div>
   );
 };

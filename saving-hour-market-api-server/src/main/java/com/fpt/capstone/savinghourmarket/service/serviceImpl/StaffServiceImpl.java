@@ -177,9 +177,9 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public StaffListResponseBody getStaffForAdmin(String name, Integer page, Integer limit) {
+    public StaffListResponseBody getStaffForAdmin(String name, StaffRole role, EnableDisableStatus status, Integer page, Integer limit) {
         Pageable pageable = PageRequest.of(page, limit);
-        Page<Staff> result = staffRepository.getStaffForAdmin(name, pageable);
+        Page<Staff> result = staffRepository.getStaffForAdmin(name, role == null ? null : role.toString(), status == null ? null : status.ordinal(), pageable);
         int totalPage = result.getTotalPages();
         long totalCustomer = result.getTotalElements();
 
