@@ -11,10 +11,7 @@ import com.fpt.capstone.savinghourmarket.model.ProductCreate;
 import com.fpt.capstone.savinghourmarket.model.ProductListResponseBody;
 import com.fpt.capstone.savinghourmarket.model.ProductSubCateOnly;
 import com.fpt.capstone.savinghourmarket.model.*;
-import com.fpt.capstone.savinghourmarket.repository.ProductCategoryRepository;
-import com.fpt.capstone.savinghourmarket.repository.ProductRepository;
-import com.fpt.capstone.savinghourmarket.repository.ProductSubCategoryRepository;
-import com.fpt.capstone.savinghourmarket.repository.SupermarketRepository;
+import com.fpt.capstone.savinghourmarket.repository.*;
 import com.fpt.capstone.savinghourmarket.service.FirebaseService;
 import com.fpt.capstone.savinghourmarket.service.ProductCategoryService;
 import com.fpt.capstone.savinghourmarket.service.ProductService;
@@ -60,6 +57,8 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductSubCategoryService productSubCategoryService;
 
+    private final PickupPointRepository pickupPointRepository;
+
     @Override
     public ProductListResponseBody getProductsForStaff(Boolean isExpiredShown, String name, String supermarketId, String productCategoryId, String productSubCategoryId, EnableDisableStatus status, Integer page, Integer limit, SortType quantitySortType, SortType expiredSortType, SortType priceSort) {
         Sort sortable = Sort.by("expiredDate").ascending();
@@ -103,7 +102,12 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductListResponseBody getProductsForCustomer(String name, String supermarketId, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, SortType quantitySortType, SortType expiredSortType, SortType priceSort) {
+    public ProductListResponseBody getProductsForCustomer(String name, String supermarketId, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, SortType quantitySortType, SortType expiredSortType, SortType priceSort, UUID pickupPointId) {
+
+        if(!pickupPointRepository.findById(pickupPointId).isPresent()){
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.PICKUP_POINT_NOT_FOUND.getCode()), AdditionalResponseCode.PICKUP_POINT_NOT_FOUND.toString());
+        }
+
         Sort sortable = Sort.by("expiredDate").ascending();
 
         if (quantitySortType != null) {
@@ -123,6 +127,7 @@ public class ProductServiceImpl implements ProductService {
                 , name
                 , productCategoryId == null ? null : UUID.fromString(productCategoryId)
                 , productSubCategoryId == null ? null : UUID.fromString(productSubCategoryId)
+                , pickupPointId
                 , pageableWithSort);
 
         int totalPage = result.getTotalPages();

@@ -67,6 +67,7 @@ public class ProductController {
     @RequestMapping(value = "/getProductsForCustomer", method = RequestMethod.GET)
     public ResponseEntity<ProductListResponseBody> getProductsForCustomer(@RequestParam(defaultValue = "") String name
             , @RequestParam(required = false) String supermarketId
+            , @RequestParam UUID pickupPointId
             , @RequestParam(required = false) String productCategoryId
             , @RequestParam(required = false) String productSubCategoryId
             , @RequestParam(defaultValue = "0") Integer page
@@ -82,7 +83,8 @@ public class ProductController {
                 , limit
                 , quantitySortType
                 , expiredSortType
-                , priceSort);
+                , priceSort
+                , pickupPointId);
         return ResponseEntity.status(HttpStatus.OK).body(productList);
     }
 

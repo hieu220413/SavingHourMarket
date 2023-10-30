@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -40,6 +41,7 @@ public class ProductBatch {
             name = "product_id",
             referencedColumnName = "id"
     )
+    @JsonIgnore
     private Product product;
 
     @ManyToOne(

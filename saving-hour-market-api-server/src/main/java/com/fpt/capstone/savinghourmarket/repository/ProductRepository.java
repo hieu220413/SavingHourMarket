@@ -36,10 +36,15 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
 
     @Query("SELECT p FROM Product p " +
+            "JOIN FETCH p.productBatchList pb " +
+            "JOIN pb.supermarketAddress pba " +
+            "JOIN pb.supermarketAddress.pickupPoint pbap " +
             "JOIN FETCH p.supermarket " +
             "JOIN FETCH p.productSubCategory " +
             "JOIN FETCH p.productSubCategory.productCategory " +
             "WHERE " +
+            "pbap.id = :pickupPointId " +
+            "AND " +
             "UPPER(p.name) LIKE UPPER(CONCAT('%',:name,'%')) " +
             "AND " +
             "((:supermarketId IS NULL) OR (p.supermarket.id = :supermarketId)) " +
@@ -48,11 +53,11 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "AND " +
             "((:productSubCategoryId IS NULL) OR (p.productSubCategory.id = :productSubCategoryId)) " +
             "AND " +
-            "p.expiredDate > CURRENT_TIMESTAMP + p.productSubCategory.allowableDisplayThreshold DAY " +
-            "AND p.quantity > 0" +
+            "pb.expiredDate > CURRENT_TIMESTAMP + p.productSubCategory.allowableDisplayThreshold DAY " +
+            "AND pb.quantity > 0" +
             "AND p.status = 1")
 
-    Page<Product> getProductsForCustomer(UUID supermarketId, String name, UUID productCategoryId, UUID productSubCategoryId, Pageable pageable);
+    Page<Product> getProductsForCustomer(UUID supermarketId, String name, UUID productCategoryId, UUID productSubCategoryId, UUID pickupPointId, Pageable pageable);
 
     @Query("SELECT p FROM Product p " +
             "WHERE p.status = 1 AND p.supermarket.id = :supermarketId ")
@@ -91,7 +96,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
         @Query("SELECT EXTRACT(MONTH FROM ord.createdTime), NEW com.fpt.capstone.savinghourmarket.model.SaleReportSupermarketMonthlyResponseBody(EXTRACT(MONTH FROM ord.createdTime), SUM(ordDetail.boughtQuantity), SUM(ordDetail.productPrice * ordDetail.boughtQuantity)) FROM OrderDetail ordDetail " +
             "JOIN ordDetail.order ord " +
-            "JOIN ordDetail.product pd " +
+            "JOIN ordDetail.productBatch.product pd " +
             "WHERE " +
             "pd.supermarket.id = :supermarketId " +
             "AND " +
@@ -150,7 +155,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     @Query("SELECT NEW com.fpt.capstone.savinghourmarket.model.SupermarketSaleReportResponseBody(sp.id, SUM(dt.boughtQuantity), SUM(dt.boughtQuantity*dt.productPrice)) FROM Order ord " +
             "JOIN ord.orderDetailList dt " +
-            "JOIN dt.product pd " +
+            "JOIN dt.productBatch.product pd " +
             "JOIN pd.supermarket sp " +
             "WHERE EXTRACT(YEAR FROM ord.createdTime) = :year " +
             "AND ord.status = 4" +
@@ -159,7 +164,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     @Query("SELECT DISTINCT NEW com.fpt.capstone.savinghourmarket.model.CateOderQuantityResponseBody(ct.id, ct.name, COUNT(ct.id)) FROM Order ord " +
             "JOIN ord.orderDetailList dt " +
-            "JOIN dt.product pd " +
+            "JOIN dt.productBatch.product pd " +
             "JOIN pd.supermarket sp " +
             "JOIN pd.productSubCategory sct " +
             "JOIN sct.productCategory ct " +
