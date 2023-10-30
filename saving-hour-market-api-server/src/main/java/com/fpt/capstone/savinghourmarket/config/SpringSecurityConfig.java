@@ -116,6 +116,7 @@ public class SpringSecurityConfig {
 
                             .requestMatchers("/api/feedback/updateStatus").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/feedback/getFeedbackForStaff").hasAnyRole(allStaffAndAdmin)
+                            .requestMatchers("/api/feedback/reply").hasRole("ADMIN")
 
                             .requestMatchers("/api/configuration/getConfiguration").hasRole("ADMIN")
                             .requestMatchers("/api/configuration/updateConfiguration").hasRole("ADMIN")
