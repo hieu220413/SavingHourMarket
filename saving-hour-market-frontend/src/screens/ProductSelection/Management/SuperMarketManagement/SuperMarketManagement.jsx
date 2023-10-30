@@ -67,6 +67,7 @@ const SuperMarketManagement = () => {
           )
             .then((res) => res.json())
             .then((respond) => {
+              console.log(respond);
               setSuperMarketList(respond.supermarketList);
               setTotalPage(respond.totalPage);
               setLoading(false);
@@ -149,6 +150,7 @@ const SuperMarketManagement = () => {
                   item={item}
                   setError={setError}
                   error={error}
+                  setLoading={setLoading}
                 />
               ))}
             </tbody>

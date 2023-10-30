@@ -1,0 +1,9 @@
+{
+  "systemStatus": 1,
+  "limitOfOrders": 3,
+  "numberOfSuggestedPickupPoint": 3,
+  "deleteUnpaidOrderTime": 1000,
+  "initialShippingFee": 10000,
+  "minKmDistanceForExtraShippingFee": 2,
+  "extraShippingFeePerKilometer": 1
+}

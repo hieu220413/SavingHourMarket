@@ -34,8 +34,8 @@ const DiscountCard = ({ data }) => {
             }}
                 style={{
                     backgroundColor: 'grey',
-                    height: 180,
-                    width: 180,
+                    height: 150,
+                    width: 150,
                     borderRadius: 10,
                     marginBottom: 15,
                 }}
@@ -48,20 +48,20 @@ const DiscountCard = ({ data }) => {
                     numberOfLines={1}
                     style={{
                         fontFamily: FONTS.fontFamily,
-                        fontSize: 18,
+                        fontSize: 15,
                         fontWeight: 700,
                         maxWidth: 180,
                         color: 'black'
                     }}>{data.name} </Text>
                 <Text style={{
                     fontFamily: FONTS.fontFamily,
-                    fontSize: 16,
+                    fontSize: 14,
                     maxWidth: 180,
 
                 }}>Còn lại: {data.quantity}</Text>
                 <Text style={{
                     fontFamily: FONTS.fontFamily,
-                    fontSize: 18,
+                    fontSize: 15,
                     color: COLORS.secondary,
                 }}>HSD: {dayjs(data.expiredDate).format('DD/MM/YYYY')}</Text>
                 {/* <TouchableOpacity

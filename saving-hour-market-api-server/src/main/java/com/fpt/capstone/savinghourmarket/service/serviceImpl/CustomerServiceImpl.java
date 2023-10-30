@@ -5,7 +5,6 @@ import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.common.OrderStatus;
 import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.entity.Order;
-import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.Staff;
 import com.fpt.capstone.savinghourmarket.exception.DisableCustomerForbiddenException;
 import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
@@ -263,9 +262,9 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public CustomerListResponseBody getCustomerForAdmin(String name, Integer page, Integer limit) {
+    public CustomerListResponseBody getCustomerForAdmin(String name, EnableDisableStatus status, Integer page, Integer limit) {
         Pageable pageable = PageRequest.of(page, limit);
-        Page<Customer> result = customerRepository.getCustomerForAdmin(name, pageable);
+        Page<Customer> result = customerRepository.getCustomerForAdmin(name, status == null ? null : status.ordinal(), pageable);
         int totalPage = result.getTotalPages();
         long totalCustomer = result.getTotalElements();
 

@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
+import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.common.StaffRole;
 import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.entity.Staff;
@@ -80,12 +81,14 @@ public class StaffController {
 
     @RequestMapping(value = "/getStaffForAdmin", method = RequestMethod.GET)
     public ResponseEntity<StaffListResponseBody> getStaffForAdmin(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @RequestParam(required = false) EnableDisableStatus status
+            , @RequestParam(required = false) StaffRole role
             , @RequestParam(defaultValue = "") String name
             , @RequestParam(defaultValue = "0") Integer page
             , @RequestParam(defaultValue = "5") Integer limit) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        StaffListResponseBody staffListResponseBody = staffService.getStaffForAdmin(name, page, limit);
+        StaffListResponseBody staffListResponseBody = staffService.getStaffForAdmin(name, role, status, page, limit);
         return ResponseEntity.status(HttpStatus.OK).body(staffListResponseBody);
     }
 

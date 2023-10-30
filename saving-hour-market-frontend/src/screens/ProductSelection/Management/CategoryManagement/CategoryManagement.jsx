@@ -48,7 +48,35 @@ const CategoryManagement = () => {
 
   const [openView, setOpenView] = useState(false);
   const handleOpenView = () => setOpenView(true);
-  const handleCloseView = () => setOpenView(false);
+  const handleCloseView = async () => {
+    setLoading(true);
+    const tokenId = await auth.currentUser.getIdToken();
+    fetch(
+      `${
+        API.baseURL
+      }/api/product/getCategoryForStaff?name=${searchValue}&page=${
+        page - 1
+      }&limit=5`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenId}`,
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        setCategories(data.productCategoryList);
+        setTotalPage(data.totalPage);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.log(err);
+        setLoading(false);
+      });
+    setOpenView(false);
+  };
   const [subCategoryToView, setSubCategoryToView] = useState(null);
 
   const [openSnackbar, setOpenSnackbar] = useState({

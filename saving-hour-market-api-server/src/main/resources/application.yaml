@@ -1,4 +1,7 @@
 spring:
+  devtools:
+    restart:
+      enabled: off
   jpa:
     show-sql: true
     properties:
@@ -33,6 +36,8 @@ server:
   port: 8082
   error:
     include-stacktrace: ${TRACE_MODE:never}
+
+
 
 logging:
   level:
