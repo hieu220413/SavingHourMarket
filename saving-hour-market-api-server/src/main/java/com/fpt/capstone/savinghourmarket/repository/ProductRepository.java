@@ -38,7 +38,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
     Page<Product> getProductsForStaff(UUID supermarketId, String name, UUID productCategoryId, UUID productSubCategoryId, Integer status, Boolean isExpiredShown, Pageable pageable);
 
 
-    @Query("SELECT p FROM Product p " +
+    @Query("SELECT DISTINCT p FROM Product p " +
             "JOIN FETCH p.productBatchList pb " +
             "JOIN pb.supermarketAddress pba " +
             "JOIN pb.supermarketAddress.pickupPoint pbap " +

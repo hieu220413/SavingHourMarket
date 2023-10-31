@@ -11,7 +11,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 public class ProductListResponseBody {
-    private List<Product> productList;
+    private List<ProductDisplayCustomer> productList;
     private int totalPage;
     private long totalProduct;
 }

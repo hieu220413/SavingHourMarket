@@ -341,7 +341,7 @@ INSERT INTO `saving_hour_market`.`product_batch` (`id`, `price`, `price_original
 --  Nước giặt Omo 2,9L
     VALUES  (UUID_TO_BIN('ec5ea50d-56dc-11ee-8a50-a85e45c41921'), 159000, 130000, 50, '2023-12-25 00:00:00', UUID_TO_BIN('accf2b04-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8c78-56dc-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('ec5eb3ce-56dc-11ee-8a50-a85e45c41921'), 159000, 130000, 25, '2023-12-25 00:00:00', UUID_TO_BIN('accf2b04-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e2090-56dc-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('ec5eb531-56dc-11ee-8a50-a85e45c41921'), 149000, 120000, 25, '2023-11-20 00:00:00', UUID_TO_BIN('accf2b04-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e2090-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5eb531-56dc-11ee-8a50-a85e45c41921'), 149000, 120000, 25, '2023-12-20 00:00:00', UUID_TO_BIN('accf2b04-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e2090-56dc-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('ec5eb87e-56dc-11ee-8a50-a85e45c41921'), 159000, 130000, 20, '2023-12-25 00:00:00', UUID_TO_BIN('accf2b04-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5ea1b4-56dc-11ee-8a50-a85e45c41921')),
 --  Nước xả vải Comfort hương nước hoa 3,8L batch
             (UUID_TO_BIN('ec5ea6b7-56dc-11ee-8a50-a85e45c41921'), 210000, 180000, 25, '2023-11-30 00:00:00', UUID_TO_BIN('ec5e38e3-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5ea1b4-56dc-11ee-8a50-a85e45c41921')),

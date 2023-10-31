@@ -44,9 +44,7 @@ public class ProductBatch {
     @JsonIgnore
     private Product product;
 
-    @ManyToOne(
-            fetch = FetchType.LAZY
-    )
+    @ManyToOne
     @JoinColumn(
             name = "supermarket_address_id",
             referencedColumnName = "id"
