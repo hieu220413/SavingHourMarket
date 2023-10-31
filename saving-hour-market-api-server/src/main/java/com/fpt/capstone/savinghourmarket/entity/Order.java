@@ -57,6 +57,9 @@ public class Order {
     @Column(columnDefinition = "tinyint")
     private Integer paymentMethod;
 
+    @Column(columnDefinition = "tinyint")
+    private Integer deliveryMethod;
+
     @Column(columnDefinition = "varchar(255)")
     private String addressDeliver;
 

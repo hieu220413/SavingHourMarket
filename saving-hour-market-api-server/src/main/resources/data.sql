@@ -23,6 +23,10 @@ SET @cancel = 6;
 SET @cod = 0;
 SET @vnpay = 1;
 
+-- Delivery method: Pickup point(0), Door-to-Door (1)
+SET @PickupPoint = 0;
+SET @DoorToDoor = 1;
+
 -- Payment status: unpaid(0), paid(1)
 SET @unpaid = 0;
 SET @paid = 1;
@@ -162,14 +166,29 @@ VALUES  (UUID_TO_BIN('ec5dfa4a-56dc-11ee-8a50-a85e45c41921'), 'Đường N7, Tă
 --             (UUID_TO_BIN('ec5dfc7e-56dc-11ee-8a50-a85e45c41921'), );
 
 
+-- Pickup point
+INSERT INTO `saving_hour_market`.`pickup_point` (`id`, `address`, `latitude`, `longitude`, `status`, `product_consolidation_area_id`)
+--     VALUES ('id', 'address', 'latitude', 'longitude', 'status');
+VALUES  (UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), 'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh', 10.845020092805793, 106.83102962168277, @enable, UUID_TO_BIN('ec5dfa4a-56dc-11ee-8a50-a85e45c41921')),
+        --       chua co trong supermarket address
+        --         (UUID_TO_BIN('accf0be1-5541-11ee-8a50-a85e45c41921'), '20 Đ. Nguyễn Đăng Giai, Thảo Điền, Quận 2, Hồ Chí Minh', 10.8019121, 106.7362979, @enable),
+        (UUID_TO_BIN('accf0d06-5541-11ee-8a50-a85e45c41921'), '432 Đ. Liên Phường, Phước Long B, Quận 9, Hồ Chí Minh', 10.8059505, 106.7891284, @enable, UUID_TO_BIN('ec5dfa4a-56dc-11ee-8a50-a85e45c41921')),
+        (UUID_TO_BIN('accf0e1e-5541-11ee-8a50-a85e45c41921'), '857 Phạm Văn Đồng, Linh Tây, Thủ Đức, Hồ Chí Minh', 10.85273099400007, 106.75072682500007, @enable, UUID_TO_BIN('ec5dfde4-56dc-11ee-8a50-a85e45c41921')),
+        --       chua co trong supermarket address
+        --         (UUID_TO_BIN('accf0f40-5541-11ee-8a50-a85e45c41921'), '430 Huỳnh Tấn Phát, Bình Thuận, Quận 7, Hồ Chí Minh', 10.7457942, 106.7290568, @enable),
+        (UUID_TO_BIN('accf105d-5541-11ee-8a50-a85e45c41921'), '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh', 10.80274197700004, 106.73845902300008, @enable, UUID_TO_BIN('ec5dfde4-56dc-11ee-8a50-a85e45c41921'));
+--             (UUID_TO_BIN('accf117b-5541-11ee-8a50-a85e45c41921'), '96 Đường Số 4, Phước Bình, Thủ Đức, Hồ Chí Minh', 10.818471742000042, 106.77107158600006, @enable, UUID_TO_BIN('ec5dfde4-56dc-11ee-8a50-a85e45c41921'));
+
+
+
 
 
 -- Staff
-INSERT INTO `saving_hour_market`.`staff` (`id`, `email`, `full_name`, `role`, `avatar_url`, `status`, `product_consolidation_area_id`)
+INSERT INTO `saving_hour_market`.`staff` (`id`, `email`, `full_name`, `role`, `avatar_url`, `status`, `pickup_point_id`)
 --     VALUES (`id`, `email`, `full_name`, `role`, `avatar_url`, `status`);
     VALUES  (UUID_TO_BIN('accf4aa8-5541-11ee-8a50-a85e45c41921'), 'hieuntse161152@fpt.edu.vn', 'Trung Hieu', 'ADMIN', 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media', @enable, null),
             (UUID_TO_BIN('accf4c03-5541-11ee-8a50-a85e45c41921'), 'vinhlgse161135@fpt.edu.vn', 'Gia Vinh', 'STAFF_SLT', 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media', @enable, null),
-            (UUID_TO_BIN('accf4d19-5541-11ee-8a50-a85e45c41921'), 'quangphse161539@fpt.edu.vn', 'Hong Quang', 'STAFF_ORD', 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media', @enable, UUID_TO_BIN('ec5dfde4-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf4d19-5541-11ee-8a50-a85e45c41921'), 'quangphse161539@fpt.edu.vn', 'Hong Quang', 'STAFF_ORD', 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media', @enable, UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('accf4e43-5541-11ee-8a50-a85e45c41921'), 'tuhase161714@fpt.edu.vn', 'Ha Tu', 'STAFF_MKT', 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media', @enable, null),
             (UUID_TO_BIN('accf4f95-5541-11ee-8a50-a85e45c41921'), 'anhpnhse161740@fpt.edu.vn', 'Hung Anh', 'STAFF_DLV_1', 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media', @enable, null),
             (UUID_TO_BIN('ec5e00f7-56dc-11ee-8a50-a85e45c41921'), 'nguoigiaohang1@fpt.com.vn', 'Nguyen Van A', 'STAFF_DLV_0', 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media', @enable, null),
@@ -179,19 +198,6 @@ INSERT INTO `saving_hour_market`.`staff` (`id`, `email`, `full_name`, `role`, `a
 
 -- 'ec5dffb7-56dc-11ee-8a50-a85e45c41921'
 
-
--- Pickup point
-INSERT INTO `saving_hour_market`.`pickup_point` (`id`, `address`, `latitude`, `longitude`, `status`, `product_consolidation_area_id`)
---     VALUES ('id', 'address', 'latitude', 'longitude', 'status');
-    VALUES  (UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), 'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh', 10.845020092805793, 106.83102962168277, @enable, UUID_TO_BIN('ec5dfa4a-56dc-11ee-8a50-a85e45c41921')),
-    --       chua co trong supermarket address
-    --         (UUID_TO_BIN('accf0be1-5541-11ee-8a50-a85e45c41921'), '20 Đ. Nguyễn Đăng Giai, Thảo Điền, Quận 2, Hồ Chí Minh', 10.8019121, 106.7362979, @enable),
-            (UUID_TO_BIN('accf0d06-5541-11ee-8a50-a85e45c41921'), '432 Đ. Liên Phường, Phước Long B, Quận 9, Hồ Chí Minh', 10.8059505, 106.7891284, @enable, UUID_TO_BIN('ec5dfa4a-56dc-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf0e1e-5541-11ee-8a50-a85e45c41921'), '857 Phạm Văn Đồng, Linh Tây, Thủ Đức, Hồ Chí Minh', 10.85273099400007, 106.75072682500007, @enable, UUID_TO_BIN('ec5dfde4-56dc-11ee-8a50-a85e45c41921')),
-    --       chua co trong supermarket address
-    --         (UUID_TO_BIN('accf0f40-5541-11ee-8a50-a85e45c41921'), '430 Huỳnh Tấn Phát, Bình Thuận, Quận 7, Hồ Chí Minh', 10.7457942, 106.7290568, @enable),
-            (UUID_TO_BIN('accf105d-5541-11ee-8a50-a85e45c41921'), '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh', 10.80274197700004, 106.73845902300008, @enable, UUID_TO_BIN('ec5dfde4-56dc-11ee-8a50-a85e45c41921'));
---             (UUID_TO_BIN('accf117b-5541-11ee-8a50-a85e45c41921'), '96 Đường Số 4, Phước Bình, Thủ Đức, Hồ Chí Minh', 10.818471742000042, 106.77107158600006, @enable, UUID_TO_BIN('ec5dfde4-56dc-11ee-8a50-a85e45c41921'));
 
 
 
@@ -488,27 +494,27 @@ INSERT INTO `saving_hour_market`.`discount` (`id`, `name`, `percentage`, `quanti
 
 
 -- Order new
-INSERT INTO `saving_hour_market`.`orders` (`id`, `total_price`, `total_discount_price`, `shipping_fee`, `created_time`, `delivery_date`, `payment_method`, `payment_status`, `address_deliver`, `receiver_phone`, `receiver_name`, `latitude`, `longitude`, `qr_code_url`, `status`, `customer_id`, `packager_id`, `order_group_id`, `order_batch_id`, `time_frame_id`)
+INSERT INTO `saving_hour_market`.`orders` (`id`, `total_price`, `total_discount_price`, `shipping_fee`, `created_time`, `delivery_date`, `payment_method`, `delivery_method`, `payment_status`, `address_deliver`, `receiver_phone`, `receiver_name`, `latitude`, `longitude`, `qr_code_url`, `status`, `customer_id`, `packager_id`, `order_group_id`, `order_batch_id`, `time_frame_id`)
 --     VALUES (`id`, `total_price`, `shipping_fee`, `created_time`, `delivery_date`, `payment_method`, `address_deliver`, `qr_code_url`, `status`, `customer_id`, `packager_id`, `order_group_id`, `order_batch_id`);
-    VALUES  (UUID_TO_BIN('accf7b01-5541-11ee-8a50-a85e45c41921'), 274350, 77650, 19000, '2023-10-17 14:20:00','2023-10-19 14:20:00', @cod, @paid, '240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.827628, 106.721636, 'qr code url here', @success,
+    VALUES  (UUID_TO_BIN('accf7b01-5541-11ee-8a50-a85e45c41921'), 274350, 77650, 19000, '2023-10-17 14:20:00','2023-10-19 14:20:00', @cod, @DoorToDoor, @paid, '240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.827628, 106.721636, 'qr code url here', @success,
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf4d19-5541-11ee-8a50-a85e45c41921'), null, null, UUID_TO_BIN('ec5e070b-56dc-11ee-8a50-a85e45c41921')),
 
-            (UUID_TO_BIN('accf7c79-5541-11ee-8a50-a85e45c41921'), 208800, 139200, 0, '2023-09-14 15:00:00', '2023-09-16 21:00:00', @vnpay, @paid, null, null, null, null, null, 'qr code url here', @success,
+            (UUID_TO_BIN('accf7c79-5541-11ee-8a50-a85e45c41921'), 208800, 139200, 0, '2023-09-14 15:00:00', '2023-09-16 21:00:00', @vnpay, @PickupPoint, @paid, null, null, null, null, null, 'qr code url here', @success,
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf4d19-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf2391-5541-11ee-8a50-a85e45c41921'), null, null),
 
-            (UUID_TO_BIN('accf7dc4-5541-11ee-8a50-a85e45c41921'), 546000, 0, 0, '2023-09-14 13:00:00', '2023-09-16 21:00:00', @cod, @unpaid, null, null, null, null, null, 'qr code url here', @cancel,
+            (UUID_TO_BIN('accf7dc4-5541-11ee-8a50-a85e45c41921'), 546000, 0, 0, '2023-09-14 13:00:00', '2023-09-16 21:00:00', @cod, @PickupPoint, @unpaid, null, null, null, null, null, 'qr code url here', @cancel,
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), null, UUID_TO_BIN('accf2391-5541-11ee-8a50-a85e45c41921'), null, null),
 
-            (UUID_TO_BIN('ec5dcac6-56dc-11ee-8a50-a85e45c41921'), 53600, 13400, 16000, '2023-11-18 13:00:00', '2023-11-19 13:00:00', @vnpay, @unpaid, '50 Lê Văn Việt, Hiệp Phú, Quận 9, Thành phố Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.847278, 106.776302, 'qr code url here', @processing,
+            (UUID_TO_BIN('ec5dcac6-56dc-11ee-8a50-a85e45c41921'), 53600, 13400, 16000, '2023-11-18 13:00:00', '2023-11-19 13:00:00', @vnpay, @DoorToDoor, @unpaid, '50 Lê Văn Việt, Hiệp Phú, Quận 9, Thành phố Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.847278, 106.776302, 'qr code url here', @processing,
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), null, null, UUID_TO_BIN('ec5def3a-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e070b-56dc-11ee-8a50-a85e45c41921')),
 
-            (UUID_TO_BIN('ec5de351-56dc-11ee-8a50-a85e45c41921'), 216000, 0, 0, '2023-11-18 08:00:00', '2023-11-17 19:00:00', @vnpay, @paid, null, null, null, null, null, 'qr code url here', @packaging,
+            (UUID_TO_BIN('ec5de351-56dc-11ee-8a50-a85e45c41921'), 216000, 0, 0, '2023-11-18 08:00:00', '2023-11-17 19:00:00', @vnpay, @PickupPoint, @paid, null, null, null, null, null, 'qr code url here', @packaging,
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf4d19-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf19db-5541-11ee-8a50-a85e45c41921'), null, null),
 
-            (UUID_TO_BIN('ec5de6e9-56dc-11ee-8a50-a85e45c41921'), 111000, 0, 0, '2023-11-17 15:00:00', '2023-11-19 19:00:00', @cod, @unpaid, null, null, null, null, null, 'qr code url here', @delivering,
+            (UUID_TO_BIN('ec5de6e9-56dc-11ee-8a50-a85e45c41921'), 111000, 0, 0, '2023-11-17 15:00:00', '2023-11-19 19:00:00', @cod, @PickupPoint, @unpaid, null, null, null, null, null, 'qr code url here', @delivering,
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf4d19-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf1baa-5541-11ee-8a50-a85e45c41921'), null, null),
 
-            (UUID_TO_BIN('ec5debf5-56dc-11ee-8a50-a85e45c41921'), 304000, 0, 19000, '2023-11-16 12:00:00', '2023-11-19 12:00:00', @cod, @unpaid, '81 Nguyễn Xiển, Long Thạnh Mỹ, Quận 9, Thành phố Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.876725, 106.83843, 'qr code url here', @processing,
+            (UUID_TO_BIN('ec5debf5-56dc-11ee-8a50-a85e45c41921'), 304000, 0, 19000, '2023-11-16 12:00:00', '2023-11-19 12:00:00', @cod, @DoorToDoor, @unpaid, '81 Nguyễn Xiển, Long Thạnh Mỹ, Quận 9, Thành phố Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.876725, 106.83843, 'qr code url here', @processing,
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), null, null, null, UUID_TO_BIN('ec5e070b-56dc-11ee-8a50-a85e45c41921'));
 
 

@@ -39,10 +39,4 @@ public class ProductConsolidationArea {
     )
     @JsonIgnore
     private List<PickupPoint> pickupPointList;
-
-    @OneToMany(
-            mappedBy = "productConsolidationArea"
-    )
-    @JsonIgnore
-    private List<Staff> staffList;
 }

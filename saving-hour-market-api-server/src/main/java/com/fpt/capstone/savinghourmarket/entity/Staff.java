@@ -43,10 +43,10 @@ public class Staff {
             fetch = FetchType.LAZY
     )
     @JoinColumn(
-            name = "product_consolidation_area_id",
+            name = "pickup_point_id",
             referencedColumnName = "id"
     )
-    private ProductConsolidationArea productConsolidationArea;
+    private PickupPoint pickupPoint;
     
 
     public Staff(StaffCreateRequestBody staffCreateRequestBody, StaffRole role) throws UnsupportedEncodingException {
