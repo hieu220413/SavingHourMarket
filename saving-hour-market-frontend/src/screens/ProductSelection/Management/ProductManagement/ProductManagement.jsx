@@ -857,6 +857,11 @@ const ProductManagement = () => {
           handleClose={handleCloseConfirmCreate}
           setOpenSuccessSnackbar={setOpenSnackbar}
           openSuccessSnackbar={openSnackbar}
+          setProducts={setProducts}
+          setIsSwitchRecovery={setIsSwitchRecovery}
+          page={page}
+          searchValue={searchValue}
+          setTotalPage={setTotalPage}
         />
       </Dialog>
       <Snackbar
