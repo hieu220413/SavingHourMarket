@@ -1,10 +1,10 @@
 /* eslint-disable prettier/prettier */
 const home = require('../assets/icons/home.png');
 // const discount = require('../assets/icons/discount.png');
-// const order = require('../assets/icons/order.png');
+const order = require('../assets/icons/order.png');
 // const cart = require('../assets/icons/cart.png');
 // const user = require('../assets/icons/user.png');
-// const search = require('../assets/icons/search.png');
+const search = require('../assets/icons/search.png');
 // const clearText = require('../assets/icons/clearText.png');
 // const star = require('../assets/icons/star.png');
 // const logo = require('../assets/icons/logo.png');
@@ -12,8 +12,8 @@ const home = require('../assets/icons/home.png');
 // const leftArrow = require('../assets/icons/left-arrow.png');
 // const plus = require('../assets/icons/plus.png');
 // const minus = require('../assets/icons/minus.png');
-// const location = require('../assets/icons/location.png');
-// const rightArrow = require('../assets/icons/right-arrow.png');
+const location = require('../assets/icons/location.png');
+const rightArrow = require('../assets/icons/right-arrow.png');
 // const calendar = require('../assets/icons/calendar.png');
 // const time = require('../assets/icons/time.png');
 // const cash = require('../assets/icons/cash.png');
@@ -28,14 +28,16 @@ const home = require('../assets/icons/home.png');
 // const questionMark = require('../assets/icons/questionMark.png');
 // const filter = require('../assets/icons/filter.png');
 // const searchIcon = require('../assets/icons/searchIcon.png');
+const statistic = require('../assets/icons/statistic.png');
+const userCircle = require('../assets/icons/user-circle.png');
 
 export default {
   home,
   // discount,
-  // order,
+  order,
   // cart,
   // user,
-  // search,
+  search,
   // clearText,
   // star,
   // logo,
@@ -43,8 +45,8 @@ export default {
   // leftArrow,
   // plus,
   // minus,
-  // location,
-  // rightArrow,
+  location,
+  rightArrow,
   // calendar,
   // time,
   // cash,
@@ -59,4 +61,6 @@ export default {
   // questionMark,
   // filter,
   // searchIcon,
+  statistic,
+  userCircle,
 };

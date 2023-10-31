@@ -9,6 +9,7 @@ import {icons} from '../constants';
 import {COLORS} from '../constants/theme';
 import {useFocusEffect} from '@react-navigation/native';
 import Test from '../components/Test';
+import Dropdown from '../screens/Dropdown';
 
 const Tab = createBottomTabNavigator();
 
@@ -66,33 +67,20 @@ const Tabs = () => {
                 <TabIcon
                   display={'Order'}
                   focused={focused}
-                  icon={icons.home}
+                  icon={icons.order}
                 />
               ),
             }}
           />
           <Tab.Screen
-            name="Home2"
-            component={Home}
+            name="Drop down"
+            component={Dropdown}
             options={{
               tabBarIcon: ({focused}) => (
                 <TabIcon
-                  display={'Order'}
+                  display={'Report'}
                   focused={focused}
-                  icon={icons.home}
-                />
-              ),
-            }}
-          />
-          <Tab.Screen
-            name="Home3"
-            component={Home}
-            options={{
-              tabBarIcon: ({focused}) => (
-                <TabIcon
-                  display={'Order'}
-                  focused={focused}
-                  icon={icons.home}
+                  icon={icons.statistic}
                 />
               ),
             }}

@@ -17,7 +17,11 @@ export default function App() {
           }}
           initialRouteName={'Login'}>
           <Stack.Screen name="Start" component={Tabs} />
-          <Stack.Screen name="Login" component={Login} />
+          <Stack.Screen
+            name="Login"
+            component={Login}
+            options={{swipeEnabled: false}}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </>
