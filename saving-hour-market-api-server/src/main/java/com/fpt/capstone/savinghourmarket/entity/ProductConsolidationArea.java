@@ -1,7 +1,6 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fpt.capstone.savinghourmarket.model.PickupPointSuggestionResponseBody;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -16,7 +16,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Setter
 @Getter
-public class PickupPoint {
+public class ProductConsolidationArea {
     @Id
     @UuidGenerator
     private UUID id;
@@ -33,23 +33,16 @@ public class PickupPoint {
     @Column(columnDefinition = "decimal(22,20)")
     private Double latitude;
 
-    @ManyToOne(
+    @OneToMany(
+            mappedBy = "productConsolidationArea",
             fetch = FetchType.LAZY
     )
-    @JoinColumn(
-            name = "product_consolidation_area_id",
-            referencedColumnName = "id"
+    @JsonIgnore
+    private List<PickupPoint> pickupPointList;
+
+    @OneToMany(
+            mappedBy = "productConsolidationArea"
     )
     @JsonIgnore
-    private ProductConsolidationArea productConsolidationArea;
-
-
-    public PickupPoint(PickupPointSuggestionResponseBody pickupPointSuggestionResponseBody) {
-        this.id = pickupPointSuggestionResponseBody.getId();
-        this.address = pickupPointSuggestionResponseBody.getAddress();
-        this.latitude = pickupPointSuggestionResponseBody.getLatitude();
-        this.longitude = pickupPointSuggestionResponseBody.getLongitude();
-        this.status = pickupPointSuggestionResponseBody.getStatus();
-
-    }
+    private List<Staff> staffList;
 }

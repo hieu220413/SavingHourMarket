@@ -34,10 +34,10 @@ public class Order {
 
     private String receiverName;
 
-    @Column(columnDefinition = "decimal(11,8)")
+    @Column(columnDefinition = "decimal(23,20)")
     private Float longitude;
 
-    @Column(columnDefinition = "decimal(10,8)")
+    @Column(columnDefinition = "decimal(22,20)")
     private Float latitude;
 
     private Integer totalDiscountPrice;

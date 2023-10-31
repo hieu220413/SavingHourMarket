@@ -17,6 +17,9 @@ import java.util.UUID;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, UUID> {
     @Query("SELECT p FROM Product p " +
+            "JOIN FETCH p.productBatchList pb " +
+            "JOIN pb.supermarketAddress pba " +
+            "JOIN pb.supermarketAddress.pickupPoint pbap " +
             "JOIN FETCH p.supermarket " +
             "JOIN FETCH p.productSubCategory " +
             "JOIN FETCH p.productSubCategory.productCategory " +
@@ -29,7 +32,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "AND " +
             "((:productSubCategoryId IS NULL) OR (p.productSubCategory.id = :productSubCategoryId)) " +
             "AND " +
-            "((:isExpiredShown IS NULL) OR (:isExpiredShown = TRUE AND p.expiredDate < CURRENT_TIMESTAMP) OR (:isExpiredShown = FALSE AND p.expiredDate > CURRENT_TIMESTAMP)) " +
+            "((:isExpiredShown IS NULL) OR (:isExpiredShown = TRUE AND pb.expiredDate < CURRENT_TIMESTAMP) OR (:isExpiredShown = FALSE AND pb.expiredDate > CURRENT_TIMESTAMP)) " +
             "AND p.status = :status")
 
     Page<Product> getProductsForStaff(UUID supermarketId, String name, UUID productCategoryId, UUID productSubCategoryId, Integer status, Boolean isExpiredShown, Pageable pageable);

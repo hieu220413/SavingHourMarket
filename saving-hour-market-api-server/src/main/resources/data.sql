@@ -154,31 +154,44 @@ INSERT INTO `saving_hour_market`.`customer` (`id`, `status`, `date_of_birth`, `a
             (UUID_TO_BIN('accef988-5541-11ee-8a50-a85e45c41921'), @enable, '2002-05-05', '441 Lê Văn Việt, Tăng Nhơn Phú A, Quận 9, Thành phố Hồ Chí Minh', 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media', 'ungthanhgiang458@gmail.com', 'Ung Thanh Giang', '0905628465', @female);
 
 
+-- Product Consolidation Area
+INSERT INTO `saving_hour_market`.`product_consolidation_area` (`id`, `address`, `latitude`, `longitude`, `status`)
+VALUES  (UUID_TO_BIN('ec5dfa4a-56dc-11ee-8a50-a85e45c41921'), 'Đường N7, Tăng Nhơn Phú A, Thủ Đức, Hồ Chí Minh', 10.846756594531838, 106.80459035612381, @enable),
+        (UUID_TO_BIN('ec5dfde4-56dc-11ee-8a50-a85e45c41921'), '9 Nam Hòa, Phước Long A, Thủ Đức, Hồ Chí Minh', 10.821593957000061, 106.76009552300007, @enable);
+--             (UUID_TO_BIN('ec5dfb70-56dc-11ee-8a50-a85e45c41921'), ),
+--             (UUID_TO_BIN('ec5dfc7e-56dc-11ee-8a50-a85e45c41921'), );
+
+
+
+
 -- Staff
-INSERT INTO `saving_hour_market`.`staff` (`id`, `email`, `full_name`, `role`, `avatar_url`, `status`)
+INSERT INTO `saving_hour_market`.`staff` (`id`, `email`, `full_name`, `role`, `avatar_url`, `status`, `product_consolidation_area_id`)
 --     VALUES (`id`, `email`, `full_name`, `role`, `avatar_url`, `status`);
-    VALUES  (UUID_TO_BIN('accf4aa8-5541-11ee-8a50-a85e45c41921'), 'hieuntse161152@fpt.edu.vn', 'Trung Hieu', 'ADMIN', 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media', @enable),
-            (UUID_TO_BIN('accf4c03-5541-11ee-8a50-a85e45c41921'), 'vinhlgse161135@fpt.edu.vn', 'Gia Vinh', 'STAFF_SLT', 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media', @enable),
-            (UUID_TO_BIN('accf4d19-5541-11ee-8a50-a85e45c41921'), 'quangphse161539@fpt.edu.vn', 'Hong Quang', 'STAFF_ORD', 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media', @enable),
-            (UUID_TO_BIN('accf4e43-5541-11ee-8a50-a85e45c41921'), 'tuhase161714@fpt.edu.vn', 'Ha Tu', 'STAFF_MKT', 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media', @enable),
-            (UUID_TO_BIN('accf4f95-5541-11ee-8a50-a85e45c41921'), 'anhpnhse161740@fpt.edu.vn', 'Hung Anh', 'STAFF_DLV_1', 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media', @enable),
-            (UUID_TO_BIN('ec5e00f7-56dc-11ee-8a50-a85e45c41921'), 'nguoigiaohang1@fpt.com.vn', 'Nguyen Van A', 'STAFF_DLV_0', 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media', @enable),
-            (UUID_TO_BIN('ec5e0293-56dc-11ee-8a50-a85e45c41921'), 'nguoigiaohang2@fpt.com.vn', 'Nguyen Van B', 'STAFF_DLV_0', 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media', @enable),
-            (UUID_TO_BIN('ec5e0433-56dc-11ee-8a50-a85e45c41921'), 'nguoigiaohang3@fpt.com.vn', 'Nguyen Van C', 'STAFF_DLV_0', 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media', @enable);
+    VALUES  (UUID_TO_BIN('accf4aa8-5541-11ee-8a50-a85e45c41921'), 'hieuntse161152@fpt.edu.vn', 'Trung Hieu', 'ADMIN', 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media', @enable, null),
+            (UUID_TO_BIN('accf4c03-5541-11ee-8a50-a85e45c41921'), 'vinhlgse161135@fpt.edu.vn', 'Gia Vinh', 'STAFF_SLT', 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media', @enable, null),
+            (UUID_TO_BIN('accf4d19-5541-11ee-8a50-a85e45c41921'), 'quangphse161539@fpt.edu.vn', 'Hong Quang', 'STAFF_ORD', 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media', @enable, UUID_TO_BIN('ec5dfde4-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf4e43-5541-11ee-8a50-a85e45c41921'), 'tuhase161714@fpt.edu.vn', 'Ha Tu', 'STAFF_MKT', 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media', @enable, null),
+            (UUID_TO_BIN('accf4f95-5541-11ee-8a50-a85e45c41921'), 'anhpnhse161740@fpt.edu.vn', 'Hung Anh', 'STAFF_DLV_1', 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media', @enable, null),
+            (UUID_TO_BIN('ec5e00f7-56dc-11ee-8a50-a85e45c41921'), 'nguoigiaohang1@fpt.com.vn', 'Nguyen Van A', 'STAFF_DLV_0', 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media', @enable, null),
+            (UUID_TO_BIN('ec5e0293-56dc-11ee-8a50-a85e45c41921'), 'nguoigiaohang2@fpt.com.vn', 'Nguyen Van B', 'STAFF_DLV_0', 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media', @enable, null),
+            (UUID_TO_BIN('ec5e0433-56dc-11ee-8a50-a85e45c41921'), 'nguoigiaohang3@fpt.com.vn', 'Nguyen Van C', 'STAFF_DLV_0', 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media', @enable, null);
+
+
+-- 'ec5dffb7-56dc-11ee-8a50-a85e45c41921'
 
 
 -- Pickup point
-INSERT INTO `saving_hour_market`.`pickup_point` (`id`, `address`, `latitude`, `longitude`, `status`)
+INSERT INTO `saving_hour_market`.`pickup_point` (`id`, `address`, `latitude`, `longitude`, `status`, `product_consolidation_area_id`)
 --     VALUES ('id', 'address', 'latitude', 'longitude', 'status');
-VALUES  (UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), 'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh', 10.844867, 106.831038, @enable),
---       chua co trong supermarket address
---         (UUID_TO_BIN('accf0be1-5541-11ee-8a50-a85e45c41921'), '20 Đ. Nguyễn Đăng Giai, Thảo Điền, Quận 2, Hồ Chí Minh', 10.8019121, 106.7362979, @enable),
-        (UUID_TO_BIN('accf0d06-5541-11ee-8a50-a85e45c41921'), '432 Đ. Liên Phường, Phước Long B, Quận 9, Hồ Chí Minh', 10.8059505, 106.7891284, @enable),
-        (UUID_TO_BIN('accf0e1e-5541-11ee-8a50-a85e45c41921'), '857 Phạm Văn Đồng, Linh Tây, Thủ Đức, Hồ Chí Minh', 10.8268113, 106.7188031, @enable),
---       chua co trong supermarket address
---         (UUID_TO_BIN('accf0f40-5541-11ee-8a50-a85e45c41921'), '430 Huỳnh Tấn Phát, Bình Thuận, Quận 7, Hồ Chí Minh', 10.7457942, 106.7290568, @enable),
-        (UUID_TO_BIN('accf105d-5541-11ee-8a50-a85e45c41921'), '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh', 10.8027419, 106.7384590, @enable),
-        (UUID_TO_BIN('accf117b-5541-11ee-8a50-a85e45c41921'), '96 Đường Số 4, Phước Bình, Thủ Đức, Hồ Chí Minh', 10.8184717, 106.7710715, @enable);
+    VALUES  (UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), 'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh', 10.845020092805793, 106.83102962168277, @enable, UUID_TO_BIN('ec5dfa4a-56dc-11ee-8a50-a85e45c41921')),
+    --       chua co trong supermarket address
+    --         (UUID_TO_BIN('accf0be1-5541-11ee-8a50-a85e45c41921'), '20 Đ. Nguyễn Đăng Giai, Thảo Điền, Quận 2, Hồ Chí Minh', 10.8019121, 106.7362979, @enable),
+            (UUID_TO_BIN('accf0d06-5541-11ee-8a50-a85e45c41921'), '432 Đ. Liên Phường, Phước Long B, Quận 9, Hồ Chí Minh', 10.8059505, 106.7891284, @enable, UUID_TO_BIN('ec5dfa4a-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf0e1e-5541-11ee-8a50-a85e45c41921'), '857 Phạm Văn Đồng, Linh Tây, Thủ Đức, Hồ Chí Minh', 10.85273099400007, 106.75072682500007, @enable, UUID_TO_BIN('ec5dfde4-56dc-11ee-8a50-a85e45c41921')),
+    --       chua co trong supermarket address
+    --         (UUID_TO_BIN('accf0f40-5541-11ee-8a50-a85e45c41921'), '430 Huỳnh Tấn Phát, Bình Thuận, Quận 7, Hồ Chí Minh', 10.7457942, 106.7290568, @enable),
+            (UUID_TO_BIN('accf105d-5541-11ee-8a50-a85e45c41921'), '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh', 10.80274197700004, 106.73845902300008, @enable, UUID_TO_BIN('ec5dfde4-56dc-11ee-8a50-a85e45c41921'));
+--             (UUID_TO_BIN('accf117b-5541-11ee-8a50-a85e45c41921'), '96 Đường Số 4, Phước Bình, Thủ Đức, Hồ Chí Minh', 10.818471742000042, 106.77107158600006, @enable, UUID_TO_BIN('ec5dfde4-56dc-11ee-8a50-a85e45c41921'));
 
 
 
@@ -221,15 +234,20 @@ INSERT INTO `saving_hour_market`.`supermarket` (`id`, `status`, `name`, `phone`)
 -- Supermarket Address
 INSERT INTO `saving_hour_market`.`supermarket_address` (`id`, `address`, `supermarket_id`, `pickup_point_id`)
     VALUES  (UUID_TO_BIN('ec5e8c78-56dc-11ee-8a50-a85e45c41921'), '34 Đ. Nam Cao, Phường Tân Phú, Quận 9, Hồ Chí Minh', UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e2090-56dc-11ee-8a50-a85e45c41921'), '48 Cầu Xây,Tân Phú,Thủ Đức,Hồ Chí Minh', UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('ec5e8dca-56dc-11ee-8a50-a85e45c41921'), '191 Quang Trung, Hiệp Phú, Thủ Đức, Hồ Chí Minh', UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0e1e-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('ec5e8f16-56dc-11ee-8a50-a85e45c41921'), '315 Đỗ Xuân Hợp, Phước Long B, Thủ Đức, Hồ Chí Minh', UUID_TO_BIN('accf028b-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf117b-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('ec5e9073-56dc-11ee-8a50-a85e45c41921'), '46 Đ.61, Phước Long B, Quận 9, Hồ Chí Minh', UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf117b-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e1f3a-56dc-11ee-8a50-a85e45c41921'), '82 Ngô Quyền,Hiệp Phú,Quận 9,Hồ Chí Minh', UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0e1e-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e8f16-56dc-11ee-8a50-a85e45c41921'), '172 Nguyễn Xiển,Trường Thạnh,Thủ Đức,Hồ Chí Minh', UUID_TO_BIN('accf028b-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e9073-56dc-11ee-8a50-a85e45c41921'), '25 Cầu Xây,Tân Phú,Thủ Đức,Hồ Chí Minh', UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('ec5e9414-56dc-11ee-8a50-a85e45c41921'), '344 Lê Văn Việt, Tăng Nhơn Phú B, Thủ Đức, Hồ Chí Minh', UUID_TO_BIN('accf0709-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0e1e-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('ec5ea1b4-56dc-11ee-8a50-a85e45c41921'), '89/1A Bưng Ông Thoàn, Phú Hữu, Thủ Đức, Hồ Chí Minh', UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0d06-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('ec5ea361-56dc-11ee-8a50-a85e45c41921'), '8 Nguyễn Hoàng, An Phú, Thủ Đức, Hồ Chí Minh', UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf105d-5541-11ee-8a50-a85e45c41921'));
 
 
 
+
+-- 'ec5e321c-56dc-11ee-8a50-a85e45c41921'
+-- 'ec5e33d6-56dc-11ee-8a50-a85e45c41921'
 
 
 -- Time frame
@@ -245,30 +263,27 @@ INSERT INTO `saving_hour_market`.`time_frame` (`id`, `day_of_week`, `from_hour`,
 
 
 
--- 'ec5e1f3a-56dc-11ee-8a50-a85e45c41921'
--- 'ec5e2090-56dc-11ee-8a50-a85e45c41921'
--- 'ec5e321c-56dc-11ee-8a50-a85e45c41921'
--- 'ec5e33d6-56dc-11ee-8a50-a85e45c41921'
+
 
 
 -- Order Group
 INSERT INTO `saving_hour_market`.`order_group` (`id`, `deliver_date`, `time_frame_id`, `pickup_point_id`, `deliverer_id`)
 --     VALUES ('id', 'time_frame_id', 'pickup_point_id');
-    VALUES  (UUID_TO_BIN('accf129e-5541-11ee-8a50-a85e45c41921'), '2023-09-18', UUID_TO_BIN('accf0876-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), null),
+    VALUES  (UUID_TO_BIN('accf129e-5541-11ee-8a50-a85e45c41921'), '2023-09-19', UUID_TO_BIN('accf0876-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), null),
 --             (UUID_TO_BIN('accf13f0-5541-11ee-8a50-a85e45c41921'), '2023-09-18', UUID_TO_BIN('accf0876-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0be1-5541-11ee-8a50-a85e45c41921'), null),
-            (UUID_TO_BIN('accf15b0-5541-11ee-8a50-a85e45c41921'), '2023-09-18', UUID_TO_BIN('accf0876-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0d06-5541-11ee-8a50-a85e45c41921'), null),
-            (UUID_TO_BIN('accf1749-5541-11ee-8a50-a85e45c41921'), '2023-09-18', UUID_TO_BIN('accf0876-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0e1e-5541-11ee-8a50-a85e45c41921'), null),
+            (UUID_TO_BIN('accf15b0-5541-11ee-8a50-a85e45c41921'), '2023-09-19', UUID_TO_BIN('accf0876-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0d06-5541-11ee-8a50-a85e45c41921'), null),
+            (UUID_TO_BIN('accf1749-5541-11ee-8a50-a85e45c41921'), '2023-09-19', UUID_TO_BIN('accf0876-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0e1e-5541-11ee-8a50-a85e45c41921'), null),
 --             (UUID_TO_BIN('accf187a-5541-11ee-8a50-a85e45c41921'), '2023-09-20', UUID_TO_BIN('accf0876-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0f40-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e00f7-56dc-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf19db-5541-11ee-8a50-a85e45c41921'), '2023-09-18', UUID_TO_BIN('accf0876-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf105d-5541-11ee-8a50-a85e45c41921'), null),
-            (UUID_TO_BIN('accf1baa-5541-11ee-8a50-a85e45c41921'), '2023-09-19', UUID_TO_BIN('accf0876-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf117b-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e0433-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf19db-5541-11ee-8a50-a85e45c41921'), '2023-09-19', UUID_TO_BIN('accf0876-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf105d-5541-11ee-8a50-a85e45c41921'), null),
+            (UUID_TO_BIN('accf1baa-5541-11ee-8a50-a85e45c41921'), '2023-09-20', UUID_TO_BIN('accf0876-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf105d-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e0433-56dc-11ee-8a50-a85e45c41921')),
 --          second time frame
-            (UUID_TO_BIN('accf1f39-5541-11ee-8a50-a85e45c41921'), '2023-09-17', UUID_TO_BIN('accf0996-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), null),
+            (UUID_TO_BIN('accf1f39-5541-11ee-8a50-a85e45c41921'), '2023-09-18', UUID_TO_BIN('accf0996-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), null),
 --             (UUID_TO_BIN('accf20d1-5541-11ee-8a50-a85e45c41921'), '2023-09-17', UUID_TO_BIN('accf0996-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0be1-5541-11ee-8a50-a85e45c41921'), null),
-            (UUID_TO_BIN('accf2205-5541-11ee-8a50-a85e45c41921'), '2023-09-17', UUID_TO_BIN('accf0996-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0d06-5541-11ee-8a50-a85e45c41921'), null),
-            (UUID_TO_BIN('accf2391-5541-11ee-8a50-a85e45c41921'), '2023-09-16', UUID_TO_BIN('accf0996-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0e1e-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e0433-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf2205-5541-11ee-8a50-a85e45c41921'), '2023-09-18', UUID_TO_BIN('accf0996-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0d06-5541-11ee-8a50-a85e45c41921'), null),
+            (UUID_TO_BIN('accf2391-5541-11ee-8a50-a85e45c41921'), '2023-09-17', UUID_TO_BIN('accf0996-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0e1e-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e0433-56dc-11ee-8a50-a85e45c41921')),
 --             (UUID_TO_BIN('accf26cb-5541-11ee-8a50-a85e45c41921'), '2023-09-17', UUID_TO_BIN('accf0996-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0f40-5541-11ee-8a50-a85e45c41921'), null),
-            (UUID_TO_BIN('accf2846-5541-11ee-8a50-a85e45c41921'), '2023-09-17', UUID_TO_BIN('accf0996-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf105d-5541-11ee-8a50-a85e45c41921'), null),
-            (UUID_TO_BIN('accf29d6-5541-11ee-8a50-a85e45c41921'), '2023-09-17', UUID_TO_BIN('accf0996-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf117b-5541-11ee-8a50-a85e45c41921'), null);
+            (UUID_TO_BIN('accf2846-5541-11ee-8a50-a85e45c41921'), '2023-09-18', UUID_TO_BIN('accf0996-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf105d-5541-11ee-8a50-a85e45c41921'), null);
+--             (UUID_TO_BIN('accf29d6-5541-11ee-8a50-a85e45c41921'), '2023-09-17', UUID_TO_BIN('accf0996-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf117b-5541-11ee-8a50-a85e45c41921'), null);
 
 
 -- Order Batch
@@ -285,48 +300,43 @@ INSERT INTO `saving_hour_market`.`order_batch` (`id`, `district`, `deliver_date`
             (UUID_TO_BIN('ec5df929-56dc-11ee-8a50-a85e45c41921'), '1', '2023-09-21', null);
 
 
-
--- 'ec5dfa4a-56dc-11ee-8a50-a85e45c41921'
--- 'ec5dfb70-56dc-11ee-8a50-a85e45c41921'
--- 'ec5dfc7e-56dc-11ee-8a50-a85e45c41921'
--- 'ec5dfde4-56dc-11ee-8a50-a85e45c41921'
--- 'ec5dffb7-56dc-11ee-8a50-a85e45c41921'
-
-
 -- Product
-INSERT INTO `saving_hour_market`.`product` (`id`, `name`, `price`, `price_original`, `quantity`, `expired_date`, `description`, `image_url`, `status`, `product_sub_category_id`, `supermarket_id`)
+INSERT INTO `saving_hour_market`.`product` (`id`, `name`, `description`, `image_url`, `status`, `product_sub_category_id`, `supermarket_id`)
 --     VALUES (`id`, `name`, `price`, `price_original`, `quantity`, `expired_date`, `description`, `image_url`, `status`, `product_category_id`, `supermarket_id`);
-    VALUES  (UUID_TO_BIN('accf2b04-5541-11ee-8a50-a85e45c41921'), 'Nước giặt Omo 2,9L', 159000, 130000, 50, '2023-12-25 00:00:00', @OmoDescription, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnuoc-giat-omo.jpeg?alt=media', @enable, UUID_TO_BIN('accf4547-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('ec5e38e3-56dc-11ee-8a50-a85e45c41921'), 'Nước xả vải Comfort hương nước hoa 3,8L', 210000, 180000, 25, '2023-11-30 00:00:00', @NuocXaComfort, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnuoc-xa-vai-comfort.jpg?alt=media', @enable, UUID_TO_BIN('accf4547-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf2c1d-5541-11ee-8a50-a85e45c41921'), 'Chả Giò Tôm Cua 500g', 55000, 48000, 15, '2023-11-10 00:00:00', @ChaGioTomCuaDescription, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fcha-gio-tom-cua-500g.jpg?alt=media', @enable, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0709-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf2d37-5541-11ee-8a50-a85e45c41921'), 'Giò Heo Xông Khói 500g', 90000, 75000, 10, '2023-11-05 00:00:00', @GioHeoXongKhoi, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fgio_heo_xong_khoi.jpg?alt=media', @enable, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0709-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf2f65-5541-11ee-8a50-a85e45c41921'), 'Kem Wall’s Oreo hộp 750ml', 75000, 62000, 25, '2023-11-01 00:00:00', @KemWallOreo, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fkem-walls-oreo-hop.jpg?alt=media', @enable, UUID_TO_BIN('accf4210-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('ec5e3b8f-56dc-11ee-8a50-a85e45c41921'), 'Kem Yukimi Daifuku Matcha 270ml', 60000, 50000, 30, '2023-11-10 00:00:00', @KemYukimiMatcha, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fkem-yukimi-daifuku-matcha.jpg?alt=media', @enable, UUID_TO_BIN('accf4210-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf3079-5541-11ee-8a50-a85e45c41921'), 'Bột Milo Protomalt hũ 400g', 60000, 49000, 30, '2023-11-15 00:00:00', @BotMilo, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fbot-milo-protomalt.jpg?alt=media', @enable, UUID_TO_BIN('accf4320-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf32f7-5541-11ee-8a50-a85e45c41921'), 'Nho mẫu đơn nội địa Trung 500g', 51000, 40000, 10, '2023-10-28 00:00:00', @NhoMauDon, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnho_mau_don.jpg?alt=media', @enable, UUID_TO_BIN('accf3fdf-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf343c-5541-11ee-8a50-a85e45c41921'), '2 lốc sữa chua Vinamilk nha đam (8 hộp)', 42000, 35000, 10, '2023-10-30 00:00:00', @SuaChuaVinamilk, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fsua-chua-vinamilk-nha-dam.jpg?alt=media', @enable, UUID_TO_BIN('accf4320-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf3552-5541-11ee-8a50-a85e45c41921'), '1 lốc hộp sữa tươi Vinamilk có đường (4 hộp)', 25000, 21000, 15, '2023-10-29 00:00:00', @SuaTuoiVinamilk, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fsua-tuoi-vinamilk-co-duong.jpg?alt=media', @enable, UUID_TO_BIN('accf4320-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf3664-5541-11ee-8a50-a85e45c41921'), 'Sữa tắm Lifebuoy Vitamin 800g', 145000, 120000, 10, '2023-12-20 00:00:00', @SuaTamLifeBoy, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fsua-tam-lifeboy.jpg?alt=media', @enable, UUID_TO_BIN('accf442f-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('ec5e3ced-56dc-11ee-8a50-a85e45c41921'), 'Sữa tắm Xmen sạch khuẩn detox 630g', 155000, 130000, 25, '2023-12-20 00:00:00', @SuaTamXmenDetox, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fsua-tam-xmen-sach-khuan-detox.jpg?alt=media', @enable, UUID_TO_BIN('accf442f-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf377f-5541-11ee-8a50-a85e45c41921'), 'Nem Lụi 300g', 42000, 35000, 15, '2023-11-05 00:00:00', @NemLui, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnem-lui.jpg?alt=media', @enable, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0709-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('ec5e432f-56dc-11ee-8a50-a85e45c41921'), 'Nem bò tiêu xanh 400g', 65000, 55000, 15, '2023-11-26 00:00:00', @NemBoTieuXanh, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnem-bo-tieu-xanh.jpg?alt=media', @enable, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0709-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('ec5e3a42-56dc-11ee-8a50-a85e45c41921'), 'Phô mai viên Hoa Doanh 300g', 42000, 34000, 20, '2023-11-05 00:00:00', @PhoMaiVienHoaDanh, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fpho-mai-vien-hoa-doanh.jpg?alt=media', @enable, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf3897-5541-11ee-8a50-a85e45c41921'), 'Táo Pink Lady nhập khẩu New Zealand 1kg', 51000, 42000, 15, '2023-10-27 00:00:00', @TaoPinkLady, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ftao-pinklady.jpg?alt=media', @enable, UUID_TO_BIN('accf3fdf-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf39b0-5541-11ee-8a50-a85e45c41921'), 'Thùng 30 gói mì Omachi lẩu tôm', 185000, 155000, 10, '2023-11-25 00:00:00', @MiLauTomOmachi, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fthung-mi-omachi-lau-tom.jpg?alt=media', @enable, UUID_TO_BIN('accf4875-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf028b-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('ec5e3e40-56dc-11ee-8a50-a85e45c41921'), 'Thùng 30 gói mì Hảo Hảo hương vị lẩu kim chi', 95000, 80000, 25, '2023-11-29 00:00:00', @MiHaoHaoKimChi, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fthung-mi-hao-hao-kim-chi.jpg?alt=media', @enable, UUID_TO_BIN('accf4875-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf3ac4-5541-11ee-8a50-a85e45c41921'), '1 lốc Strongbow Appple Ciders Gold (6 lon)', 88000, 75000, 20, '2023-11-15 00:00:00', @StrongbowAppleGold, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fstrongbow-apple-cider.jpg?alt=media', @enable, UUID_TO_BIN('accf4656-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf028b-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('ec5e4012-56dc-11ee-8a50-a85e45c41921'), 'Thùng 24 lon bia Heineken Silver', 340000, 300000, 10, '2023-11-30 00:00:00', @BiaHeineken, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fthung-bia-heineken.jpg?alt=media', @enable, UUID_TO_BIN('accf4656-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf3be3-5541-11ee-8a50-a85e45c41921'), 'Há Cảo Mini Cầu Tre Gói 500G', 58000, 49000, 15, '2023-11-02 00:00:00', @HaCaoMiniCauTre, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fha-cao-mini.jpg?alt=media', @enable, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf028b-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf3cf4-5541-11ee-8a50-a85e45c41921'), 'Bông trang điểm Silcot hộp 82 miếng', 31000, 27000, 10, '2023-12-28 00:00:00', @BongTrangDiemSilcot, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fbong-tay-trang-silicot.jpg?alt=media', @enable, UUID_TO_BIN('accf4766-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('ec5e41d8-56dc-11ee-8a50-a85e45c41921'), 'Sáp dưỡng ẩm Vaseline 50ml', 50000, 42000, 25, '2023-12-26 00:00:00', @sapVaseline, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fsap-duong-am-vaseline.jpg?alt=media', @enable, UUID_TO_BIN('accf4766-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('ec5e3596-56dc-11ee-8a50-a85e45c41921'), 'Xà lách lolo 1kg', 40000, 34000, 15, '2023-11-25 00:00:00', @XaLachLolo, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fxa-lach-lolo.jpg?alt=media', @enable, UUID_TO_BIN('ec5e1ddc-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('ec5e3778-56dc-11ee-8a50-a85e45c41921'), 'Cải thảo 1kg', 18000, 16000, 10, '2023-11-26 00:00:00', @CaiThao, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fcai-thao.jpg?alt=media', @enable, UUID_TO_BIN('ec5e1ddc-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921'));
+    VALUES  (UUID_TO_BIN('accf2b04-5541-11ee-8a50-a85e45c41921'), 'Nước giặt Omo 2,9L', @OmoDescription, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnuoc-giat-omo.jpeg?alt=media', @enable, UUID_TO_BIN('accf4547-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e38e3-56dc-11ee-8a50-a85e45c41921'), 'Nước xả vải Comfort hương nước hoa 3,8L', @NuocXaComfort, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnuoc-xa-vai-comfort.jpg?alt=media', @enable, UUID_TO_BIN('accf4547-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf2c1d-5541-11ee-8a50-a85e45c41921'), 'Chả Giò Tôm Cua 500g', @ChaGioTomCuaDescription, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fcha-gio-tom-cua-500g.jpg?alt=media', @enable, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0709-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf2d37-5541-11ee-8a50-a85e45c41921'), 'Giò Heo Xông Khói 500g', @GioHeoXongKhoi, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fgio_heo_xong_khoi.jpg?alt=media', @enable, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0709-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf2f65-5541-11ee-8a50-a85e45c41921'), 'Kem Wall’s Oreo hộp 750ml', @KemWallOreo, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fkem-walls-oreo-hop.jpg?alt=media', @enable, UUID_TO_BIN('accf4210-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e3b8f-56dc-11ee-8a50-a85e45c41921'), 'Kem Yukimi Daifuku Matcha 270ml', @KemYukimiMatcha, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fkem-yukimi-daifuku-matcha.jpg?alt=media', @enable, UUID_TO_BIN('accf4210-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf3079-5541-11ee-8a50-a85e45c41921'), 'Bột Milo Protomalt hũ 400g', @BotMilo, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fbot-milo-protomalt.jpg?alt=media', @enable, UUID_TO_BIN('accf4320-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf32f7-5541-11ee-8a50-a85e45c41921'), 'Nho mẫu đơn nội địa Trung 500g', @NhoMauDon, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnho_mau_don.jpg?alt=media', @enable, UUID_TO_BIN('accf3fdf-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf343c-5541-11ee-8a50-a85e45c41921'), '2 lốc sữa chua Vinamilk nha đam (8 hộp)', @SuaChuaVinamilk, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fsua-chua-vinamilk-nha-dam.jpg?alt=media', @enable, UUID_TO_BIN('accf4320-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf3552-5541-11ee-8a50-a85e45c41921'), '1 lốc hộp sữa tươi Vinamilk có đường (4 hộp)', @SuaTuoiVinamilk, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fsua-tuoi-vinamilk-co-duong.jpg?alt=media', @enable, UUID_TO_BIN('accf4320-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf3664-5541-11ee-8a50-a85e45c41921'), 'Sữa tắm Lifebuoy Vitamin 800g', @SuaTamLifeBoy, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fsua-tam-lifeboy.jpg?alt=media', @enable, UUID_TO_BIN('accf442f-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e3ced-56dc-11ee-8a50-a85e45c41921'), 'Sữa tắm Xmen sạch khuẩn detox 630g', @SuaTamXmenDetox, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fsua-tam-xmen-sach-khuan-detox.jpg?alt=media', @enable, UUID_TO_BIN('accf442f-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf377f-5541-11ee-8a50-a85e45c41921'), 'Nem Lụi 300g', @NemLui, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnem-lui.jpg?alt=media', @enable, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0709-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e432f-56dc-11ee-8a50-a85e45c41921'), 'Nem bò tiêu xanh 400g', @NemBoTieuXanh, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnem-bo-tieu-xanh.jpg?alt=media', @enable, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0709-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e3a42-56dc-11ee-8a50-a85e45c41921'), 'Phô mai viên Hoa Doanh 300g', @PhoMaiVienHoaDanh, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fpho-mai-vien-hoa-doanh.jpg?alt=media', @enable, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf3897-5541-11ee-8a50-a85e45c41921'), 'Táo Pink Lady nhập khẩu New Zealand 1kg', @TaoPinkLady, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ftao-pinklady.jpg?alt=media', @enable, UUID_TO_BIN('accf3fdf-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf39b0-5541-11ee-8a50-a85e45c41921'), 'Thùng 30 gói mì Omachi lẩu tôm', @MiLauTomOmachi, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fthung-mi-omachi-lau-tom.jpg?alt=media', @enable, UUID_TO_BIN('accf4875-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf028b-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e3e40-56dc-11ee-8a50-a85e45c41921'), 'Thùng 30 gói mì Hảo Hảo hương vị lẩu kim chi', @MiHaoHaoKimChi, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fthung-mi-hao-hao-kim-chi.jpg?alt=media', @enable, UUID_TO_BIN('accf4875-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf3ac4-5541-11ee-8a50-a85e45c41921'), '1 lốc Strongbow Appple Ciders Gold (6 lon)', @StrongbowAppleGold, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fstrongbow-apple-cider.jpg?alt=media', @enable, UUID_TO_BIN('accf4656-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf028b-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e4012-56dc-11ee-8a50-a85e45c41921'), 'Thùng 24 lon bia Heineken Silver', @BiaHeineken, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fthung-bia-heineken.jpg?alt=media', @enable, UUID_TO_BIN('accf4656-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf3be3-5541-11ee-8a50-a85e45c41921'), 'Há Cảo Mini Cầu Tre Gói 500G', @HaCaoMiniCauTre, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fha-cao-mini.jpg?alt=media', @enable, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf028b-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf3cf4-5541-11ee-8a50-a85e45c41921'), 'Bông trang điểm Silcot hộp 82 miếng', @BongTrangDiemSilcot, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fbong-tay-trang-silicot.jpg?alt=media', @enable, UUID_TO_BIN('accf4766-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e41d8-56dc-11ee-8a50-a85e45c41921'), 'Sáp dưỡng ẩm Vaseline 50ml', @sapVaseline, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fsap-duong-am-vaseline.jpg?alt=media', @enable, UUID_TO_BIN('accf4766-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e3596-56dc-11ee-8a50-a85e45c41921'), 'Xà lách lolo 1kg', @XaLachLolo, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fxa-lach-lolo.jpg?alt=media', @enable, UUID_TO_BIN('ec5e1ddc-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e3778-56dc-11ee-8a50-a85e45c41921'), 'Cải thảo 1kg', @CaiThao, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fcai-thao.jpg?alt=media', @enable, UUID_TO_BIN('ec5e1ddc-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921'));
 
 
 INSERT INTO `saving_hour_market`.`product_batch` (`id`, `price`, `price_original`, `quantity`, `expired_date`, `product_id`,`supermarket_address_id`)
 --     VALUES (`id`, `price`, `price_original`, `quantity`, `expired_date`, `product_id`,`supermarket_address_id`)
 --  Nước giặt Omo 2,9L
     VALUES  (UUID_TO_BIN('ec5ea50d-56dc-11ee-8a50-a85e45c41921'), 159000, 130000, 50, '2023-12-25 00:00:00', UUID_TO_BIN('accf2b04-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8c78-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5eb3ce-56dc-11ee-8a50-a85e45c41921'), 159000, 130000, 25, '2023-12-25 00:00:00', UUID_TO_BIN('accf2b04-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e2090-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5eb531-56dc-11ee-8a50-a85e45c41921'), 149000, 120000, 25, '2023-11-20 00:00:00', UUID_TO_BIN('accf2b04-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e2090-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5eb87e-56dc-11ee-8a50-a85e45c41921'), 159000, 130000, 20, '2023-12-25 00:00:00', UUID_TO_BIN('accf2b04-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5ea1b4-56dc-11ee-8a50-a85e45c41921')),
 --  Nước xả vải Comfort hương nước hoa 3,8L batch
             (UUID_TO_BIN('ec5ea6b7-56dc-11ee-8a50-a85e45c41921'), 210000, 180000, 25, '2023-11-30 00:00:00', UUID_TO_BIN('ec5e38e3-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5ea1b4-56dc-11ee-8a50-a85e45c41921')),
 --  Chả Giò Tôm Cua 500g
@@ -335,12 +345,14 @@ INSERT INTO `saving_hour_market`.`product_batch` (`id`, `price`, `price_original
             (UUID_TO_BIN('ec5ea9a5-56dc-11ee-8a50-a85e45c41921'), 90000, 75000, 10, '2023-11-05 00:00:00', UUID_TO_BIN('accf2d37-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e9414-56dc-11ee-8a50-a85e45c41921')),
 --  Kem Wall’s Oreo hộp 750ml
             (UUID_TO_BIN('ec5eab5f-56dc-11ee-8a50-a85e45c41921'), 75000, 62000, 25, '2023-11-01 00:00:00', UUID_TO_BIN('accf2f65-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8dca-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5ebcb3-56dc-11ee-8a50-a85e45c41921'), 80000, 68000, 25, '2023-11-30 00:00:00', UUID_TO_BIN('accf2f65-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8dca-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5ec37a-56dc-11ee-8a50-a85e45c41921'), 75000, 62000, 25, '2023-11-01 00:00:00', UUID_TO_BIN('accf2f65-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e1f3a-56dc-11ee-8a50-a85e45c41921')),
 --  Kem Yukimi Daifuku Matcha 270ml
             (UUID_TO_BIN('ec5eacbb-56dc-11ee-8a50-a85e45c41921'), 60000, 50000, 30, '2023-11-10 00:00:00', UUID_TO_BIN('ec5e3b8f-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8dca-56dc-11ee-8a50-a85e45c41921')),
 --  Bột Milo Protomalt hũ 400g
             (UUID_TO_BIN('ec5eae10-56dc-11ee-8a50-a85e45c41921'), 60000, 49000, 30, '2023-11-15 00:00:00', UUID_TO_BIN('accf3079-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8dca-56dc-11ee-8a50-a85e45c41921')),
 --  Nho mẫu đơn nội địa Trung 500g
-            (UUID_TO_BIN('ec5eae10-56dc-11ee-8a50-a85e45c41921'), 51000, 40000, 10, '2023-10-28 00:00:00', UUID_TO_BIN('accf32f7-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5ea361-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e869e-56dc-11ee-8a50-a85e45c41921'), 51000, 40000, 10, '2023-10-28 00:00:00', UUID_TO_BIN('accf32f7-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5ea361-56dc-11ee-8a50-a85e45c41921')),
 --  2 lốc sữa chua Vinamilk nha đam (8 hộp)
             (UUID_TO_BIN('ec5eaf69-56dc-11ee-8a50-a85e45c41921'), 42000, 35000, 10, '2023-10-30 00:00:00', UUID_TO_BIN('accf343c-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e9073-56dc-11ee-8a50-a85e45c41921')),
 -- 1 lốc hộp sữa tươi Vinamilk có đường (4 hộp)
@@ -378,7 +390,11 @@ INSERT INTO `saving_hour_market`.`product_batch` (`id`, `price`, `price_original
 
 
 
--- 'ec5e869e-56dc-11ee-8a50-a85e45c41921'
+
+
+
+
+
 -- 'ec5e87ec-56dc-11ee-8a50-a85e45c41921'
 -- 'ec5e894d-56dc-11ee-8a50-a85e45c41921'
 -- 'ec5e8b2b-56dc-11ee-8a50-a85e45c41921'
@@ -486,8 +502,8 @@ INSERT INTO `saving_hour_market`.`orders` (`id`, `total_price`, `total_discount_
             (UUID_TO_BIN('ec5dcac6-56dc-11ee-8a50-a85e45c41921'), 53600, 13400, 16000, '2023-11-18 13:00:00', '2023-11-19 13:00:00', @vnpay, @unpaid, '50 Lê Văn Việt, Hiệp Phú, Quận 9, Thành phố Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.847278, 106.776302, 'qr code url here', @processing,
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), null, null, UUID_TO_BIN('ec5def3a-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e070b-56dc-11ee-8a50-a85e45c41921')),
 
-            (UUID_TO_BIN('ec5de351-56dc-11ee-8a50-a85e45c41921'), 216000, 0, 0, '2023-11-18 08:00:00', '2023-11-20 19:00:00', @vnpay, @paid, null, null, null, null, null, 'qr code url here', @packaging,
-             UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf4d19-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf187a-5541-11ee-8a50-a85e45c41921'), null, null),
+            (UUID_TO_BIN('ec5de351-56dc-11ee-8a50-a85e45c41921'), 216000, 0, 0, '2023-11-18 08:00:00', '2023-11-17 19:00:00', @vnpay, @paid, null, null, null, null, null, 'qr code url here', @packaging,
+             UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf4d19-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf19db-5541-11ee-8a50-a85e45c41921'), null, null),
 
             (UUID_TO_BIN('ec5de6e9-56dc-11ee-8a50-a85e45c41921'), 111000, 0, 0, '2023-11-17 15:00:00', '2023-11-19 19:00:00', @cod, @unpaid, null, null, null, null, null, 'qr code url here', @delivering,
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf4d19-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf1baa-5541-11ee-8a50-a85e45c41921'), null, null),
@@ -545,9 +561,5 @@ INSERT INTO `saving_hour_market`.`order_detail` (`id`, `product_batch_id`, `boug
 
 
 
--- 'ec5eb3ce-56dc-11ee-8a50-a85e45c41921'
--- 'ec5eb531-56dc-11ee-8a50-a85e45c41921'
--- 'ec5eb87e-56dc-11ee-8a50-a85e45c41921'
--- 'ec5ebcb3-56dc-11ee-8a50-a85e45c41921'
--- 'ec5ec37a-56dc-11ee-8a50-a85e45c41921'
+
 

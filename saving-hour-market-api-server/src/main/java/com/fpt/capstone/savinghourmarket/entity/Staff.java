@@ -4,9 +4,7 @@ import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.common.StaffRole;
 import com.fpt.capstone.savinghourmarket.model.StaffCreateRequestBody;
 import com.fpt.capstone.savinghourmarket.util.Utils;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -40,6 +38,16 @@ public class Staff {
 
     @Column(columnDefinition = "tinyint")
     private Integer status;
+
+    @ManyToOne(
+            fetch = FetchType.LAZY
+    )
+    @JoinColumn(
+            name = "product_consolidation_area_id",
+            referencedColumnName = "id"
+    )
+    private ProductConsolidationArea productConsolidationArea;
+    
 
     public Staff(StaffCreateRequestBody staffCreateRequestBody, StaffRole role) throws UnsupportedEncodingException {
         this.fullName = staffCreateRequestBody.getFullName();
