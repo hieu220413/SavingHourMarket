@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -34,10 +35,21 @@ public class OrderDetail {
     @JsonIgnore
     private Order order;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(
-            name = "product_batch_id",
+            name = "product_id",
             referencedColumnName = "id"
     )
-    private ProductBatch productBatch;
+    private Product product;
+
+    @ManyToMany(
+            cascade = CascadeType.ALL,
+            fetch = FetchType.EAGER
+    )
+    @JoinTable(
+            name = "orderDetail_productBatch",
+            joinColumns = @JoinColumn(name = "order_detail_id"),
+            inverseJoinColumns = @JoinColumn(name = "product_batch_id")
+    )
+    private List<ProductBatch> productBatches;
 }

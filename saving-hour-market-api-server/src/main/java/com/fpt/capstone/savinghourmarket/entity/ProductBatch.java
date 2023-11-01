@@ -9,6 +9,7 @@ import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -50,4 +51,11 @@ public class ProductBatch {
             referencedColumnName = "id"
     )
     private SupermarketAddress supermarketAddress;
+
+    @ManyToMany(
+            mappedBy = "productBatches",
+            fetch = FetchType.LAZY
+    )
+    private List<OrderDetail> orderDetail;
+
 }

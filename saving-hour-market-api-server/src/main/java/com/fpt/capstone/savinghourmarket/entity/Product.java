@@ -73,4 +73,7 @@ public class Product {
             mappedBy = "product"
     )
     private List<ProductBatch> productBatchList;
+
+    @OneToOne(mappedBy = "product")
+    private OrderDetail orderDetail;
 }
