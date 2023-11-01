@@ -21,6 +21,7 @@ const CreateSuperMarket = ({
   openSnackbar,
   setOpenSnackbar,
   setError,
+  setIsSwitchRecovery,
 }) => {
   const [locationData, setLocationData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -107,6 +108,7 @@ const CreateSuperMarket = ({
           .then((respond) => {
             setSuperMarketList(respond.supermarketList);
             setTotalPage(respond.totalPage);
+            setIsSwitchRecovery(false);
             handleClose();
             setOpenSnackbar({
               ...openSnackbar,

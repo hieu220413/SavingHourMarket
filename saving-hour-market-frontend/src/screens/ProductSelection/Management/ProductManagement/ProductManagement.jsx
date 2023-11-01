@@ -22,6 +22,7 @@ import MuiAlert from "@mui/material/Alert";
 import { Snackbar } from "@mui/material";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 import Empty from "../../../../assets/Empty.png";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -81,41 +82,41 @@ const ProductManagement = () => {
     setAnchorEl(null);
   };
 
+  const userState = useAuthState(auth);
+
   useEffect(() => {
     const fetchProduct = async () => {
-      onAuthStateChanged(auth, async (userAuth) => {
-        setLoading(true);
-        if (userAuth) {
-          const tokenId = await auth.currentUser.getIdToken();
-          fetch(
-            `${API.baseURL}/api/product/getProductsForStaff?page=${
-              page - 1
-            }&limit=5&name=${searchValue}${
-              isSwitchRecovery ? "&status=DISABLE" : "&status=ENABLE"
-            }`,
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${tokenId}`,
-              },
-            }
-          )
-            .then((res) => res.json())
-            .then((data) => {
-              setProducts(data.productList);
-              setTotalPage(data.totalPage);
-              setLoading(false);
-            })
-            .catch((err) => {
-              console.log(err);
-              setLoading(false);
-            });
-        }
-      });
+      setLoading(true);
+      if (!userState[1]) {
+        const tokenId = await auth.currentUser.getIdToken();
+        fetch(
+          `${API.baseURL}/api/product/getProductsForStaff?page=${
+            page - 1
+          }&limit=5&name=${searchValue}${
+            isSwitchRecovery ? "&status=DISABLE" : "&status=ENABLE"
+          }`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${tokenId}`,
+            },
+          }
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            setProducts(data.productList);
+            setTotalPage(data.totalPage);
+            setLoading(false);
+          })
+          .catch((err) => {
+            console.log(err);
+            setLoading(false);
+          });
+      }
     };
     fetchProduct();
-  }, [isSwitchRecovery, page, searchValue]);
+  }, [isSwitchRecovery, page, searchValue, userState[1]]);
 
   const handleDeleteProduct = async (id) => {
     setLoading(true);
