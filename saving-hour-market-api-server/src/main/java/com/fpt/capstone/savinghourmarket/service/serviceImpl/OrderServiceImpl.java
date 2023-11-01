@@ -52,7 +52,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final GeoApiContext geoApiContext;
 
-    private  RedissonClient redissonClient;
+    private RedissonClient redissonClient;
 
     @Autowired
     public void setRedissonClient(RedissonClient redissonClient) {
@@ -67,6 +67,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private ProductBatchRepository productBatchRepository;
 
     @Autowired
     private OrderGroupRepository orderGroupRepository;
@@ -243,14 +246,22 @@ public class OrderServiceImpl implements OrderService {
                     orderProduct.setName(product.getName());
                     orderProduct.setImageUrl(product.getImageUrl());
                     orderProduct.setDescription(product.getDescription());
-                    orderProduct.setExpiredDate(product.getExpiredDate());
                     orderProduct.setProductSubCategory(product.getProductSubCategory().getName());
-                    orderProduct.setSupermarketName(product.getSupermarket().getName());
-                    orderProduct.setStatus(product.getStatus());
                     orderProduct.setProductCategory(product.getProductSubCategory().getProductCategory().getName());
+                    orderProduct.setStatus(product.getStatus());
 
+                    List<OrderProductBatch> orderProductBatches = new ArrayList<>();
+                    List<OrderDetail_ProductBatch> orderDetailProductBatches = o.getOrderDetailProductBatches();
+                    for (OrderDetail_ProductBatch orderDetail_productBatch : orderDetailProductBatches) {
+                        OrderProductBatch orderProductBatch = new OrderProductBatch();
+                        orderProductBatch.setSupermarketName(orderDetail_productBatch.getProductBatch().getSupermarketAddress().getSupermarket().getName());
+                        orderProductBatch.setSupermarketAddress(orderDetail_productBatch.getProductBatch().getSupermarketAddress().getAddress());
+                        orderProductBatch.setBoughtQuantity(orderDetail_productBatch.getBoughtQuantity());
+                        orderProductBatch.setExpiredDate(orderDetail_productBatch.getProductBatch().getExpiredDate());
+                        orderProductBatches.add(orderProductBatch);
+                    }
+                    orderProduct.setOrderDetailProductBatches(orderProductBatches);
                     return orderProduct;
-
                 }).toList();
         orderWithDetails.setOrderDetailList(orderProducts);
         return orderWithDetails;
@@ -268,13 +279,13 @@ public class OrderServiceImpl implements OrderService {
         Order order = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
 
-        if(order.getOrderGroup() != null){
+        if (order.getOrderGroup() != null) {
             OrderGroup orderGroup = order.getOrderGroup();
             orderGroup.getOrderList().remove(order);
             orderGroupRepository.save(orderGroup);
         }
 
-        if(order.getOrderBatch() != null){
+        if (order.getOrderBatch() != null) {
             OrderBatch orderBatch = order.getOrderBatch();
             orderBatch.getOrderList().remove(order);
             orderBatchRepository.save(orderBatch);
@@ -308,13 +319,13 @@ public class OrderServiceImpl implements OrderService {
         Order order = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
 
-        if(order.getOrderGroup() != null){
+        if (order.getOrderGroup() != null) {
             OrderGroup orderGroup = order.getOrderGroup();
             orderGroup.getOrderList().remove(order);
             orderGroupRepository.save(orderGroup);
         }
 
-        if(order.getOrderBatch() != null){
+        if (order.getOrderBatch() != null) {
             OrderBatch orderBatch = order.getOrderBatch();
             orderBatch.getOrderList().remove(order);
             orderBatchRepository.save(orderBatch);
@@ -340,13 +351,13 @@ public class OrderServiceImpl implements OrderService {
         Order order = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
 
-        if(order.getOrderGroup() != null){
+        if (order.getOrderGroup() != null) {
             OrderGroup orderGroup = order.getOrderGroup();
             orderGroup.getOrderList().remove(order);
             orderGroupRepository.save(orderGroup);
         }
 
-        if(order.getOrderBatch() != null){
+        if (order.getOrderBatch() != null) {
             OrderBatch orderBatch = order.getOrderBatch();
             orderBatch.getOrderList().remove(order);
             orderBatchRepository.save(orderBatch);
@@ -403,7 +414,6 @@ public class OrderServiceImpl implements OrderService {
     }
 
 
-
     // GOONG IMPLEMENT
 
     @Override
@@ -416,7 +426,7 @@ public class OrderServiceImpl implements OrderService {
         List<PickupPointSuggestionResponseBody> pickupPointSuggestionResponseBodyList = new ArrayList<>();
         List<LatLngModel> destinations = new ArrayList<>();
         LatLngModel origin = new LatLngModel(latitude, longitude);
-        for(PickupPoint pickupPoint : pickupPoints) {
+        for (PickupPoint pickupPoint : pickupPoints) {
             // using 0 because pickup point at index 0 will be deleted and next index will be 0
             pickupPointSuggestionResponseBodyList.add(new PickupPointSuggestionResponseBody(pickupPoint));
             destinations.add(new LatLngModel(pickupPoint.getLatitude().doubleValue(), pickupPoint.getLongitude().doubleValue()));
@@ -433,9 +443,9 @@ public class OrderServiceImpl implements OrderService {
         GoongDistanceMatrixResult goongDistanceMatrixResult = restTemplate.getForObject(goongMatrixDistanceRequestURI, GoongDistanceMatrixResult.class);
 
 
-        for (GoongDistanceMatrixRow goongDistanceMatrixRow : goongDistanceMatrixResult.getRows()){
+        for (GoongDistanceMatrixRow goongDistanceMatrixRow : goongDistanceMatrixResult.getRows()) {
             int i = 0;
-            for (GoongDistanceMatrixElement goongDistanceMatrixElement : goongDistanceMatrixRow.getElements()){
+            for (GoongDistanceMatrixElement goongDistanceMatrixElement : goongDistanceMatrixRow.getElements()) {
                 pickupPointSuggestionResponseBodyList.get(i).setDistance(goongDistanceMatrixElement.getDistance().getText());
                 pickupPointSuggestionResponseBodyList.get(i).setDistanceInValue(goongDistanceMatrixElement.getDistance().getValue());
                 i++;
@@ -449,8 +459,8 @@ public class OrderServiceImpl implements OrderService {
         // convert m to km
         int distance = closetPickupPoint.getDistanceInValue().intValue() / 1000;
 
-        if(distance > configuration.getMinKmDistanceForExtraShippingFee()) {
-            shippingFee += (distance - 2)*configuration.getExtraShippingFeePerKilometer();
+        if (distance > configuration.getMinKmDistanceForExtraShippingFee()) {
+            shippingFee += (distance - 2) * configuration.getExtraShippingFeePerKilometer();
         }
 
         ShippingFeeDetailResponseBody shippingFeeDetailResponseBody = new ShippingFeeDetailResponseBody();
@@ -525,10 +535,10 @@ public class OrderServiceImpl implements OrderService {
         if (repository.getOrdersProcessing(customer.getEmail()).size() < 3) {
             RLock rLock = redissonClient.getFairLock("createOrderLock");
             boolean res = rLock.tryLock(100, 10, TimeUnit.SECONDS);
-            if(res) {
+            if (res) {
                 try {
                     orderCreated = createOrderTransact(orderCreate, customer);
-                    }finally {
+                } finally {
                     rLock.unlock();
                 }
             }
@@ -536,7 +546,7 @@ public class OrderServiceImpl implements OrderService {
             throw new CustomerLimitOrderProcessingException("Bạn hiện đang có 3 đơn hàng đang chờ xác nhận!");
         }
 
-        if(orderCreated.getPaymentMethod() == PaymentMethod.VNPAY.ordinal()){
+        if (orderCreated.getPaymentMethod() == PaymentMethod.VNPAY.ordinal()) {
             RMapCache<UUID, Object> map = redissonClient.getMapCache("orderCreatedMap");
             map.put(orderCreated.getId(), 0, 31, TimeUnit.MINUTES);
         }
@@ -552,7 +562,7 @@ public class OrderServiceImpl implements OrderService {
             groupingOrder(order, orderCreate);
         } else {
             order.setTimeFrame(timeFrameRepository.findById(orderCreate.getTimeFrameId())
-                    .orElseThrow(()-> new ResourceNotFoundException("Time frame không tìm thấy với id: " + orderCreate.getTimeFrameId())));
+                    .orElseThrow(() -> new ResourceNotFoundException("Time frame không tìm thấy với id: " + orderCreate.getTimeFrameId())));
         }
 
         List<OrderDetail> orderDetails = getOrderDetails(order, orderCreate);
@@ -634,9 +644,9 @@ public class OrderServiceImpl implements OrderService {
 
     private void decrementDiscountQuantity(Discount discount) throws OutOfProductQuantityException {
         Integer quantity = discount.getQuantity();
-        if(discount.getQuantity() == 0){
+        if (discount.getQuantity() == 0) {
             throw new OutOfProductQuantityException(discount.getName() + "đã hết lượt sử dụng!");
-        }else{
+        } else {
             discount.setQuantity(quantity - 1);
         }
     }
@@ -664,22 +674,55 @@ public class OrderServiceImpl implements OrderService {
     private OrderDetail mapOrderProductCreateToOrderDetail(Order order, OrderProductCreate orderProductCreate) throws OutOfProductQuantityException, ResourceNotFoundException {
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setOrder(order);
-        Product product = getProductById(orderProductCreate.getId());
-        if (product.getQuantity() >= orderProductCreate.getBoughtQuantity()) {
-            product.setQuantity(product.getQuantity() - orderProductCreate.getBoughtQuantity());
-        } else {
-            throw new OutOfProductQuantityException(product.getName() + " chỉ còn " + product.getQuantity() + " sản phẩm!");
-        }
-        orderDetail.setProduct(product);
         orderDetail.setProductPrice(orderProductCreate.getProductPrice());
         orderDetail.setProductOriginalPrice(orderProductCreate.getProductOriginalPrice());
         orderDetail.setBoughtQuantity(orderProductCreate.getBoughtQuantity());
-        return orderDetail;
-    }
+        Product product = productRepository.findById(orderProductCreate.getProductId())
+                .orElseThrow(() -> new ResourceNotFoundException("Sản phẩm không tìm thấy với id: " + orderProductCreate.getProductId()));
+        orderDetail.setProduct(product);
 
-    private Product getProductById(UUID productId) throws ResourceNotFoundException {
-        return productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("No Product found with this id " + productId));
+        //get list of product's batch then sort ascending by quantity
+        List<UUID> productBatchIds = orderProductCreate.getProductBatchIds();
+        List<ProductBatch> productBatches = new ArrayList<>();
+        for (UUID id : productBatchIds) {
+            ProductBatch productBatch = productBatchRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Lô sản phẩm không tìm thấy với id: " + id));
+            productBatches.add(productBatch);
+        }
+        productBatches.sort(Comparator.comparingInt(ProductBatch::getQuantity));
+
+        //check if product batches total quantity is enough or not
+        int totalQuantityOfProductBatches = productBatches.stream().mapToInt(ProductBatch::getQuantity).sum();
+        int boughtQuantity = orderProductCreate.getBoughtQuantity();
+        if (boughtQuantity > totalQuantityOfProductBatches) {
+            throw new OutOfProductQuantityException(product.getName() + " chỉ còn " + totalQuantityOfProductBatches + " sản phẩm!");
+        }
+
+
+        //decrease quantity of product's batch then persist orderDetailProductBatches
+        List<OrderDetail_ProductBatch> orderDetailProductBatches = new ArrayList<>();
+        for (ProductBatch productBatch : productBatches) {
+            OrderDetail_ProductBatch orderDetailProductBatch = new OrderDetail_ProductBatch();
+            // 10 3 3 4 || 10 11 12 13 || 10 3 11
+            if (boughtQuantity > 0 && boughtQuantity > productBatch.getQuantity()) {
+                boughtQuantity -= productBatch.getQuantity();
+                productBatch.setQuantity(0);
+                orderDetailProductBatch.setBoughtQuantity(productBatch.getQuantity());
+                orderDetailProductBatch.setProductBatch(productBatch);
+                orderDetailProductBatch.setOrderDetail(orderDetail);
+            } else if (boughtQuantity > 0 && boughtQuantity <= productBatch.getQuantity()) {
+                productBatch.setQuantity(productBatch.getQuantity() - boughtQuantity);
+                boughtQuantity = 0;
+                orderDetailProductBatch.setBoughtQuantity(boughtQuantity);
+                orderDetailProductBatch.setProductBatch(productBatch);
+                orderDetailProductBatch.setOrderDetail(orderDetail);
+            }
+            productBatchRepository.save(productBatch);
+            orderDetailProductBatches.add(orderDetailProductBatch);
+        }
+        orderDetail.setOrderDetailProductBatches(orderDetailProductBatches);
+
+        return orderDetail;
     }
 
     private Pageable getPageableWithSort(String totalPriceSortType, String createdTimeSortType, String deliveryDateSortType, int page, int limit) {
@@ -721,9 +764,12 @@ public class OrderServiceImpl implements OrderService {
 
     private void increaseProductQuantity(List<OrderDetail> orderDetails) {
         for (OrderDetail orderDetail : orderDetails) {
-            Product product = orderDetail.getProduct();
-            product.setQuantity(product.getQuantity() + orderDetail.getBoughtQuantity());
-            productRepository.save(product);
+            List<OrderDetail_ProductBatch> orderDetailProductBatches = orderDetail.getOrderDetailProductBatches();
+            orderDetailProductBatches.forEach(orderDetail_productBatch -> {
+                ProductBatch productBatch = orderDetail_productBatch.getProductBatch();
+                productBatch.setQuantity(productBatch.getQuantity()+ orderDetail_productBatch.getBoughtQuantity());
+                productBatchRepository.save(productBatch);
+            });
         }
     }
 

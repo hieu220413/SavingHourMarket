@@ -44,7 +44,8 @@ public class OrderDetail {
 
     @OneToMany(
             fetch = FetchType.EAGER,
-            mappedBy = "orderDetail"
+            mappedBy = "orderDetail",
+            cascade = CascadeType.ALL
     )
     private List<OrderDetail_ProductBatch> orderDetailProductBatches;
 }

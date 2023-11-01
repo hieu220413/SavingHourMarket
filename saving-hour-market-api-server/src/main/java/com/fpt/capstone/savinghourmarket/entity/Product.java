@@ -74,6 +74,10 @@ public class Product {
     )
     private List<ProductBatch> productBatchList;
 
-    @OneToOne(mappedBy = "product")
+    @OneToOne(
+            mappedBy = "product",
+            fetch = FetchType.LAZY
+    )
+    @JsonIgnore
     private OrderDetail orderDetail;
 }

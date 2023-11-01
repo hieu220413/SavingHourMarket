@@ -20,6 +20,8 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "WHERE " +
             "((:packageId IS NULL) OR (o.packager.id = :packageId)) " +
             "AND " +
+            "((:deliverId IS NULL) OR (o.deliverer.id = :deliverId)) " +
+            "AND " +
             "((:status IS NULL) OR (o.status = :status)) " +
             "AND " +
             "(((:isGrouped IS NULL) " +
@@ -33,22 +35,11 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "((:isPaid = TRUE) AND (SIZE(o.transaction) > 0)))"
     )
     List<Order> findOrderForStaff(UUID packageId,
+                                  UUID deliverId,
                                   Integer status,
                                   Boolean isGrouped,
                                   Boolean isPaid,
                                   Pageable pageable);
-
-    @Query("SELECT o FROM Order o " +
-            "WHERE " +
-            "(o.status = 2) " +
-            "AND " +
-            "(o.orderGroup IS NULL) " +
-            "AND " +
-            "(o.timeFrame = :timeFrame) " +
-            "AND " +
-            "(o.deliveryDate = :deliveryDate) "
-    )
-    List<Order> findOrderWithoutGroups(TimeFrame timeFrame, Date deliveryDate);
 
     @Query("SELECT o FROM Order o " +
             "WHERE " +

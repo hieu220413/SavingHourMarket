@@ -75,6 +75,13 @@ public class Order {
 
     @ManyToOne()
     @JoinColumn(
+            name = "deliverer_id",
+            referencedColumnName = "id"
+    )
+    private Staff deliverer;
+
+    @ManyToOne()
+    @JoinColumn(
             name = "customer_id",
             referencedColumnName = "id"
     )
