@@ -57,6 +57,6 @@ public class ProductBatch {
             fetch = FetchType.LAZY
     )
     @JsonIgnore
-    private List<OrderDetail_ProductBatch> orderDetailProductBatches;
+    private List<OrderDetailProductBatch> orderDetailProductBatches;
 
 }

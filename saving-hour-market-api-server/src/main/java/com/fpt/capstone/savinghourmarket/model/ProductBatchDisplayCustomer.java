@@ -19,7 +19,6 @@ import java.util.UUID;
 public class ProductBatchDisplayCustomer {
 
     public ProductBatchDisplayCustomer(ProductBatch productBatch) {
-        this.idList = new ArrayList<>();
         this.idList.add(productBatch.getId());
         this.price = productBatch.getPrice();
         this.priceOriginal = productBatch.getPriceOriginal();
@@ -27,7 +26,14 @@ public class ProductBatchDisplayCustomer {
         this.quantity = productBatch.getQuantity();
     }
 
-    private List<UUID> idList;
+    public ProductBatchDisplayCustomer(LocalDate nearestBatchExpiredDate, Integer nearestBatchPrice, Integer nearestBatchPriceOriginal) {
+        this.price = nearestBatchPrice;
+        this.priceOriginal = nearestBatchPriceOriginal;
+        this.expiredDate = nearestBatchExpiredDate;
+        this.quantity = 0;
+    }
+
+    private List<UUID> idList = new ArrayList<>();
 
     private Integer price;
 
@@ -36,5 +42,6 @@ public class ProductBatchDisplayCustomer {
     private LocalDate expiredDate;
 
     private Integer quantity;
+
 
 }

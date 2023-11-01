@@ -15,7 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Setter
 @Getter
-public class OrderDetail_ProductBatch {
+public class OrderDetailProductBatch {
     @Id
     @UuidGenerator
     private UUID id;

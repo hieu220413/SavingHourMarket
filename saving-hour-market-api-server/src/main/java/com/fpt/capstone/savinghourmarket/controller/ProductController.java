@@ -65,7 +65,7 @@ public class ProductController {
     }
 
     @RequestMapping(value = "/getProductsForCustomer", method = RequestMethod.GET)
-    public ResponseEntity<ProductListResponseBody> getProductsForCustomer(@RequestParam(defaultValue = "") String name
+    public ResponseEntity<ProductListCustomerResponseBody> getProductsForCustomer(@RequestParam(defaultValue = "") String name
             , @RequestParam(required = false) String supermarketId
             , @RequestParam UUID pickupPointId
             , @RequestParam(required = false) String productCategoryId
@@ -75,7 +75,7 @@ public class ProductController {
             , @RequestParam(required = false) SortType quantitySortType
             , @RequestParam(required = false) SortType expiredSortType
             , @RequestParam(required = false) SortType priceSort) {
-        ProductListResponseBody productList = productService.getProductsForCustomer(name
+        ProductListCustomerResponseBody productList = productService.getProductsForCustomer(name
                 , supermarketId
                 , productCategoryId
                 , productSubCategoryId

@@ -1,6 +1,6 @@
 package com.fpt.capstone.savinghourmarket.model;
 
-import com.fpt.capstone.savinghourmarket.entity.OrderDetail_ProductBatch;
+import com.fpt.capstone.savinghourmarket.entity.OrderDetailProductBatch;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

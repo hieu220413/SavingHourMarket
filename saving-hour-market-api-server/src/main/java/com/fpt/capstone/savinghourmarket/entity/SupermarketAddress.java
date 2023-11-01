@@ -24,18 +24,16 @@ public class SupermarketAddress {
     private String address;
 
     @ManyToOne(
-            fetch = FetchType.LAZY
+//            fetch = FetchType.LAZY
     )
     @JoinColumn(
             name = "supermarket_id",
             referencedColumnName = "id"
     )
-    @JsonIgnore
+//    @JsonIgnore
     private Supermarket supermarket;
 
-    @ManyToOne(
-            fetch = FetchType.LAZY
-    )
+    @ManyToOne
     @JoinColumn(
             name = "pickup_point_id",
             referencedColumnName = "id"

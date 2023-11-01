@@ -1,6 +1,7 @@
 package com.fpt.capstone.savinghourmarket.repository;
 
 import com.fpt.capstone.savinghourmarket.entity.Product;
+import com.fpt.capstone.savinghourmarket.entity.ProductBatch;
 import com.fpt.capstone.savinghourmarket.model.CateOderQuantityResponseBody;
 import com.fpt.capstone.savinghourmarket.model.SupermarketSaleReportResponseBody;
 import org.springframework.data.domain.Page;
@@ -38,7 +39,31 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
     Page<Product> getProductsForStaff(UUID supermarketId, String name, UUID productCategoryId, UUID productSubCategoryId, Integer status, Boolean isExpiredShown, Pageable pageable);
 
 
-    @Query("SELECT DISTINCT p FROM Product p " +
+//    @Query("SELECT DISTINCT p FROM Product p " +
+//            "JOIN FETCH p.productBatchList pb " +
+//            "JOIN pb.supermarketAddress pba " +
+//            "JOIN pb.supermarketAddress.pickupPoint pbap " +
+//            "JOIN FETCH p.supermarket " +
+//            "JOIN FETCH p.productSubCategory " +
+//            "JOIN FETCH p.productSubCategory.productCategory " +
+//            "WHERE " +
+//            "pbap.id = :pickupPointId " +
+//            "AND " +
+//            "UPPER(p.name) LIKE UPPER(CONCAT('%',:name,'%')) " +
+//            "AND " +
+//            "((:supermarketId IS NULL) OR (p.supermarket.id = :supermarketId)) " +
+//            "AND " +
+//            "((:productCategoryId IS NULL) OR (p.productSubCategory.productCategory.id = :productCategoryId)) " +
+//            "AND " +
+//            "((:productSubCategoryId IS NULL) OR (p.productSubCategory.id = :productSubCategoryId)) " +
+//            "AND " +
+//            "pb.expiredDate > CURRENT_TIMESTAMP + p.productSubCategory.allowableDisplayThreshold DAY " +
+//            "AND pb.quantity > 0" +
+//            "AND p.status = 1 ")
+//
+//    Page<Product> getProductsForCustomer(UUID supermarketId, String name, UUID productCategoryId, UUID productSubCategoryId, UUID pickupPointId, Pageable pageable);
+
+        @Query("SELECT DISTINCT p FROM Product p " +
             "JOIN FETCH p.productBatchList pb " +
             "JOIN pb.supermarketAddress pba " +
             "JOIN pb.supermarketAddress.pickupPoint pbap " +
@@ -58,9 +83,56 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "AND " +
             "pb.expiredDate > CURRENT_TIMESTAMP + p.productSubCategory.allowableDisplayThreshold DAY " +
             "AND pb.quantity > 0" +
-            "AND p.status = 1")
+            "AND p.status = 1 ")
 
     Page<Product> getProductsForCustomer(UUID supermarketId, String name, UUID productCategoryId, UUID productSubCategoryId, UUID pickupPointId, Pageable pageable);
+
+    @Query("SELECT DISTINCT pb.expiredDate, pb.price, pb.priceOriginal, p  FROM ProductBatch pb  " +
+            "JOIN pb.product p " +
+//            "JOIN FETCH p.productBatchList pbp " +
+            "JOIN pb.supermarketAddress pba " +
+            "JOIN pb.supermarketAddress.pickupPoint pbap " +
+            "JOIN FETCH p.supermarket " +
+            "JOIN FETCH p.productSubCategory " +
+            "JOIN FETCH p.productSubCategory.productCategory " +
+            "WHERE " +
+            "pbap.id = :pickupPointId " +
+            "AND " +
+            "UPPER(p.name) LIKE UPPER(CONCAT('%',:name,'%')) " +
+            "AND " +
+            "((:supermarketId IS NULL) OR (p.supermarket.id = :supermarketId)) " +
+            "AND " +
+            "((:productCategoryId IS NULL) OR (p.productSubCategory.productCategory.id = :productCategoryId)) " +
+            "AND " +
+            "((:productSubCategoryId IS NULL) OR (p.productSubCategory.id = :productSubCategoryId)) " +
+            "AND " +
+            "pb.expiredDate = (" +
+              "SELECT DISTINCT MIN(pbsub.expiredDate) FROM ProductBatch pbsub " +
+              "JOIN pbsub.product psub " +
+              "WHERE pbsub.expiredDate > CURRENT_TIMESTAMP + psub.productSubCategory.allowableDisplayThreshold DAY  " +
+              "AND psub.id = p.id" +
+            ") " +
+            "AND pb.quantity > 0 " +
+//            "AND pbp.expiredDate > CURRENT_TIMESTAMP + p.productSubCategory.allowableDisplayThreshold DAY " +
+//            "AND pbp.quantity > 0 " +
+            "AND p.status = 1 " +
+            "GROUP BY pb.expiredDate, pb.price, pb.priceOriginal, p")
+    Page<Object[]> getProductsNearestExpiredBatchForCustomer(UUID supermarketId, String name, UUID productCategoryId, UUID productSubCategoryId, UUID pickupPointId, Pageable pageable);
+
+    @Query("SELECT p FROM Product p " +
+            "LEFT JOIN FETCH p.productBatchList pb " +
+            "JOIN pb.supermarketAddress pba " +
+            "JOIN pb.supermarketAddress.pickupPoint pbap " +
+            "WHERE " +
+            "p.id IN :productIdTargetList " +
+            "AND " +
+            "pbap.id = :pickupPointId " +
+            "AND " +
+            "pb.quantity > 0" +
+            "AND " +
+            "pb.expiredDate > CURRENT_TIMESTAMP + p.productSubCategory.allowableDisplayThreshold DAY ")
+    List<Product> findProductWithAvailableBatch(List<UUID> productIdTargetList, UUID pickupPointId);
+
 
     @Query("SELECT p FROM Product p " +
             "WHERE p.status = 1 AND p.supermarket.id = :supermarketId ")
@@ -99,7 +171,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
         @Query("SELECT EXTRACT(MONTH FROM ord.createdTime), NEW com.fpt.capstone.savinghourmarket.model.SaleReportSupermarketMonthlyResponseBody(EXTRACT(MONTH FROM ord.createdTime), SUM(ordDetail.boughtQuantity), SUM(ordDetail.productPrice * ordDetail.boughtQuantity)) FROM OrderDetail ordDetail " +
             "JOIN ordDetail.order ord " +
-            "JOIN ordDetail.productBatch.product pd " +
+            "JOIN ordDetail.product pd " +
             "WHERE " +
             "pd.supermarket.id = :supermarketId " +
             "AND " +
@@ -158,7 +230,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     @Query("SELECT NEW com.fpt.capstone.savinghourmarket.model.SupermarketSaleReportResponseBody(sp.id, SUM(dt.boughtQuantity), SUM(dt.boughtQuantity*dt.productPrice)) FROM Order ord " +
             "JOIN ord.orderDetailList dt " +
-            "JOIN dt.productBatch.product pd " +
+            "JOIN dt.product pd " +
             "JOIN pd.supermarket sp " +
             "WHERE EXTRACT(YEAR FROM ord.createdTime) = :year " +
             "AND ord.status = 4" +
@@ -167,7 +239,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     @Query("SELECT DISTINCT NEW com.fpt.capstone.savinghourmarket.model.CateOderQuantityResponseBody(ct.id, ct.name, COUNT(ct.id)) FROM Order ord " +
             "JOIN ord.orderDetailList dt " +
-            "JOIN dt.productBatch.product pd " +
+            "JOIN dt.product pd " +
             "JOIN pd.supermarket sp " +
             "JOIN pd.productSubCategory sct " +
             "JOIN sct.productCategory ct " +
@@ -176,6 +248,8 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "AND ord.status = 4" +
             "GROUP BY ord.id, ct.name, ct.id")
     List<CateOderQuantityResponseBody> getOrderTotalAllCategoryReport(UUID supermarketId, Integer year);
+
+
 
 
 //    @Query(value = "SELECT * FROM product p " +

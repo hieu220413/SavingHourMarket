@@ -35,7 +35,7 @@ public class OrderDetail {
     @JsonIgnore
     private Order order;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(
             name = "product_id",
             referencedColumnName = "id"
@@ -47,5 +47,5 @@ public class OrderDetail {
             mappedBy = "orderDetail",
             cascade = CascadeType.ALL
     )
-    private List<OrderDetail_ProductBatch> orderDetailProductBatches;
+    private List<OrderDetailProductBatch> orderDetailProductBatches;
 }

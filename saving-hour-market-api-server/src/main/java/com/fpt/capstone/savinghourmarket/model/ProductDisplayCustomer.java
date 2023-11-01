@@ -2,15 +2,13 @@ package com.fpt.capstone.savinghourmarket.model;
 
 
 import com.fpt.capstone.savinghourmarket.entity.Product;
-import com.fpt.capstone.savinghourmarket.entity.ProductBatch;
 import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
 import com.fpt.capstone.savinghourmarket.entity.Supermarket;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.UuidGenerator;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -20,7 +18,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ProductDisplayCustomer {
 
-    public ProductDisplayCustomer(Product product) {
+    public ProductDisplayCustomer(LocalDate nearestBatchExpiredDate, Integer nearestBatchPrice, Integer nearestBatchPriceOriginal, Product product) {
         this.id = product.getId();
         this.name = product.getName();
         this.description = product.getDescription();
@@ -28,8 +26,21 @@ public class ProductDisplayCustomer {
         this.status = product.getStatus();
         this.productSubCategory = product.getProductSubCategory();
         this.supermarket = product.getSupermarket();
-        this.productBatchList = new ArrayList<>();
+        this.otherProductBatchList = new ArrayList<>();
+        this.nearestExpiredBatch = new ProductBatchDisplayCustomer(nearestBatchExpiredDate, nearestBatchPrice, nearestBatchPriceOriginal);
     }
+
+
+//    public ProductDisplayCustomer(ProductBatch productBatch) {
+//        this.id = productBatch.getProduct().getId();
+//        this.name = productBatch.getProduct().getName();
+//        this.description = productBatch.getProduct().getDescription();
+//        this.imageUrl = productBatch.getProduct().getImageUrl();
+//        this.status = productBatch.getProduct().getStatus();
+//        this.productSubCategory = productBatch.getProduct().getProductSubCategory();
+//        this.supermarket = productBatch.getProduct().getSupermarket();
+//        this.nearestExpiredBatch = new ProductBatchDisplayCustomer(productBatch);
+//    }
 
     private UUID id;
 
@@ -46,5 +57,7 @@ public class ProductDisplayCustomer {
 
     private Supermarket supermarket;
 
-    private List<ProductBatchDisplayCustomer> productBatchList;
+    private ProductBatchDisplayCustomer nearestExpiredBatch;
+
+    private List<ProductBatchDisplayCustomer> otherProductBatchList = new ArrayList<>();
 }
