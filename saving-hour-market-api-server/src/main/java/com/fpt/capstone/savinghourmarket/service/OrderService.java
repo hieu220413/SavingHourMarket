@@ -28,6 +28,7 @@ public interface OrderService {
                                     String deliveryDateSortType,
                                     OrderStatus orderStatus,
                                     UUID packagerId,
+                                    UUID delivererId,
                                     Boolean isPaid,
                                     Boolean isGrouped,
                                     int page,
@@ -44,7 +45,8 @@ public interface OrderService {
                                        int page,
                                        int limit) throws NoSuchOrderException, FirebaseAuthException, ResourceNotFoundException;;
 
-    List<OrderBatch> fetchOrderBatches(District district, LocalDate deliveryDate) throws NoSuchOrderException;
+
+    List<OrderBatch> fetchOrderBatches(District district, LocalDate deliveryDate, UUID delivererID) throws NoSuchOrderException;
 
     String assignPackager(UUID orderId, UUID staffId) throws NoSuchOrderException, IOException;
 

@@ -70,6 +70,7 @@ public class OrderController {
                                                          @RequestParam(required = false) SortType deliveryDateSortType,
                                                          @RequestParam(required = false) OrderStatus orderStatus,
                                                          @RequestParam(required = false) UUID packagerId,
+                                                         @RequestParam(required = false) UUID delivererId,
                                                          @RequestParam(required = false) Boolean isPaid,
                                                          @RequestParam(required = false) Boolean isGrouped,
                                                          @RequestParam(defaultValue = "0") Integer page,
@@ -82,6 +83,7 @@ public class OrderController {
                 deliveryDateSortType == null ? null : deliveryDateSortType.name(),
                 orderStatus,
                 packagerId,
+                delivererId,
                 isPaid,
                 isGrouped,
                 page,
@@ -103,10 +105,11 @@ public class OrderController {
     @GetMapping("/getOrderBatchForStaff")
     public ResponseEntity<List<OrderBatch>> getOrderBatchForStaff(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
                                                                   @RequestParam(required = false) District district,
-                                                                  @RequestParam(required = false) LocalDate deliveryDate) throws NoSuchOrderException, FirebaseAuthException {
+                                                                  @RequestParam(required = false) LocalDate deliveryDate,
+                                                                  @RequestParam(required = false) UUID delivererId) throws NoSuchOrderException, FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderBatches(district, deliveryDate));
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderBatches(district, deliveryDate, delivererId));
     }
 
     @GetMapping("/getOrderDetail/{id}")

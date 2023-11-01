@@ -21,8 +21,10 @@ public interface OrderBatchRepository extends JpaRepository<OrderBatch, UUID> {
             "WHERE " +
             "((:district IS NULL) OR (ob.district = :district)) " +
             "AND " +
-            "((:deliveryDate IS NULL) OR (ob.deliverDate = :deliveryDate))")
-    List<OrderBatch> findByDistrictOrDeliverDate(String district, LocalDate deliveryDate);
+            "((:deliveryDate IS NULL) OR (ob.deliverDate = :deliveryDate))" +
+            "AND " +
+            "((:delivererId IS NULL) OR (ob.deliverer.id = :delivererId))")
+    List<OrderBatch> findByDistrictOrDeliverDate(String district, LocalDate deliveryDate,UUID delivererId);
 
     @Query("SELECT ob FROM OrderBatch ob " +
             "JOIN ob.deliverer delv " +
