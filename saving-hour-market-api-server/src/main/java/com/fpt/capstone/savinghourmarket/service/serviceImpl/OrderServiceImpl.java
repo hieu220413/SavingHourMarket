@@ -128,8 +128,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderBatch> fetchOrderBatches(District district, LocalDate deliveryDate) throws NoSuchOrderException {
-        List<OrderBatch> orderBatches = orderBatchRepository.findByDistrictOrDeliverDate(district != null ? district.getDistrictName() : null, deliveryDate);
+    public List<OrderBatch> fetchOrderBatches(District district, LocalDate deliveryDate, UUID delivererID) throws NoSuchOrderException {
+        List<OrderBatch> orderBatches = orderBatchRepository.findByDistrictOrDeliverDate(district != null ? district.getDistrictName() : null, deliveryDate, delivererID);
         return orderBatches;
     }
 
@@ -185,11 +185,13 @@ public class OrderServiceImpl implements OrderService {
                                            String deliveryDateSortType,
                                            OrderStatus orderStatus,
                                            UUID packagerId,
+                                           UUID delivererId,
                                            Boolean isPaid,
                                            Boolean isGrouped,
                                            int page,
                                            int limit) throws NoSuchOrderException, FirebaseAuthException {
         List<Order> orders = repository.findOrderForStaff(packagerId,
+                delivererId,
                 orderStatus == null ? null : orderStatus.ordinal(),
                 isGrouped,
                 isPaid,
@@ -767,7 +769,7 @@ public class OrderServiceImpl implements OrderService {
             List<OrderDetail_ProductBatch> orderDetailProductBatches = orderDetail.getOrderDetailProductBatches();
             orderDetailProductBatches.forEach(orderDetail_productBatch -> {
                 ProductBatch productBatch = orderDetail_productBatch.getProductBatch();
-                productBatch.setQuantity(productBatch.getQuantity()+ orderDetail_productBatch.getBoughtQuantity());
+                productBatch.setQuantity(productBatch.getQuantity() + orderDetail_productBatch.getBoughtQuantity());
                 productBatchRepository.save(productBatch);
             });
         }
