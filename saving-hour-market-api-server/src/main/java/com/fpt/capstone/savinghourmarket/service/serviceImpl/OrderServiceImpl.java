@@ -253,8 +253,8 @@ public class OrderServiceImpl implements OrderService {
                     orderProduct.setStatus(product.getStatus());
 
                     List<OrderProductBatch> orderProductBatches = new ArrayList<>();
-                    List<OrderDetail_ProductBatch> orderDetailProductBatches = o.getOrderDetailProductBatches();
-                    for (OrderDetail_ProductBatch orderDetail_productBatch : orderDetailProductBatches) {
+                    List<OrderDetailProductBatch> orderDetailProductBatches = o.getOrderDetailProductBatches();
+                    for (OrderDetailProductBatch orderDetail_productBatch : orderDetailProductBatches) {
                         OrderProductBatch orderProductBatch = new OrderProductBatch();
                         orderProductBatch.setSupermarketName(orderDetail_productBatch.getProductBatch().getSupermarketAddress().getSupermarket().getName());
                         orderProductBatch.setSupermarketAddress(orderDetail_productBatch.getProductBatch().getSupermarketAddress().getAddress());
@@ -702,9 +702,9 @@ public class OrderServiceImpl implements OrderService {
 
 
         //decrease quantity of product's batch then persist orderDetailProductBatches
-        List<OrderDetail_ProductBatch> orderDetailProductBatches = new ArrayList<>();
+        List<OrderDetailProductBatch> orderDetailProductBatches = new ArrayList<>();
         for (ProductBatch productBatch : productBatches) {
-            OrderDetail_ProductBatch orderDetailProductBatch = new OrderDetail_ProductBatch();
+            OrderDetailProductBatch orderDetailProductBatch = new OrderDetailProductBatch();
             // 10 3 3 4 || 10 11 12 13 || 10 3 11
             if (boughtQuantity > 0 && boughtQuantity > productBatch.getQuantity()) {
                 boughtQuantity -= productBatch.getQuantity();
@@ -766,7 +766,7 @@ public class OrderServiceImpl implements OrderService {
 
     private void increaseProductQuantity(List<OrderDetail> orderDetails) {
         for (OrderDetail orderDetail : orderDetails) {
-            List<OrderDetail_ProductBatch> orderDetailProductBatches = orderDetail.getOrderDetailProductBatches();
+            List<OrderDetailProductBatch> orderDetailProductBatches = orderDetail.getOrderDetailProductBatches();
             orderDetailProductBatches.forEach(orderDetail_productBatch -> {
                 ProductBatch productBatch = orderDetail_productBatch.getProductBatch();
                 productBatch.setQuantity(productBatch.getQuantity() + orderDetail_productBatch.getBoughtQuantity());
