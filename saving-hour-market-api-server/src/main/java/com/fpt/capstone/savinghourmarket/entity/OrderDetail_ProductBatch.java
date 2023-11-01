@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
-import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -16,35 +15,27 @@ import java.util.UUID;
 @NoArgsConstructor
 @Setter
 @Getter
-public class OrderDetail {
+public class OrderDetail_ProductBatch {
     @Id
     @UuidGenerator
     private UUID id;
 
-    private Integer productPrice;
-
-    private Integer productOriginalPrice;
-
     private Integer boughtQuantity;
 
-    @ManyToOne()
+    @ManyToOne(
+            fetch = FetchType.LAZY
+    )
     @JoinColumn(
-            name = "order_id",
+            name = "order_detail_id",
             referencedColumnName = "id"
     )
     @JsonIgnore
-    private Order order;
+    private OrderDetail orderDetail;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(
-            name = "product_id",
+            name = "product_batch_id",
             referencedColumnName = "id"
     )
-    private Product product;
-
-    @OneToMany(
-            fetch = FetchType.EAGER,
-            mappedBy = "orderDetail"
-    )
-    private List<OrderDetail_ProductBatch> orderDetailProductBatches;
+    private ProductBatch productBatch;
 }

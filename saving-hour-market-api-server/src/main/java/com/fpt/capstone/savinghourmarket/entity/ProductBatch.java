@@ -52,10 +52,11 @@ public class ProductBatch {
     )
     private SupermarketAddress supermarketAddress;
 
-    @ManyToMany(
-            mappedBy = "productBatches",
+    @OneToMany(
+            mappedBy = "productBatch",
             fetch = FetchType.LAZY
     )
-    private List<OrderDetail> orderDetail;
+    @JsonIgnore
+    private List<OrderDetail_ProductBatch> orderDetailProductBatches;
 
 }
