@@ -39,6 +39,24 @@ public class StaffController {
 //        return ResponseEntity.status(HttpStatus.OK).body(staff);
 //    }
 
+    @RequestMapping(value = "assignPickupPoint", method = RequestMethod.PUT)
+    public ResponseEntity<Staff> assignPickupPoint(@Parameter(hidden = true)  @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @Valid @RequestBody StaffPickupPointAssignmentBody staffPickupPointAssignmentBody) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        Staff staff = staffService.assignPickupPoint(staffPickupPointAssignmentBody);
+        return ResponseEntity.status(HttpStatus.OK).body(staff);
+    }
+
+    @RequestMapping(value = "unAssignPickupPoint", method = RequestMethod.PUT)
+    public ResponseEntity<Staff> unAssignPickupPoint(@Parameter(hidden = true)  @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @Valid @RequestBody StaffPickupPointAssignmentBody staffPickupPointAssignmentBody) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        Staff staff = staffService.unAssignPickupPoint(staffPickupPointAssignmentBody);
+        return ResponseEntity.status(HttpStatus.OK).body(staff);
+    }
+
     @RequestMapping(value = "getInfo", method = RequestMethod.GET)
     public ResponseEntity<Staff> getInfo(@Parameter(hidden = true)  @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);

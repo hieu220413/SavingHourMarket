@@ -12,6 +12,7 @@ import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -39,14 +40,15 @@ public class Staff {
     @Column(columnDefinition = "tinyint")
     private Integer status;
 
-    @ManyToOne(
+    @ManyToMany(
             fetch = FetchType.LAZY
     )
-    @JoinColumn(
-            name = "pickup_point_id",
-            referencedColumnName = "id"
+    @JoinTable(
+            name = "staff_pickup_point",
+            joinColumns = @JoinColumn(name = "staff_id"),
+            inverseJoinColumns = @JoinColumn(name = "pickup_point_id")
     )
-    private PickupPoint pickupPoint;
+    private List<PickupPoint> pickupPoint;
     
 
     public Staff(StaffCreateRequestBody staffCreateRequestBody, StaffRole role) throws UnsupportedEncodingException {
