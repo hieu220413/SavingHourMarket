@@ -72,7 +72,7 @@ public class ProductController {
             , @RequestParam(required = false) String productSubCategoryId
             , @RequestParam(defaultValue = "0") Integer page
             , @RequestParam(defaultValue = "5") Integer limit
-            , @RequestParam(required = false) SortType quantitySortType
+//            , @Parameter(hidden = true) @RequestParam(required = false) SortType quantitySortType
             , @RequestParam(required = false) SortType expiredSortType
             , @RequestParam(required = false) SortType priceSort) {
         ProductListCustomerResponseBody productList = productService.getProductsForCustomer(name
@@ -81,7 +81,7 @@ public class ProductController {
                 , productSubCategoryId
                 , page
                 , limit
-                , quantitySortType
+                , null
                 , expiredSortType
                 , priceSort
                 , pickupPointId);
