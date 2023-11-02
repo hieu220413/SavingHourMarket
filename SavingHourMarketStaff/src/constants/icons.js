@@ -9,7 +9,7 @@ const search = require('../assets/icons/search.png');
 // const star = require('../assets/icons/star.png');
 // const logo = require('../assets/icons/logo.png');
 // const edit = require('../assets/icons/edit.png');
-// const leftArrow = require('../assets/icons/left-arrow.png');
+const leftArrow = require('../assets/icons/left-arrow.png');
 // const plus = require('../assets/icons/plus.png');
 // const minus = require('../assets/icons/minus.png');
 const location = require('../assets/icons/location.png');
@@ -19,17 +19,19 @@ const rightArrow = require('../assets/icons/right-arrow.png');
 // const cash = require('../assets/icons/cash.png');
 // const creditCard = require('../assets/icons/credit-card.png');
 // const plusCircle = require('../assets/icons/plus-circle.png');
-// const phone = require('../assets/icons/phone.png');
-// const trashBin = require('../assets/icons/trashbin.png');
+const phone = require('../assets/icons/phone.png');
+const trashBin = require('../assets/icons/trashbin.png');
 // const cross = require('../assets/icons/cross.png');
-// const close = require('../assets/icons/close.png');
+const close = require('../assets/icons/close.png');
 // const orderIcon = require('../assets/icons/ordericon.png');
 // const bike = require('../assets/icons/bike.png');
 // const questionMark = require('../assets/icons/questionMark.png');
-// const filter = require('../assets/icons/filter.png');
+const filter = require('../assets/icons/filter.png');
 // const searchIcon = require('../assets/icons/searchIcon.png');
 const statistic = require('../assets/icons/statistic.png');
 const userCircle = require('../assets/icons/user-circle.png');
+const packaging = require('../assets/icons/packaging.png');
+const packaged = require('../assets/icons/packaged.png');
 
 export default {
   home,
@@ -42,7 +44,7 @@ export default {
   // star,
   // logo,
   // edit,
-  // leftArrow,
+  leftArrow,
   // plus,
   // minus,
   location,
@@ -52,15 +54,17 @@ export default {
   // cash,
   // creditCard,
   // plusCircle,
-  // phone,
-  // trashBin,
+  phone,
+  trashBin,
   // cross,
-  // close,
+  close,
   // orderIcon,
   // bike,
   // questionMark,
-  // filter,
+  filter,
   // searchIcon,
   statistic,
   userCircle,
+  packaging,
+  packaged,
 };
