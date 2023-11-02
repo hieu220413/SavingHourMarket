@@ -1,9 +1,6 @@
 package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
-import com.fpt.capstone.savinghourmarket.common.District;
-import com.fpt.capstone.savinghourmarket.common.OrderStatus;
-import com.fpt.capstone.savinghourmarket.common.PaymentMethod;
-import com.fpt.capstone.savinghourmarket.common.StaffRole;
+import com.fpt.capstone.savinghourmarket.common.*;
 import com.fpt.capstone.savinghourmarket.entity.*;
 import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.*;
@@ -119,8 +116,9 @@ public class OrderServiceImpl implements OrderService {
                                               OrderStatus orderStatus,
                                               Boolean isPaid,
                                               int page,
-                                              int limit) throws NoSuchOrderException, FirebaseAuthException {
-        List<Order> orders = repository.findOrderForCustomer(Utils.getCustomerEmail(jwtToken, firebaseAuth),
+                                              int limit) throws FirebaseAuthException {
+        List<Order> orders = repository.findOrderForCustomer(
+                Utils.getCustomerEmail(jwtToken, firebaseAuth),
                 orderStatus == null ? null : orderStatus.ordinal(),
                 isPaid,
                 getPageableWithSort(totalPriceSortType, createdTimeSortType, deliveryDateSortType, page, limit));
@@ -128,14 +126,17 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderBatch> fetchOrderBatches(District district, LocalDate deliveryDate, UUID delivererID) throws NoSuchOrderException {
-        List<OrderBatch> orderBatches = orderBatchRepository.findByDistrictOrDeliverDate(district != null ? district.getDistrictName() : null, deliveryDate, delivererID);
+    public List<OrderBatch> fetchOrderBatches(District district, LocalDate deliveryDate, UUID delivererID) {
+        List<OrderBatch> orderBatches = orderBatchRepository.findByDistrictOrDeliverDate(
+                district != null ? district.getDistrictName() : null,
+                deliveryDate,
+                delivererID);
         return orderBatches;
     }
 
     @Override
     @Transactional
-    public String assignPackager(UUID orderId, UUID staffId) throws NoSuchOrderException, IOException {
+    public String confirmPackaging(UUID orderId, UUID staffId) throws NoSuchOrderException, IOException {
         Order order = repository.findById(orderId)
                 .orElseThrow(() -> new NoSuchOrderException("No order found with this id " + orderId));
         Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new NoSuchElementException("Không tìm thấy nhân viên với ID: " + staffId));
@@ -150,25 +151,79 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
+    public String confirmPackaged(UUID orderId, UUID staffId) throws NoSuchOrderException, IOException {
+        Order order = repository.findById(orderId)
+                .orElseThrow(() -> new NoSuchOrderException("No order found with this id " + orderId));
+        Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new NoSuchElementException("Không tìm thấy nhân viên với ID: " + staffId));
+        if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_ORD.toString())) {
+            order.setPackager(staff);
+            order.setStatus(OrderStatus.PACKAGED.ordinal());
+            FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được đóng gói!", order.getCustomer().getId().toString());
+        } else {
+            return "Nhân viên này không phải là nhân Viên ĐÓNG GÓI!";
+        }
+        return "Đơn hàng này đã đóng gói xong!";
+    }
+
+    @Override
+    public String confirmSucceeded(UUID orderId, UUID staffId) throws IOException, NoSuchOrderException {
+        Order order = repository.findById(orderId)
+                .orElseThrow(() -> new NoSuchOrderException("No order found with this id " + orderId));
+        Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new NoSuchElementException("Không tìm thấy nhân viên với ID: " + staffId));
+        if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_DLV_0.toString())) {
+            order.setPackager(staff);
+            order.setStatus(OrderStatus.SUCCESS.ordinal());
+            FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được giao thành công! Hãy đánh giá dịch vụ của chúng tôi để đóng góp xây dưng hệ thống tốt hơn!", order.getCustomer().getId().toString());
+        } else {
+            return "Nhân viên này không phải là nhân Viên GIAO HÀNG!";
+        }
+        return "Đơn hàng này đã giao thành công!";
+    }
+
+    @Override
+    public String confirmFail(UUID orderId, UUID staffId) throws IOException, NoSuchOrderException {
+        Order order = repository.findById(orderId)
+                .orElseThrow(() -> new NoSuchOrderException("No order found with this id " + orderId));
+        Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new NoSuchElementException("Không tìm thấy nhân viên với ID: " + staffId));
+        if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_DLV_0.toString())) {
+            order.setPackager(staff);
+            order.setStatus(OrderStatus.FAIL.ordinal());
+            FirebaseService.sendPushNotification("SHM", "Đơn hàng đã không thể giao! Bạn vui lòng liên hệ nhân viên để được hỗ trợ giao lại!", order.getCustomer().getId().toString());
+        } else {
+            return "Nhân viên này không phải là nhân Viên GIAO HÀNG!";
+        }
+        return "Đơn hàng này đã giao thành công!";
+    }
+
+    @Override
     public String assignDeliverToOrderGroupOrBatch(UUID orderGroupId, UUID orderBatchId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException, IOException {
         Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new NoSuchElementException("No staff found with this id " + staffId));
         if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_DLV_0.toString())) {
             if (orderGroupId != null && orderBatchId == null) {
                 OrderGroup orderGroup = orderGroupRepository.findById(orderGroupId)
                         .orElseThrow(() -> new NoSuchOrderException("No group found with this group id " + orderGroupId));
-                orderGroup.setDeliverer(staff);
                 for (Order order : orderGroup.getOrderList()) {
-                    order.setStatus(OrderStatus.DELIVERING.ordinal());
-                    FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getId().toString());
+                    if (order.getStatus() == OrderStatus.PACKAGED.ordinal()) {
+                        order.setStatus(OrderStatus.DELIVERING.ordinal());
+                        FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getId().toString());
+                    } else {
+                        return "Đơn hàng " + order.getId() + " chưa được đóng gói!";
+                    }
                 }
+                orderGroup.setDeliverer(staff);
             } else if (orderGroupId == null && orderBatchId != null) {
                 OrderBatch orderBatch = orderBatchRepository.findById(orderBatchId)
                         .orElseThrow(() -> new NoSuchOrderException("No batch found with this batch id " + orderBatchId));
-                orderBatch.setDeliverer(staff);
                 for (Order order : orderBatch.getOrderList()) {
-                    order.setStatus(OrderStatus.DELIVERING.ordinal());
-                    FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getEmail());
+                    if (order.getStatus() == OrderStatus.PACKAGED.ordinal()) {
+                        order.setStatus(OrderStatus.DELIVERING.ordinal());
+                        FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getId().toString());
+                    } else {
+                        return "Đơn hàng " + order.getId() + " chưa được đóng gói!";
+                    }
                 }
+                orderBatch.setDeliverer(staff);
             } else {
                 throw new ConflictGroupAndBatchException("Group or batch must be specified");
             }
@@ -183,15 +238,48 @@ public class OrderServiceImpl implements OrderService {
     public List<Order> fetchOrdersForStaff(String totalPriceSortType,
                                            String createdTimeSortType,
                                            String deliveryDateSortType,
+                                           Date deliveryDate,
                                            OrderStatus orderStatus,
                                            UUID packagerId,
                                            UUID delivererId,
                                            Boolean isPaid,
                                            Boolean isGrouped,
                                            int page,
-                                           int limit) throws NoSuchOrderException, FirebaseAuthException {
-        List<Order> orders = repository.findOrderForStaff(packagerId,
+                                           int limit) {
+        List<Order> orders = repository.findOrderForStaff(
+                deliveryDate,
+                packagerId,
                 delivererId,
+                orderStatus == null ? null : orderStatus.ordinal(),
+                isGrouped,
+                isPaid,
+                getPageableWithSort(totalPriceSortType,
+                        createdTimeSortType,
+                        deliveryDateSortType,
+                        page,
+                        limit)
+        );
+        return orders;
+    }
+
+    @Override
+    public List<Order> fetchOrdersForPackageStaff(String totalPriceSortType,
+                                                  String createdTimeSortType,
+                                                  String deliveryDateSortType,
+                                                  UUID pickupPointId,
+                                                  Date deliveryDate,
+                                                  OrderStatus orderStatus,
+                                                  String email,
+                                                  Boolean isPaid,
+                                                  Boolean isGrouped,
+                                                  int page,
+                                                  int limit) throws ResourceNotFoundException {
+        List<PickupPoint> pickupPointListOfStaff = staffRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Nhân viên không tìm thấy với email " + email)).getPickupPoint();
+        List<Order> orders = repository.findOrderForPackageStaff(
+                pickupPointId,
+                deliveryDate,
+                pickupPointListOfStaff,
                 orderStatus == null ? null : orderStatus.ordinal(),
                 isGrouped,
                 isPaid,
@@ -226,13 +314,8 @@ public class OrderServiceImpl implements OrderService {
         orderWithDetails.setShippingFee(order.getShippingFee());
         orderWithDetails.setStatus(order.getStatus());
         orderWithDetails.setTransaction(order.getTransaction());
-
-        if (order.getOrderGroup() != null) {
-            orderWithDetails.setTimeFrame(order.getOrderGroup().getTimeFrame());
-            orderWithDetails.setPickupPoint(order.getOrderGroup().getPickupPoint());
-        } else {
-            orderWithDetails.setTimeFrame(order.getTimeFrame());
-        }
+        orderWithDetails.setTimeFrame(order.getTimeFrame());
+        orderWithDetails.setPickupPoint(order.getPickupPoint());
 
         List<OrderDetail> orderDetails = order.getOrderDetailList();
         List<OrderProduct> orderProducts = orderDetails.stream()
@@ -282,15 +365,11 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
 
         if (order.getOrderGroup() != null) {
-            OrderGroup orderGroup = order.getOrderGroup();
-            orderGroup.getOrderList().remove(order);
-            orderGroupRepository.save(orderGroup);
+            order.setOrderGroup(null);
         }
 
         if (order.getOrderBatch() != null) {
-            OrderBatch orderBatch = order.getOrderBatch();
-            orderBatch.getOrderList().remove(order);
-            orderBatchRepository.save(orderBatch);
+            order.setOrderBatch(null);
         }
 
         if (order.getStatus() == OrderStatus.PROCESSING.ordinal()) {
@@ -322,15 +401,11 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
 
         if (order.getOrderGroup() != null) {
-            OrderGroup orderGroup = order.getOrderGroup();
-            orderGroup.getOrderList().remove(order);
-            orderGroupRepository.save(orderGroup);
+            order.setOrderGroup(null);
         }
 
         if (order.getOrderBatch() != null) {
-            OrderBatch orderBatch = order.getOrderBatch();
-            orderBatch.getOrderList().remove(order);
-            orderBatchRepository.save(orderBatch);
+            order.setOrderBatch(null);
         }
 
         if (order.getStatus() == OrderStatus.PROCESSING.ordinal()) {
@@ -354,15 +429,11 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
 
         if (order.getOrderGroup() != null) {
-            OrderGroup orderGroup = order.getOrderGroup();
-            orderGroup.getOrderList().remove(order);
-            orderGroupRepository.save(orderGroup);
+            order.setOrderGroup(null);
         }
 
         if (order.getOrderBatch() != null) {
-            OrderBatch orderBatch = order.getOrderBatch();
-            orderBatch.getOrderList().remove(order);
-            orderBatchRepository.save(orderBatch);
+            order.setOrderBatch(null);
         }
 
         if (order.getStatus() == OrderStatus.PROCESSING.ordinal()) {
@@ -534,7 +605,7 @@ public class OrderServiceImpl implements OrderService {
                 .findByEmail(email)
                 .orElseThrow(() -> new AuthorizationServiceException("Access denied with this account: " + email));
         Order orderCreated = null;
-        if (repository.getOrdersProcessing(customer.getEmail()).size() < 3) {
+        if (repository.getOrdersProcessing(customer.getEmail()).size() < Utils.getAdminConfiguration().getLimitOfOrders()) {
             RLock rLock = redissonClient.getFairLock("createOrderLock");
             boolean res = rLock.tryLock(100, 10, TimeUnit.SECONDS);
             if (res) {
@@ -560,11 +631,8 @@ public class OrderServiceImpl implements OrderService {
     Order createOrderTransact(OrderCreate orderCreate, Customer customer) throws ResourceNotFoundException, InterruptedException, IOException, OutOfProductQuantityException {
         Order order = setOrderData(orderCreate, customer);
 
-        if (orderCreateHasPickupPointAndTimeFrame(orderCreate)) {
+        if (orderCreate.getDeliveryMethod().equals(DeliveryMethod.PICKUP_POINT)) {
             groupingOrder(order, orderCreate);
-        } else {
-            order.setTimeFrame(timeFrameRepository.findById(orderCreate.getTimeFrameId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Time frame không tìm thấy với id: " + orderCreate.getTimeFrameId())));
         }
 
         List<OrderDetail> orderDetails = getOrderDetails(order, orderCreate);
@@ -585,6 +653,7 @@ public class OrderServiceImpl implements OrderService {
         order.setReceiverPhone(orderCreate.getReceiverPhone());
         order.setShippingFee(orderCreate.getShippingFee());
         order.setTotalPrice(orderCreate.getTotalPrice());
+        order.setDeliveryMethod(orderCreate.getDeliveryMethod().ordinal());
         order.setTotalDiscountPrice(orderCreate.getTotalDiscountPrice());
         order.setDeliveryDate(Date.valueOf(orderCreate.getDeliveryDate()));
         order.setPaymentStatus(orderCreate.getPaymentStatus().ordinal());
@@ -594,12 +663,11 @@ public class OrderServiceImpl implements OrderService {
         order.setLongitude(orderCreate.getLongitude());
         order.setLatitude(orderCreate.getLatitude());
         order.setCreatedTime(LocalDateTime.now());
+        order.setPickupPoint(pickupPointRepository.findById(orderCreate.getPickupPointId())
+                .orElseThrow(() -> new NoSuchElementException("No pick-up point found with id " + orderCreate.getPickupPointId())));
+        order.setTimeFrame(timeFrameRepository.findById(orderCreate.getTimeFrameId())
+                .orElseThrow(() -> new ResourceNotFoundException("Time frame không tìm thấy với id: " + orderCreate.getTimeFrameId())));
         return order;
-    }
-
-    private boolean orderCreateHasPickupPointAndTimeFrame(OrderCreate orderCreate) {
-        return orderCreate.getPickupPointId() != null && !orderCreate.getPickupPointId().toString().isEmpty()
-                && orderCreate.getTimeFrameId() != null && !orderCreate.getTimeFrameId().toString().isEmpty();
     }
 
     private void groupingOrder(Order order, OrderCreate orderCreate) {
@@ -617,7 +685,6 @@ public class OrderServiceImpl implements OrderService {
             group = orderGroupRepository.save(orderGroupNew);
         }
         order.setOrderGroup(group);
-        order.setTimeFrame(group.getTimeFrame());
     }
 
     private OrderGroup createNewOrderGroup(OrderCreate orderCreate) {
@@ -697,7 +764,7 @@ public class OrderServiceImpl implements OrderService {
         int totalQuantityOfProductBatches = productBatches.stream().mapToInt(ProductBatch::getQuantity).sum();
         int boughtQuantity = orderProductCreate.getBoughtQuantity();
         if (boughtQuantity > totalQuantityOfProductBatches) {
-            throw new OutOfProductQuantityException(product.getName() + " chỉ còn " + totalQuantityOfProductBatches + " sản phẩm!");
+            throw new OutOfProductQuantityException(product.getName() + " HSD: " + productBatches.get(0).getExpiredDate() + " chỉ còn " + totalQuantityOfProductBatches + " sản phẩm!");
         }
 
 
@@ -707,19 +774,20 @@ public class OrderServiceImpl implements OrderService {
             OrderDetailProductBatch orderDetailProductBatch = new OrderDetailProductBatch();
             // 10 3 3 4 || 10 11 12 13 || 10 3 11
             if (boughtQuantity > 0 && boughtQuantity > productBatch.getQuantity()) {
+                orderDetailProductBatch.setBoughtQuantity(productBatch.getQuantity());
                 boughtQuantity -= productBatch.getQuantity();
                 productBatch.setQuantity(0);
-                orderDetailProductBatch.setBoughtQuantity(productBatch.getQuantity());
+
                 orderDetailProductBatch.setProductBatch(productBatch);
                 orderDetailProductBatch.setOrderDetail(orderDetail);
             } else if (boughtQuantity > 0 && boughtQuantity <= productBatch.getQuantity()) {
+                orderDetailProductBatch.setBoughtQuantity(boughtQuantity);
                 productBatch.setQuantity(productBatch.getQuantity() - boughtQuantity);
                 boughtQuantity = 0;
-                orderDetailProductBatch.setBoughtQuantity(boughtQuantity);
+
                 orderDetailProductBatch.setProductBatch(productBatch);
                 orderDetailProductBatch.setOrderDetail(orderDetail);
             }
-            productBatchRepository.save(productBatch);
             orderDetailProductBatches.add(orderDetailProductBatch);
         }
         orderDetail.setOrderDetailProductBatches(orderDetailProductBatches);

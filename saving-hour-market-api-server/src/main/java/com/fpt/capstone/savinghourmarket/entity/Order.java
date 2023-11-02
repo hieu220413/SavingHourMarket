@@ -94,6 +94,13 @@ public class Order {
     )
     private TimeFrame timeFrame;
 
+    @ManyToOne()
+    @JoinColumn(
+            name = "pickup_point_id",
+            referencedColumnName = "id"
+    )
+    private PickupPoint pickupPoint;
+
     @ManyToMany
     @JoinTable(
             name = "discount_order",
