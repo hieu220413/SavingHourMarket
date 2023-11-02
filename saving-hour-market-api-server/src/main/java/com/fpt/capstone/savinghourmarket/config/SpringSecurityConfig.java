@@ -86,6 +86,8 @@ public class SpringSecurityConfig {
 
                             .requestMatchers("/api/pickupPoint/getAll").permitAll()
                             .requestMatchers("/api/pickupPoint/getWithSortAndSuggestion").permitAll()
+                            .requestMatchers("/api/pickupPoint/createProductConsolidationArea").hasRole("ADMIN")
+
 
                             .requestMatchers("/api/transaction/processPaymentResult").permitAll()
 //                            .requestMatchers("/api/staff/getInfoAfterGoogleLogged").hasAnyRole(allStaffAndAdmin)
@@ -108,6 +110,8 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/supermarket/create").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/supermarket/changeStatus").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/supermarket/updateInfo").hasAnyRole(selectionStaffAndAdmin)
+                            .requestMatchers("/api/supermarket/createSupermarketAddressForSupermarket").hasRole("ADMIN")
+
 
                             .requestMatchers("/api/order/getOrdersForStaff").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/order/getOrderGroupForStaff").hasAnyRole(allStaffAndAdmin)

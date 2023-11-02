@@ -229,6 +229,92 @@ public class SupermarketServiceImpl implements SupermarketService {
         return supermarket.get();
     }
 
+
+    @Override
+    public Supermarket createSupermarketAddress(List<SupermarketAddressCreateBody> supermarketAddressCreateBody, UUID supermarketId) {
+
+        HashMap<String,String> errorFields = new HashMap<>();
+        HashMap<UUID, PickupPoint> pickupPointFromAddressHashMap = new HashMap<>();
+        Optional<Supermarket> supermarket = supermarketRepository.findById(supermarketId);
+
+        if(!supermarket.isPresent()){
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.SUPERMARKET_NOT_FOUND.getCode()), AdditionalResponseCode.SUPERMARKET_NOT_FOUND.toString());
+        }
+
+        // validate all address in request
+        HashMap<String, SupermarketAddressCreateBody> addressHashMap = new HashMap<>();
+        supermarketAddressCreateBody.stream().forEach(s -> {
+            if(!errorFields.containsKey("error")) {
+                if(!addressHashMap.containsKey(s.getAddress().toUpperCase())){
+                    addressHashMap.put(s.getAddress().toUpperCase(), s);
+                } else {
+                    errorFields.put("error", "Duplicate address found in request (" + s.getAddress() + ")");
+                }
+            }
+        });
+
+//        HashSet<String> addressHashSet = new HashSet<>();
+//        addressHashSet.addAll(addressHashMap.values());
+
+        if(!errorFields.containsKey("error")){
+            List<String> duplicatedAddressTrackList = new ArrayList<>();
+            supermarketAddressCreateBody.stream().forEach(s -> {
+                if(supermarket.get().getSupermarketAddressList().stream()
+                        .filter(supermarketAddress -> supermarketAddress.getAddress().toUpperCase().equals(s.getAddress().toUpperCase())).toList().size() > 0){
+                    duplicatedAddressTrackList.add(s.getAddress());
+                }
+            });
+            if(duplicatedAddressTrackList.size() > 0) {
+                errorFields.put("error", duplicatedAddressTrackList.stream().map(s -> '"'+ s.toString() + '"').collect(Collectors.joining(", ")) + " is/are found in supermarket");
+            }
+        }
+
+        if(!errorFields.containsKey("error")){
+            List<PickupPoint> pickupPointFromAddressList = pickupPointRepository.getAllByIdList(addressHashMap.values().stream().map(s -> s.getPickupPointId()).collect(Collectors.toList()));
+            // map pickPoint from address list to hashmap
+            for (PickupPoint pickupPoint : pickupPointFromAddressList){
+                pickupPointFromAddressHashMap.put(pickupPoint.getId(), pickupPoint);
+            }
+            // hashmap to track unfound pickup point
+            HashMap<UUID, UUID> pickupPointNotFoundHashMap = new HashMap<>();
+            for(SupermarketAddressCreateBody s : addressHashMap.values()) {
+                // check pickup point
+                if(!pickupPointFromAddressHashMap.containsKey(s.getPickupPointId())){
+                    pickupPointNotFoundHashMap.put(s.getPickupPointId(),s.getPickupPointId());
+//                    if(errorFields.containsKey("addressError")){
+//                        String errorField = errorFields.get("addressError");
+//                        errorField += errorFields.get("addressError") + "," + supermarketAddressCreateBody.getPickupPointId();
+//                        errorFields.put("addressError", errorField);
+//                    } else {
+//                        errorFields.put("addressError", "No pickup point with id " + supermarketAddressCreateBody.getPickupPointId());
+//                    }
+                }
+            }
+            if(pickupPointNotFoundHashMap.size() > 0) {
+                errorFields.put("error", "No pickup point with id " + pickupPointNotFoundHashMap.values().stream().collect(Collectors.toList()).stream()
+                        .map(Object::toString).collect(Collectors.joining(",")));
+            }
+        }
+
+        if(!errorFields.containsKey("error")) {
+            for(SupermarketAddressCreateBody s : addressHashMap.values()) {
+                if((s.getAddress().length() > 255 || s.getAddress().isBlank()) && !errorFields.containsKey("error")){
+                    errorFields.put("error", "Address maximum character is 255 and can not be empty");
+                }
+            }
+        }
+
+        if(errorFields.size() > 0){
+            throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
+        }
+
+        List<SupermarketAddress> supermarketAddressList = supermarketAddressRepository.saveAll(addressHashMap.values().stream().map(s -> new SupermarketAddress(s.getAddress(), supermarket.get(), pickupPointFromAddressHashMap.get(s.getPickupPointId()))).collect(Collectors.toList()));
+
+        supermarket.get().getSupermarketAddressList().addAll(supermarketAddressList);
+
+        return supermarket.get();
+    }
+
     @Override
     @Transactional
     public Supermarket changeStatus(UUID supermarketId, EnableDisableStatus status) {
@@ -260,4 +346,6 @@ public class SupermarketServiceImpl implements SupermarketService {
         List<Supermarket> supermarketList = result.stream().toList();
         return new SupermarketListResponseBody(supermarketList, totalPage, totalSupermarket);
     }
+
+
 }

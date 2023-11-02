@@ -13,7 +13,6 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Validated
 public class SupermarketAddressCreateBody {
     @NotNull
     private String address;
