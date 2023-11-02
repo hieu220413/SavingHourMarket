@@ -2,15 +2,15 @@ package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
 import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
+import com.fpt.capstone.savinghourmarket.entity.PickupPoint;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.Supermarket;
 import com.fpt.capstone.savinghourmarket.entity.SupermarketAddress;
 import com.fpt.capstone.savinghourmarket.exception.DisableSupermarketForbidden;
 import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
-import com.fpt.capstone.savinghourmarket.model.SupermarketCreateRequestBody;
-import com.fpt.capstone.savinghourmarket.model.SupermarketListResponseBody;
-import com.fpt.capstone.savinghourmarket.model.SupermarketUpdateRequestBody;
+import com.fpt.capstone.savinghourmarket.model.*;
+import com.fpt.capstone.savinghourmarket.repository.PickupPointRepository;
 import com.fpt.capstone.savinghourmarket.repository.ProductRepository;
 import com.fpt.capstone.savinghourmarket.repository.SupermarketAddressRepository;
 import com.fpt.capstone.savinghourmarket.repository.SupermarketRepository;
@@ -38,12 +38,15 @@ public class SupermarketServiceImpl implements SupermarketService {
 
     private final SupermarketAddressRepository supermarketAddressRepository;
 
+    private final PickupPointRepository pickupPointRepository;
+
     @Override
     @Transactional
     public Supermarket create(SupermarketCreateRequestBody supermarketCreateRequestBody) {
         Pattern pattern;
         Matcher matcher;
-        HashMap errorFields = new HashMap<>();
+        HashMap<String,String> errorFields = new HashMap<>();
+        HashMap<UUID, PickupPoint> pickupPointFromAddressHashMap = new HashMap<>();
 
         //name validate
         if(supermarketCreateRequestBody.getName().trim().length() < 2 || supermarketCreateRequestBody.getName().trim().length() > 50){
@@ -62,18 +65,52 @@ public class SupermarketServiceImpl implements SupermarketService {
             errorFields.put("phoneError", "Invalid phone number format");
         }
 
-        // validate all address
-        HashMap<String,String> addressHashMap = new HashMap<>();
+        // validate all address in request
+        HashMap<String, SupermarketAddressCreateBody> addressHashMap = new HashMap<>();
         supermarketCreateRequestBody.getSupermarketAddressList().stream().forEach(s -> {
-            if(!addressHashMap.containsKey(s.toUpperCase())){
-                addressHashMap.put(s.toUpperCase(), s);
+            if(!errorFields.containsKey("addressError")) {
+                if(!addressHashMap.containsKey(s.getAddress().toUpperCase())){
+                    addressHashMap.put(s.getAddress().toUpperCase(), s);
+                } else {
+                    errorFields.put("addressError", "Duplicate address found in request (" + s.getAddress() + ")");
+                }
             }
         });
-        HashSet<String> addressHashSet = new HashSet<>();
-        addressHashSet.addAll(addressHashMap.values());
-        for(String address : addressHashSet) {
-            if((address.length() > 255 || address.isBlank()) && !errorFields.containsKey("addressError")){
-                errorFields.put("addressError", "Maximum character is 255 and can not be empty");
+//        HashSet<String> addressHashSet = new HashSet<>();
+//        addressHashSet.addAll(addressHashMap.values());
+
+        if(!errorFields.containsKey("addressError")){
+            List<PickupPoint> pickupPointFromAddressList = pickupPointRepository.getAllByIdList(addressHashMap.values().stream().map(supermarketAddressCreateBody -> supermarketAddressCreateBody.getPickupPointId()).collect(Collectors.toList()));
+            // map pickPoint from address list to hashmap
+            for (PickupPoint pickupPoint : pickupPointFromAddressList){
+                pickupPointFromAddressHashMap.put(pickupPoint.getId(), pickupPoint);
+            }
+            // hashmap to track unfound pickup point
+            HashMap<UUID, UUID> pickupPointNotFoundHashMap = new HashMap<>();
+            for(SupermarketAddressCreateBody supermarketAddressCreateBody : addressHashMap.values()) {
+                // check pickup point
+                if(!pickupPointFromAddressHashMap.containsKey(supermarketAddressCreateBody.getPickupPointId())){
+                    pickupPointNotFoundHashMap.put(supermarketAddressCreateBody.getPickupPointId(),supermarketAddressCreateBody.getPickupPointId());
+//                    if(errorFields.containsKey("addressError")){
+//                        String errorField = errorFields.get("addressError");
+//                        errorField += errorFields.get("addressError") + "," + supermarketAddressCreateBody.getPickupPointId();
+//                        errorFields.put("addressError", errorField);
+//                    } else {
+//                        errorFields.put("addressError", "No pickup point with id " + supermarketAddressCreateBody.getPickupPointId());
+//                    }
+                }
+            }
+            if(pickupPointNotFoundHashMap.size() > 0) {
+                errorFields.put("addressError", "No pickup point with id " + pickupPointNotFoundHashMap.values().stream().collect(Collectors.toList()).stream()
+                        .map(Object::toString).collect(Collectors.joining(",")));
+            }
+        }
+
+        if(!errorFields.containsKey("addressError")) {
+            for(SupermarketAddressCreateBody supermarketAddressCreateBody : addressHashMap.values()) {
+                if((supermarketAddressCreateBody.getAddress().length() > 255 || supermarketAddressCreateBody.getAddress().isBlank()) && !errorFields.containsKey("addressError")){
+                    errorFields.put("addressError", "Maximum character is 255 and can not be empty");
+                }
             }
         }
 
@@ -85,7 +122,7 @@ public class SupermarketServiceImpl implements SupermarketService {
 
         Supermarket persistedSupermarket = supermarketRepository.save(supermarket);
 
-        List<SupermarketAddress> supermarketAddressList = supermarketAddressRepository.saveAll(addressHashSet.stream().map(s -> new SupermarketAddress(s, persistedSupermarket)).collect(Collectors.toList()));
+        List<SupermarketAddress> supermarketAddressList = supermarketAddressRepository.saveAll(addressHashMap.values().stream().map(s -> new SupermarketAddress(s.getAddress(), persistedSupermarket, pickupPointFromAddressHashMap.get(s.getPickupPointId()))).collect(Collectors.toList()));
 
         persistedSupermarket.setSupermarketAddressList(supermarketAddressList);
 
@@ -97,7 +134,8 @@ public class SupermarketServiceImpl implements SupermarketService {
     public Supermarket update(SupermarketUpdateRequestBody supermarketUpdateRequestBody, UUID supermarketId) {
         Pattern pattern;
         Matcher matcher;
-        HashMap errorFields = new HashMap<>();
+        HashMap<String,String> errorFields = new HashMap<>();
+        HashMap<UUID, PickupPoint> pickupPointFromAddressHashMap = new HashMap<>();
         Optional<Supermarket> supermarket = supermarketRepository.findById(supermarketId);
 
         if(!supermarket.isPresent()){
@@ -119,9 +157,6 @@ public class SupermarketServiceImpl implements SupermarketService {
             }
         }
 
-
-        //duplicate name check
-
         //phone format validate
         if(supermarketUpdateRequestBody.getPhone() != null && !supermarketUpdateRequestBody.getPhone().isBlank()){
             pattern = Pattern.compile("^(0|84)(2(0[3-9]|1[0-6|8|9]|2[0-2|5-9]|3[2-9]|4[0-9]|5[1|2|4-9]|6[0-3|9]|7[0-7]|8[0-9]|9[0-4|6|7|9])|3[2-9]|5[5|6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])([0-9]{7})$");
@@ -135,25 +170,52 @@ public class SupermarketServiceImpl implements SupermarketService {
 
         // validate all address
         if(supermarketUpdateRequestBody.getSupermarketAddressList() != null && !supermarketUpdateRequestBody.getSupermarketAddressList().isEmpty()){
-            HashMap<String,String> addressHashMap = new HashMap<>();
+            HashMap<String, SupermarketAddressUpdateBody> addressHashMap = new HashMap<>();
             supermarketUpdateRequestBody.getSupermarketAddressList().stream().forEach(s -> {
-                if(!addressHashMap.containsKey(s.toUpperCase())){
-                    addressHashMap.put(s.toUpperCase(), s);
+                if(!errorFields.containsKey("addressError")) {
+                    if(!addressHashMap.containsKey(s.getAddress().toUpperCase())){
+                        addressHashMap.put(s.getAddress().toUpperCase(), s);
+                    } else {
+                        errorFields.put("addressError", "Duplicate address found (" + s.getAddress() + ")");
+                    }
                 }
             });
-            HashSet<String> addressHashSet = new HashSet<>();
-            addressHashSet.addAll(addressHashMap.values());
-            for(String address : addressHashSet) {
-                if((address.length() > 255 || address.isBlank()) && !errorFields.containsKey("addressError")){
-                    errorFields.put("addressError", "Maximum character is 255 and can not be empty");
+
+            if(!errorFields.containsKey("addressError")){
+                List<PickupPoint> pickupPointFromAddressList = pickupPointRepository.getAllByIdList(addressHashMap.values().stream().map(supermarketUpdateRequestBody1 -> supermarketUpdateRequestBody1.getPickupPointId()).collect(Collectors.toList()));
+                // map pickPoint from address list to hashmap
+                for (PickupPoint pickupPoint : pickupPointFromAddressList){
+                    pickupPointFromAddressHashMap.put(pickupPoint.getId(), pickupPoint);
+                }
+                for(SupermarketAddressUpdateBody supermarketAddressUpdateBody : addressHashMap.values()) {
+                    // check pickup point
+                    if(!pickupPointFromAddressHashMap.containsKey(supermarketAddressUpdateBody.getPickupPointId())){
+                        if(errorFields.containsKey("addressError")){
+                            String errorField = errorFields.get("addressError");
+                            errorField += errorFields.get("addressError") + "," + supermarketAddressUpdateBody.getPickupPointId();
+                            errorFields.put("addressError", errorField);
+                        } else {
+                            errorFields.put("addressError", "No pickup point with id " + supermarketAddressUpdateBody.getPickupPointId());
+                        }
+                    }
                 }
             }
+
+            if(!errorFields.containsKey("addressError")) {
+                for(SupermarketAddressUpdateBody supermarketAddressUpdateBody : addressHashMap.values()) {
+                    if((supermarketAddressUpdateBody.getAddress().length() > 255 || supermarketAddressUpdateBody.getAddress().isBlank()) && !errorFields.containsKey("addressError")){
+                        errorFields.put("addressError", "Maximum character is 255 and can not be empty");
+                    }
+                }
+            }
+
             if(!errorFields.containsKey("addressError")){
+
                 // delete all old address
                 supermarketAddressRepository.deleteAll(supermarket.get().getSupermarketAddressList());
                 supermarket.get().setSupermarketAddressList(null);
                 // add all new address
-                List<SupermarketAddress> supermarketAddressList = supermarketAddressRepository.saveAll(addressHashSet.stream().map(s -> new SupermarketAddress(s, supermarket.get())).collect(Collectors.toList()));
+                List<SupermarketAddress> supermarketAddressList = supermarketAddressRepository.saveAll(addressHashMap.values().stream().map(s -> new SupermarketAddress(s.getAddress(), supermarket.get(), pickupPointFromAddressHashMap.get(s.getPickupPointId()))).collect(Collectors.toList()));
                 supermarket.get().setSupermarketAddressList(supermarketAddressList);
             }
         }

@@ -30,7 +30,7 @@ public class SupermarketAddress {
             name = "supermarket_id",
             referencedColumnName = "id"
     )
-//    @JsonIgnore
+    @JsonIgnore
     private Supermarket supermarket;
 
     @ManyToOne
@@ -40,8 +40,9 @@ public class SupermarketAddress {
     )
     private PickupPoint pickupPoint;
 
-    public SupermarketAddress(String address, Supermarket supermarket) {
+    public SupermarketAddress(String address, Supermarket supermarket, PickupPoint pickupPoint) {
         this.address = address;
+        this.pickupPoint = pickupPoint;
         this.supermarket = supermarket;
     }
 }

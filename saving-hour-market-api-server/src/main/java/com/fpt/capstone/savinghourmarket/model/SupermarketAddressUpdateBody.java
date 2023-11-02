@@ -1,21 +1,18 @@
 package com.fpt.capstone.savinghourmarket.model;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class SupermarketUpdateRequestBody {
-
-    private String name;
-
-    private List<SupermarketAddressUpdateBody> supermarketAddressList;
-
-    private String phone;
+public class SupermarketAddressUpdateBody {
+    private String address;
+    private UUID pickupPointId;
 }

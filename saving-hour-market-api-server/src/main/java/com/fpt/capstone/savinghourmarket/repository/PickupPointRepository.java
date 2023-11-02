@@ -15,4 +15,7 @@ public interface PickupPointRepository extends JpaRepository<PickupPoint, UUID> 
     @Query("SELECT p FROM PickupPoint p WHERE p.status = 1 " +
             "ORDER BY " + HAVERSINE_FORMULA)
     List<PickupPoint> getAllSortByDistance(Double latitude, Double longitude);
+
+    @Query("SELECT p FROM PickupPoint  p WHERE p.id IN :pickupPointIdList ")
+    List<PickupPoint> getAllByIdList(List<UUID> pickupPointIdList);
 }

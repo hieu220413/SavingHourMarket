@@ -45,7 +45,7 @@ public class Supermarket {
             mappedBy = "supermarket",
             cascade = CascadeType.ALL
     )
-    @JsonIgnore
+//    @JsonIgnore
     private List<SupermarketAddress> supermarketAddressList;
 
 
