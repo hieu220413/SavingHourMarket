@@ -23,6 +23,8 @@ public interface OrderGroupRepository extends JpaRepository<OrderGroup, UUID> {
             "WHERE " +
             "((:timeFrameId IS NULL) OR (og.timeFrame.id = :timeFrameId)) " +
             "AND " +
+            "(og.orderList IS NOT EMPTY) " +
+            "AND " +
             "((:pickupPointId IS NULL) OR (og.pickupPoint.id = :pickupPointId)) " +
             "AND " +
             "((:delivererId IS NULL) OR (og.deliverer.id = :delivererId)) " +

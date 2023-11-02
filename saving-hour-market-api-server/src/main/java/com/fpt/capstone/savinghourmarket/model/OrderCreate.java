@@ -40,6 +40,7 @@ public class OrderCreate {
     @NotNull
     private String receiverName;
 
+    @NotNull
     private DeliveryMethod deliveryMethod;
 
     @NotNull
@@ -48,6 +49,7 @@ public class OrderCreate {
     @NotNull
     private UUID timeFrameId;
 
+    @NotNull
     private PaymentStatus paymentStatus;
 
     @NotNull
