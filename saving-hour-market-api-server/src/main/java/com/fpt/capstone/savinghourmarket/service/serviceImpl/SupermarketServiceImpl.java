@@ -2,18 +2,13 @@ package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
 import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
-import com.fpt.capstone.savinghourmarket.entity.PickupPoint;
-import com.fpt.capstone.savinghourmarket.entity.Product;
-import com.fpt.capstone.savinghourmarket.entity.Supermarket;
-import com.fpt.capstone.savinghourmarket.entity.SupermarketAddress;
+import com.fpt.capstone.savinghourmarket.entity.*;
+import com.fpt.capstone.savinghourmarket.exception.DeleteSuperMarketAddressForbiddenException;
 import com.fpt.capstone.savinghourmarket.exception.DisableSupermarketForbidden;
 import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.*;
-import com.fpt.capstone.savinghourmarket.repository.PickupPointRepository;
-import com.fpt.capstone.savinghourmarket.repository.ProductRepository;
-import com.fpt.capstone.savinghourmarket.repository.SupermarketAddressRepository;
-import com.fpt.capstone.savinghourmarket.repository.SupermarketRepository;
+import com.fpt.capstone.savinghourmarket.repository.*;
 import com.fpt.capstone.savinghourmarket.service.SupermarketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -35,6 +30,8 @@ public class SupermarketServiceImpl implements SupermarketService {
     private final SupermarketRepository supermarketRepository;
 
     private final ProductRepository productRepository;
+
+    private final ProductBatchRepository productBatchRepository;
 
     private final SupermarketAddressRepository supermarketAddressRepository;
 
@@ -313,6 +310,76 @@ public class SupermarketServiceImpl implements SupermarketService {
         supermarket.get().getSupermarketAddressList().addAll(supermarketAddressList);
 
         return supermarket.get();
+    }
+
+    @Override
+    @Transactional
+    public Supermarket updateSupermarketAddress(SupermarketAddressUpdateBody supermarketAddressUpdateBody, UUID supermarketAddressId) {
+        HashMap<String,String> errorFields = new HashMap<>();
+        Optional<SupermarketAddress> supermarketAddress = supermarketAddressRepository.findById(supermarketAddressId);
+
+        if(!supermarketAddress.isPresent()) {
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.SUPERMARKET_ADDRESS_NOT_FOUND.getCode()), AdditionalResponseCode.SUPERMARKET_ADDRESS_NOT_FOUND.toString());
+        }
+
+        Supermarket supermarket = supermarketRepository.findById(supermarketAddress.get().getSupermarket().getId()).get();
+
+        if(supermarketAddressUpdateBody.getAddress() != null && !supermarketAddressUpdateBody.getAddress().isBlank()) {
+            if(supermarket.getSupermarketAddressList().stream()
+                    .filter(s -> !s.getId().equals(supermarketAddressId) && s.getAddress().toUpperCase().equals(supermarketAddressUpdateBody.getAddress().toUpperCase())).toList().size() > 0){
+                errorFields.put("addressError", "Address is found in supermarket");
+            }
+            if((supermarketAddressUpdateBody.getAddress().length() > 255 || supermarketAddressUpdateBody.getAddress().isBlank())){
+                errorFields.put("addressError", "Maximum character is 255 and can not be empty");
+            }
+            if(!errorFields.containsKey("addressError")){
+                supermarketAddress.get().setAddress(supermarketAddressUpdateBody.getAddress());
+            }
+        }
+
+        if(supermarketAddressUpdateBody.getPickupPointId() != null) {
+            Optional<PickupPoint> pickupPointTrack = pickupPointRepository.findById(supermarketAddressUpdateBody.getPickupPointId());
+            if(!pickupPointTrack.isPresent()){
+                errorFields.put("pickupPointError", "Pick up point not found ");
+            } else {
+                supermarketAddress.get().setPickupPoint(pickupPointTrack.get());
+            }
+        }
+
+        if(errorFields.size() > 0){
+            throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
+        }
+
+        for (SupermarketAddress s : supermarket.getSupermarketAddressList()) {
+            if(s.getId().equals(supermarketAddress.get().getId())){
+                s.setAddress(supermarketAddress.get().getAddress());
+                s.setPickupPoint(supermarketAddress.get().getPickupPoint());
+            }
+        }
+
+        return supermarket;
+    }
+
+    @Override
+    @Transactional
+    public Supermarket deleteSupermarketAddress(UUID supermarketAddressId) {
+        Optional<SupermarketAddress> supermarketAddress = supermarketAddressRepository.findById(supermarketAddressId);
+
+        if(!supermarketAddress.isPresent()) {
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.SUPERMARKET_ADDRESS_NOT_FOUND.getCode()), AdditionalResponseCode.SUPERMARKET_ADDRESS_NOT_FOUND.toString());
+        }
+
+        List<ProductBatch> existedProductBatchList = productBatchRepository.getProductBatchBySupermarketAddress(supermarketAddressId, PageRequest.of(0,1));
+
+        if(existedProductBatchList.size() > 0){
+            throw new DeleteSuperMarketAddressForbiddenException(HttpStatus.valueOf(AdditionalResponseCode.SUPERMARKET_ADDRESS_IN_PRODUCT_BATCH.getCode()), AdditionalResponseCode.SUPERMARKET_ADDRESS_IN_PRODUCT_BATCH.toString());
+        }
+
+        Supermarket supermarket = supermarketRepository.findById(supermarketAddress.get().getSupermarket().getId()).get();
+        supermarket.getSupermarketAddressList().removeIf(s -> s.getId().equals(supermarketAddressId));
+        supermarketAddressRepository.delete(supermarketAddress.get());
+
+        return supermarket;
     }
 
     @Override

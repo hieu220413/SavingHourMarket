@@ -2,10 +2,7 @@ package com.fpt.capstone.savinghourmarket.controller;
 
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.entity.Supermarket;
-import com.fpt.capstone.savinghourmarket.model.SupermarketAddressCreateBody;
-import com.fpt.capstone.savinghourmarket.model.SupermarketCreateRequestBody;
-import com.fpt.capstone.savinghourmarket.model.SupermarketListResponseBody;
-import com.fpt.capstone.savinghourmarket.model.SupermarketUpdateRequestBody;
+import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.service.SupermarketService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
@@ -56,6 +53,24 @@ public class SupermarketController {
         Supermarket supermarket = supermarketService.createSupermarketAddress(supermarketAddressCreateBodyList, supermarketId);
         return ResponseEntity.status(HttpStatus.OK).body(supermarket);
     }
+
+    @RequestMapping(value = "updateSupermarketAddressForSupermarket", method = RequestMethod.PUT)
+    public ResponseEntity<Supermarket> updateSupermarketAddressForSupermarket(@RequestBody @Valid SupermarketAddressUpdateBody supermarketAddressUpdateBody, @RequestParam UUID supermarketAddressId, @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        Supermarket supermarket = supermarketService.updateSupermarketAddress(supermarketAddressUpdateBody, supermarketAddressId);
+        return ResponseEntity.status(HttpStatus.OK).body(supermarket);
+    }
+
+
+    @RequestMapping(value = "deleteSupermarketAddressForSupermarket", method = RequestMethod.DELETE)
+    public ResponseEntity<Supermarket> deleteSupermarketAddressForSupermarket(@RequestParam UUID supermarketAddressId, @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        Supermarket supermarket = supermarketService.deleteSupermarketAddress(supermarketAddressId);
+        return ResponseEntity.status(HttpStatus.OK).body(supermarket);
+    }
+
 
     @RequestMapping(value = "/changeStatus", method = RequestMethod.PUT)
     public ResponseEntity<Supermarket> changeStatus(@RequestParam EnableDisableStatus status, @RequestParam UUID supermarketId, @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken) throws FirebaseAuthException {
