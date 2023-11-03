@@ -5,5 +5,6 @@
   "deleteUnpaidOrderTime": 1000,
   "initialShippingFee": 10000,
   "minKmDistanceForExtraShippingFee": 2,
-  "extraShippingFeePerKilometer": 1
+  "extraShippingFeePerKilometer": 1,
+  "timeAllowedForOrderCancellation": 3
 }

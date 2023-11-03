@@ -121,6 +121,7 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/supermarket/deleteSupermarketAddressForSupermarket").hasAnyRole(selectionStaffAndAdmin)
 
                             .requestMatchers("/api/order/staff/**").hasAnyRole(allStaffAndAdmin)
+                            .requestMatchers("/staff/deliveryManager/**").hasRole(StaffRole.STAFF_DLV_1.toString())
                             .requestMatchers("/api/order/sendNotification").permitAll()
 
                             .requestMatchers("/api/feedback/updateStatus").hasAnyRole(allStaffAndAdmin)

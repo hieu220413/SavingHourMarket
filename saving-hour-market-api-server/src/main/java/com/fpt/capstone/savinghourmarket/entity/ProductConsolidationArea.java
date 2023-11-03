@@ -37,6 +37,10 @@ public class ProductConsolidationArea {
             mappedBy = "productConsolidationAreaList",
             fetch = FetchType.LAZY
     )
-
     private List<PickupPoint> pickupPointList;
+
+    @OneToMany(
+           mappedBy = "productConsolidationArea"
+    )
+    private List<Order> orders;
 }

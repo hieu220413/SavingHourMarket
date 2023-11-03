@@ -5,22 +5,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Getter
-public class ProductBatchCreate {
+public class ProductBatchAddress {
 
-    private Integer price;
+    private Integer quantity;
 
-    private Integer priceOriginal;
-
-    private LocalDate expiredDate;
-
-    List<ProductBatchAddress> productBatchAddresses;
-
+    private UUID supermarketAddressId;
 }

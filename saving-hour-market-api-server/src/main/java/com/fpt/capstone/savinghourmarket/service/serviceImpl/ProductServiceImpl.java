@@ -672,10 +672,6 @@ public class ProductServiceImpl implements ProductService {
                 errorFields.put("Lỗi nhập giá cho lô HSD " + productBatch.getExpiredDate(), "Giá bán không thế âm!");
             }
 
-            if (productBatch.getQuantity() <= 0) {
-                errorFields.put("Lỗi nhập số lượng cho lô HSD " + productBatch.getExpiredDate(), "Số lượng sản phẩm không thể âm hoặc bằng 0!");
-            }
-
             Integer althd = productCreate.getProductSubCategory().getId() != null ?
                     productSubCategoryRepository.findById(productCreate.getProductSubCategory().getId())
                             .orElseThrow(() -> new ResourceNotFoundException("Product Sub Category không tìm thấy với id: " + productCreate.getProductSubCategory().getId())).getAllowableDisplayThreshold() : productCreate.getProductSubCategory().getAllowableDisplayThreshold();
@@ -693,20 +689,20 @@ public class ProductServiceImpl implements ProductService {
 
         List<ProductBatch> productBatchList = new ArrayList<>();
         for (ProductBatchCreate productBatchCreate : productCreate.getProductBatchList()) {
-            Optional<SupermarketAddress> supermarketAddress = supermarketAddressRepository.findById(productBatchCreate.getSupermarketAddressId());
-
-            if (supermarketAddress.isPresent() && supermarket.isPresent() && supermarketAddress.get().getSupermarket().getId().equals(supermarket.get().getId())) {
-                ProductBatch productBatch = new ProductBatch();
-                productBatch.setPrice(productBatchCreate.getPrice());
-                productBatch.setPriceOriginal(productBatchCreate.getPriceOriginal());
-                productBatch.setExpiredDate(productBatchCreate.getExpiredDate());
-                productBatch.setQuantity(productBatchCreate.getQuantity());
-                productBatch.setSupermarketAddress(supermarketAddress.get());
-                productBatchList.add(productBatch);
-            } else {
-                throw new ResourceNotFoundException("Địa chỉ siêu thị cho lô HSD: " + productBatchCreate.getExpiredDate() + " không tìm thấy với id hoặc không có trong danh sách địa chỉ của siêu thị: " + supermarket.get().getName());
+            for (ProductBatchAddress productBatchAddress : productBatchCreate.getProductBatchAddresses()) {
+                Optional<SupermarketAddress> supermarketAddress = supermarketAddressRepository.findById(productBatchAddress.getSupermarketAddressId());
+                if (supermarketAddress.isPresent() && supermarket.isPresent() && supermarketAddress.get().getSupermarket().getId().equals(supermarket.get().getId())) {
+                    ProductBatch productBatch = new ProductBatch();
+                    productBatch.setPrice(productBatchCreate.getPrice());
+                    productBatch.setPriceOriginal(productBatchCreate.getPriceOriginal());
+                    productBatch.setExpiredDate(productBatchCreate.getExpiredDate());
+                    productBatch.setQuantity(productBatchAddress.getQuantity());
+                    productBatch.setSupermarketAddress(supermarketAddress.get());
+                    productBatchList.add(productBatch);
+                } else {
+                    throw new ResourceNotFoundException("Địa chỉ siêu thị cho lô HSD: " + productBatchCreate.getExpiredDate() + " không tìm thấy với id hoặc không có trong danh sách địa chỉ của siêu thị: " + supermarket.get().getName());
+                }
             }
-
         }
 
         ModelMapper modelMapper = new ModelMapper();

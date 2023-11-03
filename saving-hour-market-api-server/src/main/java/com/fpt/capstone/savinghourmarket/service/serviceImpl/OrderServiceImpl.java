@@ -36,8 +36,10 @@ import java.net.URI;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
@@ -56,42 +58,27 @@ public class OrderServiceImpl implements OrderService {
         this.redissonClient = redissonClient;
     }
 
-    @Autowired
-    private OrderRepository repository;
+    private final OrderRepository repository;
 
-    @Autowired
-    private OrderDetailRepository orderDetailRepository;
+    private final ProductRepository productRepository;
 
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductBatchRepository productBatchRepository;
 
-    @Autowired
-    private ProductBatchRepository productBatchRepository;
+    private final OrderGroupRepository orderGroupRepository;
 
-    @Autowired
-    private OrderGroupRepository orderGroupRepository;
+    private final OrderBatchRepository orderBatchRepository;
 
-    @Autowired
-    private OrderBatchRepository orderBatchRepository;
+    private final TimeFrameRepository timeFrameRepository;
 
-    @Autowired
-    private TimeFrameRepository timeFrameRepository;
+    private final PickupPointRepository pickupPointRepository;
 
-    @Autowired
-    private PickupPointRepository pickupPointRepository;
+    private final CustomerRepository customerRepository;
 
-    @Autowired
-    private CustomerRepository customerRepository;
+    private final StaffRepository staffRepository;
 
-    @Autowired
-    private CustomerService customerService;
+    private final DiscountRepository discountRepository;
 
-    @Autowired
-    private StaffRepository staffRepository;
-
-    @Autowired
-    private DiscountRepository discountRepository;
-
+    private final ProductConsolidationAreaRepository productConsolidationAreaRepository;
 //    private final ConfigurationRepository configurationRepository;
 
     @Value("${goong-api-key}")
@@ -137,15 +124,20 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public String confirmPackaging(UUID orderId, UUID staffId) throws NoSuchOrderException, IOException {
+
         Order order = repository.findById(orderId)
                 .orElseThrow(() -> new NoSuchOrderException("No order found with this id " + orderId));
         Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new NoSuchElementException("Không tìm thấy nhân viên với ID: " + staffId));
-        if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_ORD.toString())) {
-            order.setPackager(staff);
-            order.setStatus(OrderStatus.PACKAGING.ordinal());
-            FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
+        if (order.getCreatedTime().isAfter(LocalDateTime.now().plus(Utils.getAdminConfiguration().getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS))) {
+            if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_ORD.toString())) {
+                order.setPackager(staff);
+                order.setStatus(OrderStatus.PACKAGING.ordinal());
+                FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
+            } else {
+                return "Nhân viên này không phải là nhân Viên ĐÓNG GÓI!";
+            }
         } else {
-            return "Nhân viên này không phải là nhân Viên ĐÓNG GÓI!";
+            return "Đơn hàng này đã chưa quá thời gian khách hàng có thể huỷ nên không thể nhận đóng gói!";
         }
         return "Đơn hàng này đã được nhận đóng gói thành công!";
     }
@@ -157,9 +149,13 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new NoSuchOrderException("No order found with this id " + orderId));
         Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new NoSuchElementException("Không tìm thấy nhân viên với ID: " + staffId));
         if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_ORD.toString())) {
-            order.setPackager(staff);
-            order.setStatus(OrderStatus.PACKAGED.ordinal());
-            FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được đóng gói!", order.getCustomer().getId().toString());
+            if (order.getStatus().equals(OrderStatus.PACKAGING)) {
+                order.setPackager(staff);
+                order.setStatus(OrderStatus.PACKAGED.ordinal());
+                FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được đóng gói!", order.getCustomer().getId().toString());
+            } else {
+                return "Đơn hàng này chưa được nhận đóng gói (PACKAGING)!";
+            }
         } else {
             return "Nhân viên này không phải là nhân Viên ĐÓNG GÓI!";
         }
@@ -170,13 +166,17 @@ public class OrderServiceImpl implements OrderService {
     public String confirmSucceeded(UUID orderId, UUID staffId) throws IOException, NoSuchOrderException {
         Order order = repository.findById(orderId)
                 .orElseThrow(() -> new NoSuchOrderException("No order found with this id " + orderId));
-        Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new NoSuchElementException("Không tìm thấy nhân viên với ID: " + staffId));
-        if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_DLV_0.toString())) {
-            order.setPackager(staff);
-            order.setStatus(OrderStatus.SUCCESS.ordinal());
-            FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được giao thành công! Hãy đánh giá dịch vụ của chúng tôi để đóng góp xây dưng hệ thống tốt hơn!", order.getCustomer().getId().toString());
+        if (order.getDeliveryDate().equals(LocalDate.now())) {
+            Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new NoSuchElementException("Không tìm thấy nhân viên với ID: " + staffId));
+            if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_DLV_0.toString())) {
+                order.setPackager(staff);
+                order.setStatus(OrderStatus.SUCCESS.ordinal());
+                FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được giao thành công! Hãy đánh giá dịch vụ của chúng tôi để đóng góp xây dưng hệ thống tốt hơn!", order.getCustomer().getId().toString());
+            } else {
+                return "Nhân viên này không phải là nhân Viên GIAO HÀNG!";
+            }
         } else {
-            return "Nhân viên này không phải là nhân Viên GIAO HÀNG!";
+            return "Đơn hàng này chưa tới ngày giao!";
         }
         return "Đơn hàng này đã giao thành công!";
     }
@@ -186,14 +186,18 @@ public class OrderServiceImpl implements OrderService {
         Order order = repository.findById(orderId)
                 .orElseThrow(() -> new NoSuchOrderException("No order found with this id " + orderId));
         Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new NoSuchElementException("Không tìm thấy nhân viên với ID: " + staffId));
-        if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_DLV_0.toString())) {
-            order.setPackager(staff);
-            order.setStatus(OrderStatus.FAIL.ordinal());
-            FirebaseService.sendPushNotification("SHM", "Đơn hàng đã không thể giao! Bạn vui lòng liên hệ nhân viên để được hỗ trợ giao lại!", order.getCustomer().getId().toString());
+        if (order.getDeliveryDate().equals(LocalDate.now())) {
+            if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_DLV_0.toString())) {
+                order.setPackager(staff);
+                order.setStatus(OrderStatus.FAIL.ordinal());
+                FirebaseService.sendPushNotification("SHM", "Đơn hàng đã không thể giao! Bạn vui lòng liên hệ nhân viên để được hỗ trợ giao lại!", order.getCustomer().getId().toString());
+            } else {
+                return "Nhân viên này không phải là nhân Viên GIAO HÀNG!";
+            }
         } else {
-            return "Nhân viên này không phải là nhân Viên GIAO HÀNG!";
+            return "Đơn hàng này chưa tới ngày giao!";
         }
-        return "Đơn hàng này đã giao thành công!";
+        return "Đơn hàng giao thất bại!";
     }
 
     @Override
@@ -231,6 +235,21 @@ public class OrderServiceImpl implements OrderService {
             return "Staff with id" + staffId + "is not DELIVERER LEVEL 0";
         }
 
+        return "Staff with id" + staffId + "set successfully";
+    }
+
+    @Override
+    public String assignDeliverToOrder(UUID orderId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException, IOException {
+        Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new NoSuchElementException("No staff found with this id " + staffId));
+        Order order = repository.findById(orderId).orElseThrow(() -> new NoSuchElementException("No order found with this id " + orderId));
+        if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_DLV_0.toString())) {
+            if (order.getStatus() == OrderStatus.PACKAGED.ordinal()) {
+                order.setStatus(OrderStatus.DELIVERING.ordinal());
+                FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getId().toString());
+            } else {
+                return "Đơn hàng " + order.getId() + " chưa được đóng gói!";
+            }
+        }
         return "Staff with id" + staffId + "set successfully";
     }
 
@@ -353,7 +372,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public String cancelOrder(String jwtToken, UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException, FirebaseAuthException {
+    public String cancelOrder(String jwtToken, UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException, FirebaseAuthException, IOException {
         String email = Utils.getCustomerEmail(jwtToken, firebaseAuth);
         Customer customer = customerRepository
                 .findByEmail(email)
@@ -363,27 +382,31 @@ public class OrderServiceImpl implements OrderService {
         }
         Order order = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
-
-        if (order.getOrderGroup() != null) {
-            order.setOrderGroup(null);
-        }
-
-        if (order.getOrderBatch() != null) {
-            order.setOrderBatch(null);
-        }
-
-        if (order.getStatus() == OrderStatus.PROCESSING.ordinal()) {
-            order.setStatus(OrderStatus.CANCEL.ordinal());
-            List<OrderDetail> orderDetails = order.getOrderDetailList();
-            increaseProductQuantity(orderDetails);
-            List<Discount> discounts = order.getDiscountList();
-            if (discounts != null && discounts.size() > 0) {
-                increaseDiscountQuantity(order.getDiscountList());
+        if (order.getCreatedTime().isBefore(LocalDateTime.now().plus(Utils.getAdminConfiguration().getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS))) {
+            if (order.getOrderGroup() != null) {
+                order.setOrderGroup(null);
             }
+
+            if (order.getOrderBatch() != null) {
+                order.setOrderBatch(null);
+            }
+
+            if (order.getStatus() == OrderStatus.PROCESSING.ordinal()) {
+                order.setStatus(OrderStatus.CANCEL.ordinal());
+                List<OrderDetail> orderDetails = order.getOrderDetailList();
+                increaseProductQuantity(orderDetails);
+                List<Discount> discounts = order.getDiscountList();
+                if (discounts != null && discounts.size() > 0) {
+                    increaseDiscountQuantity(order.getDiscountList());
+                }
+            } else {
+                throw new OrderCancellationNotAllowedException("Order with id " + id + " is already in " + order.getStatus().toString() + " process");
+            }
+            repository.save(order);
         } else {
-            throw new OrderCancellationNotAllowedException("Order with id " + id + " is already in " + order.getStatus().toString() + " process");
+            return "Đơn hàng đã quá thời gian huỷ cho phép là " + Utils.getAdminConfiguration().getTimeAllowedForOrderCancellation() +" tiếng kể từ khi đặt hàng!";
         }
-        repository.save(order);
+
         return "Successfully canceled order " + id;
     }
 
@@ -541,6 +564,53 @@ public class OrderServiceImpl implements OrderService {
         shippingFeeDetailResponseBody.setShippingFee(shippingFee);
 
         return shippingFeeDetailResponseBody;
+    }
+
+    @Override
+    public Order editDeliverDate(UUID orderId, Date deliverDate) throws ResourceNotFoundException {
+        Order order = repository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id " + orderId));
+        order.setDeliveryDate(deliverDate);
+        order.setStatus(OrderStatus.PACKAGED.ordinal());
+        order.setDeliverer(null);
+        if (order.getDeliveryMethod() == DeliveryMethod.PICKUP_POINT.ordinal()) {
+            OrderGroup group = null;
+            Optional<OrderGroup> orderGroup = orderGroupRepository
+                    .findByTimeFrameIdAndPickupPointIdAndDeliverDate(
+                            order.getTimeFrame().getId(),
+                            order.getPickupPoint().getId(),
+                            order.getDeliveryDate().toLocalDate()
+                    );
+            if (orderGroup.isPresent()) {
+                group = orderGroup.get();
+            } else {
+                OrderGroup orderGroupNew = new OrderGroup();
+                orderGroupNew.setTimeFrame(timeFrameRepository.findById(order.getTimeFrame().getId())
+                        .orElseThrow(() -> new NoSuchElementException("No time-frame found with id " + order.getTimeFrame().getId())));
+                orderGroupNew.setPickupPoint(pickupPointRepository.findById(order.getPickupPoint().getId())
+                        .orElseThrow(() -> new NoSuchElementException("No pick-up point found with id " + order.getPickupPoint().getId())));
+                orderGroupNew.setDeliverDate(order.getDeliveryDate().toLocalDate());
+                group = orderGroupRepository.save(orderGroupNew);
+            }
+            order.setOrderGroup(group);
+        } else {
+            order.setOrderBatch(null);
+        }
+        return order;
+    }
+
+    @Override
+    public Order chooseConsolidationArea(UUID orderId, UUID consolidationAreaId) throws ResourceNotFoundException {
+        Order order = repository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id " + orderId));
+        ProductConsolidationArea productConsolidationArea = productConsolidationAreaRepository.findById(consolidationAreaId)
+                        .orElseThrow(() -> new ResourceNotFoundException("ConsolidationArea not found with id " + consolidationAreaId));
+        if(order.getPickupPoint().getProductConsolidationAreaList().stream().anyMatch(pca -> pca.equals(productConsolidationArea))){
+            order.setProductConsolidationArea(productConsolidationArea);
+        } else {
+           throw new ResourceNotFoundException("Điểm tập kết không tìm thấy trong danh sách các điểm tập kết của pickup point trong đơn hàng!");
+        }
+        return order;
     }
 
 
@@ -767,12 +837,11 @@ public class OrderServiceImpl implements OrderService {
             throw new OutOfProductQuantityException(product.getName() + " HSD: " + productBatches.get(0).getExpiredDate() + " chỉ còn " + totalQuantityOfProductBatches + " sản phẩm!");
         }
 
-
         //decrease quantity of product's batch then persist orderDetailProductBatches
         List<OrderDetailProductBatch> orderDetailProductBatches = new ArrayList<>();
         for (ProductBatch productBatch : productBatches) {
             OrderDetailProductBatch orderDetailProductBatch = new OrderDetailProductBatch();
-            // 10 3 3 4 || 10 11 12 13 || 10 3 11
+
             if (boughtQuantity > 0 && boughtQuantity > productBatch.getQuantity()) {
                 orderDetailProductBatch.setBoughtQuantity(productBatch.getQuantity());
                 boughtQuantity -= productBatch.getQuantity();

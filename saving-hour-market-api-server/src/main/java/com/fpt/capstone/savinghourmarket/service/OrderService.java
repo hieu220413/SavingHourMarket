@@ -50,7 +50,7 @@ public interface OrderService {
 
     Order createOrder(String jwtToken, OrderCreate orderCreate) throws Exception;
 
-    String cancelOrder(String jwtToken, UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException, FirebaseAuthException;
+    String cancelOrder(String jwtToken, UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException, FirebaseAuthException, IOException;
 
     List<Order> fetchOrdersForCustomer(String jwtToken,
                                        String totalPriceSortType,
@@ -68,7 +68,15 @@ public interface OrderService {
 
     String confirmPackaging(UUID orderId, UUID staffId) throws NoSuchOrderException, IOException;
 
+    String confirmPackaged(UUID orderId, UUID staffId) throws NoSuchOrderException, IOException;
+
+    String confirmSucceeded(UUID orderId, UUID staffId) throws IOException, NoSuchOrderException;
+
+    String confirmFail(UUID orderId, UUID staffId) throws IOException, NoSuchOrderException;
+
     String assignDeliverToOrderGroupOrBatch(UUID orderGroupId, UUID orderBatchId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException, IOException;
+
+    String assignDeliverToOrder(UUID orderId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException, IOException;
 
     String deleteOrder(String jwtToken, UUID id) throws FirebaseAuthException, ResourceNotFoundException, OrderDeletionNotAllowedException;
 
@@ -79,9 +87,7 @@ public interface OrderService {
 
     ShippingFeeDetailResponseBody getShippingFeeDetail(Double latitude, Double longitude) throws IOException, InterruptedException, ApiException;
 
-    String confirmPackaged(UUID orderId, UUID staffId) throws NoSuchOrderException, IOException;
+    Order editDeliverDate(UUID orderId, Date deliverDate) throws ResourceNotFoundException;
 
-    String confirmSucceeded(UUID orderId, UUID staffId) throws IOException, NoSuchOrderException;
-
-    String confirmFail(UUID orderId, UUID staffId) throws IOException, NoSuchOrderException;
+    Order chooseConsolidationArea(UUID orderId, UUID consolidationAreaId) throws ResourceNotFoundException;
 }

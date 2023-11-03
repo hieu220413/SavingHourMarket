@@ -133,6 +133,13 @@ public class Order {
     @JsonIgnore
     private OrderBatch orderBatch;
 
+    @ManyToOne()
+    @JoinColumn(
+            name = "product_consolidation_area_id",
+            referencedColumnName = "id"
+    )
+    private ProductConsolidationArea productConsolidationArea;
+
     @OneToMany(
             mappedBy = "order",
             cascade = CascadeType.ALL
