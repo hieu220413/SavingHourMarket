@@ -18,4 +18,12 @@ public interface PickupPointRepository extends JpaRepository<PickupPoint, UUID> 
 
     @Query("SELECT p FROM PickupPoint  p WHERE p.id IN :pickupPointIdList ")
     List<PickupPoint> getAllByIdList(List<UUID> pickupPointIdList);
+
+    @Query("SELECT p FROM PickupPoint p WHERE p.status = 1 ")
+    List<PickupPoint> findAllForCustomer();
+
+    @Query("SELECT p FROM PickupPoint  p " +
+            "WHERE " +
+            "((:status IS NULL) OR (p.status = :status))")
+    List<PickupPoint> findAllForAdmin(Integer status);
 }

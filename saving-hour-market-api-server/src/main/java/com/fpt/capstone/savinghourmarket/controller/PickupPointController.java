@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
+import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.entity.PickupPoint;
 import com.fpt.capstone.savinghourmarket.entity.ProductConsolidationArea;
 import com.fpt.capstone.savinghourmarket.model.PickupPointsSortWithSuggestionsResponseBody;
@@ -30,12 +31,19 @@ public class PickupPointController {
     private final FirebaseAuth firebaseAuth;
     private final PickupPointService pickupPointService;
 
-    private final ProductConsolidationAreaService productConsolidationAreaService;
-
 
     @RequestMapping(value = "/getAll", method = RequestMethod.GET)
     public ResponseEntity<List<PickupPoint>> getAll() {
         List<PickupPoint> pickupPoints = pickupPointService.getAll();
+        return ResponseEntity.status(HttpStatus.OK).body(pickupPoints);
+    }
+
+    @RequestMapping(value = "/getAllForAdmin", method = RequestMethod.GET)
+    public ResponseEntity<List<PickupPoint>> getAllForAdmin(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @RequestParam(required = false)EnableDisableStatus enableDisableStatus) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        List<PickupPoint> pickupPoints = pickupPointService.getAllForAdmin(enableDisableStatus);
         return ResponseEntity.status(HttpStatus.OK).body(pickupPoints);
     }
 
@@ -48,14 +56,11 @@ public class PickupPointController {
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
-    @RequestMapping(value = "/createProductConsolidationArea", method = RequestMethod.POST)
-    public ResponseEntity<ProductConsolidationArea> createProductConsolidationArea(
-            @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
-            @Valid @RequestBody ProductConsolidationAreaCreateBody productConsolidationAreaCreateBody
-            ) throws FirebaseAuthException {
-        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
-        Utils.validateIdToken(idToken, firebaseAuth);
-        ProductConsolidationArea productConsolidationArea = productConsolidationAreaService.create(productConsolidationAreaCreateBody);
-        return ResponseEntity.status(HttpStatus.OK).body(productConsolidationArea);
-    }
+//    @RequestMapping(value = "/create", method = RequestMethod.POST)
+
+//    @RequestMapping(value = "/update", method = RequestMethod.PUT)
+
+//    @RequestMapping(value = "/updateStatus", method = RequestMethod.PUT)
+
+
 }

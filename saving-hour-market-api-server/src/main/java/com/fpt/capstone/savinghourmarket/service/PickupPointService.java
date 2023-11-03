@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.service;
 
+import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.entity.PickupPoint;
 import com.fpt.capstone.savinghourmarket.model.PickupPointsSortWithSuggestionsResponseBody;
 import com.google.maps.errors.ApiException;
@@ -11,4 +12,6 @@ public interface PickupPointService {
     List<PickupPoint> getAll();
 
     PickupPointsSortWithSuggestionsResponseBody getWithSortAndSuggestion(Double latitude, Double longitude) throws IOException, InterruptedException, ApiException;
+
+    List<PickupPoint> getAllForAdmin(EnableDisableStatus enableDisableStatus);
 }

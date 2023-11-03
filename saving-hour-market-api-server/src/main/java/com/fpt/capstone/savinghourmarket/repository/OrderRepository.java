@@ -104,4 +104,10 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "WHERE pk.id = :staffId " +
             "AND o.status IN :statusList")
     List<Order> findStaffProcessingOrderById(UUID staffId, Pageable pageable, List<Integer> statusList);
+
+    @Query("SELECT o FROM Order o " +
+            "JOIN o.timeFrame tf " +
+            "WHERE tf.id = :timeFrameId " +
+            "AND o.status IN :statusList")
+    List<Order> findTimeFrameInProcessingOrderById(UUID timeFrameId, Pageable pageable, List<Integer> statusList);
 }

@@ -1,30 +1,21 @@
 package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
+import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.entity.PickupPoint;
 import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.repository.PickupPointRepository;
+import com.fpt.capstone.savinghourmarket.repository.ProductConsolidationAreaRepository;
 import com.fpt.capstone.savinghourmarket.service.PickupPointService;
-import com.google.maps.DistanceMatrixApi;
-import com.google.maps.DistanceMatrixApiRequest;
 import com.google.maps.GeoApiContext;
 import com.google.maps.errors.ApiException;
-import com.google.maps.model.DistanceMatrix;
-import com.google.maps.model.DistanceMatrixElement;
-import com.google.maps.model.DistanceMatrixRow;
-import com.google.maps.model.LatLng;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,6 +23,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PickupPointServiceImpl implements PickupPointService {
     private final PickupPointRepository pickupPointRepository;
+    private final ProductConsolidationAreaRepository productConsolidationAreaRepository;
     private final GeoApiContext geoApiContext;
     @Value("${goong-api-key}")
     private String goongApiKey;
@@ -39,7 +31,13 @@ public class PickupPointServiceImpl implements PickupPointService {
     private String goongDistanceMatrixUrl;
     @Override
     public List<PickupPoint> getAll() {
-        List<PickupPoint> pickupPoints = pickupPointRepository.findAll();
+        List<PickupPoint> pickupPoints = pickupPointRepository.findAllForCustomer();
+        return pickupPoints;
+    }
+
+    @Override
+    public List<PickupPoint> getAllForAdmin(EnableDisableStatus enableDisableStatus) {
+        List<PickupPoint> pickupPoints = pickupPointRepository.findAllForAdmin(enableDisableStatus == null ? null : enableDisableStatus.ordinal());
         return pickupPoints;
     }
 

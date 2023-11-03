@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -33,15 +34,16 @@ public class PickupPoint {
     @Column(columnDefinition = "decimal(22,20)")
     private Double latitude;
 
-    @ManyToOne(
+    @ManyToMany(
             fetch = FetchType.LAZY
     )
-    @JoinColumn(
-            name = "product_consolidation_area_id",
-            referencedColumnName = "id"
+    @JoinTable(
+            name = "pickup_point_product_consolidation_area",
+            joinColumns = @JoinColumn(name = "pickup_point_id"),
+            inverseJoinColumns = @JoinColumn(name = "product_consolidation_area_id")
     )
     @JsonIgnore
-    private ProductConsolidationArea productConsolidationArea;
+    private List<ProductConsolidationArea> productConsolidationAreaList;
 
 
     public PickupPoint(PickupPointSuggestionResponseBody pickupPointSuggestionResponseBody) {

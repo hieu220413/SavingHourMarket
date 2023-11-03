@@ -26,6 +26,12 @@ public class ProductConsolidationAreaServiceImpl implements ProductConsolidation
     private final ProductConsolidationAreaRepository productConsolidationAreaRepository;
 
     @Override
+    public List<ProductConsolidationArea> getAllProductConsolidationAreaForAdmin(EnableDisableStatus enableDisableStatus) {
+        List<ProductConsolidationArea> productConsolidationAreaList = productConsolidationAreaRepository.getAllWithPickupPoint(enableDisableStatus == null ? null : enableDisableStatus.ordinal());
+        return productConsolidationAreaList;
+    }
+
+    @Override
     @Transactional
     public ProductConsolidationArea create(ProductConsolidationAreaCreateBody productConsolidationAreaCreateBody) {
         Pattern pattern;
@@ -70,8 +76,13 @@ public class ProductConsolidationAreaServiceImpl implements ProductConsolidation
         productConsolidationArea.setLongitude(productConsolidationAreaCreateBody.getLongitude());
         productConsolidationArea.setStatus(EnableDisableStatus.ENABLE.ordinal());
         productConsolidationArea.setPickupPointList(pickupPointForAreaList);
+        for (PickupPoint pickupPoint : pickupPointForAreaList) {
+            pickupPoint.getProductConsolidationAreaList().add(productConsolidationArea);
+        }
 
 
         return productConsolidationAreaRepository.save(productConsolidationArea);
     }
+
+
 }

@@ -33,10 +33,10 @@ public class ProductConsolidationArea {
     @Column(columnDefinition = "decimal(22,20)")
     private Double latitude;
 
-    @OneToMany(
-            mappedBy = "productConsolidationArea",
+    @ManyToMany(
+            mappedBy = "productConsolidationAreaList",
             fetch = FetchType.LAZY
     )
-    @JsonIgnore
+
     private List<PickupPoint> pickupPointList;
 }

@@ -126,105 +126,105 @@ public class SupermarketServiceImpl implements SupermarketService {
         return persistedSupermarket;
     }
 
-    @Override
-    @Transactional
-    public Supermarket update(SupermarketUpdateRequestBody supermarketUpdateRequestBody, UUID supermarketId) {
-        Pattern pattern;
-        Matcher matcher;
-        HashMap<String,String> errorFields = new HashMap<>();
-        HashMap<UUID, PickupPoint> pickupPointFromAddressHashMap = new HashMap<>();
-        Optional<Supermarket> supermarket = supermarketRepository.findById(supermarketId);
-
-        if(!supermarket.isPresent()){
-            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.SUPERMARKET_NOT_FOUND.getCode()), AdditionalResponseCode.SUPERMARKET_NOT_FOUND.toString());
-        }
-
-
-        //name validate
-        if(supermarketUpdateRequestBody.getName() != null && !supermarketUpdateRequestBody.getName().isBlank()){
-            if(supermarketUpdateRequestBody.getName().trim().length() < 2 || supermarketUpdateRequestBody.getName().trim().length() > 50){
-                errorFields.put("nameError", "Minimum character is 2 and maximum characters is 50");
-            }
-            Optional<Supermarket> duplicateSupermarket = supermarketRepository.findByName(supermarketUpdateRequestBody.getName().trim());
-            if(duplicateSupermarket.isPresent() && !duplicateSupermarket.get().getId().equals(supermarketId)) {
-                errorFields.put("nameError", "Duplicate supermarket name");
-            }
-            if(!errorFields.containsKey("nameError")){
-                supermarket.get().setName(supermarketUpdateRequestBody.getName());
-            }
-        }
-
-        //phone format validate
-        if(supermarketUpdateRequestBody.getPhone() != null && !supermarketUpdateRequestBody.getPhone().isBlank()){
-            pattern = Pattern.compile("^(0|84)(2(0[3-9]|1[0-6|8|9]|2[0-2|5-9]|3[2-9]|4[0-9]|5[1|2|4-9]|6[0-3|9]|7[0-7]|8[0-9]|9[0-4|6|7|9])|3[2-9]|5[5|6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])([0-9]{7})$");
-            matcher = pattern.matcher(supermarketUpdateRequestBody.getPhone());
-            if(!matcher.matches()){
-                errorFields.put("phoneError", "Invalid phone number format");
-            } else {
-                supermarket.get().setPhone(supermarketUpdateRequestBody.getPhone());
-            }
-        }
-
-        // validate all address
-        if(supermarketUpdateRequestBody.getSupermarketAddressList() != null && !supermarketUpdateRequestBody.getSupermarketAddressList().isEmpty()){
-            HashMap<String, SupermarketAddressUpdateBody> addressHashMap = new HashMap<>();
-            supermarketUpdateRequestBody.getSupermarketAddressList().stream().forEach(s -> {
-                if(!errorFields.containsKey("addressError")) {
-                    if(!addressHashMap.containsKey(s.getAddress().toUpperCase())){
-                        addressHashMap.put(s.getAddress().toUpperCase(), s);
-                    } else {
-                        errorFields.put("addressError", "Duplicate address found (" + s.getAddress() + ")");
-                    }
-                }
-            });
-
-            if(!errorFields.containsKey("addressError")){
-                List<PickupPoint> pickupPointFromAddressList = pickupPointRepository.getAllByIdList(addressHashMap.values().stream().map(supermarketUpdateRequestBody1 -> supermarketUpdateRequestBody1.getPickupPointId()).collect(Collectors.toList()));
-                // map pickPoint from address list to hashmap
-                for (PickupPoint pickupPoint : pickupPointFromAddressList){
-                    pickupPointFromAddressHashMap.put(pickupPoint.getId(), pickupPoint);
-                }
-                for(SupermarketAddressUpdateBody supermarketAddressUpdateBody : addressHashMap.values()) {
-                    // check pickup point
-                    if(!pickupPointFromAddressHashMap.containsKey(supermarketAddressUpdateBody.getPickupPointId())){
-                        if(errorFields.containsKey("addressError")){
-                            String errorField = errorFields.get("addressError");
-                            errorField += errorFields.get("addressError") + "," + supermarketAddressUpdateBody.getPickupPointId();
-                            errorFields.put("addressError", errorField);
-                        } else {
-                            errorFields.put("addressError", "No pickup point with id " + supermarketAddressUpdateBody.getPickupPointId());
-                        }
-                    }
-                }
-            }
-
-            if(!errorFields.containsKey("addressError")) {
-                for(SupermarketAddressUpdateBody supermarketAddressUpdateBody : addressHashMap.values()) {
-                    if((supermarketAddressUpdateBody.getAddress().length() > 255 || supermarketAddressUpdateBody.getAddress().isBlank()) && !errorFields.containsKey("addressError")){
-                        errorFields.put("addressError", "Maximum character is 255 and can not be empty");
-                    }
-                }
-            }
-
-            if(!errorFields.containsKey("addressError")){
-
-                // delete all old address
-                supermarketAddressRepository.deleteAll(supermarket.get().getSupermarketAddressList());
-                supermarket.get().setSupermarketAddressList(null);
-                // add all new address
-                List<SupermarketAddress> supermarketAddressList = supermarketAddressRepository.saveAll(addressHashMap.values().stream().map(s -> new SupermarketAddress(s.getAddress(), supermarket.get(), pickupPointFromAddressHashMap.get(s.getPickupPointId()))).collect(Collectors.toList()));
-                supermarket.get().setSupermarketAddressList(supermarketAddressList);
-            }
-        }
-
-
-        if(errorFields.size() > 0){
-            throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
-        }
-
-
-        return supermarket.get();
-    }
+//    @Override
+//    @Transactional
+//    public Supermarket update(SupermarketUpdateRequestBody supermarketUpdateRequestBody, UUID supermarketId) {
+//        Pattern pattern;
+//        Matcher matcher;
+//        HashMap<String,String> errorFields = new HashMap<>();
+//        HashMap<UUID, PickupPoint> pickupPointFromAddressHashMap = new HashMap<>();
+//        Optional<Supermarket> supermarket = supermarketRepository.findById(supermarketId);
+//
+//        if(!supermarket.isPresent()){
+//            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.SUPERMARKET_NOT_FOUND.getCode()), AdditionalResponseCode.SUPERMARKET_NOT_FOUND.toString());
+//        }
+//
+//
+//        //name validate
+//        if(supermarketUpdateRequestBody.getName() != null && !supermarketUpdateRequestBody.getName().isBlank()){
+//            if(supermarketUpdateRequestBody.getName().trim().length() < 2 || supermarketUpdateRequestBody.getName().trim().length() > 50){
+//                errorFields.put("nameError", "Minimum character is 2 and maximum characters is 50");
+//            }
+//            Optional<Supermarket> duplicateSupermarket = supermarketRepository.findByName(supermarketUpdateRequestBody.getName().trim());
+//            if(duplicateSupermarket.isPresent() && !duplicateSupermarket.get().getId().equals(supermarketId)) {
+//                errorFields.put("nameError", "Duplicate supermarket name");
+//            }
+//            if(!errorFields.containsKey("nameError")){
+//                supermarket.get().setName(supermarketUpdateRequestBody.getName());
+//            }
+//        }
+//
+//        //phone format validate
+//        if(supermarketUpdateRequestBody.getPhone() != null && !supermarketUpdateRequestBody.getPhone().isBlank()){
+//            pattern = Pattern.compile("^(0|84)(2(0[3-9]|1[0-6|8|9]|2[0-2|5-9]|3[2-9]|4[0-9]|5[1|2|4-9]|6[0-3|9]|7[0-7]|8[0-9]|9[0-4|6|7|9])|3[2-9]|5[5|6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])([0-9]{7})$");
+//            matcher = pattern.matcher(supermarketUpdateRequestBody.getPhone());
+//            if(!matcher.matches()){
+//                errorFields.put("phoneError", "Invalid phone number format");
+//            } else {
+//                supermarket.get().setPhone(supermarketUpdateRequestBody.getPhone());
+//            }
+//        }
+//
+//        // validate all address
+//        if(supermarketUpdateRequestBody.getSupermarketAddressList() != null && !supermarketUpdateRequestBody.getSupermarketAddressList().isEmpty()){
+//            HashMap<String, SupermarketAddressUpdateBody> addressHashMap = new HashMap<>();
+//            supermarketUpdateRequestBody.getSupermarketAddressList().stream().forEach(s -> {
+//                if(!errorFields.containsKey("addressError")) {
+//                    if(!addressHashMap.containsKey(s.getAddress().toUpperCase())){
+//                        addressHashMap.put(s.getAddress().toUpperCase(), s);
+//                    } else {
+//                        errorFields.put("addressError", "Duplicate address found (" + s.getAddress() + ")");
+//                    }
+//                }
+//            });
+//
+//            if(!errorFields.containsKey("addressError")){
+//                List<PickupPoint> pickupPointFromAddressList = pickupPointRepository.getAllByIdList(addressHashMap.values().stream().map(supermarketUpdateRequestBody1 -> supermarketUpdateRequestBody1.getPickupPointId()).collect(Collectors.toList()));
+//                // map pickPoint from address list to hashmap
+//                for (PickupPoint pickupPoint : pickupPointFromAddressList){
+//                    pickupPointFromAddressHashMap.put(pickupPoint.getId(), pickupPoint);
+//                }
+//                for(SupermarketAddressUpdateBody supermarketAddressUpdateBody : addressHashMap.values()) {
+//                    // check pickup point
+//                    if(!pickupPointFromAddressHashMap.containsKey(supermarketAddressUpdateBody.getPickupPointId())){
+//                        if(errorFields.containsKey("addressError")){
+//                            String errorField = errorFields.get("addressError");
+//                            errorField += errorFields.get("addressError") + "," + supermarketAddressUpdateBody.getPickupPointId();
+//                            errorFields.put("addressError", errorField);
+//                        } else {
+//                            errorFields.put("addressError", "No pickup point with id " + supermarketAddressUpdateBody.getPickupPointId());
+//                        }
+//                    }
+//                }
+//            }
+//
+//            if(!errorFields.containsKey("addressError")) {
+//                for(SupermarketAddressUpdateBody supermarketAddressUpdateBody : addressHashMap.values()) {
+//                    if((supermarketAddressUpdateBody.getAddress().length() > 255 || supermarketAddressUpdateBody.getAddress().isBlank()) && !errorFields.containsKey("addressError")){
+//                        errorFields.put("addressError", "Maximum character is 255 and can not be empty");
+//                    }
+//                }
+//            }
+//
+//            if(!errorFields.containsKey("addressError")){
+//
+//                // delete all old address
+//                supermarketAddressRepository.deleteAll(supermarket.get().getSupermarketAddressList());
+//                supermarket.get().setSupermarketAddressList(null);
+//                // add all new address
+//                List<SupermarketAddress> supermarketAddressList = supermarketAddressRepository.saveAll(addressHashMap.values().stream().map(s -> new SupermarketAddress(s.getAddress(), supermarket.get(), pickupPointFromAddressHashMap.get(s.getPickupPointId()))).collect(Collectors.toList()));
+//                supermarket.get().setSupermarketAddressList(supermarketAddressList);
+//            }
+//        }
+//
+//
+//        if(errorFields.size() > 0){
+//            throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
+//        }
+//
+//
+//        return supermarket.get();
+//    }
 
 
     @Override
