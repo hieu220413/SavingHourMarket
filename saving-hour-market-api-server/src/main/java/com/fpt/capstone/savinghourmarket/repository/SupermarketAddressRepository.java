@@ -9,4 +9,5 @@ import java.util.UUID;
 
 @Repository
 public interface SupermarketAddressRepository extends JpaRepository<SupermarketAddress, UUID> {
+
 }

@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.model;
 
+import com.fpt.capstone.savinghourmarket.entity.ProductBatch;
 import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
 import com.fpt.capstone.savinghourmarket.entity.Supermarket;
 import lombok.AllArgsConstructor;
@@ -11,6 +12,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -23,29 +25,18 @@ public class ProductCreate {
     private String name;
 
     @NotNull
-    @Positive
-    private Integer price;
-
-    @NotNull
-    @Positive
-    private Integer priceOriginal;
-
-    @NotNull
     private String description;
-
-    @NotNull
-    private LocalDate expiredDate;
-
-    @NotNull
-    private Integer quantity;
 
     @NotNull
     private String imageUrl;
 
     @NotNull
-    private ProductSubCategory productSubCategory;
+    private UUID supermarketId;
 
     @NotNull
-    private Supermarket supermarket;
+    private List<ProductBatchCreate> productBatchList;
+
+    @NotNull
+    private ProductSubCategory productSubCategory;
 
 }

@@ -69,8 +69,9 @@ public class Product {
     private Supermarket supermarket;
 
     @OneToMany(
-            fetch = FetchType.LAZY,
-            mappedBy = "product"
+            fetch = FetchType.EAGER,
+            mappedBy = "product",
+            cascade = CascadeType.ALL
     )
     private List<ProductBatch> productBatchList;
 

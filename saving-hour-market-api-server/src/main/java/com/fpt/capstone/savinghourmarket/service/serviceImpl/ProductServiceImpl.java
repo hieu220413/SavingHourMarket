@@ -1,26 +1,29 @@
 package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
-import com.fpt.capstone.savinghourmarket.common.*;
+import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
+import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
+import com.fpt.capstone.savinghourmarket.common.SortType;
+import com.fpt.capstone.savinghourmarket.common.Status;
 import com.fpt.capstone.savinghourmarket.entity.*;
 import com.fpt.capstone.savinghourmarket.exception.InvalidExcelFileDataException;
 import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
-import com.fpt.capstone.savinghourmarket.model.ProductCateWithSubCate;
-import com.fpt.capstone.savinghourmarket.model.ProductCreate;
-import com.fpt.capstone.savinghourmarket.model.ProductListResponseBody;
-import com.fpt.capstone.savinghourmarket.model.ProductSubCateOnly;
 import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.repository.*;
-import com.fpt.capstone.savinghourmarket.service.FirebaseService;
 import com.fpt.capstone.savinghourmarket.service.ProductCategoryService;
 import com.fpt.capstone.savinghourmarket.service.ProductService;
 import com.fpt.capstone.savinghourmarket.service.ProductSubCategoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.usermodel.XSSFPictureData;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,13 +34,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.time.LocalDate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -48,16 +50,14 @@ import java.util.stream.Collectors;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
-
     private final ProductCategoryRepository productCategoryRepository;
     private final ProductSubCategoryRepository productSubCategoryRepository;
-
     private final SupermarketRepository supermarketRepository;
     private final ProductCategoryService productCategoryService;
-
     private final ProductSubCategoryService productSubCategoryService;
-
     private final PickupPointRepository pickupPointRepository;
+    private final ProductBatchRepository productBatchRepository;
+    private final SupermarketAddressRepository supermarketAddressRepository;
 
     @Override
     public ProductListResponseBody getProductsForStaff(Boolean isExpiredShown, String name, String supermarketId, String productCategoryId, String productSubCategoryId, EnableDisableStatus status, Integer page, Integer limit, SortType quantitySortType, SortType expiredSortType, SortType priceSort) {
@@ -200,7 +200,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductListCustomerResponseBody getProductsForCustomer(String name, String supermarketId, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, SortType quantitySortType, SortType expiredSortType, SortType priceSort, UUID pickupPointId) {
 
-        if(!pickupPointRepository.findById(pickupPointId).isPresent()){
+        if (!pickupPointRepository.findById(pickupPointId).isPresent()) {
             throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.PICKUP_POINT_NOT_FOUND.getCode()), AdditionalResponseCode.PICKUP_POINT_NOT_FOUND.toString());
         }
 
@@ -235,7 +235,7 @@ public class ProductServiceImpl implements ProductService {
         HashMap<UUID, ProductDisplayCustomer> productDisplayCustomerHashMap = new HashMap<>();
 
         // get product sort with nearest product batch (no grouping id)
-        for(Object[] objects : result) {
+        for (Object[] objects : result) {
             LocalDate nearestBatchExpiredDate = (LocalDate) objects[0];
             Integer nearestBatchPrice = (Integer) objects[1];
             Integer nearestBatchPriceOriginal = (Integer) objects[2];
@@ -264,16 +264,16 @@ public class ProductServiceImpl implements ProductService {
             HashMap<LocalDate, ProductBatchDisplayCustomer> productBatchDisplayCustomerHashMap = new HashMap<>();
             for (ProductBatch productBatch : product.getProductBatchList()) {
                 // check if same expired date then add id to nearest expired date batch
-                if(productBatch.getExpiredDate().equals(productDisplayCustomerTemp.getNearestExpiredBatch().getExpiredDate())){
+                if (productBatch.getExpiredDate().equals(productDisplayCustomerTemp.getNearestExpiredBatch().getExpiredDate())) {
                     productDisplayCustomerTemp.getNearestExpiredBatch().getIdList().add(productBatch.getId());
                     productDisplayCustomerTemp.getNearestExpiredBatch().setQuantity(productDisplayCustomerTemp.getNearestExpiredBatch().getQuantity() + productBatch.getQuantity());
                 } else {
                     // map and handle same expired date batch
-                    if(productBatchDisplayCustomerHashMap.containsKey(productBatch.getExpiredDate())){
+                    if (productBatchDisplayCustomerHashMap.containsKey(productBatch.getExpiredDate())) {
                         ProductBatchDisplayCustomer productBatchDisplayCustomerTemp = productBatchDisplayCustomerHashMap.get(productBatch.getExpiredDate());
                         productBatchDisplayCustomerTemp.getIdList().add(productBatch.getId());
                         productBatchDisplayCustomerTemp.setQuantity(productBatchDisplayCustomerTemp.getQuantity() + productBatch.getQuantity());
-                    }else {
+                    } else {
                         productBatchDisplayCustomerHashMap.put(productBatch.getExpiredDate(), new ProductBatchDisplayCustomer(productBatch));
                     }
                 }
@@ -284,7 +284,6 @@ public class ProductServiceImpl implements ProductService {
             productBatchDisplayCustomerList.sort((o1, o2) -> o1.getExpiredDate().compareTo(o2.getExpiredDate()));
             productDisplayCustomerTemp.getOtherProductBatchList().addAll(productBatchDisplayCustomerList);
         }
-
 
 
         return new ProductListCustomerResponseBody(productDisplayCustomerList, totalPage, totalProduct);
@@ -558,12 +557,12 @@ public class ProductServiceImpl implements ProductService {
         });
 
         for (CateOderQuantityResponseBody cateOderQuantityResponseBody : cateOderQuantityResponseList) {
-            if(cateOderQuantityResponseHashmap.containsKey(cateOderQuantityResponseBody.getCategoryId())){
+            if (cateOderQuantityResponseHashmap.containsKey(cateOderQuantityResponseBody.getCategoryId())) {
                 cateOderQuantityResponseBody.setTotalOrderQuantity(cateOderQuantityResponseHashmap.get(cateOderQuantityResponseBody.getCategoryId()).getTotalOrderQuantity());
             }
         }
 
-        cateOderQuantityResponseList.sort((o1, o2) -> o2.getTotalOrderQuantity()-o1.getTotalOrderQuantity());
+        cateOderQuantityResponseList.sort((o1, o2) -> o2.getTotalOrderQuantity() - o1.getTotalOrderQuantity());
 
         return cateOderQuantityResponseList;
     }
@@ -627,7 +626,7 @@ public class ProductServiceImpl implements ProductService {
 //        if (supermarketRepository.findById(supermarketId).isEmpty()) {
 //            throw new ResourceNotFoundException("Siêu thị không tìm thấy với id: " + productSubCategoryId);
 //        }
-        
+
         return null;
     }
 
@@ -651,18 +650,6 @@ public class ProductServiceImpl implements ProductService {
             errorFields.put("Lỗi nhập tên sản phẩm", "Tên sản phẩm chỉ có tối đa 50 kí tự!");
         }
 
-        if (productCreate.getPrice() < 0 || productCreate.getPriceOriginal() < 0) {
-            errorFields.put("Lỗi nhập giá", "Giá bán không thế âm!");
-        }
-
-        if (productCreate.getQuantity() <= 0) {
-            errorFields.put("Lỗi nhập số lượng", "Số lượng sản phẩm không thể âm hoặc bằng 0!");
-        }
-
-        if (productCreate.getExpiredDate().isBefore(LocalDate.now().plus(productCreate.getProductSubCategory().getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
-            errorFields.put("Lỗi nhập ngày hết hạn", "Ngày hết hạn phải sau ngày hiện tại cộng thêm số ngày điều kiện cho hàng cận hạn sử dụng có trong SUBCATEGORY!");
-        }
-
         if (productCreate.getProductSubCategory().getId() == null && productCreate.getProductSubCategory().getName().length() > 50) {
             errorFields.put("Lỗi nhập tên SubCategory", "Tên sản phẩm chỉ có tối đa 50 kí tự!");
         }
@@ -671,27 +658,31 @@ public class ProductServiceImpl implements ProductService {
             errorFields.put("Lỗi nhập AllowableDisplayThreshold", "AllowableDisplayThreshold không thể âm hoặc bằng 0!");
         }
 
-        if (productCreate.getProductSubCategory().getId() == null && productCreate.getProductSubCategory().getProductCategory().getName().length() > 50) {
+        if (productCreate.getProductSubCategory().getProductCategory().getId() == null && productCreate.getProductSubCategory().getProductCategory().getName().length() > 50) {
             errorFields.put("Lỗi nhập tên category", "Tên category chỉ có tối đa 50 kí tự!");
         }
 
-        if (productCreate.getSupermarket().getId() == null && productCreate.getSupermarket().getName().length() > 50) {
-            errorFields.put("Lỗi nhập tên siêu thị", "Tên siêu thị chỉ có tối đa 50 kí tự!");
+        Optional<Supermarket> supermarket = supermarketRepository.findById(productCreate.getSupermarketId());
+        if (supermarket.isEmpty()) {
+            errorFields.put("Lỗi không tìm thấy", "Siêu thị không tìm thấy với id: " + productCreate.getSupermarketId());
         }
 
-        List<SupermarketAddress> supermarketAddressList = productCreate.getSupermarket().getSupermarketAddressList();
-        for (SupermarketAddress address : supermarketAddressList) {
-            if (address.getAddress().length() > 255) {
-                errorFields.put("Lỗi nhập địa chỉ siêu thị " + address.getAddress(), "Địa chỉ siêu thị chỉ có tối đa 255 kí tự!");
+        for (ProductBatchCreate productBatch : productCreate.getProductBatchList()) {
+            if (productBatch.getPrice() < 0 || productBatch.getPriceOriginal() < 0) {
+                errorFields.put("Lỗi nhập giá cho lô HSD " + productBatch.getExpiredDate(), "Giá bán không thế âm!");
             }
-        }
 
-        Pattern pattern;
-        Matcher matcher;
-        pattern = Pattern.compile("^(0|84)(2(0[3-9]|1[0-6|8|9]|2[0-2|5-9]|3[2-9]|4[0-9]|5[1|2|4-9]|6[0-3|9]|7[0-7]|8[0-9]|9[0-4|6|7|9])|3[2-9]|5[5|6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])([0-9]{7})$");
-        matcher = pattern.matcher(productCreate.getSupermarket().getPhone());
-        if (!matcher.matches()) {
-            errorFields.put("Lỗi nhập số điện thoại siêu thị", "Số điện thoại siêu thị không hợp lệ!");
+            if (productBatch.getQuantity() <= 0) {
+                errorFields.put("Lỗi nhập số lượng cho lô HSD " + productBatch.getExpiredDate(), "Số lượng sản phẩm không thể âm hoặc bằng 0!");
+            }
+
+            Integer althd = productCreate.getProductSubCategory().getId() != null ?
+                    productSubCategoryRepository.findById(productCreate.getProductSubCategory().getId())
+                            .orElseThrow(() -> new ResourceNotFoundException("Product Sub Category không tìm thấy với id: " + productCreate.getProductSubCategory().getId())).getAllowableDisplayThreshold() : productCreate.getProductSubCategory().getAllowableDisplayThreshold();
+
+            if (productBatch.getExpiredDate().isBefore(LocalDate.now().plus(althd, ChronoUnit.DAYS))) {
+                errorFields.put("Lỗi nhập ngày hết hạn cho lô HSD " + productBatch.getExpiredDate(), "Ngày hết hạn phải sau ngày hiện tại cộng thêm số ngày điều kiện cho hàng cận hạn sử dụng có trong SUBCATEGORY!");
+            }
         }
 
 
@@ -699,36 +690,53 @@ public class ProductServiceImpl implements ProductService {
             throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
         }
 
+
+        List<ProductBatch> productBatchList = new ArrayList<>();
+        for (ProductBatchCreate productBatchCreate : productCreate.getProductBatchList()) {
+            Optional<SupermarketAddress> supermarketAddress = supermarketAddressRepository.findById(productBatchCreate.getSupermarketAddressId());
+
+            if (supermarketAddress.isPresent() && supermarket.isPresent() && supermarketAddress.get().getSupermarket().getId().equals(supermarket.get().getId())) {
+                ProductBatch productBatch = new ProductBatch();
+                productBatch.setPrice(productBatchCreate.getPrice());
+                productBatch.setPriceOriginal(productBatchCreate.getPriceOriginal());
+                productBatch.setExpiredDate(productBatchCreate.getExpiredDate());
+                productBatch.setQuantity(productBatchCreate.getQuantity());
+                productBatch.setSupermarketAddress(supermarketAddress.get());
+                productBatchList.add(productBatch);
+            } else {
+                throw new ResourceNotFoundException("Địa chỉ siêu thị cho lô HSD: " + productBatchCreate.getExpiredDate() + " không tìm thấy với id hoặc không có trong danh sách địa chỉ của siêu thị: " + supermarket.get().getName());
+            }
+
+        }
+
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.map(productCreate, product);
+        product.setSupermarket(supermarket.get());
+        product.setProductBatchList(productBatchList);
         product.setStatus(Status.ENABLE.ordinal());
-        product.getSupermarket().setStatus(Status.ENABLE.ordinal());
+
+        UUID productCategoryId = product.getProductSubCategory().getProductCategory().getId();
+        UUID productSubCategoryId = product.getProductSubCategory().getId();
 
         //Save new product Category if id is null
-        UUID productCategoryId = product.getProductSubCategory().getProductCategory().getId();
-        if (productCategoryId != null) {
-            product.getProductSubCategory()
-                    .setProductCategory(productCategoryRepository.findById(productCategoryId)
-                            .orElseThrow(() -> new ResourceNotFoundException("Product Sub Category không tìm thấy với id: " + productCategoryId)));
-        } else {
-            productCategoryRepository.save(product.getProductSubCategory().getProductCategory());
+        if (productSubCategoryId == null) {
+            if (productCategoryId != null) {
+                product.getProductSubCategory()
+                        .setProductCategory(productCategoryRepository.findById(productCategoryId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Product Category không tìm thấy với id: " + productCategoryId)));
+            } else {
+                ProductCategory productCategoryNew = productCategoryRepository.save(product.getProductSubCategory().getProductCategory());
+                product.getProductSubCategory().setProductCategory(productCategoryNew);
+            }
         }
 
         //Save new product sub Category if id is null
-        UUID productSubCategoryId = product.getProductSubCategory().getId();
         product.setProductSubCategory(productSubCategoryId != null ?
                 productSubCategoryRepository.findById(productSubCategoryId)
                         .orElseThrow(() -> new ResourceNotFoundException("Product Sub Category không tìm thấy với id: " + productSubCategoryId))
                 :
                 productSubCategoryRepository.save(product.getProductSubCategory()));
 
-        //Save new supermarket if id is null
-        UUID supermarketId = product.getSupermarket().getId();
-        product.setSupermarket(supermarketId != null ?
-                supermarketRepository.findById(supermarketId)
-                        .orElseThrow(() -> new ResourceNotFoundException("Supermarket không tìm thấy với id: " + supermarketId))
-                :
-                supermarketRepository.save(product.getSupermarket()));
 
         return productRepository.save(product);
     }
