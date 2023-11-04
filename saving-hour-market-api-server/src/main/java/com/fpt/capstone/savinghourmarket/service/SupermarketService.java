@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface SupermarketService {
     Supermarket create(SupermarketCreateRequestBody supermarketCreateRequestBody);
-//    Supermarket update(SupermarketUpdateRequestBody supermarketUpdateRequestBody, UUID supermarketId);
+    Supermarket update(SupermarketUpdateRequestBody supermarketUpdateRequestBody, UUID supermarketId);
 
     Supermarket changeStatus(UUID supermarketId, EnableDisableStatus status);
 

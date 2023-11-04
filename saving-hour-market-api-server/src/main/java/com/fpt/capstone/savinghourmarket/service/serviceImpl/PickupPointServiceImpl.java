@@ -36,9 +36,9 @@ public class PickupPointServiceImpl implements PickupPointService {
     }
 
     @Override
-    public List<PickupPoint> getAllForAdmin(EnableDisableStatus enableDisableStatus) {
-        List<PickupPoint> pickupPoints = pickupPointRepository.findAllForAdmin(enableDisableStatus == null ? null : enableDisableStatus.ordinal());
-        return pickupPoints;
+    public List<PickupPointWithProductConsolidationArea> getAllForAdmin(EnableDisableStatus enableDisableStatus) {
+        List<PickupPointWithProductConsolidationArea> pickupPointWithProductConsolidationAreaList = pickupPointRepository.findAllForAdmin(enableDisableStatus == null ? null : enableDisableStatus.ordinal());
+        return pickupPointWithProductConsolidationAreaList;
     }
 
     // GOONG API VERSION

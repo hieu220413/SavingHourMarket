@@ -83,17 +83,20 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/timeframe/getAll").permitAll()
                             .requestMatchers("/api/timeframe/getForPickupPoint").permitAll()
                             .requestMatchers("/api/timeframe/getForHomeDelivery").permitAll()
-                            .requestMatchers("/api/timeframe/getAllForAdmin").hasRole("ADMIN")
+                            .requestMatchers("/api/timeframe/getAllForStaff").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/timeframe/create").hasRole("ADMIN")
                             .requestMatchers("/api/timeframe/update").hasRole("ADMIN")
                             .requestMatchers("/api/timeframe/updateStatus").hasRole("ADMIN")
 
                             .requestMatchers("/api/pickupPoint/getAll").permitAll()
                             .requestMatchers("/api/pickupPoint/getWithSortAndSuggestion").permitAll()
-                            .requestMatchers("/api/pickupPoint/getAllForAdmin").hasRole("ADMIN")
+                            .requestMatchers("/api/pickupPoint/getAllForStaff").hasAnyRole(allStaffAndAdmin)
 
                             .requestMatchers("/api/productConsolidationArea/create").hasRole("ADMIN")
-                            .requestMatchers("/api/productConsolidationArea/getAllForAdmin").hasRole("ADMIN")
+                            .requestMatchers("/api/productConsolidationArea/updateInfo").hasRole("ADMIN")
+                            .requestMatchers("/api/productConsolidationArea/updateStatus").hasRole("ADMIN")
+                            .requestMatchers("/api/productConsolidationArea/updatePickupPointList").hasRole("ADMIN")
+                            .requestMatchers("/api/productConsolidationArea/getAllForStaff").hasAnyRole(allStaffAndAdmin)
 
                             .requestMatchers("/api/transaction/processPaymentResult").permitAll()
 //                            .requestMatchers("/api/staff/getInfoAfterGoogleLogged").hasAnyRole(allStaffAndAdmin)

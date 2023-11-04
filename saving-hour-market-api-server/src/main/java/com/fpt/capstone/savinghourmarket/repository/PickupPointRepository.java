@@ -1,6 +1,7 @@
 package com.fpt.capstone.savinghourmarket.repository;
 
 import com.fpt.capstone.savinghourmarket.entity.PickupPoint;
+import com.fpt.capstone.savinghourmarket.model.PickupPointWithProductConsolidationArea;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -25,5 +26,5 @@ public interface PickupPointRepository extends JpaRepository<PickupPoint, UUID> 
     @Query("SELECT p FROM PickupPoint  p " +
             "WHERE " +
             "((:status IS NULL) OR (p.status = :status))")
-    List<PickupPoint> findAllForAdmin(Integer status);
+    List<PickupPointWithProductConsolidationArea> findAllForAdmin(Integer status);
 }

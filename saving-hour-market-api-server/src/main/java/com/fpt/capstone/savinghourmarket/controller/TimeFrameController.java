@@ -33,8 +33,8 @@ public class TimeFrameController {
         return ResponseEntity.status(HttpStatus.OK).body(timeFrameList);
     }
 
-    @RequestMapping(value = "/getAllForAdmin", method = RequestMethod.GET)
-    public ResponseEntity<List<TimeFrame>> getAllForAdmin(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+    @RequestMapping(value = "/getAllForStaff", method = RequestMethod.GET)
+    public ResponseEntity<List<TimeFrame>> getAllForStaff(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
             , @RequestParam(required = false) EnableDisableStatus enableDisableStatus) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);

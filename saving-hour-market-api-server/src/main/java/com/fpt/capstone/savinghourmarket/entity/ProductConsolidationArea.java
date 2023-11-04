@@ -42,5 +42,6 @@ public class ProductConsolidationArea {
     @OneToMany(
            mappedBy = "productConsolidationArea"
     )
+    @JsonIgnore
     private List<Order> orders;
 }

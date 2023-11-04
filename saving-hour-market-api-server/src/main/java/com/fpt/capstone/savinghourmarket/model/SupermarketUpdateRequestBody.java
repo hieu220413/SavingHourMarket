@@ -15,7 +15,5 @@ public class SupermarketUpdateRequestBody {
 
     private String name;
 
-    private List<SupermarketAddressUpdateBody> supermarketAddressList;
-
     private String phone;
 }

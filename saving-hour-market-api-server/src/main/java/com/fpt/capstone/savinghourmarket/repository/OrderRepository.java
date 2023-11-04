@@ -110,4 +110,10 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "WHERE tf.id = :timeFrameId " +
             "AND o.status IN :statusList")
     List<Order> findTimeFrameInProcessingOrderById(UUID timeFrameId, Pageable pageable, List<Integer> statusList);
+
+    @Query("SELECT o FROM Order o " +
+            "JOIN o.productConsolidationArea pca " +
+            "WHERE pca.id = :productConsolidationAreaId " +
+            "AND o.status IN :statusList")
+    List<Order> findProductConsolidationAreaInProcessingOrderById(UUID productConsolidationAreaId, Pageable pageable, List<Integer> statusList);
 }

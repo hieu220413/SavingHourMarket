@@ -38,13 +38,13 @@ public class SupermarketController {
         return ResponseEntity.status(HttpStatus.OK).body(supermarket);
     }
 
-//    @RequestMapping(value = "/updateInfo", method = RequestMethod.PUT)
-//    public ResponseEntity<Supermarket> updateInfo(@RequestBody SupermarketUpdateRequestBody supermarketUpdateRequestBody, @RequestParam UUID supermarketId, @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken) throws FirebaseAuthException {
-//        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
-//        Utils.validateIdToken(idToken, firebaseAuth);
-//        Supermarket supermarket = supermarketService.update(supermarketUpdateRequestBody, supermarketId);
-//        return ResponseEntity.status(HttpStatus.OK).body(supermarket);
-//    }
+    @RequestMapping(value = "/updateInfo", method = RequestMethod.PUT)
+    public ResponseEntity<Supermarket> updateInfo(@RequestBody SupermarketUpdateRequestBody supermarketUpdateRequestBody, @RequestParam UUID supermarketId, @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        Supermarket supermarket = supermarketService.update(supermarketUpdateRequestBody, supermarketId);
+        return ResponseEntity.status(HttpStatus.OK).body(supermarket);
+    }
 
     @RequestMapping(value = "createSupermarketAddressForSupermarket", method = RequestMethod.POST)
     public ResponseEntity<Supermarket> createSupermarketAddressForSupermarket(@RequestBody @Size(min = 1) List<@Valid SupermarketAddressCreateBody> supermarketAddressCreateBodyList, @RequestParam UUID supermarketId, @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken) throws FirebaseAuthException {
