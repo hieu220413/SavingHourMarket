@@ -348,7 +348,7 @@ public class OrderServiceImpl implements OrderService {
 
                     Product product = o.getProduct();
                     orderProduct.setName(product.getName());
-                    orderProduct.setImageUrl(product.getImageUrl());
+                    orderProduct.setImages(product.getProductImageList());
                     orderProduct.setDescription(product.getDescription());
                     orderProduct.setProductSubCategory(product.getProductSubCategory().getName());
                     orderProduct.setProductCategory(product.getProductSubCategory().getProductCategory().getName());
