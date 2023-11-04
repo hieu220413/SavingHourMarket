@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -27,4 +28,10 @@ public interface PickupPointRepository extends JpaRepository<PickupPoint, UUID> 
             "WHERE " +
             "((:status IS NULL) OR (p.status = :status))")
     List<PickupPointWithProductConsolidationArea> findAllForAdmin(Integer status);
+
+    Optional<PickupPoint> findByAddress(String address);
+
+    @Query("SELECT p FROM PickupPoint p " +
+            "WHERE p.latitude = :latitude AND p.longitude = :longitude")
+    Optional<PickupPoint> findByLongitudeAndLatitude(Double latitude, Double longitude);
 }

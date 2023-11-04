@@ -116,4 +116,10 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "WHERE pca.id = :productConsolidationAreaId " +
             "AND o.status IN :statusList")
     List<Order> findProductConsolidationAreaInProcessingOrderById(UUID productConsolidationAreaId, Pageable pageable, List<Integer> statusList);
+
+    @Query("SELECT o FROM Order o " +
+            "JOIN o.pickupPoint p " +
+            "WHERE p.id = :pickupPointId " +
+            "AND o.status IN :statusList")
+    List<Order> findPickupPointInProcessingOrderById(UUID pickupPointId, Pageable pageable, List<Integer> statusList);
 }

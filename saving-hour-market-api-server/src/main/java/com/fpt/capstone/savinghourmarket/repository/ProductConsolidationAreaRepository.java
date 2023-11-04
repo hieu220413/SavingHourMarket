@@ -25,4 +25,7 @@ public interface ProductConsolidationAreaRepository extends JpaRepository<Produc
     @Query("SELECT a FROM ProductConsolidationArea a " +
             "WHERE a.latitude = :latitude AND a.longitude = :longitude")
     Optional<ProductConsolidationArea> findByLongitudeAndLatitude(Double latitude, Double longitude);
+
+    @Query("SELECT pca FROM ProductConsolidationArea  pca WHERE pca.id IN :productConsolidationAreaIdList ")
+    List<ProductConsolidationArea> getAllByIdList(List<UUID> productConsolidationAreaIdList);
 }
