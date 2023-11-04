@@ -73,6 +73,7 @@ const Home = ({navigation}) => {
     value: 'PROCESSING',
   });
   const [visible, setVisible] = useState(false);
+  
   const onAuthStateChange = async userInfo => {
     // console.log(userInfo);
     if (initializing) {
