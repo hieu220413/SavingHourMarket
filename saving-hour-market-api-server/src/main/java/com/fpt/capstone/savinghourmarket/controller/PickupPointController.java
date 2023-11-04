@@ -3,9 +3,7 @@ package com.fpt.capstone.savinghourmarket.controller;
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.entity.PickupPoint;
 import com.fpt.capstone.savinghourmarket.entity.ProductConsolidationArea;
-import com.fpt.capstone.savinghourmarket.model.PickupPointWithProductConsolidationArea;
-import com.fpt.capstone.savinghourmarket.model.PickupPointsSortWithSuggestionsResponseBody;
-import com.fpt.capstone.savinghourmarket.model.ProductConsolidationAreaCreateBody;
+import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.service.PickupPointService;
 import com.fpt.capstone.savinghourmarket.service.ProductConsolidationAreaService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
@@ -23,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/pickupPoint")
@@ -57,11 +56,47 @@ public class PickupPointController {
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
-//    @RequestMapping(value = "/create", method = RequestMethod.POST)
+    @RequestMapping(value = "/create", method = RequestMethod.POST)
+    public ResponseEntity<PickupPointWithProductConsolidationArea> create(
+            @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken,
+            @RequestBody @Valid PickupPointCreateBody pickupPointCreateBody) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        PickupPointWithProductConsolidationArea pickupPointWithProductConsolidationArea = pickupPointService.create(pickupPointCreateBody);
+        return ResponseEntity.status(HttpStatus.OK).body(pickupPointWithProductConsolidationArea);
+    }
 
-//    @RequestMapping(value = "/update", method = RequestMethod.PUT)
 
-//    @RequestMapping(value = "/updateStatus", method = RequestMethod.PUT)
+    @RequestMapping(value = "/updateInfo", method = RequestMethod.PUT)
+    public ResponseEntity<PickupPoint> create(
+            @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken,
+            @RequestBody @Valid PickupPointUpdateBody pickupPointUpdateBody,
+            @RequestParam UUID pickupPointId) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        PickupPoint pickupPoint = pickupPointService.updateInfo(pickupPointUpdateBody, pickupPointId);
+        return ResponseEntity.status(HttpStatus.OK).body(pickupPoint);
+    }
+
+    @RequestMapping(value = "/updateStatus", method = RequestMethod.PUT)
+    public ResponseEntity<PickupPoint> updateStatus(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @RequestBody @Valid EnableDisableStatusChangeBody enableDisableStatusChangeBody) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        PickupPoint pickupPoint = pickupPointService.updateStatus(enableDisableStatusChangeBody);
+        return ResponseEntity.status(HttpStatus.OK).body(pickupPoint);
+    }
+
+    @RequestMapping(value = "/updateProductConsolidationAreaList", method = RequestMethod.PUT)
+    public ResponseEntity<PickupPointWithProductConsolidationArea> updatePickupPointList(
+            @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken,
+            @RequestBody @Valid ProductConsolidationAreaPickupPointUpdateListBody productConsolidationAreaPickupPointUpdateListBody
+    ) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        PickupPointWithProductConsolidationArea pickupPointWithProductConsolidationArea = pickupPointService.updateProductConsolidationAreaList(productConsolidationAreaPickupPointUpdateListBody);
+        return ResponseEntity.status(HttpStatus.OK).body(pickupPointWithProductConsolidationArea);
+    }
 
 
 }

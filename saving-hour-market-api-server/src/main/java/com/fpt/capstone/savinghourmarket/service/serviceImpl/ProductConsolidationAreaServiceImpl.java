@@ -72,7 +72,7 @@ public class ProductConsolidationAreaServiceImpl implements ProductConsolidation
         List<PickupPoint> pickupPointForAreaList = new ArrayList<>();
         if(productConsolidationAreaCreateBody.getPickupPointIdList().size() > 0) {
             pickupPointForAreaList = pickupPointRepository.getAllByIdList(productConsolidationAreaCreateBody.getPickupPointIdList());
-            List<UUID> pickupPointNotFoundIdList = new ArrayList<>();
+            Set<UUID> pickupPointNotFoundIdList = new HashSet<>();
             for (UUID pickupPointId : productConsolidationAreaCreateBody.getPickupPointIdList()) {
                 if(pickupPointForAreaList.stream().filter(pickupPoint -> pickupPoint.getId().equals(pickupPointId)).toList().size() == 0) {
                     pickupPointNotFoundIdList.add(pickupPointId);
@@ -192,7 +192,7 @@ public class ProductConsolidationAreaServiceImpl implements ProductConsolidation
             newPickupPointHashMap.put(pickupPoint.getId(), pickupPoint);
         }
 
-        List<UUID> pickupPointNotFoundIdList = new ArrayList<>();
+        Set<UUID> pickupPointNotFoundIdList = new HashSet<>();
         for (UUID pickupPointId : productConsolidationAreaPickupPointUpdateListBody.getNewUpdateIdList()) {
             if(!newPickupPointHashMap.containsKey(pickupPointId)){
                 pickupPointNotFoundIdList.add(pickupPointId);
