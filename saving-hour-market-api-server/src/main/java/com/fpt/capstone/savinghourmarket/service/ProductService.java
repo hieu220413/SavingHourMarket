@@ -32,7 +32,7 @@ public interface ProductService {
 
     Product createProduct(ProductCreate productCreate) throws ResourceNotFoundException;
 
-    List<Product> createProductByExcel(MultipartFile file) throws IOException, InvalidExcelFileDataException;
+    ProductExcelResponse createProductByExcel(MultipartFile file) throws IOException, InvalidExcelFileDataException;
 
     List<SaleReportSupermarketMonthlyResponseBody> getSaleReportSupermarket(UUID supermarketId, Integer year);
 
@@ -44,7 +44,7 @@ public interface ProductService {
 
     ProductSubCategory updateProductSubCategory(ProductSubCategoryUpdateBody productSubCategoryUpdateBody, UUID subCategoryId);
 
-    List<Product> createProductList(List<Product> productList) throws ResourceNotFoundException;
+    ProductExcelResponse createProductList(List<Product> productList) throws ResourceNotFoundException;
     
     Product updateProduct(Product product) throws ResourceNotFoundException;
 

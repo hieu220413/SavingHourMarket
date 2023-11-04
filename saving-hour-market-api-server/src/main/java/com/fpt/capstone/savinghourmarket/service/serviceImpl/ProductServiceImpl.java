@@ -11,16 +11,14 @@ import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.repository.*;
+import com.fpt.capstone.savinghourmarket.service.FirebaseService;
 import com.fpt.capstone.savinghourmarket.service.ProductCategoryService;
 import com.fpt.capstone.savinghourmarket.service.ProductService;
 import com.fpt.capstone.savinghourmarket.service.ProductSubCategoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFPictureData;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -34,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -371,7 +370,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> createProductList(List<Product> productList) throws ResourceNotFoundException {
+    public ProductExcelResponse createProductList(List<Product> productList) throws ResourceNotFoundException {
+
 //        LinkedHashMap<String, String> errorFields = new LinkedHashMap<>();
 //        List<Product> productsSaved = new ArrayList<>();
 //        for (Product product : productList) {
@@ -439,15 +439,16 @@ public class ProductServiceImpl implements ProductService {
 //        }
 //
 //        if (errorFields.size() > 0) {
-//            throw new InvalidExcelFileDataException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
+//            return new ProductExcelResponse(productsSaved,errorFields);
 //        }
 //
 //        productList.stream().forEach(product -> {
 //            Product productSaved = productRepository.save(product);
 //            productsSaved.add(productSaved);
 //        });
-
-        return null;
+//
+//        return new ProductExcelResponse(productsSaved,errorFields);
+        return  null;
     }
 
     public List<RevenueReportMonthly> getRevenueReportForEachMonth(Integer year) {
@@ -738,100 +739,116 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> createProductByExcel(MultipartFile file) throws IOException, InvalidExcelFileDataException {
-//        LinkedHashMap<String, String> errorFields = new LinkedHashMap<>();
-//
-//        Workbook workbook;
-//        if (isXLSFile(file)) {
-//            workbook = new HSSFWorkbook(file.getInputStream());
-//        } else if (isXLSXFile(file)) {
-//            workbook = new XSSFWorkbook(file.getInputStream());
-//        } else {
-//            errorFields.put("Invalid file type", "File này có định dạng không phải excel!");
-//            throw new InvalidExcelFileDataException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
-//        }
-//
-//        List<Product> productList = new ArrayList();
-//        LinkedHashMap<Integer, ByteArrayOutputStream> productImages = new LinkedHashMap<>();
-//        Sheet sheet = workbook.getSheetAt(0);
-//        //Get first row as title
-//        Row titleRow = sheet.getRow(0);
-//        List lst = workbook.getAllPictures();
-//
-//        //Get all images
-//        int imageRow = 1;
-//        for (Iterator it = lst.iterator(); it.hasNext(); ) {
-//
-//            PictureData pict = (PictureData) it.next();
-//
-//            String ext = pict.suggestFileExtension();
-//
-//            byte[] data = pict.getData();
-//            ByteArrayOutputStream productImageByteArrayOutputStream = new ByteArrayOutputStream();
-//            productImageByteArrayOutputStream.write(data, 0, data.length);
-//            if (ext.equals("png")) {
-//                productImages.put(imageRow, productImageByteArrayOutputStream);
-//            } else if (ext.equals("jpeg")) {
-//                productImages.put(imageRow, productImageByteArrayOutputStream);
-//            }
-//            imageRow++;
-//        }
-//
-//        int rowIndex = 0;
-//        for (Row row : sheet) {
-//            if (rowIndex != 0 && row != null) {
-//                Product product = new Product();
-//                ProductSubCategory productSubCategory = new ProductSubCategory();
-//                Supermarket supermarket = new Supermarket();
-//                int cellIndex = 0;
-//                for (Cell cell : row) {
-//                    log.info(titleRow.getCell(cellIndex) + ", " + row.getCell(cellIndex));
-//                    validateAndGetProductData(sheet, product, row, titleRow, cell, errorFields, cellIndex);
-//                    validateAndGetProductSubCateData(sheet, productSubCategory, row, titleRow, cell, errorFields, cellIndex);
-//                    validateAndGetSupermarketData(supermarket, row, titleRow, cell, errorFields, cellIndex);
-//                    cellIndex++;
-//                }
-//
-//                if (cellIndex > 0) {
-//
-//                    Optional<ProductSubCategory> productSubCategoryExistedCheck = productSubCategoryRepository.findByName(productSubCategory.getName());
-//                    if (productSubCategoryExistedCheck.isPresent()) {
-//                        productSubCategory = productSubCategoryExistedCheck.get();
-//                    } else {
-//                        errorFields.put("Lỗi xử lí tên loại sản phẩm phụ tại STT " + row.getCell(0), productSubCategory.getName() + " không tìm thấy trong hệ thống!");
-//                    }
-//
-//
-//                    Optional<Supermarket> supermarketExistedCheck = supermarketRepository.findByName(supermarket.getName());
-//                    if (supermarketExistedCheck.isPresent()) {
-//                        supermarket = supermarketExistedCheck.get();
-//                    } else {
-//                        errorFields.put("Lỗi xử lí tên siêu thị tại STT " + row.getCell(0), supermarket.getName() + " không tìm thấy trong hệ thống!");
-//                    }
-//
-//                    if (productSubCategory.getAllowableDisplayThreshold() != null && product.getExpiredDate() != null && product.getExpiredDate().isBefore(LocalDate.now().plus(productSubCategory.getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
-//                        errorFields.put("Lỗi xử lí HSD tại STT " + row.getCell(0), "HSD phải sau ngày hiện tại cộng thêm số ngày điều kiện cho hàng cận hạn sử dụng có trong SUBCATEGORY!");
-//                    }
-//
-//                    if (productImages.get((int) row.getCell(0).getNumericCellValue()) != null) {
-//                        String imageUrl = FirebaseService.uploadImageToStorage(productImages.get((int) row.getCell(0).getNumericCellValue()), product.getName());
-//                        product.setImageUrl(imageUrl);
-//                    }
-//                    product.setStatus(Status.ENABLE.ordinal());
-//                    product.setProductSubCategory(productSubCategory);
-//                    product.setSupermarket(supermarket);
-//                    productList.add(product);
-//                }
-//
-//            }
-//            rowIndex++;
-//        }
-//
-//        if (errorFields.size() > 0) {
-//            throw new InvalidExcelFileDataException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
-//        }
+    public ProductExcelResponse createProductByExcel(MultipartFile file) throws IOException, InvalidExcelFileDataException {
+        LinkedHashMap<String, String> errorFields = new LinkedHashMap<>();
 
-        return null;
+        Workbook workbook;
+        if (isXLSFile(file)) {
+            workbook = new HSSFWorkbook(file.getInputStream());
+        } else if (isXLSXFile(file)) {
+            workbook = new XSSFWorkbook(file.getInputStream());
+        } else {
+            errorFields.put("Invalid file type", "File này có định dạng không phải excel!");
+            throw new InvalidExcelFileDataException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
+        }
+
+        List<Product> productList = new ArrayList();
+        Set<ProductExcelCreate> productSeenData = new HashSet<>();
+
+        Sheet sheet = workbook.getSheetAt(0);
+        //Get first row as title
+        Row titleRow = sheet.getRow(0);
+
+        int rowIndex = 0;
+        for (Row row : sheet) {
+            if (rowIndex != 0 && row != null) {
+                Product product = new Product();
+                ProductSubCategory productSubCategory = new ProductSubCategory();
+                Supermarket supermarket = new Supermarket();
+                List<ProductExcelBatchCreate> productBatchList = new ArrayList<>();
+                ProductExcelBatchCreate productBatchCreate = new ProductExcelBatchCreate();
+                int cellIndex = 0;
+                for (Cell cell : row) {
+                    if (cell.getCellType() != CellType.BLANK) {
+                        log.info(titleRow.getCell(cellIndex) + ", " + row.getCell(cellIndex));
+                        validateAndGetProductSubCateData(productSubCategory, row, titleRow, cell, errorFields, cellIndex);
+                        validateAndGetSupermarketData(supermarket, row, titleRow, cell, errorFields, cellIndex);
+                        validateAndGetProductData(product, row, titleRow, cell, errorFields, cellIndex);
+                        validateAndGetProductBatchData(productBatchCreate, productBatchList, row, titleRow, cell, errorFields, cellIndex);
+                        cellIndex++;
+                    }
+                }
+
+                if (cellIndex > 0) {
+
+                    Optional<ProductSubCategory> productSubCategoryExistedCheck = productSubCategoryRepository.findByName(productSubCategory.getName());
+                    if (productSubCategoryExistedCheck.isPresent()) {
+                        productSubCategory = productSubCategoryExistedCheck.get();
+                    } else {
+                        errorFields.put("Lỗi xử lí tên loại sản phẩm phụ tại STT " + row.getCell(0), productSubCategory.getName() + " không tìm thấy trong hệ thống!");
+                    }
+
+
+                    Optional<Supermarket> supermarketExistedCheck = supermarketRepository.findByName(supermarket.getName());
+                    if (supermarketExistedCheck.isPresent()) {
+                        supermarket = supermarketExistedCheck.get();
+                    } else {
+                        errorFields.put("Lỗi xử lí tên siêu thị tại STT " + row.getCell(0), supermarket.getName() + " không tìm thấy trong hệ thống!");
+                    }
+
+                    List<ProductBatch> productBatches = new ArrayList<>();
+                    for (ProductExcelBatchCreate productExcelBatchCreate : productBatchList) {
+                        for (ProductExcelBatchAddressCreate productExcelBatchAddressCreate : productExcelBatchCreate.getProductBatchAddresses()) {
+                            ProductBatch productBatch = new ProductBatch();
+                            productBatch.setPrice(productExcelBatchCreate.getPrice());
+                            productBatch.setPriceOriginal(productExcelBatchCreate.getPriceOriginal());
+                            if (productSubCategory.getAllowableDisplayThreshold() != null && productExcelBatchCreate.getExpiredDate() != null && productExcelBatchCreate.getExpiredDate().isBefore(LocalDate.now().plus(productSubCategory.getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
+                                errorFields.put("Lỗi xử lí HSD tại STT " + row.getCell(0), "HSD phải sau ngày hiện tại cộng thêm số ngày điều kiện cho hàng cận hạn sử dụng có trong SUBCATEGORY!");
+                            } else {
+                                productBatch.setExpiredDate(productExcelBatchCreate.getExpiredDate());
+                            }
+                            productBatch.setQuantity(productExcelBatchAddressCreate.getQuantity());
+                            Optional<SupermarketAddress> supermarketAddress = supermarketAddressRepository.findByAddress(productExcelBatchAddressCreate.getSupermarketAddress());
+                            if(!supermarketAddress.get().getSupermarket().getId().equals(supermarket.getId())){
+                                errorFields.put("Lỗi xử lí địa chỉ kho lưu giữ tại STT " + row.getCell(0), "Địa chỉ siêu thị phải nằm trong danh sách các địa chỉ của siêu thị được chọn!");
+                            }
+                            supermarketAddress.ifPresent(productBatch::setSupermarketAddress);
+                            productBatches.add(productBatch);
+                        }
+
+                    }
+                    product.setStatus(Status.ENABLE.ordinal());
+                    product.setProductBatchList(productBatches);
+                    product.setProductSubCategory(productSubCategory);
+                    product.setSupermarket(supermarket);
+
+                    ProductExcelCreate productExcelCreate = new ProductExcelCreate();
+                    productExcelCreate.setName(product.getName());
+                    productExcelCreate.setDescription(product.getDescription());
+                    productExcelCreate.setProductSubCategory(product.getProductSubCategory());
+                    productExcelCreate.setSupermarket(product.getSupermarket());
+
+                    if (productSeenData.add(productExcelCreate)) {
+                        productList.add(product);
+                    } else {
+                        for (Product p: productList) {
+                            ProductExcelCreate productDuplicate = new ProductExcelCreate();
+                            productDuplicate.setName(p.getName());
+                            productDuplicate.setDescription(p.getDescription());
+                            productDuplicate.setProductSubCategory(p.getProductSubCategory());
+                            productDuplicate.setSupermarket(p.getSupermarket());
+                            if(productDuplicate.equals(productExcelCreate)){
+                                p.getProductBatchList().addAll(productBatches);
+                            }
+                        }
+                    }
+                }
+
+            }
+            rowIndex++;
+        }
+
+        return new ProductExcelResponse(productList,errorFields);
     }
 
     private static boolean isXLSXFile(MultipartFile file) {
@@ -852,97 +869,109 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private static void validateAndGetProductData(Sheet sheet, Product product, Row row, Row titleRow,
-                                                  Cell cell, LinkedHashMap<String, String> errorFields, int cellIndex) {
-//        XSSFSheet xssfSheet = (XSSFSheet) sheet;
-//        List<XSSFPictureData> pictures = xssfSheet.getWorkbook().getAllPictures();
-//        Pattern pattern;
-//        Matcher matcher;
-//        switch (titleRow.getCell(cellIndex).toString()) {
-//            case "Tên":
-//                if (cell.getCellType().equals(CellType.STRING)) {
-//                    String productName = cell.getStringCellValue();
-//                    if (productName.length() > 50) {
-//                        putValidateDataError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString());
-//                    } else {
-//                        product.setName(productName.trim().replaceAll("\\s+", " "));
-//                    }
-//                } else {
-//                    putFormatError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString(), CellType.STRING);
-//                }
-//                break;
-//            case "Giá bán":
-//                if (cell.getCellType().equals(CellType.NUMERIC)) {
-//                    int price = (int) cell.getNumericCellValue();
-//                    if (price < 0) {
-//                        putValidateDataError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString());
-//                    } else {
-//                        product.setPrice(price);
-//                    }
-//                } else {
-//                    putFormatError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString(), CellType.NUMERIC);
-//                }
-//                break;
-//            case "Giá gốc":
-//                if (cell.getCellType().equals(CellType.NUMERIC)) {
-//                    int priceOriginal = (int) cell.getNumericCellValue();
-//                    if (priceOriginal < 0) {
-//                        putValidateDataError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString());
-//                    } else {
-//                        product.setPriceOriginal(priceOriginal);
-//                    }
-//                } else {
-//                    putFormatError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString(), CellType.NUMERIC);
-//                }
-//                break;
-//            case "Mô tả sản phẩm":
-//                if (cell.getCellType().equals(CellType.STRING)) {
-//                    product.setDescription(cell.getStringCellValue().trim().replaceAll("\\s+", " "));
-//                } else {
-//                    putFormatError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString(), CellType.STRING);
-//                }
-//                break;
-//            case "Ngày HSD":
-//                if (cell.getCellType().equals(CellType.NUMERIC)) {
-//                    if (DateUtil.isCellDateFormatted(cell)) {
-//                        product.setExpiredDate(convertDateToLocalDate(cell.getDateCellValue()));
-//                    } else {
-//                        putValidateDataError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString());
-//                    }
-//                } else {
-//                    putFormatError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString(), CellType.NUMERIC);
-//                }
-//                break;
-//            case "Số lượng":
-//                if (cell.getCellType().equals(CellType.NUMERIC)) {
-//                    int priceOriginal = (int) cell.getNumericCellValue();
-//                    if (priceOriginal < 0) {
-//                        putValidateDataError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString());
-//                    } else {
-//                        product.setQuantity(priceOriginal);
-//                    }
-//                } else {
-//                    putFormatError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString(), CellType.NUMERIC);
-//                }
-//
-//                break;
-//        }
+    private static void validateAndGetProductData(Product product,
+                                                  Row row, Row titleRow, Cell cell, LinkedHashMap<String, String> errorFields, int cellIndex) {
+
+
+        switch (titleRow.getCell(cellIndex).toString().trim().replaceAll("\\s+", " ")) {
+            case "Tên":
+                if (cell.getCellType().equals(CellType.STRING)) {
+                    String productName = cell.getStringCellValue();
+                    if (productName != null && !productName.trim().isEmpty()) {
+                        if (productName.length() > 50) {
+                            putValidateDataError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString());
+                        } else {
+                            product.setName(productName.trim().replaceAll("\\s+", " "));
+                        }
+                    }
+                } else {
+                    putFormatError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString(), CellType.STRING);
+                }
+                break;
+            case "Mô tả sản phẩm":
+                if (cell.getCellType().equals(CellType.STRING)) {
+                    product.setDescription(cell.getStringCellValue().trim().replaceAll("\\s+", " "));
+                } else {
+                    putFormatError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString(), CellType.STRING);
+                }
+                break;
+        }
     }
 
-    private static void validateAndGetProductSubCateData(Sheet sheet, ProductSubCategory productSubCategory, Row row, Row titleRow,
-                                                         Cell cell, LinkedHashMap<String, String> errorFields, int cellIndex) {
-        XSSFSheet xssfSheet = (XSSFSheet) sheet;
-        List<XSSFPictureData> pictures = xssfSheet.getWorkbook().getAllPictures();
-        Pattern pattern;
-        Matcher matcher;
-        switch (titleRow.getCell(cellIndex).toString()) {
-            case "Tên loại sản phẩm phụ":
-                if (cell.getCellType().equals(CellType.STRING)) {
-                    String productSubCateName = cell.getStringCellValue();
-                    if (productSubCateName.length() > 50) {
+    private static void validateAndGetProductBatchData(ProductExcelBatchCreate productBatchCreate, List<ProductExcelBatchCreate> productBatchList,
+                                                       Row row, Row titleRow, Cell cell, LinkedHashMap<String, String> errorFields, int cellIndex) {
+        switch (titleRow.getCell(cellIndex).toString().trim().replaceAll("\\s+", " ")) {
+            case "Giá bán":
+                if (cell.getCellType().equals(CellType.NUMERIC)) {
+                    int price = (int) cell.getNumericCellValue();
+                    if (price < 0) {
                         putValidateDataError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString());
                     } else {
-                        productSubCategory.setName(productSubCateName.trim().replaceAll("\\s+", " "));
+                        productBatchCreate.setPrice(price);
+                    }
+                } else {
+                    putFormatError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString(), CellType.NUMERIC);
+                }
+                break;
+            case "Giá gốc":
+                if (cell.getCellType().equals(CellType.NUMERIC)) {
+                    int priceOriginal = (int) cell.getNumericCellValue();
+                    if (priceOriginal < 0) {
+                        putValidateDataError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString());
+                    } else {
+                        productBatchCreate.setPriceOriginal(priceOriginal);
+                    }
+                } else {
+                    putFormatError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString(), CellType.NUMERIC);
+                }
+                break;
+            case "HSD":
+                if (cell.getCellType().equals(CellType.NUMERIC)) {
+                    if (DateUtil.isCellDateFormatted(cell)) {
+                        productBatchCreate.setExpiredDate(convertDateToLocalDate(cell.getDateCellValue()));
+                    } else {
+                        putValidateDataError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString());
+                    }
+                } else {
+                    putFormatError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString(), CellType.NUMERIC);
+                }
+                break;
+            case "Địa chỉ kho lưu giữ + số lượng":
+                if (cell.getCellType().equals(CellType.STRING)) {
+                    List<ProductExcelBatchAddressCreate> productBatchAddresses = new ArrayList<>();
+                    String[] addressesQuantityBatches = cell.getStringCellValue().split("\n");
+                    for (String addressesQuantityBatch : addressesQuantityBatches) {
+                        String[] addressesQuantityBatchSplit = addressesQuantityBatch.split(";");
+                        if(Arrays.stream(addressesQuantityBatchSplit).toList().size() == 2){
+                            String address = addressesQuantityBatchSplit[0];
+                            String quantity = addressesQuantityBatchSplit[1];
+                            ProductExcelBatchAddressCreate productBatchAddress = new ProductExcelBatchAddressCreate();
+                            productBatchAddress.setQuantity(Integer.valueOf(quantity.trim().replaceAll("\\s+", " ")));
+                            productBatchAddress.setSupermarketAddress(address.trim().replaceAll("\\s+", " "));
+                            productBatchAddresses.add(productBatchAddress);
+                        }else{
+                            errorFields.put("Lỗi xử lí Địa chỉ kho lưu giữ + số lượng tại STT " + row.getCell(0), "Địa chỉ kho lưu giữ + số lượng không đủ thông tin!");
+                        }
+                    }
+                    productBatchCreate.setProductBatchAddresses(productBatchAddresses);
+                    productBatchList.add(productBatchCreate);
+                }
+                break;
+        }
+    }
+
+    private static void validateAndGetProductSubCateData(ProductSubCategory productSubCategory,
+                                                         Row row, Row titleRow, Cell cell, LinkedHashMap<String, String> errorFields, int cellIndex) {
+        switch (titleRow.getCell(cellIndex).toString().trim().replaceAll("\\s+", " ")) {
+            case "Danh mục phụ":
+                if (cell.getCellType().equals(CellType.STRING)) {
+                    String productSubCateName = cell.getStringCellValue();
+                    if (productSubCateName != null && !productSubCateName.trim().isEmpty()) {
+                        if (productSubCateName.length() > 50) {
+                            putValidateDataError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString());
+                        } else {
+                            productSubCategory.setName(productSubCateName.trim().replaceAll("\\s+", " "));
+                        }
                     }
                 } else {
                     putFormatError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString(), CellType.STRING);
@@ -953,16 +982,16 @@ public class ProductServiceImpl implements ProductService {
 
     private static void validateAndGetSupermarketData(Supermarket supermarket, Row row, Row titleRow,
                                                       Cell cell, LinkedHashMap<String, String> errorFields, int cellIndex) {
-        Pattern pattern;
-        Matcher matcher;
-        switch (titleRow.getCell(cellIndex).toString()) {
-            case "Tên siêu thị":
+        switch (titleRow.getCell(cellIndex).toString().trim().replaceAll("\\s+", " ")) {
+            case "Siêu thị":
                 if (cell.getCellType().equals(CellType.STRING)) {
                     String supermarketName = cell.getStringCellValue();
-                    if (supermarketName.length() > 50) {
-                        putValidateDataError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString());
-                    } else {
-                        supermarket.setName(supermarketName.trim().replaceAll("\\s+", " "));
+                    if (supermarketName != null && !supermarketName.trim().isEmpty()) {
+                        if (supermarketName.length() > 50) {
+                            putValidateDataError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString());
+                        } else {
+                            supermarket.setName(supermarketName.trim().replaceAll("\\s+", " "));
+                        }
                     }
                 } else {
                     putFormatError(errorFields, row.getCell(0).toString(), titleRow.getCell(cellIndex).toString(), CellType.STRING);

@@ -213,7 +213,7 @@ public class ProductController {
             method = RequestMethod.POST,
             consumes = {"multipart/form-data"})
     @Operation(description = "Upload product excel file")
-    public ResponseEntity<List<Product>> uploadProduct(@RequestParam("file")  MultipartFile file,
+    public ResponseEntity<ProductExcelResponse> uploadProduct(@RequestParam("file")  MultipartFile file,
                                                        @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws IOException, InvalidExcelFileDataException, FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
@@ -222,7 +222,7 @@ public class ProductController {
 
     @RequestMapping(value = "/create/list", method = RequestMethod.POST)
     @Operation(description = "Save list of products to database")
-    public ResponseEntity<List<Product>> uploadProductList(@Valid @RequestBody List<Product> productList,
+    public ResponseEntity<ProductExcelResponse> uploadProductList(@Valid @RequestBody List<Product> productList,
                                                            @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws ResourceNotFoundException, FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);

@@ -8,18 +8,16 @@ import lombok.Setter;
 import java.time.LocalDate;
 import java.util.List;
 
-@AllArgsConstructor
 @NoArgsConstructor
-@Setter
+@AllArgsConstructor
 @Getter
-public class ProductBatchCreate {
-
+@Setter
+public class ProductExcelBatchCreate {
     private Integer price;
 
     private Integer priceOriginal;
 
     private LocalDate expiredDate;
 
-    List<ProductBatchAddress> productBatchAddresses;
-
+    List<ProductExcelBatchAddressCreate> productBatchAddresses;
 }
