@@ -2,6 +2,7 @@ package com.fpt.capstone.savinghourmarket.model;
 
 
 import com.fpt.capstone.savinghourmarket.entity.Product;
+import com.fpt.capstone.savinghourmarket.entity.ProductImage;
 import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
 import com.fpt.capstone.savinghourmarket.entity.Supermarket;
 import lombok.AllArgsConstructor;
@@ -22,7 +23,7 @@ public class ProductDisplayCustomer {
         this.id = product.getId();
         this.name = product.getName();
         this.description = product.getDescription();
-        this.imageUrl = product.getImageUrl();
+        this.imageUrlImageList = product.getProductImageList();
         this.status = product.getStatus();
         this.productSubCategory = product.getProductSubCategory();
         this.supermarket = product.getSupermarket();
@@ -49,7 +50,7 @@ public class ProductDisplayCustomer {
     private String description;
 
 
-    private String imageUrl;
+    private List<ProductImage> imageUrlImageList;
 
     private Integer status;
 
