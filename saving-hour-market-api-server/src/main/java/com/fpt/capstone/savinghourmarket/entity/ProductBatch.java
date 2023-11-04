@@ -28,6 +28,9 @@ public class ProductBatch {
     private Integer priceOriginal;
 
     @Column(columnDefinition = "datetime(0)")
+    private LocalDate sellingDate;
+
+    @Column(columnDefinition = "datetime(0)")
     private LocalDate expiredDate;
 
     private Integer quantity;
