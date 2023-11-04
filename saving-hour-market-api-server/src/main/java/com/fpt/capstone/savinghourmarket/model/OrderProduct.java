@@ -2,6 +2,7 @@ package com.fpt.capstone.savinghourmarket.model;
 
 import com.fpt.capstone.savinghourmarket.entity.OrderDetailProductBatch;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
+import com.fpt.capstone.savinghourmarket.entity.ProductImage;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,7 +31,7 @@ public class OrderProduct {
 
     private String description;
 
-    private String imageUrl;
+    private List<ProductImage> images;
 
     private Integer status;
 
