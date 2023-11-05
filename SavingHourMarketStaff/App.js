@@ -1,11 +1,18 @@
 /* eslint-disable prettier/prettier */
-import React, {useEffect, useState} from 'react';
-import {createStackNavigator} from '@react-navigation/stack';
-import {NavigationContainer} from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { createStackNavigator } from '@react-navigation/stack';
+import { NavigationContainer } from '@react-navigation/native';
 import 'react-native-gesture-handler';
 import Tabs from './src/navigations/tabs';
 import Login from './src/screens/Login';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import OrderDetails from './src/screens/OrderDetails';
+import EditDeliveryDate from './src/screens/EditDeliveryDate';
+import { LogBox } from 'react-native';
+
+LogBox.ignoreLogs([
+  'Non-serializable values were found in the navigation state',
+]);
+
 const Stack = createStackNavigator();
 export default function App() {
   return (
@@ -20,8 +27,10 @@ export default function App() {
           <Stack.Screen
             name="Login"
             component={Login}
-            options={{swipeEnabled: false}}
+            options={{ swipeEnabled: false }}
           />
+          <Stack.Screen name="OrderDetails" component={OrderDetails} />
+          <Stack.Screen name="EditDeliveryDate" component={EditDeliveryDate} />
         </Stack.Navigator>
       </NavigationContainer>
     </>
