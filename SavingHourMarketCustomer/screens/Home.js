@@ -96,6 +96,7 @@ const Home = ({ navigation }) => {
       )
         .then(res => res.json())
         .then(data => {
+          console.log("san pham", data.productList[0].supermarket);
           setProductsByCategory(data.productList);
           setPage(1);
           setTotalPage(data.totalPage);

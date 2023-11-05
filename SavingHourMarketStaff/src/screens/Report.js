@@ -144,10 +144,58 @@ const Report = () => {
         </View>
         <View style={styles.footer}>
           <View style={styles.wrap_container}>
-            <View style={styles.wrap}></View>
-            <View style={styles.wrap}></View>
-            <View style={styles.wrap}></View>
-            <View style={styles.wrap}></View>
+            <View style={styles.wrap}>
+              <View style={{flex: 1}}>
+                <Text style={styles.texts}>Tổng đơn hàng trong ngày:</Text>
+              </View>
+              <View
+                style={{
+                  flex: 2,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                <Text style={styles.numbers}>80</Text>
+              </View>
+            </View>
+            <View style={styles.wrap}>
+              <View style={{flex: 1}}>
+                <Text style={styles.texts}>Tổng đơn hàng trong tháng:</Text>
+              </View>
+              <View
+                style={{
+                  flex: 2,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                <Text style={styles.numbers}>80</Text>
+              </View>
+            </View>
+            <View style={styles.wrap}>
+              <View style={{flex: 1}}>
+                <Text style={styles.texts}>Số đơn hàng chưa đóng gói:</Text>
+              </View>
+              <View
+                style={{
+                  flex: 2,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                <Text style={styles.numbers}>80</Text>
+              </View>
+            </View>
+            <View style={styles.wrap}>
+              <View style={{flex: 1}}>
+                <Text style={styles.texts}>Tổng đơn hàng:</Text>
+              </View>
+              <View
+                style={{
+                  flex: 2,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                <Text style={styles.numbers}>80</Text>
+              </View>
+            </View>
           </View>
         </View>
       </View>
@@ -179,7 +227,6 @@ const styles = StyleSheet.create({
   wrap_container: {
     display: 'flex',
     flexWrap: 'wrap',
-    backgroundColor: 'yellow',
     height: '100%',
     paddingVertical: 10,
     alignContent: 'center',
@@ -188,8 +235,19 @@ const styles = StyleSheet.create({
   wrap: {
     width: '47%',
     height: '40%',
-    backgroundColor: 'white',
+    backgroundColor: 'rgb(240,240,240)',
     borderRadius: 10,
+    padding: 10,
+    display: 'flex',
+  },
+  numbers: {
+    fontSize: 40,
+    color: 'black',
+    fontWeight: 'bold',
+  },
+  texts: {
+    fontSize: 18,
+    color: 'black',
   },
   pagenameAndLogout: {
     paddingTop: 18,
