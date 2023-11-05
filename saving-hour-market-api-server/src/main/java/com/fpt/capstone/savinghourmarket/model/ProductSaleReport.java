@@ -18,14 +18,14 @@ import java.util.UUID;
 @NoArgsConstructor
 public class ProductSaleReport {
 
-    public ProductSaleReport(Product product,Integer totalIncome, Integer soldQuantity) {
-        this.id = product.getId();
-        this.name = product.getName();
-        this.imageUrl = product.getImageUrl();
-        this.totalIncome = totalIncome;
+//    public ProductSaleReport(Product product,Integer totalIncome, Integer soldQuantity) {
+//        this.id = product.getId();
+//        this.name = product.getName();
+//        this.imageUrl = product.getImageUrl();
+//        this.totalIncome = totalIncome;
 //        this.totalPriceOriginal = product.getPriceOriginal();
-        this.soldQuantity = soldQuantity;
-    }
+//        this.soldQuantity = soldQuantity;
+//    }
 
     private UUID id;
     private String name;

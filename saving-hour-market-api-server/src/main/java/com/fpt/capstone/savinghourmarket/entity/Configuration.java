@@ -50,4 +50,7 @@ public class Configuration {
 
     @NotNull
     private Integer extraShippingFeePerKilometer;
+
+    @NotNull
+    private Integer timeAllowedForOrderCancellation;
 }

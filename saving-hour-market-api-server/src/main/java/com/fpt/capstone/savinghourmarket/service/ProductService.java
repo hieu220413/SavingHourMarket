@@ -22,7 +22,7 @@ import java.util.UUID;
 public interface ProductService {
     ProductListResponseBody getProductsForStaff(Boolean isExpiredShown, String name, String supermarketId, String productCategoryId, String productSubCategoryId, EnableDisableStatus status, Integer page, Integer limit, SortType quantitySortType, SortType expiredSortType, SortType priceSort);
 
-    ProductListResponseBody getProductsForCustomer(String name, String supermarketId, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, SortType quantitySortType, SortType expiredSortType, SortType priceSort);
+    ProductListCustomerResponseBody getProductsForCustomer(String name, String supermarketId, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, SortType quantitySortType, SortType expiredSortType, SortType priceSort, UUID pickupPointId);
 
     Product getById(UUID id);
 
@@ -32,7 +32,7 @@ public interface ProductService {
 
     Product createProduct(ProductCreate productCreate) throws ResourceNotFoundException;
 
-    List<Product> createProductByExcel(MultipartFile file) throws IOException, InvalidExcelFileDataException;
+    ProductExcelResponse createProductByExcel(MultipartFile file) throws IOException, InvalidExcelFileDataException;
 
     List<SaleReportSupermarketMonthlyResponseBody> getSaleReportSupermarket(UUID supermarketId, Integer year);
 
@@ -44,7 +44,7 @@ public interface ProductService {
 
     ProductSubCategory updateProductSubCategory(ProductSubCategoryUpdateBody productSubCategoryUpdateBody, UUID subCategoryId);
 
-    List<Product> createProductList(List<Product> productList) throws ResourceNotFoundException;
+    ProductExcelResponse createProductList(List<Product> productList) throws ResourceNotFoundException;
     
     Product updateProduct(Product product) throws ResourceNotFoundException;
 

@@ -27,8 +27,8 @@ public class TimeFrame {
     private LocalTime toHour;
 
     @Column(columnDefinition = "tinyint")
-    private Integer dayOfWeek;
+    private Integer status;
 
     @Column(columnDefinition = "tinyint")
-    private Integer status;
+    private Integer allowableDeliverMethod;
 }
