@@ -26,9 +26,9 @@ public interface ProductService {
 
     Product getById(UUID id);
 
-    List<ProductCateWithSubCate> getAllCategory();
+    List<ProductCateWithSubCate> getAllCategory(UUID pickupPointId);
 
-    List<ProductSubCateOnly> getAllSubCategory();
+    List<ProductSubCateOnly> getAllSubCategory(UUID pickupPointId);
 
     Product createProduct(ProductCreate productCreate) throws ResourceNotFoundException;
 

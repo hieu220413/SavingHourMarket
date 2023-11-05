@@ -108,14 +108,18 @@ public class ProductController {
     }
 
     @RequestMapping(value = "/getAllCategory", method = RequestMethod.GET)
-    public ResponseEntity<List<ProductCateWithSubCate>> getAllCategory() {
-        List<ProductCateWithSubCate> productCategoryList = productService.getAllCategory();
+    public ResponseEntity<List<ProductCateWithSubCate>> getAllCategory(
+            @RequestParam UUID pickupPointId
+    ) {
+        List<ProductCateWithSubCate> productCategoryList = productService.getAllCategory(pickupPointId);
         return ResponseEntity.status(HttpStatus.OK).body(productCategoryList);
     }
 
     @RequestMapping(value = "/getAllSubCategory", method = RequestMethod.GET)
-    public ResponseEntity<List<ProductSubCateOnly>> getAllSubCategory() {
-        List<ProductSubCateOnly> productSubCateOnlyList = productService.getAllSubCategory();
+    public ResponseEntity<List<ProductSubCateOnly>> getAllSubCategory(
+            @RequestParam UUID pickupPointId
+    ) {
+        List<ProductSubCateOnly> productSubCateOnlyList = productService.getAllSubCategory(pickupPointId);
         return ResponseEntity.status(HttpStatus.OK).body(productSubCateOnlyList);
     }
 
