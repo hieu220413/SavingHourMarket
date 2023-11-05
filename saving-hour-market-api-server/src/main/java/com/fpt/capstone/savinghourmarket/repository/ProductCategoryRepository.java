@@ -19,12 +19,15 @@ public interface ProductCategoryRepository extends JpaRepository<ProductCategory
             "LEFT JOIN FETCH pct.productSubCategories psct " +
             "INNER JOIN psct.productList pd " +
             "INNER JOIN pd.productBatchList pdb " +
+            "INNER JOIN pdb.supermarketAddress spa " +
+            "INNER JOIN spa.pickupPoint pp " +
             "WHERE " +
             "pdb.expiredDate > CURRENT_TIMESTAMP + pd.productSubCategory.allowableDisplayThreshold DAY " +
             "AND pdb.quantity > 0 " +
+            "AND pp.id = :pickupPointId " +
             "AND pd.status = 1")
 //            "WHERE SIZE(psct.productList) > 0 "
-    List<ProductCateWithSubCate> getAllProductCategoryWithSubCate();
+    List<ProductCateWithSubCate> getAllProductCategoryWithSubCate(UUID pickupPointId);
 
     Optional<ProductCategory> findByName(String trim);
 

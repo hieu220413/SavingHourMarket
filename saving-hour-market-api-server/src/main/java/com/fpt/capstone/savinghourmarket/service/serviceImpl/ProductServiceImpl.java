@@ -11,7 +11,6 @@ import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.repository.*;
-import com.fpt.capstone.savinghourmarket.service.FirebaseService;
 import com.fpt.capstone.savinghourmarket.service.ProductCategoryService;
 import com.fpt.capstone.savinghourmarket.service.ProductService;
 import com.fpt.capstone.savinghourmarket.service.ProductSubCategoryService;
@@ -19,8 +18,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFPictureData;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -32,15 +29,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -338,14 +332,14 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductCateWithSubCate> getAllCategory() {
-        List<ProductCateWithSubCate> productCategoryList = productCategoryRepository.getAllProductCategoryWithSubCate();
+    public List<ProductCateWithSubCate> getAllCategory(UUID pickupPointId) {
+        List<ProductCateWithSubCate> productCategoryList = productCategoryRepository.getAllProductCategoryWithSubCate(pickupPointId);
         return productCategoryList;
     }
 
     @Override
-    public List<ProductSubCateOnly> getAllSubCategory() {
-        List<ProductSubCateOnly> productSubCateOnlyList = productSubCategoryRepository.findAllSubCategoryOnly();
+    public List<ProductSubCateOnly> getAllSubCategory(UUID pickupPointId) {
+        List<ProductSubCateOnly> productSubCateOnlyList = productSubCategoryRepository.findAllSubCategoryOnly(pickupPointId);
         return productSubCateOnlyList;
     }
 
