@@ -28,4 +28,7 @@ public class TimeFrame {
 
     @Column(columnDefinition = "tinyint")
     private Integer status;
+
+    @Column(columnDefinition = "tinyint")
+    private Integer allowableDeliverMethod;
 }

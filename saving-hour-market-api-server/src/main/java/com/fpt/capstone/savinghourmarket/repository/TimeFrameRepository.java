@@ -12,11 +12,11 @@ import java.util.UUID;
 
 @Repository
 public interface TimeFrameRepository extends JpaRepository<TimeFrame, UUID> {
-    @Query("SELECT DISTINCT og.timeFrame FROM OrderGroup og ")
+    @Query("SELECT tf FROM TimeFrame tf WHERE (tf.allowableDeliverMethod = 0 OR tf.allowableDeliverMethod = 2) AND tf.status = 1 ")
     List<TimeFrame> findForPickupPoint();
 
     @Query("SELECT tf FROM TimeFrame tf " +
-            "WHERE tf.toHour <= :endTime")
+            "WHERE (tf.allowableDeliverMethod = 1 OR tf.allowableDeliverMethod = 2) AND tf.status = 1")
     List<TimeFrame> findForHomeDelivery(LocalTime endTime);
 
     @Query("SELECT t FROM TimeFrame t " +

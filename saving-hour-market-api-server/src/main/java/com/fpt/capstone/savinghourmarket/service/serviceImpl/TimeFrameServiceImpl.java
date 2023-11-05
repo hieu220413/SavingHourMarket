@@ -83,6 +83,7 @@ public class TimeFrameServiceImpl implements TimeFrameService {
         TimeFrame timeFrame = new TimeFrame();
         timeFrame.setFromHour(timeFrameCreateUpdateBody.getFromHour());
         timeFrame.setToHour(timeFrameCreateUpdateBody.getToHour());
+        timeFrame.setAllowableDeliverMethod(timeFrameCreateUpdateBody.getAllowableDeliverMethod().ordinal());
         timeFrame.setStatus(EnableDisableStatus.ENABLE.ordinal());
 
         return timeFrameRepository.save(timeFrame);
@@ -126,6 +127,7 @@ public class TimeFrameServiceImpl implements TimeFrameService {
 
         timeFrame.get().setFromHour(timeFrameUpdateBody.getFromHour());
         timeFrame.get().setToHour(timeFrameUpdateBody.getToHour());
+        timeFrame.get().setAllowableDeliverMethod(timeFrameUpdateBody.getAllowableDeliverMethod().ordinal());
 
         return timeFrame.get();
     }

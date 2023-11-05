@@ -26,6 +26,7 @@ SET @vnpay = 1;
 -- Delivery method: Pickup point(0), Door-to-Door (1)
 SET @PickupPoint = 0;
 SET @DoorToDoor = 1;
+SET @All = 2;
 
 -- Payment status: unpaid(0), paid(1)
 SET @unpaid = 0;
@@ -273,15 +274,15 @@ INSERT INTO `saving_hour_market`.`supermarket_address` (`id`, `address`, `superm
 
 
 -- Time frame
-INSERT INTO `saving_hour_market`.`time_frame` (`id`, `from_hour`, `to_hour`, `status`)
+INSERT INTO `saving_hour_market`.`time_frame` (`id`, `from_hour`, `to_hour`, `status`, `allowable_deliver_method`)
 --     VALUES ('id', 'day_of_week', 'from_hour', 'to_hour', 'status');
-    VALUES  (UUID_TO_BIN('accf0876-5541-11ee-8a50-a85e45c41921'), '19:00:00', '20:30:00', @enable),
-            (UUID_TO_BIN('accf0996-5541-11ee-8a50-a85e45c41921'), '21:00:00', '22:30:00', @enable),
-            (UUID_TO_BIN('ec5e05ac-56dc-11ee-8a50-a85e45c41921'), '08:00:00', '09:30:00', @enable),
-            (UUID_TO_BIN('ec5e070b-56dc-11ee-8a50-a85e45c41921'), '10:00:00', '11:30:00', @enable),
-            (UUID_TO_BIN('ec5e0855-56dc-11ee-8a50-a85e45c41921'), '12:00:00', '13:30:00', @enable),
-            (UUID_TO_BIN('ec5e099f-56dc-11ee-8a50-a85e45c41921'), '14:00:00', '15:30:00', @enable),
-            (UUID_TO_BIN('ec5e1c52-56dc-11ee-8a50-a85e45c41921'), '16:00:00', '17:30:00', @enable);
+    VALUES  (UUID_TO_BIN('accf0876-5541-11ee-8a50-a85e45c41921'), '19:00:00', '20:30:00', @enable, @PickupPoint),
+            (UUID_TO_BIN('accf0996-5541-11ee-8a50-a85e45c41921'), '21:00:00', '22:30:00', @enable, @PickupPoint),
+            (UUID_TO_BIN('ec5e05ac-56dc-11ee-8a50-a85e45c41921'), '08:00:00', '09:30:00', @enable, @DoorToDoor),
+            (UUID_TO_BIN('ec5e070b-56dc-11ee-8a50-a85e45c41921'), '10:00:00', '11:30:00', @enable, @DoorToDoor),
+            (UUID_TO_BIN('ec5e0855-56dc-11ee-8a50-a85e45c41921'), '12:00:00', '13:30:00', @enable, @DoorToDoor),
+            (UUID_TO_BIN('ec5e099f-56dc-11ee-8a50-a85e45c41921'), '14:00:00', '15:30:00', @enable, @DoorToDoor),
+            (UUID_TO_BIN('ec5e1c52-56dc-11ee-8a50-a85e45c41921'), '16:00:00', '17:30:00', @enable, @DoorToDoor);
 
 
 
