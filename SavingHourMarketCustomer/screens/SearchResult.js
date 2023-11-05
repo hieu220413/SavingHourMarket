@@ -10,13 +10,13 @@ import {
   FlatList,
   Modal as FilterModal,
 } from 'react-native';
-import React, { useState, useRef, useCallback } from 'react';
-import { icons } from '../constants';
-import { COLORS, FONTS } from '../constants/theme';
+import React, {useState, useRef, useCallback} from 'react';
+import {icons} from '../constants';
+import {COLORS, FONTS} from '../constants/theme';
 import dayjs from 'dayjs';
 import Empty from '../assets/image/search-empty.png';
-import { API } from '../constants/api';
-import { useFocusEffect } from '@react-navigation/native';
+import {API} from '../constants/api';
+import {useFocusEffect} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import LoadingScreen from '../components/LoadingScreen';
@@ -27,7 +27,7 @@ import Modal, {
   ScaleAnimation,
 } from 'react-native-modals';
 
-const SearchResult = ({ navigation, route }) => {
+const SearchResult = ({navigation, route}) => {
   const [result, setResult] = useState(route.params.result);
   const [productName, setProductName] = useState(route.params.text);
   const [text, setText] = useState(route.params.text);
@@ -93,9 +93,12 @@ const SearchResult = ({ navigation, route }) => {
     setLoading(true);
     if (sortItem) {
       fetch(
-        `${API.baseURL}/api/product/getProductsForCustomer?name=${productName}${currentCate === '' ? '' : '&productCategoryId=' + currentCate
-        }&page=0&limit=10${sortItem?.id == 1 ? '&expiredSortType=ASC' : ''}${sortItem?.id == 2 ? '&expiredSortType=DESC' : ''
-        }${sortItem?.id == 3 ? '&priceSort=ASC' : ''}${sortItem?.id == 4 ? '&priceSort=DESC' : ''
+        `${API.baseURL}/api/product/getProductsForCustomer?name=${productName}${
+          currentCate === '' ? '' : '&productCategoryId=' + currentCate
+        }&page=0&limit=10${sortItem?.id == 1 ? '&expiredSortType=ASC' : ''}${
+          sortItem?.id == 2 ? '&expiredSortType=DESC' : ''
+        }${sortItem?.id == 3 ? '&priceSort=ASC' : ''}${
+          sortItem?.id == 4 ? '&priceSort=DESC' : ''
         }`,
       )
         .then(res => res.json())
@@ -109,7 +112,8 @@ const SearchResult = ({ navigation, route }) => {
         });
     } else {
       fetch(
-        `${API.baseURL}/api/product/getProductsForCustomer?name=${productName}${currentCate === '' ? '' : '&productCategoryId=' + currentCate
+        `${API.baseURL}/api/product/getProductsForCustomer?name=${productName}${
+          currentCate === '' ? '' : '&productCategoryId=' + currentCate
         }&page=0&limit=10`,
       )
         .then(res => res.json())
@@ -168,7 +172,7 @@ const SearchResult = ({ navigation, route }) => {
         return;
       }
 
-      const cartData = { ...data, isChecked: false, cartQuantity: 1 };
+      const cartData = {...data, isChecked: false, cartQuantity: 1};
       newCartList = [...newCartList, cartData];
       setCartList(newCartList);
       await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
@@ -269,7 +273,7 @@ const SearchResult = ({ navigation, route }) => {
         .then(res => res.json())
         .then(data => {
           const cateData = data.map(item => {
-            return { ...item, active: false };
+            return {...item, active: false};
           });
           setSelectFilter(cateData);
           setSelectFilterInit(cateData);
@@ -282,7 +286,7 @@ const SearchResult = ({ navigation, route }) => {
     }, [productName, searchHistory]),
   );
 
-  const Product = ({ data }) => {
+  const Product = ({data}) => {
     return (
       <TouchableOpacity
         key={data.id}
@@ -301,7 +305,7 @@ const SearchResult = ({ navigation, route }) => {
             style={styles.itemImage}
           />
 
-          <View style={{ justifyContent: 'center', flex: 1, marginRight: 10 }}>
+          <View style={{justifyContent: 'center', flex: 1, marginRight: 10}}>
             <Text
               numberOfLines={1}
               style={{
@@ -314,7 +318,7 @@ const SearchResult = ({ navigation, route }) => {
               {data.name}
             </Text>
 
-            <View style={{ flexDirection: 'row' }}>
+            <View style={{flexDirection: 'row'}}>
               <Text
                 style={{
                   maxWidth: '70%',
@@ -370,58 +374,58 @@ const SearchResult = ({ navigation, route }) => {
     );
   };
 
-  const ModalSortItem = ({ item }) => {
+  const ModalSortItem = ({item}) => {
     return (
       <TouchableOpacity
         onPress={() => {
           const newArray = selectSort.map(i => {
             if (i.id === item.id) {
               if (i.active === true) {
-                return { ...i, active: false };
+                return {...i, active: false};
               } else {
-                return { ...i, active: true };
+                return {...i, active: true};
               }
             }
-            return { ...i, active: false };
+            return {...i, active: false};
           });
           setSelectSort(newArray);
         }}
         style={
           item.active == true
             ? {
-              borderColor: COLORS.primary,
-              borderWidth: 1,
-              borderRadius: 10,
-              margin: 5,
-            }
+                borderColor: COLORS.primary,
+                borderWidth: 1,
+                borderRadius: 10,
+                margin: 5,
+              }
             : {
-              borderColor: '#c8c8c8',
-              borderWidth: 0.2,
-              borderRadius: 10,
-              margin: 5,
-            }
+                borderColor: '#c8c8c8',
+                borderWidth: 0.2,
+                borderRadius: 10,
+                margin: 5,
+              }
         }>
         <Text
           style={
             item.active == true
               ? {
-                width: 150,
-                paddingHorizontal: 20,
-                paddingVertical: 10,
-                textAlign: 'center',
-                color: COLORS.primary,
-                fontFamily: FONTS.fontFamily,
-                fontSize: 12,
-              }
+                  width: 150,
+                  paddingHorizontal: 20,
+                  paddingVertical: 10,
+                  textAlign: 'center',
+                  color: COLORS.primary,
+                  fontFamily: FONTS.fontFamily,
+                  fontSize: 12,
+                }
               : {
-                width: 150,
-                paddingHorizontal: 20,
-                paddingVertical: 10,
-                textAlign: 'center',
-                color: 'black',
-                fontFamily: FONTS.fontFamily,
-                fontSize: 12,
-              }
+                  width: 150,
+                  paddingHorizontal: 20,
+                  paddingVertical: 10,
+                  textAlign: 'center',
+                  color: 'black',
+                  fontFamily: FONTS.fontFamily,
+                  fontSize: 12,
+                }
           }>
           {item.name}
         </Text>
@@ -429,7 +433,7 @@ const SearchResult = ({ navigation, route }) => {
     );
   };
 
-  const ModalCateItem = ({ item }) => {
+  const ModalCateItem = ({item}) => {
     return (
       <TouchableOpacity
         onPress={() => {
@@ -438,51 +442,51 @@ const SearchResult = ({ navigation, route }) => {
             if (i.id === item.id) {
               if (i.active === true) {
                 setCurrentCate('');
-                return { ...i, active: false };
+                return {...i, active: false};
               } else {
-                return { ...i, active: true };
+                return {...i, active: true};
               }
             }
-            return { ...i, active: false };
+            return {...i, active: false};
           });
           setSelectFilter(newArray);
         }}
         style={
           item.active == true
             ? {
-              borderColor: COLORS.primary,
-              borderWidth: 1,
-              borderRadius: 10,
-              margin: 5,
-            }
+                borderColor: COLORS.primary,
+                borderWidth: 1,
+                borderRadius: 10,
+                margin: 5,
+              }
             : {
-              borderColor: '#c8c8c8',
-              borderWidth: 0.2,
-              borderRadius: 10,
-              margin: 5,
-            }
+                borderColor: '#c8c8c8',
+                borderWidth: 0.2,
+                borderRadius: 10,
+                margin: 5,
+              }
         }>
         <Text
           style={
             item.active == true
               ? {
-                width: 150,
-                paddingHorizontal: 20,
-                paddingVertical: 10,
-                textAlign: 'center',
-                color: COLORS.primary,
-                fontFamily: FONTS.fontFamily,
-                fontSize: 12,
-              }
+                  width: 150,
+                  paddingHorizontal: 20,
+                  paddingVertical: 10,
+                  textAlign: 'center',
+                  color: COLORS.primary,
+                  fontFamily: FONTS.fontFamily,
+                  fontSize: 12,
+                }
               : {
-                width: 150,
-                paddingHorizontal: 20,
-                paddingVertical: 10,
-                textAlign: 'center',
-                color: 'black',
-                fontFamily: FONTS.fontFamily,
-                fontSize: 12,
-              }
+                  width: 150,
+                  paddingHorizontal: 20,
+                  paddingVertical: 10,
+                  textAlign: 'center',
+                  color: 'black',
+                  fontFamily: FONTS.fontFamily,
+                  fontSize: 12,
+                }
           }>
           {item.name}
         </Text>
@@ -508,7 +512,7 @@ const SearchResult = ({ navigation, route }) => {
           <Image
             source={icons.leftArrow}
             resizeMode="contain"
-            style={{ width: 35, height: 35, tintColor: COLORS.primary }}
+            style={{width: 35, height: 35, tintColor: COLORS.primary}}
           />
         </TouchableOpacity>
 
@@ -590,7 +594,7 @@ const SearchResult = ({ navigation, route }) => {
                 justifyContent: 'center',
               }}>
               <Text
-                style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
+                style={{fontSize: 12, color: 'white', fontFamily: 'Roboto'}}>
                 {cartList.length}
               </Text>
             </View>
@@ -600,9 +604,9 @@ const SearchResult = ({ navigation, route }) => {
 
       {/* Search Result */}
       {result.length == 0 ? (
-        <View style={{ alignItems: 'center', marginTop: '20%' }}>
+        <View style={{alignItems: 'center', marginTop: '20%'}}>
           <Image
-            style={{ width: 200, height: 200 }}
+            style={{width: 200, height: 200}}
             resizeMode="contain"
             source={Empty}
           />
@@ -621,7 +625,7 @@ const SearchResult = ({ navigation, route }) => {
           showsVerticalScrollIndicator={true}
           data={result}
           keyExtractor={item => `${item.id}`}
-          renderItem={({ item }) => <Product data={item} />}
+          renderItem={({item}) => <Product data={item} />}
         />
       )}
       {/* Modal filter */}
@@ -768,7 +772,7 @@ const SearchResult = ({ navigation, route }) => {
             />
             <ModalButton
               text="Đăng nhập"
-              textStyle={{ color: COLORS.primary }}
+              textStyle={{color: COLORS.primary}}
               onPress={async () => {
                 try {
                   await AsyncStorage.removeItem('userInfo');
@@ -783,7 +787,7 @@ const SearchResult = ({ navigation, route }) => {
           </ModalFooter>
         }>
         <View
-          style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
+          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
           <Text
             style={{
               fontSize: 20,

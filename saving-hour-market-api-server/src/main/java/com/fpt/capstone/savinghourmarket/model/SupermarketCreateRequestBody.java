@@ -21,7 +21,7 @@ public class SupermarketCreateRequestBody {
 
     @NotNull
     @Size(min = 1)
-    private List<String> supermarketAddressList;
+    private List<SupermarketAddressCreateBody> supermarketAddressList;
 
     @NotNull
     private String phone;
