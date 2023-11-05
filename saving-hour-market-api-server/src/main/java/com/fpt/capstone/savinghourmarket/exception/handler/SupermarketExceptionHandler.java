@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.exception.handler;
 
+import com.fpt.capstone.savinghourmarket.exception.DeleteSuperMarketAddressForbiddenException;
 import com.fpt.capstone.savinghourmarket.exception.DisableSupermarketForbidden;
 import com.fpt.capstone.savinghourmarket.model.ApiError;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,12 @@ import java.time.LocalDateTime;
 public class SupermarketExceptionHandler {
     @ExceptionHandler(DisableSupermarketForbidden.class)
     public ResponseEntity<ApiError> handleDisableSupermarketForbiddenException(DisableSupermarketForbidden e) {
+        ApiError apiError = new ApiError(LocalDateTime.now().toString(), e.getStatusCode().value(), e.getReason());
+        return ResponseEntity.status(e.getStatusCode()).body(apiError);
+    }
+
+    @ExceptionHandler(DeleteSuperMarketAddressForbiddenException.class)
+    public ResponseEntity<ApiError> handleDeleteSuperMarketAddressForbiddenException(DeleteSuperMarketAddressForbiddenException e) {
         ApiError apiError = new ApiError(LocalDateTime.now().toString(), e.getStatusCode().value(), e.getReason());
         return ResponseEntity.status(e.getStatusCode()).body(apiError);
     }

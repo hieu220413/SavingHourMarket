@@ -18,9 +18,10 @@ public interface ProductCategoryRepository extends JpaRepository<ProductCategory
     @Query("SELECT DISTINCT pct from ProductCategory pct " +
             "LEFT JOIN FETCH pct.productSubCategories psct " +
             "INNER JOIN psct.productList pd " +
+            "INNER JOIN pd.productBatchList pdb " +
             "WHERE " +
-            "pd.expiredDate > CURRENT_TIMESTAMP + pd.productSubCategory.allowableDisplayThreshold DAY " +
-            "AND pd.quantity > 0" +
+            "pdb.expiredDate > CURRENT_TIMESTAMP + pd.productSubCategory.allowableDisplayThreshold DAY " +
+            "AND pdb.quantity > 0 " +
             "AND pd.status = 1")
 //            "WHERE SIZE(psct.productList) > 0 "
     List<ProductCateWithSubCate> getAllProductCategoryWithSubCate();

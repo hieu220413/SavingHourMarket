@@ -17,6 +17,7 @@ public interface StaffRepository extends JpaRepository<Staff, UUID> {
     Optional<Staff> findByEmail(String email);
 
     @Query("SELECT s FROM Staff s " +
+            "LEFT JOIN FETCH s.pickupPoint " +
             "WHERE UPPER(s.fullName) LIKE UPPER(CONCAT('%',:name,'%')) " +
             "AND " +
             "((:status IS NULL) OR (s.status = :status)) " +

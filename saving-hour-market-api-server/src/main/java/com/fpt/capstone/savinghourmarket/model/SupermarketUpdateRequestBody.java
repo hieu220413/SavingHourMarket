@@ -1,6 +1,5 @@
 package com.fpt.capstone.savinghourmarket.model;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,8 +14,6 @@ import java.util.List;
 public class SupermarketUpdateRequestBody {
 
     private String name;
-
-    private List<String> supermarketAddressList;
 
     private String phone;
 }
