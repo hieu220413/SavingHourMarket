@@ -17,6 +17,11 @@ const CreateStaff = ({
 }) => {
   const [isActiveDropdown, setisActiveDropdown] = useState(false);
   const [selectedRole, setSelectedRole] = useState("Chọn vai trò");
+  const [isActiveDropdownPickupPoint, setisActiveDropdownPickupPoint] =
+    useState(false);
+  const [selectedPickupPoint, setselectedPickupPoint] = useState(
+    "Chọn điểm giao hàng"
+  );
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,6 +35,12 @@ const CreateStaff = ({
     "STAFF_DLV_0",
     "STAFF_DLV_1",
   ];
+  const [pickupPointList, setPickupPointList] = useState([
+    "121 Tran Van Du,P.13, Quan Tan Binh, TP.HCM",
+    "121 Tran Van Du,P.13, Quan Tan Binh, TP.HCM",
+    "121 Tran Van Du,P.13, Quan Tan Binh, TP.HCM",
+    "121 Tran Van Du,P.13, Quan Tan Binh, TP.HCM",
+  ]);
   const [error, setError] = useState({
     name: "",
     email: "",
@@ -37,6 +48,7 @@ const CreateStaff = ({
     password: "",
     confirmPassword: "",
     common: "",
+    pickupPoint: "",
   });
 
   const handleCreate = async () => {
@@ -229,6 +241,69 @@ const CreateStaff = ({
             )}
           </div>
         </div>
+        {/* pickuppoint */}
+        {selectedRole === "STAFF_ORD" && (
+          <div className="modal__container-body-inputcontrol">
+            <h4 className="modal__container-body-inputcontrol-label">
+              Điểm giao hàng
+            </h4>
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                }}
+              >
+                <div
+                  className="dropdown"
+                  style={{ width: "400px", marginRight: 0 }}
+                >
+                  <div
+                    className="dropdown-btn"
+                    onClick={(e) =>
+                      setisActiveDropdownPickupPoint(
+                        !isActiveDropdownPickupPoint
+                      )
+                    }
+                  >
+                    {selectedPickupPoint}
+                    <FontAwesomeIcon icon={faCaretDown} />
+                  </div>
+                  {isActiveDropdownPickupPoint && (
+                    <div
+                      style={{ height: "150px", overflowY: "scroll" }}
+                      className="dropdown-content"
+                    >
+                      {pickupPointList.map((item, index) => (
+                        <div
+                          onClick={(e) => {
+                            setselectedPickupPoint(item);
+                            setisActiveDropdownPickupPoint(
+                              !isActiveDropdownPickupPoint
+                            );
+                            setError({ ...error, pickupPoint: "" });
+                          }}
+                          className="dropdown-item"
+                          key={index}
+                        >
+                          {item}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+              {error.role && (
+                <p
+                  style={{ fontSize: "14px", marginBottom: "-10px" }}
+                  className="text-danger"
+                >
+                  {error.role}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* email  */}
         <div className="modal__container-body-inputcontrol">
           <h4 className="modal__container-body-inputcontrol-label">Email</h4>

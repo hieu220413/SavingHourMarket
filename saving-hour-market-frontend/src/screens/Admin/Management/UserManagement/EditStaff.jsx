@@ -20,6 +20,11 @@ const EditStaff = ({
   const [name, setName] = useState(staff.fullName);
   const [email, setEmail] = useState(staff.email);
   const [loading, setLoading] = useState(false);
+  const [isActiveDropdownPickupPoint, setisActiveDropdownPickupPoint] =
+    useState(false);
+  const [selectedPickupPoint, setselectedPickupPoint] = useState(
+    "Chọn điểm giao hàng"
+  );
   const [error, setError] = useState({
     name: "",
     email: "",
@@ -27,6 +32,7 @@ const EditStaff = ({
     password: "",
     confirmPassword: "",
     common: "",
+    pickupPoint: "",
   });
   const roleList = [
     "ADMIN",
@@ -36,7 +42,12 @@ const EditStaff = ({
     "STAFF_DLV_0",
     "STAFF_DLV_1",
   ];
-
+  const [pickupPointList, setPickupPointList] = useState([
+    "121 Tran Van Du,P.13, Quan Tan Binh, TP.HCM",
+    "121 Tran Van Du,P.13, Quan Tan Binh, TP.HCM",
+    "121 Tran Van Du,P.13, Quan Tan Binh, TP.HCM",
+    "121 Tran Van Du,P.13, Quan Tan Binh, TP.HCM",
+  ]);
   const handleEdit = async () => {
     setLoading(true);
     const tokenId = await auth.currentUser.getIdToken();
@@ -112,7 +123,10 @@ const EditStaff = ({
                   <FontAwesomeIcon icon={faCaretDown} />
                 </div>
                 {isActiveDropdown && (
-                  <div className="dropdown-content">
+                  <div
+                    style={{ height: "180px", overflowY: "scroll" }}
+                    className="dropdown-content"
+                  >
                     {roleList.map((item, index) => (
                       <div
                         onClick={(e) => {
@@ -140,6 +154,68 @@ const EditStaff = ({
             )}
           </div>
         </div>
+        {/* pickuppoint */}
+        {selectedRole === "STAFF_ORD" && (
+          <div className="modal__container-body-inputcontrol">
+            <h4 className="modal__container-body-inputcontrol-label">
+              Điểm giao hàng
+            </h4>
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                }}
+              >
+                <div
+                  className="dropdown"
+                  style={{ width: "400px", marginRight: 0 }}
+                >
+                  <div
+                    className="dropdown-btn"
+                    onClick={(e) =>
+                      setisActiveDropdownPickupPoint(
+                        !isActiveDropdownPickupPoint
+                      )
+                    }
+                  >
+                    {selectedPickupPoint}
+                    <FontAwesomeIcon icon={faCaretDown} />
+                  </div>
+                  {isActiveDropdownPickupPoint && (
+                    <div
+                      style={{ height: "150px", overflowY: "scroll" }}
+                      className="dropdown-content"
+                    >
+                      {pickupPointList.map((item, index) => (
+                        <div
+                          onClick={(e) => {
+                            setselectedPickupPoint(item);
+                            setisActiveDropdownPickupPoint(
+                              !isActiveDropdownPickupPoint
+                            );
+                            setError({ ...error, pickupPoint: "" });
+                          }}
+                          className="dropdown-item"
+                          key={index}
+                        >
+                          {item}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+              {error.role && (
+                <p
+                  style={{ fontSize: "14px", marginBottom: "-10px" }}
+                  className="text-danger"
+                >
+                  {error.role}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
         {/* name */}
         <div className="modal__container-body-inputcontrol">
           <h4 className="modal__container-body-inputcontrol-label">

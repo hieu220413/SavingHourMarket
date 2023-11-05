@@ -1,119 +1,153 @@
-import React, { useEffect, useState } from "react";
-import ManagementMenu from "../../../../components/ManagementMenu/ManagementMenu";
-import "./SuperMarketManagement.scss";
+import React, { useState } from "react";
+import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import MuiAlert from "@mui/material/Alert";
+import { Dialog, Snackbar } from "@mui/material";
+import Empty from "../../../../assets/Empty.png";
 import {
-  faArrowDown,
-  faClipboard,
   faMagnifyingGlass,
   faPlus,
-  faTrashCanArrowUp,
+  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
-import { Dialog } from "@mui/material";
-import CreateSuperMarket from "./CreateSuperMarket";
-import { API } from "../../../../contanst/api";
-import { auth } from "../../../../firebase/firebase.config";
-import EditSuperMarket from "./EditSuperMarket";
-import SupermarketItem from "./SupermarketItem";
-import MuiAlert from "@mui/material/Alert";
-import { Snackbar } from "@mui/material";
-import { onAuthStateChanged } from "firebase/auth";
-import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
-import Empty from "../../../../assets/Empty.png";
-import { useIdToken, useAuthState } from "react-firebase-hooks/auth";
+import ManagementMenu from "../../../../components/ManagementMenu/ManagementMenu";
+import CreateConsolidation from "./CreateConsolidation";
+import EditConsolidation from "./EditConsolidation";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-const SuperMarketManagement = () => {
-  const [open, setOpen] = useState(false);
+const ConsolidationManagement = () => {
   const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(1);
-  const [superMarketList, setSuperMarketList] = useState([]);
   const [textPage, setTextPage] = useState(1);
-  const [textSearch, setTextSearch] = useState("");
+  const [consolidationList, setConsolidationList] = useState([1, 2, 3]);
   const [searchValue, setSearchValue] = useState("");
-  const [error, setError] = useState("");
+  const [textSearch, setTextSearch] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isSwitchRecovery, setIsSwitchRecovery] = useState(false);
-
+  const [openCreateDialog, setOpenCreateDialog] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState({
     open: false,
     vertical: "top",
     horizontal: "right",
     severity: "error",
+    text: "",
   });
   const { vertical, horizontal } = openSnackbar;
   const handleCloseSnackbar = () => {
     setOpenSnackbar({ ...openSnackbar, open: false });
   };
+  const handleOpenCreateDialog = () => setOpenCreateDialog(true);
+  const handleCloseCreateDialog = () => setOpenCreateDialog(false);
 
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const ConsolidationItem = ({ item, index }) => {
+    const [openEditDialog, setOpenEditDialog] = useState(false);
+    const handleOpenEditDialog = () => setOpenEditDialog(true);
+    const handleCloseEditDialog = () => setOpenEditDialog(false);
 
-  const userState = useAuthState(auth);
+    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+    const handleOpenDeleteDialog = () => setOpenDeleteDialog(true);
+    const handleCloseDeleteDialog = () => setOpenDeleteDialog(false);
+    return (
+      <tr className="table-body-row">
+        <td>1</td>
+        <td>121 Trần Văn Dư, Phường 13, Q.Tân Bình,Tp.HCM</td>
 
-  useEffect(() => {
-    const fetchSupermarket = async () => {
-      setLoading(true);
-      if (!userState[1]) {
-        const tokenId = await auth?.currentUser?.getIdToken();
-        if (tokenId) {
-          fetch(
-            `${API.baseURL}/api/supermarket/getSupermarketForStaff?page=${
-              page - 1
-            }&limit=6&name=${searchValue}${
-              isSwitchRecovery ? "&status=DISABLE" : "&status=ENABLE"
-            }`,
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${tokenId}`,
-              },
-            }
-          )
-            .then((res) => res.json())
-            .then((respond) => {
-              setSuperMarketList(respond.supermarketList);
-              setTotalPage(respond.totalPage);
-              setLoading(false);
-            })
-            .catch((err) => console.log(err));
-        }
-      }
-    };
+        <td>
+          <i onClick={handleOpenEditDialog} class="bi bi-pencil-square"></i>
+          <i onClick={handleOpenDeleteDialog} class="bi bi-trash-fill"></i>
+        </td>
+        <Dialog
+          onClose={handleCloseEditDialog}
+          aria-labelledby="customized-dialog-title"
+          open={openEditDialog}
+        >
+          <EditConsolidation
+            item={item}
+            setOpenSnackbar={setOpenSnackbar}
+            openSnackbar={openSnackbar}
+            handleClose={handleCloseEditDialog}
+            setConsolidationList={setConsolidationList}
+            searchValue={searchValue}
+            page={page}
+            setTotalPage={setTotalPage}
+          />
+        </Dialog>
+        <Dialog
+          onClose={handleCloseDeleteDialog}
+          aria-labelledby="customized-dialog-title"
+          open={openDeleteDialog}
+        >
+          <div className="modal__container">
+            <div className="modal__container-header">
+              <h3 className="modal__container-header-title">
+                Vô hiệu hóa điểm tập kết
+              </h3>
+              <FontAwesomeIcon
+                onClick={handleCloseDeleteDialog}
+                icon={faXmark}
+              />
+            </div>
+          </div>
+          <div className="modal__container-body">
+            <h4> Bạn có chắc muốn vô hiệu hóa điểm tập kết này</h4>
+          </div>
+          {/* modal footer */}
+          <div className="modal__container-footer">
+            <div className="modal__container-footer-buttons">
+              <button
+                onClick={handleCloseDeleteDialog}
+                className="modal__container-footer-buttons-close"
+              >
+                Đóng
+              </button>
+              <button
+                onClick={() => {
+                  // handleDelete();
+                }}
+                className="modal__container-footer-buttons-create"
+              >
+                Xác nhận
+              </button>
+            </div>
+          </div>
+        </Dialog>
+      </tr>
+    );
+  };
 
-    fetchSupermarket();
-  }, [page, searchValue, isSwitchRecovery, userState[1]]);
-
+  const onSubmitSearch = (e) => {};
   const menuTabs = [
     {
-      display: "Siêu thị",
-      to: "/supermarketmanagement",
+      display: "Tài khoản",
+      to: "/usermanagement",
     },
     {
-      display: "Sản phẩm",
-      to: "/productmanagement",
+      display: "Góp ý",
+      to: "/feedbackmanagement",
     },
     {
-      display: "Loại sản phẩm",
-      to: "/categorymanagement",
+      display: "Điểm giao hàng",
+      to: "/pickuppointmanagement",
+    },
+    {
+      display: "Giao dịch",
+      to: "/transactionmanagement",
+    },
+    {
+      display: "Khung giờ",
+      to: "/timeframemanagement",
+    },
+    {
+      display: "Điểm tập kết",
+      to: "/consolidationmanagement",
     },
   ];
-
-  const onSubmitSearch = (e) => {
-    e.preventDefault();
-    setSearchValue(textSearch);
-    setPage(1);
-  };
   return (
     <div>
       <ManagementMenu menuTabs={menuTabs} />
-      <div className="supermarket__container">
-        <div className="supermarket__header">
-          {/* search bar */}
+      <div style={{ marginBottom: 50 }} className="user__container">
+        <div className="user__header">
           <div className="search">
             <form onSubmit={(e) => onSubmitSearch(e)}>
               <div onClick={(e) => onSubmitSearch(e)} className="search-icon">
@@ -129,48 +163,37 @@ const SuperMarketManagement = () => {
           </div>
           {/* ****************** */}
 
-          {!isSwitchRecovery && (
-            <div onClick={handleOpen} className="supermarket__header-button">
-              <FontAwesomeIcon icon={faPlus} />
-              Thêm siêu thị
-            </div>
-          )}
+          <div
+            onClick={handleOpenCreateDialog}
+            className="pickuppoint__header-button"
+          >
+            <FontAwesomeIcon icon={faPlus} />
+            Thêm điểm tập kết
+          </div>
         </div>
-
         {/* data table + pagination*/}
         <div className="table__container">
           {/* data table */}
           <table class="table ">
-            {superMarketList.length !== 0 && (
+            {consolidationList.length !== 0 && (
               <>
                 <thead>
                   <tr className="table-header-row">
                     <th>No.</th>
-                    <th>Tên</th>
                     <th>Địa chỉ</th>
-                    <th>Số điện thoại</th>
-                    <th></th>
+
+                    <th>Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {superMarketList.map((item, i) => (
-                    <SupermarketItem
-                      setTotalPage={setTotalPage}
-                      page={page}
-                      searchValue={searchValue}
-                      setSuperMarketList={setSuperMarketList}
-                      i={i}
-                      item={item}
-                      setError={setError}
-                      error={error}
-                      setLoading={setLoading}
-                      isSwitchRecovery={isSwitchRecovery}
-                    />
+                  {consolidationList.map((item, index) => (
+                    <ConsolidationItem item={item} index={index} />
                   ))}
                 </tbody>
               </>
             )}
-            {superMarketList.length === 0 && (
+
+            {consolidationList.length === 0 && (
               <div>
                 <div
                   style={{
@@ -192,30 +215,15 @@ const SuperMarketManagement = () => {
                     fontSize: 24,
                   }}
                 >
-                  Không có tài khoản nào
+                  Không có giao dịch
                 </p>
               </div>
             )}
           </table>
           {/* ********************** */}
 
-          <div>
-            <button
-              onClick={() => {
-                setPage(1);
-                setIsSwitchRecovery(!isSwitchRecovery);
-              }}
-              className=" buttonRecovery"
-            >
-              {isSwitchRecovery ? "Danh sách siêu thị" : "Siêu thị đã xóa"}
-              <FontAwesomeIcon
-                icon={isSwitchRecovery ? faClipboard : faTrashCanArrowUp}
-              />
-            </button>
-          </div>
-
           {/* pagination */}
-          {superMarketList.length !== 0 && (
+          {consolidationList.length !== 0 && (
             <div className="row pageBtn">
               <div className="col" style={{ textAlign: "right" }}>
                 <br />
@@ -318,49 +326,46 @@ const SuperMarketManagement = () => {
               </div>
             </div>
           )}
-
           {/* ********************** */}
         </div>
         {/* ***************** */}
-      </div>
-      <Dialog
-        onClose={handleClose}
-        aria-labelledby="customized-dialog-title"
-        open={open}
-      >
-        <CreateSuperMarket
-          page={page}
-          setTotalPage={setTotalPage}
-          setSuperMarketList={setSuperMarketList}
-          handleClose={handleClose}
-          searchValue={searchValue}
-          openSnackbar={openSnackbar}
-          setOpenSnackbar={setOpenSnackbar}
-          setError={setError}
-          setIsSwitchRecovery={setIsSwitchRecovery}
-        />
-      </Dialog>
-      <Snackbar
-        open={openSnackbar.open}
-        autoHideDuration={1000}
-        anchorOrigin={{ vertical, horizontal }}
-        onClose={handleCloseSnackbar}
-      >
-        <Alert
+        <Snackbar
+          open={openSnackbar.open}
+          autoHideDuration={1000}
+          anchorOrigin={{ vertical, horizontal }}
           onClose={handleCloseSnackbar}
-          severity={openSnackbar.severity}
-          sx={{
-            width: "100%",
-            fontSize: "15px",
-            alignItem: "center",
-          }}
         >
-          {error}
-        </Alert>
-      </Snackbar>
-      {loading && <LoadingScreen />}
+          <Alert
+            onClose={handleCloseSnackbar}
+            severity={openSnackbar.severity}
+            sx={{
+              width: "100%",
+              fontSize: "15px",
+              alignItem: "center",
+            }}
+          >
+            {openSnackbar.text}
+          </Alert>
+        </Snackbar>
+        <Dialog
+          onClose={handleCloseCreateDialog}
+          aria-labelledby="customized-dialog-title"
+          open={openCreateDialog}
+        >
+          <CreateConsolidation
+            setOpenSnackbar={setOpenSnackbar}
+            openSnackbar={openSnackbar}
+            handleClose={handleCloseCreateDialog}
+            setConsolidationList={setConsolidationList}
+            searchValue={searchValue}
+            page={page}
+            setTotalPage={setTotalPage}
+          />
+        </Dialog>
+        {loading && <LoadingScreen />}
+      </div>
     </div>
   );
 };
 
-export default SuperMarketManagement;
+export default ConsolidationManagement;

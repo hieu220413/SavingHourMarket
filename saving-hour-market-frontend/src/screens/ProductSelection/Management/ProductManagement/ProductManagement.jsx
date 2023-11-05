@@ -131,7 +131,6 @@ const ProductManagement = () => {
     })
       .then((res) => res.json())
       .then((res) => {
-        console.log(res);
         if (res?.error) {
           setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
           setMsg(res.error);
@@ -505,6 +504,7 @@ const ProductManagement = () => {
                     onClick={(e) => {
                       e.preventDefault();
                       setPage(1);
+                      setTextPage(1);
                     }}
                     className="btn btn-success  "
                     name="op"
@@ -519,6 +519,7 @@ const ProductManagement = () => {
                     onClick={(e) => {
                       e.preventDefault();
                       setPage(page - 1);
+                      setTextPage(page - 1);
                     }}
                     className="btn btn-success  "
                     name="op"
@@ -533,6 +534,7 @@ const ProductManagement = () => {
                     onClick={(e) => {
                       e.preventDefault();
                       setPage(page + 1);
+                      setTextPage(page + 1);
                     }}
                     className="btn btn-success  "
                     name="op"
@@ -547,6 +549,7 @@ const ProductManagement = () => {
                     onClick={(e) => {
                       e.preventDefault();
                       setPage(totalPage);
+                      setTextPage(totalPage);
                     }}
                     className="btn btn-success  "
                     name="op"
@@ -560,8 +563,7 @@ const ProductManagement = () => {
                     name="gotoPage"
                     value={textPage}
                     onChange={(e) => {
-                      if (e.target.value >= page && e.target.value <= totalPage)
-                        setTextPage(e.target.value);
+                      setTextPage(e.target.value);
                     }}
                     className=" "
                     style={{
@@ -576,7 +578,11 @@ const ProductManagement = () => {
                     type="submit"
                     onClick={(e) => {
                       e.preventDefault();
-                      setPage(textPage);
+                      if (textPage >= 1 && textPage <= totalPage) {
+                        setPage(parseInt(textPage));
+                      } else {
+                        setTextPage(page);
+                      }
                     }}
                     className="btn btn-success  "
                     name="op"

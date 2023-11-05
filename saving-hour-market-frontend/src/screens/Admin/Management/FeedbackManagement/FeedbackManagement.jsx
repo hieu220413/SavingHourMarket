@@ -62,6 +62,14 @@ const FeedbackManagement = () => {
       display: "Giao dịch",
       to: "/transactionmanagement",
     },
+    {
+      display: "Khung giờ",
+      to: "/timeframemanagement",
+    },
+    {
+      display: "Điểm tập kết",
+      to: "/consolidationmanagement",
+    },
   ];
 
   const userState = useAuthState(auth);

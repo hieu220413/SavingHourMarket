@@ -22,6 +22,14 @@ const UserManagement = () => {
       display: "Giao dịch",
       to: "/transactionmanagement",
     },
+    {
+      display: "Khung giờ",
+      to: "/timeframemanagement",
+    },
+    {
+      display: "Điểm tập kết",
+      to: "/consolidationmanagement",
+    },
   ];
 
   return (
