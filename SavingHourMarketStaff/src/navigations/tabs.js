@@ -1,14 +1,17 @@
 /* eslint-disable prettier/prettier */
-import React, {useEffect, useState, useCallback} from 'react';
-import {View} from 'react-native';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View } from 'react-native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import TabIcon from '../components/TabIcon';
 import Home from '../screens/Home';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {icons} from '../constants';
-import {COLORS} from '../constants/theme';
-import {useFocusEffect} from '@react-navigation/native';
+import { icons } from '../constants';
+import { COLORS } from '../constants/theme';
+import { useFocusEffect } from '@react-navigation/native';
 import Test from '../components/Test';
+import Dropdown from '../screens/Dropdown';
+import HomeDeliver from '../screens/HomeDeliver';
+import QrCodeScanner from '../screens/QrCodeScanner';
 
 const Tab = createBottomTabNavigator();
 
@@ -49,7 +52,7 @@ const Tabs = () => {
           name="Temp"
           component={Test}
           options={{
-            tabBarIcon: ({focused}) => (
+            tabBarIcon: ({ focused }) => (
               <TabIcon display={'Order'} focused={focused} icon={icons.home} />
             ),
           }}
@@ -62,37 +65,24 @@ const Tabs = () => {
             name="Home"
             component={Home}
             options={{
-              tabBarIcon: ({focused}) => (
+              tabBarIcon: ({ focused }) => (
                 <TabIcon
                   display={'Order'}
                   focused={focused}
-                  icon={icons.home}
+                  icon={icons.order}
                 />
               ),
             }}
           />
           <Tab.Screen
-            name="Home2"
-            component={Home}
+            name="Drop down"
+            component={Dropdown}
             options={{
-              tabBarIcon: ({focused}) => (
+              tabBarIcon: ({ focused }) => (
                 <TabIcon
-                  display={'Order'}
+                  display={'Report'}
                   focused={focused}
-                  icon={icons.home}
-                />
-              ),
-            }}
-          />
-          <Tab.Screen
-            name="Home3"
-            component={Home}
-            options={{
-              tabBarIcon: ({focused}) => (
-                <TabIcon
-                  display={'Order'}
-                  focused={focused}
-                  icon={icons.home}
+                  icon={icons.statistic}
                 />
               ),
             }}
@@ -105,7 +95,7 @@ const Tabs = () => {
             name="Home"
             component={Home}
             options={{
-              tabBarIcon: ({focused}) => (
+              tabBarIcon: ({ focused }) => (
                 <TabIcon display={'DLV1'} focused={focused} icon={icons.home} />
               ),
             }}
@@ -114,7 +104,7 @@ const Tabs = () => {
             name="Home2"
             component={Home}
             options={{
-              tabBarIcon: ({focused}) => (
+              tabBarIcon: ({ focused }) => (
                 <TabIcon display={'DLV1'} focused={focused} icon={icons.home} />
               ),
             }}
@@ -123,7 +113,7 @@ const Tabs = () => {
             name="Home3"
             component={Home}
             options={{
-              tabBarIcon: ({focused}) => (
+              tabBarIcon: ({ focused }) => (
                 <TabIcon display={'DLV1'} focused={focused} icon={icons.home} />
               ),
             }}
@@ -133,20 +123,20 @@ const Tabs = () => {
       {user?.role === 'STAFF_DLV_0' && (
         <>
           <Tab.Screen
-            name="Home"
-            component={Home}
+            name="HomeDeliver"
+            component={HomeDeliver}
             options={{
-              tabBarIcon: ({focused}) => (
-                <TabIcon display={'DLV0'} focused={focused} icon={icons.home} />
+              tabBarIcon: ({ focused }) => (
+                <TabIcon display={'Trang chủ'} focused={focused} icon={icons.home} />
               ),
             }}
           />
           <Tab.Screen
             name="Home2"
-            component={Home}
+            component={QrCodeScanner}
             options={{
-              tabBarIcon: ({focused}) => (
-                <TabIcon display={'DLV0'} focused={focused} icon={icons.home} />
+              tabBarIcon: ({ focused }) => (
+                <TabIcon display={'Scan QR'} focused={focused} icon={icons.qrCodeScanner} />
               ),
             }}
           />
@@ -154,7 +144,7 @@ const Tabs = () => {
             name="Home3"
             component={Home}
             options={{
-              tabBarIcon: ({focused}) => (
+              tabBarIcon: ({ focused }) => (
                 <TabIcon display={'DLV0'} focused={focused} icon={icons.home} />
               ),
             }}
