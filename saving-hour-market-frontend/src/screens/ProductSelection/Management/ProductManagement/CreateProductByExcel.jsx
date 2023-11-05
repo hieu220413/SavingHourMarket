@@ -8,6 +8,7 @@ import { auth } from "../../../../firebase/firebase.config";
 import { AiFillFileImage } from "react-icons/ai";
 import MuiAlert from "@mui/material/Alert";
 import { Snackbar } from "@mui/material";
+import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -28,6 +29,7 @@ const CreateProductByExcel = ({
     severity: "error",
   });
   const { vertical, horizontal } = openSnackbar;
+  const [loading, setLoading] = useState(false);
   const handleCloseSnackbar = () => {
     setOpenSnackbar({ ...openSnackbar, open: false });
   };
@@ -44,6 +46,7 @@ const CreateProductByExcel = ({
       setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
       return;
     }
+    setLoading(true);
     const tokenId = await auth.currentUser.getIdToken();
     let formData = new FormData();
     formData.append("file", excelFile);
@@ -61,12 +64,13 @@ const CreateProductByExcel = ({
         console.log(res);
 
         if (res.status === 500) {
-          setError(res.error);
+          setLoading(false);
+          setError("File không đúng với bản mẫu");
           setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
           return;
         }
         if (res.code === 422) {
-          console.log(Object.entries(res.errorFields));
+          setLoading(false);
           const listError = Object.entries(res.errorFields).map(
             ([key, value]) => {
               return `${key}: ${value}`;
@@ -75,6 +79,7 @@ const CreateProductByExcel = ({
           setErrorList(listError);
           return;
         }
+        setLoading(false);
         setConfirmProductList(res);
         handleClose();
         handleOpenConfirmCreate();
@@ -184,6 +189,7 @@ const CreateProductByExcel = ({
           {error}
         </Alert>
       </Snackbar>
+      {loading && <LoadingScreen />}
     </div>
   );
 };

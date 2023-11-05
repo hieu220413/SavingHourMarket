@@ -220,6 +220,7 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
+    @Transactional
     public Staff updateStaffRole(StaffRoleUpdateRequestBody staffRoleUpdateRequestBody, String email) throws FirebaseAuthException {
         Optional<Staff> staff = staffRepository.findById(staffRoleUpdateRequestBody.getId());
 
@@ -234,9 +235,10 @@ public class StaffServiceImpl implements StaffService {
         UserRecord userRecord = checkIsStaffInOrderProcess(staff);
 
         Map<String, Object> claims = new HashMap<>();
+        staff.get().setRole(staffRoleUpdateRequestBody.getRole().toString());
         claims.put("user_role", staffRoleUpdateRequestBody.getRole().toString());
         firebaseAuth.setCustomUserClaims(userRecord.getUid(), claims);
-        staff.get().setRole(staffRoleUpdateRequestBody.getRole().toString());
+        firebaseAuth.revokeRefreshTokens(userRecord.getUid());
 
         return staff.get();
     }

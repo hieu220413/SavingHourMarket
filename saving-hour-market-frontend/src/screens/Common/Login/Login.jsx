@@ -12,6 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../../../feature/userSlice";
 import { auth } from "../../../firebase/firebase.config";
 import { routes } from "../../../routes/routes";
+import LoadingScreen from "../../../components/LoadingScreen/LoadingScreen";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -19,6 +20,7 @@ const Login = () => {
   const [errEmail, setErrEmail] = useState("");
   const [errPassword, setErrPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state) => state.user.user);
@@ -31,7 +33,6 @@ const Login = () => {
   }, []);
 
   const handleLogin = async (e) => {
-    debugger;
     e.preventDefault();
     if (email === "") {
       setErrEmail("Vui lòng không để trống");
@@ -41,7 +42,7 @@ const Login = () => {
       setErrPassword("Vui lòng không để trống");
       return;
     }
-
+    setLoading(true);
     signInWithEmailAndPassword(auth, email, password)
       .then(async (userCredential) => {
         // Signed in
@@ -63,19 +64,23 @@ const Login = () => {
                   localStorage.clear();
                   const action = setUser(null);
                   dispatch(action);
+                  setError("Tài khoản của bạn không có quyền truy cập");
+                  setErrEmail("");
+                  setErrPassword("");
+                  setLoading(false);
                 })
                 .catch((error) => {
                   // An error happened.
                 });
-              setError("Tài khoản của bạn không có quyền truy cập");
-              setErrEmail("");
-              setErrPassword("");
+
               return;
             }
             if (
-              respond.role !== "ADMIN" ||
-              respond.role !== "STAFF_SLT" ||
-              respond.role !== "STAFF_MKT"
+              !(
+                respond.role === "ADMIN" ||
+                respond.role === "STAFF_SLT" ||
+                respond.role === "STAFF_MKT"
+              )
             ) {
               signOut(auth)
                 .then(() => {
@@ -83,19 +88,21 @@ const Login = () => {
                   localStorage.clear();
                   const action = setUser(null);
                   dispatch(action);
+                  setError("Tài khoản của bạn không có quyền truy cập");
+                  setErrEmail("");
+                  setErrPassword("");
+                  setLoading(false);
                 })
                 .catch((error) => {
                   // An error happened.
                 });
-              setError("Tài khoản của bạn không có quyền truy cập");
-              setErrEmail("");
-              setErrPassword("");
               return;
             }
             const action = setUser(respond);
             dispatch(action);
             localStorage.setItem("user", JSON.stringify(respond));
-            navigate("/productmanagement");
+            setLoading(false);
+            navigate("/");
           })
           .catch((err) => {
             console.log(err);
@@ -106,6 +113,7 @@ const Login = () => {
         setError("Sai tên đăng nhập hoặc mật khẩu");
         setErrEmail("");
         setErrPassword("");
+        setLoading(false);
       });
   };
   return (
@@ -181,6 +189,7 @@ const Login = () => {
           </button>
         </form>
       </div>
+      {loading && <LoadingScreen />}
     </div>
   );
 };

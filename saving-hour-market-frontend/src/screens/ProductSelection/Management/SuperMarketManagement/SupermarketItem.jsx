@@ -97,6 +97,7 @@ const SupermarketItem = ({
       })
       .catch((err) => console.log(err));
   };
+
   return (
     <tr key={i} className="table-body-row">
       <td>{i + 1}</td>
@@ -106,19 +107,23 @@ const SupermarketItem = ({
           position: "relative",
         }}
       >
-        <FontAwesomeIcon
-          style={{ marginRight: 10 }}
-          data-bs-toggle="dropdown"
-          aria-expanded="false"
-          className="arrow-down"
-          icon={faReceipt}
-        />
-
         {item.supermarketAddressList[0]?.address}
+        {item.supermarketAddressList.length > 1 && (
+          <FontAwesomeIcon
+            style={{ marginLeft: 10 }}
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            className="arrow-down"
+            icon={faReceipt}
+          />
+        )}
         <ul class="dropdown-menu">
-          {item.supermarketAddressList.map((addressItem) => (
-            <li>{addressItem?.address}</li>
-          ))}
+          {item.supermarketAddressList.map((addressItem, i) => {
+            if (i === 0) {
+              return <></>;
+            }
+            return <li>{addressItem?.address}</li>;
+          })}
         </ul>
       </td>
       <td>{item.phone}</td>
