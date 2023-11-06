@@ -56,6 +56,9 @@ public class ProductDisplayCustomer {
 
     private ProductSubCategory productSubCategory;
 
+    private Integer fromPriceRange;
+    private Integer toPriceRange;
+
     private Supermarket supermarket;
 
     private ProductBatchDisplayCustomer nearestExpiredBatch;

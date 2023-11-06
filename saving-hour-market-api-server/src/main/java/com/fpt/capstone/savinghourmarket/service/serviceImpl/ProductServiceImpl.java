@@ -276,6 +276,29 @@ public class ProductServiceImpl implements ProductService {
             productDisplayCustomerTemp.getOtherProductBatchList().addAll(productBatchDisplayCustomerList);
         }
 
+        // set price range
+        for (ProductDisplayCustomer productDisplayCustomer : productDisplayCustomerList) {
+            // get from range
+            Integer minPrice = productDisplayCustomer.getNearestExpiredBatch().getPrice();
+            // get to range
+            Integer maxPrice = null;
+            if(productDisplayCustomer.getOtherProductBatchList().size() > 0) {
+                maxPrice = productDisplayCustomer.getOtherProductBatchList().stream().mapToInt(value -> value.getPrice()).max().orElse(0);
+            }
+            // set range
+            if(maxPrice != null) {
+                if(minPrice > maxPrice) {
+                    Integer temp = minPrice;
+                    minPrice = maxPrice;
+                    maxPrice = temp;
+                }
+                productDisplayCustomer.setFromPriceRange(minPrice);
+                productDisplayCustomer.setToPriceRange(maxPrice);
+            } else {
+                productDisplayCustomer.setFromPriceRange(minPrice);
+            }
+        }
+
 
         return new ProductListCustomerResponseBody(productDisplayCustomerList, totalPage, totalProduct);
     }
