@@ -29,6 +29,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.ByteArrayOutputStream;
@@ -37,6 +38,7 @@ import java.net.URI;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -405,7 +407,7 @@ public class OrderServiceImpl implements OrderService {
             }
             repository.save(order);
         } else {
-            return "Đơn hàng đã quá thời gian huỷ cho phép là " + Utils.getAdminConfiguration().getTimeAllowedForOrderCancellation() +" tiếng kể từ khi đặt hàng!";
+            return "Đơn hàng đã quá thời gian huỷ cho phép là " + Utils.getAdminConfiguration().getTimeAllowedForOrderCancellation() + " tiếng kể từ khi đặt hàng!";
         }
 
         return "Successfully canceled order " + id;
@@ -615,15 +617,152 @@ public class OrderServiceImpl implements OrderService {
         Order order = repository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id " + orderId));
         ProductConsolidationArea productConsolidationArea = productConsolidationAreaRepository.findById(consolidationAreaId)
-                        .orElseThrow(() -> new ResourceNotFoundException("ConsolidationArea not found with id " + consolidationAreaId));
-        if(order.getPickupPoint().getProductConsolidationAreaList().stream().anyMatch(pca -> pca.equals(productConsolidationArea))){
+                .orElseThrow(() -> new ResourceNotFoundException("ConsolidationArea not found with id " + consolidationAreaId));
+        if (order.getPickupPoint().getProductConsolidationAreaList().stream().anyMatch(pca -> pca.equals(productConsolidationArea))) {
             order.setProductConsolidationArea(productConsolidationArea);
         } else {
-           throw new ResourceNotFoundException("Điểm tập kết không tìm thấy trong danh sách các điểm tập kết của pickup point trong đơn hàng!");
+            throw new ResourceNotFoundException("Điểm tập kết không tìm thấy trong danh sách các điểm tập kết của pickup point trong đơn hàng!");
         }
         return order;
     }
 
+    @Override
+    public ReportOrdersResponse getReportOrders(OrderReportMode mode, LocalDate startDate, LocalDate endDate, Integer month, Integer year) {
+        ReportOrdersResponse reportOrdersResponse = new ReportOrdersResponse();
+        switch (mode) {
+            case ALL -> {
+                List<Object[]> resultDate = repository.getOrdersReportByDay(startDate != null ? startDate.atStartOfDay() : null, endDate != null ? endDate.atTime(LocalTime.MAX) : null);
+                List<OrderReport> reportListDate = new ArrayList<>();
+                for (Object[] row : resultDate) {
+                    Date reportDate = (Date) row[0];
+                    Long processingCount = (Long) row[1];
+                    Long packagingCount = (Long) row[2];
+                    Long packagedCount = (Long) row[3];
+                    Long deliveringCount = (Long) row[4];
+                    Long successCount = (Long) row[5];
+                    Long failCount = (Long) row[6];
+                    Long cancelCount = (Long) row[7];
+
+                    if (processingCount > 0 || packagingCount > 0 || packagedCount > 0 || deliveringCount > 0 || successCount > 0 || failCount > 0 || cancelCount > 0) {
+                        OrderReport report = new OrderReport(reportDate, processingCount, packagingCount, packagedCount, deliveringCount, successCount, failCount, cancelCount);
+                        reportListDate.add(report);
+                    }
+                }
+
+                List<Object[]> resultMonth = repository.getOrdersReportByMonth(month);
+                LinkedHashMap<Integer, List<OrderReportMonth>> reportListMonth = new LinkedHashMap<>();
+                for (Object[] row : resultMonth) {
+                    Integer yearResult = (Integer) row[0];
+                    List<OrderReportMonth> listForYear = reportListMonth.get(yearResult);
+
+                    int monthResult = (int) row[1];
+                    Long successCount = (Long) row[2];
+                    Long failCount = (Long) row[3];
+                    Long cancelCount = (Long) row[4];
+
+                    if (successCount > 0 || failCount > 0 || cancelCount > 0) {
+                        if (listForYear == null) {
+                            listForYear = new ArrayList<>();
+                            OrderReportMonth report = new OrderReportMonth(monthResult, successCount, failCount, cancelCount);
+                            listForYear.add(report);
+                            reportListMonth.put(yearResult, listForYear);
+                        } else {
+                            OrderReportMonth report = new OrderReportMonth(monthResult, successCount, failCount, cancelCount);
+                            listForYear.add(report);
+                            listForYear.sort(Comparator.comparing(OrderReportMonth::getMonth));
+                            reportListMonth.put(yearResult, listForYear);
+                        }
+                    }
+                }
+
+                List<Object[]> resultYear = repository.getOrdersReportByYear(year);
+                List<OrderReportYear> reportListYear = new ArrayList<>();
+                for (Object[] row : resultYear) {
+                    int yearResult = (int) row[0];
+                    Long successCount = (Long) row[1];
+                    Long failCount = (Long) row[2];
+                    Long cancelCount = (Long) row[3];
+                    if (successCount > 0 || failCount > 0 || cancelCount > 0) {
+                        OrderReportYear report = new OrderReportYear(yearResult, successCount, failCount, cancelCount);
+                        reportListYear.add(report);
+                    }
+                }
+
+                reportListDate.sort(Comparator.comparing(OrderReport::getDate));
+                reportListYear.sort(Comparator.comparing(OrderReportYear::getYear));
+                reportOrdersResponse.setOrdersReportByDay(reportListDate);
+                reportOrdersResponse.setOrdersReportByMonth(reportListMonth);
+                reportOrdersResponse.setOrdersReportByYear(reportListYear);
+            }
+            case DATE -> {
+                List<Object[]> resultDate = repository.getOrdersReportByDay(startDate != null ? startDate.atStartOfDay() : null, endDate != null ? endDate.atTime(LocalTime.MAX) : null);
+                List<OrderReport> reportListDate = new ArrayList<>();
+                for (Object[] row : resultDate) {
+                    Date reportDate = (Date) row[0];
+                    Long processingCount = (Long) row[1];
+                    Long packagingCount = (Long) row[2];
+                    Long packagedCount = (Long) row[3];
+                    Long deliveringCount = (Long) row[4];
+                    Long successCount = (Long) row[5];
+                    Long failCount = (Long) row[6];
+                    Long cancelCount = (Long) row[7];
+
+                    if (processingCount > 0 || packagingCount > 0 || packagedCount > 0 || deliveringCount > 0 || successCount > 0 || failCount > 0 || cancelCount > 0) {
+                        OrderReport report = new OrderReport(reportDate, processingCount, packagingCount, packagedCount, deliveringCount, successCount, failCount, cancelCount);
+                        reportListDate.add(report);
+                    }
+                }
+                reportListDate.sort(Comparator.comparing(OrderReport::getDate));
+                reportOrdersResponse.setOrdersReportByDay(reportListDate);
+            }
+            case MONTH -> {
+                List<Object[]> resultMonth = repository.getOrdersReportByMonth(month);
+                LinkedHashMap<Integer, List<OrderReportMonth>> reportListMonth = new LinkedHashMap<>();
+                for (Object[] row : resultMonth) {
+                    Integer yearResult = (Integer) row[0];
+                    List<OrderReportMonth> listForYear = reportListMonth.get(yearResult);
+
+                    int monthResult = (int) row[1];
+                    Long successCount = (Long) row[2];
+                    Long failCount = (Long) row[3];
+                    Long cancelCount = (Long) row[4];
+
+                    if (successCount > 0 || failCount > 0 || cancelCount > 0) {
+                        if (listForYear == null) {
+                            listForYear = new ArrayList<>();
+                            OrderReportMonth report = new OrderReportMonth(monthResult, successCount, failCount, cancelCount);
+                            listForYear.add(report);
+                            reportListMonth.put(yearResult, listForYear);
+                        } else {
+                            OrderReportMonth report = new OrderReportMonth(monthResult, successCount, failCount, cancelCount);
+                            listForYear.add(report);
+                            listForYear.sort(Comparator.comparing(OrderReportMonth::getMonth));
+                            reportListMonth.put(yearResult, listForYear);
+                        }
+                    }
+                }
+                reportOrdersResponse.setOrdersReportByMonth(reportListMonth);
+            }
+            case YEAR -> {
+                List<Object[]> resultYear = repository.getOrdersReportByYear(year);
+                List<OrderReportYear> reportListYear = new ArrayList<>();
+                for (Object[] row : resultYear) {
+                    int yearResult = (int) row[0];
+                    Long successCount = (Long) row[1];
+                    Long failCount = (Long) row[2];
+                    Long cancelCount = (Long) row[3];
+                    if (successCount > 0 || failCount > 0 || cancelCount > 0) {
+                        OrderReportYear report = new OrderReportYear(yearResult, successCount, failCount, cancelCount);
+                        reportListYear.add(report);
+                    }
+                }
+                reportListYear.sort(Comparator.comparing(OrderReportYear::getYear));
+                reportOrdersResponse.setOrdersReportByYear(reportListYear);
+            }
+        }
+
+        return reportOrdersResponse;
+    }
 
     // GOOGLE MAP IMPLEMENT
 //    @Override
