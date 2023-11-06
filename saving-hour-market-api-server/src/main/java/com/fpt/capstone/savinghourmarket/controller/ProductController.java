@@ -1,6 +1,7 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
+import com.fpt.capstone.savinghourmarket.common.Month;
 import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
@@ -108,14 +109,18 @@ public class ProductController {
     }
 
     @RequestMapping(value = "/getAllCategory", method = RequestMethod.GET)
-    public ResponseEntity<List<ProductCateWithSubCate>> getAllCategory() {
-        List<ProductCateWithSubCate> productCategoryList = productService.getAllCategory();
+    public ResponseEntity<List<ProductCateWithSubCate>> getAllCategory(
+            @RequestParam UUID pickupPointId
+    ) {
+        List<ProductCateWithSubCate> productCategoryList = productService.getAllCategory(pickupPointId);
         return ResponseEntity.status(HttpStatus.OK).body(productCategoryList);
     }
 
     @RequestMapping(value = "/getAllSubCategory", method = RequestMethod.GET)
-    public ResponseEntity<List<ProductSubCateOnly>> getAllSubCategory() {
-        List<ProductSubCateOnly> productSubCateOnlyList = productService.getAllSubCategory();
+    public ResponseEntity<List<ProductSubCateOnly>> getAllSubCategory(
+            @RequestParam UUID pickupPointId
+    ) {
+        List<ProductSubCateOnly> productSubCateOnlyList = productService.getAllSubCategory(pickupPointId);
         return ResponseEntity.status(HttpStatus.OK).body(productSubCateOnlyList);
     }
 
@@ -249,6 +254,17 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(revenueReportYearlyList);
     }
 
+    @RequestMapping(value = "/getRevenueReportForEachProduct", method = RequestMethod.GET)
+    public ResponseEntity<List<ProductSaleReport>> getRevenueReportForEachProduct(
+            @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken,
+            @RequestParam(required = false) Month month,
+            @RequestParam Integer year) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        List<ProductSaleReport> productSaleReportList = productService.getRevenueReportForEachProduct(month, year);
+        return ResponseEntity.status(HttpStatus.OK).body(productSaleReportList);
+    }
+
     @RequestMapping(value = "/getAllSupermarketSaleReport", method = RequestMethod.GET)
     public ResponseEntity<List<SupermarketSaleReportResponseBody>> getAllSupermarketSaleReport(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
             , @RequestParam(required = false) Integer year) throws FirebaseAuthException {
@@ -256,6 +272,18 @@ public class ProductController {
         Utils.validateIdToken(idToken, firebaseAuth);
         List<SupermarketSaleReportResponseBody> supermarketSaleReportResponseBodyList = productService.getAllSupermarketSaleReport(year);
         return ResponseEntity.status(HttpStatus.OK).body(supermarketSaleReportResponseBodyList);
+    }
+
+    @RequestMapping(value = "/getRevenueReportForEachProductForSupermarket", method = RequestMethod.GET)
+    public ResponseEntity<List<ProductSaleReport>> getRevenueReportForEachProductForSupermarket(
+            @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken,
+            @RequestParam(required = false) Month month,
+            @RequestParam Integer year,
+            @RequestParam UUID supermarketId) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        List<ProductSaleReport> productSaleReportList = productService.getRevenueReportForEachProductForSupermarket(month, year, supermarketId);
+        return ResponseEntity.status(HttpStatus.OK).body(productSaleReportList);
     }
 
     @RequestMapping(value = "/getOrderTotalAllCategorySupermarketReport", method = RequestMethod.GET)
