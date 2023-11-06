@@ -638,6 +638,7 @@ const Payment = ({navigation, route}) => {
         deliveryDate: format(date, 'yyyy-MM-dd'),
         receiverName: name,
         receiverPhone: phone,
+        pickupPointId: pickupPoint.id,
         timeFrameId: customerTimeFrame.id,
         deliveryMethod: 'DOOR_TO_DOOR',
         paymentStatus: 'UNPAID',
