@@ -13,17 +13,53 @@ import Modal, {
 } from 'react-native-modals';
 import {TextInput} from 'react-native-gesture-handler';
 import LoadingScreen from '../components/LoadingScreen';
+import auth from '@react-native-firebase/auth';
 
 const EditCustomerLocation = ({navigation, route}) => {
-  const {setCustomerLocation, customerLocation} = route.params;
+  const {setCustomerLocation, customerLocation, pickupPoint} = route.params;
   const [locationPicked, setLocationPicked] = useState(customerLocation);
   const [openValidateDialog, setOpenValidateDialog] = useState(false);
   const [validateMessage, setValidateMessage] = useState('');
-  const [text, setText] = useState('');
-  const [searchValue, setSearchValue] = useState('');
+  const [text, setText] = useState(customerLocation.address);
+  const [searchValue, setSearchValue] = useState(customerLocation.address);
   const [data, setData] = useState([]);
   const [isFocused, setIsFocused] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [shippingDetail, setShippingDetail] = useState(null);
+  const [isFetchShipDetail, setIsFetchShipDetail] = useState(false);
+  const [shippingCostPolicy, setShippingCostPolicy] = useState({
+    initialShippingFee: 10000,
+    minKmDistanceForExtraShippingFee: 2,
+    extraShippingFeePerKilometer: 1000,
+  });
+
+  useEffect(() => {
+    const fetchShipDetail = async () => {
+      setLoading(true);
+      setIsFetchShipDetail(true);
+      const tokenId = await auth().currentUser.getIdToken();
+      fetch(
+        `${API.baseURL}/api/order/getShippingFeeDetail?latitude=${locationPicked.lat}&longitude=${locationPicked.long}&pickupPointId=${pickupPoint.id}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${tokenId}`,
+          },
+        },
+      )
+        .then(respond => respond.json())
+        .then(res => {
+          setShippingDetail(res);
+          setIsFetchShipDetail(false);
+          setLoading(false);
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    };
+    fetchShipDetail();
+  }, [locationPicked]);
 
   const selectLocation = item => {
     Keyboard.dismiss();
@@ -33,7 +69,7 @@ const EditCustomerLocation = ({navigation, route}) => {
       `https://rsapi.goong.io/Place/Detail?place_id=${item.place_id}&api_key=${API.GoongAPIKey}`,
     )
       .then(res => res.json())
-      .then(respond => {
+      .then(async respond => {
         const picked = {
           address: item.description,
           long: respond.result.geometry.location.lng,
@@ -48,8 +84,9 @@ const EditCustomerLocation = ({navigation, route}) => {
           setText(item.description);
           setSearchValue(item.description);
           setCustomerLocation(picked);
-          setLoading(false);
-          navigation.navigate('Payment');
+          setLocationPicked(picked);
+
+          // navigation.navigate('Payment');
         } else {
           setValidateMessage('Chúng tôi chỉ giao hàng trong khu vực TP.HCM');
           setOpenValidateDialog(true);
@@ -104,7 +141,7 @@ const EditCustomerLocation = ({navigation, route}) => {
 
   const onChange = text => {
     setText(text);
-    setLocationPicked(null);
+    setIsFetchShipDetail(true);
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
@@ -148,7 +185,7 @@ const EditCustomerLocation = ({navigation, route}) => {
 
       <View
         style={{
-          height: '100%',
+          // height: '100%',
           position: 'relative',
         }}>
         <Image
@@ -188,7 +225,6 @@ const EditCustomerLocation = ({navigation, route}) => {
           onPress={() => {
             setText('');
             setSearchValue('');
-            setLocationPicked(null);
           }}
           style={{
             position: 'absolute',
@@ -216,91 +252,218 @@ const EditCustomerLocation = ({navigation, route}) => {
             ))}
           </View>
         )}
-
-        {/* <GooglePlacesAutocomplete
-          ref={ref => {
-            if (shouldSetDefaultValue) {
-              ref?.setAddressText(customerLocation.address);
-            }
-            if (clear) {
-              ref?.setAddressText('');
-              setTextHasChanged(true);
-            }
-          }}
-          placeholder="Nhập địa chỉ mới"
-          autoFocus={false}
-          returnKeyType={'search'} // Can be left out for default return key https://facebook.github.io/react-native/docs/textinput.html#returnkeytype
-          listViewDisplayed="auto" // true/false/undefined
-          fetchDetails={true}
-          renderDescription={row => row.description} // custom description render
-          onPress={(data, details = null) => {
-            const location = {
-              address: details.formatted_address,
-              long: details.geometry.location.lng,
-              lat: details.geometry.location.lat,
-            };
-            console.log(location);
-            setLocationPicked(location);
-          }}
-          query={{
-            // available options: https://developers.google.com/places/web-service/autocomplete
-            key: API.GoogleMapAPIKey,
-            language: 'vn', // language of the results
-            components: 'country:vn',
-          }}
-          styles={{
-            textInputContainer: {
-              width: '100%',
-              // borderBottomColor: 'black',
-              height: 50,
-            },
-            textInput: {
-              fontSize: 16,
-              fontFamily: 'Roboto',
-              color: 'black',
-              padding: 20,
-              height: 60,
-              paddingRight: 40,
-            },
-            description: {
-              fontWeight: 'bold',
-              color: 'black',
-              fontFamily: 'Roboto',
-              fontSize: 16,
-            },
-            predefinedPlacesDescription: {
-              color: '#1faadb',
-            },
-          }}
-          enablePoweredByContainer={false}
-          renderRightButton={() => (
-            <TouchableOpacity
-              onPress={() => {
-                setClear(true);
-                setTimeout(() => setClear(false), 300);
-              }}
-              style={{
-                position: 'absolute',
-                top: 20,
-                right: 10,
-                zIndex: 999,
-              }}>
-              <Image
-                resizeMode="contain"
-                source={icons.cross}
-                style={{width: 20, height: 20}}
-              />
-            </TouchableOpacity>
-          )}
-          // currentLocation={true} // Will add a 'Current location' button at the top of the predefined places list
-          // currentLocationLabel="Current location"
-          onFail={error => console.log(error)}
-          onNotFound={() => console.log('no results')}
-          nearbyPlacesAPI="GooglePlacesSearch" // Which API to use: GoogleReverseGeocoding or GooglePlacesSearch
-          filterReverseGeocodingByTypes={['locality']} // filter the reverse geocoding results by types - ['locality', 'administrative_area_level_3'] if you want to display only cities
-          debounce={200} // debounce the requests in ms. Set to 0 to remove debounce. By default 0ms.
-        /> */}
       </View>
+      {shippingDetail && !isFetchShipDetail && (
+        <View style={{backgroundColor: 'white', padding: 20, marginTop: 20}}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+              marginBottom: 10,
+            }}>
+            <Text
+              style={{
+                fontSize: 20,
+                fontFamily: 'Roboto',
+                color: 'black',
+                fontWeight: 'bold',
+              }}>
+              Chi tiết giao hàng
+            </Text>
+          </View>
+
+          <View
+            style={{
+              // flexDirection: 'row',
+              alignItems: 'start',
+              gap: 5,
+              paddingTop: 10,
+              paddingBottom: 10,
+              borderTopColor: '#decbcb',
+              borderTopWidth: 0.75,
+            }}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontFamily: 'Roboto',
+                color: 'black',
+                fontWeight: 'bold',
+              }}>
+              Điểm giao hàng đã chọn :
+            </Text>
+            <Text
+              style={{
+                fontSize: 18,
+                fontFamily: 'Roboto',
+                color: 'black',
+                // fontWeight: 'bold',
+              }}>
+              {pickupPoint.address}
+            </Text>
+          </View>
+          <View
+            style={{
+              // flexDirection: 'row',
+              alignItems: 'start',
+              gap: 5,
+              paddingTop: 10,
+              paddingBottom: 10,
+              borderTopColor: '#decbcb',
+              borderTopWidth: 0.75,
+            }}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontFamily: 'Roboto',
+                color: 'black',
+                fontWeight: 'bold',
+              }}>
+              Địa chỉ của bạn :
+            </Text>
+            <Text
+              style={{
+                fontSize: 18,
+                fontFamily: 'Roboto',
+                color: 'black',
+                // fontWeight: 'bold',
+              }}>
+              {locationPicked.address}
+            </Text>
+          </View>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 15,
+              paddingTop: 10,
+              borderTopColor: '#decbcb',
+              borderTopWidth: 0.75,
+              justifyContent: 'space-between',
+            }}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontFamily: 'Roboto',
+                color: 'black',
+                fontWeight: 'bold',
+              }}>
+              Khoảng cách :
+            </Text>
+            <Text style={{fontSize: 18, fontFamily: 'Roboto', color: 'black'}}>
+              {shippingDetail.closestPickupPoint.distance}
+            </Text>
+          </View>
+
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 15,
+              paddingVertical: 5,
+              justifyContent: 'space-between',
+            }}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontFamily: 'Roboto',
+                color: 'black',
+                fontWeight: 'bold',
+              }}>
+              Phí giao hàng:
+            </Text>
+            <Text style={{fontSize: 18, fontFamily: 'Roboto', color: 'black'}}>
+              {shippingDetail.shippingFee.toLocaleString('vi-VN', {
+                style: 'currency',
+                currency: 'VND',
+              })}
+            </Text>
+          </View>
+
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 15,
+              justifyContent: 'center',
+              paddingTop: 10,
+              borderTopColor: '#decbcb',
+              borderTopWidth: 0.75,
+              marginTop: 5,
+            }}>
+            <Text
+              style={{
+                fontSize: 16,
+                fontFamily: 'Roboto',
+                color: 'black',
+                textAlign: 'center',
+              }}>
+              Phí giao hàng tính bằng: khoảng cách từ địa chỉ của bạn đến địa
+              điểm giao hàng đã chọn dưới{' '}
+              {shippingCostPolicy.minKmDistanceForExtraShippingFee}
+              km là{' '}
+              {shippingCostPolicy.initialShippingFee.toLocaleString('vi-VN', {
+                style: 'currency',
+                currency: 'VND',
+              })}
+              , trên {shippingCostPolicy.minKmDistanceForExtraShippingFee}
+              km thì sẽ cộng{' '}
+              {shippingCostPolicy.extraShippingFeePerKilometer.toLocaleString(
+                'vi-VN',
+                {
+                  style: 'currency',
+                  currency: 'VND',
+                },
+              )}
+              /1km
+            </Text>
+          </View>
+        </View>
+      )}
+
+      {shippingDetail && !isFetchShipDetail && (
+        <View
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: 'white',
+            borderTopColor: 'transparent',
+            height: 70,
+            width: '100%',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+
+            marginTop: 20,
+            elevation: 10,
+          }}>
+          <View style={{width: '95%'}}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Payment')}
+              style={{
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: COLORS.primary,
+                paddingVertical: 10,
+                width: '100%',
+                borderRadius: 30,
+              }}>
+              <Text
+                style={{
+                  fontSize: 18,
+                  color: 'white',
+                  fontFamily: 'Roboto',
+                  fontWeight: 'bold',
+                }}>
+                Tiếp tục
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
       <Modal
         width={0.8}
         visible={openValidateDialog}
