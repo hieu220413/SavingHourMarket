@@ -44,6 +44,9 @@ const Home = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [openAuthModal, setOpenAuthModal] = useState(false);
 
+  // pickup point id
+  const pickupPointId = 'accf0ac0-5541-11ee-8a50-a85e45c41921';
+
   const showToast = () => {
     Toast.show({
       type: 'success',
@@ -92,7 +95,7 @@ const Home = ({ navigation }) => {
     if (currentCate) {
       setLoading(true);
       fetch(
-        `${API.baseURL}/api/product/getProductsForCustomer?productCategoryId=${currentCate}&page=0&limit=10&quantitySortType=DESC&expiredSortType=ASC`,
+        `${API.baseURL}/api/product/getProductsForCustomer?productCategoryId=${currentCate}&pickupPointId=${pickupPointId}&page=0&limit=10&quantitySortType=DESC&expiredSortType=ASC`,
       )
         .then(res => res.json())
         .then(data => {
@@ -168,7 +171,7 @@ const Home = ({ navigation }) => {
           <Image
             resizeMode="contain"
             source={{
-              uri: data?.imageUrl,
+              uri: data?.imageUrlImageList[0].imageUrl,
             }}
             style={styles.itemImage}
           />
@@ -196,7 +199,7 @@ const Home = ({ navigation }) => {
                   fontWeight: 600,
                   fontFamily: FONTS.fontFamily,
                 }}>
-                {data.price.toLocaleString('vi-VN', {
+                {data?.nearestExpiredBatch.price.toLocaleString('vi-VN', {
                   currency: 'VND',
                 })}
               </Text>
@@ -218,7 +221,7 @@ const Home = ({ navigation }) => {
                 fontSize: 18,
                 marginBottom: 10,
               }}>
-              HSD: {dayjs(data.expiredDate).format('DD/MM/YYYY')}
+              HSD: {dayjs(data?.nearestExpiredBatch.expiredDate).format('DD/MM/YYYY')}
             </Text>
             {/* Button buy */}
             <TouchableOpacity onPress={() => handleAddToCart(data)}>
@@ -329,8 +332,51 @@ const Home = ({ navigation }) => {
     );
   };
 
+  const SelectPickupPointBar = () => {
+    return (
+      <View style={{
+        paddingHorizontal: 20,
+      }}>
+        <Text style={{ fontSize: 16, fontFamily: FONTS.fontFamily }}>Vị trí hiện tại của bạn:</Text>
+        <TouchableOpacity>
+          <View style={{
+            paddingVertical: 6,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            <View style={{
+              flexDirection: 'row',
+              gap: 10,
+              alignItems: 'center',
+              width: '80%',
+            }}>
+              <Image
+                resizeMode="contain"
+                style={{ width: 20, height: 20, tintColor: COLORS.primary }}
+                source={icons.location}
+              />
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontFamily: 'Roboto',
+                  color: 'black',
+                  fontWeight: 'bold',
+                }}>
+                Quận 9
+              </Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
+      {/* Pickup point */}
+      <SelectPickupPointBar />
+
       {/* Search */}
       <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
         <SearchBar />
@@ -396,9 +442,9 @@ const Home = ({ navigation }) => {
             flexDirection: 'row',
             flexWrap: 'wrap',
             marginVertical: 5,
-            alignItems:'center',
-            gap:20,
-            paddingHorizontal:20
+            alignItems: 'center',
+            gap: 20,
+            paddingHorizontal: 20,
 
           }}>
           {subCategories.map((item, index) => (

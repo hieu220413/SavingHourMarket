@@ -1,12 +1,12 @@
 /* eslint-disable prettier/prettier */
 // eslint-disable-next-line prettier/prettier
-import {View, Text, TouchableOpacity, Image, ScrollView} from 'react-native';
-import React, {useCallback, useState} from 'react';
-import {icons} from '../constants';
-import {COLORS, FONTS} from '../constants/theme';
+import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { icons } from '../constants';
+import { COLORS, FONTS } from '../constants/theme';
 import dayjs from 'dayjs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useFocusEffect} from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import Modal, {
   ModalFooter,
   ModalButton,
@@ -14,8 +14,9 @@ import Modal, {
   ScaleAnimation,
 } from 'react-native-modals';
 import Toast from 'react-native-toast-message';
+import Swiper from 'react-native-swiper';
 
-const ProductDetails = ({navigation, route}) => {
+const ProductDetails = ({ navigation, route }) => {
   const product = route.params.product;
   const [cartList, setCartList] = useState([]);
   const [openAuthModal, setOpenAuthModal] = useState(false);
@@ -90,7 +91,7 @@ const ProductDetails = ({navigation, route}) => {
         return;
       }
 
-      const cartData = {...data, isChecked: false, cartQuantity: 1};
+      const cartData = { ...data, isChecked: false, cartQuantity: 1 };
       newCartList = [...newCartList, cartData];
       setCartList(newCartList);
       await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
@@ -117,7 +118,7 @@ const ProductDetails = ({navigation, route}) => {
           <Image
             source={icons.leftArrow}
             resizeMode="contain"
-            style={{width: 35, height: 35, tintColor: COLORS.primary}}
+            style={{ width: 35, height: 35, tintColor: COLORS.primary }}
           />
         </TouchableOpacity>
         <Text
@@ -162,7 +163,7 @@ const ProductDetails = ({navigation, route}) => {
                 justifyContent: 'center',
               }}>
               <Text
-                style={{fontSize: 12, color: 'white', fontFamily: 'Roboto'}}>
+                style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
                 {cartList.length}
               </Text>
             </View>
@@ -171,19 +172,64 @@ const ProductDetails = ({navigation, route}) => {
       </View>
 
       <ScrollView>
-        <Image
+        <Swiper
           style={{
-            width: '85%',
             height: 250,
-            marginHorizontal: 30,
-            borderRadius: 20,
-            backgroundColor: 'green',
           }}
-          resizeMode="contain"
-          source={{
-            uri: product?.imageUrl,
-          }}
-        />
+          showsButtons={true}>
+          {product?.imageUrlImageList.map((item, index) => (
+            <Image
+              style={{
+                width: '85%',
+                height: 250,
+                marginHorizontal: 30,
+                borderRadius: 20,
+                backgroundColor: 'green',
+              }}
+              resizeMode="contain"
+              source={{
+                uri: item.imageUrl,
+              }}
+            />
+          ))}
+          {/* <View style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: '#9DD6EB'
+          }}>
+            <Text style={{
+              color: '#fff',
+              fontSize: 30,
+              fontWeight: 'bold'
+            }}>Hello Swiper</Text>
+          </View>
+          <View style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: '#97CAE5'
+          }}>
+            <Text style={{
+              color: '#fff',
+              fontSize: 30,
+              fontWeight: 'bold'
+            }}>Beautiful</Text>
+          </View>
+          <View style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: '#92BBD9'
+          }}>
+            <Text style={{
+              color: '#fff',
+              fontSize: 30,
+              fontWeight: 'bold'
+            }}>And simple</Text>
+          </View> */}
+        </Swiper>
+
         <View
           style={{
             marginHorizontal: 30,
@@ -212,7 +258,7 @@ const ProductDetails = ({navigation, route}) => {
                 fontSize: 16,
                 marginTop: 5,
               }}>
-              HSD: {dayjs(product.expiredDate).format('DD/MM/YYYY')}
+              HSD: {dayjs(product.nearestExpiredBatch.expiredDate).format('DD/MM/YYYY')}
             </Text>
           </View>
 
@@ -242,7 +288,7 @@ const ProductDetails = ({navigation, route}) => {
             alignItems: 'center',
             justifyContent: 'space-between',
           }}>
-          <View style={{flexDirection: 'row'}}>
+          <View style={{ flexDirection: 'row' }}>
             <Text
               style={{
                 fontSize: 24,
@@ -251,7 +297,7 @@ const ProductDetails = ({navigation, route}) => {
                 fontWeight: 700,
                 fontFamily: FONTS.fontFamily,
               }}>
-              {product.price.toLocaleString('vi-VN', {
+              {product.nearestExpiredBatch.price.toLocaleString('vi-VN', {
                 currency: 'VND',
               })}
             </Text>
@@ -323,7 +369,7 @@ const ProductDetails = ({navigation, route}) => {
             />
             <ModalButton
               text="Đăng nhập"
-              textStyle={{color: COLORS.primary}}
+              textStyle={{ color: COLORS.primary }}
               onPress={async () => {
                 try {
                   await AsyncStorage.removeItem('userInfo');
@@ -338,7 +384,7 @@ const ProductDetails = ({navigation, route}) => {
           </ModalFooter>
         }>
         <View
-          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
+          style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
           <Text
             style={{
               fontSize: 20,

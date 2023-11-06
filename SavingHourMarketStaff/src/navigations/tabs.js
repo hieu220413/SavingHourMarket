@@ -10,6 +10,9 @@ import {COLORS} from '../constants/theme';
 import {useFocusEffect} from '@react-navigation/native';
 import Test from '../components/Test';
 import Report from '../screens/Report';
+import Dropdown from '../screens/Dropdown';
+import HomeDeliver from '../screens/HomeDeliver';
+import QrCodeScanner from '../screens/QrCodeScanner';
 
 const Tab = createBottomTabNavigator();
 
@@ -121,20 +124,28 @@ const Tabs = () => {
       {user?.role === 'STAFF_DLV_0' && (
         <>
           <Tab.Screen
-            name="Home"
-            component={Home}
+            name="HomeDeliver"
+            component={HomeDeliver}
             options={{
               tabBarIcon: ({focused}) => (
-                <TabIcon display={'DLV0'} focused={focused} icon={icons.home} />
+                <TabIcon
+                  display={'Trang chủ'}
+                  focused={focused}
+                  icon={icons.home}
+                />
               ),
             }}
           />
           <Tab.Screen
             name="Home2"
-            component={Home}
+            component={QrCodeScanner}
             options={{
               tabBarIcon: ({focused}) => (
-                <TabIcon display={'DLV0'} focused={focused} icon={icons.home} />
+                <TabIcon
+                  display={'Scan QR'}
+                  focused={focused}
+                  icon={icons.qrCodeScanner}
+                />
               ),
             }}
           />
