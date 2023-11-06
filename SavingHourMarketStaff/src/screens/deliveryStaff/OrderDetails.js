@@ -4,12 +4,12 @@ import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
 import React, { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
-import { icons } from '../constants';
-import { COLORS, FONTS } from '../constants/theme';
+import { icons } from '../../constants';
+import { COLORS, FONTS } from '../../constants/theme';
 import { format } from 'date-fns';
 import { useFocusEffect } from '@react-navigation/native';
-import { API } from '../constants/api';
-import LoadingScreen from '../components/LoadingScreen';
+import { API } from '../../constants/api';
+import LoadingScreen from '../../components/LoadingScreen';
 
 
 const OrderDetails = ({ navigation, route }) => {

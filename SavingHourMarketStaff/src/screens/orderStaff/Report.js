@@ -10,12 +10,12 @@ import {
 import React, {useEffect, useState, useCallback} from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {COLORS} from '../constants/theme';
-import {icons} from '../constants';
+import {COLORS} from '../../constants/theme';
+import {icons} from '../../constants';
 import {useFocusEffect} from '@react-navigation/native';
-import {API} from '../constants/api';
+import {API} from '../../constants/api';
 import {format} from 'date-fns';
-import LoadingScreen from '../components/LoadingScreen';
+import LoadingScreen from '../../components/LoadingScreen';
 import {
   ExpandableCalendar,
   AgendaList,

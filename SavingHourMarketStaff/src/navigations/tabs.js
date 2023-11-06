@@ -3,16 +3,16 @@ import React, {useEffect, useState, useCallback} from 'react';
 import {View} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import TabIcon from '../components/TabIcon';
-import Home from '../screens/Home';
+import Home from '../screens/orderStaff/Home';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {icons} from '../constants';
 import {COLORS} from '../constants/theme';
 import {useFocusEffect} from '@react-navigation/native';
 import Test from '../components/Test';
-import Report from '../screens/Report';
-import Dropdown from '../screens/Dropdown';
-import HomeDeliver from '../screens/HomeDeliver';
-import QrCodeScanner from '../screens/QrCodeScanner';
+import Report from '../screens/orderStaff/Report';
+import HomeDeliver from '../screens/deliveryStaff/HomeDeliver';
+import QrCodeScanner from '../screens/deliveryStaff/QrCodeScanner';
+import Product from '../screens/orderStaff/Product';
 
 const Tab = createBottomTabNavigator();
 
@@ -71,6 +71,19 @@ const Tabs = () => {
                   display={'Đơn hàng'}
                   focused={focused}
                   icon={icons.order}
+                />
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="Product"
+            component={Product}
+            options={{
+              tabBarIcon: ({focused}) => (
+                <TabIcon
+                  display={'Sản phẩm'}
+                  focused={focused}
+                  icon={icons.product}
                 />
               ),
             }}

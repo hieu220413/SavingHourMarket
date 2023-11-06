@@ -14,14 +14,14 @@ import {
 import React, {useEffect, useState, useCallback} from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {COLORS} from '../constants/theme';
-import {icons} from '../constants';
+import {COLORS} from '../../constants/theme';
+import {icons} from '../../constants';
 import {useFocusEffect} from '@react-navigation/native';
-import {API} from '../constants/api';
+import {API} from '../../constants/api';
 import {format} from 'date-fns';
-import CartEmpty from '../assets/image/search-empty.png';
+import CartEmpty from '../../assets/image/search-empty.png';
 import {SwipeListView} from 'react-native-swipe-list-view';
-import LoadingScreen from '../components/LoadingScreen';
+import LoadingScreen from '../../components/LoadingScreen';
 
 const SearchBar = () => {
   return (
@@ -73,7 +73,8 @@ const Home = ({navigation}) => {
     value: 'PROCESSING',
   });
   const [visible, setVisible] = useState(false);
-  
+  const [pickupPoint, setPickupPoint] = useState(null);
+
   const onAuthStateChange = async userInfo => {
     // console.log(userInfo);
     if (initializing) {
@@ -95,7 +96,7 @@ const Home = ({navigation}) => {
         return;
       }
       const currentUser = await AsyncStorage.getItem('userInfo');
-      // console.log(currentUser);
+      console.log('currentUser' ,currentUser);
     } else {
       // no sessions found.
       console.log('user is not logged in');
@@ -125,7 +126,7 @@ const Home = ({navigation}) => {
             setLoading(true);
 
             fetch(
-              `${API.baseURL}/api/order/getOrdersForStaff?orderStatus=${currentStatus.value}`,
+              `${API.baseURL}/api/order/staff/getOrdersForPackageStaff?orderStatus=${currentStatus.value}`,
               {
                 method: 'GET',
                 headers: {
@@ -198,7 +199,9 @@ const Home = ({navigation}) => {
             setLoading(true);
 
             fetch(
-              `${API.baseURL}/api/order/getOrdersForStaff?orderStatus=${
+              `${
+                API.baseURL
+              }/api/order/staff/getOrdersForPackageStaff?orderStatus=${
                 currentStatus.value
               }${sortItem?.id == 1 ? '&deliveryDateSortType=ASC' : ''}${
                 sortItem?.id == 2 ? '&deliveryDateSortType=DESC' : ''
@@ -239,7 +242,7 @@ const Home = ({navigation}) => {
             setLoading(true);
 
             fetch(
-              `${API.baseURL}/api/order/getOrdersForStaff?orderStatus=${currentStatus.value}`,
+              `${API.baseURL}/api/order/staff/getOrdersForPackageStaff?orderStatus=${currentStatus.value}`,
               {
                 method: 'GET',
                 headers: {
@@ -285,7 +288,7 @@ const Home = ({navigation}) => {
           setLoading(true);
 
           fetch(
-            `${API.baseURL}/api/order/getOrdersForStaff?orderStatus=${currentStatus.value}`,
+            `${API.baseURL}/api/order/staff/getOrdersForPackageStaff?orderStatus=${currentStatus.value}`,
             {
               method: 'GET',
               headers: {
@@ -394,7 +397,12 @@ const Home = ({navigation}) => {
           <View style={styles.areaAndLogout}>
             <View style={styles.area}>
               <Text style={{fontSize: 16}}>Khu vực:</Text>
-              <TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  navigation.navigate('SelectPickupPoint', {
+                    setPickupPoint: setPickupPoint,
+                  });
+                }}>
                 <View style={styles.pickArea}>
                   <View style={styles.pickAreaItem}>
                     <Image
@@ -411,7 +419,7 @@ const Home = ({navigation}) => {
                       {/* {pickupPoint
                         ? pickupPoint.address
                         : 'Chọn điểm nhận hàng'} */}
-                      Chọn điểm nhận hàng
+                      Chọn điểm giao hàng
                     </Text>
                   </View>
                   <Image
