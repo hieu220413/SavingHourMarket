@@ -1,6 +1,7 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
 import com.fpt.capstone.savinghourmarket.common.District;
+import com.fpt.capstone.savinghourmarket.common.OrderReportMode;
 import com.fpt.capstone.savinghourmarket.common.OrderStatus;
 import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Order;
@@ -9,6 +10,7 @@ import com.fpt.capstone.savinghourmarket.entity.OrderGroup;
 import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.OrderCreate;
 import com.fpt.capstone.savinghourmarket.model.OrderWithDetails;
+import com.fpt.capstone.savinghourmarket.model.ReportOrdersResponse;
 import com.fpt.capstone.savinghourmarket.model.ShippingFeeDetailResponseBody;
 import com.fpt.capstone.savinghourmarket.service.FirebaseService;
 import com.fpt.capstone.savinghourmarket.service.OrderService;
@@ -252,11 +254,23 @@ public class OrderController {
 
     @PutMapping("/staff/chooseConsolidationArea/{orderId}")
     public ResponseEntity<Order> chooseConsolidationArea(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken,
-                                                 @PathVariable UUID orderId,
-                                                 @RequestParam UUID consolidationAreaId) throws ResourceNotFoundException, FirebaseAuthException {
+                                                         @PathVariable UUID orderId,
+                                                         @RequestParam UUID consolidationAreaId) throws ResourceNotFoundException, FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(orderService.chooseConsolidationArea(orderId, consolidationAreaId));
+    }
+
+    @GetMapping("/staff/getReportOrders")
+    public ResponseEntity<ReportOrdersResponse> getReportOrders(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken,
+                                                                OrderReportMode mode,
+                                                                @RequestParam(required = false) LocalDate startDate,
+                                                                @RequestParam(required = false) LocalDate endDate,
+                                                                @RequestParam(required = false) Integer month,
+                                                                @RequestParam(required = false) Integer year) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.getReportOrders(mode, startDate, endDate, month, year));
     }
 
 }

@@ -588,6 +588,15 @@ INSERT INTO `saving_hour_market`.`orders` (`id`, `total_price`, `total_discount_
             (UUID_TO_BIN('ec5de6e9-56dc-11ee-8a50-a85e45c41921'), 111000, 0, 0, '2023-11-17 15:00:00', '2023-11-19 19:00:00', @cod, @PickupPoint, @unpaid, null, null, null, null, null, 'qr code url here', @delivering,
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf4d19-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf1baa-5541-11ee-8a50-a85e45c41921'), null, null),
 
+            (UUID_TO_BIN('a4e3cf39-78cf-11ee-a832-a85e45c41921'), 111000, 0, 0, '2024-1-17 15:00:00', '2023-11-19 19:00:00', @cod, @PickupPoint, @unpaid, null, null, null, null, null, 'qr code url here', @success,
+             UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf4d19-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf1baa-5541-11ee-8a50-a85e45c41921'), null, null),
+
+            (UUID_TO_BIN('a4e3bfca-78cf-11ee-a832-a85e45c41921'), 111000, 0, 0, '2024-2-17 15:00:00', '2023-11-19 19:00:00', @cod, @PickupPoint, @unpaid, null, null, null, null, null, 'qr code url here', @success,
+             UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf4d19-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf1baa-5541-11ee-8a50-a85e45c41921'), null, null),
+
+            (UUID_TO_BIN('a4e3c832-78cf-11ee-a832-a85e45c41921'), 111000, 0, 0, '2024-5-17 15:00:00', '2023-11-19 19:00:00', @cod, @PickupPoint, @unpaid, null, null, null, null, null, 'qr code url here', @success,
+             UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf4d19-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf1baa-5541-11ee-8a50-a85e45c41921'), null, null),
+
             (UUID_TO_BIN('ec5debf5-56dc-11ee-8a50-a85e45c41921'), 304000, 0, 19000, '2023-11-16 12:00:00', '2023-11-19 12:00:00', @cod, @DoorToDoor, @unpaid, '81 Nguyễn Xiển, Long Thạnh Mỹ, Quận 9, Thành phố Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.876725, 106.83843, 'qr code url here', @processing,
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), null, null, null, UUID_TO_BIN('ec5e070b-56dc-11ee-8a50-a85e45c41921'));
 
