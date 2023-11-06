@@ -27,6 +27,7 @@ import Search from './screens/Search';
 import SearchResult from './screens/SearchResult';
 import SearchBar from './components/SearchBar';
 import ProductsBySubCategories from './screens/ProductsBySubCategories';
+import ChangePickupPoint from './screens/ChangePickupPoint';
 
 import { LogBox } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
@@ -188,6 +189,7 @@ export default function App() {
           <Stack.Screen name="Upload" component={UploadScreen} />
           <Stack.Screen name="Order Feedback" component={OrderFeedback} />
           <Stack.Screen name="List Feedback" component={FeedbackList} />
+          <Stack.Screen name="ChangePickupPoint" component={ChangePickupPoint} />
         </Stack.Navigator>
       </NavigationContainer>
       <ModalPortal />

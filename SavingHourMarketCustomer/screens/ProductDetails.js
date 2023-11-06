@@ -176,58 +176,53 @@ const ProductDetails = ({ navigation, route }) => {
           style={{
             height: 250,
           }}
-          showsButtons={true}>
+
+          nextButton={{
+
+          }}
+          showsButtons={false}>
           {product?.imageUrlImageList.map((item, index) => (
-            <Image
-              style={{
-                width: '85%',
-                height: 250,
-                marginHorizontal: 30,
-                borderRadius: 20,
-                backgroundColor: 'green',
-              }}
-              resizeMode="contain"
-              source={{
-                uri: item.imageUrl,
-              }}
-            />
+            <>
+              <Image
+                key={index}
+                style={{
+                  width: '85%',
+                  height: 250,
+                  marginHorizontal: 30,
+                  borderRadius: 20,
+                  backgroundColor: 'green',
+                }}
+                resizeMode="contain"
+                source={{
+                  uri: item.imageUrl,
+                }}
+              />
+              {product?.imageUrlImageList.length !== 1 && (
+                <View
+                  key={index}
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    right: 0,
+                    paddingHorizontal: 8,
+                    paddingVertical: 2,
+                    marginHorizontal: 20,
+                    borderWidth: 1,
+                    borderColor: 'black',
+                    borderRadius: 10,
+                  }}
+                >
+                  <Text
+                    key={index}
+                    style={{
+                      color: 'black',
+                      fontFamily: FONTS.fontFamily,
+                    }}
+                  >{index + 1}/{product?.imageUrlImageList.length}</Text>
+                </View>
+              )}
+            </>
           ))}
-          {/* <View style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: '#9DD6EB'
-          }}>
-            <Text style={{
-              color: '#fff',
-              fontSize: 30,
-              fontWeight: 'bold'
-            }}>Hello Swiper</Text>
-          </View>
-          <View style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: '#97CAE5'
-          }}>
-            <Text style={{
-              color: '#fff',
-              fontSize: 30,
-              fontWeight: 'bold'
-            }}>Beautiful</Text>
-          </View>
-          <View style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: '#92BBD9'
-          }}>
-            <Text style={{
-              color: '#fff',
-              fontSize: 30,
-              fontWeight: 'bold'
-            }}>And simple</Text>
-          </View> */}
         </Swiper>
 
         <View
