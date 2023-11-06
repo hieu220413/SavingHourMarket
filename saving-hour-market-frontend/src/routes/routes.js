@@ -14,6 +14,8 @@ import ProductManagement from "../screens/ProductSelection/Management/ProductMan
 import CategoryManagement from "../screens/ProductSelection/Management/CategoryManagement/CategoryManagement";
 import Report from "../screens/ProductSelection/Report/Report";
 import SuperMarketReport from "../screens/ProductSelection/Management/SuperMarketReport/SuperMarketReport";
+import TimeframeManagement from "../screens/Admin/Management/TimeframeManagement/TimeframeManagement";
+import ConsolidationManagement from "../screens/Admin/Management/ConsolidationManagement/ConsolidationManagement";
 
 export const routes = [
   {
@@ -47,6 +49,20 @@ export const routes = [
   {
     path: "/transactionmanagement",
     component: TransactionManagement,
+    layout: DefaultLayout,
+    private: true,
+    role: "ADMIN",
+  },
+  {
+    path: "/timeframemanagement",
+    component: TimeframeManagement,
+    layout: DefaultLayout,
+    private: true,
+    role: "ADMIN",
+  },
+  {
+    path: "/consolidationmanagement",
+    component: ConsolidationManagement,
     layout: DefaultLayout,
     private: true,
     role: "ADMIN",

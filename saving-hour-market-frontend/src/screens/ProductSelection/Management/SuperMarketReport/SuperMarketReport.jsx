@@ -30,6 +30,8 @@ import { API } from "../../../../contanst/api";
 import { auth } from "../../../../firebase/firebase.config";
 import { onAuthStateChanged } from "firebase/auth";
 import { Box, Stack, Typography } from "@mui/material";
+import { useAuthState } from "react-firebase-hooks/auth";
+import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 
 function SuperMarketReport() {
   const [years, setYears] = useState([]);
@@ -41,170 +43,173 @@ function SuperMarketReport() {
   const [quaterData, setQuaterData] = useState([]);
   const [supermarketSaleReportByCategory, setSupermarketSaleReportByCategory] =
     useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const userState = useAuthState(auth);
 
   useEffect(() => {
     const fetchYearData = async () => {
-      onAuthStateChanged(auth, async (userAuth) => {
-        if (userAuth) {
-          const tokenId = await auth.currentUser.getIdToken();
-          fetch(`${API.baseURL}/api/product/getRevenueReportForEachYear`, {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${tokenId}`,
-            },
+      setLoading(true);
+      if (!userState[1]) {
+        const tokenId = await auth.currentUser.getIdToken();
+        fetch(`${API.baseURL}/api/product/getRevenueReportForEachYear`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${tokenId}`,
+          },
+        })
+          .then((res) => res.json())
+          .then((respond) => {
+            setYears(respond);
+            setLoading(false);
           })
-            .then((res) => res.json())
-            .then((respond) => {
-              setYears(respond);
-            })
-            .catch((err) => console.log(err));
-        }
-      });
+          .catch((err) => console.log(err));
+      }
     };
     let supermarketList = [];
     let firstSupermarket = [];
     const fetchAllSupermarketSaleReport = async () => {
-      onAuthStateChanged(auth, async (userAuth) => {
-        if (userAuth) {
-          const tokenId = await auth.currentUser.getIdToken();
-          fetch(
-            `${API.baseURL}/api/product/getAllSupermarketSaleReport?year=${selectedYear}`,
-            {
-              method: "GET",
-              headers: {
-                Authorization: `Bearer ${tokenId}`,
-              },
-            }
-          )
-            .then((res) => res.json())
-            .then((respond) => {
-              setAllSuperData(respond);
-              supermarketList = respond;
-            })
-            .catch((err) => console.log(err));
-        }
-      });
+      setLoading(true);
+      if (!userState[1]) {
+        const tokenId = await auth.currentUser.getIdToken();
+        fetch(
+          `${API.baseURL}/api/product/getAllSupermarketSaleReport?year=${selectedYear}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${tokenId}`,
+            },
+          }
+        )
+          .then((res) => res.json())
+          .then((respond) => {
+            setAllSuperData(respond);
+            supermarketList = respond;
+            setLoading(false);
+          })
+          .catch((err) => console.log(err));
+      }
     };
     const fetchSupermarketSaleReport = async () => {
-      onAuthStateChanged(auth, async (userAuth) => {
-        if (userAuth) {
-          const tokenId = await auth.currentUser.getIdToken();
-          fetch(
-            `${API.baseURL}/api/product/getAllSupermarketSaleReport?year=${selectedYear}`,
-            {
-              method: "GET",
-              headers: {
-                Authorization: `Bearer ${tokenId}`,
-              },
+      setLoading(true);
+      if (!userState[1]) {
+        const tokenId = await auth.currentUser.getIdToken();
+        fetch(
+          `${API.baseURL}/api/product/getAllSupermarketSaleReport?year=${selectedYear}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${tokenId}`,
+            },
+          }
+        )
+          .then((res) => res.json())
+          .then((respond) => {
+            let supermarket;
+            if (selectedSupermarket) {
+              supermarket = supermarketList.filter(
+                (item) => item.name === selectedSupermarket
+              );
+            } else {
+              supermarket = supermarketList.filter(
+                (item) => item.name === respond[0].name
+              );
             }
-          )
-            .then((res) => res.json())
-            .then((respond) => {
-              let supermarket;
-              if (selectedSupermarket) {
-                supermarket = supermarketList.filter(
-                  (item) => item.name === selectedSupermarket
-                );
-              } else {
-                supermarket = supermarketList.filter(
-                  (item) => item.name === respond[0].name
-                );
+            const id = supermarket[0].id;
+            //   console.log(id);
+            fetch(
+              `${API.baseURL}/api/product/getSaleReportSupermarket?supermarketId=${id}&year=${selectedYear}`,
+              {
+                method: "GET",
+                headers: {
+                  Authorization: `Bearer ${tokenId}`,
+                },
               }
-              const id = supermarket[0].id;
-              //   console.log(id);
-              fetch(
-                `${API.baseURL}/api/product/getSaleReportSupermarket?supermarketId=${id}&year=${selectedYear}`,
-                {
-                  method: "GET",
-                  headers: {
-                    Authorization: `Bearer ${tokenId}`,
-                  },
+            )
+              .then((res) => res.json())
+              .then((respond) => {
+                setOneSuperData(respond);
+                let Quater1 = 0;
+                for (let i = 0; i < 3; i++) {
+                  Quater1 += respond[i]?.totalIncome;
                 }
-              )
-                .then((res) => res.json())
-                .then((respond) => {
-                  setOneSuperData(respond);
-                  let Quater1 = 0;
-                  for (let i = 0; i < 3; i++) {
-                    Quater1 += respond[i]?.totalIncome;
-                  }
-                  let Quater2 = 0;
-                  for (let i = 3; i < 6; i++) {
-                    Quater2 += respond[i]?.totalIncome;
-                  }
-                  let Quater3 = 0;
-                  for (let i = 6; i < 9; i++) {
-                    Quater3 += respond[i]?.totalIncome;
-                  }
-                  let Quater4 = 0;
-                  for (let i = 9; i < 11; i++) {
-                    Quater4 += respond[i]?.totalIncome;
-                  }
+                let Quater2 = 0;
+                for (let i = 3; i < 6; i++) {
+                  Quater2 += respond[i]?.totalIncome;
+                }
+                let Quater3 = 0;
+                for (let i = 6; i < 9; i++) {
+                  Quater3 += respond[i]?.totalIncome;
+                }
+                let Quater4 = 0;
+                for (let i = 9; i < 11; i++) {
+                  Quater4 += respond[i]?.totalIncome;
+                }
 
-                  setQuaterData([
-                    { name: "Quý 1", value: Quater1 },
-                    { name: "Quý 2", value: Quater2 },
-                    { name: "Quý 3", value: Quater3 },
-                    { name: "Quý 4", value: Quater4 },
-                  ]);
-                })
-                .catch((err) => console.log(err));
-            })
-            .catch((err) => console.log(err));
-        }
-      });
+                setQuaterData([
+                  { name: "Quý 1", value: Quater1 },
+                  { name: "Quý 2", value: Quater2 },
+                  { name: "Quý 3", value: Quater3 },
+                  { name: "Quý 4", value: Quater4 },
+                ]);
+                setLoading(false);
+              })
+              .catch((err) => console.log(err));
+          })
+          .catch((err) => console.log(err));
+      }
     };
     const fetchSupermarketSaleReportByCategory = async () => {
-      onAuthStateChanged(auth, async (userAuth) => {
-        if (userAuth) {
-          const tokenId = await auth.currentUser.getIdToken();
-          fetch(
-            `${API.baseURL}/api/product/getAllSupermarketSaleReport?year=${selectedYear}`,
-            {
-              method: "GET",
-              headers: {
-                Authorization: `Bearer ${tokenId}`,
-              },
+      setLoading(true);
+      if (!userState[1]) {
+        const tokenId = await auth.currentUser.getIdToken();
+        fetch(
+          `${API.baseURL}/api/product/getAllSupermarketSaleReport?year=${selectedYear}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${tokenId}`,
+            },
+          }
+        )
+          .then((res) => res.json())
+          .then((respond) => {
+            let supermarket;
+            if (selectedSupermarket) {
+              supermarket = supermarketList.filter(
+                (item) => item.name === selectedSupermarket
+              );
+            } else {
+              supermarket = supermarketList.filter(
+                (item) => item.name === respond[0].name
+              );
             }
-          )
-            .then((res) => res.json())
-            .then((respond) => {
-              let supermarket;
-              if (selectedSupermarket) {
-                supermarket = supermarketList.filter(
-                  (item) => item.name === selectedSupermarket
-                );
-              } else {
-                supermarket = supermarketList.filter(
-                  (item) => item.name === respond[0].name
-                );
+            const id = supermarket[0].id;
+            //   console.log(id);
+            fetch(
+              `${API.baseURL}/api/product/getOrderTotalAllCategorySupermarketReport?supermarketId=${id}&year=${selectedYear}`,
+              {
+                method: "GET",
+                headers: {
+                  Authorization: `Bearer ${tokenId}`,
+                },
               }
-              const id = supermarket[0].id;
-              //   console.log(id);
-              fetch(
-                `${API.baseURL}/api/product/getOrderTotalAllCategorySupermarketReport?supermarketId=${id}&year=${selectedYear}`,
-                {
-                  method: "GET",
-                  headers: {
-                    Authorization: `Bearer ${tokenId}`,
-                  },
-                }
-              )
-                .then((res) => res.json())
-                .then((respond) => {
-                  setSupermarketSaleReportByCategory(respond);
-                })
-                .catch((err) => console.log(err));
-            })
-            .catch((err) => console.log(err));
-        }
-      });
+            )
+              .then((res) => res.json())
+              .then((respond) => {
+                setSupermarketSaleReportByCategory(respond);
+                setLoading(false);
+              })
+              .catch((err) => console.log(err));
+          })
+          .catch((err) => console.log(err));
+      }
     };
     fetchYearData();
     fetchAllSupermarketSaleReport();
     fetchSupermarketSaleReport();
     fetchSupermarketSaleReportByCategory();
-  }, [selectedYear, selectedSupermarket]);
+  }, [selectedYear, selectedSupermarket, userState[1]]);
   const menuTabs = [
     {
       display: "Hệ thống",
@@ -434,6 +439,7 @@ function SuperMarketReport() {
           </div>
         </div>
       </div>
+      {loading && <LoadingScreen />}
     </div>
   );
 }

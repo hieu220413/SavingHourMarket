@@ -16,6 +16,7 @@ import EditCategory from "./EditCategory";
 import CreateCategory from "./CreateCategory";
 import { onAuthStateChanged } from "firebase/auth";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
+import { useAuthState } from "react-firebase-hooks/auth";
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
@@ -90,41 +91,41 @@ const CategoryManagement = () => {
     setOpenSnackbar({ ...openSnackbar, open: false });
   };
 
+  const userState = useAuthState(auth);
+
   useEffect(() => {
     const fetchCategory = async () => {
-      onAuthStateChanged(auth, async (userAuth) => {
-        setLoading(true);
-        if (userAuth) {
-          const tokenId = await auth.currentUser.getIdToken();
-          fetch(
-            `${
-              API.baseURL
-            }/api/product/getCategoryForStaff?name=${searchValue}&page=${
-              page - 1
-            }&limit=5`,
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${tokenId}`,
-              },
-            }
-          )
-            .then((res) => res.json())
-            .then((data) => {
-              setCategories(data.productCategoryList);
-              setTotalPage(data.totalPage);
-              setLoading(false);
-            })
-            .catch((err) => {
-              console.log(err);
-              setLoading(false);
-            });
-        }
-      });
+      setLoading(true);
+      if (!userState[1]) {
+        const tokenId = await auth.currentUser.getIdToken();
+        fetch(
+          `${
+            API.baseURL
+          }/api/product/getCategoryForStaff?name=${searchValue}&page=${
+            page - 1
+          }&limit=5`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${tokenId}`,
+            },
+          }
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            setCategories(data.productCategoryList);
+            setTotalPage(data.totalPage);
+            setLoading(false);
+          })
+          .catch((err) => {
+            console.log(err);
+            setLoading(false);
+          });
+      }
     };
     fetchCategory();
-  }, [page, searchValue]);
+  }, [page, searchValue, userState[1]]);
 
   const onSubmitSearch = (e) => {
     e.preventDefault();

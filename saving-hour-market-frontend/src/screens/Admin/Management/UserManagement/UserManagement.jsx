@@ -1,28 +1,42 @@
-import React from "react";
+import React, { useState } from "react";
 import ManagementMenu from "../../../../components/ManagementMenu/ManagementMenu";
+import "./UserManagement.scss";
+import StaffManagement from "./StaffManagement";
+import CustomerManagement from "./CustomerManagement";
 
 const UserManagement = () => {
   const menuTabs = [
     {
-      display: "User",
+      display: "Tài khoản",
       to: "/usermanagement",
     },
     {
-      display: "Feedback",
+      display: "Góp ý",
       to: "/feedbackmanagement",
     },
     {
-      display: "Pickup Point",
+      display: "Điểm giao hàng",
       to: "/pickuppointmanagement",
     },
     {
-      display: "Transaction",
+      display: "Giao dịch",
       to: "/transactionmanagement",
     },
+    {
+      display: "Khung giờ",
+      to: "/timeframemanagement",
+    },
+    {
+      display: "Điểm tập kết",
+      to: "/consolidationmanagement",
+    },
   ];
+
   return (
     <div>
       <ManagementMenu menuTabs={menuTabs} />
+      <StaffManagement />
+      <CustomerManagement />
     </div>
   );
 };

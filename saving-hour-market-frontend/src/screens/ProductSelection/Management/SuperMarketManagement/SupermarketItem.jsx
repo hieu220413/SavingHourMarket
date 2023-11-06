@@ -26,6 +26,7 @@ const SupermarketItem = ({
   setError,
   error,
   setLoading,
+  isSwitchRecovery,
 }) => {
   const [openEdit, setOpenEdit] = useState(false);
   const handleOpenEdit = () => setOpenEdit(true);
@@ -60,7 +61,6 @@ const SupermarketItem = ({
     )
       .then((res) => res.json())
       .then((respond) => {
-        console.log(respond);
         if (respond?.error) {
           setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
           setError(respond.error);
@@ -70,7 +70,9 @@ const SupermarketItem = ({
         fetch(
           `${API.baseURL}/api/supermarket/getSupermarketForStaff?page=${
             page - 1
-          }&limit=6&name=${searchValue}`,
+          }&limit=6&name=${searchValue}${
+            isSwitchRecovery ? "&status=DISABLE" : "&status=ENABLE"
+          }`,
           {
             method: "GET",
             headers: {
@@ -91,6 +93,59 @@ const SupermarketItem = ({
               severity: "success",
             });
             setError("Vô hiệu hóa thành công");
+            setLoading(false);
+          })
+          .catch((err) => console.log(err));
+      })
+      .catch((err) => console.log(err));
+  };
+
+  const handleReverse = async () => {
+    setLoading(true);
+    const tokenId = await auth.currentUser.getIdToken();
+    fetch(
+      `${API.baseURL}/api/supermarket/changeStatus?supermarketId=${item.id}&status=ENABLE`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenId}`,
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((respond) => {
+        if (respond?.error) {
+          setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
+          setError(respond.error);
+          setLoading(false);
+          return;
+        }
+        fetch(
+          `${API.baseURL}/api/supermarket/getSupermarketForStaff?page=${
+            page - 1
+          }&limit=6&name=${searchValue}${
+            isSwitchRecovery ? "&status=DISABLE" : "&status=ENABLE"
+          }`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${tokenId}`,
+            },
+          }
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            setSuperMarketList(data.supermarketList);
+            setTotalPage(data.totalPage);
+            handleCloseDelete();
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "success",
+            });
+            setError("Phục hồi thành công");
             setLoading(false);
           })
           .catch((err) => console.log(err));
@@ -128,8 +183,19 @@ const SupermarketItem = ({
       </td>
       <td>{item.phone}</td>
       <td>
-        <i onClick={handleOpenEdit} class="bi bi-pencil-square"></i>
-        <i onClick={handleOpenDelete} class="bi bi-trash-fill"></i>
+        {isSwitchRecovery ? (
+          <i
+            onClick={() => {
+              handleReverse();
+            }}
+            class="bi bi-arrow-repeat"
+          ></i>
+        ) : (
+          <>
+            <i onClick={handleOpenEdit} class="bi bi-pencil-square"></i>
+            <i onClick={handleOpenDelete} class="bi bi-trash-fill"></i>
+          </>
+        )}
       </td>
       <Dialog
         onClose={handleCloseEdit}
