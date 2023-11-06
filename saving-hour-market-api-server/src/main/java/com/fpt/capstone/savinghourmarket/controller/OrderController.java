@@ -24,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
@@ -215,11 +216,12 @@ public class OrderController {
     public ResponseEntity<ShippingFeeDetailResponseBody> getShippingFeeDetail(
             @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken,
             @RequestParam Double latitude,
-            @RequestParam Double longitude
+            @RequestParam Double longitude,
+            @RequestParam UUID pickupPointId
     ) throws FirebaseAuthException, IOException, InterruptedException, ApiException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        ShippingFeeDetailResponseBody shippingFeeDetailResponseBody = orderService.getShippingFeeDetail(latitude, longitude);
+        ShippingFeeDetailResponseBody shippingFeeDetailResponseBody = orderService.getShippingFeeDetail(latitude, longitude, pickupPointId);
         return ResponseEntity.status(HttpStatus.OK).body(shippingFeeDetailResponseBody);
     }
 

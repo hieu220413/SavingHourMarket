@@ -12,6 +12,7 @@ import com.fpt.capstone.savinghourmarket.model.ShippingFeeDetailResponseBody;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.maps.errors.ApiException;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.IOException;
 import java.sql.Date;
@@ -85,7 +86,7 @@ public interface OrderService {
 
     List<OrderBatch> batchingForStaff(Date deliverDate, UUID timeFrameId, Integer batchQuantity) throws ResourceNotFoundException;
 
-    ShippingFeeDetailResponseBody getShippingFeeDetail(Double latitude, Double longitude) throws IOException, InterruptedException, ApiException;
+    ShippingFeeDetailResponseBody getShippingFeeDetail(Double latitude, Double longitude, UUID pickupPoint) throws IOException, InterruptedException, ApiException;
 
     Order editDeliverDate(UUID orderId, Date deliverDate) throws ResourceNotFoundException;
 
