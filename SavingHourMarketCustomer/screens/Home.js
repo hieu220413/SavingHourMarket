@@ -74,7 +74,7 @@ const Home = ({navigation}) => {
         try {
           setLoading(true);
           const value = await AsyncStorage.getItem('PickupPoint');
-          setPickupPoint(JSON.parse(value));
+          setPickupPoint(value ? JSON.parse(value) : pickupPoint);
           setLoading(false);
         } catch (err) {
           console.log(err);

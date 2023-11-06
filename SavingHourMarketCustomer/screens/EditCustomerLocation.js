@@ -398,8 +398,8 @@ const EditCustomerLocation = ({navigation, route}) => {
                 color: 'black',
                 textAlign: 'center',
               }}>
-              Phí giao hàng tính bằng: khoảng cách từ địa chỉ của bạn đến địa
-              điểm giao hàng đã chọn dưới{' '}
+              Phí giao hàng tính bằng khoảng cách từ địa chỉ của bạn đến địa
+              điểm giao hàng đã chọn: dưới{' '}
               {shippingCostPolicy.minKmDistanceForExtraShippingFee}
               km là{' '}
               {shippingCostPolicy.initialShippingFee.toLocaleString('vi-VN', {
@@ -407,7 +407,7 @@ const EditCustomerLocation = ({navigation, route}) => {
                 currency: 'VND',
               })}
               , trên {shippingCostPolicy.minKmDistanceForExtraShippingFee}
-              km thì sẽ cộng{' '}
+              km sẽ cộng{' '}
               {shippingCostPolicy.extraShippingFeePerKilometer.toLocaleString(
                 'vi-VN',
                 {
@@ -457,7 +457,7 @@ const EditCustomerLocation = ({navigation, route}) => {
                   fontFamily: 'Roboto',
                   fontWeight: 'bold',
                 }}>
-                Tiếp tục
+                Chấp nhận
               </Text>
             </TouchableOpacity>
           </View>

@@ -25,6 +25,7 @@ import Swiper from 'react-native-swiper';
 import BottomSheet, {
   useBottomSheet,
   BottomSheetModalProvider,
+  BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
 import {format} from 'date-fns';
 
@@ -33,6 +34,7 @@ const ProductDetails = ({navigation, route}) => {
   const [cartList, setCartList] = useState([]);
   const [openAuthModal, setOpenAuthModal] = useState(false);
   const [openWarnModal, setOpenWarnModal] = useState(false);
+  const [isAddToCart, setIsAddToCart] = useState(false);
   const [index, setIndex] = useState(-1);
 
   const [productBatchList, setProductBatchList] = useState([
@@ -94,13 +96,14 @@ const ProductDetails = ({navigation, route}) => {
         {
           id: item.id,
           name: item.name,
-          price: item.price,
-          priceOriginal: item.priceOriginal,
-          expiredDate: Date.parse(item.expiredDate),
-          imageUrl: item.imageUrl,
+          price: selectedProductBatch.price,
+          priceOriginal: selectedProductBatch.priceOriginal,
+          expiredDate: Date.parse(selectedProductBatch.expiredDate),
+          imageUrl: item.imageUrlImageList[0].imageUrl,
           productCategoryName: item.productSubCategory.productCategory.name,
           productCategoryId: item.productSubCategory.productCategory.id,
           quantity: 1,
+          idList: selectedProductBatch.idList,
         },
       ];
 
@@ -231,10 +234,7 @@ const ProductDetails = ({navigation, route}) => {
           style={{
             height: 250,
           }}
-
-          nextButton={{
-
-          }}
+          nextButton={{}}
           showsButtons={false}>
           {product?.imageUrlImageList.map((item, index) => (
             <>
@@ -265,15 +265,15 @@ const ProductDetails = ({navigation, route}) => {
                     borderWidth: 1,
                     borderColor: 'black',
                     borderRadius: 10,
-                  }}
-                >
+                  }}>
                   <Text
                     key={index}
                     style={{
                       color: 'black',
                       fontFamily: FONTS.fontFamily,
-                    }}
-                  >{index + 1}/{product?.imageUrlImageList.length}</Text>
+                    }}>
+                    {index + 1}/{product?.imageUrlImageList.length}
+                  </Text>
                 </View>
               )}
             </>
@@ -366,7 +366,11 @@ const ProductDetails = ({navigation, route}) => {
               ₫
             </Text>
           </View>
-          <TouchableOpacity onPress={() => handlePresentBottomSheet()}>
+          <TouchableOpacity
+            onPress={() => {
+              setIsAddToCart(true);
+              handlePresentBottomSheet();
+            }}>
             <Text
               style={{
                 paddingVertical: 8,
@@ -384,7 +388,11 @@ const ProductDetails = ({navigation, route}) => {
               Thêm
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleBuy}>
+          <TouchableOpacity
+            onPress={() => {
+              setIsAddToCart(false);
+              handlePresentBottomSheet();
+            }}>
             <Text
               style={{
                 paddingVertical: 10,
@@ -517,15 +525,18 @@ const ProductDetails = ({navigation, route}) => {
                       color: 'red',
                       fontFamily: FONTS.fontFamily,
                     }}>
-                    {minPrice.toLocaleString('vi-VN', {
-                      style: 'currency',
-                      currency: 'VND',
-                    })}{' '}
-                    -{' '}
-                    {maxPrice.toLocaleString('vi-VN', {
-                      style: 'currency',
-                      currency: 'VND',
-                    })}
+                    {minPrice === maxPrice
+                      ? `${minPrice.toLocaleString('vi-VN', {
+                          style: 'currency',
+                          currency: 'VND',
+                        })}`
+                      : `${minPrice.toLocaleString('vi-VN', {
+                          style: 'currency',
+                          currency: 'VND',
+                        })} - ${maxPrice.toLocaleString('vi-VN', {
+                          style: 'currency',
+                          currency: 'VND',
+                        })}`}
                   </Text>
                   <Text
                     style={{
@@ -551,8 +562,13 @@ const ProductDetails = ({navigation, route}) => {
               </TouchableOpacity>
             </View>
           </View>
-          <ScrollView>
-            <View style={{paddingHorizontal: 15}}>
+          <BottomSheetScrollView>
+            <View
+              style={{
+                paddingHorizontal: 15,
+                paddingBottom: 15,
+                marginBottom: 140,
+              }}>
               <Text
                 style={{
                   fontSize: 18,
@@ -564,8 +580,9 @@ const ProductDetails = ({navigation, route}) => {
                 }}>
                 Lô hàng :
               </Text>
-              {productBatchList.map(item => (
+              {productBatchList.map((item, index) => (
                 <TouchableOpacity
+                  key={index}
                   onPress={() => {
                     setSelectedProductBatch(item);
                   }}
@@ -619,13 +636,14 @@ const ProductDetails = ({navigation, route}) => {
                 </TouchableOpacity>
               ))}
             </View>
-          </ScrollView>
+          </BottomSheetScrollView>
           <View
             style={{
               position: 'absolute',
-              bottom: 80,
+              bottom: 70,
               left: 0,
               right: 0,
+
               backgroundColor: 'white',
               borderTopColor: 'transparent',
               height: 70,
@@ -639,7 +657,9 @@ const ProductDetails = ({navigation, route}) => {
             }}>
             <View style={{width: '95%'}}>
               <TouchableOpacity
-                onPress={() => handleAddToCart(product)}
+                onPress={() => {
+                  isAddToCart ? handleAddToCart(product) : handleBuy();
+                }}
                 style={{
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -655,7 +675,7 @@ const ProductDetails = ({navigation, route}) => {
                     fontFamily: 'Roboto',
                     fontWeight: 'bold',
                   }}>
-                  Mua hàng
+                  {isAddToCart ? 'Mua hàng' : 'Đặt hàng'}
                 </Text>
               </TouchableOpacity>
             </View>

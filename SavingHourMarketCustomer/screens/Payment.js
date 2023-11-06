@@ -99,6 +99,20 @@ const Payment = ({navigation, route}) => {
 
   const [keyboard, setKeyboard] = useState(Boolean);
 
+  useFocusEffect(
+    useCallback(() => {
+      // Get pickup point from AS
+      (async () => {
+        try {
+          const value = await AsyncStorage.getItem('PickupPoint');
+          setPickupPoint(value ? JSON.parse(value) : pickupPoint);
+        } catch (err) {
+          console.log(err);
+        }
+      })();
+    }, []),
+  );
+
   useEffect(() => {
     const getShippingFee = async () => {
       const idToken = await auth().currentUser.getIdToken();
@@ -625,6 +639,7 @@ const Payment = ({navigation, route}) => {
         receiverName: name,
         receiverPhone: phone,
         timeFrameId: customerTimeFrame.id,
+        deliveryMethod: 'DOOR_TO_DOOR',
         paymentStatus: 'UNPAID',
         paymentMethod: paymentMethod.id,
         addressDeliver: customerLocation.address,
