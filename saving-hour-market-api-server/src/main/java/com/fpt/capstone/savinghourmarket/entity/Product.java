@@ -69,7 +69,7 @@ public class Product {
     private Supermarket supermarket;
 
     @OneToMany(
-            fetch = FetchType.EAGER,
+            fetch = FetchType.LAZY,
             mappedBy = "product",
             cascade = CascadeType.ALL
     )
