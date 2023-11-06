@@ -17,6 +17,13 @@ const Search = ({ navigation }) => {
     const [text, setText] = useState('');
     const [loading, setLoading] = useState(false);
     const [searchHistory, setSearchHistory] = useState([]);
+    const [pickupPoint, setPickupPoint] = useState({
+        id: "accf0ac0-5541-11ee-8a50-a85e45c41921",
+        address: "Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh",
+        status: 1,
+        longitude: 106.83102962168277,
+        latitude: 10.845020092805793,
+    });
 
     const typingTimeoutRef = useRef(null);
 
@@ -32,7 +39,17 @@ const Search = ({ navigation }) => {
     // fetch search suggestion
     useFocusEffect(
         useCallback(() => {
-            fetch(`${API.baseURL}/api/product/getProductsForCustomer?name=${productName}&quantitySortType=DESC&expiredSortType=DESC`)
+            // Get pickup point from AS
+            (async () => {
+                try {
+                    const value = await AsyncStorage.getItem('PickupPoint');
+                    setPickupPoint(JSON.parse(value));
+                } catch (err) {
+                    console.log(err);
+                }
+            })();
+
+            fetch(`${API.baseURL}/api/product/getProductsForCustomer?name=${productName}&pickupPointId=${pickupPoint.id}&quantitySortType=DESC&expiredSortType=DESC`)
                 .then(res => res.json())
                 .then(data => {
                     setResult(data.productList);
@@ -50,14 +67,15 @@ const Search = ({ navigation }) => {
                     console.log(err);
                 }
             })();
-        }, [productName]
+
+        }, [pickupPoint.id, productName]
         )
     );
 
     // fetch recommend products for display
     useEffect(() => {
         setLoading(true);
-        fetch(`${API.baseURL}/api/product/getProductsForCustomer?page=0&limit=6&quantitySortType=DESC&expiredSortType=ASC`)
+        fetch(`${API.baseURL}/api/product/getProductsForCustomer?page=0&limit=6&quantitySortType=DESC&expiredSortType=ASC&pickupPointId=${pickupPoint.id}`)
             .then(res => res.json())
             .then(data => {
                 setProducts(data.productList);
@@ -67,7 +85,7 @@ const Search = ({ navigation }) => {
                 console.log(err);
                 setLoading(false);
             });
-    }, []);
+    }, [pickupPoint.id]);
 
     const Item = ({ item }) => {
         return (
@@ -148,7 +166,7 @@ const Search = ({ navigation }) => {
                 <Image
                     resizeMode='contain'
                     source={{
-                        uri: item?.imageUrl
+                        uri: item?.imageUrlImageList[0].imageUrl,
                     }}
                     style={{
                         width: 100,

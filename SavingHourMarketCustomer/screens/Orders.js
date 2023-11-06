@@ -41,7 +41,7 @@ const Orders = ({navigation}) => {
   //authen check
   const onAuthStateChange = async userInfo => {
     // console.log(userInfo);
-    setLoading(true);
+
     if (initializing) {
       setInitializing(false);
     }
@@ -59,17 +59,16 @@ const Orders = ({navigation}) => {
 
         await AsyncStorage.removeItem('userInfo');
         await AsyncStorage.removeItem('CartList');
-        setLoading(false);
+
         setOpenAuthModal(true);
         return;
       }
-      setLoading(false);
     } else {
       // no sessions found.
       console.log('user is not logged in');
       await AsyncStorage.removeItem('userInfo');
       await AsyncStorage.removeItem('CartList');
-      setLoading(false);
+
       setOpenAuthModal(true);
     }
   };
