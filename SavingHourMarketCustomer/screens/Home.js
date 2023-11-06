@@ -21,16 +21,12 @@ import { API } from '../constants/api';
 import { useFocusEffect } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import LoadingScreen from '../components/LoadingScreen';
-import { Alert } from 'react-native';
-import messaging from '@react-native-firebase/messaging';
-import auth from '@react-native-firebase/auth';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import Modal, {
   ModalFooter,
   ModalButton,
-  SlideAnimation,
   ScaleAnimation,
 } from 'react-native-modals';
+import Empty from '../assets/image/search-empty.png';
 
 const Home = ({ navigation }) => {
   const [categories, setCategories] = useState([]);
@@ -43,9 +39,13 @@ const Home = ({ navigation }) => {
   const [cartList, setCartList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openAuthModal, setOpenAuthModal] = useState(false);
-
-  // pickup point id
-  const pickupPointId = 'accf0ac0-5541-11ee-8a50-a85e45c41921';
+  const [pickupPoint, setPickupPoint] = useState({
+    id: "accf0ac0-5541-11ee-8a50-a85e45c41921",
+    address: "Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh",
+    status: 1,
+    longitude: 106.83102962168277,
+    latitude: 10.845020092805793,
+  });
 
   const showToast = () => {
     Toast.show({
@@ -69,12 +69,24 @@ const Home = ({ navigation }) => {
           setLoading(false);
         }
       })();
+      // Get pickup point from AS
+      (async () => {
+        try {
+          setLoading(true);
+          const value = await AsyncStorage.getItem('PickupPoint');
+          setPickupPoint(JSON.parse(value));
+          setLoading(false);
+        } catch (err) {
+          console.log(err);
+          setLoading(false);
+        }
+      })();
     }, []),
   );
 
   useEffect(() => {
     setLoading(true);
-    fetch(`${API.baseURL}/api/product/getAllCategory`)
+    fetch(`${API.baseURL}/api/product/getAllCategory?pickupPointId=${pickupPoint?.id}`)
       .then(res => res.json())
       .then(data => {
         if (data.error) {
@@ -89,13 +101,13 @@ const Home = ({ navigation }) => {
         console.log(err);
         setLoading(false);
       });
-  }, []);
+  }, [pickupPoint?.id]);
 
   useEffect(() => {
     if (currentCate) {
       setLoading(true);
       fetch(
-        `${API.baseURL}/api/product/getProductsForCustomer?productCategoryId=${currentCate}&pickupPointId=${pickupPointId}&page=0&limit=10&quantitySortType=DESC&expiredSortType=ASC`,
+        `${API.baseURL}/api/product/getProductsForCustomer?productCategoryId=${currentCate}&pickupPointId=${pickupPoint?.id}&page=0&limit=10&quantitySortType=DESC&expiredSortType=ASC`,
       )
         .then(res => res.json())
         .then(data => {
@@ -125,7 +137,7 @@ const Home = ({ navigation }) => {
         item.id === currentCate && setSubCategories(item.productSubCategories);
       });
     }
-  }, [currentCate, categories]);
+  }, [currentCate, categories, pickupPoint.id]);
 
   const handleAddToCart = async data => {
     try {
@@ -335,9 +347,17 @@ const Home = ({ navigation }) => {
     return (
       <View style={{
         paddingHorizontal: 20,
+        paddingTop: 10,
       }}>
         <Text style={{ fontSize: 16, fontFamily: FONTS.fontFamily }}>Vị trí hiện tại của bạn:</Text>
-        <TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate('ChangePickupPoint', {
+              pickupPoint: pickupPoint,
+              setPickupPoint,
+            });
+          }}
+        >
           <View style={{
             paddingVertical: 6,
             flexDirection: 'row',
@@ -348,7 +368,7 @@ const Home = ({ navigation }) => {
               flexDirection: 'row',
               gap: 10,
               alignItems: 'center',
-              width: '80%',
+              width: '95%',
             }}>
               <Image
                 resizeMode="contain"
@@ -362,14 +382,14 @@ const Home = ({ navigation }) => {
                   color: 'black',
                   fontWeight: 'bold',
                 }}>
-                Quận 9
+                {pickupPoint ? pickupPoint.address : ''}
               </Text>
             </View>
           </View>
         </TouchableOpacity>
       </View>
     );
-  }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -513,6 +533,24 @@ const Home = ({ navigation }) => {
         {productsByCategory.map((item, index) => (
           <Item data={item} key={index} />
         ))}
+
+        {productsByCategory.length === 0 && (
+          <View style={{ alignItems: 'center' }}>
+            <Image
+              style={{ width: 200, height: 200 }}
+              resizeMode="contain"
+              source={Empty}
+            />
+            <Text
+              style={{
+                fontSize: 20,
+                fontFamily: 'Roboto',
+                fontWeight: 'bold',
+              }}>
+              Không có sản phẩm
+            </Text>
+          </View>
+        )}
         {/* Load more Products */}
         {page < totalPage && (
           <TouchableOpacity

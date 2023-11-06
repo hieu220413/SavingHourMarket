@@ -10,6 +10,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { API } from '../constants/api';
 import LoadingScreen from '../components/LoadingScreen';
 import Toast from 'react-native-toast-message';
+import Empty from '../assets/image/search-empty.png';
 
 const ProductsBySubCategories = ({ navigation, route }) => {
     const subCategoryId = route.params.subCategory.id;
@@ -41,6 +42,14 @@ const ProductsBySubCategories = ({ navigation, route }) => {
     const [selectSort, setSelectSort] = useState(sortOptions);
     const [modalVisible, setModalVisible] = useState(false);
 
+    const [pickupPoint, setPickupPoint] = useState({
+        id: "accf0ac0-5541-11ee-8a50-a85e45c41921",
+        address: "Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh",
+        status: 1,
+        longitude: 106.83102962168277,
+        latitude: 10.845020092805793,
+    });
+
     const showToast = () => {
         Toast.show({
             type: 'success',
@@ -54,16 +63,26 @@ const ProductsBySubCategories = ({ navigation, route }) => {
     useFocusEffect(
         useCallback(() => {
             setLoading(true);
-            fetch(`${API.baseURL}/api/product/getProductsForCustomer?productSubCategoryId=${subCategoryId}&page=0&limit=9999`)
-                .then(res => res.json())
-                .then(data => {
-                    setProducts(data.productList);
-                    setLoading(false);
-                })
-                .catch(err => {
+            // Get pickup point from AS
+            (async () => {
+                try {
+                    const value = await AsyncStorage.getItem('PickupPoint');
+                    setPickupPoint(JSON.parse(value));
+                    fetch(`${API.baseURL}/api/product/getProductsForCustomer?productSubCategoryId=${subCategoryId}&pickupPointId=${JSON.parse(value).id}&page=0&limit=9999`)
+                        .then(res => res.json())
+                        .then(data => {
+                            setProducts(data.productList);
+                            setLoading(false);
+                        })
+                        .catch(err => {
+                            console.log(err);
+                            setLoading(false);
+                        });
+                } catch (err) {
                     console.log(err);
                     setLoading(false);
-                });
+                }
+            })();
 
             (async () => {
                 try {
@@ -106,7 +125,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
         const sortItem = item.find(item => item.active === true);
         setLoading(true);
         if (sortItem) {
-            fetch(`${API.baseURL}/api/product/getProductsForCustomer?productSubCategoryId=${subCategoryId}&page=0&limit=10${sortItem?.id == 1 ? '&expiredSortType=ASC' : ''}${sortItem?.id == 2 ? '&expiredSortType=DESC' : ''}${sortItem?.id == 3 ? '&priceSort=ASC' : ''}${sortItem?.id == 4 ? '&priceSort=DESC' : ''}`)
+            fetch(`${API.baseURL}/api/product/getProductsForCustomer?productSubCategoryId=${subCategoryId}&pickupPointId=${pickupPoint.id}&page=0&limit=10${sortItem?.id == 1 ? '&expiredSortType=ASC' : ''}${sortItem?.id == 2 ? '&expiredSortType=DESC' : ''}${sortItem?.id == 3 ? '&priceSort=ASC' : ''}${sortItem?.id == 4 ? '&priceSort=DESC' : ''}`)
                 .then(res => res.json())
                 .then(data => {
                     setProducts(data.productList);
@@ -117,7 +136,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
                     setLoading(false);
                 });
         } else {
-            fetch(`${API.baseURL}/api/product/getProductsForCustomer?productSubCategoryId=${subCategoryId}&page=0&limit=10`)
+            fetch(`${API.baseURL}/api/product/getProductsForCustomer?productSubCategoryId=${subCategoryId}&pickupPointId=${pickupPoint.id}&page=0&limit=10`)
                 .then(res => res.json())
                 .then(data => {
                     setProducts(data.productList);
@@ -139,7 +158,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
     const handleClear = () => {
         setModalVisible(!modalVisible);
         setLoading(true);
-        fetch(`${API.baseURL}/api/product/getProductsForCustomer?page=0&limit=10`)
+        fetch(`${API.baseURL}/api/product/getProductsForCustomer?page=0&limit=10&pickupPointId=${pickupPoint.id}`)
             .then(res => res.json())
             .then(data => {
                 setProducts(data.productList);
@@ -167,7 +186,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
                     <Image
                         resizeMode="contain"
                         source={{
-                            uri: data?.imageUrl,
+                            uri: data?.imageUrlImageList[0].imageUrl,
                         }}
                         style={styles.itemImage}
                     />
@@ -195,7 +214,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
                                     fontWeight: 600,
                                     fontFamily: FONTS.fontFamily,
                                 }}>
-                                {data.price.toLocaleString('vi-VN', {
+                                {data?.nearestExpiredBatch.price.toLocaleString('vi-VN', {
                                     currency: 'VND',
                                 })}
                             </Text>
@@ -217,7 +236,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
                                 fontSize: 18,
                                 marginBottom: 10,
                             }}>
-                            HSD: {dayjs(data.expiredDate).format('DD/MM/YYYY')}
+                            HSD: {dayjs(data?.nearestExpiredBatch.expiredDate).format('DD/MM/YYYY')}
                         </Text>
                         {/* Button buy */}
                         <TouchableOpacity onPress={() => handleAddToCart(data)}>
@@ -387,6 +406,23 @@ const ProductsBySubCategories = ({ navigation, route }) => {
                         <Item data={item} key={index} />
                     ))}
                 </ScrollView>
+                {products.length === 0 && (
+                    <View style={{ alignItems: 'center' }}>
+                        <Image
+                            style={{ width: 200, height: 200 }}
+                            resizeMode="contain"
+                            source={Empty}
+                        />
+                        <Text
+                            style={{
+                                fontSize: 20,
+                                fontFamily: 'Roboto',
+                                fontWeight: 'bold',
+                            }}>
+                            Không có sản phẩm
+                        </Text>
+                    </View>
+                )}
 
                 {/* Modal filter */}
                 <Modal
