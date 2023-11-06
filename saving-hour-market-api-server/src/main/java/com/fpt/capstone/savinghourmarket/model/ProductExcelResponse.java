@@ -16,5 +16,5 @@ import java.util.List;
 public class ProductExcelResponse {
     private List<Product> productList;
 
-    private LinkedHashMap<String, String> errorFields;
+    private LinkedHashMap<Integer, List<String>> errorFields;
 }
