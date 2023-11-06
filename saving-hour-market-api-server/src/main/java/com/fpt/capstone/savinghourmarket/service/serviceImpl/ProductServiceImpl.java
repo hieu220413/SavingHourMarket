@@ -1,9 +1,6 @@
 package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
-import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
-import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
-import com.fpt.capstone.savinghourmarket.common.SortType;
-import com.fpt.capstone.savinghourmarket.common.Status;
+import com.fpt.capstone.savinghourmarket.common.*;
 import com.fpt.capstone.savinghourmarket.entity.*;
 import com.fpt.capstone.savinghourmarket.exception.InvalidExcelFileDataException;
 import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
@@ -20,6 +17,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.modelmapper.ModelMapper;
+import org.redisson.misc.Hash;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -521,6 +519,37 @@ public class ProductServiceImpl implements ProductService {
         return allSupermarketSaleReportResponseBodyList;
     }
 
+
+    @Override
+    public List<ProductSaleReport> getRevenueReportForEachProductForSupermarket(Month month, Integer year, UUID supermarketId) {
+
+        List<ProductSaleReport> productSaleReportList = productRepository.findAllWithSubFieldWithSupermarket(supermarketId).stream().map(product -> new ProductSaleReport(product.getId(), product.getName(), product.getSupermarket().getName())).collect(Collectors.toList());
+
+        List<Object[]> result = productRepository.getRevenueReportForEachProductForSupermarket(month == null ? null : month.getMonthInNumber(), year, supermarketId);
+        HashMap<UUID, Object[]> resultHashMap = new HashMap<>();
+        for(Object[] objects : result) {
+            resultHashMap.put((UUID) objects[0], objects);
+        }
+
+        for (ProductSaleReport productSaleReport : productSaleReportList) {
+            if(resultHashMap.containsKey(productSaleReport.getId())) {
+                Object[] productReportResult = resultHashMap.get(productSaleReport.getId());
+//                UUID productId = (UUID) productReportResult[0];
+//                String productName = (String) productReportResult[1];
+//                String supermarketName = (String) productReportResult[2];
+                Long totalIncome = (Long) productReportResult[3];
+                Long boughtQuantity = (Long) productReportResult[4];
+                productSaleReport.setTotalIncome(totalIncome);
+                productSaleReport.setSoldQuantity(boughtQuantity.intValue());
+            }
+        }
+
+        productSaleReportList.sort((o1, o2) -> o2.getSoldQuantity().compareTo(o1.getSoldQuantity()));
+
+        return productSaleReportList;
+    }
+
+
     @Override
     public List<CateOderQuantityResponseBody> getOrderTotalAllCategorySupermarket(UUID supermarketId, Integer year) {
         LocalDate currentDate = LocalDate.now();
@@ -574,6 +603,35 @@ public class ProductServiceImpl implements ProductService {
         List<ProductSubCateOnly> productSubCateOnlyList = result.stream().toList();
 
         return new SubCategoryListResponseBody(productSubCateOnlyList, totalPage, totalSubCategory);
+    }
+
+    @Override
+    public List<ProductSaleReport> getRevenueReportForEachProduct(Month month, Integer year) {
+
+        List<ProductSaleReport> productSaleReportList = productRepository.findAllWithSubField().stream().map(product -> new ProductSaleReport(product.getId(), product.getName(), product.getSupermarket().getName())).collect(Collectors.toList());
+
+        List<Object[]> result = productRepository.getRevenueReportForEachProduct(month == null ? null : month.getMonthInNumber(), year);
+        HashMap<UUID, Object[]> resultHashMap = new HashMap<>();
+        for(Object[] objects : result) {
+            resultHashMap.put((UUID) objects[0], objects);
+        }
+
+        for (ProductSaleReport productSaleReport : productSaleReportList) {
+            if(resultHashMap.containsKey(productSaleReport.getId())) {
+                Object[] productReportResult = resultHashMap.get(productSaleReport.getId());
+//                UUID productId = (UUID) productReportResult[0];
+//                String productName = (String) productReportResult[1];
+//                String supermarketName = (String) productReportResult[2];
+                Long totalIncome = (Long) productReportResult[3];
+                Long boughtQuantity = (Long) productReportResult[4];
+                productSaleReport.setTotalIncome(totalIncome);
+                productSaleReport.setSoldQuantity(boughtQuantity.intValue());
+            }
+        }
+
+        productSaleReportList.sort((o1, o2) -> o2.getSoldQuantity().compareTo(o1.getSoldQuantity()));
+
+        return productSaleReportList;
     }
 
     @Override

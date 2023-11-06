@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -250,6 +251,77 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
     List<CateOderQuantityResponseBody> getOrderTotalAllCategoryReport(UUID supermarketId, Integer year);
 
 
+//    @Query("SELECT NEW com.fpt.capstone.savinghourmarket.entity.Product(ordDetail.product.id, ordDetail.product.name, ordDetail.product.imageUrl, SUM(ordDetail.productPrice * ordDetail.boughtQuantity), SUM(ordDetail.productOriginalPrice * ordDetail.boughtQuantity), SUM(ordDetail.boughtQuantity)) FROM OrderDetail ordDetail " +
+//            "JOIN ordDetail.order ord " +
+//            "JOIN ordDetail.product pd " +
+//            "WHERE " +
+//            "pd.supermarket.id = :supermarketId " +
+//            "AND " +
+//            "((:quarter IS NOT NULL) OR ((:monthValue IS NULL) OR EXTRACT(MONTH FROM ord.createdTime) =  :monthValue)) " +
+//            "AND " +
+//            "((:quarter IS NULL) " +
+//                "OR " +
+//                "((:quarter = 1) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 1 and 3)) " +
+//                "OR " +
+//                "((:quarter = 2) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 4 and 6)) " +
+//                "OR " +
+//                "((:quarter = 3) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 7 and 9)) " +
+//                "OR " +
+//                "((:quarter = 4) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 10 and 12)) " +
+//            ")" +
+//            "AND " +
+//            "EXTRACT(YEAR FROM ord.createdTime) = :year " +
+//            "AND ord.status = 4 " +
+//            "GROUP BY ordDetail.product.id, ordDetail.product.name ")
+//    List<Product> getProductsReportForSupermarket(UUID supermarketId, Integer monthValue, Integer quarter, Integer year);
+//
+    @Query("SELECT ordDetail.product.id, ordDetail.product.name, ordDetail.product.supermarket.name, SUM(ordDetail.productPrice * ordDetail.boughtQuantity), SUM(ordDetail.boughtQuantity) FROM OrderDetail ordDetail " +
+            "JOIN ordDetail.order ord " +
+            "JOIN  ordDetail.product pd " +
+            "JOIN  pd.supermarket sp " +
+            "WHERE " +
+//            "pd.supermarket.id = :supermarketId " +
+//            "AND " +
+            "((:monthInNumber IS NULL) OR EXTRACT(MONTH FROM ord.createdTime) =  :monthInNumber) " +
+//            "((:quarter IS NOT NULL) OR ((:monthValue IS NULL) OR EXTRACT(MONTH FROM ord.createdTime) =  :monthValue)) " +
+//            "AND " +
+//            "((:quarter IS NULL) " +
+//            "OR " +
+//            "((:quarter = 1) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 1 and 3)) " +
+//            "OR " +
+//            "((:quarter = 2) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 4 and 6)) " +
+//            "OR " +
+//            "((:quarter = 3) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 7 and 9)) " +
+//            "OR " +
+//            "((:quarter = 4) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 10 and 12)) " +
+//            ")" +
+            "AND " +
+            "EXTRACT(YEAR FROM ord.createdTime) = :year " +
+            "AND ord.status = 4 " +
+            "GROUP BY ordDetail.product.id, ordDetail.product.name, sp.name")
+    List<Object[]> getRevenueReportForEachProduct(Integer monthInNumber, Integer year);
+
+    @Query("SELECT p FROM Product p JOIN FETCH p.supermarket sp JOIN FETCH p.productBatchList JOIN FETCH p.productSubCategory psc JOIN FETCH psc.productCategory")
+    List<Product> findAllWithSubField();
+
+
+    @Query("SELECT ordDetail.product.id, ordDetail.product.name, ordDetail.product.supermarket.name, SUM(ordDetail.productPrice * ordDetail.boughtQuantity), SUM(ordDetail.boughtQuantity) FROM OrderDetail ordDetail " +
+            "JOIN ordDetail.order ord " +
+            "JOIN  ordDetail.product pd " +
+            "JOIN  pd.supermarket sp " +
+            "WHERE " +
+            "sp.id = :supermarketId " +
+            "AND " +
+            "((:monthInNumber IS NULL) OR EXTRACT(MONTH FROM ord.createdTime) =  :monthInNumber) " +
+            "AND " +
+            "EXTRACT(YEAR FROM ord.createdTime) = :year " +
+            "AND ord.status = 4 " +
+            "GROUP BY ordDetail.product.id, ordDetail.product.name, sp.name")
+    List<Object[]> getRevenueReportForEachProductForSupermarket(Integer monthInNumber, Integer year, UUID supermarketId);
+
+    @Query("SELECT p FROM Product p JOIN FETCH p.supermarket sp JOIN FETCH p.productBatchList JOIN FETCH p.productSubCategory psc JOIN FETCH psc.productCategory " +
+            "WHERE p.supermarket.id = :supermarketId")
+    List<Product> findAllWithSubFieldWithSupermarket(UUID supermarketId);
 
 
 //    @Query(value = "SELECT * FROM product p " +
