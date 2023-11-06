@@ -108,9 +108,6 @@ const Home = ({navigation}) => {
   useEffect(() => {
     if (currentCate) {
       setLoading(true);
-      console.log(
-        `${API.baseURL}/api/product/getProductsForCustomer?productCategoryId=${currentCate}&pickupPointId=${pickupPointId}&page=0&limit=10&quantitySortType=DESC&expiredSortType=ASC`,
-      );
       fetch(
         `${API.baseURL}/api/product/getProductsForCustomer?productCategoryId=${currentCate}&pickupPointId=${pickupPoint?.id}&page=0&limit=10&quantitySortType=DESC&expiredSortType=ASC`,
       )
@@ -142,7 +139,7 @@ const Home = ({navigation}) => {
         item.id === currentCate && setSubCategories(item.productSubCategories);
       });
     }
-  }, [currentCate, categories, pickupPoint.id]);
+  }, [currentCate, categories, pickupPoint?.id]);
 
   const handleAddToCart = async data => {
     try {
