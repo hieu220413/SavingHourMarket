@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -513,20 +514,27 @@ public class OrderServiceImpl implements OrderService {
     // GOONG IMPLEMENT
 
     @Override
-    public ShippingFeeDetailResponseBody getShippingFeeDetail(Double latitude, Double longitude) throws IOException, InterruptedException, ApiException {
+    public ShippingFeeDetailResponseBody getShippingFeeDetail(Double latitude, Double longitude, UUID pickupPointId) throws IOException, InterruptedException, ApiException {
 //        int numberOfSuggestion = 3;
-        Configuration configuration = Utils.getAdminConfiguration();
-        PickupPointSuggestionResponseBody closetPickupPoint;
-        Integer shippingFee = configuration.getInitialShippingFee();
-        List<PickupPoint> pickupPoints = pickupPointRepository.getAllSortByDistance(latitude, longitude);
-        List<PickupPointSuggestionResponseBody> pickupPointSuggestionResponseBodyList = new ArrayList<>();
-        List<LatLngModel> destinations = new ArrayList<>();
-        LatLngModel origin = new LatLngModel(latitude, longitude);
-        for (PickupPoint pickupPoint : pickupPoints) {
-            // using 0 because pickup point at index 0 will be deleted and next index will be 0
-            pickupPointSuggestionResponseBodyList.add(new PickupPointSuggestionResponseBody(pickupPoint));
-            destinations.add(new LatLngModel(pickupPoint.getLatitude().doubleValue(), pickupPoint.getLongitude().doubleValue()));
+        Optional<PickupPoint> pickupPoint = pickupPointRepository.findById(pickupPointId);
+        if(!pickupPoint.isPresent()) {
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.PICKUP_POINT_NOT_FOUND.getCode()), AdditionalResponseCode.PICKUP_POINT_NOT_FOUND.toString());
         }
+        Configuration configuration = Utils.getAdminConfiguration();
+//        PickupPointSuggestionResponseBody closetPickupPoint;
+        Integer shippingFee = configuration.getInitialShippingFee();
+//        List<PickupPoint> pickupPoints = pickupPointRepository.getAllSortByDistance(latitude, longitude);
+//        List<PickupPointSuggestionResponseBody> pickupPointSuggestionResponseBodyList = new ArrayList<>();
+        List<LatLngModel> destinations = new ArrayList<>();
+        destinations.add(new LatLngModel(pickupPoint.get().getLatitude(), pickupPoint.get().getLongitude()));
+        LatLngModel origin = new LatLngModel(latitude, longitude);
+        PickupPointSuggestionResponseBody pickupPointSuggestionResult = new PickupPointSuggestionResponseBody(pickupPoint.get());
+
+//        for (PickupPoint pickupPoint : pickupPoints) {
+//            // using 0 because pickup point at index 0 will be deleted and next index will be 0
+//            pickupPointSuggestionResponseBodyList.add(new PickupPointSuggestionResponseBody(pickupPoint));
+//            destinations.add(new LatLngModel(pickupPoint.getLatitude().doubleValue(), pickupPoint.getLongitude().doubleValue()));
+//        }
 
         // fetch goong api
         String apiKeyParam = "api_key=" + goongApiKey;
@@ -540,27 +548,30 @@ public class OrderServiceImpl implements OrderService {
 
 
         for (GoongDistanceMatrixRow goongDistanceMatrixRow : goongDistanceMatrixResult.getRows()) {
-            int i = 0;
+//            int i = 0;
             for (GoongDistanceMatrixElement goongDistanceMatrixElement : goongDistanceMatrixRow.getElements()) {
-                pickupPointSuggestionResponseBodyList.get(i).setDistance(goongDistanceMatrixElement.getDistance().getText());
-                pickupPointSuggestionResponseBodyList.get(i).setDistanceInValue(goongDistanceMatrixElement.getDistance().getValue());
-                i++;
+                pickupPointSuggestionResult.setDistance(goongDistanceMatrixElement.getDistance().getText());
+                pickupPointSuggestionResult.setDistanceInValue(goongDistanceMatrixElement.getDistance().getValue());
+//                pickupPointSuggestionResponseBodyList.get(i).setDistance(goongDistanceMatrixElement.getDistance().getText());
+//                pickupPointSuggestionResponseBodyList.get(i).setDistanceInValue(goongDistanceMatrixElement.getDistance().getValue());
+//                i++;
             }
         }
 
-        pickupPointSuggestionResponseBodyList.sort((o1, o2) -> (int) (o1.getDistanceInValue() - o2.getDistanceInValue()));
+//        pickupPointSuggestionResponseBodyList.sort((o1, o2) -> (int) (o1.getDistanceInValue() - o2.getDistanceInValue()));
 
-        closetPickupPoint = pickupPointSuggestionResponseBodyList.get(0);
+//        closetPickupPoint = pickupPointSuggestionResponseBodyList.get(0);
 
         // convert m to km
-        int distance = closetPickupPoint.getDistanceInValue().intValue() / 1000;
+//        int distance = closetPickupPoint.getDistanceInValue().intValue() / 1000;
+        int distance = pickupPointSuggestionResult.getDistanceInValue().intValue() / 1000;
 
         if (distance > configuration.getMinKmDistanceForExtraShippingFee()) {
             shippingFee += (distance - 2) * configuration.getExtraShippingFeePerKilometer();
         }
 
         ShippingFeeDetailResponseBody shippingFeeDetailResponseBody = new ShippingFeeDetailResponseBody();
-        shippingFeeDetailResponseBody.setClosestPickupPoint(closetPickupPoint);
+        shippingFeeDetailResponseBody.setClosestPickupPoint(pickupPointSuggestionResult);
         shippingFeeDetailResponseBody.setShippingFee(shippingFee);
 
         return shippingFeeDetailResponseBody;
