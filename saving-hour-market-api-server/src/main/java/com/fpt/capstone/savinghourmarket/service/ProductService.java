@@ -1,6 +1,7 @@
 package com.fpt.capstone.savinghourmarket.service;
 
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
+import com.fpt.capstone.savinghourmarket.common.Month;
 import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
@@ -61,4 +62,8 @@ public interface ProductService {
     CategoryListResponseBody getCategoryForStaff(String name, EnableDisableStatus status, Integer page, Integer limit);
 
     SubCategoryListResponseBody getSubCategoryForStaff(String name, EnableDisableStatus status, UUID productCategoryId, Integer page, Integer limit);
+
+    List<ProductSaleReport> getRevenueReportForEachProduct(Month month, Integer year);
+
+    List<ProductSaleReport> getRevenueReportForEachProductForSupermarket(Month month, Integer year, UUID supermarketId);
 }
