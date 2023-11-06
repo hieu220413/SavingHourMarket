@@ -23,7 +23,6 @@ import LoadingScreen from '../components/LoadingScreen';
 import Modal, {
   ModalFooter,
   ModalButton,
-  SlideAnimation,
   ScaleAnimation,
 } from 'react-native-modals';
 
@@ -62,6 +61,13 @@ const SearchResult = ({ navigation, route }) => {
   const [selectFilterInit, setSelectFilterInit] = useState([]);
   const [selectSort, setSelectSort] = useState(sortOptions);
   const searchHistory = route.params.text;
+  const [pickupPoint, setPickupPoint] = useState({
+    id: "accf0ac0-5541-11ee-8a50-a85e45c41921",
+    address: "Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh",
+    status: 1,
+    longitude: 106.83102962168277,
+    latitude: 10.845020092805793,
+  });
 
   const showToast = () => {
     Toast.show({
@@ -93,7 +99,7 @@ const SearchResult = ({ navigation, route }) => {
     setLoading(true);
     if (sortItem) {
       fetch(
-        `${API.baseURL}/api/product/getProductsForCustomer?name=${productName}${currentCate === '' ? '' : '&productCategoryId=' + currentCate
+        `${API.baseURL}/api/product/getProductsForCustomer?name=${productName}&pickupPointId=${pickupPoint.id}${currentCate === '' ? '' : '&productCategoryId=' + currentCate
         }&page=0&limit=10${sortItem?.id == 1 ? '&expiredSortType=ASC' : ''}${sortItem?.id == 2 ? '&expiredSortType=DESC' : ''
         }${sortItem?.id == 3 ? '&priceSort=ASC' : ''}${sortItem?.id == 4 ? '&priceSort=DESC' : ''
         }`,
@@ -109,7 +115,7 @@ const SearchResult = ({ navigation, route }) => {
         });
     } else {
       fetch(
-        `${API.baseURL}/api/product/getProductsForCustomer?name=${productName}${currentCate === '' ? '' : '&productCategoryId=' + currentCate
+        `${API.baseURL}/api/product/getProductsForCustomer?name=${productName}&pickupPointId=${pickupPoint.id}${currentCate === '' ? '' : '&productCategoryId=' + currentCate
         }&page=0&limit=10`,
       )
         .then(res => res.json())
@@ -132,9 +138,10 @@ const SearchResult = ({ navigation, route }) => {
 
   const handleClear = () => {
     setModalVisible(!modalVisible);
+    setCurrentCate('');
     setLoading(true);
     fetch(
-      `${API.baseURL}/api/product/getProductsForCustomer?name=${productName}&page=0&limit=10`,
+      `${API.baseURL}/api/product/getProductsForCustomer?name=${productName}&pickupPointId=${pickupPoint.id}&page=0&limit=10`,
     )
       .then(res => res.json())
       .then(data => {
@@ -207,18 +214,29 @@ const SearchResult = ({ navigation, route }) => {
   useFocusEffect(
     useCallback(() => {
       setLoading(true);
-      fetch(
-        `${API.baseURL}/api/product/getProductsForCustomer?name=${productName}&quantitySortType=DESC&expiredSortType=DESC`,
-      )
-        .then(res => res.json())
-        .then(data => {
-          setResult(data.productList);
-          setLoading(false);
-        })
-        .catch(err => {
+      // AsyncStorage.removeItem('SearchHistory');
+      // Get pickup point from AS
+      (async () => {
+        try {
+          const value = await AsyncStorage.getItem('PickupPoint');
+          setPickupPoint(JSON.parse(value));
+          fetch(
+            `${API.baseURL}/api/product/getProductsForCustomer?name=${productName}&pickupPointId=${JSON.parse(value).id}&quantitySortType=DESC&expiredSortType=DESC`,
+          )
+            .then(res => res.json())
+            .then(data => {
+              setResult(data.productList);
+              setLoading(false);
+            })
+            .catch(err => {
+              console.log(err);
+              setLoading(false);
+            });
+        } catch (err) {
           console.log(err);
           setLoading(false);
-        });
+        }
+      })();
 
       (async () => {
         try {
@@ -256,8 +274,6 @@ const SearchResult = ({ navigation, route }) => {
             'SearchHistory',
             JSON.stringify(searchData),
           );
-
-          // AsyncStorage.removeItem('SearchHistory');
           setLoading(false);
         } catch (err) {
           console.log(err);
@@ -265,7 +281,7 @@ const SearchResult = ({ navigation, route }) => {
         }
       })();
 
-      fetch(`${API.baseURL}/api/product/getAllCategory`)
+      fetch(`${API.baseURL}/api/product/getAllCategory?pickupPointId=${pickupPoint.id}`)
         .then(res => res.json())
         .then(data => {
           const cateData = data.map(item => {
@@ -279,7 +295,7 @@ const SearchResult = ({ navigation, route }) => {
           console.log(err);
           setLoading(false);
         });
-    }, [productName, searchHistory]),
+    }, [pickupPoint.id, productName, searchHistory]),
   );
 
   const Product = ({ data }) => {
@@ -296,7 +312,7 @@ const SearchResult = ({ navigation, route }) => {
           <Image
             resizeMode="contain"
             source={{
-              uri: data?.imageUrl,
+              uri: data?.imageUrlImageList[0].imageUrl,
             }}
             style={styles.itemImage}
           />
@@ -324,7 +340,7 @@ const SearchResult = ({ navigation, route }) => {
                   fontWeight: 600,
                   fontFamily: FONTS.fontFamily,
                 }}>
-                {data.price.toLocaleString('vi-VN', {
+                {data?.nearestExpiredBatch.price.toLocaleString('vi-VN', {
                   currency: 'VND',
                 })}
               </Text>
@@ -346,7 +362,7 @@ const SearchResult = ({ navigation, route }) => {
                 fontSize: 18,
                 marginBottom: 10,
               }}>
-              HSD: {dayjs(data.expiredDate).format('DD/MM/YYYY')}
+              HSD: {dayjs(data?.nearestExpiredBatch.expiredDate).format('DD/MM/YYYY')}
             </Text>
             {/* Button buy */}
             <TouchableOpacity onPress={() => handleAddToCart(data)}>
