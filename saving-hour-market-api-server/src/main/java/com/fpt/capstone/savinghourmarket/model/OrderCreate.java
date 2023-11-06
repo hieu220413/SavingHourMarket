@@ -1,7 +1,9 @@
 package com.fpt.capstone.savinghourmarket.model;
 
+import com.fpt.capstone.savinghourmarket.common.DeliveryMethod;
 import com.fpt.capstone.savinghourmarket.common.PaymentStatus;
 import com.fpt.capstone.savinghourmarket.entity.Transaction;
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,11 +40,16 @@ public class OrderCreate {
     @NotNull
     private String receiverName;
 
+    @NotNull
+    private DeliveryMethod deliveryMethod;
+
+    @NotNull
     private UUID pickupPointId;
 
     @NotNull
     private UUID timeFrameId;
 
+    @NotNull
     private PaymentStatus paymentStatus;
 
     @NotNull

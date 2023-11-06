@@ -8,10 +8,13 @@ import Login from './src/screens/Login';
 import OrderDetails from './src/screens/OrderDetails';
 import EditDeliveryDate from './src/screens/EditDeliveryDate';
 import { LogBox } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import OrderDetail from './src/screens/OrderDetail';
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
 ]);
+
 
 const Stack = createStackNavigator();
 export default function App() {
@@ -31,6 +34,7 @@ export default function App() {
           />
           <Stack.Screen name="OrderDetails" component={OrderDetails} />
           <Stack.Screen name="EditDeliveryDate" component={EditDeliveryDate} />
+          <Stack.Screen name="OrderDetail" component={OrderDetail} />
         </Stack.Navigator>
       </NavigationContainer>
     </>

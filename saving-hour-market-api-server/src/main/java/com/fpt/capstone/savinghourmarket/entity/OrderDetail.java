@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -40,4 +41,11 @@ public class OrderDetail {
             referencedColumnName = "id"
     )
     private Product product;
+
+    @OneToMany(
+            fetch = FetchType.EAGER,
+            mappedBy = "orderDetail",
+            cascade = CascadeType.ALL
+    )
+    private List<OrderDetailProductBatch> orderDetailProductBatches;
 }

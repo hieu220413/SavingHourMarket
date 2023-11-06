@@ -178,9 +178,10 @@ const EditProfile = ({navigation, route}) => {
 
     return `${day}/${month}/${year}`;
   };
-  const isValidEmail = email => {
-    const regex = /^([A-Za-z0-9_\-\.])+@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
-    return regex.test(email);
+  const isValidPhone = phone => {
+    const regex =
+      /^(0|84)(2(0[3-9]|1[0-6|8|9]|2[0-2|5-9]|3[2-9]|4[0-9]|5[1|2|4-9]|6[0-3|9]|7[0-7]|8[0-9]|9[0-4|6|7|9])|3[2-9]|5[5|6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])([0-9]{7})$/;
+    return regex.test(phone);
   };
 
   const isValidName = name => {
@@ -194,36 +195,32 @@ const EditProfile = ({navigation, route}) => {
     setAddressError('');
     setPhoneError('');
     if (username === null || username.trim().length == 0) {
-      return setUsernameError('Username can not be empty !');
+      return setUsernameError('Vui lòng không bỏ trống !');
     }
     if (!isValidName(username)) {
-      return setUsernameError('Invalid username!');
+      return setUsernameError('Username không hợp lệ!');
     }
-    // if (dateOfBirth === null) {
-    //   return setDateOfBirthError('Date of birth can not be empty !');
-    // }
+    if (dateOfBirth === null) {
+      return setDateOfBirthError('Date of birth can not be empty !');
+    }
     if (email.trim().length == 0) {
-      return setEmailError('Email can not be empty !');
+      return setEmailError('Vui lòng không bỏ trống !');
     }
-    if (!isValidEmail(email)) {
-      return setEmailError('Invalid email !');
-    }
+    // if (!isValidEmail(email)) {
+    //   return setEmailError('Email không hợp lệ !');
+    // }
     // if (address === null || address.trim().length == 0) {
     //   return setAddressError('Address can not be empty !');
     // }
-    if (
-      phone !== null &&
-      !/^(0|84)(2(0[3-9]|1[0-6|8|9]|2[0-2|5-9]|3[2-9]|4[0-9]|5[1|2|4-9]|6[0-3|9]|7[0-7]|8[0-9]|9[0-4|6|7|9])|3[2-9]|5[5|6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])([0-9]{7})$/.test(
-        phone,
-      )
-    ) {
-      return setPhoneError('Invalid phone number!');
+    if (phone === null || !isValidPhone(phone)) {
+      return setPhoneError('Số điện thoại không hợp lệ!');
     }
     return true;
   };
 
   const submitForm = async () => {
     setLoading(true);
+    console.log(phone);
     let submitInfo = {};
     if (!isValidForm()) {
       setLoading(false);
@@ -264,12 +261,18 @@ const EditProfile = ({navigation, route}) => {
         })
         .then(async respond => {
           console.log('respone', JSON.stringify(respond));
+          if (respond.code === 422) {
+            console.log('loi sdt');
+            Alert.alert(respond.message);
+            setLoading(false);
+            return;
+          }
           await AsyncStorage.setItem('userInfo', JSON.stringify(respond));
           setLoading(false);
           navigation.navigate('Profile');
         })
         .catch(err => {
-          console.log(err);
+          console.log('Lỗi', err);
           setLoading(false);
         });
     }
@@ -302,7 +305,7 @@ const EditProfile = ({navigation, route}) => {
               color: 'black',
               fontFamily: 'Roboto',
             }}>
-            Edit Profile
+            Chỉnh sửa thông tin
           </Text>
         </View>
         <View
@@ -409,7 +412,7 @@ const EditProfile = ({navigation, route}) => {
                         : ''
                     }
                     underlineColorAndroid="transparent"
-                    placeholder="Date of birth"
+                    placeholder="Ngày tháng năm sinh"
                     keyboardType="default"
                     editable={false}></TextInput>
                   <AntDesign
@@ -463,7 +466,7 @@ const EditProfile = ({navigation, route}) => {
                   setAddress(text);
                 }}
                 value={address}
-                placeholder="Address"
+                placeholder="Địa chỉ"
                 keyboardType="default"></TextInput>
               {addressError && (
                 <View style={{width: '85%', marginTop: '-4%'}}>
@@ -486,7 +489,7 @@ const EditProfile = ({navigation, route}) => {
                   setPhone(text);
                 }}
                 value={phone}
-                placeholder="Phone"
+                placeholder="Số điện thoại"
                 keyboardType="numeric"></TextInput>
               {phoneError && (
                 <View style={{width: '85%', marginTop: '-4%'}}>
@@ -501,7 +504,7 @@ const EditProfile = ({navigation, route}) => {
                 marginBottom: '4%',
               }}>
               <View style={{width: '90%'}}>
-                <FlatButton text="Update" onPress={submitForm} />
+                <FlatButton text="Cập nhật" onPress={submitForm} />
               </View>
             </View>
           </ScrollView>

@@ -17,11 +17,15 @@ public interface ProductSubCategoryRepository extends JpaRepository<ProductSubCa
 
     @Query("SELECT DISTINCT psct FROM ProductSubCategory psct " +
             "INNER JOIN psct.productList pd " +
+            "INNER JOIN pd.productBatchList pdb " +
+            "INNER JOIN pdb.supermarketAddress spa " +
+            "INNER JOIN spa.pickupPoint pp " +
             "WHERE " +
-            "pd.expiredDate > CURRENT_TIMESTAMP + pd.productSubCategory.allowableDisplayThreshold DAY " +
-            "AND pd.quantity > 0" +
+            "pdb.expiredDate > CURRENT_TIMESTAMP + pd.productSubCategory.allowableDisplayThreshold DAY " +
+            "AND pdb.quantity > 0" +
+            "AND pp.id = :pickupPointId " +
             "AND pd.status = 1")
-    List<ProductSubCateOnly> findAllSubCategoryOnly();
+    List<ProductSubCateOnly> findAllSubCategoryOnly(UUID pickupPointId);
 
     Optional<ProductSubCategory> findByName(String name);
 
