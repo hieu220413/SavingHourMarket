@@ -246,7 +246,6 @@ const ChangePickupPoint = ({ navigation, route }) => {
                                         key={item.id}
                                         onPress={async () => {
                                             try {
-                                                await AsyncStorage.removeItem('CartList');
                                                 storedPickupPoint(item);
                                                 route.params.setPickupPoint(item);
                                                 navigation.navigate('Start');
@@ -315,7 +314,6 @@ const ChangePickupPoint = ({ navigation, route }) => {
                             key={item.id}
                             onPress={async () => {
                                 try {
-                                    await AsyncStorage.removeItem('CartList');
                                     storedPickupPoint(item);
                                     route.params.setPickupPoint(item);
                                     navigation.navigate('Start');

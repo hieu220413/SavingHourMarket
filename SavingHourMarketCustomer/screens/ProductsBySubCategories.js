@@ -9,18 +9,18 @@ import {
   StyleSheet,
   Modal,
 } from 'react-native';
-import React, {useCallback, useState} from 'react';
-import {icons} from '../constants';
-import {COLORS, FONTS} from '../constants/theme';
+import React, { useCallback, useState } from 'react';
+import { icons } from '../constants';
+import { COLORS, FONTS } from '../constants/theme';
 import dayjs from 'dayjs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useFocusEffect} from '@react-navigation/native';
-import {API} from '../constants/api';
+import { useFocusEffect } from '@react-navigation/native';
+import { API } from '../constants/api';
 import LoadingScreen from '../components/LoadingScreen';
 import Toast from 'react-native-toast-message';
 import Empty from '../assets/image/search-empty.png';
 
-const ProductsBySubCategories = ({navigation, route}) => {
+const ProductsBySubCategories = ({ navigation, route }) => {
   const subCategoryId = route.params.subCategory.id;
   const [products, setProducts] = useState([]);
   const [cartList, setCartList] = useState([]);
@@ -76,10 +76,8 @@ const ProductsBySubCategories = ({navigation, route}) => {
           const value = await AsyncStorage.getItem('PickupPoint');
           setPickupPoint(JSON.parse(value));
           fetch(
-            `${
-              API.baseURL
-            }/api/product/getProductsForCustomer?productSubCategoryId=${subCategoryId}&pickupPointId=${
-              JSON.parse(value).id
+            `${API.baseURL
+            }/api/product/getProductsForCustomer?productSubCategoryId=${subCategoryId}&pickupPointId=${JSON.parse(value).id
             }&page=0&limit=9999`,
           )
             .then(res => res.json())
@@ -99,7 +97,8 @@ const ProductsBySubCategories = ({navigation, route}) => {
 
       (async () => {
         try {
-          const cartList = await AsyncStorage.getItem('CartList');
+          const value = await AsyncStorage.getItem('PickupPoint');
+          const cartList = await AsyncStorage.getItem('CartList'+JSON.parse(value).id);
           setCartList(cartList ? JSON.parse(cartList) : []);
           setLoading(false);
         } catch (err) {
@@ -112,22 +111,23 @@ const ProductsBySubCategories = ({navigation, route}) => {
 
   const handleAddToCart = async data => {
     try {
-      const jsonValue = await AsyncStorage.getItem('CartList');
+      const value = await AsyncStorage.getItem('PickupPoint');
+      const jsonValue = await AsyncStorage.getItem('CartList' + JSON.parse(value).id);
       let newCartList = jsonValue ? JSON.parse(jsonValue) : [];
       const itemExisted = newCartList.some(item => item.id === data.id);
       if (itemExisted) {
         const index = newCartList.findIndex(item => item.id === data.id);
         newCartList[index].cartQuantity = newCartList[index].cartQuantity + 1;
         setCartList(newCartList);
-        await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
+        await AsyncStorage.setItem('CartList' + JSON.parse(value).id, JSON.stringify(newCartList));
         showToast();
         return;
       }
 
-      const cartData = {...data, isChecked: false, cartQuantity: 1};
+      const cartData = { ...data, isChecked: false, cartQuantity: 1 };
       newCartList = [...newCartList, cartData];
       setCartList(newCartList);
-      await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
+      await AsyncStorage.setItem('CartList' + JSON.parse(value).id, JSON.stringify(newCartList));
       showToast();
     } catch (error) {
       console.log(error);
@@ -139,14 +139,10 @@ const ProductsBySubCategories = ({navigation, route}) => {
     setLoading(true);
     if (sortItem) {
       fetch(
-        `${
-          API.baseURL
-        }/api/product/getProductsForCustomer?productSubCategoryId=${subCategoryId}&pickupPointId=${
-          pickupPoint.id
-        }&page=0&limit=10${sortItem?.id == 1 ? '&expiredSortType=ASC' : ''}${
-          sortItem?.id == 2 ? '&expiredSortType=DESC' : ''
-        }${sortItem?.id == 3 ? '&priceSort=ASC' : ''}${
-          sortItem?.id == 4 ? '&priceSort=DESC' : ''
+        `${API.baseURL
+        }/api/product/getProductsForCustomer?productSubCategoryId=${subCategoryId}&pickupPointId=${pickupPoint.id
+        }&page=0&limit=10${sortItem?.id == 1 ? '&expiredSortType=ASC' : ''}${sortItem?.id == 2 ? '&expiredSortType=DESC' : ''
+        }${sortItem?.id == 3 ? '&priceSort=ASC' : ''}${sortItem?.id == 4 ? '&priceSort=DESC' : ''
         }`,
       )
         .then(res => res.json())
@@ -198,147 +194,150 @@ const ProductsBySubCategories = ({navigation, route}) => {
       });
   };
 
-  const Item = ({data}) => {
+  const Item = ({ data }) => {
     return (
       <TouchableOpacity
-        key={data.id}
-        onPress={() => {
-          navigation.navigate('ProductDetails', {
-            product: data,
-          });
-        }}>
-        <View style={styles.itemContainer}>
-          {/* Image Product */}
-          <Image
-            resizeMode="contain"
-            source={{
-              uri: data?.imageUrlImageList[0].imageUrl,
-            }}
-            style={styles.itemImage}
-          />
+      key={data.id}
+      onPress={() => {
+        navigation.navigate('ProductDetails', {
+          product: data,
+          pickupPointId: pickupPoint.id
+        });
+      }}>
+      <View style={styles.itemContainer}>
+        {/* Image Product */}
+        <Image
+          resizeMode="contain"
+          source={{
+            uri: data?.imageUrlImageList[0].imageUrl,
+          }}
+          style={styles.itemImage}
+        />
 
-          <View style={{justifyContent: 'center', flex: 1, marginRight: 10}}>
-            <Text
-              numberOfLines={1}
-              style={{
-                fontFamily: FONTS.fontFamily,
-                fontSize: 18,
-                fontWeight: 700,
-                maxWidth: '95%',
-                color: 'black',
-              }}>
-              {data.name}
-            </Text>
+        <View style={{ justifyContent: 'center', flex: 1, marginRight: 10,marginTop:5 }}>
+          <Text
+            numberOfLines={1}
+            style={{
+              fontFamily: FONTS.fontFamily,
+              fontSize: 20,
+              fontWeight: 700,
+              maxWidth: '95%',
+              color: 'black',
+            }}>
+            {data.name}
+          </Text>
+          <Text
+            style={{
+              fontFamily: FONTS.fontFamily,
+              fontSize: 16,
+              marginTop:8,
+              marginBottom: 10,
+            }}>
+            HSD:{' '}
+            {dayjs(data?.nearestExpiredBatch.expiredDate).format(
+              'DD/MM/YYYY',
+            )}
+          </Text>
 
-            <View style={{flexDirection: 'row'}}>
-              <Text
-                style={{
-                  maxWidth: '70%',
-                  fontSize: 18,
-                  lineHeight: 30,
-                  color: COLORS.secondary,
-                  fontWeight: 600,
-                  fontFamily: FONTS.fontFamily,
-                }}>
-                {data?.nearestExpiredBatch.price.toLocaleString('vi-VN', {
-                  currency: 'VND',
-                })}
-              </Text>
-              <Text
-                style={{
-                  fontSize: 12,
-                  lineHeight: 18,
-                  color: COLORS.secondary,
-                  fontWeight: 600,
-                  fontFamily: FONTS.fontFamily,
-                }}>
-                ₫
-              </Text>
-            </View>
-
+          <View style={{ flexDirection: 'row' }}>
             <Text
               style={{
-                fontFamily: FONTS.fontFamily,
+                maxWidth: '70%',
                 fontSize: 18,
-                marginBottom: 10,
+                lineHeight: 20,
+                color: COLORS.secondary,
+                fontWeight: 'bold',
+                fontFamily: FONTS.fontFamily,
               }}>
-              HSD:{' '}
-              {dayjs(data?.nearestExpiredBatch.expiredDate).format(
-                'DD/MM/YYYY',
-              )}
+              {data?.nearestExpiredBatch.price.toLocaleString('vi-VN', {
+                currency: 'VND',
+              })}
             </Text>
-            {/* Button buy */}
-            <TouchableOpacity onPress={() => handleAddToCart(data)}>
-              <Text
-                style={{
-                  maxWidth: 150,
-                  maxHeight: 40,
-                  padding: 10,
-                  backgroundColor: COLORS.primary,
-                  borderRadius: 10,
-                  textAlign: 'center',
-                  color: '#ffffff',
-                  fontFamily: FONTS.fontFamily,
-                }}>
-                Thêm vào giỏ hàng
-              </Text>
-            </TouchableOpacity>
+            <Text
+              style={{
+                fontSize: 12,
+                lineHeight: 13,
+                color: COLORS.secondary,
+                fontWeight: 600,
+                fontFamily: FONTS.fontFamily,
+              }}>
+              ₫
+            </Text>
           </View>
+
+
+          {/* Button buy */}
+          {/* <TouchableOpacity onPress={() => handleAddToCart(data)}>
+            <Text
+              style={{
+                maxWidth: 150,
+                maxHeight: 40,
+                padding: 10,
+                backgroundColor: COLORS.primary,
+                borderRadius: 10,
+                textAlign: 'center',
+                color: '#ffffff',
+                fontFamily: FONTS.fontFamily,
+              }}>
+              Thêm vào giỏ hàng
+            </Text>
+          </TouchableOpacity> */}
         </View>
-      </TouchableOpacity>
+      </View>
+    </TouchableOpacity>
     );
   };
 
-  const ModalSortItem = ({item}) => {
+  const ModalSortItem = ({ item }) => {
     return (
       <TouchableOpacity
         onPress={() => {
           const newArray = selectSort.map(i => {
             if (i.id === item.id) {
               if (i.active === true) {
-                return {...i, active: false};
+                return { ...i, active: false };
               } else {
-                return {...i, active: true};
+                return { ...i, active: true };
               }
             }
-            return {...i, active: false};
+            return { ...i, active: false };
           });
           setSelectSort(newArray);
         }}
         style={
           item.active == true
             ? {
-                borderColor: COLORS.primary,
-                borderWidth: 1,
-                borderRadius: 10,
-                margin: 5,
-              }
+              borderColor: COLORS.primary,
+              borderWidth: 1,
+              borderRadius: 10,
+              margin: 5,
+            }
             : {
-                borderColor: '#c8c8c8',
-                borderWidth: 0.2,
-                borderRadius: 10,
-                margin: 5,
-              }
+              borderColor: '#c8c8c8',
+              borderWidth: 0.2,
+              borderRadius: 10,
+              margin: 5,
+            }
         }>
         <Text
           style={
             item.active == true
               ? {
-                  width: 150,
-                  paddingVertical: 10,
-                  textAlign: 'center',
-                  color: COLORS.primary,
-                  fontFamily: FONTS.fontFamily,
-                  fontSize: 12,
-                }
+                width: 150,
+                paddingVertical: 10,
+                textAlign: 'center',
+                color: COLORS.primary,
+                fontFamily: FONTS.fontFamily,
+                fontSize: 12,
+              }
               : {
-                  width: 150,
-                  paddingVertical: 10,
-                  textAlign: 'center',
-                  color: 'black',
-                  fontFamily: FONTS.fontFamily,
-                  fontSize: 12,
-                }
+                width: 150,
+                paddingVertical: 10,
+                textAlign: 'center',
+                color: 'black',
+                fontFamily: FONTS.fontFamily,
+                fontSize: 12,
+              }
           }>
           {item.name}
         </Text>
@@ -360,7 +359,7 @@ const ProductsBySubCategories = ({navigation, route}) => {
             <Image
               source={icons.leftArrow}
               resizeMode="contain"
-              style={{width: 35, height: 35, tintColor: COLORS.primary}}
+              style={{ width: 35, height: 35, tintColor: COLORS.primary }}
             />
           </TouchableOpacity>
           <Text
@@ -443,9 +442,9 @@ const ProductsBySubCategories = ({navigation, route}) => {
           ))}
         </ScrollView>
         {products.length === 0 && (
-          <View style={{alignItems: 'center'}}>
+          <View style={{ alignItems: 'center' }}>
             <Image
-              style={{width: 200, height: 200}}
+              style={{ width: 200, height: 200 }}
               resizeMode="contain"
               source={Empty}
             />
