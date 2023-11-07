@@ -85,7 +85,8 @@ public class Product {
 
     @OneToMany(
             fetch = FetchType.EAGER,
-            mappedBy = "product"
+            mappedBy = "product",
+            cascade = CascadeType.ALL
     )
     private List<ProductImage> productImageList;
 
