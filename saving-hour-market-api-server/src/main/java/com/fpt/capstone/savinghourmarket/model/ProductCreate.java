@@ -28,7 +28,7 @@ public class ProductCreate {
     private String description;
 
     @NotNull
-    private String imageUrl;
+    private List<String> imageUrls;
 
     @NotNull
     private UUID supermarketId;
