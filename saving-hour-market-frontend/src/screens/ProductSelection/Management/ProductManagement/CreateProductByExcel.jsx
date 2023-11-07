@@ -80,7 +80,10 @@ const CreateProductByExcel = ({
           return;
         }
         setLoading(false);
-        setConfirmProductList(res);
+        setConfirmProductList({
+          productList: res.productList,
+          errorFields: res.errorFields,
+        });
         handleClose();
         handleOpenConfirmCreate();
       })
