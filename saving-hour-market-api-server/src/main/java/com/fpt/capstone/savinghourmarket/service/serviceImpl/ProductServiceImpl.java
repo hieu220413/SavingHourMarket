@@ -608,7 +608,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public CategoryListResponseBody getCategoryForStaff(String name, EnableDisableStatus status, Integer page, Integer limit) {
-        Pageable pageable = PageRequest.of(page, limit);
+        Pageable pageable = PageRequest.of(limit == null ? 0 : page, limit == null ? Integer.MAX_VALUE : limit);
         Page<ProductCateWithSubCate> result = productCategoryRepository.getAllProductCategoryWithSubCateForStaff(name, pageable);
         int totalPage = result.getTotalPages();
         long totalCategory = result.getTotalElements();
