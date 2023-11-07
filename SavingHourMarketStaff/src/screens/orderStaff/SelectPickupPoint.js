@@ -5,7 +5,9 @@ import {
   View,
   Keyboard,
   TouchableOpacity,
+  Image,
 } from 'react-native';
+import {ScrollView, TextInput} from 'react-native-gesture-handler';
 import React, {useEffect, useState, useCallback} from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -17,10 +19,11 @@ import {format} from 'date-fns';
 import CartEmpty from '../../assets/image/search-empty.png';
 import {SwipeListView} from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const SelectPickupPoint = ({navigation, route}) => {
   const [initializing, setInitializing] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [pickupPointList, setPickupPointList] = useState([]);
 
   const onAuthStateChange = async userInfo => {
     // console.log(userInfo);
@@ -64,19 +67,52 @@ const SelectPickupPoint = ({navigation, route}) => {
     }, []),
   );
 
+  useFocusEffect(
+    useCallback(() => {
+      const fetchData = async () => {
+        if (auth().currentUser) {
+          const tokenId = await auth().currentUser.getIdToken();
+          if (tokenId) {
+            setLoading(true);
+
+            fetch(`${API.baseURL}/api/staff/getInfo`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
+              },
+            })
+              .then(res => res.json())
+              .then(respond => {
+                console.log(respond.pickupPoint);
+                if (respond.error) {
+                  setLoading(false);
+                  return;
+                }
+                setPickupPointList(respond.pickupPoint);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
+          }
+        }
+      };
+      fetchData();
+    }, []),
+  );
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => {
-              navigation.goBack();
-            }}>
-            <Ionicons
-              style={{top: '6%'}}
-              name="arrow-back-sharp"
-              size={28}
-              color="black"></Ionicons>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Image
+              source={icons.leftArrow}
+              resizeMode="contain"
+              style={{width: 35, height: 35, tintColor: COLORS.primary}}
+            />
           </TouchableOpacity>
           <Text
             style={{
@@ -89,7 +125,66 @@ const SelectPickupPoint = ({navigation, route}) => {
             Chọn điểm nhận hàng
           </Text>
         </View>
-        <View style={styles.body}></View>
+        <View style={styles.body}>
+          <Text
+            style={{
+              fontSize: 20,
+              color: 'black',
+              fontFamily: 'Roboto',
+              fontWeight: 'bold',
+              paddingBottom: 20,
+              borderBottomColor: '#decbcb',
+              borderBottomWidth: 0.75,
+              marginHorizontal: 15,
+              marginVertical: 20,
+            }}>
+            Các điểm giao hàng bạn phụ trách:
+          </Text>
+          <ScrollView
+            style={{
+              paddingHorizontal: 15,
+            }}>
+            {pickupPointList.map(item => (
+              <TouchableOpacity
+                key={item.id}
+                onPress={() => {
+                  //   storedPickupPoint(item);
+                  route.params.setPickupPoint(item);
+                  navigation.navigate('Home');
+                }}
+                style={{
+                  paddingVertical: 15,
+                  borderBottomColor: '#decbcb',
+                  borderBottomWidth: 0.75,
+                }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 15,
+                    flex: 1,
+                  }}>
+                  <Image
+                    resizeMode="contain"
+                    style={{width: 25, height: 25}}
+                    source={icons.location}
+                  />
+                  <Text
+                    style={{
+                      fontSize: 17,
+                      color: 'black',
+                      fontFamily: 'Roboto',
+                      width: '70%',
+                    }}>
+                    {item.address}
+                  </Text>
+                  <Text style={{fontSize: 14}}>{item.distance}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+        {loading && <LoadingScreen />}
       </View>
     </TouchableWithoutFeedback>
   );
@@ -106,10 +201,10 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     paddingHorizontal: 20,
-    paddingTop: 10,
-    backgroundColor: 'pink',
+    paddingTop: 15,
+    // backgroundColor: 'pink',
   },
   body: {
-    flex: 8,
+    flex: 11,
   },
 });

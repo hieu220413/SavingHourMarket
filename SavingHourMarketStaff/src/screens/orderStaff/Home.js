@@ -10,6 +10,7 @@ import {
   ScrollView,
   Modal,
   Pressable,
+  Alert,
 } from 'react-native';
 import React, {useEffect, useState, useCallback} from 'react';
 import auth from '@react-native-firebase/auth';
@@ -74,6 +75,8 @@ const Home = ({navigation}) => {
   });
   const [visible, setVisible] = useState(false);
   const [pickupPoint, setPickupPoint] = useState(null);
+  const [order, setOrder] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
 
   const onAuthStateChange = async userInfo => {
     // console.log(userInfo);
@@ -96,7 +99,8 @@ const Home = ({navigation}) => {
         return;
       }
       const currentUser = await AsyncStorage.getItem('userInfo');
-      console.log('currentUser' ,currentUser);
+      // console.log('currentUser', currentUser);
+      setCurrentUser(JSON.parse(currentUser));
     } else {
       // no sessions found.
       console.log('user is not logged in');
@@ -124,38 +128,99 @@ const Home = ({navigation}) => {
           const tokenId = await auth().currentUser.getIdToken();
           if (tokenId) {
             setLoading(true);
-
-            fetch(
-              `${API.baseURL}/api/order/staff/getOrdersForPackageStaff?orderStatus=${currentStatus.value}`,
-              {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${tokenId}`,
+            if (pickupPoint) {
+              fetch(
+                `${API.baseURL}/api/order/staff/getOrdersForPackageStaff?pickupPointId=${pickupPoint?.id}&orderStatus=${currentStatus.value}`,
+                {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${tokenId}`,
+                  },
                 },
-              },
-            )
-              .then(res => res.json())
-              .then(respond => {
-                // console.log(respond);
-                if (respond.error) {
-                  setLoading(false);
-                  return;
-                }
+              )
+                .then(res => res.json())
+                .then(respond => {
+                  console.log('order', respond);
+                  if (respond.error) {
+                    setLoading(false);
+                    return;
+                  }
 
-                setOrderList(respond);
-                setLoading(false);
-              })
-              .catch(err => {
-                console.log(err);
-                setLoading(false);
-              });
+                  setOrderList(respond);
+                  setLoading(false);
+                })
+                .catch(err => {
+                  console.log(err);
+                  setLoading(false);
+                });
+            } else {
+              fetch(
+                `${API.baseURL}/api/order/staff/getOrdersForPackageStaff?orderStatus=${currentStatus.value}`,
+                {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${tokenId}`,
+                  },
+                },
+              )
+                .then(res => res.json())
+                .then(respond => {
+                  console.log('order', respond);
+                  if (respond.error) {
+                    setLoading(false);
+                    return;
+                  }
+
+                  setOrderList(respond);
+                  setLoading(false);
+                })
+                .catch(err => {
+                  console.log(err);
+                  setLoading(false);
+                });
+            }
           }
         }
       };
       fetchData();
-    }, [currentStatus]),
+    }, [currentStatus, pickupPoint]),
   );
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     if (auth().currentUser) {
+  //       const tokenId = await auth().currentUser.getIdToken();
+  //       if (tokenId) {
+  //         setLoading(true);
+
+  //         fetch(`${API.baseURL}/api/staff/getInfo`, {
+  //           method: 'GET',
+  //           headers: {
+  //             'Content-Type': 'application/json',
+  //             Authorization: `Bearer ${tokenId}`,
+  //           },
+  //         })
+  //           .then(res => res.json())
+  //           .then(respond => {
+  //             // console.log(respond.pickupPoint);
+  //             if (respond.error) {
+  //               setLoading(false);
+  //               return;
+  //             }
+  //             setPickupPoint(respond.pickupPoint[0]);
+  //             setLoading(false);
+  //           })
+  //           .catch(err => {
+  //             console.log(err);
+  //             setLoading(false);
+  //           });
+  //       }
+  //     }
+  //   };
+  //   fetchData();
+  // }, []);
 
   const orderStatus = [
     {display: 'Chờ đóng gói', value: 'PROCESSING'},
@@ -201,13 +266,13 @@ const Home = ({navigation}) => {
             fetch(
               `${
                 API.baseURL
-              }/api/order/staff/getOrdersForPackageStaff?orderStatus=${
-                currentStatus.value
-              }${sortItem?.id == 1 ? '&deliveryDateSortType=ASC' : ''}${
-                sortItem?.id == 2 ? '&deliveryDateSortType=DESC' : ''
-              }${sortItem?.id == 3 ? '&createdTimeSortType=DESC' : ''}${
-                sortItem?.id == 4 ? '&createdTimeSortType=ASC' : ''
-              }`,
+              }/api/order/staff/getOrdersForPackageStaff?pickupPointId=${
+                pickupPoint.id
+              }&orderStatus=${currentStatus.value}${
+                sortItem?.id == 1 ? '&deliveryDateSortType=ASC' : ''
+              }${sortItem?.id == 2 ? '&deliveryDateSortType=DESC' : ''}${
+                sortItem?.id == 3 ? '&createdTimeSortType=DESC' : ''
+              }${sortItem?.id == 4 ? '&createdTimeSortType=ASC' : ''}`,
               {
                 method: 'GET',
                 headers: {
@@ -242,7 +307,7 @@ const Home = ({navigation}) => {
             setLoading(true);
 
             fetch(
-              `${API.baseURL}/api/order/staff/getOrdersForPackageStaff?orderStatus=${currentStatus.value}`,
+              `${API.baseURL}/api/order/staff/getOrdersForPackageStaff?pickupPointId=${pickupPoint.id}&orderStatus=${currentStatus.value}`,
               {
                 method: 'GET',
                 headers: {
@@ -288,7 +353,7 @@ const Home = ({navigation}) => {
           setLoading(true);
 
           fetch(
-            `${API.baseURL}/api/order/staff/getOrdersForPackageStaff?orderStatus=${currentStatus.value}`,
+            `${API.baseURL}/api/order/staff/getOrdersForPackageStaff?pickupPointId=${pickupPoint.id}&orderStatus=${currentStatus.value}`,
             {
               method: 'GET',
               headers: {
@@ -323,6 +388,80 @@ const Home = ({navigation}) => {
   };
 
   const handleConfirm = () => {
+    const confirmPackaging = async () => {
+      if (auth().currentUser) {
+        const tokenId = await auth().currentUser.getIdToken();
+        if (tokenId) {
+          setLoading(true);
+          console.log(currentUser.id);
+          console.log(order.id);
+          fetch(
+            `${API.baseURL}/api/order/staff/confirmPackaging?orderId=${order.id}&staffId=${currentUser.id}`,
+            {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
+              },
+            },
+          )
+            .then(res => res.text())
+            .then(respond => {
+              console.log(respond);
+              Alert.alert(respond);
+              // if (respond.error) {
+              //   setLoading(false);
+              //   return;
+              // }
+              setLoading(false);
+            })
+            .catch(err => {
+              console.log(err);
+              setLoading(false);
+            });
+        }
+      }
+    };
+
+    const confirmPackaged = async () => {
+      if (auth().currentUser) {
+        const tokenId = await auth().currentUser.getIdToken();
+        if (tokenId) {
+          setLoading(true);
+          console.log(currentUser.id);
+          console.log(order.id);
+          fetch(
+            `${API.baseURL}/api/order/staff/confirmPackaged?orderId=${order.id}&staffId=${currentUser.id}`,
+            {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
+              },
+            },
+          )
+            .then(res => res.text())
+            .then(respond => {
+              console.log(respond);
+              Alert.alert(respond);
+              // if (respond.error) {
+              //   setLoading(false);
+              //   return;
+              // }
+              setLoading(false);
+            })
+            .catch(err => {
+              console.log(err);
+              setLoading(false);
+            });
+        }
+      }
+    };
+    if (order.status === 0) {
+      confirmPackaging();
+    } else {
+      // confirmPackaged();
+    }
     // The user has pressed the "Delete" button, so here you can do your own logic.
     // ...Your logic
     setVisible(false);
@@ -412,14 +551,14 @@ const Home = ({navigation}) => {
                     />
                     <Text
                       style={{
-                        fontSize: 18,
+                        fontSize: 16,
                         fontFamily: 'Roboto',
                         color: 'black',
                       }}>
-                      {/* {pickupPoint
+                      {pickupPoint
                         ? pickupPoint.address
-                        : 'Chọn điểm nhận hàng'} */}
-                      Chọn điểm giao hàng
+                        : 'Chọn điểm giao hàng'}
+                      {/* Chọn điểm giao hàng */}
                     </Text>
                   </View>
                   <Image
@@ -688,6 +827,8 @@ const Home = ({navigation}) => {
                       }}
                       onPress={() => {
                         setVisible(true);
+                        // console.log(data.item.id);
+                        setOrder(data.item);
                       }}>
                       <View>
                         {data.item?.status === 0 && (
@@ -900,7 +1041,9 @@ const Home = ({navigation}) => {
                       color: 'white',
                       borderRadius: 10,
                     }}
-                    onPress={handleConfirm}>
+                    onPress={() => {
+                      handleConfirm();
+                    }}>
                     <Text style={styles.textStyle}>Xác nhận</Text>
                   </TouchableOpacity>
                 </View>
@@ -921,7 +1064,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   header: {
-    flex: 2,
+    flex: 2.2,
     // backgroundColor: 'orange',
     paddingHorizontal: 20,
   },
