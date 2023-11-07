@@ -51,6 +51,9 @@ public class Product {
 //    @Column(columnDefinition = "text")
 //    private String imageUrl;
 
+    @Column(columnDefinition = "varchar(50)")
+    private String unit;
+
     @Column(columnDefinition = "tinyint")
     private Integer status;
 
