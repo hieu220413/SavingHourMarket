@@ -138,10 +138,14 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "FROM Order o " +
             "WHERE ((:startDate IS NULL) OR (o.createdTime >= :startDate)) " +
             "AND ((:endDate IS NULL) OR (o.createdTime <= :endDate)) " +
+            "AND ((:month IS NULL) OR (MONTH(o.createdTime) = :month )) " +
+            "AND ((:year IS NULL) OR (YEAR(o.createdTime) = :year )) " +
             "GROUP BY DATE(o.createdTime)")
     List<Object[]> getOrdersReportByDay(
             @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate
+            @Param("endDate") LocalDateTime endDate,
+            Integer month,
+            Integer year
     );
 
     @Query("SELECT YEAR(o.createdTime) AS year, " +
@@ -151,8 +155,9 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "SUM(CASE WHEN o.status = 6 THEN 1 ELSE 0 END) AS cancelCount " +
             "FROM Order o " +
             "WHERE ((:month IS NULL) OR (MONTH(o.createdTime) = :month ))" +
+            "AND ((:year IS NULL) OR (YEAR(o.createdTime) = :year )) " +
             "GROUP BY YEAR(o.createdTime), MONTH(o.createdTime)")
-    List<Object[]> getOrdersReportByMonth(Integer month);
+    List<Object[]> getOrdersReportByMonth(Integer month, Integer year);
 
     @Query("SELECT YEAR(o.createdTime) AS year, " +
             "SUM(CASE WHEN o.status = 4 THEN 1 ELSE 0 END) AS successCount, " +
