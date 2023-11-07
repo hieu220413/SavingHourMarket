@@ -10,6 +10,7 @@ import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -19,14 +20,14 @@ import java.util.UUID;
 @Getter
 public class Product {
 
-    public Product(UUID id, String name, String imageUrl, Long price, Long priceOriginal, Long quantity) {
-        this.id = id;
-        this.name = name;
-        this.imageUrl = imageUrl;
-        this.price = price.intValue();
-        this.priceOriginal = priceOriginal.intValue();
-        this.quantity = quantity.intValue();
-    }
+//    public Product(UUID id, String name, String imageUrl, Long price, Long priceOriginal, Long quantity) {
+//        this.id = id;
+//        this.name = name;
+////        this.imageUrl = imageUrl;
+////        this.price = price.intValue();
+////        this.priceOriginal = priceOriginal.intValue();
+////        this.quantity = quantity.intValue();
+//    }
 
     @Id
     @UuidGenerator
@@ -35,20 +36,20 @@ public class Product {
     @Column(columnDefinition = "varchar(50) CHARACTER SET utf8 COLLATE utf8_bin")
     private String name;
 
-    private Integer price;
-
-    private Integer priceOriginal;
+//    private Integer price;
+//
+//    private Integer priceOriginal;
 
     @Column(columnDefinition = "text")
     private String description;
 
-    @Column(columnDefinition = "datetime(0)")
-    private LocalDate expiredDate;
+//    @Column(columnDefinition = "datetime(0)")
+//    private LocalDate expiredDate;
+//
+//    private Integer quantity;
 
-    private Integer quantity;
-
-    @Column(columnDefinition = "text")
-    private String imageUrl;
+//    @Column(columnDefinition = "text")
+//    private String imageUrl;
 
     @Column(columnDefinition = "tinyint")
     private Integer status;
@@ -60,10 +61,33 @@ public class Product {
     )
     private ProductSubCategory productSubCategory;
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(
             name = "supermarket_id",
             referencedColumnName = "id"
     )
     private Supermarket supermarket;
+
+    @OneToMany(
+            fetch = FetchType.LAZY,
+            mappedBy = "product",
+            cascade = CascadeType.ALL
+    )
+    private List<ProductBatch> productBatchList;
+
+
+    @OneToMany(
+            fetch = FetchType.LAZY,
+            mappedBy = "product"
+    )
+    @JsonIgnore
+    private List<OrderDetail> orderDetail;
+
+    @OneToMany(
+            fetch = FetchType.EAGER,
+            mappedBy = "product"
+    )
+    private List<ProductImage> productImageList;
+
+
 }

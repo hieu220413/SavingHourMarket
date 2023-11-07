@@ -48,6 +48,7 @@ public final class Utils {
         configuration.setInitialShippingFee(jsonObject.getInt("initialShippingFee"));
         configuration.setMinKmDistanceForExtraShippingFee(jsonObject.getInt("minKmDistanceForExtraShippingFee"));
         configuration.setExtraShippingFeePerKilometer(jsonObject.getInt("extraShippingFeePerKilometer"));
+        configuration.setTimeAllowedForOrderCancellation(jsonObject.getInt("timeAllowedForOrderCancellation"));
         return configuration;
     }
 

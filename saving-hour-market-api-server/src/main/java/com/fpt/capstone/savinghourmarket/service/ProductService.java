@@ -1,6 +1,7 @@
 package com.fpt.capstone.savinghourmarket.service;
 
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
+import com.fpt.capstone.savinghourmarket.common.Month;
 import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
@@ -22,17 +23,17 @@ import java.util.UUID;
 public interface ProductService {
     ProductListResponseBody getProductsForStaff(Boolean isExpiredShown, String name, String supermarketId, String productCategoryId, String productSubCategoryId, EnableDisableStatus status, Integer page, Integer limit, SortType quantitySortType, SortType expiredSortType, SortType priceSort);
 
-    ProductListResponseBody getProductsForCustomer(String name, String supermarketId, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, SortType quantitySortType, SortType expiredSortType, SortType priceSort);
+    ProductListCustomerResponseBody getProductsForCustomer(String name, String supermarketId, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, SortType quantitySortType, SortType expiredSortType, SortType priceSort, UUID pickupPointId);
 
     Product getById(UUID id);
 
-    List<ProductCateWithSubCate> getAllCategory();
+    List<ProductCateWithSubCate> getAllCategory(UUID pickupPointId);
 
-    List<ProductSubCateOnly> getAllSubCategory();
+    List<ProductSubCateOnly> getAllSubCategory(UUID pickupPointId);
 
     Product createProduct(ProductCreate productCreate) throws ResourceNotFoundException;
 
-    List<Product> createProductByExcel(MultipartFile file) throws IOException, InvalidExcelFileDataException;
+    ProductExcelResponse createProductByExcel(MultipartFile file) throws IOException, InvalidExcelFileDataException;
 
     List<SaleReportSupermarketMonthlyResponseBody> getSaleReportSupermarket(UUID supermarketId, Integer year);
 
@@ -44,7 +45,7 @@ public interface ProductService {
 
     ProductSubCategory updateProductSubCategory(ProductSubCategoryUpdateBody productSubCategoryUpdateBody, UUID subCategoryId);
 
-    List<Product> createProductList(List<Product> productList) throws ResourceNotFoundException;
+    ProductExcelResponse createProductList(List<Product> productList) throws ResourceNotFoundException;
     
     Product updateProduct(Product product) throws ResourceNotFoundException;
 
@@ -61,4 +62,8 @@ public interface ProductService {
     CategoryListResponseBody getCategoryForStaff(String name, EnableDisableStatus status, Integer page, Integer limit);
 
     SubCategoryListResponseBody getSubCategoryForStaff(String name, EnableDisableStatus status, UUID productCategoryId, Integer page, Integer limit);
+
+    List<ProductSaleReport> getRevenueReportForEachProduct(Month month, Integer year);
+
+    List<ProductSaleReport> getRevenueReportForEachProductForSupermarket(Month month, Integer year, UUID supermarketId);
 }

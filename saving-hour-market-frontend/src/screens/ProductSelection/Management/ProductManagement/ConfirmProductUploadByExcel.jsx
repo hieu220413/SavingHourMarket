@@ -25,6 +25,7 @@ const ConfirmProductUploadByExcel = ({
   searchValue,
   page,
   setTotalPage,
+  setIsSwitchRecovery,
 }) => {
   const [openSnackbar, setOpenSnackbar] = useState({
     open: false,
@@ -69,6 +70,7 @@ const ConfirmProductUploadByExcel = ({
             setTotalPage(data.totalPage);
             setLoading(false);
             handleClose();
+            setIsSwitchRecovery(false);
             setMsg("Thêm mới thành công");
             setOpenSuccessSnackbar({
               ...openSuccessSnackbar,

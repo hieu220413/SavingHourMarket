@@ -21,6 +21,7 @@ const CreateSuperMarket = ({
   openSnackbar,
   setOpenSnackbar,
   setError,
+  setIsSwitchRecovery,
 }) => {
   const [locationData, setLocationData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -30,6 +31,7 @@ const CreateSuperMarket = ({
       isFocused: false,
       selectAddress: "",
       searchAddress: "",
+      error: "",
     },
   ]);
   const [name, setName] = useState("");
@@ -57,9 +59,17 @@ const CreateSuperMarket = ({
       setError("Số điện thoại không hợp lệ");
       return;
     }
-    const addressListValidate = addressList.some((item) => !item.selectAddress);
+    const addressListValidate = addressList.map((item) => {
+      if (!item.selectAddress) {
+        return { ...item, error: "Địa chỉ không hợp lệ" };
+      }
+      return item;
+    });
+    setAddressList(addressListValidate);
 
-    if (addressListValidate) {
+    const validateAddress = addressList.some((item) => !item.selectAddress);
+
+    if (validateAddress) {
       setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
       setError("Địa chỉ không hợp lệ");
       return;
@@ -107,6 +117,7 @@ const CreateSuperMarket = ({
           .then((respond) => {
             setSuperMarketList(respond.supermarketList);
             setTotalPage(respond.totalPage);
+            setIsSwitchRecovery(false);
             handleClose();
             setOpenSnackbar({
               ...openSnackbar,
@@ -215,6 +226,7 @@ const CreateSuperMarket = ({
                           ...data,
                           searchAddress: e.target.value,
                           selectAddress: "",
+                          error: "",
                         };
                       }
                       return data;
@@ -253,14 +265,14 @@ const CreateSuperMarket = ({
                   type="text"
                   className="modal__container-body-inputcontrol-input"
                 />
-                {/* {item.error && (
+                {item.error && (
                   <p
                     style={{ fontSize: "14px", marginBottom: "-10px" }}
                     className="text-danger"
                   >
                     {item.error}
                   </p>
-                )} */}
+                )}
                 {item.searchAddress && (
                   <FontAwesomeIcon
                     onClick={() => {
@@ -293,6 +305,7 @@ const CreateSuperMarket = ({
                                   isFocused: false,
                                   searchAddress: data.description,
                                   selectAddress: data.description,
+                                  error: "",
                                 };
                               }
                               return address;
@@ -320,6 +333,7 @@ const CreateSuperMarket = ({
                 isFocused: false,
                 selectAddress: "",
                 searchAddress: "",
+                error: "",
               },
             ]);
           }}

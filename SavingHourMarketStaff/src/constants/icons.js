@@ -8,7 +8,9 @@ const search = require('../assets/icons/search.png');
 // const clearText = require('../assets/icons/clearText.png');
 // const star = require('../assets/icons/star.png');
 // const logo = require('../assets/icons/logo.png');
+
 const edit = require('../assets/icons/edit.png');
+
 const leftArrow = require('../assets/icons/left-arrow.png');
 // const plus = require('../assets/icons/plus.png');
 // const minus = require('../assets/icons/minus.png');
@@ -20,7 +22,7 @@ const calendar = require('../assets/icons/calendar.png');
 // const creditCard = require('../assets/icons/credit-card.png');
 // const plusCircle = require('../assets/icons/plus-circle.png');
 const phone = require('../assets/icons/phone.png');
-// const trashBin = require('../assets/icons/trashbin.png');
+const trashBin = require('../assets/icons/trashbin.png');
 // const cross = require('../assets/icons/cross.png');
 const close = require('../assets/icons/close.png');
 // const orderIcon = require('../assets/icons/ordericon.png');
@@ -32,6 +34,8 @@ const statistic = require('../assets/icons/statistic.png');
 const userCircle = require('../assets/icons/user-circle.png');
 const qrCodeScanner = require('../assets/icons/QRCodeScanner.png');
 const packager = require('../assets/icons/package1.png');
+const packaging = require('../assets/icons/packaging.png');
+const packaged = require('../assets/icons/packaged.png');
 
 export default {
   home,
@@ -55,7 +59,7 @@ export default {
   // creditCard,
   // plusCircle,
   phone,
-  // trashBin,
+  trashBin,
   // cross,
   close,
   // orderIcon,
@@ -67,4 +71,6 @@ export default {
   userCircle,
   qrCodeScanner,
   packager,
+  packaging,
+  packaged,
 };

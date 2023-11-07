@@ -102,7 +102,10 @@ const AuthProvider = ({ children }) => {
   return currentRoute.role === user?.role || currentRoute.role === "All" ? (
     children
   ) : (
-    <Navigate to="/" />
+    <>
+      {user?.role === "STAFF_SLT" && <Navigate to="/supermarketmanagement" />}
+      {user?.role === "ADMIN" && <Navigate to="/usermanagement" />}
+    </>
   );
 };
 

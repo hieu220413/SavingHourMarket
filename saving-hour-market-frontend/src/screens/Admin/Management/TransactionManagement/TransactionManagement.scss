@@ -1,0 +1,19 @@
+.refund-button {
+  padding: 7px 0px;
+  border-radius: 3px;
+  background: var(--primary);
+  width: 79px;
+  display: flex;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s all ease-in-out;
+
+  &:hover {
+    background-color: #157347;
+    border-color: #146c43;
+  }
+}

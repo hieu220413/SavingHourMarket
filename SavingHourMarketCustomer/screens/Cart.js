@@ -56,7 +56,7 @@ const Cart = ({navigation}) => {
 
   const deleteRow = async (rowMap, rowKey) => {
     closeRow(rowMap, rowKey);
-    const newCart = cartItems.filter(item => item.id !== rowKey);
+    const newCart = cartItems.filter(item => item.idList[0] !== rowKey);
     setcartItems(newCart);
     try {
       await AsyncStorage.setItem('CartList', JSON.stringify(newCart));
@@ -80,10 +80,11 @@ const Cart = ({navigation}) => {
           price: item.price,
           priceOriginal: item.priceOriginal,
           expiredDate: Date.parse(item.expiredDate),
-          imageUrl: item.imageUrl,
+          imageUrl: item.imageUrlImageList[0].imageUrl,
           productCategoryName: item.productSubCategory.productCategory.name,
           productCategoryId: item.productSubCategory.productCategory.id,
           quantity: item.cartQuantity,
+          idList: item.idList,
         };
         orderItems = [...orderItems, orderItem];
       }
@@ -152,6 +153,7 @@ const Cart = ({navigation}) => {
             }}>
             <SwipeListView
               data={cartItems}
+              keyExtractor={(item, index) => item.idList[0]}
               renderItem={(data, rowMap) => (
                 <CartItem
                   setcartItems={setcartItems}
@@ -183,7 +185,7 @@ const Cart = ({navigation}) => {
                       setDeleteDialog({
                         open: true,
                         rowMap: rowMap,
-                        rowKey: data.item.id,
+                        rowKey: data.item.idList[0],
                       });
                     }}>
                     <View>

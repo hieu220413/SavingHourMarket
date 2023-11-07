@@ -24,6 +24,7 @@ import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 import Empty from "../../../../assets/Empty.png";
 import ViewProductBatch from "./ViewProductBatch";
 import ProductImageSlider from "./ProductImageSlider";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -93,41 +94,41 @@ const ProductManagement = () => {
     setAnchorEl(null);
   };
 
+  const userState = useAuthState(auth);
+
   useEffect(() => {
     const fetchProduct = async () => {
-      onAuthStateChanged(auth, async (userAuth) => {
-        setLoading(true);
-        if (userAuth) {
-          const tokenId = await auth.currentUser.getIdToken();
-          fetch(
-            `${API.baseURL}/api/product/getProductsForStaff?page=${
-              page - 1
-            }&limit=5&name=${searchValue}${
-              isSwitchRecovery ? "&status=DISABLE" : "&status=ENABLE"
-            }`,
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${tokenId}`,
-              },
-            }
-          )
-            .then((res) => res.json())
-            .then((data) => {
-              setProducts(data.productList);
-              setTotalPage(data.totalPage);
-              setLoading(false);
-            })
-            .catch((err) => {
-              console.log(err);
-              setLoading(false);
-            });
-        }
-      });
+      setLoading(true);
+      if (!userState[1]) {
+        const tokenId = await auth.currentUser.getIdToken();
+        fetch(
+          `${API.baseURL}/api/product/getProductsForStaff?page=${
+            page - 1
+          }&limit=5&name=${searchValue}${
+            isSwitchRecovery ? "&status=DISABLE" : "&status=ENABLE"
+          }`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${tokenId}`,
+            },
+          }
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            setProducts(data.productList);
+            setTotalPage(data.totalPage);
+            setLoading(false);
+          })
+          .catch((err) => {
+            console.log(err);
+            setLoading(false);
+          });
+      }
     };
     fetchProduct();
-  }, [isSwitchRecovery, page, searchValue]);
+  }, [isSwitchRecovery, page, searchValue, userState[1]]);
 
   const handleDeleteProduct = async (id) => {
     setLoading(true);
@@ -142,7 +143,6 @@ const ProductManagement = () => {
     })
       .then((res) => res.json())
       .then((res) => {
-        console.log(res);
         if (res?.error) {
           setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
           setMsg(res.error);
@@ -510,6 +510,7 @@ const ProductManagement = () => {
                     onClick={(e) => {
                       e.preventDefault();
                       setPage(1);
+                      setTextPage(1);
                     }}
                     className="btn btn-success  "
                     name="op"
@@ -524,6 +525,7 @@ const ProductManagement = () => {
                     onClick={(e) => {
                       e.preventDefault();
                       setPage(page - 1);
+                      setTextPage(page - 1);
                     }}
                     className="btn btn-success  "
                     name="op"
@@ -538,6 +540,7 @@ const ProductManagement = () => {
                     onClick={(e) => {
                       e.preventDefault();
                       setPage(page + 1);
+                      setTextPage(page + 1);
                     }}
                     className="btn btn-success  "
                     name="op"
@@ -552,6 +555,7 @@ const ProductManagement = () => {
                     onClick={(e) => {
                       e.preventDefault();
                       setPage(totalPage);
+                      setTextPage(totalPage);
                     }}
                     className="btn btn-success  "
                     name="op"
@@ -565,8 +569,7 @@ const ProductManagement = () => {
                     name="gotoPage"
                     value={textPage}
                     onChange={(e) => {
-                      if (e.target.value >= page && e.target.value <= totalPage)
-                        setTextPage(e.target.value);
+                      setTextPage(e.target.value);
                     }}
                     className=" "
                     style={{
@@ -581,7 +584,11 @@ const ProductManagement = () => {
                     type="submit"
                     onClick={(e) => {
                       e.preventDefault();
-                      setPage(textPage);
+                      if (textPage >= 1 && textPage <= totalPage) {
+                        setPage(parseInt(textPage));
+                      } else {
+                        setTextPage(page);
+                      }
                     }}
                     className="btn btn-success  "
                     name="op"

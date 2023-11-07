@@ -1,6 +1,8 @@
 package com.fpt.capstone.savinghourmarket.exception.handler;
 
 import com.fpt.capstone.savinghourmarket.model.ApiError;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +24,16 @@ public class BadRequestExceptionHandler {
         for (ObjectError objectError : ex.getBindingResult()
                 .getAllErrors()) {
             String defaultMessage = ((FieldError) objectError).getField() + ": " + objectError.getDefaultMessage();
+            errors.add(defaultMessage);
+        }
+        return ResponseEntity.badRequest().body(errors);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<List<String>> handleValidationException(ConstraintViolationException ex) {
+        List<String> errors = new ArrayList<>();
+        for (ConstraintViolation objectError : ex.getConstraintViolations()) {
+            String defaultMessage = objectError.getPropertyPath().toString() +  objectError.getMessage();
             errors.add(defaultMessage);
         }
         return ResponseEntity.badRequest().body(errors);

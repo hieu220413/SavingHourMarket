@@ -161,7 +161,7 @@ const Profile = ({navigation}) => {
             color: 'black',
             fontFamily: 'Roboto',
           }}>
-          Profile
+          Tôi
         </Text>
       </View>
       {/* Profile */}
@@ -323,7 +323,7 @@ const Profile = ({navigation}) => {
                 fontWeight: '700',
                 color: 'black',
               }}>
-              Profile
+              Thông tin cá nhân
             </Text>
           </View>
           <View>
@@ -414,7 +414,7 @@ const Profile = ({navigation}) => {
                 fontWeight: '700',
                 color: 'black',
               }}>
-              Notification
+              Thông báo
             </Text>
           </View>
           <Switch
@@ -484,7 +484,7 @@ const Profile = ({navigation}) => {
                 fontWeight: '700',
                 color: 'black',
               }}>
-              Feedback
+              Đánh giá
             </Text>
           </View>
           <AntDesign name="right" size={20} color="black"></AntDesign>
@@ -517,7 +517,7 @@ const Profile = ({navigation}) => {
                   fontWeight: '700',
                   color: 'red',
                 }}>
-                Log out
+                Đăng xuất
               </Text>
             </View>
           </TouchableOpacity>
@@ -547,7 +547,7 @@ const Profile = ({navigation}) => {
                   fontWeight: '700',
                   color: 'black',
                 }}>
-                Log In
+                Đăng nhập
               </Text>
             </View>
           </TouchableOpacity>

@@ -40,8 +40,8 @@ const Home = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [openAuthModal, setOpenAuthModal] = useState(false);
   const [pickupPoint, setPickupPoint] = useState({
-    id: "accf0ac0-5541-11ee-8a50-a85e45c41921",
-    address: "Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh",
+    id: 'accf0ac0-5541-11ee-8a50-a85e45c41921',
+    address: 'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh',
     status: 1,
     longitude: 106.83102962168277,
     latitude: 10.845020092805793,
@@ -74,7 +74,7 @@ const Home = ({ navigation }) => {
         try {
           setLoading(true);
           const value = await AsyncStorage.getItem('PickupPoint');
-          setPickupPoint(JSON.parse(value));
+          setPickupPoint(value ? JSON.parse(value) : pickupPoint);
           setLoading(false);
         } catch (err) {
           console.log(err);
@@ -86,7 +86,9 @@ const Home = ({ navigation }) => {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`${API.baseURL}/api/product/getAllCategory?pickupPointId=${pickupPoint?.id}`)
+    fetch(
+      `${API.baseURL}/api/product/getAllCategory?pickupPointId=${pickupPoint?.id}`,
+    )
       .then(res => res.json())
       .then(data => {
         if (data.error) {
@@ -137,7 +139,7 @@ const Home = ({ navigation }) => {
         item.id === currentCate && setSubCategories(item.productSubCategories);
       });
     }
-  }, [currentCate, categories, pickupPoint.id]);
+  }, [currentCate, categories, pickupPoint?.id]);
 
   const handleAddToCart = async data => {
     try {
@@ -232,7 +234,10 @@ const Home = ({ navigation }) => {
                 fontSize: 18,
                 marginBottom: 10,
               }}>
-              HSD: {dayjs(data?.nearestExpiredBatch.expiredDate).format('DD/MM/YYYY')}
+              HSD:{' '}
+              {dayjs(data?.nearestExpiredBatch.expiredDate).format(
+                'DD/MM/YYYY',
+              )}
             </Text>
             {/* Button buy */}
             <TouchableOpacity onPress={() => handleAddToCart(data)}>
@@ -349,41 +354,49 @@ const Home = ({ navigation }) => {
         paddingHorizontal: 20,
         paddingTop: 10,
       }}>
-        <Text style={{ fontSize: 16, fontFamily: FONTS.fontFamily }}>Vị trí hiện tại của bạn:</Text>
+        <Text style={{ fontSize: 16, fontFamily: FONTS.fontFamily }}>Điểm nhận hàng hiện tại:</Text>
         <TouchableOpacity
           onPress={() => {
             navigation.navigate('ChangePickupPoint', {
               pickupPoint: pickupPoint,
               setPickupPoint,
             });
-          }}
-        >
-          <View style={{
-            paddingVertical: 6,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
           }}>
-            <View style={{
+          <View
+            style={{
+              paddingVertical: 6,
               flexDirection: 'row',
-              gap: 10,
               alignItems: 'center',
-              width: '95%',
+              justifyContent: 'space-between',
             }}>
-              <Image
-                resizeMode="contain"
-                style={{ width: 20, height: 20, tintColor: COLORS.primary }}
-                source={icons.location}
-              />
-              <Text
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                width: '95%',
+              }}>
+              <View
                 style={{
-                  fontSize: 18,
-                  fontFamily: 'Roboto',
-                  color: 'black',
-                  fontWeight: 'bold',
+                  flexDirection: 'row',
+                  gap: 10,
+                  alignItems: 'center',
+                  width: '80%',
                 }}>
-                {pickupPoint ? pickupPoint.address : ''}
-              </Text>
+                <Image
+                  resizeMode="contain"
+                  style={{ width: 20, height: 20, tintColor: COLORS.primary }}
+                  source={icons.location}
+                />
+                <Text
+                  style={{
+                    fontSize: 18,
+                    fontFamily: 'Roboto',
+                    color: 'black',
+                    fontWeight: 'bold',
+                  }}>
+                  {pickupPoint ? pickupPoint.address : ''}
+                </Text>
+              </View>
             </View>
           </View>
         </TouchableOpacity>
@@ -464,7 +477,6 @@ const Home = ({ navigation }) => {
             alignItems: 'center',
             gap: 20,
             paddingHorizontal: 20,
-
           }}>
           {subCategories.map((item, index) => (
             <SubCategory data={item} key={index} />
