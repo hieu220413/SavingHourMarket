@@ -1,0 +1,58 @@
+.transaction__information {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  padding-bottom: 20px;
+  &-title {
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  &-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+
+    &-item {
+      display: flex;
+      flex-direction: column;
+
+      &-title {
+        font-size: 16px;
+        font-weight: 400;
+      }
+
+      &-desc {
+        font-size: 18px;
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+.order__information {
+  &-title {
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  &-body {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    &-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      &-title {
+        font-size: 16px;
+        font-weight: 400;
+      }
+
+      &-desc {
+        font-size: 18px;
+        font-weight: 600;
+      }
+    }
+  }
+}

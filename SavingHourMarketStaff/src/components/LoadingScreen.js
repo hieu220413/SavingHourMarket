@@ -1,3 +1,5 @@
+/* eslint-disable prettier/prettier */
+// eslint-disable-next-line prettier/prettier
 import {View, Text, StyleSheet} from 'react-native';
 import React from 'react';
 import * as Progress from 'react-native-progress';

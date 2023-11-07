@@ -35,6 +35,7 @@ const EditSuperMarket = ({
       isFocused: false,
       selectAddress: item.address,
       searchAddress: item.address,
+      error: "",
     };
   });
   const [addressList, setAddressList] = useState(list);
@@ -62,9 +63,17 @@ const EditSuperMarket = ({
       setError("Số điện thoại không hợp lệ");
       return;
     }
-    const addressListValidate = addressList.some((item) => !item.selectAddress);
+    const addressListValidate = addressList.map((item) => {
+      if (!item.selectAddress) {
+        return { ...item, error: "Địa chỉ không hợp lệ" };
+      }
+      return item;
+    });
+    setAddressList(addressListValidate);
 
-    if (addressListValidate) {
+    const validateAddress = addressList.some((item) => !item.selectAddress);
+
+    if (validateAddress) {
       setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
       setError("Địa chỉ không hợp lệ");
       return;
@@ -224,6 +233,7 @@ const EditSuperMarket = ({
                           ...data,
                           searchAddress: e.target.value,
                           selectAddress: "",
+                          error: "",
                         };
                       }
                       return data;
@@ -262,14 +272,14 @@ const EditSuperMarket = ({
                   type="text"
                   className="modal__container-body-inputcontrol-input"
                 />
-                {/* {item.error && (
-                <p
-                  style={{ fontSize: "14px", marginBottom: "-10px" }}
-                  className="text-danger"
-                >
-                  {item.error}
-                </p>
-              )} */}
+                {item.error && (
+                  <p
+                    style={{ fontSize: "14px", marginBottom: "-10px" }}
+                    className="text-danger"
+                  >
+                    {item.error}
+                  </p>
+                )}
                 {item.searchAddress && (
                   <FontAwesomeIcon
                     onClick={() => {
@@ -302,6 +312,7 @@ const EditSuperMarket = ({
                                   isFocused: false,
                                   searchAddress: data.description,
                                   selectAddress: data.description,
+                                  error: "",
                                 };
                               }
                               return address;
@@ -329,6 +340,7 @@ const EditSuperMarket = ({
                 isFocused: false,
                 selectAddress: "",
                 searchAddress: "",
+                error: "",
               },
             ]);
           }}

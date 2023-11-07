@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react/no-unstable-nested-components */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   Text,
   View,
@@ -13,26 +13,22 @@ import {
 } from 'react-native';
 import Categories from '../components/Categories';
 import DiscountRow from '../components/DiscountRow';
-import { COLORS, FONTS } from '../constants/theme';
-import { icons } from '../constants';
+import {COLORS, FONTS} from '../constants/theme';
+import {icons} from '../constants';
 import dayjs from 'dayjs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API } from '../constants/api';
-import { useFocusEffect } from '@react-navigation/native';
+import {API} from '../constants/api';
+import {useFocusEffect} from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import LoadingScreen from '../components/LoadingScreen';
-import { Alert } from 'react-native';
-import messaging from '@react-native-firebase/messaging';
-import auth from '@react-native-firebase/auth';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import Modal, {
   ModalFooter,
   ModalButton,
-  SlideAnimation,
   ScaleAnimation,
 } from 'react-native-modals';
+import Empty from '../assets/image/search-empty.png';
 
-const Home = ({ navigation }) => {
+const Home = ({navigation}) => {
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [currentCate, setCurrentCate] = useState('');
@@ -43,6 +39,13 @@ const Home = ({ navigation }) => {
   const [cartList, setCartList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openAuthModal, setOpenAuthModal] = useState(false);
+  const [pickupPoint, setPickupPoint] = useState({
+    id: 'accf0ac0-5541-11ee-8a50-a85e45c41921',
+    address: 'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh',
+    status: 1,
+    longitude: 106.83102962168277,
+    latitude: 10.845020092805793,
+  });
 
   const showToast = () => {
     Toast.show({
@@ -66,12 +69,26 @@ const Home = ({ navigation }) => {
           setLoading(false);
         }
       })();
+      // Get pickup point from AS
+      (async () => {
+        try {
+          setLoading(true);
+          const value = await AsyncStorage.getItem('PickupPoint');
+          setPickupPoint(value ? JSON.parse(value) : pickupPoint);
+          setLoading(false);
+        } catch (err) {
+          console.log(err);
+          setLoading(false);
+        }
+      })();
     }, []),
   );
 
   useEffect(() => {
     setLoading(true);
-    fetch(`${API.baseURL}/api/product/getAllCategory`)
+    fetch(
+      `${API.baseURL}/api/product/getAllCategory?pickupPointId=${pickupPoint?.id}`,
+    )
       .then(res => res.json())
       .then(data => {
         if (data.error) {
@@ -86,13 +103,13 @@ const Home = ({ navigation }) => {
         console.log(err);
         setLoading(false);
       });
-  }, []);
+  }, [pickupPoint?.id]);
 
   useEffect(() => {
     if (currentCate) {
       setLoading(true);
       fetch(
-        `${API.baseURL}/api/product/getProductsForCustomer?productCategoryId=${currentCate}&page=0&limit=10&quantitySortType=DESC&expiredSortType=ASC`,
+        `${API.baseURL}/api/product/getProductsForCustomer?productCategoryId=${currentCate}&pickupPointId=${pickupPoint?.id}&page=0&limit=10&quantitySortType=DESC&expiredSortType=ASC`,
       )
         .then(res => res.json())
         .then(data => {
@@ -122,7 +139,7 @@ const Home = ({ navigation }) => {
         item.id === currentCate && setSubCategories(item.productSubCategories);
       });
     }
-  }, [currentCate, categories]);
+  }, [currentCate, categories, pickupPoint?.id]);
 
   const handleAddToCart = async data => {
     try {
@@ -143,7 +160,7 @@ const Home = ({ navigation }) => {
         return;
       }
 
-      const cartData = { ...data, isChecked: false, cartQuantity: 1 };
+      const cartData = {...data, isChecked: false, cartQuantity: 1};
       newCartList = [...newCartList, cartData];
       setCartList(newCartList);
       await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
@@ -153,7 +170,7 @@ const Home = ({ navigation }) => {
     }
   };
 
-  const Item = ({ data }) => {
+  const Item = ({data}) => {
     return (
       <TouchableOpacity
         key={data.id}
@@ -167,12 +184,12 @@ const Home = ({ navigation }) => {
           <Image
             resizeMode="contain"
             source={{
-              uri: data?.imageUrl,
+              uri: data?.imageUrlImageList[0].imageUrl,
             }}
             style={styles.itemImage}
           />
 
-          <View style={{ justifyContent: 'center', flex: 1, marginRight: 10 }}>
+          <View style={{justifyContent: 'center', flex: 1, marginRight: 10}}>
             <Text
               numberOfLines={1}
               style={{
@@ -185,7 +202,7 @@ const Home = ({ navigation }) => {
               {data.name}
             </Text>
 
-            <View style={{ flexDirection: 'row' }}>
+            <View style={{flexDirection: 'row'}}>
               <Text
                 style={{
                   maxWidth: '70%',
@@ -195,7 +212,7 @@ const Home = ({ navigation }) => {
                   fontWeight: 600,
                   fontFamily: FONTS.fontFamily,
                 }}>
-                {data.price.toLocaleString('vi-VN', {
+                {data?.nearestExpiredBatch.price.toLocaleString('vi-VN', {
                   currency: 'VND',
                 })}
               </Text>
@@ -217,7 +234,10 @@ const Home = ({ navigation }) => {
                 fontSize: 18,
                 marginBottom: 10,
               }}>
-              HSD: {dayjs(data.expiredDate).format('DD/MM/YYYY')}
+              HSD:{' '}
+              {dayjs(data?.nearestExpiredBatch.expiredDate).format(
+                'DD/MM/YYYY',
+              )}
             </Text>
             {/* Button buy */}
             <TouchableOpacity onPress={() => handleAddToCart(data)}>
@@ -241,7 +261,7 @@ const Home = ({ navigation }) => {
     );
   };
 
-  const SubCategory = ({ data }) => {
+  const SubCategory = ({data}) => {
     return (
       <TouchableOpacity
         onPress={() => {
@@ -328,10 +348,72 @@ const Home = ({ navigation }) => {
     );
   };
 
+  const SelectPickupPointBar = () => {
+    return (
+      <View
+        style={{
+          paddingHorizontal: 20,
+          paddingTop: 10,
+        }}>
+        <Text style={{fontSize: 16, fontFamily: FONTS.fontFamily}}>
+          Vị trí hiện tại của bạn:
+        </Text>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate('ChangePickupPoint', {
+              pickupPoint: pickupPoint,
+              setPickupPoint,
+            });
+          }}>
+          <View
+            style={{
+              paddingVertical: 6,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                width: '95%',
+              }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  gap: 10,
+                  alignItems: 'center',
+                  width: '80%',
+                }}>
+                <Image
+                  resizeMode="contain"
+                  style={{width: 20, height: 20, tintColor: COLORS.primary}}
+                  source={icons.location}
+                />
+                <Text
+                  style={{
+                    fontSize: 18,
+                    fontFamily: 'Roboto',
+                    color: 'black',
+                    fontWeight: 'bold',
+                  }}>
+                  {pickupPoint ? pickupPoint.address : ''}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
+      {/* Pickup point */}
+      <SelectPickupPointBar />
+
       {/* Search */}
-      <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+      <View style={{flexDirection: 'row', gap: 10, alignItems: 'center'}}>
         <SearchBar />
         <TouchableOpacity
           onPress={async () => {
@@ -342,7 +424,7 @@ const Home = ({ navigation }) => {
                 return;
               }
               navigation.navigate('Cart');
-            } catch (error) { }
+            } catch (error) {}
           }}>
           <Image
             resizeMode="contain"
@@ -367,7 +449,7 @@ const Home = ({ navigation }) => {
                 justifyContent: 'center',
               }}>
               <Text
-                style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
+                style={{fontSize: 12, color: 'white', fontFamily: 'Roboto'}}>
                 {cartList.length}
               </Text>
             </View>
@@ -395,10 +477,9 @@ const Home = ({ navigation }) => {
             flexDirection: 'row',
             flexWrap: 'wrap',
             marginVertical: 5,
-            alignItems:'center',
-            gap:20,
-            paddingHorizontal:20
-
+            alignItems: 'center',
+            gap: 20,
+            paddingHorizontal: 20,
           }}>
           {subCategories.map((item, index) => (
             <SubCategory data={item} key={index} />
@@ -467,6 +548,24 @@ const Home = ({ navigation }) => {
         {productsByCategory.map((item, index) => (
           <Item data={item} key={index} />
         ))}
+
+        {productsByCategory.length === 0 && (
+          <View style={{alignItems: 'center'}}>
+            <Image
+              style={{width: 200, height: 200}}
+              resizeMode="contain"
+              source={Empty}
+            />
+            <Text
+              style={{
+                fontSize: 20,
+                fontFamily: 'Roboto',
+                fontWeight: 'bold',
+              }}>
+              Không có sản phẩm
+            </Text>
+          </View>
+        )}
         {/* Load more Products */}
         {page < totalPage && (
           <TouchableOpacity
@@ -474,8 +573,10 @@ const Home = ({ navigation }) => {
               setPage(page + 1);
               setLoading(true);
               fetch(
-                `${API.baseURL
-                }/api/product/getProductsForCustomer?productCategoryId=${currentCate}&page=${page + 1
+                `${
+                  API.baseURL
+                }/api/product/getProductsForCustomer?productCategoryId=${currentCate}&page=${
+                  page + 1
                 }&limit=5`,
               )
                 .then(res => res.json())
@@ -523,14 +624,14 @@ const Home = ({ navigation }) => {
           <ModalFooter>
             <ModalButton
               text="Ở lại trang"
-              textStyle={{ color: 'red' }}
+              textStyle={{color: 'red'}}
               onPress={() => {
                 setOpenAuthModal(false);
               }}
             />
             <ModalButton
               text="Đăng nhập"
-              textStyle={{ color: COLORS.primary }}
+              textStyle={{color: COLORS.primary}}
               onPress={async () => {
                 try {
                   await AsyncStorage.removeItem('userInfo');
@@ -545,7 +646,7 @@ const Home = ({ navigation }) => {
           </ModalFooter>
         }>
         <View
-          style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
+          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
           <Text
             style={{
               fontSize: 20,

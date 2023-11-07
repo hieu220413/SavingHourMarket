@@ -631,7 +631,7 @@ public class OrderServiceImpl implements OrderService {
         ReportOrdersResponse reportOrdersResponse = new ReportOrdersResponse();
         switch (mode) {
             case ALL -> {
-                List<Object[]> resultDate = repository.getOrdersReportByDay(startDate != null ? startDate.atStartOfDay() : null, endDate != null ? endDate.atTime(LocalTime.MAX) : null);
+                List<Object[]> resultDate = repository.getOrdersReportByDay(startDate != null ? startDate.atStartOfDay() : null, endDate != null ? endDate.atTime(LocalTime.MAX) : null,month,year);
                 List<OrderReport> reportListDate = new ArrayList<>();
                 for (Object[] row : resultDate) {
                     Date reportDate = (Date) row[0];
@@ -649,7 +649,7 @@ public class OrderServiceImpl implements OrderService {
                     }
                 }
 
-                List<Object[]> resultMonth = repository.getOrdersReportByMonth(month);
+                List<Object[]> resultMonth = repository.getOrdersReportByMonth(month,year);
                 LinkedHashMap<Integer, List<OrderReportMonth>> reportListMonth = new LinkedHashMap<>();
                 for (Object[] row : resultMonth) {
                     Integer yearResult = (Integer) row[0];
@@ -695,7 +695,7 @@ public class OrderServiceImpl implements OrderService {
                 reportOrdersResponse.setOrdersReportByYear(reportListYear);
             }
             case DATE -> {
-                List<Object[]> resultDate = repository.getOrdersReportByDay(startDate != null ? startDate.atStartOfDay() : null, endDate != null ? endDate.atTime(LocalTime.MAX) : null);
+                List<Object[]> resultDate = repository.getOrdersReportByDay(startDate != null ? startDate.atStartOfDay() : null, endDate != null ? endDate.atTime(LocalTime.MAX) : null,month,year);
                 List<OrderReport> reportListDate = new ArrayList<>();
                 for (Object[] row : resultDate) {
                     Date reportDate = (Date) row[0];
@@ -716,7 +716,7 @@ public class OrderServiceImpl implements OrderService {
                 reportOrdersResponse.setOrdersReportByDay(reportListDate);
             }
             case MONTH -> {
-                List<Object[]> resultMonth = repository.getOrdersReportByMonth(month);
+                List<Object[]> resultMonth = repository.getOrdersReportByMonth(month,year);
                 LinkedHashMap<Integer, List<OrderReportMonth>> reportListMonth = new LinkedHashMap<>();
                 for (Object[] row : resultMonth) {
                     Integer yearResult = (Integer) row[0];

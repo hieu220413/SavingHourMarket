@@ -102,7 +102,14 @@ const Login = () => {
             dispatch(action);
             localStorage.setItem("user", JSON.stringify(respond));
             setLoading(false);
-            navigate("/");
+            if (respond.role === "STAFF_SLT") {
+              navigate("/supermarketmanagement");
+              return;
+            }
+            if (respond.role === "ADMIN") {
+              navigate("/usermanagement");
+              return;
+            }
           })
           .catch((err) => {
             console.log(err);
