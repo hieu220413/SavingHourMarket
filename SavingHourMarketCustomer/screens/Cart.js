@@ -33,7 +33,8 @@ const Cart = ({navigation}) => {
     useCallback(() => {
       (async () => {
         try {
-          const cartList = await AsyncStorage.getItem('CartList');
+          const value = await AsyncStorage.getItem('PickupPoint');
+          const cartList = await AsyncStorage.getItem('CartList'+JSON.parse(value).id);
           setcartItems(cartList ? JSON.parse(cartList) : []);
         } catch (err) {
           console.log(err);
