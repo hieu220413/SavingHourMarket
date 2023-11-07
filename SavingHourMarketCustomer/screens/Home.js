@@ -74,7 +74,7 @@ const Home = ({navigation}) => {
         try {
           setLoading(true);
           const value = await AsyncStorage.getItem('PickupPoint');
-          setPickupPoint(JSON.parse(value));
+          setPickupPoint(value ? JSON.parse(value) : pickupPoint);
           setLoading(false);
         } catch (err) {
           console.log(err);
@@ -141,7 +141,7 @@ const Home = ({navigation}) => {
         item.id === currentCate && setSubCategories(item.productSubCategories);
       });
     }
-  }, [currentCate, categories, pickupPoint.id]);
+  }, [currentCate, categories, pickupPoint?.id]);
 
   const handleAddToCart = async data => {
     try {
@@ -352,14 +352,11 @@ const Home = ({navigation}) => {
 
   const SelectPickupPointBar = () => {
     return (
-      <View
-        style={{
-          paddingHorizontal: 20,
-          paddingTop: 10,
-        }}>
-        <Text style={{fontSize: 16, fontFamily: FONTS.fontFamily}}>
-          Vị trí hiện tại của bạn:
-        </Text>
+      <View style={{
+        paddingHorizontal: 20,
+        paddingTop: 10,
+      }}>
+        <Text style={{ fontSize: 16, fontFamily: FONTS.fontFamily }}>Điểm nhận hàng hiện tại:</Text>
         <TouchableOpacity
           onPress={() => {
             navigation.navigate('ChangePickupPoint', {
@@ -389,7 +386,7 @@ const Home = ({navigation}) => {
                 }}>
                 <Image
                   resizeMode="contain"
-                  style={{width: 20, height: 20, tintColor: COLORS.primary}}
+                  style={{ width: 20, height: 20, tintColor: COLORS.primary }}
                   source={icons.location}
                 />
                 <Text

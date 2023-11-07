@@ -51,6 +51,9 @@ public class Product {
 //    @Column(columnDefinition = "text")
 //    private String imageUrl;
 
+    @Column(columnDefinition = "varchar(50)")
+    private String unit;
+
     @Column(columnDefinition = "tinyint")
     private Integer status;
 
@@ -69,7 +72,7 @@ public class Product {
     private Supermarket supermarket;
 
     @OneToMany(
-            fetch = FetchType.EAGER,
+            fetch = FetchType.LAZY,
             mappedBy = "product",
             cascade = CascadeType.ALL
     )
@@ -85,7 +88,8 @@ public class Product {
 
     @OneToMany(
             fetch = FetchType.EAGER,
-            mappedBy = "product"
+            mappedBy = "product",
+            cascade = CascadeType.ALL
     )
     private List<ProductImage> productImageList;
 

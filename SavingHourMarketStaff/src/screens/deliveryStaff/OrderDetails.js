@@ -75,6 +75,7 @@ const OrderDetails = ({ navigation, route }) => {
                 })
                     .then(res => res.json())
                     .then(respond => {
+                        console.log(respond)
                         setItem(respond);
                         setLoading(false);
                     })
@@ -276,7 +277,7 @@ const OrderDetails = ({ navigation, route }) => {
                                     }}>
                                     <Image
                                         source={{
-                                            uri: product.imageUrl,
+                                            uri: product.images[0].imageUrl,
                                         }}
                                         style={{ flex: 4, width: '100%', height: '95%' }}
                                     />

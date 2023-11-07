@@ -13,7 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const CartItem = ({item, cartItems, setcartItems, navigation}) => {
   const handleAddQuantity = async () => {
     const newCart = cartItems.map(data => {
-      if (data.id === item.id) {
+      if (data.idList[0] === item.idList[0]) {
         return {...data, cartQuantity: data.cartQuantity + 1};
       }
       return data;
@@ -26,11 +26,11 @@ const CartItem = ({item, cartItems, setcartItems, navigation}) => {
     }
   };
 
-  const itemIndex = cartItems.findIndex(i => i.id === item.id);
+  const itemIndex = cartItems.findIndex(i => i.idList[0] === item.idList[0]);
 
   const handleRemoveQuantity = async () => {
     const newCart = cartItems.map(data => {
-      if (data.id === item.id) {
+      if (data.idList[0] === item.idList[0]) {
         if (data.cartQuantity === 1) {
           return data;
         }
@@ -48,6 +48,7 @@ const CartItem = ({item, cartItems, setcartItems, navigation}) => {
 
   return (
     <View
+      key={item.idList[0]}
       style={{
         backgroundColor: 'white',
 
@@ -81,7 +82,7 @@ const CartItem = ({item, cartItems, setcartItems, navigation}) => {
             style={{flex: 0.5}}
             onClick={async () => {
               const newCart = cartItems.map(data => {
-                if (data.id === item.id) {
+                if (data.idList[0] === item.idList[0]) {
                   return {...data, isChecked: !data.isChecked};
                 }
                 return data;
@@ -102,7 +103,7 @@ const CartItem = ({item, cartItems, setcartItems, navigation}) => {
             resizeMode="contain"
             style={{flex: 3, width: '100%', height: 160, borderRadius: 10}}
             source={{
-              uri: item.imageUrl,
+              uri: item.imageUrlImageList[0].imageUrl,
             }}
           />
 

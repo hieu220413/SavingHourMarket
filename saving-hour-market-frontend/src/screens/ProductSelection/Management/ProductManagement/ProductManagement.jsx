@@ -23,6 +23,11 @@ import { Snackbar } from "@mui/material";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 import Empty from "../../../../assets/Empty.png";
 import { useAuthState } from "react-firebase-hooks/auth";
+import ViewProductBatch from "./ViewProductBatch";
+import ProductImageSlider from "./ProductImageSlider";
+import ViewProductBatch from "./ViewProductBatch";
+import ProductImageSlider from "./ProductImageSlider";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -61,6 +66,16 @@ const ProductManagement = () => {
   const [openConfirmCreate, setOpenConfirmCreate] = useState(false);
   const handleOpenConfirmCreate = () => setOpenConfirmCreate(true);
   const handleCloseConfirmCreate = () => setOpenConfirmCreate(false);
+
+  const [productBatch, setProductBatch] = useState(null);
+  const [openProductBatch, setOpenProductBatch] = useState(false);
+  const handleOpenProductBatch = () => setOpenProductBatch(true);
+  const handleCloseProductBatch = () => setOpenProductBatch(false);
+
+  const [imageUrlList, setImageUrlList] = useState(null);
+  const [openImageUrlList, setOpenImageUrlList] = useState(false);
+  const handleOpenImageUrlList = () => setOpenImageUrlList(true);
+  const handleCloseImageUrlList = () => setOpenImageUrlList(false);
 
   const [openSnackbar, setOpenSnackbar] = useState({
     open: false,
@@ -322,23 +337,31 @@ const ProductManagement = () => {
         <tr className="table-body-row">
           <td style={{ paddingTop: 30 }}>{index + 1}</td>
           <td>
-            <img width="80px" height="60px" src={item.imageUrl} />
+            <img
+              style={{
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                setImageUrlList(item.productImageList);
+                handleOpenImageUrlList();
+              }}
+              width="80px"
+              height="60px"
+              src={item.productImageList[0].imageUrl}
+            />
           </td>
           <td style={{ paddingTop: 30 }}>{item.name}</td>
-          <td style={{ paddingTop: 30 }}>
-            {dayjs(item.expiredDate).format("DD/MM/YYYY")}
-          </td>
-          <td style={{ paddingTop: 30 }}>
-            {item.price.toLocaleString("vi-VN", {
-              style: "currency",
-              currency: "VND",
-            })}
-          </td>
-          <td style={{ paddingTop: 30 }}>{item.quantity}</td>
           <td style={{ paddingTop: 30 }}>
             {item.productSubCategory.productCategory.name}
           </td>
           <td style={{ paddingTop: 30 }}>
+            <i
+              onClick={() => {
+                setProductBatch(item.productBatchList);
+                handleOpenProductBatch();
+              }}
+              className="bi bi-eye"
+            ></i>
             <i
               onClick={() => {
                 setProductToEdit(item);
@@ -367,17 +390,6 @@ const ProductManagement = () => {
           <td>
             <img width="80px" height="60px" src={item.imageUrl} />
           </td>
-          <td style={{ paddingTop: 30 }}>{item.name}</td>
-          <td style={{ paddingTop: 30 }}>
-            {dayjs(item.expiredDate).format("DD/MM/YYYY")}
-          </td>
-          <td style={{ paddingTop: 30 }}>
-            {item.price.toLocaleString("vi-VN", {
-              style: "currency",
-              currency: "VND",
-            })}
-          </td>
-          <td style={{ paddingTop: 30 }}>{item.quantity}</td>
           <td style={{ paddingTop: 30 }}>
             {item.productSubCategory.productCategory.name}
           </td>
@@ -465,9 +477,6 @@ const ProductManagement = () => {
                   <th>No.</th>
                   <th>Hình ảnh</th>
                   <th>Tên Sản phẩm</th>
-                  <th>Ngày hết hạn</th>
-                  <th>Giá tiền</th>
-                  <th>Số lượng</th>
                   <th>Tên loại sản phẩm</th>
                   <th>Thao tác</th>
                 </tr>
@@ -611,10 +620,6 @@ const ProductManagement = () => {
                         <th>No.</th>
                         <th>Hình ảnh</th>
                         <th>Tên Sản phẩm</th>
-                        <th>Ngày hết hạn</th>
-                        <th>Giá tiền</th>
-                        <th>Số lượng</th>
-                        <th>Tên loại sản phẩm</th>
                         <th>Thao tác</th>
                       </>
                     )}
@@ -871,6 +876,29 @@ const ProductManagement = () => {
           setTotalPage={setTotalPage}
         />
       </Dialog>
+
+      <Dialog
+        onClose={handleCloseProductBatch}
+        aria-labelledby="customized-dialog-title"
+        open={openProductBatch}
+      >
+        <ViewProductBatch
+          handleClose={handleCloseProductBatch}
+          productBatch={productBatch}
+        />
+      </Dialog>
+
+      <Dialog
+        onClose={handleCloseImageUrlList}
+        aria-labelledby="customized-dialog-title"
+        open={openImageUrlList}
+      >
+        <ProductImageSlider
+          handleClose={handleCloseImageUrlList}
+          imageUrlList={imageUrlList}
+        />
+      </Dialog>
+
       <Snackbar
         open={openSnackbar.open}
         autoHideDuration={1000}

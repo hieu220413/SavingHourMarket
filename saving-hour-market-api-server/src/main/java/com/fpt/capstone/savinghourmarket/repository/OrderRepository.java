@@ -2,17 +2,15 @@ package com.fpt.capstone.savinghourmarket.repository;
 
 import com.fpt.capstone.savinghourmarket.entity.Order;
 import com.fpt.capstone.savinghourmarket.entity.PickupPoint;
-import com.fpt.capstone.savinghourmarket.entity.Staff;
-import com.fpt.capstone.savinghourmarket.entity.TimeFrame;
-import org.springframework.data.domain.PageRequest;
+import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -122,4 +120,65 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "WHERE p.id = :pickupPointId " +
             "AND o.status IN :statusList")
     List<Order> findPickupPointInProcessingOrderById(UUID pickupPointId, Pageable pageable, List<Integer> statusList);
+
+    @Query("SELECT DATE(o.createdTime) AS date, " +
+            "SUM(CASE WHEN o.status = 0 THEN 1 ELSE 0 END) AS processingCount, " +
+            "SUM(CASE WHEN o.status = 1 THEN 1 ELSE 0 END) AS packagingCount, " +
+            "SUM(CASE WHEN o.status = 2 THEN 1 ELSE 0 END) AS packagedCount, " +
+            "SUM(CASE WHEN o.status = 3 THEN 1 ELSE 0 END) AS deliveringCount, " +
+            "SUM(CASE WHEN o.status = 4 THEN 1 ELSE 0 END) AS successCount, " +
+            "SUM(CASE WHEN o.status = 5 THEN 1 ELSE 0 END) AS failCount, " +
+            "SUM(CASE WHEN o.status = 6 THEN 1 ELSE 0 END) AS cancelCount " +
+            "FROM Order o " +
+            "WHERE ((:startDate IS NULL) OR (o.createdTime >= :startDate)) " +
+            "AND ((:endDate IS NULL) OR (o.createdTime <= :endDate)) " +
+            "AND ((:month IS NULL) OR (MONTH(o.createdTime) = :month )) " +
+            "AND ((:year IS NULL) OR (YEAR(o.createdTime) = :year )) " +
+            "GROUP BY DATE(o.createdTime)")
+    List<Object[]> getOrdersReportByDay(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            Integer month,
+            Integer year
+    );
+
+    @Query("SELECT YEAR(o.createdTime) AS year, " +
+            "MONTH(o.createdTime) AS month, " +
+            "SUM(CASE WHEN o.status = 4 THEN 1 ELSE 0 END) AS successCount, " +
+            "SUM(CASE WHEN o.status = 5 THEN 1 ELSE 0 END) AS failCount, " +
+            "SUM(CASE WHEN o.status = 6 THEN 1 ELSE 0 END) AS cancelCount " +
+            "FROM Order o " +
+            "WHERE ((:month IS NULL) OR (MONTH(o.createdTime) = :month ))" +
+            "AND ((:year IS NULL) OR (YEAR(o.createdTime) = :year )) " +
+            "GROUP BY YEAR(o.createdTime), MONTH(o.createdTime)")
+    List<Object[]> getOrdersReportByMonth(Integer month, Integer year);
+
+    @Query("SELECT YEAR(o.createdTime) AS year, " +
+            "SUM(CASE WHEN o.status = 4 THEN 1 ELSE 0 END) AS successCount, " +
+            "SUM(CASE WHEN o.status = 5 THEN 1 ELSE 0 END) AS failCount, " +
+            "SUM(CASE WHEN o.status = 6 THEN 1 ELSE 0 END) AS cancelCount " +
+            "FROM Order o " +
+            "WHERE ((:year IS NULL) OR (YEAR(o.createdTime) = :year))" +
+            "GROUP BY YEAR(o.createdTime)")
+    List<Object[]> getOrdersReportByYear(Integer year);
+
+    @Query("SELECT DISTINCT o FROM Order o " +
+            "JOIN FETCH o.timeFrame tf " +
+            "LEFT JOIN FETCH o.deliverer dlv " +
+            "LEFT JOIN FETCH o.orderBatch obt " +
+            "WHERE " +
+            "(o.status = 2)" +
+            "AND " +
+            "(obt IS NULL) " +
+            "AND " +
+            "(o.orderGroup IS NULL) " +
+            "AND " +
+            "(tf.id = :timeframeId) " +
+            "AND " +
+            "(o.deliveryMethod = 1)" +
+            "AND " +
+            "(dlv IS NULL) " +
+            "AND " +
+            "(o.deliveryDate = :deliverDate) ")
+    List<Order> findOrderWithoutGroups(UUID timeframeId, Date deliverDate);
 }

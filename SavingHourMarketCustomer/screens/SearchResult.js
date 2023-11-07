@@ -62,8 +62,8 @@ const SearchResult = ({navigation, route}) => {
   const [selectSort, setSelectSort] = useState(sortOptions);
   const searchHistory = route.params.text;
   const [pickupPoint, setPickupPoint] = useState({
-    id: "accf0ac0-5541-11ee-8a50-a85e45c41921",
-    address: "Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh",
+    id: 'accf0ac0-5541-11ee-8a50-a85e45c41921',
+    address: 'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh',
     status: 1,
     longitude: 106.83102962168277,
     latitude: 10.845020092805793,
@@ -99,9 +99,12 @@ const SearchResult = ({navigation, route}) => {
     setLoading(true);
     if (sortItem) {
       fetch(
-        `${API.baseURL}/api/product/getProductsForCustomer?name=${productName}&pickupPointId=${pickupPoint.id}${currentCate === '' ? '' : '&productCategoryId=' + currentCate
-        }&page=0&limit=10${sortItem?.id == 1 ? '&expiredSortType=ASC' : ''}${sortItem?.id == 2 ? '&expiredSortType=DESC' : ''
-        }${sortItem?.id == 3 ? '&priceSort=ASC' : ''}${sortItem?.id == 4 ? '&priceSort=DESC' : ''
+        `${API.baseURL}/api/product/getProductsForCustomer?name=${productName}${
+          currentCate === '' ? '' : '&productCategoryId=' + currentCate
+        }&page=0&limit=10${sortItem?.id == 1 ? '&expiredSortType=ASC' : ''}${
+          sortItem?.id == 2 ? '&expiredSortType=DESC' : ''
+        }${sortItem?.id == 3 ? '&priceSort=ASC' : ''}${
+          sortItem?.id == 4 ? '&priceSort=DESC' : ''
         }`,
       )
         .then(res => res.json())
@@ -115,7 +118,8 @@ const SearchResult = ({navigation, route}) => {
         });
     } else {
       fetch(
-        `${API.baseURL}/api/product/getProductsForCustomer?name=${productName}&pickupPointId=${pickupPoint.id}${currentCate === '' ? '' : '&productCategoryId=' + currentCate
+        `${API.baseURL}/api/product/getProductsForCustomer?name=${productName}${
+          currentCate === '' ? '' : '&productCategoryId=' + currentCate
         }&page=0&limit=10`,
       )
         .then(res => res.json())
@@ -221,7 +225,11 @@ const SearchResult = ({navigation, route}) => {
           const value = await AsyncStorage.getItem('PickupPoint');
           setPickupPoint(JSON.parse(value));
           fetch(
-            `${API.baseURL}/api/product/getProductsForCustomer?name=${productName}&pickupPointId=${JSON.parse(value).id}&quantitySortType=DESC&expiredSortType=DESC`,
+            `${
+              API.baseURL
+            }/api/product/getProductsForCustomer?name=${productName}&pickupPointId=${
+              JSON.parse(value).id
+            }&quantitySortType=DESC&expiredSortType=DESC`,
           )
             .then(res => res.json())
             .then(data => {
@@ -281,7 +289,9 @@ const SearchResult = ({navigation, route}) => {
         }
       })();
 
-      fetch(`${API.baseURL}/api/product/getAllCategory?pickupPointId=${pickupPoint.id}`)
+      fetch(
+        `${API.baseURL}/api/product/getAllCategory?pickupPointId=${pickupPoint.id}`,
+      )
         .then(res => res.json())
         .then(data => {
           const cateData = data.map(item => {
@@ -362,7 +372,10 @@ const SearchResult = ({navigation, route}) => {
                 fontSize: 18,
                 marginBottom: 10,
               }}>
-              HSD: {dayjs(data?.nearestExpiredBatch.expiredDate).format('DD/MM/YYYY')}
+              HSD:{' '}
+              {dayjs(data?.nearestExpiredBatch.expiredDate).format(
+                'DD/MM/YYYY',
+              )}
             </Text>
             {/* Button buy */}
             <TouchableOpacity onPress={() => handleAddToCart(data)}>

@@ -110,8 +110,10 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "pb.expiredDate = (" +
               "SELECT DISTINCT MIN(pbsub.expiredDate) FROM ProductBatch pbsub " +
               "JOIN pbsub.product psub " +
+              "JOIN pbsub.supermarketAddress spa " +
+              "JOIN spa.pickupPoint pp " +
               "WHERE pbsub.expiredDate > CURRENT_TIMESTAMP + psub.productSubCategory.allowableDisplayThreshold DAY  " +
-              "AND psub.id = p.id" +
+              "AND psub.id = p.id AND pp.id = :pickupPointId" +
             ") " +
             "AND pb.quantity > 0 " +
 //            "AND pbp.expiredDate > CURRENT_TIMESTAMP + p.productSubCategory.allowableDisplayThreshold DAY " +
