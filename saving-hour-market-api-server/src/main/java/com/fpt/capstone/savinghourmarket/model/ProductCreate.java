@@ -28,6 +28,9 @@ public class ProductCreate {
     private String description;
 
     @NotNull
+    private String unit;
+
+    @NotNull
     private List<String> imageUrls;
 
     @NotNull
