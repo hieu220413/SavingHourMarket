@@ -88,9 +88,12 @@ const QrCodeScanner = ({ navigation }) => {
                 }}
             >
                 <QRCodeScanner
-                    onRead={({ data }) => setData(data)}
-                    flashMode={RNCamera.Constants.FlashMode.torch}
+                    onRead={({ data }) => {navigation.navigate('OrderDetails', {
+                        id: data,
+                    });}}
+                    flashMode={RNCamera.Constants.FlashMode.off}
                     reactivate={true}
+                    showMarker={true}
                     reactivateTimeout={500}
                     topContent={
                         <Text style={styles.centerText}>

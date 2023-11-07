@@ -17,3 +17,19 @@
     margin-top: 10px;
   }
 }
+
+.error__container {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  h3 {
+    font-size: 16px;
+  }
+  i {
+    font-size: 16px;
+
+    &::before {
+      margin-bottom: 3px;
+    }
+  }
+}

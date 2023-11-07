@@ -3,10 +3,7 @@ package com.fpt.capstone.savinghourmarket.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 
@@ -20,6 +17,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Setter
 @Getter
+@Builder
 @Table(name = "orders")
 public class Order {
     @Id

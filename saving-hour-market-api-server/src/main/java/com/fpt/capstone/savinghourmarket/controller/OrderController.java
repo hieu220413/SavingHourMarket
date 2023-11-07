@@ -134,12 +134,12 @@ public class OrderController {
 
     @GetMapping("/staff/getOrderBatch")
     public ResponseEntity<List<OrderBatch>> getOrderBatchForStaff(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
-                                                                  @RequestParam(required = false) District district,
+//                                                                  @RequestParam(required = false) District district,
                                                                   @RequestParam(required = false) LocalDate deliveryDate,
                                                                   @RequestParam(required = false) UUID delivererId) throws NoSuchOrderException, FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderBatches(district, deliveryDate, delivererId));
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderBatches(deliveryDate, delivererId));
     }
 
     @GetMapping("/getOrderDetail/{id}")

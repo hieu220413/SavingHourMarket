@@ -8,12 +8,12 @@ import {
   ScrollView,
   StyleSheet,
 } from 'react-native';
-import React, {useCallback, useState, useRef, useMemo} from 'react';
-import {icons} from '../constants';
-import {COLORS, FONTS} from '../constants/theme';
+import React, { useCallback, useState, useRef, useMemo } from 'react';
+import { icons } from '../constants';
+import { COLORS, FONTS } from '../constants/theme';
 import dayjs from 'dayjs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useFocusEffect} from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import Modal, {
   ModalFooter,
   ModalButton,
@@ -27,9 +27,9 @@ import BottomSheet, {
   BottomSheetModalProvider,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import {format} from 'date-fns';
+import { format } from 'date-fns';
 
-const ProductDetails = ({navigation, route}) => {
+const ProductDetails = ({ navigation, route }) => {
   const product = route.params.product;
   const [cartList, setCartList] = useState([]);
   const [openAuthModal, setOpenAuthModal] = useState(false);
@@ -55,7 +55,7 @@ const ProductDetails = ({navigation, route}) => {
   const bottomSheetRef = useRef(null);
 
   // variables
-  const snapPoints = useMemo(() => ['80%'], []);
+  const snapPoints = useMemo(() => ['60%'], []);
 
   const handlePresentBottomSheet = useCallback(() => {
     // bottomSheetRef.current?.present();
@@ -106,7 +106,7 @@ const ProductDetails = ({navigation, route}) => {
           idList: selectedProductBatch.idList,
         },
       ];
-
+      
       await AsyncStorage.setItem('OrderItems', JSON.stringify(orderItem));
       navigation.navigate('Payment');
     } catch (error) {
@@ -137,6 +137,10 @@ const ProductDetails = ({navigation, route}) => {
         newCartList[index].cartQuantity = newCartList[index].cartQuantity + 1;
         setCartList(newCartList);
         await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
+        setIndex(-1)
+        bottomSheetRef.current?.close();
+        setSelectedProductBatch(null)
+
         showToast();
         return;
       }
@@ -152,6 +156,9 @@ const ProductDetails = ({navigation, route}) => {
       };
       newCartList = [...newCartList, cartData];
       setCartList(newCartList);
+      setIndex(-1)
+      bottomSheetRef.current?.close();
+      setSelectedProductBatch(null)
       await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
       showToast();
     } catch (error) {
@@ -176,7 +183,7 @@ const ProductDetails = ({navigation, route}) => {
           <Image
             source={icons.leftArrow}
             resizeMode="contain"
-            style={{width: 35, height: 35, tintColor: COLORS.primary}}
+            style={{ width: 35, height: 35, tintColor: COLORS.primary }}
           />
         </TouchableOpacity>
         <Text
@@ -221,7 +228,7 @@ const ProductDetails = ({navigation, route}) => {
                 justifyContent: 'center',
               }}>
               <Text
-                style={{fontSize: 12, color: 'white', fontFamily: 'Roboto'}}>
+                style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
                 {cartList.length}
               </Text>
             </View>
@@ -234,40 +241,40 @@ const ProductDetails = ({navigation, route}) => {
           style={{
             height: 250,
           }}
-          nextButton={{}}
+          activeDotColor='#37A65B'
           showsButtons={false}>
           {product?.imageUrlImageList.map((item, index) => (
-            <>
+            <View
+              key={index}
+            >
               <Image
-                key={index}
                 style={{
                   width: '85%',
-                  height: 250,
+                  height: '100%',
                   marginHorizontal: 30,
                   borderRadius: 20,
                   backgroundColor: 'green',
                 }}
-                resizeMode="contain"
+                resizeMode="stretch"
                 source={{
                   uri: item.imageUrl,
                 }}
               />
               {product?.imageUrlImageList.length !== 1 && (
                 <View
-                  key={index}
                   style={{
                     position: 'absolute',
-                    bottom: 0,
-                    right: 0,
+                    bottom: 10,
+                    right: 20,
                     paddingHorizontal: 8,
                     paddingVertical: 2,
                     marginHorizontal: 20,
                     borderWidth: 1,
                     borderColor: 'black',
                     borderRadius: 10,
+                    backgroundColor: 'white'
                   }}>
                   <Text
-                    key={index}
                     style={{
                       color: 'black',
                       fontFamily: FONTS.fontFamily,
@@ -276,7 +283,7 @@ const ProductDetails = ({navigation, route}) => {
                   </Text>
                 </View>
               )}
-            </>
+            </View>
           ))}
         </Swiper>
 
@@ -341,7 +348,7 @@ const ProductDetails = ({navigation, route}) => {
             alignItems: 'center',
             justifyContent: 'space-between',
           }}>
-          <View style={{flexDirection: 'row'}}>
+          <View style={{ flexDirection: 'row' }}>
             <Text
               style={{
                 fontSize: 24,
@@ -430,7 +437,7 @@ const ProductDetails = ({navigation, route}) => {
             />
             <ModalButton
               text="Đăng nhập"
-              textStyle={{color: COLORS.primary}}
+              textStyle={{ color: COLORS.primary }}
               onPress={async () => {
                 try {
                   await AsyncStorage.removeItem('userInfo');
@@ -445,7 +452,7 @@ const ProductDetails = ({navigation, route}) => {
           </ModalFooter>
         }>
         <View
-          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
+          style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
           <Text
             style={{
               fontSize: 20,
@@ -478,7 +485,7 @@ const ProductDetails = ({navigation, route}) => {
           </ModalFooter>
         }>
         <View
-          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
+          style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
           <Text
             style={{
               fontSize: 20,
@@ -496,7 +503,7 @@ const ProductDetails = ({navigation, route}) => {
           enableOverDrag={false}
           index={index}
           snapPoints={snapPoints}>
-          <View style={{padding: 3}}>
+          <View style={{ padding: 3 }}>
             <View
               style={{
                 flexDirection: 'row',
@@ -514,9 +521,9 @@ const ProductDetails = ({navigation, route}) => {
                   borderRadius: 20,
                 }}
                 resizeMode="contain"
-                source={{uri: product.imageUrlImageList[0].imageUrl}}
+                source={{ uri: product.imageUrlImageList[0].imageUrl }}
               />
-              <View style={{flex: 6, justifyContent: 'space-between'}}>
+              <View style={{ flex: 6, justifyContent: 'space-between' }}>
                 <View></View>
                 <View>
                   <Text
@@ -527,16 +534,16 @@ const ProductDetails = ({navigation, route}) => {
                     }}>
                     {minPrice === maxPrice
                       ? `${minPrice.toLocaleString('vi-VN', {
-                          style: 'currency',
-                          currency: 'VND',
-                        })}`
+                        style: 'currency',
+                        currency: 'VND',
+                      })}`
                       : `${minPrice.toLocaleString('vi-VN', {
-                          style: 'currency',
-                          currency: 'VND',
-                        })} - ${maxPrice.toLocaleString('vi-VN', {
-                          style: 'currency',
-                          currency: 'VND',
-                        })}`}
+                        style: 'currency',
+                        currency: 'VND',
+                      })} - ${maxPrice.toLocaleString('vi-VN', {
+                        style: 'currency',
+                        currency: 'VND',
+                      })}`}
                   </Text>
                   <Text
                     style={{
@@ -553,9 +560,9 @@ const ProductDetails = ({navigation, route}) => {
                   bottomSheetRef.current?.close();
                   setIndex(-1);
                 }}
-                style={{flex: 1}}>
+                style={{ flex: 1 }}>
                 <Image
-                  style={{width: 25, height: 25}}
+                  style={{ width: 25, height: 25 }}
                   resizeMode="contain"
                   source={icons.cross}
                 />
@@ -655,7 +662,7 @@ const ProductDetails = ({navigation, route}) => {
               marginTop: 20,
               elevation: 10,
             }}>
-            <View style={{width: '95%'}}>
+            <View style={{ width: '95%' }}>
               <TouchableOpacity
                 onPress={() => {
                   isAddToCart ? handleAddToCart(product) : handleBuy();
