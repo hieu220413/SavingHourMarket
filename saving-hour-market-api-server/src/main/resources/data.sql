@@ -358,6 +358,8 @@ INSERT INTO `saving_hour_market`.`product_image` (`id`, `image_url`, `product_id
 --      VALUES (`id`, `image_url`, `product_id`)
 --  Nước giặt Omo 2,9L
     VALUES  (UUID_TO_BIN('a4e38eb7-78cf-11ee-a832-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnuoc-giat-omo.jpeg?alt=media', UUID_TO_BIN('accf2b04-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('a4e3b8cb-78cf-11ee-a832-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnuoc-giat-omo-2.jpg?alt=media', UUID_TO_BIN('accf2b04-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('a4e3b9fa-78cf-11ee-a832-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnuoc-giat-omo-3.jpg?alt=media', UUID_TO_BIN('accf2b04-5541-11ee-8a50-a85e45c41921')),
 --  Nước xả vải Comfort hương nước hoa 3,8L batch
             (UUID_TO_BIN('a4e38c04-78cf-11ee-a832-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnuoc-xa-vai-comfort.jpg?alt=media', UUID_TO_BIN('ec5e38e3-56dc-11ee-8a50-a85e45c41921')),
 --  Chả Giò Tôm Cua 500g
@@ -689,8 +691,8 @@ INSERT INTO `saving_hour_market`.`order_detail_product_batch` (`id`, `bought_qua
 
 
 
--- 'a4e3b8cb-78cf-11ee-a832-a85e45c41921'
--- 'a4e3b9fa-78cf-11ee-a832-a85e45c41921'
+
+
 -- 'a4e3bb1d-78cf-11ee-a832-a85e45c41921'
 -- 'a4e3bc3a-78cf-11ee-a832-a85e45c41921'
 -- 'a4e3bd5d-78cf-11ee-a832-a85e45c41921'
