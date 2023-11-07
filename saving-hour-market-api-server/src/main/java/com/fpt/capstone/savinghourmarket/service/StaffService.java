@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.service;
 
+import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.common.StaffRole;
 import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.entity.Staff;
@@ -23,9 +24,13 @@ public interface StaffService {
 
     Staff getStaffByEmail(String email);
 
-    StaffListResponseBody getStaffForAdmin(String name, Integer page, Integer limit);
+    StaffListResponseBody getStaffForAdmin(String name, StaffRole role, EnableDisableStatus status, Integer page, Integer limit);
 
     Staff updateStaffAccountStatus(AccountStatusChangeBody accountStatusChangeBody, String email) throws FirebaseAuthException;
 
     Staff updateStaffRole(StaffRoleUpdateRequestBody staffRoleUpdateRequestBody, String email) throws FirebaseAuthException;
+
+    Staff assignPickupPoint(StaffPickupPointAssignmentBody staffPickupPointAssignmentBody);
+
+    Staff unAssignPickupPoint(StaffPickupPointAssignmentBody staffPickupPointAssignmentBody);
 }

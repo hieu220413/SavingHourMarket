@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
+import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
 import com.fpt.capstone.savinghourmarket.common.FeedbackObject;
 import com.fpt.capstone.savinghourmarket.common.FeedbackStatus;
 import com.fpt.capstone.savinghourmarket.common.SortType;
@@ -7,8 +8,11 @@ import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.entity.FeedBack;
 import com.fpt.capstone.savinghourmarket.entity.FeedBackImage;
 import com.fpt.capstone.savinghourmarket.exception.FeedBackNotFoundException;
+import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
+import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.FeedbackCreate;
+import com.fpt.capstone.savinghourmarket.model.FeedbackReplyRequestBody;
 import com.fpt.capstone.savinghourmarket.repository.CustomerRepository;
 import com.fpt.capstone.savinghourmarket.repository.FeedBackRepository;
 import com.fpt.capstone.savinghourmarket.service.FeedBackService;
@@ -21,15 +25,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -131,5 +133,31 @@ public class FeedBackServiceImpl implements FeedBackService {
         String email = Utils.getCustomerEmail(jwtToken, firebaseAuth);
         return customerRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with this email " + email));
+    }
+
+    @Override
+    @Transactional
+    public FeedBack replyFeedback(UUID feedbackId, FeedbackReplyRequestBody feedbackReplyRequestBody) {
+        HashMap errorFields = new HashMap<>();
+        Optional<FeedBack> feedBack = feedBackRepository.findById(feedbackId);
+
+        if(!feedBack.isPresent()){
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.FEEDBACK_NOT_FOUND.getCode()), AdditionalResponseCode.FEEDBACK_NOT_FOUND.toString());
+        }
+
+        if(feedbackReplyRequestBody.getResponseMessage().trim().isBlank()){
+            errorFields.put("responseMessageError", "Value can not be blank");
+        }
+
+        if(errorFields.size() > 0){
+            throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
+        }
+
+        feedBack.get().setResponseMessage(feedbackReplyRequestBody.getResponseMessage());
+        if(feedBack.get().getStatus() != FeedbackStatus.COMPLETED){
+            feedBack.get().setStatus(FeedbackStatus.COMPLETED);
+        }
+
+        return feedBack.get();
     }
 }

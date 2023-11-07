@@ -35,7 +35,7 @@ public class ProductCategory {
     @UuidGenerator
     private UUID id;
 
-    @Column(columnDefinition = "varchar(50)")
+    @Column(columnDefinition = "varchar(50) CHARACTER SET utf8 COLLATE utf8_bin")
     private String name;
 
     @OneToMany(

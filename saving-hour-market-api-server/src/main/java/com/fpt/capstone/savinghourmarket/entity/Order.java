@@ -33,10 +33,10 @@ public class Order implements Clusterable {
 
     private String receiverName;
 
-    @Column(columnDefinition = "decimal(11,8)")
+    @Column(columnDefinition = "decimal(23,20)")
     private Float longitude;
 
-    @Column(columnDefinition = "decimal(10,8)")
+    @Column(columnDefinition = "decimal(22,20)")
     private Float latitude;
 
     private Integer totalDiscountPrice;
@@ -56,6 +56,9 @@ public class Order implements Clusterable {
     @Column(columnDefinition = "tinyint")
     private Integer paymentMethod;
 
+    @Column(columnDefinition = "tinyint")
+    private Integer deliveryMethod;
+
     @Column(columnDefinition = "varchar(255)")
     private String addressDeliver;
 
@@ -71,6 +74,13 @@ public class Order implements Clusterable {
 
     @ManyToOne()
     @JoinColumn(
+            name = "deliverer_id",
+            referencedColumnName = "id"
+    )
+    private Staff deliverer;
+
+    @ManyToOne()
+    @JoinColumn(
             name = "customer_id",
             referencedColumnName = "id"
     )
@@ -83,9 +93,14 @@ public class Order implements Clusterable {
     )
     private TimeFrame timeFrame;
 
-    @ManyToMany(
-            cascade = CascadeType.ALL
+    @ManyToOne()
+    @JoinColumn(
+            name = "pickup_point_id",
+            referencedColumnName = "id"
     )
+    private PickupPoint pickupPoint;
+
+    @ManyToMany
     @JoinTable(
             name = "discount_order",
             joinColumns = @JoinColumn(name = "order_id"),
@@ -116,6 +131,13 @@ public class Order implements Clusterable {
     )
     @JsonIgnore
     private OrderBatch orderBatch;
+
+    @ManyToOne()
+    @JoinColumn(
+            name = "product_consolidation_area_id",
+            referencedColumnName = "id"
+    )
+    private ProductConsolidationArea productConsolidationArea;
 
     @OneToMany(
             mappedBy = "order",

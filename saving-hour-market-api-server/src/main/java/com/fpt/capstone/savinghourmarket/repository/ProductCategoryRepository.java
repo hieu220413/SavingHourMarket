@@ -1,8 +1,9 @@
 package com.fpt.capstone.savinghourmarket.repository;
 
-import com.fpt.capstone.savinghourmarket.entity.Discount;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
 import com.fpt.capstone.savinghourmarket.model.ProductCateWithSubCate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -17,12 +18,16 @@ public interface ProductCategoryRepository extends JpaRepository<ProductCategory
     @Query("SELECT DISTINCT pct from ProductCategory pct " +
             "LEFT JOIN FETCH pct.productSubCategories psct " +
             "INNER JOIN psct.productList pd " +
+            "INNER JOIN pd.productBatchList pdb " +
+            "INNER JOIN pdb.supermarketAddress spa " +
+            "INNER JOIN spa.pickupPoint pp " +
             "WHERE " +
-            "pd.expiredDate > CURRENT_TIMESTAMP + pd.productSubCategory.allowableDisplayThreshold DAY " +
-            "AND pd.quantity > 0" +
+            "pdb.expiredDate > CURRENT_TIMESTAMP + pd.productSubCategory.allowableDisplayThreshold DAY " +
+            "AND pdb.quantity > 0 " +
+            "AND pp.id = :pickupPointId " +
             "AND pd.status = 1")
 //            "WHERE SIZE(psct.productList) > 0 "
-    List<ProductCateWithSubCate> getAllProductCategoryWithSubCate();
+    List<ProductCateWithSubCate> getAllProductCategoryWithSubCate(UUID pickupPointId);
 
     Optional<ProductCategory> findByName(String trim);
 
@@ -51,4 +56,9 @@ public interface ProductCategoryRepository extends JpaRepository<ProductCategory
             "AND ord.status = 4 " +
             "GROUP BY ct.id, ct.name")
     ProductCategory getCategoryDiscountUsageByCategoryId(Integer monthValue, Integer quarter, Integer year, Integer fromPercentage, Integer toPercentage, UUID productCategoryId);
+
+    @Query("SELECT DISTINCT pct from ProductCategory pct " +
+            "LEFT JOIN FETCH pct.productSubCategories psct " +
+            "WHERE UPPER(pct.name) LIKE UPPER(CONCAT('%',:name,'%'))")
+    Page<ProductCateWithSubCate> getAllProductCategoryWithSubCateForStaff(String name, Pageable pageable);
 }

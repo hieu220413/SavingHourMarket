@@ -2,11 +2,17 @@ import React, { useEffect, useState } from "react";
 import LoginImg from "../../../assets/LoginImg.png";
 import "./Login.scss";
 import { Link, useNavigate } from "react-router-dom";
-import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
 import { API } from "../../../contanst/api";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../../../feature/userSlice";
 import { auth } from "../../../firebase/firebase.config";
+import { routes } from "../../../routes/routes";
+import LoadingScreen from "../../../components/LoadingScreen/LoadingScreen";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -14,16 +20,16 @@ const Login = () => {
   const [errEmail, setErrEmail] = useState("");
   const [errPassword, setErrPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const user = useSelector((state) => state.user.user);
 
   useEffect(() => {
-    onAuthStateChanged(auth, (userAuth) => {
-      if (userAuth) {
-        navigate("/");
-        return;
-      }
-    });
+    if (user) {
+      navigate("/");
+      return;
+    }
   }, []);
 
   const handleLogin = async (e) => {
@@ -36,11 +42,9 @@ const Login = () => {
       setErrPassword("Vui lòng không để trống");
       return;
     }
-
+    setLoading(true);
     signInWithEmailAndPassword(auth, email, password)
       .then(async (userCredential) => {
-        console.log(userCredential);
-
         // Signed in
         const user = userCredential.user;
         const tokenId = await auth.currentUser.getIdToken();
@@ -53,10 +57,59 @@ const Login = () => {
         })
           .then((res) => res.json())
           .then((respond) => {
+            if (respond.code === 403) {
+              signOut(auth)
+                .then(() => {
+                  // Sign-out successful
+                  localStorage.clear();
+                  const action = setUser(null);
+                  dispatch(action);
+                  setError("Tài khoản của bạn không có quyền truy cập");
+                  setErrEmail("");
+                  setErrPassword("");
+                  setLoading(false);
+                })
+                .catch((error) => {
+                  // An error happened.
+                });
+
+              return;
+            }
+            if (
+              !(
+                respond.role === "ADMIN" ||
+                respond.role === "STAFF_SLT" ||
+                respond.role === "STAFF_MKT"
+              )
+            ) {
+              signOut(auth)
+                .then(() => {
+                  // Sign-out successful.
+                  localStorage.clear();
+                  const action = setUser(null);
+                  dispatch(action);
+                  setError("Tài khoản của bạn không có quyền truy cập");
+                  setErrEmail("");
+                  setErrPassword("");
+                  setLoading(false);
+                })
+                .catch((error) => {
+                  // An error happened.
+                });
+              return;
+            }
             const action = setUser(respond);
             dispatch(action);
             localStorage.setItem("user", JSON.stringify(respond));
-            navigate("/");
+            setLoading(false);
+            if (respond.role === "STAFF_SLT") {
+              navigate("/supermarketmanagement");
+              return;
+            }
+            if (respond.role === "ADMIN") {
+              navigate("/usermanagement");
+              return;
+            }
           })
           .catch((err) => {
             console.log(err);
@@ -67,6 +120,7 @@ const Login = () => {
         setError("Sai tên đăng nhập hoặc mật khẩu");
         setErrEmail("");
         setErrPassword("");
+        setLoading(false);
       });
   };
   return (
@@ -142,6 +196,7 @@ const Login = () => {
           </button>
         </form>
       </div>
+      {loading && <LoadingScreen />}
     </div>
   );
 };

@@ -14,6 +14,7 @@ import {
   LogBox,
   NativeEventEmitter,
   Alert,
+  AppState,
 } from 'react-native';
 import {ScrollView, TextInput} from 'react-native-gesture-handler';
 import {icons} from '../constants';
@@ -47,7 +48,15 @@ const Payment = ({navigation, route}) => {
   const [date, setDate] = useState(null);
   const [open, setOpen] = useState(false);
 
-  const [pickupPoint, setPickupPoint] = useState(null);
+  const appState = useRef(AppState.currentState);
+
+  const [pickupPoint, setPickupPoint] = useState({
+    id: 'accf0ac0-5541-11ee-8a50-a85e45c41921',
+    address: 'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh',
+    status: 1,
+    longitude: 106.83102962168277,
+    latitude: 10.845020092805793,
+  });
 
   const [timeFrame, setTimeFrame] = useState(null);
 
@@ -89,6 +98,20 @@ const Payment = ({navigation, route}) => {
   });
 
   const [keyboard, setKeyboard] = useState(Boolean);
+
+  useFocusEffect(
+    useCallback(() => {
+      // Get pickup point from AS
+      (async () => {
+        try {
+          const value = await AsyncStorage.getItem('PickupPoint');
+          setPickupPoint(value ? JSON.parse(value) : pickupPoint);
+        } catch (err) {
+          console.log(err);
+        }
+      })();
+    }, []),
+  );
 
   useEffect(() => {
     const getShippingFee = async () => {
@@ -186,23 +209,25 @@ const Payment = ({navigation, route}) => {
           console.log('e.resultCode = ' + e.resultCode);
           switch (e.resultCode) {
             case -1:
-              await fetch(`${API.baseURL}/api/order/deleteOrder/${orderId}`, {
-                method: 'DELETE',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${idToken}`,
-                },
-              })
-                .then(res => {
-                  return res.json();
-                })
-                .then(respond => {
-                  console.log(respond);
-                  setValidateMessage('Thanh toán thất bại ');
-                  setOpenValidateDialog(true);
-                  // setItem(respond);
-                })
-                .catch(err => console.log(err));
+              // await fetch(`${API.baseURL}/api/order/deleteOrder/${orderId}`, {
+              //   method: 'DELETE',
+              //   headers: {
+              //     'Content-Type': 'application/json',
+              //     Authorization: `Bearer ${idToken}`,
+              //   },
+              // })
+              //   .then(res => {
+              //     return res.json();
+              //   })
+              //   .then(respond => {
+              //     console.log(respond);
+              //     setValidateMessage('Thanh toán thất bại ');
+              //     setOpenValidateDialog(true);
+              //     // setItem(respond);
+              //   })
+              //   .catch(err => console.log(err));
+              setValidateMessage('Thanh toán thất bại ');
+              setOpenValidateDialog(true);
 
               console.log('nguoi dung nhan nut back tu device');
 
@@ -213,24 +238,25 @@ const Payment = ({navigation, route}) => {
               break;
             case 98:
               // Giao dich khong thanh cong. (bao gom case nguoi dung an nut back tu VNPAY UI)
-              await fetch(`${API.baseURL}/api/order/deleteOrder/${orderId}`, {
-                method: 'DELETE',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${idToken}`,
-                },
-              })
-                .then(res => {
-                  return res.json();
-                })
-                .then(respond => {
-                  console.log(respond);
-                  setValidateMessage('Thanh toán thất bại ');
-                  setOpenValidateDialog(true);
-                  // setItem(respond);
-                })
-                .catch(err => console.log(err));
-
+              // await fetch(`${API.baseURL}/api/order/deleteOrder/${orderId}`, {
+              //   method: 'DELETE',
+              //   headers: {
+              //     'Content-Type': 'application/json',
+              //     Authorization: `Bearer ${idToken}`,
+              //   },
+              // })
+              //   .then(res => {
+              //     return res.json();
+              //   })
+              //   .then(respond => {
+              //     console.log(respond);
+              //     setValidateMessage('Thanh toán thất bại ');
+              //     setOpenValidateDialog(true);
+              //     // setItem(respond);
+              //   })
+              //   .catch(err => console.log(err));
+              setValidateMessage('Thanh toán thất bại ');
+              setOpenValidateDialog(true);
               break;
           }
 
@@ -295,6 +321,7 @@ const Payment = ({navigation, route}) => {
       console.log('user is logged in');
       const json = await AsyncStorage.getItem('userInfo');
       const user = JSON.parse(json);
+      await deleteUserUnpaidVnpayOrders();
 
       setName(user.fullName);
       setPhone(user.phone);
@@ -309,6 +336,67 @@ const Payment = ({navigation, route}) => {
     }
   };
 
+  // delete user unpaid vnpay order
+  const deleteUserUnpaidVnpayOrders = async () => {
+    if (auth().currentUser) {
+      const tokenId = await auth()
+        .currentUser.getIdToken(true)
+        .catch(e => {
+          console.log(e);
+          return null;
+        });
+      if (tokenId) {
+        // delete vnpay fail payment order
+        const getProcessingUnpaidOrderRequest = await fetch(
+          `${API.baseURL}/api/order/getOrdersForCustomer?orderStatus=PROCESSING&isPaid=false`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${tokenId}`,
+            },
+          },
+        ).catch(e => {
+          console.log(e);
+          return null;
+        });
+
+        if (!getProcessingUnpaidOrderRequest) {
+          return;
+        }
+
+        if (getProcessingUnpaidOrderRequest.status === 200) {
+          const orderFailList = await getProcessingUnpaidOrderRequest.json();
+          orderFailList.forEach(async order => {
+            // if order paymentMethod is vnpay
+            if (order.paymentMethod === 1) {
+              const deleteOrderRequest = await fetch(
+                `${API.baseURL}/api/order/deleteOrder/${order.id}`,
+                {
+                  method: 'DELETE',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${tokenId}`,
+                  },
+                },
+              ).catch(err => {
+                console.log(err);
+                return null;
+              });
+              if (!deleteOrderRequest) {
+                return;
+              }
+              if (deleteOrderRequest.status === 200) {
+                console.log(await deleteOrderRequest.text());
+              }
+            }
+          });
+        }
+        //
+      }
+    }
+  };
+
   useEffect(() => {
     // auth().currentUser.reload()
     const subscriber = auth().onAuthStateChanged(
@@ -320,6 +408,19 @@ const Payment = ({navigation, route}) => {
     });
     return subscriber;
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('focus', async () => {
+      if (appState.current === 'active') {
+        // console.log('App has come to focus!');
+        await deleteUserUnpaidVnpayOrders();
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
   }, []);
 
   const _keyboardDidShow = () => {
@@ -502,12 +603,15 @@ const Payment = ({navigation, route}) => {
     });
     const orderDetailList = orderItems.map(item => {
       return {
-        id: item.id,
+        productId: item.id,
         productPrice: item.price,
         productOriginalPrice: item.priceOriginal,
         boughtQuantity: item.quantity,
+        productBatchIds: item.idList,
       };
     });
+    console.log(orderDetailList);
+
     if (pickUpPointIsChecked) {
       submitOrder = {
         shippingFee: 0,
@@ -517,6 +621,7 @@ const Payment = ({navigation, route}) => {
         receiverName: name,
         receiverPhone: phone,
         pickupPointId: pickupPoint.id,
+        deliveryMethod: 'PICKUP_POINT',
         timeFrameId: timeFrame.id,
         paymentStatus: 'UNPAID',
         paymentMethod: paymentMethod.id,
@@ -533,7 +638,9 @@ const Payment = ({navigation, route}) => {
         deliveryDate: format(date, 'yyyy-MM-dd'),
         receiverName: name,
         receiverPhone: phone,
+        pickupPointId: pickupPoint.id,
         timeFrameId: customerTimeFrame.id,
+        deliveryMethod: 'DOOR_TO_DOOR',
         paymentStatus: 'UNPAID',
         paymentMethod: paymentMethod.id,
         addressDeliver: customerLocation.address,
@@ -568,6 +675,12 @@ const Payment = ({navigation, route}) => {
           setOpenValidateDialog(true);
           return;
         }
+        if (respond.status === 500) {
+          setValidateMessage(respond.error);
+          setLoading(false);
+          setOpenValidateDialog(true);
+          return;
+        }
         if (respond.code === 403) {
           setLoading(false);
           setOpenAuthModal(true);
@@ -597,18 +710,6 @@ const Payment = ({navigation, route}) => {
         console.log(err);
         return null;
       });
-
-    // if (!createOrderRequest) {
-    //   setValidateMessage('Hệ thống hiện đang có lỗi');
-    //   setOpenValidateDialog(true);
-    // }
-
-    // if (createOrderRequest) {
-    //   // handle vnpay payment method
-    //   // hangle COD payment method
-    //   // console.log(await createOrderRequest.json());
-    //   // Handle other request status
-    // }
   };
 
   return (
@@ -677,7 +778,7 @@ const Payment = ({navigation, route}) => {
                   {/* item group by category */}
                   {groupByCategory[key].map(item => (
                     <View
-                      key={item.id}
+                      key={item.idList[0]}
                       style={{
                         flexDirection: 'row',
                         gap: 10,
@@ -967,12 +1068,7 @@ const Payment = ({navigation, route}) => {
                   paddingHorizontal: 20,
                 }}>
                 {/* Manage Pickup Point */}
-                <TouchableOpacity
-                  onPress={() => {
-                    navigation.navigate('Select pickup point', {
-                      setPickupPoint: setPickupPoint,
-                    });
-                  }}>
+                <View>
                   <View
                     style={{
                       paddingVertical: 20,
@@ -980,40 +1076,51 @@ const Payment = ({navigation, route}) => {
                       alignItems: 'center',
                       justifyContent: 'space-between',
                     }}>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        gap: 10,
-                        alignItems: 'center',
-                        width: '80%',
-                      }}>
-                      <Image
-                        resizeMode="contain"
-                        style={{width: 25, height: 25}}
-                        source={icons.location}
-                      />
-                      <Text
+                    <View style={{width: '80%'}}>
+                      <View
                         style={{
-                          fontSize: 20,
-                          fontFamily: 'Roboto',
-                          color: 'black',
+                          flexDirection: 'row',
+                          gap: 10,
+                          alignItems: 'center',
                         }}>
-                        {pickupPoint
-                          ? pickupPoint.address
-                          : 'Chọn điểm nhận hàng'}
-                      </Text>
+                        <Image
+                          style={{
+                            width: 25,
+                            height: 25,
+                          }}
+                          source={icons.location}
+                        />
+                        <Text
+                          style={{
+                            fontSize: 20,
+                            fontFamily: 'Roboto',
+                            color: 'black',
+                          }}>
+                          Điểm giao hàng đã chọn
+                        </Text>
+                      </View>
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          gap: 10,
+                          alignItems: 'center',
+                          marginTop: 10,
+                        }}>
+                        <View style={{width: 25}}></View>
+                        <View>
+                          <Text
+                            style={{
+                              fontSize: 18,
+                              fontFamily: 'Roboto',
+                              color: 'black',
+                            }}>
+                            {pickupPoint.address}
+                          </Text>
+                        </View>
+                      </View>
                     </View>
-
-                    <Image
-                      resizeMode="contain"
-                      style={{
-                        width: 25,
-                        height: 25,
-                      }}
-                      source={icons.rightArrow}
-                    />
                   </View>
-                </TouchableOpacity>
+                </View>
 
                 {/* Manage time frame */}
                 <TouchableOpacity
@@ -1158,6 +1265,7 @@ const Payment = ({navigation, route}) => {
                     navigation.navigate('Edit customer location', {
                       setCustomerLocation,
                       customerLocation,
+                      pickupPoint,
                     });
                   }}>
                   <View
@@ -1757,6 +1865,7 @@ const Payment = ({navigation, route}) => {
               text="Đăng nhập"
               textStyle={{color: COLORS.primary}}
               onPress={async () => {
+                setOpenAuthModal(false);
                 try {
                   await GoogleSignin.signOut();
                   auth()
@@ -1764,7 +1873,7 @@ const Payment = ({navigation, route}) => {
                     .then(async () => {
                       await AsyncStorage.removeItem('userInfo');
                       await AsyncStorage.removeItem('CartList');
-                      setOpenAuthModal(false);
+
                       navigation.navigate('Login');
                     })
                     .catch(e => console.log(e));

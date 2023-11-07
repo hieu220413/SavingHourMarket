@@ -11,6 +11,7 @@ import { API } from "../../../../contanst/api";
 import MuiAlert from "@mui/material/Alert";
 import { Snackbar } from "@mui/material";
 import { auth } from "../../../../firebase/firebase.config";
+import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -34,11 +35,13 @@ const EditSuperMarket = ({
       isFocused: false,
       selectAddress: item.address,
       searchAddress: item.address,
+      error: "",
     };
   });
   const [addressList, setAddressList] = useState(list);
   const [name, setName] = useState(supermarket.name);
   const [phone, setPhone] = useState(supermarket.phone);
+  const [loading, setLoading] = useState(false);
   const typingTimeoutRef = useRef(null);
   const handleEdit = async () => {
     if (!name) {
@@ -60,9 +63,17 @@ const EditSuperMarket = ({
       setError("Số điện thoại không hợp lệ");
       return;
     }
-    const addressListValidate = addressList.some((item) => !item.selectAddress);
+    const addressListValidate = addressList.map((item) => {
+      if (!item.selectAddress) {
+        return { ...item, error: "Địa chỉ không hợp lệ" };
+      }
+      return item;
+    });
+    setAddressList(addressListValidate);
 
-    if (addressListValidate) {
+    const validateAddress = addressList.some((item) => !item.selectAddress);
+
+    if (validateAddress) {
       setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
       setError("Địa chỉ không hợp lệ");
       return;
@@ -73,6 +84,7 @@ const EditSuperMarket = ({
       supermarketAddressList: listAddress,
       phone: phone,
     };
+    setLoading(true);
     const tokenId = await auth.currentUser.getIdToken();
     fetch(
       `${API.baseURL}/api/supermarket/updateInfo?supermarketId=${supermarket.id}`,
@@ -90,11 +102,13 @@ const EditSuperMarket = ({
         if (respond?.code === 422) {
           setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
           setError("Tên siêu thị đã tồn tại");
+          setLoading(false);
           return;
         }
         if (respond?.error) {
           setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
           setError(respond.error);
+          setLoading(false);
           return;
         }
         fetch(
@@ -120,6 +134,7 @@ const EditSuperMarket = ({
               severity: "success",
             });
             setError("Chỉnh sửa thành công");
+            setLoading(false);
           })
           .catch((err) => console.log(err));
       })
@@ -218,6 +233,7 @@ const EditSuperMarket = ({
                           ...data,
                           searchAddress: e.target.value,
                           selectAddress: "",
+                          error: "",
                         };
                       }
                       return data;
@@ -256,14 +272,14 @@ const EditSuperMarket = ({
                   type="text"
                   className="modal__container-body-inputcontrol-input"
                 />
-                {/* {item.error && (
-                <p
-                  style={{ fontSize: "14px", marginBottom: "-10px" }}
-                  className="text-danger"
-                >
-                  {item.error}
-                </p>
-              )} */}
+                {item.error && (
+                  <p
+                    style={{ fontSize: "14px", marginBottom: "-10px" }}
+                    className="text-danger"
+                  >
+                    {item.error}
+                  </p>
+                )}
                 {item.searchAddress && (
                   <FontAwesomeIcon
                     onClick={() => {
@@ -296,6 +312,7 @@ const EditSuperMarket = ({
                                   isFocused: false,
                                   searchAddress: data.description,
                                   selectAddress: data.description,
+                                  error: "",
                                 };
                               }
                               return address;
@@ -323,6 +340,7 @@ const EditSuperMarket = ({
                 isFocused: false,
                 selectAddress: "",
                 searchAddress: "",
+                error: "",
               },
             ]);
           }}
@@ -351,6 +369,7 @@ const EditSuperMarket = ({
         </div>
       </div>
       {/* *********************** */}
+      {loading && <LoadingScreen />}
     </div>
   );
 };

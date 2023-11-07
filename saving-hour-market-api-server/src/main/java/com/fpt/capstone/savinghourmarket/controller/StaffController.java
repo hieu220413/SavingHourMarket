@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
+import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.common.StaffRole;
 import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.entity.Staff;
@@ -37,6 +38,24 @@ public class StaffController {
 //        Staff staff = staffService.getInfoGoogleLogged(email);
 //        return ResponseEntity.status(HttpStatus.OK).body(staff);
 //    }
+
+    @RequestMapping(value = "assignPickupPoint", method = RequestMethod.PUT)
+    public ResponseEntity<Staff> assignPickupPoint(@Parameter(hidden = true)  @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @Valid @RequestBody StaffPickupPointAssignmentBody staffPickupPointAssignmentBody) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        Staff staff = staffService.assignPickupPoint(staffPickupPointAssignmentBody);
+        return ResponseEntity.status(HttpStatus.OK).body(staff);
+    }
+
+    @RequestMapping(value = "unAssignPickupPoint", method = RequestMethod.PUT)
+    public ResponseEntity<Staff> unAssignPickupPoint(@Parameter(hidden = true)  @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @Valid @RequestBody StaffPickupPointAssignmentBody staffPickupPointAssignmentBody) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        Staff staff = staffService.unAssignPickupPoint(staffPickupPointAssignmentBody);
+        return ResponseEntity.status(HttpStatus.OK).body(staff);
+    }
 
     @RequestMapping(value = "getInfo", method = RequestMethod.GET)
     public ResponseEntity<Staff> getInfo(@Parameter(hidden = true)  @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
@@ -80,12 +99,14 @@ public class StaffController {
 
     @RequestMapping(value = "/getStaffForAdmin", method = RequestMethod.GET)
     public ResponseEntity<StaffListResponseBody> getStaffForAdmin(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @RequestParam(required = false) EnableDisableStatus status
+            , @RequestParam(required = false) StaffRole role
             , @RequestParam(defaultValue = "") String name
             , @RequestParam(defaultValue = "0") Integer page
             , @RequestParam(defaultValue = "5") Integer limit) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        StaffListResponseBody staffListResponseBody = staffService.getStaffForAdmin(name, page, limit);
+        StaffListResponseBody staffListResponseBody = staffService.getStaffForAdmin(name, role, status, page, limit);
         return ResponseEntity.status(HttpStatus.OK).body(staffListResponseBody);
     }
 

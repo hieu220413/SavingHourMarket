@@ -10,6 +10,7 @@ import {
 import { API } from "../../../../contanst/api";
 
 import { auth } from "../../../../firebase/firebase.config";
+import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 
 const CreateSuperMarket = ({
   handleClose,
@@ -20,14 +21,17 @@ const CreateSuperMarket = ({
   openSnackbar,
   setOpenSnackbar,
   setError,
+  setIsSwitchRecovery,
 }) => {
   const [locationData, setLocationData] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const [addressList, setAddressList] = useState([
     {
       isFocused: false,
       selectAddress: "",
       searchAddress: "",
+      error: "",
     },
   ]);
   const [name, setName] = useState("");
@@ -55,9 +59,17 @@ const CreateSuperMarket = ({
       setError("Số điện thoại không hợp lệ");
       return;
     }
-    const addressListValidate = addressList.some((item) => !item.selectAddress);
+    const addressListValidate = addressList.map((item) => {
+      if (!item.selectAddress) {
+        return { ...item, error: "Địa chỉ không hợp lệ" };
+      }
+      return item;
+    });
+    setAddressList(addressListValidate);
 
-    if (addressListValidate) {
+    const validateAddress = addressList.some((item) => !item.selectAddress);
+
+    if (validateAddress) {
       setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
       setError("Địa chỉ không hợp lệ");
       return;
@@ -69,6 +81,8 @@ const CreateSuperMarket = ({
       supermarketAddressList: listAddress,
       phone: phone,
     };
+
+    setLoading(true);
 
     const tokenId = await auth.currentUser.getIdToken();
     fetch(`${API.baseURL}/api/supermarket/create`, {
@@ -84,6 +98,7 @@ const CreateSuperMarket = ({
         if (respond?.code === 422) {
           setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
           setError("Tên siêu thị đã tồn tại");
+          setLoading(false);
           return;
         }
         fetch(
@@ -102,6 +117,7 @@ const CreateSuperMarket = ({
           .then((respond) => {
             setSuperMarketList(respond.supermarketList);
             setTotalPage(respond.totalPage);
+            setIsSwitchRecovery(false);
             handleClose();
             setOpenSnackbar({
               ...openSnackbar,
@@ -109,6 +125,7 @@ const CreateSuperMarket = ({
               severity: "success",
             });
             setError("Thêm siêu thị thành công");
+            setLoading(false);
           })
           .catch((err) => console.log(err));
       })
@@ -209,6 +226,7 @@ const CreateSuperMarket = ({
                           ...data,
                           searchAddress: e.target.value,
                           selectAddress: "",
+                          error: "",
                         };
                       }
                       return data;
@@ -247,14 +265,14 @@ const CreateSuperMarket = ({
                   type="text"
                   className="modal__container-body-inputcontrol-input"
                 />
-                {/* {item.error && (
+                {item.error && (
                   <p
                     style={{ fontSize: "14px", marginBottom: "-10px" }}
                     className="text-danger"
                   >
                     {item.error}
                   </p>
-                )} */}
+                )}
                 {item.searchAddress && (
                   <FontAwesomeIcon
                     onClick={() => {
@@ -287,6 +305,7 @@ const CreateSuperMarket = ({
                                   isFocused: false,
                                   searchAddress: data.description,
                                   selectAddress: data.description,
+                                  error: "",
                                 };
                               }
                               return address;
@@ -314,6 +333,7 @@ const CreateSuperMarket = ({
                 isFocused: false,
                 selectAddress: "",
                 searchAddress: "",
+                error: "",
               },
             ]);
           }}
@@ -342,6 +362,7 @@ const CreateSuperMarket = ({
         </div>
       </div>
       {/* *********************** */}
+      {loading && <LoadingScreen />}
     </div>
   );
 };

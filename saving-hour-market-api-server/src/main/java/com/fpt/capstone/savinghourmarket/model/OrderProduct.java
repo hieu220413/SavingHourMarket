@@ -1,6 +1,8 @@
 package com.fpt.capstone.savinghourmarket.model;
 
+import com.fpt.capstone.savinghourmarket.entity.OrderDetailProductBatch;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
+import com.fpt.capstone.savinghourmarket.entity.ProductImage;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,6 +10,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -28,9 +31,7 @@ public class OrderProduct {
 
     private String description;
 
-    private LocalDate expiredDate;
-
-    private String imageUrl;
+    private List<ProductImage> images;
 
     private Integer status;
 
@@ -38,7 +39,7 @@ public class OrderProduct {
 
     private String productSubCategory;
 
-    private String supermarketName;
+    private List<OrderProductBatch> orderDetailProductBatches;
 }
 
 

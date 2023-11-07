@@ -1,8 +1,9 @@
 package com.fpt.capstone.savinghourmarket.repository;
 
 import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
-import com.fpt.capstone.savinghourmarket.model.ProductCateWithSubCate;
 import com.fpt.capstone.savinghourmarket.model.ProductSubCateOnly;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -16,11 +17,15 @@ public interface ProductSubCategoryRepository extends JpaRepository<ProductSubCa
 
     @Query("SELECT DISTINCT psct FROM ProductSubCategory psct " +
             "INNER JOIN psct.productList pd " +
+            "INNER JOIN pd.productBatchList pdb " +
+            "INNER JOIN pdb.supermarketAddress spa " +
+            "INNER JOIN spa.pickupPoint pp " +
             "WHERE " +
-            "pd.expiredDate > CURRENT_TIMESTAMP + pd.productSubCategory.allowableDisplayThreshold DAY " +
-            "AND pd.quantity > 0" +
+            "pdb.expiredDate > CURRENT_TIMESTAMP + pd.productSubCategory.allowableDisplayThreshold DAY " +
+            "AND pdb.quantity > 0" +
+            "AND pp.id = :pickupPointId " +
             "AND pd.status = 1")
-    List<ProductSubCateOnly> findAllSubCategoryOnly();
+    List<ProductSubCateOnly> findAllSubCategoryOnly(UUID pickupPointId);
 
     Optional<ProductSubCategory> findByName(String name);
 
@@ -60,4 +65,11 @@ public interface ProductSubCategoryRepository extends JpaRepository<ProductSubCa
             "JOIN sct.productCategory ct " +
             "WHERE ct.id = :productCategoryId")
     List<ProductSubCategory> getAllSubCategoryByCategoryId(UUID productCategoryId);
+
+    @Query("SELECT DISTINCT psct FROM ProductSubCategory psct " +
+            "WHERE " +
+            "((:productCategoryId IS NULL) OR (psct.productCategory.id = :productCategoryId)) " +
+            "AND " +
+            "UPPER(psct.name) LIKE UPPER(CONCAT('%',:name,'%')) ")
+    Page<ProductSubCateOnly> findAllSubCategoryOnlyForStaff(String name, UUID productCategoryId, Pageable pageable);
 }

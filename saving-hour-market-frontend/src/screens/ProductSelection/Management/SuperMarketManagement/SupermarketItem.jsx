@@ -25,6 +25,8 @@ const SupermarketItem = ({
   searchValue,
   setError,
   error,
+  setLoading,
+  isSwitchRecovery,
 }) => {
   const [openEdit, setOpenEdit] = useState(false);
   const handleOpenEdit = () => setOpenEdit(true);
@@ -45,6 +47,7 @@ const SupermarketItem = ({
   };
 
   const handleDelete = async () => {
+    setLoading(true);
     const tokenId = await auth.currentUser.getIdToken();
     fetch(
       `${API.baseURL}/api/supermarket/changeStatus?supermarketId=${item.id}&status=DISABLE`,
@@ -61,12 +64,69 @@ const SupermarketItem = ({
         if (respond?.error) {
           setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
           setError(respond.error);
+          setLoading(false);
           return;
         }
         fetch(
           `${API.baseURL}/api/supermarket/getSupermarketForStaff?page=${
             page - 1
-          }&limit=6&name=${searchValue}`,
+          }&limit=6&name=${searchValue}${
+            isSwitchRecovery ? "&status=DISABLE" : "&status=ENABLE"
+          }`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${tokenId}`,
+            },
+          }
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            console.log(data);
+            setSuperMarketList(data.supermarketList);
+            setTotalPage(data.totalPage);
+            handleCloseDelete();
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "success",
+            });
+            setError("Vô hiệu hóa thành công");
+            setLoading(false);
+          })
+          .catch((err) => console.log(err));
+      })
+      .catch((err) => console.log(err));
+  };
+
+  const handleReverse = async () => {
+    setLoading(true);
+    const tokenId = await auth.currentUser.getIdToken();
+    fetch(
+      `${API.baseURL}/api/supermarket/changeStatus?supermarketId=${item.id}&status=ENABLE`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenId}`,
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((respond) => {
+        if (respond?.error) {
+          setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
+          setError(respond.error);
+          setLoading(false);
+          return;
+        }
+        fetch(
+          `${API.baseURL}/api/supermarket/getSupermarketForStaff?page=${
+            page - 1
+          }&limit=6&name=${searchValue}${
+            isSwitchRecovery ? "&status=DISABLE" : "&status=ENABLE"
+          }`,
           {
             method: "GET",
             headers: {
@@ -85,12 +145,14 @@ const SupermarketItem = ({
               open: true,
               severity: "success",
             });
-            setError("Vô hiệu hóa thành công");
+            setError("Phục hồi thành công");
+            setLoading(false);
           })
           .catch((err) => console.log(err));
       })
       .catch((err) => console.log(err));
   };
+
   return (
     <tr key={i} className="table-body-row">
       <td>{i + 1}</td>
@@ -100,25 +162,40 @@ const SupermarketItem = ({
           position: "relative",
         }}
       >
-        <FontAwesomeIcon
-          style={{ marginRight: 10 }}
-          data-bs-toggle="dropdown"
-          aria-expanded="false"
-          className="arrow-down"
-          icon={faReceipt}
-        />
-
         {item.supermarketAddressList[0]?.address}
+        {item.supermarketAddressList.length > 1 && (
+          <FontAwesomeIcon
+            style={{ marginLeft: 10 }}
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            className="arrow-down"
+            icon={faReceipt}
+          />
+        )}
         <ul class="dropdown-menu">
-          {item.supermarketAddressList.map((addressItem) => (
-            <li>{addressItem?.address}</li>
-          ))}
+          {item.supermarketAddressList.map((addressItem, i) => {
+            if (i === 0) {
+              return <></>;
+            }
+            return <li>{addressItem?.address}</li>;
+          })}
         </ul>
       </td>
       <td>{item.phone}</td>
       <td>
-        <i onClick={handleOpenEdit} class="bi bi-pencil-square"></i>
-        <i onClick={handleOpenDelete} class="bi bi-trash-fill"></i>
+        {isSwitchRecovery ? (
+          <i
+            onClick={() => {
+              handleReverse();
+            }}
+            class="bi bi-arrow-repeat"
+          ></i>
+        ) : (
+          <>
+            <i onClick={handleOpenEdit} class="bi bi-pencil-square"></i>
+            <i onClick={handleOpenDelete} class="bi bi-trash-fill"></i>
+          </>
+        )}
       </td>
       <Dialog
         onClose={handleCloseEdit}

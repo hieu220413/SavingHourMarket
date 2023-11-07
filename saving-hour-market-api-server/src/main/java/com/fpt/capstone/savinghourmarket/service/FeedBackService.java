@@ -7,6 +7,7 @@ import com.fpt.capstone.savinghourmarket.entity.FeedBack;
 import com.fpt.capstone.savinghourmarket.exception.FeedBackNotFoundException;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.FeedbackCreate;
+import com.fpt.capstone.savinghourmarket.model.FeedbackReplyRequestBody;
 import com.google.firebase.auth.FirebaseAuthException;
 
 import java.util.List;
@@ -26,4 +27,6 @@ public interface FeedBackService {
                                        SortType createTimeSortType,
                                        SortType rateSortType,
                                        FeedbackObject feedbackObject, FeedbackStatus feedbackStatus, int page, int size) throws ResourceNotFoundException, FirebaseAuthException, FeedBackNotFoundException;
+
+    FeedBack replyFeedback(UUID feedbackId, FeedbackReplyRequestBody feedbackReplyRequestBody);
 }

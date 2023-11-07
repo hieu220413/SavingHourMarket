@@ -1,6 +1,7 @@
 package com.fpt.capstone.savinghourmarket.repository;
 
 import com.fpt.capstone.savinghourmarket.entity.Product;
+import com.fpt.capstone.savinghourmarket.entity.ProductBatch;
 import com.fpt.capstone.savinghourmarket.model.CateOderQuantityResponseBody;
 import com.fpt.capstone.savinghourmarket.model.SupermarketSaleReportResponseBody;
 import org.springframework.data.domain.Page;
@@ -10,6 +11,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,6 +19,9 @@ import java.util.UUID;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, UUID> {
     @Query("SELECT p FROM Product p " +
+            "JOIN FETCH p.productBatchList pb " +
+            "JOIN pb.supermarketAddress pba " +
+            "JOIN pb.supermarketAddress.pickupPoint pbap " +
             "JOIN FETCH p.supermarket " +
             "JOIN FETCH p.productSubCategory " +
             "JOIN FETCH p.productSubCategory.productCategory " +
@@ -29,17 +34,46 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "AND " +
             "((:productSubCategoryId IS NULL) OR (p.productSubCategory.id = :productSubCategoryId)) " +
             "AND " +
-            "((:isExpiredShown IS NULL) OR (:isExpiredShown = TRUE AND p.expiredDate < CURRENT_TIMESTAMP) OR (:isExpiredShown = FALSE AND p.expiredDate > CURRENT_TIMESTAMP)) " +
+            "((:isExpiredShown IS NULL) OR (:isExpiredShown = TRUE AND pb.expiredDate < CURRENT_TIMESTAMP) OR (:isExpiredShown = FALSE AND pb.expiredDate > CURRENT_TIMESTAMP)) " +
             "AND p.status = :status")
 
     Page<Product> getProductsForStaff(UUID supermarketId, String name, UUID productCategoryId, UUID productSubCategoryId, Integer status, Boolean isExpiredShown, Pageable pageable);
 
 
-    @Query("SELECT p FROM Product p " +
+//    @Query("SELECT DISTINCT p FROM Product p " +
+//            "JOIN FETCH p.productBatchList pb " +
+//            "JOIN pb.supermarketAddress pba " +
+//            "JOIN pb.supermarketAddress.pickupPoint pbap " +
+//            "JOIN FETCH p.supermarket " +
+//            "JOIN FETCH p.productSubCategory " +
+//            "JOIN FETCH p.productSubCategory.productCategory " +
+//            "WHERE " +
+//            "pbap.id = :pickupPointId " +
+//            "AND " +
+//            "UPPER(p.name) LIKE UPPER(CONCAT('%',:name,'%')) " +
+//            "AND " +
+//            "((:supermarketId IS NULL) OR (p.supermarket.id = :supermarketId)) " +
+//            "AND " +
+//            "((:productCategoryId IS NULL) OR (p.productSubCategory.productCategory.id = :productCategoryId)) " +
+//            "AND " +
+//            "((:productSubCategoryId IS NULL) OR (p.productSubCategory.id = :productSubCategoryId)) " +
+//            "AND " +
+//            "pb.expiredDate > CURRENT_TIMESTAMP + p.productSubCategory.allowableDisplayThreshold DAY " +
+//            "AND pb.quantity > 0" +
+//            "AND p.status = 1 ")
+//
+//    Page<Product> getProductsForCustomer(UUID supermarketId, String name, UUID productCategoryId, UUID productSubCategoryId, UUID pickupPointId, Pageable pageable);
+
+        @Query("SELECT DISTINCT p FROM Product p " +
+            "JOIN FETCH p.productBatchList pb " +
+            "JOIN pb.supermarketAddress pba " +
+            "JOIN pb.supermarketAddress.pickupPoint pbap " +
             "JOIN FETCH p.supermarket " +
             "JOIN FETCH p.productSubCategory " +
             "JOIN FETCH p.productSubCategory.productCategory " +
             "WHERE " +
+            "pbap.id = :pickupPointId " +
+            "AND " +
             "UPPER(p.name) LIKE UPPER(CONCAT('%',:name,'%')) " +
             "AND " +
             "((:supermarketId IS NULL) OR (p.supermarket.id = :supermarketId)) " +
@@ -48,11 +82,60 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "AND " +
             "((:productSubCategoryId IS NULL) OR (p.productSubCategory.id = :productSubCategoryId)) " +
             "AND " +
-            "p.expiredDate > CURRENT_TIMESTAMP + p.productSubCategory.allowableDisplayThreshold DAY " +
-            "AND p.quantity > 0" +
-            "AND p.status = 1")
+            "pb.expiredDate > CURRENT_TIMESTAMP + p.productSubCategory.allowableDisplayThreshold DAY " +
+            "AND pb.quantity > 0" +
+            "AND p.status = 1 ")
 
-    Page<Product> getProductsForCustomer(UUID supermarketId, String name, UUID productCategoryId, UUID productSubCategoryId, Pageable pageable);
+    Page<Product> getProductsForCustomer(UUID supermarketId, String name, UUID productCategoryId, UUID productSubCategoryId, UUID pickupPointId, Pageable pageable);
+
+    @Query("SELECT DISTINCT pb.expiredDate, pb.price, pb.priceOriginal, p  FROM ProductBatch pb  " +
+            "JOIN pb.product p " +
+//            "JOIN FETCH p.productBatchList pbp " +
+            "JOIN pb.supermarketAddress pba " +
+            "JOIN pb.supermarketAddress.pickupPoint pbap " +
+            "JOIN FETCH p.supermarket " +
+            "JOIN FETCH p.productSubCategory " +
+            "JOIN FETCH p.productSubCategory.productCategory " +
+            "WHERE " +
+            "pbap.id = :pickupPointId " +
+            "AND " +
+            "UPPER(p.name) LIKE UPPER(CONCAT('%',:name,'%')) " +
+            "AND " +
+            "((:supermarketId IS NULL) OR (p.supermarket.id = :supermarketId)) " +
+            "AND " +
+            "((:productCategoryId IS NULL) OR (p.productSubCategory.productCategory.id = :productCategoryId)) " +
+            "AND " +
+            "((:productSubCategoryId IS NULL) OR (p.productSubCategory.id = :productSubCategoryId)) " +
+            "AND " +
+            "pb.expiredDate = (" +
+              "SELECT DISTINCT MIN(pbsub.expiredDate) FROM ProductBatch pbsub " +
+              "JOIN pbsub.product psub " +
+              "JOIN pbsub.supermarketAddress spa " +
+              "JOIN spa.pickupPoint pp " +
+              "WHERE pbsub.expiredDate > CURRENT_TIMESTAMP + psub.productSubCategory.allowableDisplayThreshold DAY  " +
+              "AND psub.id = p.id AND pp.id = :pickupPointId" +
+            ") " +
+            "AND pb.quantity > 0 " +
+//            "AND pbp.expiredDate > CURRENT_TIMESTAMP + p.productSubCategory.allowableDisplayThreshold DAY " +
+//            "AND pbp.quantity > 0 " +
+            "AND p.status = 1 " +
+            "GROUP BY pb.expiredDate, pb.price, pb.priceOriginal, p")
+    Page<Object[]> getProductsNearestExpiredBatchForCustomer(UUID supermarketId, String name, UUID productCategoryId, UUID productSubCategoryId, UUID pickupPointId, Pageable pageable);
+
+    @Query("SELECT p FROM Product p " +
+            "LEFT JOIN FETCH p.productBatchList pb " +
+            "JOIN pb.supermarketAddress pba " +
+            "JOIN pb.supermarketAddress.pickupPoint pbap " +
+            "WHERE " +
+            "p.id IN :productIdTargetList " +
+            "AND " +
+            "pbap.id = :pickupPointId " +
+            "AND " +
+            "pb.quantity > 0" +
+            "AND " +
+            "pb.expiredDate > CURRENT_TIMESTAMP + p.productSubCategory.allowableDisplayThreshold DAY ")
+    List<Product> findProductWithAvailableBatch(List<UUID> productIdTargetList, UUID pickupPointId);
+
 
     @Query("SELECT p FROM Product p " +
             "WHERE p.status = 1 AND p.supermarket.id = :supermarketId ")
@@ -168,6 +251,79 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "AND ord.status = 4" +
             "GROUP BY ord.id, ct.name, ct.id")
     List<CateOderQuantityResponseBody> getOrderTotalAllCategoryReport(UUID supermarketId, Integer year);
+
+
+//    @Query("SELECT NEW com.fpt.capstone.savinghourmarket.entity.Product(ordDetail.product.id, ordDetail.product.name, ordDetail.product.imageUrl, SUM(ordDetail.productPrice * ordDetail.boughtQuantity), SUM(ordDetail.productOriginalPrice * ordDetail.boughtQuantity), SUM(ordDetail.boughtQuantity)) FROM OrderDetail ordDetail " +
+//            "JOIN ordDetail.order ord " +
+//            "JOIN ordDetail.product pd " +
+//            "WHERE " +
+//            "pd.supermarket.id = :supermarketId " +
+//            "AND " +
+//            "((:quarter IS NOT NULL) OR ((:monthValue IS NULL) OR EXTRACT(MONTH FROM ord.createdTime) =  :monthValue)) " +
+//            "AND " +
+//            "((:quarter IS NULL) " +
+//                "OR " +
+//                "((:quarter = 1) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 1 and 3)) " +
+//                "OR " +
+//                "((:quarter = 2) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 4 and 6)) " +
+//                "OR " +
+//                "((:quarter = 3) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 7 and 9)) " +
+//                "OR " +
+//                "((:quarter = 4) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 10 and 12)) " +
+//            ")" +
+//            "AND " +
+//            "EXTRACT(YEAR FROM ord.createdTime) = :year " +
+//            "AND ord.status = 4 " +
+//            "GROUP BY ordDetail.product.id, ordDetail.product.name ")
+//    List<Product> getProductsReportForSupermarket(UUID supermarketId, Integer monthValue, Integer quarter, Integer year);
+//
+    @Query("SELECT ordDetail.product.id, ordDetail.product.name, ordDetail.product.supermarket.name, SUM(ordDetail.productPrice * ordDetail.boughtQuantity), SUM(ordDetail.boughtQuantity) FROM OrderDetail ordDetail " +
+            "JOIN ordDetail.order ord " +
+            "JOIN  ordDetail.product pd " +
+            "JOIN  pd.supermarket sp " +
+            "WHERE " +
+//            "pd.supermarket.id = :supermarketId " +
+//            "AND " +
+            "((:monthInNumber IS NULL) OR EXTRACT(MONTH FROM ord.createdTime) =  :monthInNumber) " +
+//            "((:quarter IS NOT NULL) OR ((:monthValue IS NULL) OR EXTRACT(MONTH FROM ord.createdTime) =  :monthValue)) " +
+//            "AND " +
+//            "((:quarter IS NULL) " +
+//            "OR " +
+//            "((:quarter = 1) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 1 and 3)) " +
+//            "OR " +
+//            "((:quarter = 2) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 4 and 6)) " +
+//            "OR " +
+//            "((:quarter = 3) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 7 and 9)) " +
+//            "OR " +
+//            "((:quarter = 4) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 10 and 12)) " +
+//            ")" +
+            "AND " +
+            "EXTRACT(YEAR FROM ord.createdTime) = :year " +
+            "AND ord.status = 4 " +
+            "GROUP BY ordDetail.product.id, ordDetail.product.name, sp.name")
+    List<Object[]> getRevenueReportForEachProduct(Integer monthInNumber, Integer year);
+
+    @Query("SELECT p FROM Product p JOIN FETCH p.supermarket sp JOIN FETCH p.productBatchList JOIN FETCH p.productSubCategory psc JOIN FETCH psc.productCategory")
+    List<Product> findAllWithSubField();
+
+
+    @Query("SELECT ordDetail.product.id, ordDetail.product.name, ordDetail.product.supermarket.name, SUM(ordDetail.productPrice * ordDetail.boughtQuantity), SUM(ordDetail.boughtQuantity) FROM OrderDetail ordDetail " +
+            "JOIN ordDetail.order ord " +
+            "JOIN  ordDetail.product pd " +
+            "JOIN  pd.supermarket sp " +
+            "WHERE " +
+            "sp.id = :supermarketId " +
+            "AND " +
+            "((:monthInNumber IS NULL) OR EXTRACT(MONTH FROM ord.createdTime) =  :monthInNumber) " +
+            "AND " +
+            "EXTRACT(YEAR FROM ord.createdTime) = :year " +
+            "AND ord.status = 4 " +
+            "GROUP BY ordDetail.product.id, ordDetail.product.name, sp.name")
+    List<Object[]> getRevenueReportForEachProductForSupermarket(Integer monthInNumber, Integer year, UUID supermarketId);
+
+    @Query("SELECT p FROM Product p JOIN FETCH p.supermarket sp JOIN FETCH p.productBatchList JOIN FETCH p.productSubCategory psc JOIN FETCH psc.productCategory " +
+            "WHERE p.supermarket.id = :supermarketId")
+    List<Product> findAllWithSubFieldWithSupermarket(UUID supermarketId);
 
 
 //    @Query(value = "SELECT * FROM product p " +

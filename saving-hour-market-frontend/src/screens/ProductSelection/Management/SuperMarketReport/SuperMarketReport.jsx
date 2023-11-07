@@ -28,8 +28,10 @@ import {
 } from "recharts";
 import { API } from "../../../../contanst/api";
 import { auth } from "../../../../firebase/firebase.config";
-
+import { onAuthStateChanged } from "firebase/auth";
 import { Box, Stack, Typography } from "@mui/material";
+import { useAuthState } from "react-firebase-hooks/auth";
+import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 
 function SuperMarketReport() {
   const [years, setYears] = useState([]);
@@ -37,89 +39,177 @@ function SuperMarketReport() {
   const [selectedYear, setSelectedYear] = useState(thisYear);
   const [allSuperData, setAllSuperData] = useState([]);
   const [selectedSupermarket, setSelectedSupermarket] = useState();
+  const [oneSuperData, setOneSuperData] = useState([]);
+  const [quaterData, setQuaterData] = useState([]);
+  const [supermarketSaleReportByCategory, setSupermarketSaleReportByCategory] =
+    useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const userState = useAuthState(auth);
 
   useEffect(() => {
     const fetchYearData = async () => {
-      const tokenId = await auth.currentUser.getIdToken();
-      fetch(`${API.baseURL}/api/product/getRevenueReportForEachYear`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${tokenId}`,
-        },
-      })
-        .then((res) => res.json())
-        .then((respond) => {
-          setYears(respond);
+      setLoading(true);
+      if (!userState[1]) {
+        const tokenId = await auth.currentUser.getIdToken();
+        fetch(`${API.baseURL}/api/product/getRevenueReportForEachYear`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${tokenId}`,
+          },
         })
-        .catch((err) => console.log(err));
+          .then((res) => res.json())
+          .then((respond) => {
+            setYears(respond);
+            setLoading(false);
+          })
+          .catch((err) => console.log(err));
+      }
     };
     let supermarketList = [];
     let firstSupermarket = [];
     const fetchAllSupermarketSaleReport = async () => {
-      const tokenId = await auth.currentUser.getIdToken();
-
-      fetch(
-        `${API.baseURL}/api/product/getAllSupermarketSaleReport?year=${selectedYear}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${tokenId}`,
-          },
-        }
-      )
-        .then((res) => res.json())
-        .then((respond) => {
-          setAllSuperData(respond);
-          supermarketList = respond;
-        })
-        .catch((err) => console.log(err));
+      setLoading(true);
+      if (!userState[1]) {
+        const tokenId = await auth.currentUser.getIdToken();
+        fetch(
+          `${API.baseURL}/api/product/getAllSupermarketSaleReport?year=${selectedYear}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${tokenId}`,
+            },
+          }
+        )
+          .then((res) => res.json())
+          .then((respond) => {
+            setAllSuperData(respond);
+            supermarketList = respond;
+            setLoading(false);
+          })
+          .catch((err) => console.log(err));
+      }
     };
     const fetchSupermarketSaleReport = async () => {
-      const tokenId = await auth.currentUser.getIdToken();
-      fetch(
-        `${API.baseURL}/api/product/getAllSupermarketSaleReport?year=${selectedYear}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${tokenId}`,
-          },
-        }
-      )
-        .then((res) => res.json())
-        .then((respond) => {
-          let supermarket;
-          if (selectedSupermarket) {
-            supermarket = supermarketList.filter(
-              (item) => item.name === selectedSupermarket
-            );
-          } else {
-            supermarket = supermarketList.filter(
-              (item) => item.name === respond[0].name
-            );
+      setLoading(true);
+      if (!userState[1]) {
+        const tokenId = await auth.currentUser.getIdToken();
+        fetch(
+          `${API.baseURL}/api/product/getAllSupermarketSaleReport?year=${selectedYear}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${tokenId}`,
+            },
           }
-          const id = supermarket[0].id;
-        //   console.log(id);
-          fetch(
-            `${API.baseURL}/api/product/getSaleReportSupermarket?supermarketId=${id}&year=${selectedYear}`,
-            {
-              method: "GET",
-              headers: {
-                Authorization: `Bearer ${tokenId}`,
-              },
+        )
+          .then((res) => res.json())
+          .then((respond) => {
+            let supermarket;
+            if (selectedSupermarket) {
+              supermarket = supermarketList.filter(
+                (item) => item.name === selectedSupermarket
+              );
+            } else {
+              supermarket = supermarketList.filter(
+                (item) => item.name === respond[0].name
+              );
             }
-          )
-            .then((res) => res.json())
-            .then((respond) => {
-              console.log(respond);
-            })
-            .catch((err) => console.log(err));
-        })
-        .catch((err) => console.log(err));
+            const id = supermarket[0].id;
+            //   console.log(id);
+            fetch(
+              `${API.baseURL}/api/product/getSaleReportSupermarket?supermarketId=${id}&year=${selectedYear}`,
+              {
+                method: "GET",
+                headers: {
+                  Authorization: `Bearer ${tokenId}`,
+                },
+              }
+            )
+              .then((res) => res.json())
+              .then((respond) => {
+                setOneSuperData(respond);
+                let Quater1 = 0;
+                for (let i = 0; i < 3; i++) {
+                  Quater1 += respond[i]?.totalIncome;
+                }
+                let Quater2 = 0;
+                for (let i = 3; i < 6; i++) {
+                  Quater2 += respond[i]?.totalIncome;
+                }
+                let Quater3 = 0;
+                for (let i = 6; i < 9; i++) {
+                  Quater3 += respond[i]?.totalIncome;
+                }
+                let Quater4 = 0;
+                for (let i = 9; i < 11; i++) {
+                  Quater4 += respond[i]?.totalIncome;
+                }
+
+                setQuaterData([
+                  { name: "Quý 1", value: Quater1 },
+                  { name: "Quý 2", value: Quater2 },
+                  { name: "Quý 3", value: Quater3 },
+                  { name: "Quý 4", value: Quater4 },
+                ]);
+                setLoading(false);
+              })
+              .catch((err) => console.log(err));
+          })
+          .catch((err) => console.log(err));
+      }
+    };
+    const fetchSupermarketSaleReportByCategory = async () => {
+      setLoading(true);
+      if (!userState[1]) {
+        const tokenId = await auth.currentUser.getIdToken();
+        fetch(
+          `${API.baseURL}/api/product/getAllSupermarketSaleReport?year=${selectedYear}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${tokenId}`,
+            },
+          }
+        )
+          .then((res) => res.json())
+          .then((respond) => {
+            let supermarket;
+            if (selectedSupermarket) {
+              supermarket = supermarketList.filter(
+                (item) => item.name === selectedSupermarket
+              );
+            } else {
+              supermarket = supermarketList.filter(
+                (item) => item.name === respond[0].name
+              );
+            }
+            const id = supermarket[0].id;
+            //   console.log(id);
+            fetch(
+              `${API.baseURL}/api/product/getOrderTotalAllCategorySupermarketReport?supermarketId=${id}&year=${selectedYear}`,
+              {
+                method: "GET",
+                headers: {
+                  Authorization: `Bearer ${tokenId}`,
+                },
+              }
+            )
+              .then((res) => res.json())
+              .then((respond) => {
+                setSupermarketSaleReportByCategory(respond);
+                setLoading(false);
+              })
+              .catch((err) => console.log(err));
+          })
+          .catch((err) => console.log(err));
+      }
     };
     fetchYearData();
     fetchAllSupermarketSaleReport();
     fetchSupermarketSaleReport();
-  }, [selectedYear, selectedSupermarket]);
+    fetchSupermarketSaleReportByCategory();
+  }, [selectedYear, selectedSupermarket, userState[1]]);
   const menuTabs = [
     {
       display: "Hệ thống",
@@ -128,69 +218,6 @@ function SuperMarketReport() {
     {
       display: "Siêu thị",
       to: "/supermarketreport",
-    },
-  ];
-
-  const data01 = [
-    {
-      name: "JAN",
-      Bán: 150.75,
-      Nhập: 78.8,
-    },
-    {
-      name: "FEB",
-      Bán: 138.92,
-      Nhập: 67.7,
-    },
-    {
-      name: "MAR",
-      Bán: 160.78,
-      Nhập: 80.6,
-    },
-    {
-      name: "APR",
-      Bán: 153.73,
-      Nhập: 77.32,
-    },
-    {
-      name: "MAY",
-      Bán: 157.8,
-      Nhập: 73.23,
-    },
-    {
-      name: "JUN",
-      Bán: 128.79,
-      Nhập: 50.4,
-    },
-    {
-      name: "JUL",
-      Bán: 138.72,
-      Nhập: 53.7,
-    },
-    {
-      name: "AUG",
-      Bán: 178.94,
-      Nhập: 95.5,
-    },
-    {
-      name: "SEP",
-      Bán: 165.49,
-      Nhập: 79.81,
-    },
-    {
-      name: "OCT",
-      Bán: 150.96,
-      Nhập: 68.8,
-    },
-    {
-      name: "NOV",
-      Bán: 156.7,
-      Nhập: 67.63,
-    },
-    {
-      name: "DEC",
-      Bán: 134.75,
-      Nhập: 62.9,
     },
   ];
 
@@ -210,13 +237,6 @@ function SuperMarketReport() {
     // alert(evt.target.value);
     setSelectedSupermarket(evt.target.value);
   };
-
-  const data02 = [
-    { name: "Quý 1", value: 40.54 },
-    { name: "Quý 2", value: 38.63 },
-    { name: "Quý 3", value: 67.75 },
-    { name: "Quý 4", value: 23.782 },
-  ];
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
@@ -246,44 +266,7 @@ function SuperMarketReport() {
       </text>
     );
   };
-  const data03 = [
-    {
-      subject: "Math",
-      A: 120,
-      B: 110,
-      fullMark: 150,
-    },
-    {
-      subject: "Chinese",
-      A: 98,
-      B: 130,
-      fullMark: 150,
-    },
-    {
-      subject: "English",
-      A: 86,
-      B: 130,
-      fullMark: 150,
-    },
-    {
-      subject: "Geography",
-      A: 99,
-      B: 100,
-      fullMark: 150,
-    },
-    {
-      subject: "Physics",
-      A: 85,
-      B: 90,
-      fullMark: 150,
-    },
-    {
-      subject: "History",
-      A: 65,
-      B: 85,
-      fullMark: 150,
-    },
-  ];
+
   return (
     <div>
       <ManagementMenu menuTabs={menuTabs} />
@@ -330,7 +313,7 @@ function SuperMarketReport() {
             <div className="linechart">
               <ResponsiveContainer width="75%" height="98%">
                 <AreaChart
-                  data={data01}
+                  data={oneSuperData}
                   margin={{
                     top: 10,
                     right: 30,
@@ -339,12 +322,12 @@ function SuperMarketReport() {
                   }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
+                  <XAxis dataKey="month" />
                   <YAxis />
                   <Tooltip />
                   <Area
                     type="monotone"
-                    dataKey="Bán"
+                    dataKey="totalIncome"
                     stroke="#82ca9d"
                     fill="#82ca9d"
                   />
@@ -364,7 +347,7 @@ function SuperMarketReport() {
                 >
                   <PieChart width={200} height={200}>
                     <Pie
-                      data={data02}
+                      data={quaterData}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
@@ -373,13 +356,14 @@ function SuperMarketReport() {
                       fill="#8884d8"
                       dataKey="value"
                     >
-                      {data02.map((entry, index) => (
+                      {quaterData.map((entry, index) => (
                         <Cell
                           key={`cell-${index}`}
                           fill={COLORS[index % COLORS.length]}
                         />
                       ))}
                     </Pie>
+                    <Tooltip />
                   </PieChart>
 
                   <Box
@@ -403,7 +387,7 @@ function SuperMarketReport() {
                             fontWeight: "600",
                           }}
                         >
-                          {data02[i]?.name}
+                          {quaterData[i]?.name}
                         </Typography>
                       </Stack>
                     ))}
@@ -432,14 +416,19 @@ function SuperMarketReport() {
             </div>
             <div className="radarchart">
               <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data03}>
+                <RadarChart
+                  cx="50%"
+                  cy="50%"
+                  outerRadius="80%"
+                  data={supermarketSaleReportByCategory}
+                >
                   <PolarGrid />
-                  <PolarAngleAxis dataKey="subject" />
+                  <PolarAngleAxis dataKey="categoryName" />
                   <PolarRadiusAxis />
                   <Tooltip />
 
                   <Radar
-                    dataKey="A"
+                    dataKey="totalOrderQuantity"
                     stroke="#8884d8"
                     fill="#8884d8"
                     fillOpacity={0.6}
@@ -450,6 +439,7 @@ function SuperMarketReport() {
           </div>
         </div>
       </div>
+      {loading && <LoadingScreen />}
     </div>
   );
 }

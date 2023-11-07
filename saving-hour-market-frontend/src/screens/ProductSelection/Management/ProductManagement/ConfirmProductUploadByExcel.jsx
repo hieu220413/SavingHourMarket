@@ -8,6 +8,7 @@ import MuiAlert from "@mui/material/Alert";
 import { Snackbar } from "@mui/material";
 import { API } from "../../../../contanst/api";
 import { auth } from "../../../../firebase/firebase.config";
+import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -20,6 +21,11 @@ const ConfirmProductUploadByExcel = ({
   setOpenSuccessSnackbar,
   openSuccessSnackbar,
   setMsg,
+  setProducts,
+  searchValue,
+  page,
+  setTotalPage,
+  setIsSwitchRecovery,
 }) => {
   const [openSnackbar, setOpenSnackbar] = useState({
     open: false,
@@ -31,8 +37,10 @@ const ConfirmProductUploadByExcel = ({
   const handleCloseSnackbar = () => {
     setOpenSnackbar({ ...openSnackbar, open: false });
   };
+  const [loading, setLoading] = useState(false);
 
   const handleConfirm = async () => {
+    setLoading(true);
     const tokenId = await auth.currentUser.getIdToken();
     fetch(`${API.baseURL}/api/product/create/list`, {
       method: "POST",
@@ -43,14 +51,37 @@ const ConfirmProductUploadByExcel = ({
       body: JSON.stringify(confirmProductList),
     })
       .then((res) => res.json())
-      .then((res) => {
-        handleClose();
-        setMsg("Thêm mới thành công");
-        setOpenSuccessSnackbar({
-          ...openSuccessSnackbar,
-          open: true,
-          severity: "success",
-        });
+      .then(async (res) => {
+        fetch(
+          `${API.baseURL}/api/product/getProductsForStaff?page=${
+            page - 1
+          }&limit=5&name=${searchValue}&status=ENABLE`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${tokenId}`,
+            },
+          }
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            setProducts(data.productList);
+            setTotalPage(data.totalPage);
+            setLoading(false);
+            handleClose();
+            setIsSwitchRecovery(false);
+            setMsg("Thêm mới thành công");
+            setOpenSuccessSnackbar({
+              ...openSuccessSnackbar,
+              open: true,
+              severity: "success",
+            });
+          })
+          .catch((err) => {
+            console.log(err);
+            setLoading(false);
+          });
       })
       .catch((err) => console.log(err));
   };
@@ -221,6 +252,7 @@ const ConfirmProductUploadByExcel = ({
           Chỉnh sửa thành công
         </Alert>
       </Snackbar>
+      {loading && <LoadingScreen />}
     </div>
   );
 };

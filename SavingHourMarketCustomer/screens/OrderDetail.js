@@ -54,7 +54,6 @@ const OrderDetail = ({navigation, route}) => {
 
       const token = await auth().currentUser.getIdToken();
       setTokenId(token);
-      setLoading(false);
     } else {
       // no sessions found.
       console.log('user is not logged in');
@@ -294,7 +293,7 @@ const OrderDetail = ({navigation, route}) => {
                   }}>
                   <Image
                     source={{
-                      uri: product.imageUrl,
+                      uri: product.images[0].imageUrl,
                     }}
                     style={{flex: 4, width: '100%', height: '95%'}}
                   />
@@ -329,6 +328,21 @@ const OrderDetail = ({navigation, route}) => {
                         fontWeight: 700,
                       }}>
                       {product.productCategory}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 18,
+                        color: 'black',
+                        fontFamily: 'Roboto',
+                        fontWeight: 'bold',
+                      }}>
+                      HSD:
+                      {format(
+                        new Date(
+                          product.orderDetailProductBatches[0].expiredDate,
+                        ),
+                        'dd/MM/yyyy',
+                      )}
                     </Text>
                     <View
                       style={{

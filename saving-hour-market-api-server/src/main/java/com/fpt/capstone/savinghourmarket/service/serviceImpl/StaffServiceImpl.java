@@ -31,12 +31,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class StaffServiceImpl implements StaffService {
 
     private final StaffRepository staffRepository;
+
+    private final PickupPointRepository pickupPointRepository;
 
     private final CustomerRepository customerRepository;
 
@@ -177,9 +180,9 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public StaffListResponseBody getStaffForAdmin(String name, Integer page, Integer limit) {
+    public StaffListResponseBody getStaffForAdmin(String name, StaffRole role, EnableDisableStatus status, Integer page, Integer limit) {
         Pageable pageable = PageRequest.of(page, limit);
-        Page<Staff> result = staffRepository.getStaffForAdmin(name, pageable);
+        Page<Staff> result = staffRepository.getStaffForAdmin(name, role == null ? null : role.toString(), status == null ? null : status.ordinal(), pageable);
         int totalPage = result.getTotalPages();
         long totalCustomer = result.getTotalElements();
 
@@ -217,6 +220,7 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
+    @Transactional
     public Staff updateStaffRole(StaffRoleUpdateRequestBody staffRoleUpdateRequestBody, String email) throws FirebaseAuthException {
         Optional<Staff> staff = staffRepository.findById(staffRoleUpdateRequestBody.getId());
 
@@ -231,9 +235,48 @@ public class StaffServiceImpl implements StaffService {
         UserRecord userRecord = checkIsStaffInOrderProcess(staff);
 
         Map<String, Object> claims = new HashMap<>();
+        staff.get().setRole(staffRoleUpdateRequestBody.getRole().toString());
         claims.put("user_role", staffRoleUpdateRequestBody.getRole().toString());
         firebaseAuth.setCustomUserClaims(userRecord.getUid(), claims);
-        staff.get().setRole(staffRoleUpdateRequestBody.getRole().toString());
+        firebaseAuth.revokeRefreshTokens(userRecord.getUid());
+
+        return staff.get();
+    }
+
+    @Override
+    @Transactional
+    public Staff assignPickupPoint(StaffPickupPointAssignmentBody staffPickupPointAssignmentBody) {
+        Optional<Staff> staff = staffRepository.findByEmail(staffPickupPointAssignmentBody.getStaffEmail());
+        if(!staff.isPresent()) {
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_NOT_FOUND.getCode()), AdditionalResponseCode.STAFF_NOT_FOUND.toString());
+        }
+
+        Optional<PickupPoint> pickupPoint = pickupPointRepository.findById(staffPickupPointAssignmentBody.getPickupPointId());
+        if(!pickupPoint.isPresent()) {
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.PICKUP_POINT_NOT_FOUND.getCode()), AdditionalResponseCode.PICKUP_POINT_NOT_FOUND.toString());
+        }
+
+        if(staff.get().getPickupPoint().stream().filter(pickupPoint1 -> pickupPoint1.getId().equals(pickupPoint.get().getId())).collect(Collectors.toList()).size() == 0){
+            staff.get().getPickupPoint().add(pickupPoint.get());
+        }
+
+        return staff.get();
+    }
+
+    @Override
+    @Transactional
+    public Staff unAssignPickupPoint(StaffPickupPointAssignmentBody staffPickupPointAssignmentBody) {
+        Optional<Staff> staff = staffRepository.findByEmail(staffPickupPointAssignmentBody.getStaffEmail());
+        if(!staff.isPresent()) {
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_NOT_FOUND.getCode()), AdditionalResponseCode.STAFF_NOT_FOUND.toString());
+        }
+
+        Optional<PickupPoint> pickupPoint = pickupPointRepository.findById(staffPickupPointAssignmentBody.getPickupPointId());
+        if(!pickupPoint.isPresent()) {
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.PICKUP_POINT_NOT_FOUND.getCode()), AdditionalResponseCode.PICKUP_POINT_NOT_FOUND.toString());
+        }
+
+        staff.get().getPickupPoint().removeIf(pickupPoint1 -> pickupPoint1.getId().equals(pickupPoint.get().getId()));
 
         return staff.get();
     }

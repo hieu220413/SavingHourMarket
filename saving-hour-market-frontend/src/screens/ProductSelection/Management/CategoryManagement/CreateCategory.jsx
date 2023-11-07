@@ -1,21 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faXmark,
-  faCaretDown,
-  faRepeat,
-  faPlusCircle,
-  faMinus,
-  faX,
-} from "@fortawesome/free-solid-svg-icons";
+import { faXmark, faCaretDown } from "@fortawesome/free-solid-svg-icons";
 import { MdCloudUpload, MdDelete } from "react-icons/md";
 import { AiFillFileImage } from "react-icons/ai";
-import dayjs from "dayjs";
 import { auth, imageDB } from "../../../../firebase/firebase.config";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { v4 } from "uuid";
 import { API } from "../../../../contanst/api";
-const CreateCategory = ({ handleClose }) => {
+import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
+const CreateCategory = ({
+  handleClose,
+  setCategory,
+  page,
+  searchValue,
+  openSnackbar,
+  setOpenSnackbar,
+  setMsg,
+}) => {
   const [imageSubCate, setImageSubCate] = useState(null);
   const [fileNameSubCate, setFileNameSubCate] = useState(
     "Chưa có hình ảnh loại sản phẩm phụ"
@@ -26,23 +27,16 @@ const CreateCategory = ({ handleClose }) => {
   const [isActiveDropdownCate, setIsActiveDropdownCate] = useState(false);
   const [selectedDropdownItemCate, setSelectedDropdownItemCate] =
     useState("Chọn loại sản phẩm");
-  const [isCreateNewCate, setIsCreateNewCate] = useState(false);
 
-  const [subCategories, setSubCategories] = useState([]);
-  const [isActiveDropdownSubCate, setIsActiveDropdownSubCate] = useState(false);
-  const [selectedDropdownItemSubCate, setSelectedDropdownItemSubCate] =
-    useState("Chọn loại sản phẩm phụ");
-  const [isCreateNewSubCate, setIsCreateNewSubCate] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   //validate data
   const [categoryId, setCategoryId] = useState("");
-  const [category, setCategory] = useState("");
-  const [subCategoryId, setSubcategoryId] = useState("");
+  const [categoryName, setCategoryName] = useState("");
   const [subCateName, setSubCateName] = useState("");
   const [allowableDisplayThreshold, setAllowableDisplayThreshold] = useState(0);
-  const [imageUrlSubCate, setImageUrlSubCate] = useState("");
   // check error
-  const [checkCategorySelected, setCheckCategorySelected] = useState(false);
+  const [isSwitch, setIsSwitch] = useState(false);
   const [error, setError] = useState({
     category: "",
     subCateName: "",
@@ -53,7 +47,7 @@ const CreateCategory = ({ handleClose }) => {
   useEffect(() => {
     const fetchData = async () => {
       const tokenId = await auth.currentUser.getIdToken();
-      fetch(`${API.baseURL}/api/product/getAllCategory`, {
+      fetch(`${API.baseURL}/api/product/getCategoryForStaff?page=0&limit=99`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -62,7 +56,7 @@ const CreateCategory = ({ handleClose }) => {
       })
         .then((res) => res.json())
         .then((data) => {
-          setCategories(data);
+          setCategories(data.productCategoryList);
         })
         .catch((err) => {
           console.log(err);
@@ -77,18 +71,73 @@ const CreateCategory = ({ handleClose }) => {
       await uploadBytes(imgRefSubCate, imgSubCateToFirebase);
       try {
         const url = await getDownloadURL(imgRefSubCate);
-        setImageUrlSubCate(url);
+        return url;
       } catch (error) {
         console.log(error);
       }
     }
   };
 
-  const handleSubmit = async () => {
-    console.log("click");
-    uploadSubCateImgToFireBase();
-    if (category === "") {
+  const handleSubmitCategory = async () => {
+    if (categoryName === "") {
       setError({ ...error, category: "Vui lòng không để trống" });
+      return;
+    }
+
+    // Category Data
+    const submitProductCategory = {
+      name: categoryName,
+    };
+
+    const tokenId = await auth.currentUser.getIdToken();
+    setLoading(true);
+    fetch(`${API.baseURL}/api/product/createCategory`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${tokenId}`,
+      },
+      body: JSON.stringify(submitProductCategory),
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        console.log(res);
+        fetch(
+          `${
+            API.baseURL
+          }/api/product/getCategoryForStaff?name=${searchValue}&page=${
+            page - 1
+          }&limit=5`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${tokenId}`,
+            },
+          }
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            setCategory(data.productCategoryList);
+            setLoading(false);
+            handleClose();
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "success",
+            });
+            setMsg("Thêm loại sản phẩm thành công");
+          })
+          .catch((err) => {
+            console.log(err);
+            setLoading(false);
+          });
+      });
+  };
+
+  const handleSubmitSubCategory = async () => {
+    if (categoryName === "") {
+      setError({ ...error, category: "Hãy chọn loại sản phẩm trước" });
       return;
     }
 
@@ -114,92 +163,343 @@ const CreateCategory = ({ handleClose }) => {
       setError({ ...error, imageUrlSubCate: "Chưa có ảnh sản phẩm" });
       return;
     }
-    // Category Data
-    const submitProductCategory = {
-      id: categoryId ? categoryId : "",
-      name: category,
-      totalDiscountUsage: 0,
-    };
-
     //  Subcategory Data
     const submitProductSubCategory = {
-      id: subCategoryId ? subCategoryId : "",
       name: subCateName,
       imageUrl: imageUrlSubCate,
       allowableDisplayThreshold: allowableDisplayThreshold,
-      productCategory: submitProductCategory,
-      totalDiscountUsage: 0,
+      productCategoryId: categoryId,
     };
+    const tokenId = await auth.currentUser.getIdToken();
+    setLoading(true);
+    fetch(`${API.baseURL}/api/product/createSubCategory`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${tokenId}`,
+      },
+      body: JSON.stringify(submitProductSubCategory),
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        console.log(res);
+        fetch(
+          `${
+            API.baseURL
+          }/api/product/getCategoryForStaff?name=${searchValue}&page=${
+            page - 1
+          }&limit=5`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${tokenId}`,
+            },
+          }
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            setCategory(data.productCategoryList);
+            setLoading(false);
+            handleClose();
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "success",
+            });
+            setMsg("Thêm loại sản phẩm phụ thành công");
+          })
+          .catch((err) => {
+            console.log(err);
+            setLoading(false);
+          });
+      });
   };
 
   return (
-    <div className="modal__container">
-      <div className="modal__container-header">
-        <h3 className="modal__container-header-title">
-          Thêm loại sản phẩm mới
-        </h3>
-        <FontAwesomeIcon icon={faXmark} onClick={handleClose} />
-      </div>
-      <div className="modal__container-body" style={{ height: "100%" }}>
-        {/* Create Categories */}
-
-        <>
-          <div className="modal__container-body-inputcontrol">
-            <h4 className="modal__container-body-inputcontrol-label">
-              Tên loại sản phẩm
-            </h4>
-            <div>
-              <input
-                placeholder="Nhập tên loại sản phẩm"
-                type="text"
-                className="modal__container-body-inputcontrol-input"
-                value={category}
-                onChange={(e) => {
-                  setCategory(e.target.value);
-                  setError({ ...error, category: "" });
-                }}
-              />
-              {error.category && (
-                <p
-                  style={{ fontSize: "14px", marginBottom: "-10px" }}
-                  className="text-danger"
-                >
-                  {error.category}
-                </p>
-              )}
+    <>
+      <div className="modal__container">
+        {isSwitch === false && (
+          <>
+            <div className="modal__container-header">
+              <h3 className="modal__container-header-title">
+                Thêm loại sản phẩm mới
+              </h3>
+              <FontAwesomeIcon icon={faXmark} onClick={handleClose} />
             </div>
-          </div>
-        </>
-      </div>
+            <div className="modal__container-body" style={{ height: "100%" }}>
+              {/* Create Categories */}
 
-      {/* modal footer */}
-      <div
-        className="modal__container-footer"
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-        }}
-      >
-        <div className="modal__container-footer-buttons">
-          <button
-            className="modal__container-footer-buttons-close"
-            onClick={() => {
-              console.log("click");
-            }}
-          >
-            Thêm loại sản phẩm phụ
-          </button>
-        </div>
-        <div className="modal__container-footer-buttons">
-          <button
-            onClick={handleSubmit}
-            className="modal__container-footer-buttons-create"
-          >
-            Tạo mới
-          </button>
-        </div>
+              <>
+                <div className="modal__container-body-inputcontrol">
+                  <h4 className="modal__container-body-inputcontrol-label">
+                    Tên loại sản phẩm
+                  </h4>
+                  <div>
+                    <input
+                      placeholder="Nhập tên loại sản phẩm"
+                      type="text"
+                      className="modal__container-body-inputcontrol-input"
+                      value={categoryName}
+                      onChange={(e) => {
+                        setCategoryName(e.target.value);
+                        setError({ ...error, category: "" });
+                      }}
+                    />
+                    {error.category && (
+                      <p
+                        style={{ fontSize: "14px", marginBottom: "-10px" }}
+                        className="text-danger"
+                      >
+                        {error.category}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </>
+            </div>
+
+            {/* modal footer */}
+            <div
+              className="modal__container-footer"
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+            >
+              <div className="modal__container-footer-buttons">
+                <button
+                  className="modal__container-footer-buttons-close"
+                  onClick={() => {
+                    console.log("click");
+                    setIsSwitch(true);
+                  }}
+                >
+                  Thêm loại sản phẩm phụ
+                </button>
+              </div>
+              <div className="modal__container-footer-buttons">
+                <button
+                  onClick={handleSubmitCategory}
+                  className="modal__container-footer-buttons-create"
+                >
+                  Tạo mới
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+        {isSwitch === true && (
+          <>
+            <div className="modal__container-header">
+              <h3 className="modal__container-header-title">
+                Thêm loại sản phẩm phụ mới
+              </h3>
+              <FontAwesomeIcon icon={faXmark} onClick={handleClose} />
+            </div>
+            <div className="modal__container-body" style={{ height: "100%" }}>
+              <div className="modal__container-body-inputcontrol">
+                <h4 className="modal__container-body-inputcontrol-label">
+                  Tên loại sản phẩm
+                </h4>
+                <div>
+                  <div style={{ display: "flex" }}>
+                    <div className="dropdown" style={{ width: "400px" }}>
+                      <div
+                        className="dropdown-btn"
+                        onClick={(e) =>
+                          setIsActiveDropdownCate(!isActiveDropdownCate)
+                        }
+                      >
+                        {selectedDropdownItemCate}
+                        <FontAwesomeIcon icon={faCaretDown} />
+                      </div>
+                      {isActiveDropdownCate && (
+                        <div className="dropdown-content">
+                          {categories.map((item, index) => (
+                            <div
+                              onClick={(e) => {
+                                setSelectedDropdownItemCate(item.name);
+                                setIsActiveDropdownCate(false);
+                                setCategoryId(item.id);
+                                setCategoryName(item.name);
+                                setError({ ...error, category: "" });
+                              }}
+                              className="dropdown-item"
+                              key={index}
+                            >
+                              {item.name}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  {error.category && (
+                    <p
+                      style={{ fontSize: "14px", marginBottom: "-10px" }}
+                      className="text-danger"
+                    >
+                      {error.category}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Sub Cate*/}
+              <div className="modal__container-body-inputcontrol">
+                <h4 className="modal__container-body-inputcontrol-label">
+                  Tên loại sản phẩm phụ
+                </h4>
+                <div>
+                  {" "}
+                  <input
+                    placeholder="Nhập tên loại sản phẩm phụ"
+                    type="text"
+                    className="modal__container-body-inputcontrol-input"
+                    value={subCateName}
+                    onChange={(e) => {
+                      setSubCateName(e.target.value);
+                      setError({ ...error, subCateName: "" });
+                      if (categoryName === "") {
+                        setError({
+                          ...error,
+                          subCateName: "Vui lòng chọn loại sản phẩm trước",
+                        });
+                      }
+                    }}
+                  />
+                  {error.subCateName && (
+                    <p
+                      style={{ fontSize: "14px", marginBottom: "-10px" }}
+                      className="text-danger"
+                    >
+                      {error.subCateName}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="modal__container-body-inputcontrol">
+                <h4 className="modal__container-body-inputcontrol-label">
+                  Số ngày trước hạn HSD
+                </h4>
+                <div>
+                  <input
+                    min={0}
+                    placeholder="Nhập số ngày tối thiểu trước HSD"
+                    type="number"
+                    className="modal__container-body-inputcontrol-input"
+                    value={allowableDisplayThreshold}
+                    onChange={(e) => {
+                      setAllowableDisplayThreshold(e.target.value);
+                      setError({ ...error, allowableDisplayThreshold: "" });
+                    }}
+                  />
+                  {error.allowableDisplayThreshold && (
+                    <p
+                      style={{ fontSize: "14px", marginBottom: "-10px" }}
+                      className="text-danger"
+                    >
+                      {error.allowableDisplayThreshold}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="modal__container-body-inputcontrol">
+                <h4 className="modal__container-body-inputcontrol-label">
+                  Tải ảnh
+                </h4>
+                <div style={{ maxWidth: "400px" }}>
+                  <div
+                    className="imgWrapper"
+                    onClick={() =>
+                      document.querySelector("#imgUploadSubCate").click()
+                    }
+                  >
+                    <input
+                      id="imgUploadSubCate"
+                      type="file"
+                      accept="image/*"
+                      hidden
+                      onChange={({ target: { files } }) => {
+                        files[0] && setFileNameSubCate(files[0].name);
+                        if (files && files[0]) {
+                          setImageSubCate(URL.createObjectURL(files[0]));
+                          setImgSubCateToFirebase(files[0]);
+                          setError({ ...error, imageUrlSubCate: "" });
+                        }
+                      }}
+                    />
+                    {imageSubCate ? (
+                      <img
+                        src={imageSubCate}
+                        width={360}
+                        height={160}
+                        alt={fileNameSubCate}
+                        style={{ borderRadius: "5px" }}
+                      />
+                    ) : (
+                      <>
+                        <MdCloudUpload color="#37a65b" size={60} />
+                        <p style={{ fontSize: "14px" }}>
+                          Tải ảnh loại sản phẩm phụ
+                        </p>
+                      </>
+                    )}
+                  </div>
+                  <section className="uploaded-row">
+                    <AiFillFileImage color="#37a65b" size={25} />
+                    <span className="upload-content">
+                      {fileNameSubCate} -
+                      <MdDelete
+                        color="#37a65b"
+                        style={{ cursor: "pointer" }}
+                        onClick={() => {
+                          setFileNameSubCate(
+                            "Chưa có hình ảnh loại sản phẩm phụ"
+                          );
+                          setImageSubCate(null);
+                          setImgSubCateToFirebase("");
+                        }}
+                        size={25}
+                      />
+                    </span>
+                  </section>
+                </div>
+              </div>
+            </div>
+            {/* modal footer */}
+            <div
+              className="modal__container-footer"
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+            >
+              <div className="modal__container-footer-buttons">
+                <button
+                  className="modal__container-footer-buttons-close"
+                  onClick={() => {
+                    setIsSwitch(false);
+                  }}
+                >
+                  Thêm loại sản phẩm
+                </button>
+              </div>
+              <div className="modal__container-footer-buttons">
+                <button
+                  onClick={handleSubmitSubCategory}
+                  className="modal__container-footer-buttons-create"
+                >
+                  Tạo mới
+                </button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
-    </div>
+      {loading && <LoadingScreen />}
+    </>
   );
 };
 
