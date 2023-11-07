@@ -55,7 +55,7 @@ const ProductDetails = ({ navigation, route }) => {
   const bottomSheetRef = useRef(null);
 
   // variables
-  const snapPoints = useMemo(() => ['80%'], []);
+  const snapPoints = useMemo(() => ['60%'], []);
 
   const handlePresentBottomSheet = useCallback(() => {
     // bottomSheetRef.current?.present();
@@ -106,7 +106,7 @@ const ProductDetails = ({ navigation, route }) => {
           idList: selectedProductBatch.idList,
         },
       ];
-
+      
       await AsyncStorage.setItem('OrderItems', JSON.stringify(orderItem));
       navigation.navigate('Payment');
     } catch (error) {
@@ -137,6 +137,10 @@ const ProductDetails = ({ navigation, route }) => {
         newCartList[index].cartQuantity = newCartList[index].cartQuantity + 1;
         setCartList(newCartList);
         await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
+        setIndex(-1)
+        bottomSheetRef.current?.close();
+        setSelectedProductBatch(null)
+
         showToast();
         return;
       }
@@ -152,6 +156,9 @@ const ProductDetails = ({ navigation, route }) => {
       };
       newCartList = [...newCartList, cartData];
       setCartList(newCartList);
+      setIndex(-1)
+      bottomSheetRef.current?.close();
+      setSelectedProductBatch(null)
       await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
       showToast();
     } catch (error) {
