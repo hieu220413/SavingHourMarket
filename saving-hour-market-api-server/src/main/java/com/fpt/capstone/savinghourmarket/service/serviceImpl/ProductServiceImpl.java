@@ -392,7 +392,11 @@ public class ProductServiceImpl implements ProductService {
         for (Product product : productList) {
             List<String> errors = new ArrayList<>();
             if (product.getName().length() > 50) {
-                errors.add("Tên sản phẩm: " + product.getName() + "quá 50 kí tự!");
+                errors.add("Tên sản phẩm: " + product.getName() + " quá 50 kí tự!");
+            }
+
+            if (product.getUnit().length() > 50) {
+                errors.add("Đơn vị sản phẩm: " + product.getUnit() + " quá 50 kí tự!");
             }
 
             if (product.getProductImageList().size() == 0) {
@@ -401,14 +405,14 @@ public class ProductServiceImpl implements ProductService {
 
             UUID productSubCategoryId = product.getProductSubCategory().getId();
             if (productSubCategoryId == null) {
-                errors.add("Vui lòng nhập thông tin Loại danh mục phụ");
+                errors.add("Vui lòng nhập thông tin Loại danh mục phụ!");
             } else if (!productSubCategoryRepository.findById(productSubCategoryId).isPresent()) {
                 errors.add("Danh mục phụ không tìm thấy với id: " + productSubCategoryId);
             }
 
             UUID supermarketId = product.getSupermarket().getId();
             if (supermarketId == null) {
-                errors.add("Vui lòng nhập thông tin siêu thị");
+                errors.add("Vui lòng nhập thông tin siêu thị!");
             } else if (!supermarketRepository.findById(supermarketId).isPresent()) {
                 errors.add("Siêu thị không tìm thấy với id: " + productSubCategoryId);
             }
@@ -679,6 +683,10 @@ public class ProductServiceImpl implements ProductService {
             errorFields.put("Lỗi nhập tên sản phẩm", "Tên sản phẩm chỉ có tối đa 50 kí tự!");
         }
 
+        if (product.getUnit().length() > 50) {
+            errorFields.put("Lỗi nhập đơn vị sản phẩm", "Đơn vị sản phẩm chỉ có tối đa 50 kí tự!");
+        }
+
         if (product.getProductImageList().size() == 0) {
             errorFields.put("Lỗi hình ảnh sản phẩm", "Vui lòng thêm hình cho sản phẩm!");
         }
@@ -725,6 +733,10 @@ public class ProductServiceImpl implements ProductService {
         Product product = new Product();
         if (productCreate.getName().length() > 50) {
             errorFields.put("Lỗi nhập tên sản phẩm", "Tên sản phẩm chỉ có tối đa 50 kí tự!");
+        }
+
+        if (productCreate.getUnit().length() > 50) {
+            errorFields.put("Lỗi nhập đơn vị sản phẩm", "Đơn vị sản phẩm chỉ có tối đa 50 kí tự!");
         }
 
         if (productCreate.getProductSubCategory().getId() == null && productCreate.getProductSubCategory().getName().length() > 50) {
@@ -827,6 +839,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductExcelResponse createProductByExcel(MultipartFile file) throws IOException, InvalidExcelFileDataException {
+
         LinkedHashMap<Integer, List<String>> errorFields = new LinkedHashMap<>();
 
         Workbook workbook;
@@ -844,100 +857,123 @@ public class ProductServiceImpl implements ProductService {
         Set<ProductExcelCreate> productSeenData = new HashSet<>();
 
         Sheet sheet = workbook.getSheetAt(0);
-        //Get first row as title
-        Row titleRow = sheet.getRow(0);
 
-        Integer rowIndex = 0;
-        for (Row row : sheet) {
-            if (rowIndex != 0 && row != null) {
-                Product product = new Product();
-                ProductSubCategory productSubCategory = new ProductSubCategory();
-                Supermarket supermarket = new Supermarket();
-                List<ProductExcelBatchCreate> productBatchList = new ArrayList<>();
-                ProductExcelBatchCreate productBatchCreate = new ProductExcelBatchCreate();
-                List<String> errors = new ArrayList<>();
-                int cellIndex = 0;
-                for (Cell cell : row) {
-                    if (cell.getCellType() != CellType.BLANK) {
-                        log.info(titleRow.getCell(cellIndex) + ", " + row.getCell(cellIndex));
-                        validateAndGetProductSubCateData(productSubCategory, titleRow, cell, errors, cellIndex);
-                        validateAndGetSupermarketData(supermarket, titleRow, cell, errors, cellIndex);
-                        validateAndGetProductData(product, titleRow, cell, errors, cellIndex);
-                        validateAndGetProductBatchData(productBatchCreate, productBatchList, titleRow, cell, errors, cellIndex);
-                        cellIndex++;
-                    }
-                }
+        try {
+            //Get first row as title
+            Row titleRow = sheet.getRow(0);
 
-                if (cellIndex > 0) {
-
-                    Optional<ProductSubCategory> productSubCategoryExistedCheck = productSubCategoryRepository.findByName(productSubCategory.getName());
-                    if (productSubCategoryExistedCheck.isPresent()) {
-                        productSubCategory = productSubCategoryExistedCheck.get();
-                    } else {
-                        errors.add("Tên danh mục phụ " + productSubCategory.getName() + " không tìm thấy trong hệ thống!");
-                    }
-
-                    Optional<Supermarket> supermarketExistedCheck = supermarketRepository.findByName(supermarket.getName());
-                    if (supermarketExistedCheck.isPresent()) {
-                        supermarket = supermarketExistedCheck.get();
-                    } else {
-                        errors.add("Tên siêu thị " + supermarket.getName() + " không tìm thấy trong hệ thống!");
-                    }
-
-                    List<ProductBatch> productBatches = new ArrayList<>();
-                    for (ProductExcelBatchCreate productExcelBatchCreate : productBatchList) {
-                        for (ProductExcelBatchAddressCreate productExcelBatchAddressCreate : productExcelBatchCreate.getProductBatchAddresses()) {
-                            ProductBatch productBatch = new ProductBatch();
-                            productBatch.setPrice(productExcelBatchCreate.getPrice());
-                            productBatch.setPriceOriginal(productExcelBatchCreate.getPriceOriginal());
-                            if (productSubCategory.getAllowableDisplayThreshold() != null && productExcelBatchCreate.getExpiredDate() != null && productExcelBatchCreate.getExpiredDate().isBefore(LocalDate.now().plus(productSubCategory.getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
-                                errors.add("HSD của lô phải sau ngày hiện tại cộng thêm số ngày điều kiện cho hàng cận hạn sử dụng có trong SUBCATEGORY!");
-                            } else {
-                                productBatch.setExpiredDate(productExcelBatchCreate.getExpiredDate());
-                            }
-                            productBatch.setQuantity(productExcelBatchAddressCreate.getQuantity());
-                            Optional<SupermarketAddress> supermarketAddress = supermarketAddressRepository.findByAddress(productExcelBatchAddressCreate.getSupermarketAddress());
-                            if (!supermarketAddress.get().getSupermarket().getId().equals(supermarket.getId())) {
-                                errors.add("Địa chỉ kho lưu trữ " + supermarketAddress.get().getAddress() + " không nằm trong danh sách các địa chỉ của siêu thị được chọn!");
-                            }
-                            supermarketAddress.ifPresent(productBatch::setSupermarketAddress);
-                            productBatches.add(productBatch);
-                        }
-
-                    }
-
-                    if (errors.size() > 0) {
-                        errorFields.put(rowIndex, errors);
-                    }
-                    product.setStatus(Status.ENABLE.ordinal());
-                    product.setProductBatchList(productBatches);
-                    product.setProductSubCategory(productSubCategory);
-                    product.setSupermarket(supermarket);
-
-                    ProductExcelCreate productExcelCreate = new ProductExcelCreate();
-                    productExcelCreate.setName(product.getName());
-                    productExcelCreate.setDescription(product.getDescription());
-                    productExcelCreate.setProductSubCategory(product.getProductSubCategory());
-                    productExcelCreate.setSupermarket(product.getSupermarket());
-
-                    if (productSeenData.add(productExcelCreate)) {
-                        productList.add(product);
-                    } else {
-                        for (Product p : productList) {
-                            ProductExcelCreate productDuplicate = new ProductExcelCreate();
-                            productDuplicate.setName(p.getName());
-                            productDuplicate.setDescription(p.getDescription());
-                            productDuplicate.setProductSubCategory(p.getProductSubCategory());
-                            productDuplicate.setSupermarket(p.getSupermarket());
-                            if (productDuplicate.equals(productExcelCreate)) {
-                                p.getProductBatchList().addAll(productBatches);
-                            }
+            Integer rowIndex = 0;
+            for (Row row : sheet) {
+                if (row.getPhysicalNumberOfCells() == titleRow.getPhysicalNumberOfCells() && rowIndex != 0 && row != null) {
+                    Product product = new Product();
+                    ProductSubCategory productSubCategory = new ProductSubCategory();
+                    Supermarket supermarket = new Supermarket();
+                    List<ProductExcelBatchCreate> productBatchList = new ArrayList<>();
+                    ProductExcelBatchCreate productBatchCreate = new ProductExcelBatchCreate();
+                    List<String> errors = new ArrayList<>();
+                    int cellIndex = 0;
+                    for (Cell cell : row) {
+                        if (cell.getCellType() != CellType.BLANK) {
+//                            log.info(titleRow.getCell(cellIndex) + ", " + row.getCell(cellIndex));
+                            validateAndGetProductSubCateData(productSubCategory, titleRow, cell, errors, cellIndex);
+                            validateAndGetSupermarketData(supermarket, titleRow, cell, errors, cellIndex);
+                            validateAndGetProductData(product, titleRow, cell, errors, cellIndex);
+                            validateAndGetProductBatchData(productBatchCreate, productBatchList, titleRow, cell, errors, cellIndex);
+                            cellIndex++;
+                        } else {
+                            break;
                         }
                     }
-                }
 
+                    if (product.getName() == null || product.getDescription() == null || product.getUnit() == null) {
+                        continue;
+                    }
+
+                    if (cellIndex > 0) {
+
+                        Optional<ProductSubCategory> productSubCategoryExistedCheck = productSubCategoryRepository.findByName(productSubCategory.getName());
+                        if (productSubCategoryExistedCheck.isPresent()) {
+                            productSubCategory = productSubCategoryExistedCheck.get();
+                        } else {
+                            errors.add("Tên danh mục phụ " + productSubCategory.getName() + " không tìm thấy trong hệ thống!");
+                        }
+
+                        Optional<Supermarket> supermarketExistedCheck = supermarketRepository.findByName(supermarket.getName());
+                        if (supermarketExistedCheck.isPresent()) {
+                            supermarket = supermarketExistedCheck.get();
+                        } else {
+                            errors.add("Tên siêu thị " + supermarket.getName() + " không tìm thấy trong hệ thống!");
+                        }
+
+                        List<ProductBatch> productBatches = new ArrayList<>();
+                        for (ProductExcelBatchCreate productExcelBatchCreate : productBatchList) {
+                            for (ProductExcelBatchAddressCreate productExcelBatchAddressCreate : productExcelBatchCreate.getProductBatchAddresses()) {
+                                ProductBatch productBatch = new ProductBatch();
+                                productBatch.setPrice(productExcelBatchCreate.getPrice());
+                                productBatch.setPriceOriginal(productExcelBatchCreate.getPriceOriginal());
+                                if (productSubCategory.getAllowableDisplayThreshold() != null && productExcelBatchCreate.getExpiredDate() != null && productExcelBatchCreate.getExpiredDate().isBefore(LocalDate.now().plus(productSubCategory.getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
+                                    errors.add("HSD(" + productExcelBatchCreate.getExpiredDate() + ") hiện trước ngày hiện tại cộng thêm số ngày điều kiện cho hàng cận hạn sử dụng có trong SUBCATEGORY!");
+                                } else {
+                                    productBatch.setExpiredDate(productExcelBatchCreate.getExpiredDate());
+                                }
+                                productBatch.setQuantity(productExcelBatchAddressCreate.getQuantity());
+                                Optional<SupermarketAddress> supermarketAddress = supermarketAddressRepository.findByAddress(productExcelBatchAddressCreate.getSupermarketAddress());
+                                if (supermarketAddress.isEmpty()) {
+                                    errors.add("Địa chỉ kho lưu trữ " + productExcelBatchAddressCreate.getSupermarketAddress() + " không tìm thấy trong hệ thống!");
+                                } else if (!supermarketAddress.get().getSupermarket().getId().equals(supermarket.getId())) {
+                                    errors.add("Địa chỉ kho lưu trữ " + supermarketAddress.get().getAddress() + " không nằm trong danh sách các địa chỉ của siêu thị được chọn!");
+                                }
+                                supermarketAddress.ifPresent(productBatch::setSupermarketAddress);
+                                productBatches.add(productBatch);
+                            }
+
+                        }
+
+                        if (errors.size() > 0) {
+                            errorFields.put(rowIndex, errors);
+                        }
+                        product.setStatus(Status.ENABLE.ordinal());
+                        product.setProductBatchList(productBatches);
+                        product.setProductSubCategory(productSubCategory);
+                        product.setSupermarket(supermarket);
+
+                        ProductExcelCreate productExcelCreate = new ProductExcelCreate();
+                        productExcelCreate.setName(product.getName());
+                        productExcelCreate.setUnit(product.getUnit());
+                        productExcelCreate.setDescription(product.getDescription());
+                        productExcelCreate.setProductSubCategory(product.getProductSubCategory());
+                        productExcelCreate.setSupermarket(product.getSupermarket());
+
+                        if (product.getName() != null && product.getDescription() != null && product.getUnit() != null && product.getProductSubCategory() != null && productSeenData.add(productExcelCreate)) {
+                            productList.add(product);
+                        } else {
+                            for (Product p : productList) {
+                                ProductExcelCreate productDuplicate = new ProductExcelCreate();
+                                productDuplicate.setName(p.getName());
+                                productDuplicate.setDescription(p.getDescription());
+                                productDuplicate.setProductSubCategory(p.getProductSubCategory());
+                                productDuplicate.setSupermarket(p.getSupermarket());
+                                if (productDuplicate.equals(productExcelCreate)) {
+                                    p.getProductBatchList().addAll(productBatches);
+                                }
+                            }
+                        }
+                    }
+
+                }
+                rowIndex++;
             }
-            rowIndex++;
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            LinkedHashMap<String, String> errorFieldsFile = new LinkedHashMap<>();
+            errorFieldsFile.put("Invalid file type", "File không phải mẫu do hệ thống cung cấp!");
+            throw new InvalidExcelFileDataException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFieldsFile);
+        }
+
+        if (productList.size() == 0) {
+            LinkedHashMap<String, String> errorFieldsFile = new LinkedHashMap<>();
+            errorFieldsFile.put("Invalid file type", "File không phải mẫu do hệ thống cung cấp!");
+            throw new InvalidExcelFileDataException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFieldsFile);
         }
 
         return new ProductExcelResponse(productList, errorFields);
@@ -987,6 +1023,20 @@ public class ProductServiceImpl implements ProductService {
                     putFormatError(errors, titleRow.getCell(cellIndex).toString(), CellType.STRING);
                 }
                 break;
+            case "Đơn vị":
+                if (cell.getCellType().equals(CellType.STRING)) {
+                    String productUnit = cell.getStringCellValue();
+                    if (productUnit != null && !productUnit.trim().isEmpty()) {
+                        if (productUnit.length() > 50) {
+                            errors.add("Đơn vị có quá 50 kí tự!");
+                        } else {
+                            product.setUnit(productUnit.trim().replaceAll("\\s+", " "));
+                        }
+                    }
+                } else {
+                    putFormatError(errors, titleRow.getCell(cellIndex).toString(), CellType.STRING);
+                }
+                break;
         }
     }
 
@@ -997,7 +1047,7 @@ public class ProductServiceImpl implements ProductService {
                 if (cell.getCellType().equals(CellType.NUMERIC)) {
                     int price = (int) cell.getNumericCellValue();
                     if (price < 0) {
-                        errors.add("Giá bán của lô sản phẩm HSD(" + productBatchCreate.getExpiredDate().toString() + ") đang âm!");
+                        errors.add("Giá bán " + cell.getNumericCellValue() + " của lô sản phẩm HSD(" + productBatchCreate.getExpiredDate().toString() + ") đang âm!");
                     } else {
                         productBatchCreate.setPrice(price);
                     }
@@ -1009,7 +1059,7 @@ public class ProductServiceImpl implements ProductService {
                 if (cell.getCellType().equals(CellType.NUMERIC)) {
                     int priceOriginal = (int) cell.getNumericCellValue();
                     if (priceOriginal < 0) {
-                        errors.add("Giá gốc của lô sản phẩm HSD(" + productBatchCreate.getExpiredDate().toString() + ") đang âm!");
+                        errors.add("Giá gốc " + cell.getNumericCellValue() + " của lô sản phẩm HSD(" + productBatchCreate.getExpiredDate().toString() + ") đang âm!");
                     } else {
                         productBatchCreate.setPriceOriginal(priceOriginal);
                     }
@@ -1022,7 +1072,7 @@ public class ProductServiceImpl implements ProductService {
                     if (DateUtil.isCellDateFormatted(cell)) {
                         productBatchCreate.setExpiredDate(convertDateToLocalDate(cell.getDateCellValue()));
                     } else {
-                        errors.add("HSD không có định dạng ngày tháng năm đúng!");
+                        errors.add("HSD " + cell.getNumericCellValue() + " không có định dạng ngày tháng năm đúng!");
                     }
                 }
                 break;
@@ -1030,21 +1080,28 @@ public class ProductServiceImpl implements ProductService {
                 if (cell.getCellType().equals(CellType.STRING)) {
                     List<ProductExcelBatchAddressCreate> productBatchAddresses = new ArrayList<>();
                     String[] addressesQuantityBatches = cell.getStringCellValue().split("\n");
-                    for (String addressesQuantityBatch : addressesQuantityBatches) {
-                        String[] addressesQuantityBatchSplit = addressesQuantityBatch.split(";");
-                        if (Arrays.stream(addressesQuantityBatchSplit).toList().size() == 2) {
-                            String address = addressesQuantityBatchSplit[0];
-                            String quantity = addressesQuantityBatchSplit[1];
-                            ProductExcelBatchAddressCreate productBatchAddress = new ProductExcelBatchAddressCreate();
-                            productBatchAddress.setQuantity(Integer.valueOf(quantity.trim().replaceAll("\\s+", " ")));
-                            productBatchAddress.setSupermarketAddress(address.trim().replaceAll("\\s+", " "));
-                            productBatchAddresses.add(productBatchAddress);
-                        } else {
-                            errors.add("Địa chỉ kho lưu giữ + số lượng của lô sản phẩm HSD(" + productBatchCreate.getExpiredDate().toString() + ") không có đủ thông tin là ĐỊA CHỈ;SỐ LƯỢNG!");
+                    if (addressesQuantityBatches.length == 0) {
+                        errors.add("Địa chỉ kho lưu giữ + số lượng (" + cell.getStringCellValue() + ") không đúng cách nhập để có thể nhận biết được thông tin!");
+                    } else {
+                        for (String addressesQuantityBatch : addressesQuantityBatches) {
+                            String[] addressesQuantityBatchSplit = addressesQuantityBatch.split(";");
+                            if (addressesQuantityBatchSplit.length == 0) {
+                                errors.add("Địa chỉ kho lưu giữ + số lượng(" + addressesQuantityBatch + ") không đúng cách nhập để có thể nhận biết được thông tin!");
+                            } else if (Arrays.stream(addressesQuantityBatchSplit).toList().size() == 2) {
+                                String address = addressesQuantityBatchSplit[0];
+                                String quantity = addressesQuantityBatchSplit[1];
+                                ProductExcelBatchAddressCreate productBatchAddress = new ProductExcelBatchAddressCreate();
+                                productBatchAddress.setQuantity(Integer.valueOf(quantity.trim().replaceAll("\\s+", " ")));
+                                productBatchAddress.setSupermarketAddress(address.trim().replaceAll("\\s+", " "));
+                                productBatchAddresses.add(productBatchAddress);
+                            } else {
+                                errors.add("Địa chỉ kho lưu giữ + số lượng (" + addressesQuantityBatch + ") không đúng cách nhập để có thể nhận biết được thông tin!");
+                            }
                         }
+                        productBatchCreate.setProductBatchAddresses(productBatchAddresses);
+                        productBatchList.add(productBatchCreate);
                     }
-                    productBatchCreate.setProductBatchAddresses(productBatchAddresses);
-                    productBatchList.add(productBatchCreate);
+
                 } else {
                     putFormatError(errors, titleRow.getCell(cellIndex).toString(), CellType.STRING);
                 }
