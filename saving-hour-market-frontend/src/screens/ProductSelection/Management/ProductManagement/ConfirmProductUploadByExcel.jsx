@@ -9,6 +9,9 @@ import { Snackbar } from "@mui/material";
 import { API } from "../../../../contanst/api";
 import { auth } from "../../../../firebase/firebase.config";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
+import NullImage from "../../../../assets/Null-Image.png";
+import ProductBatchUploadByExcel from "./ProductBatchUploadByExcel";
+import ErrorProductUploadByExcel from "./ErrorProductUploadByExcel";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -37,7 +40,13 @@ const ConfirmProductUploadByExcel = ({
   const handleCloseSnackbar = () => {
     setOpenSnackbar({ ...openSnackbar, open: false });
   };
+
   const [loading, setLoading] = useState(false);
+  const [errorList, setErrorList] = useState(
+    Object.entries(confirmProductList.errorFields).map(([key, value]) => {
+      return { index: key, value: value };
+    })
+  );
 
   const handleConfirm = async () => {
     setLoading(true);
@@ -91,33 +100,83 @@ const ConfirmProductUploadByExcel = ({
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
+    const [openProductBatch, setOpenProductBatch] = useState(false);
+    const handleOpenProductBatch = () => setOpenProductBatch(true);
+    const handleCloseProductBatch = () => setOpenProductBatch(false);
+
+    const [openErrorList, setOpenErrorList] = useState(false);
+    const handleOpenErrorList = () => setOpenErrorList(true);
+    const handleCloseErrorList = () => setOpenErrorList(false);
+
     const [openDelete, setOpenDelete] = useState(false);
     const handleOpenDelete = () => setOpenDelete(true);
     const handleCloseDelete = () => setOpenDelete(false);
+
+    const errorField = errorList.find(
+      (item) => parseInt(item.index) === index + 1
+    );
 
     return (
       <>
         <tr key={index} className="table-body-row">
           <td style={{ paddingTop: 30 }}>{index + 1}</td>
           <td>
-            <img width="80px" height="60px" src={item.imageUrl} />
+            {item.productImageList ? (
+              <img
+                alt="hình"
+                width="80px"
+                height="60px"
+                src={item?.productImageList[0]?.image}
+              />
+            ) : (
+              <img alt="hình" width="80px" height="60px" src={NullImage} />
+            )}
           </td>
-          <td style={{ paddingTop: 30 }}>{item.name}</td>
+          <td style={{ paddingTop: 30 }}>{item?.name}</td>
+
           <td style={{ paddingTop: 30 }}>
-            {dayjs(item.expiredDate).format("DD/MM/YYYY")}
+            {item?.productSubCategory?.id ? (
+              item?.productSubCategory?.name
+            ) : (
+              <p style={{ fontWeight: 600 }} className="text-danger">
+                Không tồn tại
+              </p>
+            )}
           </td>
           <td style={{ paddingTop: 30 }}>
-            {item.price.toLocaleString("vi-VN", {
-              style: "currency",
-              currency: "VND",
-            })}
+            {item?.supermarket?.id ? (
+              item?.supermarket?.name
+            ) : (
+              <p style={{ fontWeight: 600 }} className="text-danger">
+                Không tồn tại
+              </p>
+            )}
           </td>
-          <td style={{ paddingTop: 30 }}>{item.quantity}</td>
-          <td style={{ paddingTop: 30 }}>{item.productSubCategory.name}</td>
-          <td style={{ paddingTop: 30 }}>{item.supermarket.name}</td>
+          <td style={{ paddingTop: 30 }}>
+            <i
+              onClick={() => {
+                handleOpenProductBatch();
+              }}
+              class="bi bi-eye-fill"
+            ></i>
+          </td>
           <td style={{ paddingTop: 30 }}>
             <i onClick={handleOpen} class="bi bi-pencil-square"></i>
             <i onClick={handleOpenDelete} class="bi bi-trash-fill"></i>
+          </td>
+          <td style={{ paddingTop: 30 }}>
+            {errorList.some((item) => parseInt(item.index) === index + 1) ? (
+              <i
+                onClick={handleOpenErrorList}
+                style={{ marginLeft: "-3px" }}
+                class="bi bi-exclamation-circle-fill text-danger"
+              ></i>
+            ) : (
+              <i
+                style={{ marginLeft: "-3px" }}
+                class="bi bi-check-circle-fill"
+              ></i>
+            )}
           </td>
         </tr>
         <Dialog
@@ -176,22 +235,42 @@ const ConfirmProductUploadByExcel = ({
             </div>
           </div>
         </Dialog>
+        <Dialog
+          onClose={handleCloseProductBatch}
+          aria-labelledby="customized-dialog-title"
+          open={openProductBatch}
+        >
+          <ProductBatchUploadByExcel
+            handleClose={handleCloseProductBatch}
+            productBatch={item.productBatchList}
+          />
+        </Dialog>
+        <Dialog
+          onClose={handleCloseErrorList}
+          aria-labelledby="customized-dialog-title"
+          open={openErrorList}
+        >
+          <ErrorProductUploadByExcel
+            handleClose={handleCloseErrorList}
+            errorList={errorField ? errorField.value : []}
+          />
+        </Dialog>
       </>
     );
   };
 
   return (
-    <div
-      style={{ width: "max-content" }}
-      className="modal__container modal-scroll"
-    >
+    <div style={{ width: "1150px" }} className="modal__container modal-scroll">
       <div className="modal__container-header">
         <h3 className="modal__container-header-title">
           Xác nhận danh sách sản phẩm
         </h3>
         <FontAwesomeIcon onClick={handleClose} icon={faXmark} />
       </div>
-      <div className="modal__container-body">
+      <div
+        style={{ display: "flex", alignItems: "center" }}
+        className="modal__container-body"
+      >
         <div className="table__container">
           {/* data table */}
           <table class="table ">
@@ -200,16 +279,15 @@ const ConfirmProductUploadByExcel = ({
                 <th>No.</th>
                 <th>Hình ảnh</th>
                 <th>Tên Sản phẩm</th>
-                <th>Ngày hết hạn</th>
-                <th>Giá tiền</th>
-                <th>Số lượng</th>
                 <th>Loại sản phẩm phụ</th>
                 <th>Siêu thị</th>
+                <th>Lô hàng</th>
                 <th>Thao tác</th>
+                <th>Lỗi</th>
               </tr>
             </thead>
             <tbody>
-              {confirmProductList.map((item, index) => (
+              {confirmProductList.productList.map((item, index) => (
                 <ProductRow item={item} index={index} />
               ))}
             </tbody>
@@ -252,6 +330,7 @@ const ConfirmProductUploadByExcel = ({
           Chỉnh sửa thành công
         </Alert>
       </Snackbar>
+
       {loading && <LoadingScreen />}
     </div>
   );
