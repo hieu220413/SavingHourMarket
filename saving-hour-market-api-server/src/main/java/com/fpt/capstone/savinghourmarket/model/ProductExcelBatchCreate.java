@@ -20,4 +20,8 @@ public class ProductExcelBatchCreate {
     private LocalDate expiredDate;
 
     List<ProductExcelBatchAddressCreate> productBatchAddresses;
+
+    public boolean hasNullField() {
+        return price == null || priceOriginal == null || expiredDate == null || productBatchAddresses == null;
+    }
 }
