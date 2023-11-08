@@ -181,4 +181,26 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "AND " +
             "(o.deliveryDate = :deliverDate) ")
     List<Order> findOrderWithoutGroups(UUID timeframeId, Date deliverDate);
+
+    @Query("SELECT DISTINCT o FROM Order o " +
+            "JOIN FETCH o.timeFrame tf " +
+            "LEFT JOIN FETCH o.deliverer dlv " +
+            "LEFT JOIN FETCH o.orderBatch obt " +
+            "WHERE " +
+            "(o.status = 2)" +
+            "AND " +
+            "(obt IS NULL) " +
+            "AND " +
+            "(o.orderGroup IS NULL) " +
+            "AND " +
+            "(tf.id = :timeframeId) " +
+            "AND " +
+            "(o.deliveryMethod = 1)" +
+            "AND " +
+            "(dlv IS NULL) " +
+            "AND " +
+            "(o.deliveryDate = :deliverDate) " +
+            "AND " +
+            "o.id IN :orderIdList")
+    List<Order> findOrderByIdListWithDeliveredStatus(List<UUID> orderIdList, UUID timeframeId, Date deliverDate);
 }

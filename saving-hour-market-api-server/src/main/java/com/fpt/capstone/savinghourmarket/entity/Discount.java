@@ -66,13 +66,12 @@ public class Discount {
 //            inverseJoinColumns = @JoinColumn(name = "product_category_id")
 //    )
     @ManyToOne(
-            fetch = FetchType.LAZY
+            fetch = FetchType.EAGER
     )
     @JoinColumn(
             name = "product_category_id",
             referencedColumnName = "id"
     )
-    @JsonIgnore
     private ProductCategory productCategory;
 
 //    @ManyToMany(
@@ -84,12 +83,11 @@ public class Discount {
 //            inverseJoinColumns = @JoinColumn(name = "product_sub_category_id")
 //    )
     @ManyToOne(
-            fetch = FetchType.LAZY
+            fetch = FetchType.EAGER
     )
     @JoinColumn(
             name = "product_sub_category_id",
             referencedColumnName = "id"
     )
-    @JsonIgnore
     private ProductSubCategory productSubCategory;
 }

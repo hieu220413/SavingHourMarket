@@ -8,6 +8,7 @@ import {
   faPlusCircle,
   faMinus,
   faX,
+  faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { MdCloudUpload, MdDelete } from "react-icons/md";
 import { AiFillFileImage } from "react-icons/ai";
@@ -17,6 +18,9 @@ import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { v4 } from "uuid";
 import { API } from "../../../../contanst/api";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
+import { Slide } from "react-slideshow-image";
+import CreateProductImageSlider from "./CreateProductImageSlider";
+import { Dialog } from "@mui/material";
 
 const CreateProduct = ({
   handleClose,
@@ -28,9 +32,12 @@ const CreateProduct = ({
   setOpenSnackbar,
   setMsg,
 }) => {
-  const [image, setImage] = useState(null);
-  const [fileName, setFileName] = useState("Chưa có hình ảnh sản phẩm");
-  const [imgToFirebase, setImgToFirebase] = useState("");
+  const [image, setImage] = useState([]);
+  const [imgToFirebase, setImgToFirebase] = useState([]);
+
+  const [openImageUrlList, setOpenImageUrlList] = useState(false);
+  const handleOpenImageUrlList = () => setOpenImageUrlList(true);
+  const handleCloseImageUrlList = () => setOpenImageUrlList(false);
 
   const [imageSubCate, setImageSubCate] = useState(null);
   const [fileNameSubCate, setFileNameSubCate] = useState(
@@ -42,7 +49,6 @@ const CreateProduct = ({
   const [isActiveDropdown, setIsActiveDropdown] = useState(false);
   const [selectedDropdownItem, setSelectedDropdownItem] =
     useState("Chọn siêu thị");
-  const [isCreateNewSupermarket, setIsCreateNewSupermarket] = useState(false);
 
   const [categories, setCategories] = useState([]);
   const [isActiveDropdownCate, setIsActiveDropdownCate] = useState(false);
@@ -57,8 +63,6 @@ const CreateProduct = ({
   const [isCreateNewSubCate, setIsCreateNewSubCate] = useState(false);
 
   const [allowableDate, setAllowableDate] = useState("");
-
-  const [locationData, setLocationData] = useState([]);
 
   const [addressList, setAddressList] = useState([
     {
@@ -126,7 +130,7 @@ const CreateProduct = ({
           setSupermarkets(data.supermarketList);
         });
 
-      fetch(`${API.baseURL}/api/product/getAllCategory`, {
+      fetch(`${API.baseURL}/api/product/getCategoryForStaff`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -135,7 +139,7 @@ const CreateProduct = ({
       })
         .then((res) => res.json())
         .then((data) => {
-          setCategories(data);
+          setCategories(data.productCategoryList);
         })
         .catch((err) => {
           console.log(err);
@@ -144,17 +148,23 @@ const CreateProduct = ({
     fetchData();
   }, []);
 
-  const uploadProductImgToFirebase = async () => {
-    if (imgToFirebase !== "") {
-      const imgRef = ref(imageDB, `productImage/${v4()}`);
-      await uploadBytes(imgRef, imgToFirebase);
-      try {
-        const url = await getDownloadURL(imgRef);
-        return url;
-      } catch (error) {
-        console.log(error);
-      }
+  const uploadProductImgToFirebase = async (image) => {
+    const imgRef = ref(imageDB, `productImage/${v4()}`);
+    await uploadBytes(imgRef, image);
+    try {
+      const url = await getDownloadURL(imgRef);
+      return url;
+    } catch (error) {
+      console.log(error);
     }
+  };
+
+  const uploadProductImagesToFireBase = async (images) => {
+    const imageList = Array.from(images, (image) =>
+      uploadProductImgToFirebase(image)
+    );
+    const imageUrls = await Promise.all(imageList);
+    return imageUrls;
   };
 
   const uploadSubCateImgToFireBase = async () => {
@@ -267,7 +277,7 @@ const CreateProduct = ({
       return;
     }
 
-    let imageUrl = await uploadProductImgToFirebase();
+    let imageUrl = await uploadProductImagesToFireBase(imgToFirebase);
     if (imageUrl === "") {
       setError({ ...error, imageUrl: "Chưa có ảnh sản phẩm" });
       return;
@@ -386,328 +396,68 @@ const CreateProduct = ({
           style={{ height: "65vh", overflowY: "scroll" }}
         >
           {/* Supermarket */}
-          {isCreateNewSupermarket === false && (
-            <>
-              <div className="modal__container-body-inputcontrol">
-                <h4 className="modal__container-body-inputcontrol-label">
-                  Tên siêu thị
-                </h4>
-                <div>
-                  <div
-                    style={{
-                      display: "flex",
-                    }}
-                  >
-                    <div className="dropdown">
-                      <div
-                        className="dropdown-btn"
-                        onClick={(e) => setIsActiveDropdown(!isActiveDropdown)}
-                      >
-                        {selectedDropdownItem}
-                        <FontAwesomeIcon icon={faCaretDown} />
-                      </div>
-                      {isActiveDropdown && (
-                        <div className="dropdown-content">
-                          {supermarkets.map((item, index) => (
-                            <div
-                              onClick={(e) => {
-                                setSelectedDropdownItem(item.name);
-                                setIsActiveDropdown(false);
-                                setSupermarketId(item.id);
-                                setSupermarket(item.name);
-                                setError({ ...error, supermarket: "" });
-                                setSupermarketAddress(
-                                  item.supermarketAddressList
-                                );
-                                setSuperMarketHotline(item.phone);
-                                const tempArrAddressList = addressList.map(
-                                  (data) => {
-                                    return { ...data, isCreateNew: false };
-                                  }
-                                );
-                                setAddressList(tempArrAddressList);
-                              }}
-                              className="dropdown-item"
-                              key={index}
-                            >
-                              {item.name}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <button
-                      style={{
-                        width: "120px",
-                      }}
-                      className="buttonSwitchSelectSuperMarket"
-                      onClick={(e) => {
-                        setIsCreateNewSupermarket(true);
-                        setSupermarket("");
-                        setSuperMarketHotline("");
-                        setSupermarketAddress([]);
-                        setAddressList([
-                          {
-                            isFocused: false,
-                            selectAddress: "",
-                            searchAddress: "",
-                          },
-                        ]);
-                      }}
-                    >
-                      Thêm mới
-                      <FontAwesomeIcon
-                        icon={faRepeat}
-                        style={{ paddingLeft: 10 }}
-                      />
-                    </button>
-                  </div>
-                  {error.supermarket && (
-                    <p
-                      style={{ fontSize: "14px", marginBottom: "-10px" }}
-                      className="text-danger"
-                    >
-                      {error.supermarket}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
-          {/* Create Supermarket */}
-          {isCreateNewSupermarket && (
-            <>
-              <button
-                className="buttonSwitchSelectSuperMarket"
-                onClick={(e) => {
-                  setIsCreateNewSupermarket(false);
-                  setSupermarket("");
-                  setSelectedDropdownItem("Chọn siêu thị");
+          <div className="modal__container-body-inputcontrol">
+            <h4 className="modal__container-body-inputcontrol-label">
+              Tên siêu thị
+            </h4>
+            <div>
+              <div
+                style={{
+                  display: "flex",
                 }}
               >
-                Thêm siêu thị có sẵn
-                <FontAwesomeIcon icon={faRepeat} style={{ paddingLeft: 10 }} />
-              </button>
-              <div className="modal__container-body-inputcontrol">
-                <h4 className="modal__container-body-inputcontrol-label">
-                  Tên siêu thị
-                </h4>
-                <div>
-                  <input
-                    placeholder="Nhập tên siêu thị"
-                    type="text"
-                    className="modal__container-body-inputcontrol-input"
-                    value={supermarket}
-                    onChange={(e) => {
-                      setSupermarket(e.target.value);
-                      setError({ ...error, supermarket: "" });
-                    }}
-                  />
-                  {error.supermarket && (
-                    <p
-                      style={{ fontSize: "14px", marginBottom: "-10px" }}
-                      className="text-danger"
-                    >
-                      {error.supermarket}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="modal__container-body-inputcontrol">
-                <h4 className="modal__container-body-inputcontrol-label">
-                  Hotline siêu thị
-                </h4>
-                <div>
-                  <input
-                    placeholder="Nhập Hotline siêu thị"
-                    type="text"
-                    className="modal__container-body-inputcontrol-input"
-                    value={supermarketHotline}
-                    onChange={(e) => {
-                      setSuperMarketHotline(e.target.value);
-                      setError({ ...error, supermarketHotline: "" });
-                    }}
-                  />
-                  {error.supermarketHotline && (
-                    <p
-                      style={{ fontSize: "14px", marginBottom: "-10px" }}
-                      className="text-danger"
-                    >
-                      {error.supermarketHotline}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {addressList.map((item, i) => {
-                return (
-                  <div className="modal__container-body-inputcontrol input-address">
-                    <div className="modal__container-body-inputcontrol-label-icon">
-                      {addressList.length !== 1 && (
-                        <div
-                          onClick={() => {
-                            setAddressList(
-                              addressList.filter((address) => address !== item)
-                            );
-                            setError({ ...error, supermarketAddress: "" });
-                          }}
-                          className="button__minus"
-                        >
-                          <FontAwesomeIcon icon={faMinus} />
-                        </div>
-                      )}
-
-                      <h4 className="modal__container-body-inputcontrol-label">
-                        Chi nhánh {i + 1}
-                      </h4>
-                    </div>
-
-                    <div>
-                      <input
-                        style={{ paddingRight: 20 }}
-                        value={item.searchAddress}
-                        onChange={(e) => {
-                          const newAddressList1 = addressList.map(
-                            (data, index) => {
-                              if (index === i) {
-                                return {
-                                  ...data,
-                                  searchAddress: e.target.value,
-                                  selectAddress: "",
-                                };
-                              }
-                              return data;
-                            }
-                          );
-                          setAddressList(newAddressList1);
-                          setError({ ...error, supermarketAddress: "" });
-
-                          if (typingTimeoutRef.current) {
-                            clearTimeout(typingTimeoutRef.current);
-                          }
-                          typingTimeoutRef.current = setTimeout(() => {
-                            fetch(
-                              `https://rsapi.goong.io/Place/AutoComplete?api_key=${API.GoongAPIKey}&limit=4&input=${item.searchAddress}`
-                            )
-                              .then((res) => res.json())
-                              .then((respond) => {
-                                if (!respond.predictions) {
-                                  setLocationData([]);
-                                  return;
-                                }
-                                setLocationData(respond.predictions);
-                              })
-                              .catch((err) => console.log(err));
-                          }, 400);
-                        }}
-                        onFocus={() => {
-                          setLocationData([]);
-                          const newAddressList1 = addressList.map(
-                            (data, index) => {
-                              if (index === i) {
-                                return { ...data, isFocused: true };
-                              }
-                              return { ...data, isFocused: false };
-                            }
-                          );
-                          setAddressList(newAddressList1);
-                        }}
-                        placeholder="Nhập địa chỉ"
-                        type="text"
-                        className="modal__container-body-inputcontrol-input"
-                      />
-                      {item.searchAddress && (
-                        <FontAwesomeIcon
-                          onClick={() => {
-                            const newAddressList1 = addressList.map(
-                              (data, index) => {
-                                if (index === i) {
-                                  return {
-                                    ...data,
-                                    searchAddress: "",
-                                    selectAddress: "",
-                                  };
-                                }
-                                return data;
-                              }
-                            );
-                            setAddressList(newAddressList1);
-                          }}
-                          className="input-icon-x"
-                          icon={faX}
-                        />
-                      )}
-
-                      {item.isFocused && locationData.length !== 0 && (
-                        <div
-                          className="suggest-location"
-                          style={{
-                            left: "155px",
-                          }}
-                        >
-                          {locationData.map((data) => (
-                            <div
-                              onClick={() => {
-                                const newAddressList1 = addressList.map(
-                                  (address, index) => {
-                                    if (index === i) {
-                                      return {
-                                        isFocused: false,
-                                        searchAddress: data.description,
-                                        selectAddress: data.description,
-                                      };
-                                    }
-                                    return address;
-                                  }
-                                );
-                                setAddressList(newAddressList1);
-                              }}
-                              className="suggest-location-item"
-                            >
-                              <h4>{data.description}</h4>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                <div
+                  className="dropdown"
+                  style={{
+                    width: "400px",
+                  }}
+                >
+                  <div
+                    className="dropdown-btn"
+                    onClick={(e) => setIsActiveDropdown(!isActiveDropdown)}
+                  >
+                    {selectedDropdownItem}
+                    <FontAwesomeIcon icon={faCaretDown} />
                   </div>
-                );
-              })}
-
-              {error.supermarketAddress && (
+                  {isActiveDropdown && (
+                    <div className="dropdown-content">
+                      {supermarkets.map((item, index) => (
+                        <div
+                          onClick={(e) => {
+                            setSelectedDropdownItem(item.name);
+                            setIsActiveDropdown(false);
+                            setSupermarketId(item.id);
+                            setSupermarket(item.name);
+                            setError({ ...error, supermarket: "" });
+                            setSupermarketAddress(item.supermarketAddressList);
+                            setSuperMarketHotline(item.phone);
+                            const tempArrAddressList = addressList.map(
+                              (data) => {
+                                return { ...data, isCreateNew: false };
+                              }
+                            );
+                            setAddressList(tempArrAddressList);
+                          }}
+                          className="dropdown-item"
+                          key={index}
+                        >
+                          {item.name}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+              {error.supermarket && (
                 <p
                   style={{ fontSize: "14px", marginBottom: "-10px" }}
                   className="text-danger"
                 >
-                  {error.supermarketAddress}
+                  {error.supermarket}
                 </p>
               )}
-
-              <div className="modal__container-body-inputcontrol">
-                <button
-                  onClick={() => {
-                    setAddressList([
-                      ...addressList,
-                      {
-                        isFocused: false,
-                        selectAddress: "",
-                        searchAddress: "",
-                      },
-                    ]);
-                    setError({ ...error, supermarketAddress: "" });
-                  }}
-                  className="buttonAddSupermarkerAddress"
-                >
-                  Thêm chi nhánh mới
-                  <FontAwesomeIcon
-                    icon={faPlusCircle}
-                    style={{ paddingLeft: 10 }}
-                  />
-                </button>
-              </div>
-            </>
-          )}
+            </div>
+          </div>
 
           {/* Categories */}
           {isCreateNewCate === false && (
@@ -1382,71 +1132,114 @@ const CreateProduct = ({
             </div>
           </div>
           {/* Image Upload */}
-          <div className="modal__container-body-inputcontrol">
-            <h4 className="modal__container-body-inputcontrol-label">
-              Tải ảnh
-            </h4>
-            <div style={{ maxWidth: "400px" }}>
-              <div
-                className="imgWrapper"
-                onClick={() => document.querySelector("#imgUpload").click()}
-              >
-                <input
-                  id="imgUpload"
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  onChange={({ target: { files } }) => {
-                    files[0] && setFileName(files[0].name);
-                    if (files && files[0]) {
-                      setImage(URL.createObjectURL(files[0]));
-                      setImgToFirebase(files[0]);
-                      console.log(files[0]);
-                      setError({ ...error, imageUrl: "" });
-                    }
-                  }}
-                />
-                {image ? (
-                  <img
-                    src={image}
-                    width={360}
-                    height={160}
-                    alt={fileName}
-                    style={{ borderRadius: "5px", maxWidth: 360 }}
+          <>
+            <div
+              className="modal__container-body-inputcontrol"
+              style={{
+                position: "relative",
+              }}
+            >
+              <div className="modal__container-body-inputcontrol-label-icon">
+                <h4 className="modal__container-body-inputcontrol-label">
+                  Tải ảnh
+                </h4>
+              </div>
+
+              <div style={{ maxWidth: "400px" }}>
+                <div
+                  className="imgWrapper"
+                  onClick={() => document.querySelector("#imgUpload").click()}
+                >
+                  <input
+                    id="imgUpload"
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    hidden
+                    onChange={({ target: { files } }) => {
+                      if (files) {
+                        const fileArray = Object.entries(files).map(
+                          ([key, value]) => {
+                            return { index: key, value: value };
+                          }
+                        );
+                        let imageUrlListToShow = [];
+                        let imageUrlListToFireBase = [];
+                        fileArray.map((item) => {
+                          imageUrlListToShow.push(
+                            URL.createObjectURL(item.value)
+                          );
+                          imageUrlListToFireBase.push(item.value);
+                        });
+                        setImage(imageUrlListToShow);
+                        setImgToFirebase(
+                          imageUrlListToFireBase
+                            ? imageUrlListToFireBase
+                            : files[0]
+                        );
+                        setError({ ...error, imageUrl: "" });
+                      }
+                    }}
                   />
-                ) : (
-                  <>
-                    <MdCloudUpload color="#37a65b" size={60} />
-                    <p style={{ fontSize: "14px" }}>Tải ảnh sản phẩm</p>
-                  </>
+                  {image.length !== 0 ? (
+                    <img
+                      src={image[0]}
+                      width={360}
+                      height={160}
+                      style={{ borderRadius: "5px", maxWidth: 360 }}
+                    />
+                  ) : (
+                    <>
+                      <MdCloudUpload color="#37a65b" size={60} />
+                      <p style={{ fontSize: "14px" }}>Tải ảnh sản phẩm</p>
+                    </>
+                  )}
+                </div>
+                {image.length > 1 && (
+                  <section
+                    className="uploaded-row"
+                    style={{
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      {
+                        handleOpenImageUrlList();
+                      }
+                    }}
+                  >
+                    <h4>Xem tất cả hình đã tải lên</h4>
+                  </section>
+                )}
+                {error.imageUrl && (
+                  <p
+                    style={{ fontSize: "14px", marginBottom: "-10px" }}
+                    className="text-danger"
+                  >
+                    {error.imageUrl}
+                  </p>
                 )}
               </div>
-              <section className="uploaded-row">
-                <AiFillFileImage color="#37a65b" size={25} />
-                <span className="upload-content">
-                  {fileName} -
-                  <MdDelete
-                    color="#37a65b"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => {
-                      setFileName("Chưa có hình ảnh sản phẩm");
-                      setImage(null);
-                      setImgToFirebase("");
-                    }}
-                    size={25}
-                  />
-                </span>
-              </section>
-              {error.imageUrl && (
-                <p
-                  style={{ fontSize: "14px", marginBottom: "-10px" }}
-                  className="text-danger"
-                >
-                  {error.imageUrl}
-                </p>
-              )}
             </div>
-          </div>
+          </>
+          {/* <div>
+            <button
+              className="buttonAddSupermarkerAddress"
+              onClick={() => {
+                setImageList([
+                  ...imageList,
+                  {
+                    isFocus: false,
+                    selectImage: null,
+                    imageUrl: null,
+                    error: "",
+                  },
+                ]);
+              }}
+            >
+              <FontAwesomeIcon icon={faPlus} />
+              <span style={{ marginLeft: 5 }}>Thêm hình ảnh</span>
+            </button>
+          </div> */}
         </div>
         {/* ********************** */}
 
@@ -1469,6 +1262,16 @@ const CreateProduct = ({
         </div>
         {/* *********************** */}
       </div>
+      <Dialog
+        onClose={handleCloseImageUrlList}
+        aria-labelledby="customized-dialog-title"
+        open={openImageUrlList}
+      >
+        <CreateProductImageSlider
+          handleClose={handleCloseImageUrlList}
+          imageUrlList={image}
+        />
+      </Dialog>
       {loading && <LoadingScreen />}
     </>
   );
