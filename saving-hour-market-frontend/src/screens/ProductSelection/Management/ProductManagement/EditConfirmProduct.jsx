@@ -244,6 +244,7 @@ const EditConfirmProduct = ({
       // validate supermarketstore
       if (
         !batch.supermarketAddress?.id ||
+        !batch.supermarketAddress ||
         !supermarketStores.some(
           (item) => item.address === batch?.supermarketAddress?.address
         )
@@ -262,10 +263,10 @@ const EditConfirmProduct = ({
     });
 
     if (productbatchValidate.some((item) => item === false)) {
+      setProductBatchs(newProductBatchs);
       return;
     }
 
-    setProductBatchs(newProductBatchs);
     const uniqueValues = new Set(
       productBatchs.map((v) => v?.supermarketAddress?.address)
     );
@@ -280,19 +281,18 @@ const EditConfirmProduct = ({
       return;
     }
     //  **************************
-    let isProductDuplicated = confirmProductList.productList.find(
-      (item, index) => {
-        if (
-          item.name === productName &&
-          item.productSubCategory.id === selectedDropdownItemSubCate.id &&
-          item.unit === unit &&
-          item.supermarket.id === selectedSupermarketDropdownItem.id
-        ) {
-          return Object.assign(item, { index: index });
-        }
-        return null;
+    let isProductDuplicated = confirmProductList.productList.find((item, i) => {
+      if (
+        item.name === productName &&
+        item.productSubCategory.id === selectedDropdownItemSubCate.id &&
+        item.unit === unit &&
+        item.supermarket.id === selectedSupermarketDropdownItem.id &&
+        i !== index
+      ) {
+        return Object.assign(item, { index: i });
       }
-    );
+      return null;
+    });
     if (isProductDuplicated) {
       setProductDuplicated(isProductDuplicated);
       handleOpenProductDuplicated();
