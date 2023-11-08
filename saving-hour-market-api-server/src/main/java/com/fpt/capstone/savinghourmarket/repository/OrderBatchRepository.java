@@ -15,18 +15,16 @@ import java.util.UUID;
 
 @Repository
 public interface OrderBatchRepository extends JpaRepository<OrderBatch, UUID> {
-    Optional<OrderBatch> findByDistrictAndDeliverDate(String district, LocalDate deliveryDate);
+//    Optional<OrderBatch> findByDistrictAndDeliverDate(String district, LocalDate deliveryDate);
 
     @Query("SELECT ob from OrderBatch  ob " +
             "WHERE " +
-            "((:district IS NULL) OR (ob.district = :district)) " +
-            "AND " +
             "((:deliveryDate IS NULL) OR (ob.deliverDate = :deliveryDate)) " +
             "AND " +
             "((:delivererId IS NULL) OR (ob.deliverer.id = :delivererId)) "+
             "AND " +
             "(ob.orderList IS NOT EMPTY) ")
-    List<OrderBatch> findByDistrictOrDeliverDate(String district, LocalDate deliveryDate,UUID delivererId);
+    List<OrderBatch> findByDistrictOrDeliverDate(LocalDate deliveryDate,UUID delivererId);
 
     @Query("SELECT ob FROM OrderBatch ob " +
             "JOIN ob.deliverer delv " +

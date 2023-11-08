@@ -9,6 +9,11 @@ import LoadingScreen from '../components/LoadingScreen';
 import { useFocusEffect } from '@react-navigation/native';
 import { API } from '../constants/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Modal, {
+    ModalFooter,
+    ModalButton,
+    ScaleAnimation,
+} from 'react-native-modals';
 
 const ChangePickupPoint = ({ navigation, route }) => {
     const [pickupPointSuggestionList, setPickupPointSuggestionList] = useState([]);
@@ -24,6 +29,9 @@ const ChangePickupPoint = ({ navigation, route }) => {
         long: route.params.pickupPoint.longitude,
         lat: route.params.pickupPoint.latitude,
     });
+    const [otherPickupPointList, setOtherPickupPointList] = useState([]);
+    const [openValidateDialog, setOpenValidateDialog] = useState(false);
+    const [validateMessage, setValidateMessage] = useState('');
 
     const typingTimeoutRef = useRef(null);
 
@@ -66,6 +74,7 @@ const ChangePickupPoint = ({ navigation, route }) => {
                     setPickupPointSuggestionList(
                         response.sortedPickupPointSuggestionList,
                     );
+                    setOtherPickupPointList(response.otherSortedPickupPointList);
                     setLoading(false);
                 })
                 .catch(err => {
@@ -104,10 +113,22 @@ const ChangePickupPoint = ({ navigation, route }) => {
                     long: respond.result.geometry.location.lng,
                     lat: respond.result.geometry.location.lat,
                 };
-                setText(item.description);
-                setSearchValue(item.description);
-                setLocationPicked(picked);
-                setLoading(false);
+
+                if (
+                    picked.address.includes('Ho Chi Minh') ||
+                    picked.address.includes('Hồ Chí Minh') ||
+                    picked.address.includes('HCM')
+                ) {
+                    setText(item.description);
+                    setSearchValue(item.description);
+                    setLocationPicked(picked);
+                    setLoading(false);
+                } else {
+                    setValidateMessage('Chúng tôi chỉ giao hàng trong khu vực TP.HCM');
+                    setOpenValidateDialog(true);
+                    setLoading(false);
+                    return;
+                }
             })
             .catch(err => console.log(err));
     };
@@ -215,13 +236,90 @@ const ChangePickupPoint = ({ navigation, route }) => {
                         paddingHorizontal: 15
                     }}
                 >
-                    {pickupPointSuggestionList.map(item => (
+                    {pickupPointSuggestionList.map((item, index) => (
+                        <View
+                            key={index}
+                        >
+                            {item.distanceInValue !== 0 && (
+                                <>
+                                    <TouchableOpacity
+                                        key={item.id}
+                                        onPress={async () => {
+                                            try {
+                                                storedPickupPoint(item);
+                                                route.params.setPickupPoint(item);
+                                                navigation.navigate('Start');
+                                            } catch (e) {
+                                                console.log(e);
+                                            }
+                                        }}
+                                        style={{
+                                            paddingVertical: 15,
+
+                                            borderBottomColor: '#decbcb',
+                                            borderBottomWidth: 0.75,
+                                        }}>
+                                        <View
+                                            style={{
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                gap: 15,
+                                                flex: 1,
+                                            }}>
+                                            <Image
+                                                resizeMode="contain"
+                                                style={{ width: 25, height: 25 }}
+                                                source={icons.location}
+                                            />
+                                            <Text
+                                                style={{
+                                                    fontSize: 17,
+                                                    color: 'black',
+                                                    fontFamily: 'Roboto',
+                                                    width: '70%',
+                                                }}>
+                                                {item.address}
+                                            </Text>
+                                            <Text style={{ fontSize: 14 }}>{item.distance}</Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                </>
+                            )}
+                        </View>
+                    ))}
+                </ScrollView>
+                {/* ******* */}
+                <Text
+                    style={{
+                        fontSize: 20,
+                        color: 'black',
+                        fontFamily: 'Roboto',
+                        fontWeight: 'bold',
+                        paddingBottom: 20,
+                        marginTop: 20,
+                        borderBottomColor: '#decbcb',
+                        borderBottomWidth: 0.75,
+                        marginHorizontal: 15,
+                    }}>
+                    Khác
+                </Text>
+                {/* Order pickup point */}
+                <ScrollView
+                    contentContainerStyle={{
+                        paddingHorizontal: 15,
+                    }}
+                >
+                    {otherPickupPointList.map(item => (
                         <TouchableOpacity
                             key={item.id}
-                            onPress={() => {
-                                storedPickupPoint(item);
-                                route.params.setPickupPoint(item);
-                                navigation.navigate('Start');
+                            onPress={async () => {
+                                try {
+                                    storedPickupPoint(item);
+                                    route.params.setPickupPoint(item);
+                                    navigation.navigate('Start');
+                                } catch (e) {
+                                    console.log(e);
+                                }
                             }}
                             style={{
                                 paddingVertical: 15,
@@ -255,7 +353,44 @@ const ChangePickupPoint = ({ navigation, route }) => {
                         </TouchableOpacity>
                     ))}
                 </ScrollView>
+
             </View>
+            <Modal
+                width={0.8}
+                visible={openValidateDialog}
+                onTouchOutside={() => {
+                    setOpenValidateDialog(false);
+                }}
+                dialogAnimation={
+                    new ScaleAnimation({
+                        initialValue: 0, // optional
+                        useNativeDriver: true, // optional
+                    })
+                }
+                footer={
+                    <ModalFooter>
+                        <ModalButton
+                            textStyle={{ color: 'red' }}
+                            text="Đóng"
+                            onPress={() => {
+                                setOpenValidateDialog(false);
+                            }}
+                        />
+                    </ModalFooter>
+                }>
+                <View
+                    style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
+                    <Text
+                        style={{
+                            fontSize: 20,
+                            fontFamily: 'Roboto',
+                            color: 'black',
+                            textAlign: 'center',
+                        }}>
+                        {validateMessage}
+                    </Text>
+                </View>
+            </Modal>
             {loading && <LoadingScreen />}
         </>
     );

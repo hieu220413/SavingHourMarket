@@ -67,7 +67,7 @@ public interface OrderService {
     ;
 
 
-    List<OrderBatch> fetchOrderBatches(District district, LocalDate deliveryDate, UUID delivererID) throws NoSuchOrderException;
+    List<OrderBatch> fetchOrderBatches(LocalDate deliveryDate, UUID delivererID) throws NoSuchOrderException;
 
     String confirmPackaging(UUID orderId, UUID staffId) throws NoSuchOrderException, IOException;
 
