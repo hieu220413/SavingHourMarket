@@ -3,10 +3,8 @@ package com.fpt.capstone.savinghourmarket.controller;
 import com.fpt.capstone.savinghourmarket.common.Month;
 import com.fpt.capstone.savinghourmarket.common.Quarter;
 import com.fpt.capstone.savinghourmarket.entity.Discount;
-import com.fpt.capstone.savinghourmarket.model.CateWithSubCateDiscountUsageReport;
-import com.fpt.capstone.savinghourmarket.model.DiscountOnly;
-import com.fpt.capstone.savinghourmarket.model.DiscountReport;
-import com.fpt.capstone.savinghourmarket.model.DiscountsUsageReportResponseBody;
+import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
+import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.service.DiscountService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
@@ -19,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -122,4 +121,37 @@ public class DiscountController {
         CateWithSubCateDiscountUsageReport discountsUsageReportResponseBody = discountService.getCategoryWithSubCategoryDiscountUsageReport(month, quarter, year, fromPercentage, toPercentage, productCategoryId);
         return ResponseEntity.status(HttpStatus.OK).body(discountsUsageReportResponseBody);
     }
+
+    @RequestMapping(value = "/createDiscount", method = RequestMethod.POST)
+    public ResponseEntity<Discount> createDiscount(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken,
+                                                   @Valid @RequestBody DiscountCreate discountCreate) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        return ResponseEntity.status(HttpStatus.OK).body(discountService.create(discountCreate));
+    }
+
+    @RequestMapping(value = "/updateDiscount", method = RequestMethod.PUT)
+    public ResponseEntity<Discount> updateDiscount(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken,
+                                                   @Valid @RequestBody DiscountUpdate discount) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        return ResponseEntity.status(HttpStatus.OK).body(discountService.update(discount));
+    }
+
+    @RequestMapping(value = "/disableDiscount/{id}", method = RequestMethod.PUT)
+    public ResponseEntity<Discount> disableDiscount(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken,
+                                                   @PathVariable UUID id) throws FirebaseAuthException, ResourceNotFoundException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        return ResponseEntity.status(HttpStatus.OK).body(discountService.disable(id));
+    }
+
+    @RequestMapping(value = "/enableDiscount/{id}", method = RequestMethod.PUT)
+    public ResponseEntity<Discount> enableDiscount(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken,
+                                                    @PathVariable UUID id) throws FirebaseAuthException, ResourceNotFoundException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        return ResponseEntity.status(HttpStatus.OK).body(discountService.enable(id));
+    }
+
 }
