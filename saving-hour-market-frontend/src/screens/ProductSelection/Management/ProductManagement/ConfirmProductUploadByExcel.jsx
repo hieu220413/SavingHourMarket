@@ -132,14 +132,23 @@ const ConfirmProductUploadByExcel = ({
               <img alt="hình" width="80px" height="60px" src={NullImage} />
             )}
           </td>
-          <td style={{ paddingTop: 30 }}>{item?.name}</td>
+          <td style={{ paddingTop: 30 }}>
+            {" "}
+            {item?.name ? (
+              item?.name
+            ) : (
+              <p style={{ fontWeight: 700 }} className="text-danger">
+                Lỗi tên
+              </p>
+            )}
+          </td>
 
           <td style={{ paddingTop: 30 }}>
             {item?.productSubCategory?.id ? (
               item?.productSubCategory?.name
             ) : (
-              <p style={{ fontWeight: 600 }} className="text-danger">
-                Không tồn tại
+              <p style={{ fontWeight: 700 }} className="text-danger">
+                Lỗi loại sản phẩm phụ
               </p>
             )}
           </td>
@@ -147,8 +156,8 @@ const ConfirmProductUploadByExcel = ({
             {item?.supermarket?.id ? (
               item?.supermarket?.name
             ) : (
-              <p style={{ fontWeight: 600 }} className="text-danger">
-                Không tồn tại
+              <p style={{ fontWeight: 700 }} className="text-danger">
+                Lỗi siêu thị
               </p>
             )}
           </td>
@@ -165,7 +174,8 @@ const ConfirmProductUploadByExcel = ({
             <i onClick={handleOpenDelete} class="bi bi-trash-fill"></i>
           </td>
           <td style={{ paddingTop: 30 }}>
-            {errorList.some((item) => parseInt(item.index) === index + 1) ? (
+            {errorList.some((item) => parseInt(item.index) === index + 1) ||
+            !item.productImageList ? (
               <i
                 onClick={handleOpenErrorList}
                 style={{ marginLeft: "-3px" }}
@@ -260,7 +270,7 @@ const ConfirmProductUploadByExcel = ({
   };
 
   return (
-    <div style={{ width: "1150px" }} className="modal__container modal-scroll">
+    <div style={{ width: "1200px" }} className="modal__container modal-scroll">
       <div className="modal__container-header">
         <h3 className="modal__container-header-title">
           Xác nhận danh sách sản phẩm
