@@ -21,6 +21,8 @@ public class OrderGroup {
     private UUID id;
 
     private LocalDate deliverDate;
+//
+//    private int status;
 
     @ManyToOne
     @JoinColumn(
@@ -50,4 +52,6 @@ public class OrderGroup {
             mappedBy = "orderGroup"
     )
     private List<Order> orderList;
+
+
 }

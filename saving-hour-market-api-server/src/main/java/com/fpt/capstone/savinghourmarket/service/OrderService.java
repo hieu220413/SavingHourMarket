@@ -1,8 +1,6 @@
 package com.fpt.capstone.savinghourmarket.service;
 
-import com.fpt.capstone.savinghourmarket.common.District;
-import com.fpt.capstone.savinghourmarket.common.OrderReportMode;
-import com.fpt.capstone.savinghourmarket.common.OrderStatus;
+import com.fpt.capstone.savinghourmarket.common.*;
 import com.fpt.capstone.savinghourmarket.entity.Order;
 import com.fpt.capstone.savinghourmarket.entity.OrderBatch;
 import com.fpt.capstone.savinghourmarket.entity.OrderGroup;
@@ -11,7 +9,6 @@ import com.fpt.capstone.savinghourmarket.model.*;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.maps.errors.ApiException;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.IOException;
 import java.sql.Date;
@@ -20,7 +17,13 @@ import java.util.List;
 import java.util.UUID;
 
 public interface OrderService {
-    List<OrderGroup> fetchOrderGroups(LocalDate deliverDate, UUID timeFrameId, UUID pickupPointId, UUID delivererId) throws NoSuchOrderException, FirebaseAuthException;
+    List<OrderGroup> fetchOrderGroups(SortType deliverDateSortType,
+                                      LocalDate deliverDate,
+                                      UUID timeFrameId,
+                                      UUID pickupPointId,
+                                      UUID delivererId,
+                                      Integer page,
+                                      Integer size) throws FirebaseAuthException;
 
     List<Order> fetchOrdersForStaff(String totalPriceSortType,
                                     String createdTimeSortType,

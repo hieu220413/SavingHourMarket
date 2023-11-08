@@ -1,9 +1,6 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
-import com.fpt.capstone.savinghourmarket.common.District;
-import com.fpt.capstone.savinghourmarket.common.OrderReportMode;
-import com.fpt.capstone.savinghourmarket.common.OrderStatus;
-import com.fpt.capstone.savinghourmarket.common.SortType;
+import com.fpt.capstone.savinghourmarket.common.*;
 import com.fpt.capstone.savinghourmarket.entity.Order;
 import com.fpt.capstone.savinghourmarket.entity.OrderBatch;
 import com.fpt.capstone.savinghourmarket.entity.OrderGroup;
@@ -24,7 +21,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
@@ -122,13 +118,16 @@ public class OrderController {
 
     @GetMapping("/staff/getOrderGroup")
     public ResponseEntity<List<OrderGroup>> getOrderGroupForStaff(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
+                                                                  @RequestParam(required = false) SortType deliverDateSortType,
                                                                   @RequestParam(required = false) LocalDate deliverDate,
                                                                   @RequestParam(required = false) UUID timeFrameId,
                                                                   @RequestParam(required = false) UUID pickupPointId,
-                                                                  @RequestParam(required = false) UUID delivererId) throws NoSuchOrderException, FirebaseAuthException {
+                                                                  @RequestParam(required = false) UUID delivererId,
+                                                                  @RequestParam(defaultValue = "0") Integer page,
+                                                                  @RequestParam(defaultValue = "10") Integer size) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderGroups(deliverDate, timeFrameId, pickupPointId, delivererId));
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderGroups(deliverDateSortType,deliverDate, timeFrameId, pickupPointId, delivererId,page,size));
     }
 
     @GetMapping("/staff/getOrderBatch")
