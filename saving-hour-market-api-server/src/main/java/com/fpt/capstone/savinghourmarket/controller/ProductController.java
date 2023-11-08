@@ -130,7 +130,7 @@ public class ProductController {
             // just in case need status
             , @Parameter(hidden = true) @RequestParam(required = false) EnableDisableStatus status
             , @RequestParam(defaultValue = "0") Integer page
-            , @RequestParam(defaultValue = "5") Integer limit) throws FirebaseAuthException {
+            , @RequestParam(required = false) Integer limit) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
         CategoryListResponseBody categoryListResponseBody = productService.getCategoryForStaff(name, status, page, limit);

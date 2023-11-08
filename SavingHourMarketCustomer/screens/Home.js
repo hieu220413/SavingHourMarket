@@ -56,25 +56,19 @@ const Home = ({navigation}) => {
     });
   };
 
+  // console.log(cartList);
+
   useFocusEffect(
     useCallback(() => {
-      (async () => {
-        try {
-          setLoading(true);
-          const cartList = await AsyncStorage.getItem('CartList');
-          setCartList(cartList ? JSON.parse(cartList) : []);
-          setLoading(false);
-        } catch (err) {
-          console.log(err);
-          setLoading(false);
-        }
-      })();
       // Get pickup point from AS
       (async () => {
         try {
           setLoading(true);
           const value = await AsyncStorage.getItem('PickupPoint');
           setPickupPoint(value ? JSON.parse(value) : pickupPoint);
+          const cartListNew = await AsyncStorage.getItem('CartList'+JSON.parse(value).id);
+          console.log(cartListNew);
+          setCartList(cartListNew ? JSON.parse(cartListNew) : []);
           setLoading(false);
         } catch (err) {
           console.log(err);
@@ -179,6 +173,7 @@ const Home = ({navigation}) => {
         onPress={() => {
           navigation.navigate('ProductDetails', {
             product: data,
+            pickupPointId: pickupPoint.id
           });
         }}>
         <View style={styles.itemContainer}>
@@ -191,17 +186,29 @@ const Home = ({navigation}) => {
             style={styles.itemImage}
           />
 
-          <View style={{justifyContent: 'center', flex: 1, marginRight: 10}}>
+          <View style={{ justifyContent: 'center', flex: 1, marginRight: 10,marginTop:5 }}>
             <Text
               numberOfLines={1}
               style={{
                 fontFamily: FONTS.fontFamily,
-                fontSize: 18,
+                fontSize: 20,
                 fontWeight: 700,
                 maxWidth: '95%',
                 color: 'black',
               }}>
               {data.name}
+            </Text>
+            <Text
+              style={{
+                fontFamily: FONTS.fontFamily,
+                fontSize: 16,
+                marginTop:8,
+                marginBottom: 10,
+              }}>
+              HSD:{' '}
+              {dayjs(data?.nearestExpiredBatch.expiredDate).format(
+                'DD/MM/YYYY',
+              )}
             </Text>
 
             <View style={{flexDirection: 'row'}}>
@@ -209,9 +216,9 @@ const Home = ({navigation}) => {
                 style={{
                   maxWidth: '70%',
                   fontSize: 18,
-                  lineHeight: 30,
+                  lineHeight: 20,
                   color: COLORS.secondary,
-                  fontWeight: 600,
+                  fontWeight: 'bold',
                   fontFamily: FONTS.fontFamily,
                 }}>
                 {data?.nearestExpiredBatch.price.toLocaleString('vi-VN', {
@@ -221,7 +228,7 @@ const Home = ({navigation}) => {
               <Text
                 style={{
                   fontSize: 12,
-                  lineHeight: 18,
+                  lineHeight: 13,
                   color: COLORS.secondary,
                   fontWeight: 600,
                   fontFamily: FONTS.fontFamily,
@@ -230,19 +237,9 @@ const Home = ({navigation}) => {
               </Text>
             </View>
 
-            <Text
-              style={{
-                fontFamily: FONTS.fontFamily,
-                fontSize: 18,
-                marginBottom: 10,
-              }}>
-              HSD:{' '}
-              {dayjs(data?.nearestExpiredBatch.expiredDate).format(
-                'DD/MM/YYYY',
-              )}
-            </Text>
+
             {/* Button buy */}
-            <TouchableOpacity onPress={() => handleAddToCart(data)}>
+            {/* <TouchableOpacity onPress={() => handleAddToCart(data)}>
               <Text
                 style={{
                   maxWidth: 150,
@@ -256,7 +253,7 @@ const Home = ({navigation}) => {
                 }}>
                 Thêm vào giỏ hàng
               </Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         </View>
       </TouchableOpacity>
