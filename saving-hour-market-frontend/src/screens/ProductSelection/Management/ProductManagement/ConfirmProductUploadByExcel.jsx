@@ -142,6 +142,7 @@ const ConfirmProductUploadByExcel = ({
               </p>
             )}
           </td>
+          <td style={{ paddingTop: 30 }}>{item?.unit}</td>
 
           <td style={{ paddingTop: 30 }}>
             {item?.productSubCategory?.id ? (
@@ -289,6 +290,7 @@ const ConfirmProductUploadByExcel = ({
                 <th>No.</th>
                 <th>Hình ảnh</th>
                 <th>Tên Sản phẩm</th>
+                <th>Đơn vị</th>
                 <th>Loại sản phẩm phụ</th>
                 <th>Siêu thị</th>
                 <th>Lô hàng</th>

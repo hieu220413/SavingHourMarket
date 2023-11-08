@@ -13,6 +13,13 @@ import { MdCloudUpload } from "react-icons/md";
 import { format } from "date-fns";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { v4 } from "uuid";
+import MuiAlert from "@mui/material/Alert";
+import { Dialog, Snackbar } from "@mui/material";
+import ProductDuplicated from "./ProductDuplicated";
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 const EditConfirmProduct = ({
   product,
@@ -39,17 +46,13 @@ const EditConfirmProduct = ({
       product?.productSubCategory.id ? product?.productSubCategory : null
     );
 
+  const [openProductDuplicated, setOpenProductDuplicated] = useState(false);
+  const handleOpenProductDuplicated = () => setOpenProductDuplicated(true);
+  const handleCloseProductDuplicated = () => setOpenProductDuplicated(false);
+  const [productDuplicated, setProductDuplicated] = useState(null);
+
   const [productName, setProductName] = useState(product?.name);
-  const [price, setPrice] = useState(product?.productBatchList[0]?.price);
-  const [priceOriginal, setPriceOriginal] = useState(
-    product?.productBatchList[0]?.priceOriginal
-  );
-  const [quantity, setQuantity] = useState(
-    product?.productBatchList[0]?.quantity
-  );
-  const [expiredDate, setExpiredDate] = useState(
-    format(new Date(product.productBatchList[0].expiredDate), "yyyy-MM-dd")
-  );
+  const [unit, setUnit] = useState(product?.unit);
   const [description, setDescription] = useState(product.description);
   const [image, setImage] = useState("");
   const [imageToFireBase, setImageToFireBase] = useState("");
@@ -76,6 +79,17 @@ const EditConfirmProduct = ({
   const [allowableDisplayThreshold, setAllowableDisplayThreshold] = useState(
     selectedDropdownItemSubCate.allowableDisplayThreshold
   );
+  const [openValidateSnackbar, setOpenValidateSnackbar] = useState({
+    open: false,
+    vertical: "top",
+    horizontal: "right",
+    severity: "success",
+    text: "",
+  });
+  const { vertical, horizontal } = openValidateSnackbar;
+  const handleCloseValidateSnackbar = () => {
+    setOpenValidateSnackbar({ ...openValidateSnackbar, open: false });
+  };
 
   const [error, setError] = useState({
     productName: "",
@@ -86,6 +100,7 @@ const EditConfirmProduct = ({
     subCateName: "",
     allowableDisplayThreshold: "",
     imageUrlSubCate: "",
+    unit: "",
   });
 
   useEffect(() => {
@@ -137,6 +152,11 @@ const EditConfirmProduct = ({
   const onConfirm = async () => {
     if (productName === "") {
       setError({ ...error, productName: "Vui lòng không để trống" });
+      return;
+    }
+
+    if (!unit) {
+      setError({ ...error, unit: "Vui lòng không để trống" });
       return;
     }
 
@@ -200,7 +220,6 @@ const EditConfirmProduct = ({
         new Date(batch.expiredDate).getTime() <
         getDateAfterToday(allowableDisplayThreshold).getTime()
       ) {
-        console.log(allowableDisplayThreshold);
         newProductBatchs[index] = {
           ...productBatchs[index],
           error: {
@@ -226,7 +245,7 @@ const EditConfirmProduct = ({
       if (
         !batch.supermarketAddress ||
         !supermarketStores.some(
-          (item) => item.address === batch.supermarketAddress?.address
+          (item) => item.address === batch?.supermarketAddress?.address
         )
       ) {
         newProductBatchs[index] = {
@@ -238,43 +257,68 @@ const EditConfirmProduct = ({
         };
         return false;
       }
+
       return true;
     });
-    setProductBatchs(newProductBatchs);
-    //  **************************
 
-    // if (
-    //   new Date(expiredDate).getTime() <
-    //   getDateAfterToday(allowableDisplayThreshold).getTime()
-    // ) {
-    //   setError({
-    //     ...error,
-    //     expiredDate: `Ngày hết hạn bạn nhập đã bé hơn giới hạn số ngày trước HSD`,
-    //   });
-    //   return;
-    // }
-    // let submitUpdate = {};
-    // if (!imageToFireBase) {
-    //   submitUpdate = {
-    //     id: null,
-    //     name: productName,
-    //     price: parseInt(price),
-    //     priceOriginal: priceOriginal,
-    //     description: description,
-    //     expiredDate: format(new Date(expiredDate), "yyyy-MM-dd"),
-    //     quantity: quantity,
-    //     status: 1,
-    //     imageUrl: image,
-    //     productSubCategory: {
-    //       ...selectedDropdownItemSubCate,
-    //       productCategory: {
-    //         id: selectedDropdownItemCate.id,
-    //         name: selectedDropdownItemCate.name,
-    //       },
-    //     },
-    //     supermarket: selectedSupermarketDropdownItem,
-    //   };
-    // }
+    setProductBatchs(newProductBatchs);
+    const uniqueValues = new Set(
+      productBatchs.map((v) => v?.supermarketAddress?.address)
+    );
+
+    if (uniqueValues.size < productBatchs.length) {
+      setOpenValidateSnackbar({
+        ...openValidateSnackbar,
+        open: true,
+        severity: "error",
+        text: "Tồn tại lô hàng trùng chi nhánh siêu thị",
+      });
+      return;
+    }
+    //  **************************
+    let isProductDuplicated = confirmProductList.productList.find(
+      (item, index) => {
+        if (
+          item.name === productName &&
+          item.productSubCategory.id === selectedDropdownItemSubCate.id &&
+          item.unit === unit &&
+          item.supermarket.id === selectedSupermarketDropdownItem.id
+        ) {
+          return Object.assign(item, { index: index });
+        }
+        return null;
+      }
+    );
+    if (isProductDuplicated) {
+      console.log(isProductDuplicated);
+      setProductDuplicated(isProductDuplicated);
+      handleOpenProductDuplicated();
+
+      return;
+    }
+
+    let submitUpdate = {};
+    if (!imageToFireBase) {
+      submitUpdate = {
+        id: null,
+        name: productName,
+        description: description,
+        unit: unit,
+        status: 1,
+        imageUrl: image,
+        productSubCategory: {
+          ...selectedDropdownItemSubCate,
+          productCategory: {
+            id: selectedDropdownItemCate.id,
+            name: selectedDropdownItemCate.name,
+          },
+        },
+        supermarket: selectedSupermarketDropdownItem,
+        productBatchList: productBatchs,
+        productImageList: null,
+      };
+    }
+    console.log(submitUpdate);
     // if (imageToFireBase) {
     //   const imgRef = ref(imageDB, `productImage/${v4()}`);
     //   await uploadBytes(imgRef, imageToFireBase);
@@ -548,6 +592,34 @@ const EditConfirmProduct = ({
                 className="text-danger"
               >
                 {error.productName}
+              </p>
+            )}
+          </div>
+        </div>
+        {/* * * */}
+
+        {/* product name */}
+        <div className="modal__container-body-inputcontrol">
+          <h4 className="modal__container-body-inputcontrol-label">
+            Đơn vị bán
+          </h4>
+          <div>
+            <input
+              value={unit}
+              placeholder="Nhập tên sản phẩm"
+              type="text"
+              className="modal__container-body-inputcontrol-input"
+              onChange={(e) => {
+                setUnit(e.target.value);
+                setError({ ...error, unit: "" });
+              }}
+            />
+            {error.unit && (
+              <p
+                style={{ fontSize: "14px", marginBottom: "-10px" }}
+                className="text-danger"
+              >
+                {error.unit}
               </p>
             )}
           </div>
@@ -866,11 +938,13 @@ const EditConfirmProduct = ({
                 type="file"
                 accept="image/*"
                 hidden
+                multiple
                 onChange={({ target: { files } }) => {
                   if (files && files[0]) {
-                    setImage(URL.createObjectURL(files[0]));
-                    setImageToFireBase(files[0]);
-                    setError({ ...error, imageUrl: "" });
+                    // setImage(URL.createObjectURL(files[0]));
+                    // setImageToFireBase(files[0]);
+                    // setError({ ...error, imageUrl: "" });
+                    console.log(URL.createObjectURL(files[0]));
                   }
                 }}
               />
@@ -935,6 +1009,35 @@ const EditConfirmProduct = ({
         </div>
       </div>
       {/* *********************** */}
+      <Dialog
+        onClose={handleCloseProductDuplicated}
+        aria-labelledby="customized-dialog-title"
+        open={openProductDuplicated}
+      >
+        <ProductDuplicated
+          handleClose={handleCloseProductDuplicated}
+          item={productDuplicated}
+          confirmProductList={confirmProductList}
+        />
+      </Dialog>
+      <Snackbar
+        open={openValidateSnackbar.open}
+        autoHideDuration={2000}
+        anchorOrigin={{ vertical, horizontal }}
+        onClose={handleCloseValidateSnackbar}
+      >
+        <Alert
+          onClose={handleCloseValidateSnackbar}
+          severity={openValidateSnackbar.severity}
+          sx={{
+            width: "100%",
+            fontSize: "15px",
+            alignItem: "center",
+          }}
+        >
+          {openValidateSnackbar.text}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

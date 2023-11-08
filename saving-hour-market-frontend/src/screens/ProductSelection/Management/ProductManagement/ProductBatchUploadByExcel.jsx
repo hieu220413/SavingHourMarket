@@ -20,7 +20,15 @@ const ProductBatchUploadByExcel = ({ handleClose, productBatch }) => {
             )}
           </td>
           <td>{item?.quantity}</td>
-          <td>{item?.supermarketAddress?.address}</td>
+          <td>
+            {item?.supermarketAddress ? (
+              item?.supermarketAddress?.address
+            ) : (
+              <p style={{ fontWeight: 700 }} className="text-danger">
+                Lỗi địa chỉ
+              </p>
+            )}
+          </td>
           <td>
             {item?.price.toLocaleString("vi-VN", {
               style: "currency",
