@@ -868,24 +868,31 @@ public class ProductServiceImpl implements ProductService {
                     Product product = new Product();
                     ProductSubCategory productSubCategory = new ProductSubCategory();
                     Supermarket supermarket = new Supermarket();
-                    List<ProductExcelBatchCreate> productBatchList = new ArrayList<>();
+                    List<ProductExcelBatchCreate> productBatchCreateList = new ArrayList<>();
                     ProductExcelBatchCreate productBatchCreate = new ProductExcelBatchCreate();
                     List<String> errors = new ArrayList<>();
                     int cellIndex = 0;
                     for (Cell cell : row) {
                         if (cell.getCellType() != CellType.BLANK) {
-//                            log.info(titleRow.getCell(cellIndex) + ", " + row.getCell(cellIndex));
+                            log.info(titleRow.getCell(cellIndex) + ", " + row.getCell(cellIndex));
                             validateAndGetProductSubCateData(productSubCategory, titleRow, cell, errors, cellIndex);
                             validateAndGetSupermarketData(supermarket, titleRow, cell, errors, cellIndex);
                             validateAndGetProductData(product, titleRow, cell, errors, cellIndex);
-                            validateAndGetProductBatchData(productBatchCreate, productBatchList, titleRow, cell, errors, cellIndex);
-                            cellIndex++;
+                            validateAndGetProductBatchData(productBatchCreate, productBatchCreateList, titleRow, cell, errors, cellIndex);
                         } else {
-                            break;
+                            log.info(cell.getCellType() + "");
                         }
+                        cellIndex++;
                     }
 
-                    if (product.getName() == null || product.getDescription() == null || product.getUnit() == null) {
+                    if (product.getName() == null || product.getDescription() == null || product.getUnit() == null || productSubCategory.getName() == null || supermarket.getName() == null || productBatchCreate.hasNullField()) {
+                        if (errorFields.get(0) != null) {
+                            errorFields.get(0).add("Thông tin của sản phẩm ở dòng " + (rowIndex + 1) + " có một thông tin bị trống nên không được hệ thống nhận biết!");
+                        } else {
+                            errors.add("Thông tin của sản phẩm ở dòng " + (rowIndex + 1) + " có một thông tin bị trống nên không được hệ thống nhận biết!");
+                            errorFields.put(0, errors);
+                        }
+                        rowIndex++;
                         continue;
                     }
 
@@ -906,7 +913,7 @@ public class ProductServiceImpl implements ProductService {
                         }
 
                         List<ProductBatch> productBatches = new ArrayList<>();
-                        for (ProductExcelBatchCreate productExcelBatchCreate : productBatchList) {
+                        for (ProductExcelBatchCreate productExcelBatchCreate : productBatchCreateList) {
                             for (ProductExcelBatchAddressCreate productExcelBatchAddressCreate : productExcelBatchCreate.getProductBatchAddresses()) {
                                 ProductBatch productBatch = new ProductBatch();
                                 productBatch.setPrice(productExcelBatchCreate.getPrice());
