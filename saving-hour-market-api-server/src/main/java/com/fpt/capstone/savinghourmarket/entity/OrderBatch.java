@@ -22,7 +22,7 @@ public class OrderBatch {
     @UuidGenerator
     private UUID id;
 
-    private String district;
+//    private String district;
 
     private LocalDate deliverDate;
 
@@ -40,4 +40,11 @@ public class OrderBatch {
             mappedBy = "orderBatch"
     )
     private List<Order> orderList;
+
+    @ManyToOne
+    @JoinColumn(
+            name = "time_frame_id",
+            referencedColumnName = "id"
+    )
+    private TimeFrame timeFrame;
 }

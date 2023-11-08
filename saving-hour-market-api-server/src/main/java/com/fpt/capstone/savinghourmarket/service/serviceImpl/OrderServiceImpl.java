@@ -9,6 +9,10 @@ import com.fpt.capstone.savinghourmarket.service.CustomerService;
 import com.fpt.capstone.savinghourmarket.service.FirebaseService;
 import com.fpt.capstone.savinghourmarket.service.OrderService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
+import com.fpt.capstone.savinghourmarket.util.kmean.Centroid;
+import com.fpt.capstone.savinghourmarket.util.kmean.HaversineDistance;
+import com.fpt.capstone.savinghourmarket.util.kmean.KMeans;
+import com.fpt.capstone.savinghourmarket.util.kmean.Record;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.maps.GeoApiContext;
@@ -22,6 +26,7 @@ import org.redisson.api.RMapCache;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -116,9 +121,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderBatch> fetchOrderBatches(District district, LocalDate deliveryDate, UUID delivererID) {
+    public List<OrderBatch> fetchOrderBatches(LocalDate deliveryDate, UUID delivererID) {
         List<OrderBatch> orderBatches = orderBatchRepository.findByDistrictOrDeliverDate(
-                district != null ? district.getDistrictName() : null,
                 deliveryDate,
                 delivererID);
         return orderBatches;
@@ -509,7 +513,49 @@ public class OrderServiceImpl implements OrderService {
 //        }
 //
 //        return orderBatches;
-        return null;
+        TimeFrame timeFrame = timeFrameRepository.findById(timeFrameId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy time-frame với id: " + timeFrameId));
+        List<Order> ordersWithoutGroups = repository.findOrderWithoutGroups(timeFrame.getId(), deliverDate);
+//        List<Order> dummies = new ArrayList<>();
+//        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("Group 1-1 predict (Gan vinhome)").receiverPhone("0972779175").latitude((float) 10.82658).longitude((float) 106.82865).status(OrderStatus.PROCESSING.ordinal()).build());
+//        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("Group 1-2 predict (Gan vinhome)").receiverPhone("0972779175").latitude((float) 10.84717).longitude((float) 106.83026).status(OrderStatus.PROCESSING.ordinal()).build());
+//        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("Group 1-3 predict (Gan vinhome)").receiverPhone("0972779175").latitude((float) 10.82806).longitude((float) 106.83131).status(OrderStatus.PROCESSING.ordinal()).build());
+//        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("Group 2-1 predit (Le van viet gan truong)").receiverPhone("0972779175").latitude((float) 10.84549).longitude((float) 106.79671).status(OrderStatus.PROCESSING.ordinal()).build());
+//        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("Group 2-2 predit (Le van viet gan truong)").receiverPhone("0972779175").latitude((float) 10.84148).longitude((float) 106.81005).status(OrderStatus.PROCESSING.ordinal()).build());
+//        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("Group 2-3 or 3 predit (xa lo hn)").receiverPhone("0972779175").latitude((float) 10.83598).longitude((float) 106.76767).status(OrderStatus.PROCESSING.ordinal()).build());
+//        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("Duplicate 1-2").receiverPhone("0972779175").latitude((float) 10.84717).longitude((float) 106.83026).status(OrderStatus.PROCESSING.ordinal()).build());
+//        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("30a Ấp 7, Xuân Thới Thượng, Hóc Môn, Thành phố Hồ Chí Minh, Việt Nam").receiverPhone("0972779175").latitude((float) 10.8419923).longitude((float) 106.5866278).status(OrderStatus.PROCESSING.ordinal()).build());
+//        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("Đường Bà Điểm 4/21 Ấp Tiền Lân, Tiền Lân, Hóc Môn, Thành phố Hồ Chí Minh, Việt Nam").receiverPhone("0972779175").latitude((float) 10.8419923).longitude((float) 106.5866278).status(OrderStatus.PROCESSING.ordinal()).build());
+//        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("5/15V XTT4, Bà Điểm, Hóc Môn, Thành phố Hồ Chí Minh 71700, Việt Nam").receiverPhone("0972779175").latitude((float) 10.8393158).longitude((float) 106.5853618).status(OrderStatus.PROCESSING.ordinal()).build());
+//        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("311 Tân Kỳ Tân Quý, Tân Sơn Nhì, Tân Phú, Thành phố Hồ Chí Minh, Việt Nam").receiverPhone("0972779175").latitude((float) 10.80004).longitude((float) 106.6227574).status(OrderStatus.PROCESSING.ordinal()).build());
+//        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("155 Nguyễn Cửu Đàm, Tân Sơn Nhì, Tân Phú, Thành phố Hồ Chí Minh 700000, Việt Nam").receiverPhone("0972779175").latitude((float) 10.80004).longitude((float) 106.6227574).status(OrderStatus.PROCESSING.ordinal()).build());
+
+
+        List<OrderBatch> orderBatchList = new ArrayList<>();
+        if(ordersWithoutGroups.size()>0) {
+            List<Record> records = new ArrayList<>();
+
+            for (Order order : ordersWithoutGroups) {
+                Record record = new Record();
+                record.setOrder(order);
+                record.setFeatures(Map.of("latitude", order.getLatitude().doubleValue(), "longitude", order.getLongitude().doubleValue()));
+                records.add(record);
+            }
+
+            Map<Centroid, List<Record>> clusters = KMeans.fit(records, batchQuantity, new HaversineDistance(), 1000);
+
+
+            for (Map.Entry<Centroid, List<Record>> cluster : clusters.entrySet()) {
+                OrderBatch orderBatch = new OrderBatch();
+                orderBatch.setDeliverDate(deliverDate.toLocalDate());
+                orderBatch.setTimeFrame(timeFrame);
+                orderBatch.setOrderList(cluster.getValue().stream().map(record -> record.getOrder()).collect(Collectors.toList()));
+                orderBatchList.add(orderBatch);
+            }
+        }
+
+
+        return orderBatchList;
     }
 
 
@@ -762,6 +808,59 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return reportOrdersResponse;
+    }
+
+    @Override
+    @Transactional
+    public List<OrderBatch> createBatches(List<OrderBatchCreateBody> orderBatchCreateBodyList) {
+        List<OrderBatch> orderBatchList = new ArrayList<>();
+        if(orderBatchCreateBodyList.size() > 0) {
+            HashMap errorFields = new HashMap<>();
+            for(OrderBatchCreateBody orderBatchCreateBody : orderBatchCreateBodyList) {
+                if(errorFields.size() > 0) {
+                    break;
+                }
+
+                Optional<TimeFrame> timeFrame = timeFrameRepository.findTimeFrameActiveById(orderBatchCreateBody.getTimeFrameId());
+                if(!timeFrame.isPresent()) {
+                    errorFields.put("timeFrameIdError", "No time frame id "+ orderBatchCreateBody.getTimeFrameId() + " found");
+                }
+
+                if(orderBatchCreateBody.getDeliverDate().isBefore(LocalDate.now())) {
+                    errorFields.put("deliverDateError", "Date value must be equal or after current date");
+                }
+
+                List<Order> orderTrackList = new ArrayList<>();
+                if(!errorFields.containsKey("timeFrameIdError") && !errorFields.containsKey("deliverDateError")){
+                    orderTrackList = repository.findOrderByIdListWithDeliveredStatus(orderBatchCreateBody.getOrderIdList(), timeFrame.get().getId(), Date.valueOf(orderBatchCreateBody.getDeliverDate()));
+                    HashMap<UUID, Order> orderTrackHashMap = new HashMap<>();
+                    orderTrackList.forEach(order -> orderTrackHashMap.put(order.getId(), order));
+                    List<UUID> orderIdNotFoundList = new ArrayList<>();
+                    for (UUID orderId : orderBatchCreateBody.getOrderIdList()){
+                        if(!orderTrackHashMap.containsKey(orderId)) {
+                            orderIdNotFoundList.add(orderId);
+                        }
+                    }
+                    if(orderIdNotFoundList.size() > 0) {
+                        errorFields.put("orderIdListError", "Order ids '" + orderIdNotFoundList.stream().map(Objects::toString).collect(Collectors.joining(",")) + "' not found or not meet condition");
+                    }
+                }
+
+                if(errorFields.size() > 0){
+                    throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
+                }
+                
+                OrderBatch orderBatch = new OrderBatch();
+                orderBatch.setDeliverDate(orderBatchCreateBody.getDeliverDate());
+                orderBatch.setTimeFrame(timeFrame.get());
+                orderBatch.setOrderList(orderTrackList);
+                for (Order order : orderTrackList) {
+                    order.setOrderBatch(orderBatch);
+                }
+                orderBatchList.add(orderBatchRepository.save(orderBatch));
+            }
+        }
+        return orderBatchList;
     }
 
     // GOOGLE MAP IMPLEMENT

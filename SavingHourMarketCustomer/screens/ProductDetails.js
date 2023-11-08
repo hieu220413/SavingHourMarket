@@ -31,6 +31,7 @@ import { format } from 'date-fns';
 
 const ProductDetails = ({ navigation, route }) => {
   const product = route.params.product;
+  const pickupPointId = route.params.pickupPointId;
   const [cartList, setCartList] = useState([]);
   const [openAuthModal, setOpenAuthModal] = useState(false);
   const [openWarnModal, setOpenWarnModal] = useState(false);
@@ -55,7 +56,7 @@ const ProductDetails = ({ navigation, route }) => {
   const bottomSheetRef = useRef(null);
 
   // variables
-  const snapPoints = useMemo(() => ['80%'], []);
+  const snapPoints = useMemo(() => ['60%'], []);
 
   const handlePresentBottomSheet = useCallback(() => {
     // bottomSheetRef.current?.present();
@@ -75,7 +76,7 @@ const ProductDetails = ({ navigation, route }) => {
     useCallback(() => {
       (async () => {
         try {
-          const cartList = await AsyncStorage.getItem('CartList');
+          const cartList = await AsyncStorage.getItem('CartList'+pickupPointId);
           setCartList(cartList ? JSON.parse(cartList) : []);
         } catch (err) {
           console.log(err);
@@ -106,7 +107,7 @@ const ProductDetails = ({ navigation, route }) => {
           idList: selectedProductBatch.idList,
         },
       ];
-
+      
       await AsyncStorage.setItem('OrderItems', JSON.stringify(orderItem));
       navigation.navigate('Payment');
     } catch (error) {
@@ -125,7 +126,8 @@ const ProductDetails = ({ navigation, route }) => {
         setOpenWarnModal(true);
         return;
       }
-      const jsonValue = await AsyncStorage.getItem('CartList');
+
+      const jsonValue = await AsyncStorage.getItem('CartList'+pickupPointId);
       let newCartList = jsonValue ? JSON.parse(jsonValue) : [];
       const itemExisted = newCartList.some(
         item =>
@@ -136,7 +138,10 @@ const ProductDetails = ({ navigation, route }) => {
         const index = newCartList.findIndex(item => item.id === data.id);
         newCartList[index].cartQuantity = newCartList[index].cartQuantity + 1;
         setCartList(newCartList);
-        await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
+        await AsyncStorage.setItem('CartList'+pickupPointId, JSON.stringify(newCartList));
+        setIndex(-1);
+        bottomSheetRef.current?.close();
+        setSelectedProductBatch(null);
         showToast();
         return;
       }
@@ -152,7 +157,11 @@ const ProductDetails = ({ navigation, route }) => {
       };
       newCartList = [...newCartList, cartData];
       setCartList(newCartList);
-      await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
+
+      setIndex(-1)
+      bottomSheetRef.current?.close();
+      setSelectedProductBatch(null)
+      await AsyncStorage.setItem('CartList'+pickupPointId, JSON.stringify(newCartList));
       showToast();
     } catch (error) {
       console.log(error);
@@ -434,7 +443,7 @@ const ProductDetails = ({ navigation, route }) => {
               onPress={async () => {
                 try {
                   await AsyncStorage.removeItem('userInfo');
-                  await AsyncStorage.removeItem('CartList');
+                  await AsyncStorage.clear();
                   navigation.navigate('Login');
                   setOpenAuthModal(false);
                 } catch (error) {

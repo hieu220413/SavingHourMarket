@@ -57,6 +57,10 @@ public class ConfigurationSystemServiceImpl implements SystemConfigurationServic
             errorFields.put("deleteUnpaidOrderTimeError", "Value must be higher than 0");
         }
 
+        if(configurationUpdateBody.getTimeAllowedForOrderCancellation() < 0) {
+            errorFields.put("timeAllowedForOrderCancellationError", "Value must not be lower than 0");
+        }
+
         if(errorFields.size() > 0){
             throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
         }
@@ -70,6 +74,7 @@ public class ConfigurationSystemServiceImpl implements SystemConfigurationServic
         configurationBuilder.add("initialShippingFee", configurationUpdateBody.getInitialShippingFee());
         configurationBuilder.add("minKmDistanceForExtraShippingFee", configurationUpdateBody.getMinKmDistanceForExtraShippingFee());
         configurationBuilder.add("extraShippingFeePerKilometer", configurationUpdateBody.getExtraShippingFeePerKilometer());
+        configurationBuilder.add("timeAllowedForOrderCancellation", configurationUpdateBody.getTimeAllowedForOrderCancellation());
 
         JsonObject configurationJsonObject = configurationBuilder.build();
 

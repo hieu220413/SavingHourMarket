@@ -2,21 +2,15 @@ package com.fpt.capstone.savinghourmarket.repository;
 
 import com.fpt.capstone.savinghourmarket.entity.Order;
 import com.fpt.capstone.savinghourmarket.entity.PickupPoint;
-import com.fpt.capstone.savinghourmarket.entity.Staff;
-import com.fpt.capstone.savinghourmarket.entity.TimeFrame;
-import com.fpt.capstone.savinghourmarket.model.OrderReport;
 import io.lettuce.core.dynamic.annotation.Param;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Date;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -167,4 +161,46 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "WHERE ((:year IS NULL) OR (YEAR(o.createdTime) = :year))" +
             "GROUP BY YEAR(o.createdTime)")
     List<Object[]> getOrdersReportByYear(Integer year);
+
+    @Query("SELECT DISTINCT o FROM Order o " +
+            "JOIN FETCH o.timeFrame tf " +
+            "LEFT JOIN FETCH o.deliverer dlv " +
+            "LEFT JOIN FETCH o.orderBatch obt " +
+            "WHERE " +
+            "(o.status = 2)" +
+            "AND " +
+            "(obt IS NULL) " +
+            "AND " +
+            "(o.orderGroup IS NULL) " +
+            "AND " +
+            "(tf.id = :timeframeId) " +
+            "AND " +
+            "(o.deliveryMethod = 1)" +
+            "AND " +
+            "(dlv IS NULL) " +
+            "AND " +
+            "(o.deliveryDate = :deliverDate) ")
+    List<Order> findOrderWithoutGroups(UUID timeframeId, Date deliverDate);
+
+    @Query("SELECT DISTINCT o FROM Order o " +
+            "JOIN FETCH o.timeFrame tf " +
+            "LEFT JOIN FETCH o.deliverer dlv " +
+            "LEFT JOIN FETCH o.orderBatch obt " +
+            "WHERE " +
+            "(o.status = 2)" +
+            "AND " +
+            "(obt IS NULL) " +
+            "AND " +
+            "(o.orderGroup IS NULL) " +
+            "AND " +
+            "(tf.id = :timeframeId) " +
+            "AND " +
+            "(o.deliveryMethod = 1)" +
+            "AND " +
+            "(dlv IS NULL) " +
+            "AND " +
+            "(o.deliveryDate = :deliverDate) " +
+            "AND " +
+            "o.id IN :orderIdList")
+    List<Order> findOrderByIdListWithDeliveredStatus(List<UUID> orderIdList, UUID timeframeId, Date deliverDate);
 }
