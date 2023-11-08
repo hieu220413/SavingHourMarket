@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import javax.swing.text.html.Option;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +15,10 @@ import java.util.UUID;
 public interface TimeFrameRepository extends JpaRepository<TimeFrame, UUID> {
     @Query("SELECT tf FROM TimeFrame tf WHERE (tf.allowableDeliverMethod = 0 OR tf.allowableDeliverMethod = 2) AND tf.status = 1 ")
     List<TimeFrame> findForPickupPoint();
+
+    @Query("SELECT tf FROM TimeFrame tf " +
+            "WHERE tf.id = :timeFrameId AND tf.status = 1")
+    Optional<TimeFrame> findTimeFrameActiveById(UUID timeFrameId);
 
     @Query("SELECT tf FROM TimeFrame tf " +
             "WHERE (tf.allowableDeliverMethod = 1 OR tf.allowableDeliverMethod = 2) AND tf.status = 1")

@@ -26,6 +26,7 @@ import org.redisson.api.RMapCache;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -807,6 +808,59 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return reportOrdersResponse;
+    }
+
+    @Override
+    @Transactional
+    public List<OrderBatch> createBatches(List<OrderBatchCreateBody> orderBatchCreateBodyList) {
+        List<OrderBatch> orderBatchList = new ArrayList<>();
+        if(orderBatchCreateBodyList.size() > 0) {
+            HashMap errorFields = new HashMap<>();
+            for(OrderBatchCreateBody orderBatchCreateBody : orderBatchCreateBodyList) {
+                if(errorFields.size() > 0) {
+                    break;
+                }
+
+                Optional<TimeFrame> timeFrame = timeFrameRepository.findTimeFrameActiveById(orderBatchCreateBody.getTimeFrameId());
+                if(!timeFrame.isPresent()) {
+                    errorFields.put("timeFrameIdError", "No time frame id "+ orderBatchCreateBody.getTimeFrameId() + " found");
+                }
+
+                if(orderBatchCreateBody.getDeliverDate().isBefore(LocalDate.now())) {
+                    errorFields.put("deliverDateError", "Date value must be equal or after current date");
+                }
+
+                List<Order> orderTrackList = new ArrayList<>();
+                if(!errorFields.containsKey("timeFrameIdError") && !errorFields.containsKey("deliverDateError")){
+                    orderTrackList = repository.findOrderByIdListWithDeliveredStatus(orderBatchCreateBody.getOrderIdList(), timeFrame.get().getId(), Date.valueOf(orderBatchCreateBody.getDeliverDate()));
+                    HashMap<UUID, Order> orderTrackHashMap = new HashMap<>();
+                    orderTrackList.forEach(order -> orderTrackHashMap.put(order.getId(), order));
+                    List<UUID> orderIdNotFoundList = new ArrayList<>();
+                    for (UUID orderId : orderBatchCreateBody.getOrderIdList()){
+                        if(!orderTrackHashMap.containsKey(orderId)) {
+                            orderIdNotFoundList.add(orderId);
+                        }
+                    }
+                    if(orderIdNotFoundList.size() > 0) {
+                        errorFields.put("orderIdListError", "Order ids '" + orderIdNotFoundList.stream().map(Objects::toString).collect(Collectors.joining(",")) + "' not found or not meet condition");
+                    }
+                }
+
+                if(errorFields.size() > 0){
+                    throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
+                }
+                
+                OrderBatch orderBatch = new OrderBatch();
+                orderBatch.setDeliverDate(orderBatchCreateBody.getDeliverDate());
+                orderBatch.setTimeFrame(timeFrame.get());
+                orderBatch.setOrderList(orderTrackList);
+                for (Order order : orderTrackList) {
+                    order.setOrderBatch(orderBatch);
+                }
+                orderBatchList.add(orderBatchRepository.save(orderBatch));
+            }
+        }
+        return orderBatchList;
     }
 
     // GOOGLE MAP IMPLEMENT

@@ -7,10 +7,7 @@ import com.fpt.capstone.savinghourmarket.entity.Order;
 import com.fpt.capstone.savinghourmarket.entity.OrderBatch;
 import com.fpt.capstone.savinghourmarket.entity.OrderGroup;
 import com.fpt.capstone.savinghourmarket.exception.*;
-import com.fpt.capstone.savinghourmarket.model.OrderCreate;
-import com.fpt.capstone.savinghourmarket.model.OrderWithDetails;
-import com.fpt.capstone.savinghourmarket.model.ReportOrdersResponse;
-import com.fpt.capstone.savinghourmarket.model.ShippingFeeDetailResponseBody;
+import com.fpt.capstone.savinghourmarket.model.*;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.maps.errors.ApiException;
 import org.springframework.transaction.annotation.Transactional;
@@ -95,4 +92,6 @@ public interface OrderService {
     Order chooseConsolidationArea(UUID orderId, UUID consolidationAreaId) throws ResourceNotFoundException;
 
     ReportOrdersResponse getReportOrders(OrderReportMode mode, LocalDate startDate, LocalDate endDate, Integer month, Integer year);
+
+    List<OrderBatch> createBatches(List<OrderBatchCreateBody> orderBatchCreateBodyList);
 }

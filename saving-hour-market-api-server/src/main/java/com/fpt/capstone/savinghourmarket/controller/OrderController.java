@@ -8,10 +8,7 @@ import com.fpt.capstone.savinghourmarket.entity.Order;
 import com.fpt.capstone.savinghourmarket.entity.OrderBatch;
 import com.fpt.capstone.savinghourmarket.entity.OrderGroup;
 import com.fpt.capstone.savinghourmarket.exception.*;
-import com.fpt.capstone.savinghourmarket.model.OrderCreate;
-import com.fpt.capstone.savinghourmarket.model.OrderWithDetails;
-import com.fpt.capstone.savinghourmarket.model.ReportOrdersResponse;
-import com.fpt.capstone.savinghourmarket.model.ShippingFeeDetailResponseBody;
+import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.service.FirebaseService;
 import com.fpt.capstone.savinghourmarket.service.OrderService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
@@ -23,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -36,6 +34,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping(value = "/api/order/")
 @RequiredArgsConstructor
+@Validated
 public class OrderController {
 
     private final OrderService orderService;
@@ -242,6 +241,16 @@ public class OrderController {
         Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(orderService.batchingForStaff(deliverDate, timeFrameId, batchQuantity));
     }
+
+    @PostMapping("/staff/deliveryManager/createBatches")
+    public ResponseEntity<List<OrderBatch>> createBatches(
+            @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken,
+            @RequestBody List<@jakarta.validation.Valid OrderBatchCreateBody> orderBatchCreateBodyList) throws ResourceNotFoundException, FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.createBatches(orderBatchCreateBodyList));
+    }
+
 
     @PutMapping("/staff/editDeliverDate/{orderId}")
     public ResponseEntity<Order> editDeliverDate(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken,
