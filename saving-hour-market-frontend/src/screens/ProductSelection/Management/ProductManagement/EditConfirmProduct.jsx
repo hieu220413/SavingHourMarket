@@ -290,7 +290,6 @@ const EditConfirmProduct = ({
       }
     );
     if (isProductDuplicated) {
-      console.log(isProductDuplicated);
       setProductDuplicated(isProductDuplicated);
       handleOpenProductDuplicated();
 

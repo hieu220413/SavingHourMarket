@@ -2,13 +2,14 @@ import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState } from "react";
 import NullImage from "../../../../assets/Null-Image.png";
+import { Dialog } from "@mui/material";
+import ProductBatchUploadByExcel from "./ProductBatchUploadByExcel";
+import ErrorProductUploadByExcel from "./ErrorProductUploadByExcel";
 
 const ProductDuplicated = ({ handleClose, item, confirmProductList }) => {
   const [openProductBatch, setOpenProductBatch] = useState(false);
   const handleOpenProductBatch = () => setOpenProductBatch(true);
   const handleCloseProductBatch = () => setOpenProductBatch(false);
-
-  console.log(item);
 
   const [openErrorList, setOpenErrorList] = useState(false);
   const handleOpenErrorList = () => setOpenErrorList(true);
@@ -19,12 +20,22 @@ const ProductDuplicated = ({ handleClose, item, confirmProductList }) => {
     })
   );
 
+  const errorField = errorList.find(
+    (data) => parseInt(data.index) === item.index + 1
+  );
+
   return (
     <div style={{ width: "fit-content" }} className="modal__container">
       <div className="modal__container-header">
         <h3 className="modal__container-header-title">Sản phẩm đã tồn tại</h3>
         <FontAwesomeIcon onClick={handleClose} icon={faXmark} />
       </div>
+      <h4
+        className="text-danger"
+        style={{ textAlign: "center", fontSize: "18px", marginTop: 20 }}
+      >
+        Bạn có muốn thay thế sản phẩm này
+      </h4>
       <div className="modal__container-body">
         <div style={{ height: "fit-content" }} className="table__container">
           {/* data table */}
@@ -129,10 +140,30 @@ const ProductDuplicated = ({ handleClose, item, confirmProductList }) => {
             onClick={handleClose}
             className="modal__container-footer-buttons-create"
           >
-            Đồng ý
+            Thay thế
           </button>
         </div>
       </div>
+      <Dialog
+        onClose={handleCloseProductBatch}
+        aria-labelledby="customized-dialog-title"
+        open={openProductBatch}
+      >
+        <ProductBatchUploadByExcel
+          handleClose={handleCloseProductBatch}
+          productBatch={item.productBatchList}
+        />
+      </Dialog>
+      <Dialog
+        onClose={handleCloseErrorList}
+        aria-labelledby="customized-dialog-title"
+        open={openErrorList}
+      >
+        <ErrorProductUploadByExcel
+          handleClose={handleCloseErrorList}
+          errorList={errorField ? errorField.value : []}
+        />
+      </Dialog>
     </div>
   );
 };
