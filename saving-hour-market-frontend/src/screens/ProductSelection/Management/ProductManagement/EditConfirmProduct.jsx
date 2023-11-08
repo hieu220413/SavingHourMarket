@@ -182,7 +182,7 @@ const EditConfirmProduct = ({
 
     // validate product batch
     let newProductBatchs = [...productBatchs];
-    productBatchs.map((batch, index) => {
+    const productbatchValidate = productBatchs.map((batch, index) => {
       // validate price
       if (batch.price === 0) {
         newProductBatchs[index] = {
@@ -243,7 +243,7 @@ const EditConfirmProduct = ({
       }
       // validate supermarketstore
       if (
-        !batch.supermarketAddress ||
+        !batch.supermarketAddress?.id ||
         !supermarketStores.some(
           (item) => item.address === batch?.supermarketAddress?.address
         )
@@ -260,6 +260,10 @@ const EditConfirmProduct = ({
 
       return true;
     });
+
+    if (productbatchValidate.some((item) => item === false)) {
+      return;
+    }
 
     setProductBatchs(newProductBatchs);
     const uniqueValues = new Set(
@@ -346,15 +350,22 @@ const EditConfirmProduct = ({
     //     console.log(error);
     //   }
     // }
-    // const newList = confirmProductList.map((item, i) => {
-    //   if (index === i) {
-    //     return submitUpdate;
-    //   }
-    //   return item;
-    // });
 
-    // setOpenSnackbar({ ...openSnackbar, open: true, severity: "success" });
-    // setConfirmProductList(newList);
+    const newProductList = confirmProductList.productList.map((item, i) => {
+      if (index === i) {
+        return submitUpdate;
+      }
+      return item;
+    });
+
+    const newErrorList = { ...confirmProductList.errorFields };
+    delete newErrorList[index + 1];
+
+    setOpenSnackbar({ ...openSnackbar, open: true, severity: "success" });
+    setConfirmProductList({
+      productList: newProductList,
+      errorFields: newErrorList,
+    });
   };
 
   return (

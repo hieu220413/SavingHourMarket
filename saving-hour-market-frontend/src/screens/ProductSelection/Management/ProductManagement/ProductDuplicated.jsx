@@ -34,7 +34,7 @@ const ProductDuplicated = ({ handleClose, item, confirmProductList }) => {
         className="text-danger"
         style={{ textAlign: "center", fontSize: "18px", marginTop: 20 }}
       >
-        Bạn có muốn thay thế sản phẩm này
+        Sản phẩm đã tồn tại bạn có muốn thay thế sản phẩm này
       </h4>
       <div className="modal__container-body">
         <div style={{ height: "fit-content" }} className="table__container">
