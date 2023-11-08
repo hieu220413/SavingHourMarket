@@ -16,7 +16,7 @@ public interface StaffRepository extends JpaRepository<Staff, UUID> {
     Optional<Staff> getStaffByEmail(String email);
     Optional<Staff> findByEmail(String email);
 
-    @Query("SELECT s FROM Staff s " +
+    @Query("SELECT DISTINCT s FROM Staff s " +
             "LEFT JOIN FETCH s.pickupPoint " +
             "WHERE UPPER(s.fullName) LIKE UPPER(CONCAT('%',:name,'%')) " +
             "AND " +
@@ -25,4 +25,13 @@ public interface StaffRepository extends JpaRepository<Staff, UUID> {
             "((:role IS NULL) OR (s.role = :role))")
 
     Page<Staff> getStaffForAdmin(String name, String role, Integer status, Pageable pageable);
+
+    @Query("SELECT DISTINCT s FROM Staff s " +
+//            "LEFT JOIN FETCH s.pickupPoint " +
+            "WHERE UPPER(s.fullName) LIKE UPPER(CONCAT('%',:name,'%')) " +
+            "AND " +
+            "s.status = 1 " +
+            "AND " +
+            "s.role = :role")
+    Page<Staff> getStaffForDeliverManager(String name,  String role, Pageable pageable);
 }
