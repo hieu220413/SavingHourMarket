@@ -30,7 +30,11 @@ public interface OrderGroupRepository extends JpaRepository<OrderGroup, UUID> {
             "((:delivererId IS NULL) OR (og.deliverer.id = :delivererId)) " +
             "AND " +
             "((:deliveryDate IS NULL) OR (og.deliverDate = :deliveryDate))")
-    List<OrderGroup> findByTimeFrameOrPickupPointOrDeliverDate(UUID timeFrameId, UUID pickupPointId, UUID delivererId, LocalDate deliveryDate);
+    List<OrderGroup> findByTimeFrameOrPickupPointOrDeliverDate(UUID timeFrameId,
+                                                               UUID pickupPointId,
+                                                               UUID delivererId,
+                                                               LocalDate deliveryDate,
+                                                               Pageable pageable);
 
     @Query("SELECT og FROM OrderGroup og " +
             "JOIN og.deliverer delv " +

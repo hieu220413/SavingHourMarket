@@ -5,7 +5,6 @@ import com.fpt.capstone.savinghourmarket.entity.*;
 import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.repository.*;
-import com.fpt.capstone.savinghourmarket.service.CustomerService;
 import com.fpt.capstone.savinghourmarket.service.FirebaseService;
 import com.fpt.capstone.savinghourmarket.service.OrderService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
@@ -26,7 +25,6 @@ import org.redisson.api.RMapCache;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -34,7 +32,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.ByteArrayOutputStream;
@@ -47,7 +44,6 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
@@ -95,11 +91,35 @@ public class OrderServiceImpl implements OrderService {
     private String goongDistanceMatrixUrl;
 
     @Override
-    public List<OrderGroup> fetchOrderGroups(LocalDate deliverDate, UUID timeFrameId, UUID pickupPointId, UUID delivererId) throws NoSuchOrderException, FirebaseAuthException {
-        List<OrderGroup> orderGroups = orderGroupRepository.findByTimeFrameOrPickupPointOrDeliverDate(timeFrameId, pickupPointId, delivererId, deliverDate);
-        if (orderGroups.isEmpty()) {
-            throw new NoSuchOrderException("No such order group left on system");
+    public List<OrderGroup> fetchOrderGroups(SortType deliverDateSortType,
+                                             LocalDate deliverDate,
+                                             UUID timeFrameId,
+                                             UUID pickupPointId,
+                                             UUID delivererId,
+                                             Integer page,
+                                             Integer size)  {
+        Sort sortable = null;
+
+        if (deliverDateSortType != null) {
+            if (deliverDateSortType.equals(SortType.ASC.toString())) {
+                sortable = Sort.by("deliverDate").ascending();
+            } else {
+                sortable = Sort.by("deliverDate").descending();
+            }
         }
+        Pageable pageableWithSort;
+        if (sortable != null) {
+            pageableWithSort = PageRequest.of(page, size, sortable);
+        } else {
+            pageableWithSort = PageRequest.of(page, size);
+        }
+
+        List<OrderGroup> orderGroups = orderGroupRepository.findByTimeFrameOrPickupPointOrDeliverDate(timeFrameId,
+                pickupPointId,
+                delivererId,
+                deliverDate,
+                pageableWithSort);
+
         return orderGroups;
     }
 
@@ -131,7 +151,6 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public String confirmPackaging(UUID orderId, UUID staffId) throws NoSuchOrderException, IOException {
-
         Order order = repository.findById(orderId)
                 .orElseThrow(() -> new NoSuchOrderException("No order found with this id " + orderId));
         Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new NoSuchElementException("Không tìm thấy nhân viên với ID: " + staffId));
@@ -532,7 +551,7 @@ public class OrderServiceImpl implements OrderService {
 
 
         List<OrderBatch> orderBatchList = new ArrayList<>();
-        if(ordersWithoutGroups.size()>0) {
+        if (ordersWithoutGroups.size() > 0) {
             List<Record> records = new ArrayList<>();
 
             for (Order order : ordersWithoutGroups) {
@@ -565,7 +584,7 @@ public class OrderServiceImpl implements OrderService {
     public ShippingFeeDetailResponseBody getShippingFeeDetail(Double latitude, Double longitude, UUID pickupPointId) throws IOException, InterruptedException, ApiException {
 //        int numberOfSuggestion = 3;
         Optional<PickupPoint> pickupPoint = pickupPointRepository.findById(pickupPointId);
-        if(!pickupPoint.isPresent()) {
+        if (!pickupPoint.isPresent()) {
             throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.PICKUP_POINT_NOT_FOUND.getCode()), AdditionalResponseCode.PICKUP_POINT_NOT_FOUND.toString());
         }
         Configuration configuration = Utils.getAdminConfiguration();
@@ -677,7 +696,7 @@ public class OrderServiceImpl implements OrderService {
         ReportOrdersResponse reportOrdersResponse = new ReportOrdersResponse();
         switch (mode) {
             case ALL -> {
-                List<Object[]> resultDate = repository.getOrdersReportByDay(startDate != null ? startDate.atStartOfDay() : null, endDate != null ? endDate.atTime(LocalTime.MAX) : null,month,year);
+                List<Object[]> resultDate = repository.getOrdersReportByDay(startDate != null ? startDate.atStartOfDay() : null, endDate != null ? endDate.atTime(LocalTime.MAX) : null, month, year);
                 List<OrderReport> reportListDate = new ArrayList<>();
                 for (Object[] row : resultDate) {
                     Date reportDate = (Date) row[0];
@@ -695,7 +714,7 @@ public class OrderServiceImpl implements OrderService {
                     }
                 }
 
-                List<Object[]> resultMonth = repository.getOrdersReportByMonth(month,year);
+                List<Object[]> resultMonth = repository.getOrdersReportByMonth(month, year);
                 LinkedHashMap<Integer, List<OrderReportMonth>> reportListMonth = new LinkedHashMap<>();
                 for (Object[] row : resultMonth) {
                     Integer yearResult = (Integer) row[0];
@@ -741,7 +760,7 @@ public class OrderServiceImpl implements OrderService {
                 reportOrdersResponse.setOrdersReportByYear(reportListYear);
             }
             case DATE -> {
-                List<Object[]> resultDate = repository.getOrdersReportByDay(startDate != null ? startDate.atStartOfDay() : null, endDate != null ? endDate.atTime(LocalTime.MAX) : null,month,year);
+                List<Object[]> resultDate = repository.getOrdersReportByDay(startDate != null ? startDate.atStartOfDay() : null, endDate != null ? endDate.atTime(LocalTime.MAX) : null, month, year);
                 List<OrderReport> reportListDate = new ArrayList<>();
                 for (Object[] row : resultDate) {
                     Date reportDate = (Date) row[0];
@@ -762,7 +781,7 @@ public class OrderServiceImpl implements OrderService {
                 reportOrdersResponse.setOrdersReportByDay(reportListDate);
             }
             case MONTH -> {
-                List<Object[]> resultMonth = repository.getOrdersReportByMonth(month,year);
+                List<Object[]> resultMonth = repository.getOrdersReportByMonth(month, year);
                 LinkedHashMap<Integer, List<OrderReportMonth>> reportListMonth = new LinkedHashMap<>();
                 for (Object[] row : resultMonth) {
                     Integer yearResult = (Integer) row[0];
@@ -814,42 +833,42 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public List<OrderBatch> createBatches(List<OrderBatchCreateBody> orderBatchCreateBodyList) {
         List<OrderBatch> orderBatchList = new ArrayList<>();
-        if(orderBatchCreateBodyList.size() > 0) {
+        if (orderBatchCreateBodyList.size() > 0) {
             HashMap errorFields = new HashMap<>();
-            for(OrderBatchCreateBody orderBatchCreateBody : orderBatchCreateBodyList) {
-                if(errorFields.size() > 0) {
+            for (OrderBatchCreateBody orderBatchCreateBody : orderBatchCreateBodyList) {
+                if (errorFields.size() > 0) {
                     break;
                 }
 
                 Optional<TimeFrame> timeFrame = timeFrameRepository.findTimeFrameActiveById(orderBatchCreateBody.getTimeFrameId());
-                if(!timeFrame.isPresent()) {
-                    errorFields.put("timeFrameIdError", "No time frame id "+ orderBatchCreateBody.getTimeFrameId() + " found");
+                if (!timeFrame.isPresent()) {
+                    errorFields.put("timeFrameIdError", "No time frame id " + orderBatchCreateBody.getTimeFrameId() + " found");
                 }
 
-                if(orderBatchCreateBody.getDeliverDate().isBefore(LocalDate.now())) {
+                if (orderBatchCreateBody.getDeliverDate().isBefore(LocalDate.now())) {
                     errorFields.put("deliverDateError", "Date value must be equal or after current date");
                 }
 
                 List<Order> orderTrackList = new ArrayList<>();
-                if(!errorFields.containsKey("timeFrameIdError") && !errorFields.containsKey("deliverDateError")){
+                if (!errorFields.containsKey("timeFrameIdError") && !errorFields.containsKey("deliverDateError")) {
                     orderTrackList = repository.findOrderByIdListWithDeliveredStatus(orderBatchCreateBody.getOrderIdList(), timeFrame.get().getId(), Date.valueOf(orderBatchCreateBody.getDeliverDate()));
                     HashMap<UUID, Order> orderTrackHashMap = new HashMap<>();
                     orderTrackList.forEach(order -> orderTrackHashMap.put(order.getId(), order));
                     List<UUID> orderIdNotFoundList = new ArrayList<>();
-                    for (UUID orderId : orderBatchCreateBody.getOrderIdList()){
-                        if(!orderTrackHashMap.containsKey(orderId)) {
+                    for (UUID orderId : orderBatchCreateBody.getOrderIdList()) {
+                        if (!orderTrackHashMap.containsKey(orderId)) {
                             orderIdNotFoundList.add(orderId);
                         }
                     }
-                    if(orderIdNotFoundList.size() > 0) {
+                    if (orderIdNotFoundList.size() > 0) {
                         errorFields.put("orderIdListError", "Order ids '" + orderIdNotFoundList.stream().map(Objects::toString).collect(Collectors.joining(",")) + "' not found or not meet condition");
                     }
                 }
 
-                if(errorFields.size() > 0){
+                if (errorFields.size() > 0) {
                     throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
                 }
-                
+
                 OrderBatch orderBatch = new OrderBatch();
                 orderBatch.setDeliverDate(orderBatchCreateBody.getDeliverDate());
                 orderBatch.setTimeFrame(timeFrame.get());
