@@ -455,6 +455,8 @@ public class ProductServiceImpl implements ProductService {
         }
 
         productList.stream().forEach(product -> {
+            String unit = product.getUnit().toLowerCase();
+            product.setUnit(unit);
             Product productSaved = productRepository.save(product);
             productsSaved.add(productSaved);
         });
@@ -711,7 +713,8 @@ public class ProductServiceImpl implements ProductService {
         if (errorFields.size() > 0) {
             throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
         }
-
+        String unit = product.getUnit().toLowerCase();
+        product.setUnit(unit);
         return productRepository.save(product);
     }
 
@@ -809,6 +812,8 @@ public class ProductServiceImpl implements ProductService {
         product.setProductImageList(productImageList);
         product.setSupermarket(supermarket.get());
         product.setProductBatchList(productBatchList);
+        String unit = product.getUnit().toLowerCase();
+        product.setUnit(unit);
         product.setStatus(Status.ENABLE.ordinal());
 
         UUID productCategoryId = product.getProductSubCategory().getProductCategory().getId();
@@ -939,6 +944,8 @@ public class ProductServiceImpl implements ProductService {
                         if (errors.size() > 0) {
                             errorFields.put(rowIndex, errors);
                         }
+                        String unit = product.getUnit().toLowerCase();
+                        product.setUnit(unit);
                         product.setStatus(Status.ENABLE.ordinal());
                         product.setProductBatchList(productBatches);
                         product.setProductSubCategory(productSubCategory);
