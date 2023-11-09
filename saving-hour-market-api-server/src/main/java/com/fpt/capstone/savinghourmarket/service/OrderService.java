@@ -3,6 +3,7 @@ package com.fpt.capstone.savinghourmarket.service;
 import com.fpt.capstone.savinghourmarket.common.*;
 import com.fpt.capstone.savinghourmarket.entity.Order;
 import com.fpt.capstone.savinghourmarket.entity.OrderBatch;
+import com.fpt.capstone.savinghourmarket.entity.OrderDetail;
 import com.fpt.capstone.savinghourmarket.entity.OrderGroup;
 import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.*;
@@ -72,23 +73,32 @@ public interface OrderService {
                                                      Integer page,
                                                      Integer size) throws FirebaseAuthException, ResourceNotFoundException;
 
+    List<OrderProductForPackage> getProductOrderDetailAfterPackaging(UUID supermarketId,
+                                                          UUID pickupPointId,
+                                                          String staffEmail,
+                                                          Integer page,
+                                                          Integer size) throws FirebaseAuthException, ResourceNotFoundException;
+
+
     OrderWithDetails fetchOrderDetail(UUID id) throws ResourceNotFoundException;
 
     Order createOrder(String jwtToken, OrderCreate orderCreate) throws Exception;
 
     String cancelOrder(String jwtToken, UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException, FirebaseAuthException, IOException;
 
-    String confirmPackaging(UUID orderId, UUID staffId) throws NoSuchOrderException, IOException;
+    String confirmPackaging(UUID orderId, String staffEmail, UUID productConsolidationAreaId) throws NoSuchOrderException, IOException, ResourceNotFoundException;
 
-    String confirmPackaged(UUID orderId, UUID staffId) throws NoSuchOrderException, IOException;
+    String confirmPackagingGroup(UUID orderGroupId, String staffEmail, UUID productConsolidationAreaId) throws NoSuchOrderException, IOException, ResourceNotFoundException;
 
-    String confirmSucceeded(UUID orderId, UUID staffId) throws IOException, NoSuchOrderException;
+    String confirmPackaged(UUID orderId, String staffEmail) throws NoSuchOrderException, IOException, ResourceNotFoundException;
 
-    String confirmFail(UUID orderId, UUID staffId) throws IOException, NoSuchOrderException;
+    String confirmSucceeded(UUID orderId, String staffEmail) throws IOException, NoSuchOrderException, ResourceNotFoundException;
 
-    String assignDeliverToOrderGroupOrBatch(UUID orderGroupId, UUID orderBatchId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException, IOException;
+    String confirmFail(UUID orderId, String staffEmail) throws IOException, NoSuchOrderException, ResourceNotFoundException;
 
-    String assignDeliverToOrder(UUID orderId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException, IOException;
+    String assignDeliverToOrderGroupOrBatch(UUID orderGroupId, UUID orderBatchId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException, IOException, ResourceNotFoundException;
+
+    String assignDeliverToOrder(UUID orderId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException, IOException, ResourceNotFoundException;
 
     String deleteOrder(String jwtToken, UUID id) throws FirebaseAuthException, ResourceNotFoundException, OrderDeletionNotAllowedException;
 
@@ -101,7 +111,7 @@ public interface OrderService {
 
     Order editDeliverDate(UUID orderId, Date deliverDate) throws ResourceNotFoundException;
 
-    Order chooseConsolidationArea(UUID orderId, UUID consolidationAreaId) throws ResourceNotFoundException;
+//    Order chooseConsolidationArea(UUID orderId, UUID consolidationAreaId) throws ResourceNotFoundException;
 
     ReportOrdersResponse getReportOrders(OrderReportMode mode, LocalDate startDate, LocalDate endDate, Integer month, Integer year);
 
