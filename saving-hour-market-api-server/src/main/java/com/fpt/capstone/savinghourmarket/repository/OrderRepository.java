@@ -167,6 +167,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
 
     @Query("SELECT DISTINCT o FROM Order o " +
             "JOIN FETCH o.timeFrame tf " +
+            "JOIN FETCH o.productConsolidationArea pca " +
             "LEFT JOIN FETCH o.deliverer dlv " +
             "LEFT JOIN FETCH o.orderBatch obt " +
             "WHERE " +
@@ -178,12 +179,14 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "AND " +
             "(tf.id = :timeframeId) " +
             "AND " +
+            "(pca.id = :productConsolidationAreaId) " +
+            "AND " +
             "(o.deliveryMethod = 1)" +
             "AND " +
             "(dlv IS NULL) " +
             "AND " +
             "(o.deliveryDate = :deliverDate) ")
-    List<Order> findOrderWithoutGroups(UUID timeframeId, Date deliverDate);
+    List<Order> findOrderWithoutGroups(UUID timeframeId, Date deliverDate, UUID productConsolidationAreaId);
 
     @Query("SELECT DISTINCT o FROM Order o " +
             "JOIN FETCH o.timeFrame tf " +

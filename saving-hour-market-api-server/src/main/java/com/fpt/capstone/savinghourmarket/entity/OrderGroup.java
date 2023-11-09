@@ -53,5 +53,12 @@ public class OrderGroup {
     )
     private List<Order> orderList;
 
+    @ManyToOne
+    @JoinColumn(
+            name = "product_consolidation_area_id",
+            referencedColumnName = "id"
+    )
+    private ProductConsolidationArea productConsolidationArea;
+
 
 }

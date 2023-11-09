@@ -537,7 +537,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderBatch> batchingForStaff(Date deliverDate, UUID timeFrameId, Integer batchQuantity) throws ResourceNotFoundException {
+    public List<OrderBatch> batchingForStaff(Date deliverDate, UUID timeFrameId, Integer batchQuantity, UUID productConsolidationAreaId) throws ResourceNotFoundException {
 //        TimeFrame timeFrame = timeFrameRepository.findById(timeFrameId)
 //                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy time-frame với id: " + timeFrameId));
 //
@@ -571,7 +571,9 @@ public class OrderServiceImpl implements OrderService {
 //        return orderBatches;
         TimeFrame timeFrame = timeFrameRepository.findById(timeFrameId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy time-frame với id: " + timeFrameId));
-        List<Order> ordersWithoutGroups = repository.findOrderWithoutGroups(timeFrame.getId(), deliverDate);
+        ProductConsolidationArea productConsolidationArea = productConsolidationAreaRepository.findById(productConsolidationAreaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy product-consolidation-area với id: " + productConsolidationAreaId));
+        List<Order> ordersWithoutGroups = repository.findOrderWithoutGroups(timeFrame.getId(), deliverDate, productConsolidationArea.getId());
 //        List<Order> dummies = new ArrayList<>();
 //        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("Group 1-1 predict (Gan vinhome)").receiverPhone("0972779175").latitude((float) 10.82658).longitude((float) 106.82865).status(OrderStatus.PROCESSING.ordinal()).build());
 //        dummies.add(Order.builder().id(UUID.randomUUID()).totalPrice(10000).totalDiscountPrice(200).shippingFee(3000).createdTime(LocalDateTime.now()).deliveryDate(Date.valueOf("2023-10-19")).paymentMethod(PaymentMethod.COD.ordinal()).paymentStatus(PaymentStatus.UNPAID.ordinal()).addressDeliver("Group 1-2 predict (Gan vinhome)").receiverPhone("0972779175").latitude((float) 10.84717).longitude((float) 106.83026).status(OrderStatus.PROCESSING.ordinal()).build());
