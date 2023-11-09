@@ -17,14 +17,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface OrderService {
-    List<OrderGroup> fetchOrderGroups(SortType deliverDateSortType,
-                                      LocalDate deliverDate,
-                                      UUID timeFrameId,
-                                      UUID pickupPointId,
-                                      UUID delivererId,
-                                      Integer page,
-                                      Integer size) throws FirebaseAuthException;
-
     List<Order> fetchOrdersForStaff(String totalPriceSortType,
                                     String createdTimeSortType,
                                     String deliveryDateSortType,
@@ -34,8 +26,29 @@ public interface OrderService {
                                     UUID delivererId,
                                     Boolean isPaid,
                                     Boolean isGrouped,
+                                    Boolean isBatched,
                                     int page,
                                     int limit);
+
+    List<Order> fetchOrdersForCustomer(String jwtToken,
+                                       String totalPriceSortType,
+                                       String createdTimeSortType,
+                                       String deliveryDateSortType,
+                                       OrderStatus orderStatus,
+                                       Boolean isPaid,
+                                       int page,
+                                       int limit) throws FirebaseAuthException;
+
+    List<OrderBatch> fetchOrderBatches(LocalDate deliveryDate, UUID delivererID) throws NoSuchOrderException;
+
+    List<OrderGroup> fetchOrderGroups(SortType deliverDateSortType,
+                                      LocalDate deliverDate,
+                                      Boolean getOldOrderGroup,
+                                      UUID timeFrameId,
+                                      UUID pickupPointId,
+                                      UUID delivererId,
+                                      Integer page,
+                                      Integer size) throws FirebaseAuthException;
 
     List<Order> fetchOrdersForPackageStaff(String totalPriceSortType,
                                            String createdTimeSortType,
@@ -45,29 +58,25 @@ public interface OrderService {
                                            OrderStatus orderStatus,
                                            String email,
                                            Boolean isPaid,
-                                           Boolean isGrouped,
+                                           DeliveryMethod deliveryMethod,
                                            int page,
                                            int limit) throws NoSuchOrderException, FirebaseAuthException, ResourceNotFoundException;
+
+    List<OrderGroup> fetchOrderGroupsForPackageStaff(String staffEmail,
+                                                     SortType deliverDateSortType,
+                                                     LocalDate deliverDate,
+                                                     Boolean getOldOrderGroup,
+                                                     UUID timeFrameId,
+                                                     UUID pickupPointId,
+                                                     UUID delivererId,
+                                                     Integer page,
+                                                     Integer size) throws FirebaseAuthException, ResourceNotFoundException;
 
     OrderWithDetails fetchOrderDetail(UUID id) throws ResourceNotFoundException;
 
     Order createOrder(String jwtToken, OrderCreate orderCreate) throws Exception;
 
     String cancelOrder(String jwtToken, UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException, FirebaseAuthException, IOException;
-
-    List<Order> fetchOrdersForCustomer(String jwtToken,
-                                       String totalPriceSortType,
-                                       String createdTimeSortType,
-                                       String deliveryDateSortType,
-                                       OrderStatus orderStatus,
-                                       Boolean isPaid,
-                                       int page,
-                                       int limit) throws  FirebaseAuthException;
-
-    ;
-
-
-    List<OrderBatch> fetchOrderBatches(LocalDate deliveryDate, UUID delivererID) throws NoSuchOrderException;
 
     String confirmPackaging(UUID orderId, UUID staffId) throws NoSuchOrderException, IOException;
 

@@ -93,6 +93,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderGroup> fetchOrderGroups(SortType deliverDateSortType,
                                              LocalDate deliverDate,
+                                             Boolean getOldOrderGroup,
                                              UUID timeFrameId,
                                              UUID pickupPointId,
                                              UUID delivererId,
@@ -114,7 +115,41 @@ public class OrderServiceImpl implements OrderService {
             pageableWithSort = PageRequest.of(page, size);
         }
 
-        List<OrderGroup> orderGroups = orderGroupRepository.findByTimeFrameOrPickupPointOrDeliverDate(timeFrameId,
+        List<OrderGroup> orderGroups = orderGroupRepository.findByTimeFrameOrPickupPointOrDeliverDate(
+                getOldOrderGroup,
+                timeFrameId,
+                pickupPointId,
+                delivererId,
+                deliverDate,
+                pageableWithSort);
+
+        return orderGroups;
+    }
+
+    @Override
+    public List<OrderGroup> fetchOrderGroupsForPackageStaff(String staffEmail, SortType deliverDateSortType, LocalDate deliverDate, Boolean getOldOrderGroup, UUID timeFrameId, UUID pickupPointId, UUID delivererId, Integer page, Integer size) throws FirebaseAuthException, ResourceNotFoundException {
+        List<PickupPoint> pickupPointListOfStaff = staffRepository.findByEmail(staffEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Nhân viên không tìm thấy với email " + staffEmail)).getPickupPoint();
+        Sort sortable = null;
+
+        if (deliverDateSortType != null) {
+            if (deliverDateSortType.equals(SortType.ASC.toString())) {
+                sortable = Sort.by("deliverDate").ascending();
+            } else {
+                sortable = Sort.by("deliverDate").descending();
+            }
+        }
+        Pageable pageableWithSort;
+        if (sortable != null) {
+            pageableWithSort = PageRequest.of(page, size, sortable);
+        } else {
+            pageableWithSort = PageRequest.of(page, size);
+        }
+
+        List<OrderGroup> orderGroups = orderGroupRepository.findByTimeFrameOrPickupPointOrDeliverDateForPackageStaff(
+                pickupPointListOfStaff,
+                getOldOrderGroup,
+                timeFrameId,
                 pickupPointId,
                 delivererId,
                 deliverDate,
@@ -289,6 +324,7 @@ public class OrderServiceImpl implements OrderService {
                                            UUID delivererId,
                                            Boolean isPaid,
                                            Boolean isGrouped,
+                                           Boolean isBatched,
                                            int page,
                                            int limit) {
         List<Order> orders = repository.findOrderForStaff(
@@ -297,6 +333,7 @@ public class OrderServiceImpl implements OrderService {
                 delivererId,
                 orderStatus == null ? null : orderStatus.ordinal(),
                 isGrouped,
+                isBatched,
                 isPaid,
                 getPageableWithSort(totalPriceSortType,
                         createdTimeSortType,
@@ -316,7 +353,7 @@ public class OrderServiceImpl implements OrderService {
                                                   OrderStatus orderStatus,
                                                   String email,
                                                   Boolean isPaid,
-                                                  Boolean isGrouped,
+                                                  DeliveryMethod deliveryMethod,
                                                   int page,
                                                   int limit) throws ResourceNotFoundException {
         List<PickupPoint> pickupPointListOfStaff = staffRepository.findByEmail(email)
@@ -326,7 +363,7 @@ public class OrderServiceImpl implements OrderService {
                 deliveryDate,
                 pickupPointListOfStaff,
                 orderStatus == null ? null : orderStatus.ordinal(),
-                isGrouped,
+                deliveryMethod.ordinal(),
                 isPaid,
                 getPageableWithSort(totalPriceSortType,
                         createdTimeSortType,
@@ -977,9 +1014,11 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderDetailList(orderDetails);
         mapDiscountsToOrder(order, orderCreate.getDiscountID());
         Order orderSaved = repository.save(order);
+
         mapTransactionToOrder(orderSaved, orderCreate.getTransaction());
         String qrCodeUrl = generateAndUploadQRCode(orderSaved);
         orderSaved.setQrCodeUrl(qrCodeUrl);
+
         return repository.save(orderSaved);
     }
 

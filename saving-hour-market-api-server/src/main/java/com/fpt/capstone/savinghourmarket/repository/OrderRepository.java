@@ -32,6 +32,12 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "OR " +
             "((:isGrouped = TRUE) AND (o.orderGroup IS NOT NULL)))) " +
             "AND " +
+            "(((:isBatched IS NULL) " +
+            "OR " +
+            "((:isBatched = FALSE) AND (o.orderBatch IS NULL)) " +
+            "OR " +
+            "((:isBatched = TRUE) AND (o.orderBatch IS NOT NULL)))) " +
+            "AND " +
             "(((:isPaid IS NULL) OR (:isPaid = FALSE)) " +
             "OR " +
             "((:isPaid = TRUE) AND (SIZE(o.transaction) > 0)))"
@@ -41,6 +47,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
                                   UUID deliverId,
                                   Integer status,
                                   Boolean isGrouped,
+                                  Boolean isBatched,
                                   Boolean isPaid,
                                   Pageable pageable);
 
@@ -52,11 +59,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "AND " +
             "((:status IS NULL) OR (o.status = :status)) " +
             "AND " +
-            "(((:isGrouped IS NULL) " +
-            "OR " +
-            "((:isGrouped = FALSE) AND (o.orderGroup IS NULL)) " +
-            "OR " +
-            "((:isGrouped = TRUE) AND (o.orderGroup IS NOT NULL)))) " +
+            "((:deliveryMethod IS NULL) OR (o.deliveryMethod = :deliveryMethod)) " +
             "AND " +
             "(((:isPaid IS NULL) OR (:isPaid = FALSE)) " +
             "OR " +
@@ -66,7 +69,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
                                          Date deliveryDate,
                                          List<PickupPoint> pickupPointList,
                                          Integer status,
-                                         Boolean isGrouped,
+                                         Integer deliveryMethod,
                                          Boolean isPaid,
                                          Pageable pageable);
 
