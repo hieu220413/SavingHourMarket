@@ -234,11 +234,13 @@ public class OrderController {
     @GetMapping("/staff/deliveryManager/batchingForStaff")
     public ResponseEntity<List<OrderBatch>> batchingForStaff(
             @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken,
-            @RequestParam Date deliverDate, @RequestParam UUID timeFrameId,
+            @RequestParam Date deliverDate,
+            @RequestParam UUID timeFrameId,
+            @RequestParam UUID productConsolidationAreaId,
             @RequestParam Integer batchQuantity) throws ResourceNotFoundException, FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.batchingForStaff(deliverDate, timeFrameId, batchQuantity));
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.batchingForStaff(deliverDate, timeFrameId, batchQuantity, productConsolidationAreaId));
     }
 
     @PostMapping("/staff/deliveryManager/createBatches")
