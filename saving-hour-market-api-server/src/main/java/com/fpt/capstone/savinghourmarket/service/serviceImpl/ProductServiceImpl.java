@@ -825,6 +825,7 @@ public class ProductServiceImpl implements ProductService {
         productCreate.getImageUrls().forEach(imageUrl -> {
             ProductImage image = new ProductImage();
             image.setImageUrl(imageUrl);
+            image.setProduct(product);
             productImageList.add(image);
         });
         product.setProductImageList(productImageList);
