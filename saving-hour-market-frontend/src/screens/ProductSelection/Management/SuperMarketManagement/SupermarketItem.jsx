@@ -27,6 +27,9 @@ const SupermarketItem = ({
   error,
   setLoading,
   isSwitchRecovery,
+  handleOpenSupermarketStore,
+  setSupermarketStore,
+  setCurrentId,
 }) => {
   const [openEdit, setOpenEdit] = useState(false);
   const handleOpenEdit = () => setOpenEdit(true);
@@ -92,7 +95,7 @@ const SupermarketItem = ({
               open: true,
               severity: "success",
             });
-            setError("Vô hiệu hóa thành công");
+            setError("Xóa thành công");
             setLoading(false);
           })
           .catch((err) => console.log(err));
@@ -157,31 +160,17 @@ const SupermarketItem = ({
     <tr key={i} className="table-body-row">
       <td>{i + 1}</td>
       <td>{item.name}</td>
-      <td
-        style={{
-          position: "relative",
-        }}
-      >
-        {item.supermarketAddressList[0]?.address}
-        {item.supermarketAddressList.length > 1 && (
-          <FontAwesomeIcon
-            style={{ marginLeft: 10 }}
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-            className="arrow-down"
-            icon={faReceipt}
-          />
-        )}
-        <ul class="dropdown-menu">
-          {item.supermarketAddressList.map((addressItem, i) => {
-            if (i === 0) {
-              return <></>;
-            }
-            return <li>{addressItem?.address}</li>;
-          })}
-        </ul>
-      </td>
       <td>{item.phone}</td>
+      <td>
+        <i
+          onClick={() => {
+            setSupermarketStore(item.supermarketAddressList);
+            setCurrentId(item.id);
+            handleOpenSupermarketStore();
+          }}
+          className="bi bi-eye"
+        ></i>
+      </td>
       <td>
         {isSwitchRecovery ? (
           <i

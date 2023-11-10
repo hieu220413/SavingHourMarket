@@ -28,21 +28,12 @@ const EditSuperMarket = ({
   setError,
   openSnackbar,
 }) => {
-  const [locationData, setLocationData] = useState([]);
-
-  const list = supermarket.supermarketAddressList.map((item) => {
-    return {
-      isFocused: false,
-      selectAddress: item.address,
-      searchAddress: item.address,
-      error: "",
-    };
-  });
-  const [addressList, setAddressList] = useState(list);
+  const [addressList, setAddressList] = useState(
+    supermarket.supermarketAddressList
+  );
   const [name, setName] = useState(supermarket.name);
   const [phone, setPhone] = useState(supermarket.phone);
   const [loading, setLoading] = useState(false);
-  const typingTimeoutRef = useRef(null);
   const handleEdit = async () => {
     if (!name) {
       setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
@@ -63,25 +54,9 @@ const EditSuperMarket = ({
       setError("Số điện thoại không hợp lệ");
       return;
     }
-    const addressListValidate = addressList.map((item) => {
-      if (!item.selectAddress) {
-        return { ...item, error: "Địa chỉ không hợp lệ" };
-      }
-      return item;
-    });
-    setAddressList(addressListValidate);
 
-    const validateAddress = addressList.some((item) => !item.selectAddress);
-
-    if (validateAddress) {
-      setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
-      setError("Địa chỉ không hợp lệ");
-      return;
-    }
-    const listAddress = addressList.map((item) => item.selectAddress);
     const submitSupermarket = {
       name: name,
-      supermarketAddressList: listAddress,
       phone: phone,
     };
     setLoading(true);
@@ -143,7 +118,7 @@ const EditSuperMarket = ({
   return (
     <div
       className={`modal__container ${
-        addressList.length >= 6 ? "modal-scroll" : ""
+        addressList.length >= 3 ? "modal-scroll" : ""
       }`}
     >
       <div className="modal__container-header">
@@ -202,152 +177,49 @@ const EditSuperMarket = ({
 
         {addressList.map((item, i) => {
           return (
-            <div className="modal__container-body-inputcontrol input-address">
-              <div className="modal__container-body-inputcontrol-label-icon">
-                {addressList.length !== 1 && (
-                  <div
-                    onClick={() => {
-                      setAddressList(
-                        addressList.filter((address) => address !== item)
-                      );
-                    }}
-                    className="button__minus"
-                  >
-                    <FontAwesomeIcon icon={faMinus} />
-                  </div>
-                )}
-
-                <h4 className="modal__container-body-inputcontrol-label">
-                  Chi nhánh {i + 1}
-                </h4>
+            <>
+              <div onClick={() => {}} className="button__add">
+                Chi nhánh {i + 1}
               </div>
+              <div className="modal__container-body-inputcontrol input-address">
+                <div className="modal__container-body-inputcontrol-label-icon">
+                  <h4 className="modal__container-body-inputcontrol-label">
+                    Chi nhánh {i + 1}
+                  </h4>
+                </div>
 
-              <div>
-                <input
-                  style={{ paddingRight: 20 }}
-                  value={item.searchAddress}
-                  onChange={(e) => {
-                    const newAddressList1 = addressList.map((data, index) => {
-                      if (index === i) {
-                        return {
-                          ...data,
-                          searchAddress: e.target.value,
-                          selectAddress: "",
-                          error: "",
-                        };
-                      }
-                      return data;
-                    });
-                    setAddressList(newAddressList1);
-
-                    if (typingTimeoutRef.current) {
-                      clearTimeout(typingTimeoutRef.current);
-                    }
-                    typingTimeoutRef.current = setTimeout(() => {
-                      fetch(
-                        `https://rsapi.goong.io/Place/AutoComplete?api_key=${API.GoongAPIKey}&limit=4&input=${item.searchAddress}`
-                      )
-                        .then((res) => res.json())
-                        .then((respond) => {
-                          if (!respond.predictions) {
-                            setLocationData([]);
-                            return;
-                          }
-                          setLocationData(respond.predictions);
-                        })
-                        .catch((err) => console.log(err));
-                    }, 400);
-                  }}
-                  onFocus={() => {
-                    setLocationData([]);
-                    const newAddressList1 = addressList.map((data, index) => {
-                      if (index === i) {
-                        return { ...data, isFocused: true };
-                      }
-                      return { ...data, isFocused: false };
-                    });
-                    setAddressList(newAddressList1);
-                  }}
-                  placeholder="Nhập địa chỉ"
-                  type="text"
-                  className="modal__container-body-inputcontrol-input"
-                />
-                {item.error && (
-                  <p
-                    style={{ fontSize: "14px", marginBottom: "-10px" }}
-                    className="text-danger"
-                  >
-                    {item.error}
-                  </p>
-                )}
-                {item.searchAddress && (
-                  <FontAwesomeIcon
-                    onClick={() => {
-                      const newAddressList1 = addressList.map((data, index) => {
-                        if (index === i) {
-                          return {
-                            ...data,
-                            searchAddress: "",
-                            selectAddress: "",
-                          };
-                        }
-                        return data;
-                      });
-                      setAddressList(newAddressList1);
-                    }}
-                    className="input-icon-x"
-                    icon={faX}
+                <div>
+                  <input
+                    disabled
+                    style={{ paddingRight: 20 }}
+                    value={item.address}
+                    placeholder="Nhập địa chỉ"
+                    type="text"
+                    className="modal__container-body-inputcontrol-input"
                   />
-                )}
-
-                {item.isFocused && locationData.length !== 0 && (
-                  <div className="suggest-location">
-                    {locationData.map((data) => (
-                      <div
-                        onClick={() => {
-                          const newAddressList1 = addressList.map(
-                            (address, index) => {
-                              if (index === i) {
-                                return {
-                                  isFocused: false,
-                                  searchAddress: data.description,
-                                  selectAddress: data.description,
-                                  error: "",
-                                };
-                              }
-                              return address;
-                            }
-                          );
-                          setAddressList(newAddressList1);
-                        }}
-                        className="suggest-location-item"
-                      >
-                        <h4>{data.description}</h4>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                </div>
               </div>
-            </div>
+              <div className="modal__container-body-inputcontrol input-address">
+                <div className="modal__container-body-inputcontrol-label-icon">
+                  <h4 className="modal__container-body-inputcontrol-label">
+                    Điểm giao hàng liên kết
+                  </h4>
+                </div>
+
+                <div>
+                  <input
+                    disabled
+                    style={{ paddingRight: 20 }}
+                    value={item.pickupPoint.address}
+                    placeholder="Nhập địa chỉ"
+                    type="text"
+                    className="modal__container-body-inputcontrol-input"
+                  />
+                </div>
+              </div>
+            </>
           );
         })}
-
-        <div
-          onClick={() => {
-            setAddressList([
-              ...addressList,
-              {
-                isFocused: false,
-                selectAddress: "",
-                searchAddress: "",
-                error: "",
-              },
-            ]);
-          }}
-          className="button__add"
-        >
-          Thêm chi nhánh mới <FontAwesomeIcon icon={faPlus} />
-        </div>
       </div>
       {/* ********************** */}
 

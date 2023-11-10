@@ -10,8 +10,12 @@ const ErrorProductUploadByExcel = ({ handleClose, errorList }) => {
         <FontAwesomeIcon icon={faXmark} onClick={handleClose} />
       </div>
       <div style={{}} className="modal__container-body">
-        {errorList.map((item) => (
-          <div className="error__container">
+        <div className="error__container">
+          <i class="bi bi-exclamation-circle-fill text-danger"></i>
+          <h3 className="text-danger">Sản phẩm chưa có hình ảnh</h3>
+        </div>
+        {errorList.map((item, index) => (
+          <div key={index} className="error__container">
             <i class="bi bi-exclamation-circle-fill text-danger"></i>
             <h3 className="text-danger">{item}</h3>
           </div>

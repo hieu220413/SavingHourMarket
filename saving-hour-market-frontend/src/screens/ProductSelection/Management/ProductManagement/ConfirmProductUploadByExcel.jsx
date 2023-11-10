@@ -12,6 +12,8 @@ import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 import NullImage from "../../../../assets/Null-Image.png";
 import ProductBatchUploadByExcel from "./ProductBatchUploadByExcel";
 import ErrorProductUploadByExcel from "./ErrorProductUploadByExcel";
+import ProductImageSlider from "./ProductImageSlider";
+import CreateProductImageSlider from "./CreateProductImageSlider";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -35,6 +37,7 @@ const ConfirmProductUploadByExcel = ({
     vertical: "top",
     horizontal: "right",
     severity: "success",
+    edit: true,
   });
   const { vertical, horizontal } = openSnackbar;
   const handleCloseSnackbar = () => {
@@ -48,6 +51,11 @@ const ConfirmProductUploadByExcel = ({
     })
   );
 
+  const [openImageUrlList, setOpenImageUrlList] = useState(false);
+  const handleOpenImageUrlList = () => setOpenImageUrlList(true);
+  const handleCloseImageUrlList = () => setOpenImageUrlList(false);
+  const [imageUrlList, setImageUrlList] = useState(null);
+
   const handleConfirm = async () => {
     setLoading(true);
     const tokenId = await auth.currentUser.getIdToken();
@@ -57,10 +65,16 @@ const ConfirmProductUploadByExcel = ({
         "Content-Type": "application/json",
         Authorization: `Bearer ${tokenId}`,
       },
-      body: JSON.stringify(confirmProductList),
+      body: JSON.stringify(confirmProductList.productList),
     })
       .then((res) => res.json())
       .then(async (res) => {
+        if (res.status === 500) {
+          setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
+          setLoading(false);
+          return;
+        }
+
         fetch(
           `${API.baseURL}/api/product/getProductsForStaff?page=${
             page - 1
@@ -124,22 +138,39 @@ const ConfirmProductUploadByExcel = ({
             {item.productImageList ? (
               <img
                 alt="hình"
+                style={{ cursor: "pointer" }}
                 width="80px"
                 height="60px"
-                src={item?.productImageList[0]?.image}
+                onClick={() => {
+                  setImageUrlList(
+                    item.productImageList.map((img) => img.imageUrl)
+                  );
+                  handleOpenImageUrlList();
+                }}
+                src={item?.productImageList[0]?.imageUrl}
               />
             ) : (
               <img alt="hình" width="80px" height="60px" src={NullImage} />
             )}
           </td>
-          <td style={{ paddingTop: 30 }}>{item?.name}</td>
+          <td style={{ paddingTop: 30 }}>
+            {" "}
+            {item?.name ? (
+              item?.name
+            ) : (
+              <p style={{ fontWeight: 700 }} className="text-danger">
+                Lỗi tên
+              </p>
+            )}
+          </td>
+          <td style={{ paddingTop: 30 }}>{item?.unit}</td>
 
           <td style={{ paddingTop: 30 }}>
             {item?.productSubCategory?.id ? (
               item?.productSubCategory?.name
             ) : (
-              <p style={{ fontWeight: 600 }} className="text-danger">
-                Không tồn tại
+              <p style={{ fontWeight: 700 }} className="text-danger">
+                Lỗi loại sản phẩm phụ
               </p>
             )}
           </td>
@@ -147,8 +178,8 @@ const ConfirmProductUploadByExcel = ({
             {item?.supermarket?.id ? (
               item?.supermarket?.name
             ) : (
-              <p style={{ fontWeight: 600 }} className="text-danger">
-                Không tồn tại
+              <p style={{ fontWeight: 700 }} className="text-danger">
+                Lỗi siêu thị
               </p>
             )}
           </td>
@@ -165,7 +196,8 @@ const ConfirmProductUploadByExcel = ({
             <i onClick={handleOpenDelete} class="bi bi-trash-fill"></i>
           </td>
           <td style={{ paddingTop: 30 }}>
-            {errorList.some((item) => parseInt(item.index) === index + 1) ? (
+            {errorList.some((item) => parseInt(item.index) === index + 1) ||
+            !item.productImageList ? (
               <i
                 onClick={handleOpenErrorList}
                 style={{ marginLeft: "-3px" }}
@@ -191,6 +223,7 @@ const ConfirmProductUploadByExcel = ({
             product={item}
             index={index}
             setOpenSnackbar={setOpenSnackbar}
+            setErrorList={setErrorList}
             openSnackbar={openSnackbar}
           />
         </Dialog>
@@ -260,7 +293,7 @@ const ConfirmProductUploadByExcel = ({
   };
 
   return (
-    <div style={{ width: "1150px" }} className="modal__container modal-scroll">
+    <div style={{ width: "1200px" }} className="modal__container modal-scroll">
       <div className="modal__container-header">
         <h3 className="modal__container-header-title">
           Xác nhận danh sách sản phẩm
@@ -279,6 +312,7 @@ const ConfirmProductUploadByExcel = ({
                 <th>No.</th>
                 <th>Hình ảnh</th>
                 <th>Tên Sản phẩm</th>
+                <th>Đơn vị</th>
                 <th>Loại sản phẩm phụ</th>
                 <th>Siêu thị</th>
                 <th>Lô hàng</th>
@@ -314,7 +348,7 @@ const ConfirmProductUploadByExcel = ({
       {/* *********************** */}
       <Snackbar
         open={openSnackbar.open}
-        autoHideDuration={1000}
+        autoHideDuration={2000}
         anchorOrigin={{ vertical, horizontal }}
         onClose={handleCloseSnackbar}
       >
@@ -327,9 +361,21 @@ const ConfirmProductUploadByExcel = ({
             alignItem: "center",
           }}
         >
-          Chỉnh sửa thành công
+          {openSnackbar.severity === "success"
+            ? "Chỉnh sửa thành công"
+            : "Vui lòng sửa hết lỗi còn tồn tại"}
         </Alert>
       </Snackbar>
+      <Dialog
+        onClose={handleCloseImageUrlList}
+        aria-labelledby="customized-dialog-title"
+        open={openImageUrlList}
+      >
+        <CreateProductImageSlider
+          handleClose={handleCloseImageUrlList}
+          imageUrlList={imageUrlList}
+        />
+      </Dialog>
 
       {loading && <LoadingScreen />}
     </div>
