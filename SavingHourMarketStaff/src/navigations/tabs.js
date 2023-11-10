@@ -16,6 +16,7 @@ import Product from '../screens/orderStaff/Product';
 import OrderGroup from '../screens/deliveryManager/OrderGroup';
 import OrderBatch from '../screens/deliveryManager/OrderBatch';
 import Batching from '../screens/deliveryManager/Batching';
+import OrderGroupForOrderStaff from '../screens/orderStaff/OrderGroup';
 
 const Tab = createBottomTabNavigator();
 
@@ -72,6 +73,19 @@ const Tabs = () => {
               tabBarIcon: ({focused}) => (
                 <TabIcon
                   display={'Đơn hàng'}
+                  focused={focused}
+                  icon={icons.order}
+                />
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="OrderGroupForOrderStaff"
+            component={OrderGroupForOrderStaff}
+            options={{
+              tabBarIcon: ({focused}) => (
+                <TabIcon
+                  display={'Nhóm Đơn'}
                   focused={focused}
                   icon={icons.order}
                 />
