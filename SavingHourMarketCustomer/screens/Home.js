@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react/no-unstable-nested-components */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   Text,
   View,
@@ -13,12 +13,12 @@ import {
 } from 'react-native';
 import Categories from '../components/Categories';
 import DiscountRow from '../components/DiscountRow';
-import { COLORS, FONTS } from '../constants/theme';
-import { icons } from '../constants';
+import {COLORS, FONTS} from '../constants/theme';
+import {icons} from '../constants';
 import dayjs from 'dayjs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API } from '../constants/api';
-import { useFocusEffect } from '@react-navigation/native';
+import {API} from '../constants/api';
+import {useFocusEffect} from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import LoadingScreen from '../components/LoadingScreen';
 import Modal, {
@@ -28,7 +28,7 @@ import Modal, {
 } from 'react-native-modals';
 import Empty from '../assets/image/search-empty.png';
 
-const Home = ({ navigation }) => {
+const Home = ({navigation}) => {
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [currentCate, setCurrentCate] = useState('');
@@ -121,6 +121,8 @@ const Home = ({ navigation }) => {
       )
         .then(res => res.json())
         .then(data => {
+          // console.log("san pham", data.productList[0].supermarket);
+          console.log(data);
           setProductsByCategory(data.productList);
           setPage(1);
           setTotalPage(data.totalPage);
@@ -168,7 +170,7 @@ const Home = ({ navigation }) => {
         return;
       }
 
-      const cartData = { ...data, isChecked: false, cartQuantity: 1 };
+      const cartData = {...data, isChecked: false, cartQuantity: 1};
       newCartList = [...newCartList, cartData];
       setCartList(newCartList);
       await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
@@ -178,7 +180,7 @@ const Home = ({ navigation }) => {
     }
   };
 
-  const Item = ({ data }) => {
+  const Item = ({data}) => {
     return (
       <TouchableOpacity
         key={data.id}
@@ -223,7 +225,7 @@ const Home = ({ navigation }) => {
               )}
             </Text>
 
-            <View style={{ flexDirection: 'row' }}>
+            <View style={{flexDirection: 'row'}}>
               <Text
                 style={{
                   maxWidth: '70%',
@@ -272,7 +274,7 @@ const Home = ({ navigation }) => {
     );
   };
 
-  const SubCategory = ({ data }) => {
+  const SubCategory = ({data}) => {
     return (
       <TouchableOpacity
         onPress={() => {
@@ -421,7 +423,7 @@ const Home = ({ navigation }) => {
       <SelectPickupPointBar />
 
       {/* Search */}
-      <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+      <View style={{flexDirection: 'row', gap: 10, alignItems: 'center'}}>
         <SearchBar />
         <TouchableOpacity
           onPress={async () => {
@@ -432,7 +434,7 @@ const Home = ({ navigation }) => {
                 return;
               }
               navigation.navigate('Cart');
-            } catch (error) { }
+            } catch (error) {}
           }}>
           <Image
             resizeMode="contain"
@@ -457,7 +459,7 @@ const Home = ({ navigation }) => {
                 justifyContent: 'center',
               }}>
               <Text
-                style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
+                style={{fontSize: 12, color: 'white', fontFamily: 'Roboto'}}>
                 {cartList.length}
               </Text>
             </View>
@@ -558,9 +560,9 @@ const Home = ({ navigation }) => {
         ))}
 
         {productsByCategory.length === 0 && (
-          <View style={{ alignItems: 'center' }}>
+          <View style={{alignItems: 'center'}}>
             <Image
-              style={{ width: 200, height: 200 }}
+              style={{width: 200, height: 200}}
               resizeMode="contain"
               source={Empty}
             />
@@ -581,8 +583,10 @@ const Home = ({ navigation }) => {
               setPage(page + 1);
               setLoading(true);
               fetch(
-                `${API.baseURL
-                }/api/product/getProductsForCustomer?productCategoryId=${currentCate}&page=${page + 1
+                `${
+                  API.baseURL
+                }/api/product/getProductsForCustomer?productCategoryId=${currentCate}&page=${
+                  page + 1
                 }&limit=5`,
               )
                 .then(res => res.json())
@@ -630,14 +634,14 @@ const Home = ({ navigation }) => {
           <ModalFooter>
             <ModalButton
               text="Ở lại trang"
-              textStyle={{ color: 'red' }}
+              textStyle={{color: 'red'}}
               onPress={() => {
                 setOpenAuthModal(false);
               }}
             />
             <ModalButton
               text="Đăng nhập"
-              textStyle={{ color: COLORS.primary }}
+              textStyle={{color: COLORS.primary}}
               onPress={async () => {
                 try {
                   await AsyncStorage.removeItem('userInfo');
@@ -652,7 +656,7 @@ const Home = ({ navigation }) => {
           </ModalFooter>
         }>
         <View
-          style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
+          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
           <Text
             style={{
               fontSize: 20,

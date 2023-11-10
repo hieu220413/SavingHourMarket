@@ -1,17 +1,15 @@
 package com.fpt.capstone.savinghourmarket.service;
 
-import com.fpt.capstone.savinghourmarket.common.District;
-import com.fpt.capstone.savinghourmarket.common.OrderReportMode;
-import com.fpt.capstone.savinghourmarket.common.OrderStatus;
+import com.fpt.capstone.savinghourmarket.common.*;
 import com.fpt.capstone.savinghourmarket.entity.Order;
 import com.fpt.capstone.savinghourmarket.entity.OrderBatch;
+import com.fpt.capstone.savinghourmarket.entity.OrderDetail;
 import com.fpt.capstone.savinghourmarket.entity.OrderGroup;
 import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.*;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.maps.errors.ApiException;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.IOException;
 import java.sql.Date;
@@ -20,8 +18,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface OrderService {
-    List<OrderGroup> fetchOrderGroups(LocalDate deliverDate, UUID timeFrameId, UUID pickupPointId, UUID delivererId) throws NoSuchOrderException, FirebaseAuthException;
-
     List<Order> fetchOrdersForStaff(String totalPriceSortType,
                                     String createdTimeSortType,
                                     String deliveryDateSortType,
@@ -31,8 +27,29 @@ public interface OrderService {
                                     UUID delivererId,
                                     Boolean isPaid,
                                     Boolean isGrouped,
+                                    Boolean isBatched,
                                     int page,
                                     int limit);
+
+    List<Order> fetchOrdersForCustomer(String jwtToken,
+                                       String totalPriceSortType,
+                                       String createdTimeSortType,
+                                       String deliveryDateSortType,
+                                       OrderStatus orderStatus,
+                                       Boolean isPaid,
+                                       int page,
+                                       int limit) throws FirebaseAuthException;
+
+    List<OrderBatch> fetchOrderBatches(LocalDate deliveryDate, UUID delivererID) throws NoSuchOrderException;
+
+    List<OrderGroup> fetchOrderGroups(SortType deliverDateSortType,
+                                      LocalDate deliverDate,
+                                      Boolean getOldOrderGroup,
+                                      UUID timeFrameId,
+                                      UUID pickupPointId,
+                                      UUID delivererId,
+                                      Integer page,
+                                      Integer size) throws FirebaseAuthException;
 
     List<Order> fetchOrdersForPackageStaff(String totalPriceSortType,
                                            String createdTimeSortType,
@@ -42,9 +59,26 @@ public interface OrderService {
                                            OrderStatus orderStatus,
                                            String email,
                                            Boolean isPaid,
-                                           Boolean isGrouped,
+                                           DeliveryMethod deliveryMethod,
                                            int page,
                                            int limit) throws NoSuchOrderException, FirebaseAuthException, ResourceNotFoundException;
+
+    List<OrderGroup> fetchOrderGroupsForPackageStaff(String staffEmail,
+                                                     SortType deliverDateSortType,
+                                                     LocalDate deliverDate,
+                                                     Boolean getOldOrderGroup,
+                                                     UUID timeFrameId,
+                                                     UUID pickupPointId,
+                                                     UUID delivererId,
+                                                     Integer page,
+                                                     Integer size) throws FirebaseAuthException, ResourceNotFoundException;
+
+    List<OrderProductForPackage> getProductOrderDetailAfterPackaging(UUID supermarketId,
+                                                          UUID pickupPointId,
+                                                          String staffEmail,
+                                                          Integer page,
+                                                          Integer size) throws FirebaseAuthException, ResourceNotFoundException;
+
 
     OrderWithDetails fetchOrderDetail(UUID id) throws ResourceNotFoundException;
 
@@ -52,44 +86,32 @@ public interface OrderService {
 
     String cancelOrder(String jwtToken, UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException, FirebaseAuthException, IOException;
 
-    List<Order> fetchOrdersForCustomer(String jwtToken,
-                                       String totalPriceSortType,
-                                       String createdTimeSortType,
-                                       String deliveryDateSortType,
-                                       OrderStatus orderStatus,
-                                       Boolean isPaid,
-                                       int page,
-                                       int limit) throws  FirebaseAuthException;
+    String confirmPackaging(UUID orderId, String staffEmail, UUID productConsolidationAreaId) throws NoSuchOrderException, IOException, ResourceNotFoundException;
 
-    ;
+    String confirmPackagingGroup(UUID orderGroupId, String staffEmail, UUID productConsolidationAreaId) throws NoSuchOrderException, IOException, ResourceNotFoundException;
 
+    String confirmPackaged(UUID orderId, String staffEmail) throws NoSuchOrderException, IOException, ResourceNotFoundException;
 
-    List<OrderBatch> fetchOrderBatches(LocalDate deliveryDate, UUID delivererID) throws NoSuchOrderException;
+    String confirmSucceeded(UUID orderId, String staffEmail) throws IOException, NoSuchOrderException, ResourceNotFoundException;
 
-    String confirmPackaging(UUID orderId, UUID staffId) throws NoSuchOrderException, IOException;
+    String confirmFail(UUID orderId, String staffEmail) throws IOException, NoSuchOrderException, ResourceNotFoundException;
 
-    String confirmPackaged(UUID orderId, UUID staffId) throws NoSuchOrderException, IOException;
+    String assignDeliverToOrderGroupOrBatch(UUID orderGroupId, UUID orderBatchId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException, IOException, ResourceNotFoundException;
 
-    String confirmSucceeded(UUID orderId, UUID staffId) throws IOException, NoSuchOrderException;
-
-    String confirmFail(UUID orderId, UUID staffId) throws IOException, NoSuchOrderException;
-
-    String assignDeliverToOrderGroupOrBatch(UUID orderGroupId, UUID orderBatchId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException, IOException;
-
-    String assignDeliverToOrder(UUID orderId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException, IOException;
+    String assignDeliverToOrder(UUID orderId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException, IOException, ResourceNotFoundException;
 
     String deleteOrder(String jwtToken, UUID id) throws FirebaseAuthException, ResourceNotFoundException, OrderDeletionNotAllowedException;
 
     @Transactional
     String deleteOrderWithoutAuthen(UUID id) throws FirebaseAuthException, ResourceNotFoundException, OrderDeletionNotAllowedException;
 
-    List<OrderBatch> batchingForStaff(Date deliverDate, UUID timeFrameId, Integer batchQuantity) throws ResourceNotFoundException;
+    List<OrderBatch> batchingForStaff(Date deliverDate, UUID timeFrameId, Integer batchQuantity, UUID productConsolidationAreaId) throws ResourceNotFoundException;
 
     ShippingFeeDetailResponseBody getShippingFeeDetail(Double latitude, Double longitude, UUID pickupPoint) throws IOException, InterruptedException, ApiException;
 
     Order editDeliverDate(UUID orderId, Date deliverDate) throws ResourceNotFoundException;
 
-    Order chooseConsolidationArea(UUID orderId, UUID consolidationAreaId) throws ResourceNotFoundException;
+//    Order chooseConsolidationArea(UUID orderId, UUID consolidationAreaId) throws ResourceNotFoundException;
 
     ReportOrdersResponse getReportOrders(OrderReportMode mode, LocalDate startDate, LocalDate endDate, Integer month, Integer year);
 

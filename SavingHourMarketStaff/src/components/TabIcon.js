@@ -24,6 +24,7 @@ const TabIcon = ({focused, icon, display}) => {
       />
       <Text
         style={{
+          textAlign: 'center',
           fontSize: 15,
           color: focused ? COLORS.secondary : COLORS.tabIcon,
           fontWeight: 400,

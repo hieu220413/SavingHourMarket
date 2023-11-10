@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, UUID> {
-    @Query("SELECT p FROM Product p " +
+    @Query("SELECT DISTINCT p FROM Product p " +
             "JOIN FETCH p.productBatchList pb " +
             "JOIN pb.supermarketAddress pba " +
             "JOIN pb.supermarketAddress.pickupPoint pbap " +

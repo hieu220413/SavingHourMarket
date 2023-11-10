@@ -455,6 +455,26 @@ public class ProductServiceImpl implements ProductService {
         }
 
         productList.stream().forEach(product -> {
+
+
+            List<ProductBatch> productBatchesWithoutForeignKeys = product.getProductBatchList();
+            List<ProductBatch> productBatchesWithForeignKeys = new ArrayList<>();
+            productBatchesWithoutForeignKeys.forEach(batch -> {
+                batch.setProduct(product);
+                productBatchesWithForeignKeys.add(batch);
+            });
+            product.setProductBatchList(productBatchesWithForeignKeys);
+
+            List<ProductImage> productImageWithoutForeignKeys = product.getProductImageList();
+            List<ProductImage> productImageWithForeignKeys = new ArrayList<>();
+            productImageWithoutForeignKeys.forEach(image -> {
+                image.setProduct(product);
+                productImageWithForeignKeys.add(image);
+            });
+            product.setProductImageList(productImageWithForeignKeys);
+
+            String unit = product.getUnit().toLowerCase();
+            product.setUnit(unit);
             Product productSaved = productRepository.save(product);
             productsSaved.add(productSaved);
         });
@@ -711,7 +731,8 @@ public class ProductServiceImpl implements ProductService {
         if (errorFields.size() > 0) {
             throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
         }
-
+        String unit = product.getUnit().toLowerCase();
+        product.setUnit(unit);
         return productRepository.save(product);
     }
 
@@ -804,11 +825,17 @@ public class ProductServiceImpl implements ProductService {
         productCreate.getImageUrls().forEach(imageUrl -> {
             ProductImage image = new ProductImage();
             image.setImageUrl(imageUrl);
+            image.setProduct(product);
             productImageList.add(image);
         });
         product.setProductImageList(productImageList);
         product.setSupermarket(supermarket.get());
+        productBatchList.forEach(productBatch -> {
+            productBatch.setProduct(product);
+        });
         product.setProductBatchList(productBatchList);
+        String unit = product.getUnit().toLowerCase();
+        product.setUnit(unit);
         product.setStatus(Status.ENABLE.ordinal());
 
         UUID productCategoryId = product.getProductSubCategory().getProductCategory().getId();
@@ -939,6 +966,8 @@ public class ProductServiceImpl implements ProductService {
                         if (errors.size() > 0) {
                             errorFields.put(rowIndex, errors);
                         }
+                        String unit = product.getUnit().toLowerCase();
+                        product.setUnit(unit);
                         product.setStatus(Status.ENABLE.ordinal());
                         product.setProductBatchList(productBatches);
                         product.setProductSubCategory(productSubCategory);

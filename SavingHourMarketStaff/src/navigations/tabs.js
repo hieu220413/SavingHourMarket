@@ -1,17 +1,21 @@
 /* eslint-disable prettier/prettier */
-import React, { useEffect, useState, useCallback } from 'react';
-import { View } from 'react-native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import React, {useEffect, useState, useCallback} from 'react';
+import {View} from 'react-native';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import TabIcon from '../components/TabIcon';
-import Home from '../screens/Home';
+import Home from '../screens/orderStaff/Home';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { icons } from '../constants';
-import { COLORS } from '../constants/theme';
-import { useFocusEffect } from '@react-navigation/native';
+import {icons} from '../constants';
+import {COLORS} from '../constants/theme';
+import {useFocusEffect} from '@react-navigation/native';
 import Test from '../components/Test';
-import Dropdown from '../screens/Dropdown';
-import HomeDeliver from '../screens/HomeDeliver';
-import QrCodeScanner from '../screens/QrCodeScanner';
+import Report from '../screens/orderStaff/Report';
+import HomeDeliver from '../screens/deliveryStaff/HomeDeliver';
+import QrCodeScanner from '../screens/deliveryStaff/QrCodeScanner';
+import Product from '../screens/orderStaff/Product';
+import OrderGroup from '../screens/deliveryManager/OrderGroup';
+import OrderBatch from '../screens/deliveryManager/OrderBatch';
+import Batching from '../screens/deliveryManager/Batching';
 
 const Tab = createBottomTabNavigator();
 
@@ -52,7 +56,7 @@ const Tabs = () => {
           name="Temp"
           component={Test}
           options={{
-            tabBarIcon: ({ focused }) => (
+            tabBarIcon: ({focused}) => (
               <TabIcon display={'Order'} focused={focused} icon={icons.home} />
             ),
           }}
@@ -65,9 +69,9 @@ const Tabs = () => {
             name="Home"
             component={Home}
             options={{
-              tabBarIcon: ({ focused }) => (
+              tabBarIcon: ({focused}) => (
                 <TabIcon
-                  display={'Order'}
+                  display={'Đơn hàng'}
                   focused={focused}
                   icon={icons.order}
                 />
@@ -75,12 +79,25 @@ const Tabs = () => {
             }}
           />
           <Tab.Screen
-            name="Drop down"
-            component={Dropdown}
+            name="Product"
+            component={Product}
             options={{
-              tabBarIcon: ({ focused }) => (
+              tabBarIcon: ({focused}) => (
                 <TabIcon
-                  display={'Report'}
+                  display={'Sản phẩm'}
+                  focused={focused}
+                  icon={icons.product}
+                />
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="Report"
+            component={Report}
+            options={{
+              tabBarIcon: ({focused}) => (
+                <TabIcon
+                  display={'Thống kê'}
                   focused={focused}
                   icon={icons.statistic}
                 />
@@ -92,29 +109,37 @@ const Tabs = () => {
       {user?.role === 'STAFF_DLV_1' && (
         <>
           <Tab.Screen
-            name="Home"
-            component={Home}
+            name="OrderGroup"
+            component={OrderGroup}
             options={{
-              tabBarIcon: ({ focused }) => (
-                <TabIcon display={'DLV1'} focused={focused} icon={icons.home} />
+              tabBarIcon: ({focused}) => (
+                <TabIcon
+                  display={'Đơn điểm giao hàng'}
+                  focused={focused}
+                  icon={icons.pickuppoint}
+                />
               ),
             }}
           />
           <Tab.Screen
-            name="Home2"
-            component={Home}
+            name="OrderBatch"
+            component={OrderBatch}
             options={{
-              tabBarIcon: ({ focused }) => (
-                <TabIcon display={'DLV1'} focused={focused} icon={icons.home} />
+              tabBarIcon: ({focused}) => (
+                <TabIcon
+                  display={'Đơn giao tận nhà'}
+                  focused={focused}
+                  icon={icons.homedelivery}
+                />
               ),
             }}
           />
           <Tab.Screen
-            name="Home3"
-            component={Home}
+            name="Batching"
+            component={Batching}
             options={{
-              tabBarIcon: ({ focused }) => (
-                <TabIcon display={'DLV1'} focused={focused} icon={icons.home} />
+              tabBarIcon: ({focused}) => (
+                <TabIcon display={'Gom đơn hàng'} focused={focused} icon={icons.batching} />
               ),
             }}
           />
@@ -126,8 +151,12 @@ const Tabs = () => {
             name="HomeDeliver"
             component={HomeDeliver}
             options={{
-              tabBarIcon: ({ focused }) => (
-                <TabIcon display={'Trang chủ'} focused={focused} icon={icons.home} />
+              tabBarIcon: ({focused}) => (
+                <TabIcon
+                  display={'Trang chủ'}
+                  focused={focused}
+                  icon={icons.home}
+                />
               ),
             }}
           />
@@ -135,8 +164,12 @@ const Tabs = () => {
             name="Home2"
             component={QrCodeScanner}
             options={{
-              tabBarIcon: ({ focused }) => (
-                <TabIcon display={'Scan QR'} focused={focused} icon={icons.qrCodeScanner} />
+              tabBarIcon: ({focused}) => (
+                <TabIcon
+                  display={'Scan QR'}
+                  focused={focused}
+                  icon={icons.qrCodeScanner}
+                />
               ),
             }}
           />
@@ -144,7 +177,7 @@ const Tabs = () => {
             name="Home3"
             component={Home}
             options={{
-              tabBarIcon: ({ focused }) => (
+              tabBarIcon: ({focused}) => (
                 <TabIcon display={'DLV0'} focused={focused} icon={icons.home} />
               ),
             }}

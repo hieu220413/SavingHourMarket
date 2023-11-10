@@ -5,12 +5,12 @@ import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
 import { Image } from 'react-native-animatable';
-import { icons } from '../constants';
-import { COLORS, FONTS } from '../constants/theme';
-import { API } from '../constants/api';
+import { icons } from '../../constants';
+import { COLORS, FONTS } from '../../constants/theme';
+import { API } from '../../constants/api';
 import { format } from 'date-fns';
-import Empty from '../assets/image/search-empty.png';
-import LoadingScreen from '../components/LoadingScreen';
+import Empty from '../../assets/image/search-empty.png';
+import LoadingScreen from '../../components/LoadingScreen';
 
 const HomeDeliver = ({ navigation }) => {
     const [initializing, setInitializing] = useState(true);

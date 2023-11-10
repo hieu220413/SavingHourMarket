@@ -50,7 +50,7 @@ public class FeedBackController {
     }
 
     @PutMapping("/updateStatus")
-    public ResponseEntity<String> updateStatus(@RequestParam UUID feedbackId, @RequestParam FeedbackStatus status,@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken) throws FirebaseAuthException {
+    public ResponseEntity<String> updateStatus(@RequestParam UUID feedbackId, @RequestParam FeedbackStatus status,@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken) throws FirebaseAuthException, ResourceNotFoundException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(feedBackService.updateStatus(feedbackId, status));

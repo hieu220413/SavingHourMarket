@@ -4,13 +4,13 @@ import { View, Text, Image } from 'react-native';
 
 import React, { useCallback, useState } from 'react';
 import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
-import { icons } from '../constants';
-import { COLORS } from '../constants/theme';
+import { icons } from '../../constants';
+import { COLORS } from '../../constants/theme';
 import { useFocusEffect } from '@react-navigation/native';
 import DatePicker from 'react-native-date-picker';
 import { format } from 'date-fns';
-import { API } from '../constants/api';
-import LoadingScreen from '../components/LoadingScreen';
+import { API } from '../../constants/api';
+import LoadingScreen from '../../components/LoadingScreen';
 import dayjs from "dayjs";
 import Modal, { ModalButton, ModalFooter, ScaleAnimation } from 'react-native-modals';
 

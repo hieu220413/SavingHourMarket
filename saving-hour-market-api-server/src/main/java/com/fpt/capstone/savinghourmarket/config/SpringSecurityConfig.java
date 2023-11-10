@@ -36,6 +36,8 @@ public class SpringSecurityConfig {
 
     private String[] marketingStaffAndAdmin= {StaffRole.STAFF_MKT.toString(), "ADMIN"};
 
+    private String[] deliverManagerAndAdmin = {StaffRole.STAFF_DLV_1.toString(), "ADMIN"};
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable).cors(httpSecurityCorsConfigurer -> {
@@ -103,6 +105,8 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/productConsolidationArea/updateStatus").hasRole("ADMIN")
                             .requestMatchers("/api/productConsolidationArea/updatePickupPointList").hasRole("ADMIN")
                             .requestMatchers("/api/productConsolidationArea/getAllForStaff").hasAnyRole(allStaffAndAdmin)
+                            .requestMatchers("/api/productConsolidationArea/getByPickupPointForStaff").hasAnyRole(allStaffAndAdmin)
+
 
                             .requestMatchers("/api/transaction/processPaymentResult").permitAll()
 //                            .requestMatchers("/api/staff/getInfoAfterGoogleLogged").hasAnyRole(allStaffAndAdmin)
@@ -110,6 +114,7 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/staff/getInfo").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/staff/updateInfo").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/staff/getCustomerDetailByEmail").hasAnyRole(allStaffAndAdmin)
+                            .requestMatchers("/api/staff/getStaffForDeliverManager").hasAnyRole(deliverManagerAndAdmin)
                             .requestMatchers("/api/staff/createStaffAccount").hasRole("ADMIN")
                             .requestMatchers("/api/staff/getStaffByEmail").hasRole("ADMIN")
                             .requestMatchers("/api/staff/getStaffForAdmin").hasRole("ADMIN")
@@ -130,7 +135,9 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/supermarket/deleteSupermarketAddressForSupermarket").hasAnyRole(selectionStaffAndAdmin)
 
                             .requestMatchers("/api/order/staff/**").hasAnyRole(allStaffAndAdmin)
-                            .requestMatchers("/staff/deliveryManager/**").hasRole(StaffRole.STAFF_DLV_1.toString())
+                            .requestMatchers("/api/order/deliveryManager/**").hasRole(StaffRole.STAFF_DLV_1.toString())
+                            .requestMatchers("/api/order/deliveryStaff/**").hasRole(StaffRole.STAFF_DLV_0.toString())
+                            .requestMatchers("/api/order/packageStaff/**").hasRole(StaffRole.STAFF_ORD.toString())
                             .requestMatchers("/api/order/sendNotification").permitAll()
 
                             .requestMatchers("/api/feedback/updateStatus").hasAnyRole(allStaffAndAdmin)
