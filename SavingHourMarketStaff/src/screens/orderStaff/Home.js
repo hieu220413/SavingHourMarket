@@ -130,7 +130,7 @@ const Home = ({navigation}) => {
             setLoading(true);
             if (pickupPoint) {
               fetch(
-                `${API.baseURL}/api/order/staff/getOrdersForPackageStaff?pickupPointId=${pickupPoint?.id}&orderStatus=${currentStatus.value}`,
+                `${API.baseURL}/api/order/packageStaff/getOrders?pickupPointId=${pickupPoint?.id}&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
                 {
                   method: 'GET',
                   headers: {
@@ -141,7 +141,7 @@ const Home = ({navigation}) => {
               )
                 .then(res => res.json())
                 .then(respond => {
-                  console.log('order', respond);
+                  console.log('order', respond );
                   if (respond.error) {
                     setLoading(false);
                     return;
@@ -156,7 +156,7 @@ const Home = ({navigation}) => {
                 });
             } else {
               fetch(
-                `${API.baseURL}/api/order/staff/getOrdersForPackageStaff?orderStatus=${currentStatus.value}`,
+                `${API.baseURL}/api/order/packageStaff/getOrders?orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
                 {
                   method: 'GET',
                   headers: {
@@ -167,7 +167,7 @@ const Home = ({navigation}) => {
               )
                 .then(res => res.json())
                 .then(respond => {
-                  console.log('order', respond);
+                  console.log('order', respond , '1');
                   if (respond.error) {
                     setLoading(false);
                     return;
@@ -266,7 +266,7 @@ const Home = ({navigation}) => {
             fetch(
               `${
                 API.baseURL
-              }/api/order/staff/getOrdersForPackageStaff?pickupPointId=${
+              }/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&pickupPointId=${
                 pickupPoint.id
               }&orderStatus=${currentStatus.value}${
                 sortItem?.id == 1 ? '&deliveryDateSortType=ASC' : ''
@@ -292,7 +292,7 @@ const Home = ({navigation}) => {
                 setLoading(false);
               })
               .catch(err => {
-                console.log(err);
+                console.log(err );
                 setLoading(false);
               });
           }
@@ -307,7 +307,7 @@ const Home = ({navigation}) => {
             setLoading(true);
 
             fetch(
-              `${API.baseURL}/api/order/staff/getOrdersForPackageStaff?pickupPointId=${pickupPoint.id}&orderStatus=${currentStatus.value}`,
+              `${API.baseURL}/api/order/packageStaff/getOrders?pickupPointId=${pickupPoint.id}&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
               {
                 method: 'GET',
                 headers: {
@@ -327,7 +327,7 @@ const Home = ({navigation}) => {
                 setLoading(false);
               })
               .catch(err => {
-                console.log(err);
+                console.log(err   + '1');
                 setLoading(false);
               });
           }
@@ -353,7 +353,7 @@ const Home = ({navigation}) => {
           setLoading(true);
 
           fetch(
-            `${API.baseURL}/api/order/staff/getOrdersForPackageStaff?pickupPointId=${pickupPoint.id}&orderStatus=${currentStatus.value}`,
+            `${API.baseURL}/api/order/packageStaff/getOrders?pickupPointId=${pickupPoint.id}&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
             {
               method: 'GET',
               headers: {
