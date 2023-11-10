@@ -829,6 +829,9 @@ public class ProductServiceImpl implements ProductService {
         });
         product.setProductImageList(productImageList);
         product.setSupermarket(supermarket.get());
+        productBatchList.forEach(productBatch -> {
+            productBatch.setProduct(product);
+        });
         product.setProductBatchList(productBatchList);
         String unit = product.getUnit().toLowerCase();
         product.setUnit(unit);
