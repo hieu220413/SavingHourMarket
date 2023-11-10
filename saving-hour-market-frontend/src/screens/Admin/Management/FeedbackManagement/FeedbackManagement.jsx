@@ -96,7 +96,8 @@ const FeedbackManagement = () => {
         )
           .then((res) => res.json())
           .then((respond) => {
-            if (respond.code === 404) {
+            console.log(respond);
+            if (respond?.code === 404 || respond.status === 500) {
               setFeedbackList([]);
               setLoading(false);
               return;

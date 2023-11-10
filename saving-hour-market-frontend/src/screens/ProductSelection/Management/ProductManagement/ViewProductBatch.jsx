@@ -10,12 +10,12 @@ const ViewProductBatch = ({ handleClose, productBatch }) => {
         <tr className="table-body-row">
           <td style={{ paddingTop: 30 }}>{index + 1}</td>
           <td style={{ paddingTop: 30 }}>
-            {dayjs(item.sellingDate).format("DD/MM/YYYY")}
-          </td>
-          <td style={{ paddingTop: 30 }}>
             {dayjs(item.expiredDate).format("DD/MM/YYYY")}
           </td>
           <td style={{ paddingTop: 30 }}>{item.quantity}</td>
+          <td style={{ paddingTop: 30 }}>
+            {item?.supermarketAddress?.address}
+          </td>
           <td style={{ paddingTop: 30 }}>
             {item.price.toLocaleString("vi-VN", {
               style: "currency",
@@ -46,9 +46,9 @@ const ViewProductBatch = ({ handleClose, productBatch }) => {
             <thead>
               <tr className="table-header-row">
                 <th>No.</th>
-                <th>Ngày mua</th>
                 <th>Ngày hết hạn</th>
                 <th>Số lượng</th>
+                <th>Kho</th>
                 <th>Giá</th>
                 <th>Giá gốc</th>
               </tr>

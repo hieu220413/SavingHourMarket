@@ -108,7 +108,7 @@ const HomeDeliver = ({ navigation }) => {
         const tokenId = await auth().currentUser.getIdToken();
         if (tokenId) {
             setLoading(true);
-            fetch(`${API.baseURL}/api/order/getOrdersForStaff?${currentOptions.id === 0 ? 'isGrouped=false' : 'isGrouped=true'}${selected ? `&orderStatus=${selected.value}` : ''}&page=0&size=10`, {
+            fetch(`${API.baseURL}/api/order/staff/getOrders?${currentOptions.id === 0 ? 'isGrouped=false' : 'isGrouped=true'}${selected ? `&orderStatus=${selected.value}` : ''}&page=0&size=10`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',

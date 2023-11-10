@@ -1,12 +1,13 @@
 package com.fpt.capstone.savinghourmarket.model;
 
+import com.fpt.capstone.savinghourmarket.entity.ProductImage;
 import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
+import com.fpt.capstone.savinghourmarket.entity.Supermarket;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,27 +15,22 @@ import java.util.UUID;
 @AllArgsConstructor
 @Getter
 @Setter
-public class ProductCreate {
+public class ProductCreateList {
 
-    @NotNull
+    private UUID id;
+
     private String name;
 
-    @NotNull
     private String description;
 
-    @NotNull
     private String unit;
 
-    @NotNull
     private List<String> imageUrls;
 
-    @NotNull
-    private UUID supermarketId;
+    private Supermarket supermarket;
 
-    @NotNull
-    private List<ProductBatchRequest> productBatchList;
+    private List<ProductBatchCreateList> productBatchList;
 
-    @NotNull
     private ProductSubCategory productSubCategory;
 
 }

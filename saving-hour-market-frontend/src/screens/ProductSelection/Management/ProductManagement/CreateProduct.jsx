@@ -8,6 +8,8 @@ import {
   faPlusCircle,
   faMinus,
   faX,
+  faPlus,
+  faCircleMinus,
 } from "@fortawesome/free-solid-svg-icons";
 import { MdCloudUpload, MdDelete } from "react-icons/md";
 import { AiFillFileImage } from "react-icons/ai";
@@ -17,7 +19,14 @@ import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { v4 } from "uuid";
 import { API } from "../../../../contanst/api";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
+import { Slide } from "react-slideshow-image";
+import CreateProductImageSlider from "./CreateProductImageSlider";
+import { Dialog, Snackbar } from "@mui/material";
+import MuiAlert from "@mui/material/Alert";
 
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 const CreateProduct = ({
   handleClose,
   setProducts,
@@ -28,9 +37,12 @@ const CreateProduct = ({
   setOpenSnackbar,
   setMsg,
 }) => {
-  const [image, setImage] = useState(null);
-  const [fileName, setFileName] = useState("Chưa có hình ảnh sản phẩm");
-  const [imgToFirebase, setImgToFirebase] = useState("");
+  const [image, setImage] = useState([]);
+  const [imgToFirebase, setImgToFirebase] = useState([]);
+
+  const [openImageUrlList, setOpenImageUrlList] = useState(false);
+  const handleOpenImageUrlList = () => setOpenImageUrlList(true);
+  const handleCloseImageUrlList = () => setOpenImageUrlList(false);
 
   const [imageSubCate, setImageSubCate] = useState(null);
   const [fileNameSubCate, setFileNameSubCate] = useState(
@@ -42,7 +54,6 @@ const CreateProduct = ({
   const [isActiveDropdown, setIsActiveDropdown] = useState(false);
   const [selectedDropdownItem, setSelectedDropdownItem] =
     useState("Chọn siêu thị");
-  const [isCreateNewSupermarket, setIsCreateNewSupermarket] = useState(false);
 
   const [categories, setCategories] = useState([]);
   const [isActiveDropdownCate, setIsActiveDropdownCate] = useState(false);
@@ -57,8 +68,6 @@ const CreateProduct = ({
   const [isCreateNewSubCate, setIsCreateNewSubCate] = useState(false);
 
   const [allowableDate, setAllowableDate] = useState("");
-
-  const [locationData, setLocationData] = useState([]);
 
   const [addressList, setAddressList] = useState([
     {
@@ -90,12 +99,43 @@ const CreateProduct = ({
   const [allowableDisplayThreshold, setAllowableDisplayThreshold] = useState(0);
   const [imageUrlSubCate, setImageUrlSubCate] = useState("");
 
+  const [unit, setUnit] = useState("");
+  const [productBatchAddresses, setProductBatchAddresses] = useState([
+    {
+      quantity: 0,
+      supermarketAddressId: null,
+      supermarketAddress: null,
+      error: {
+        quantity: "",
+        supermarketStores: "",
+      },
+      isActiveDropdownSupermarketStore: false,
+    },
+  ]);
+
+  const [productBatchs, setProductBatchs] = useState([
+    {
+      price: 0,
+      priceOriginal: 0,
+      expiredDate: null,
+      productBatchAddresses: productBatchAddresses,
+      error: {
+        price: "",
+        priceOriginal: "",
+        expiredDate: "",
+      },
+    },
+  ]);
+
   const [loading, setLoading] = useState(false);
 
   // check error
   const [checkCategorySelected, setCheckCategorySelected] = useState(false);
+  const [checkSupermarketSelected, setCheckSupermarketSelected] =
+    useState(false);
   const [error, setError] = useState({
     productName: "",
+    unit: "",
     price: "",
     priceOriginal: "",
     description: "",
@@ -110,6 +150,18 @@ const CreateProduct = ({
     allowableDisplayThreshold: "",
     imageUrlSubCate: "",
   });
+
+  const [openValidateSnackbar, setOpenValidateSnackbar] = useState({
+    open: false,
+    vertical: "top",
+    horizontal: "right",
+    severity: "success",
+    text: "",
+  });
+  const { vertical, horizontal } = openValidateSnackbar;
+  const handleCloseValidateSnackbar = () => {
+    setOpenValidateSnackbar({ ...openValidateSnackbar, open: false });
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -126,7 +178,7 @@ const CreateProduct = ({
           setSupermarkets(data.supermarketList);
         });
 
-      fetch(`${API.baseURL}/api/product/getAllCategory`, {
+      fetch(`${API.baseURL}/api/product/getCategoryForStaff`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -135,7 +187,7 @@ const CreateProduct = ({
       })
         .then((res) => res.json())
         .then((data) => {
-          setCategories(data);
+          setCategories(data.productCategoryList);
         })
         .catch((err) => {
           console.log(err);
@@ -144,17 +196,23 @@ const CreateProduct = ({
     fetchData();
   }, []);
 
-  const uploadProductImgToFirebase = async () => {
-    if (imgToFirebase !== "") {
-      const imgRef = ref(imageDB, `productImage/${v4()}`);
-      await uploadBytes(imgRef, imgToFirebase);
-      try {
-        const url = await getDownloadURL(imgRef);
-        return url;
-      } catch (error) {
-        console.log(error);
-      }
+  const uploadProductImgToFirebase = async (image) => {
+    const imgRef = ref(imageDB, `productImage/${v4()}`);
+    await uploadBytes(imgRef, image);
+    try {
+      const url = await getDownloadURL(imgRef);
+      return url;
+    } catch (error) {
+      console.log(error);
     }
+  };
+
+  const uploadProductImagesToFireBase = async (images) => {
+    const imageList = Array.from(images, (image) =>
+      uploadProductImgToFirebase(image)
+    );
+    const imageUrls = await Promise.all(imageList);
+    return imageUrls;
   };
 
   const uploadSubCateImgToFireBase = async () => {
@@ -163,7 +221,7 @@ const CreateProduct = ({
       await uploadBytes(imgRefSubCate, imgSubCateToFirebase);
       try {
         const url = await getDownloadURL(imgRefSubCate);
-        setImageUrlSubCate(url);
+        return url;
       } catch (error) {
         console.log(error);
       }
@@ -177,9 +235,13 @@ const CreateProduct = ({
     return nextDate;
   };
 
+  const dayDiffFromToday = (expDate) => {
+    return Math.ceil((expDate - new Date()) / (1000 * 3600 * 24));
+  };
+
   const handleSubmit = async () => {
     if (supermarket === "") {
-      setError({ ...error, supermarket: "Vui lòng không để trống" });
+      setError({ ...error, supermarket: "Vui lòng không chọn siêu thị" });
       return;
     }
 
@@ -234,41 +296,159 @@ const CreateProduct = ({
       setError({ ...error, productName: "Vui lòng không để trống" });
       return;
     }
-    if (price <= 0 || !price) {
-      setError({ ...error, price: "Số tiền nhập vào phải lớn hớn 0" });
-      return;
-    }
-    if (priceOriginal <= 0 || !priceOriginal) {
-      setError({ ...error, priceOriginal: "Số tiền nhập vào phải lớn hớn 0" });
-      return;
-    }
     if (description === "") {
       setError({ ...error, description: "Vui lòng không để trống" });
       return;
     }
-    if (error.expiredDate !== "") {
-      return;
-    }
-    if (allowableDate < allowableDisplayThreshold) {
-      setError({
-        ...error,
-        expiredDate: `Ngày hết hạn bạn nhập đã bé hơn giới hạn số ngày trước HSD`,
-      });
-      return;
-    }
-    if (quantity <= 0 || !quantity) {
-      setError({ ...error, quantity: "Số lượng nhập vào phải lớn hớn 0" });
+    // validate product batch
+    let newProductBatchs = [...productBatchs];
+    const productbatchValidate = productBatchs.map((batch, index) => {
+      // validate price
+      if (batch.price === "") {
+        newProductBatchs[index] = {
+          ...productBatchs[index],
+          error: {
+            ...productBatchs[index].error,
+            price: "Giá sản phẩm không thể bỏ trống",
+          },
+        };
+        return false;
+      }
+      if (batch.price <= 0) {
+        newProductBatchs[index] = {
+          ...productBatchs[index],
+          error: {
+            ...productBatchs[index].error,
+            price: "Giá sản phẩm không thể bé hơn 0",
+          },
+        };
+        return false;
+      }
+      // validate priceOriginal
+      if (batch.priceOriginal === "") {
+        newProductBatchs[index] = {
+          ...productBatchs[index],
+          error: {
+            ...productBatchs[index].error,
+            priceOriginal: "Giá sản phẩm không thể bỏ trống",
+          },
+        };
+        return false;
+      }
+      if (batch.priceOriginal <= 0) {
+        newProductBatchs[index] = {
+          ...productBatchs[index],
+          error: {
+            ...productBatchs[index].error,
+            priceOriginal: "Giá gốc sản phẩm không thể bé hơn 0",
+          },
+        };
+        return false;
+      }
+      // validate expiredDate
+      if (!batch.expiredDate) {
+        newProductBatchs[index] = {
+          ...productBatchs[index],
+          error: {
+            ...productBatchs[index].error,
+            expiredDate: "Vui lòng nhập ngày hết hạn",
+          },
+        };
+        return false;
+      }
+      if (
+        new Date(batch.expiredDate).getTime() <
+        getDateAfterToday(allowableDisplayThreshold).getTime()
+      ) {
+        newProductBatchs[index] = {
+          ...productBatchs[index],
+          error: {
+            ...productBatchs[index].error,
+            expiredDate:
+              "Ngày hết hạn bạn nhập đã bé hơn giới hạn số ngày trước HSD",
+          },
+        };
+        return false;
+      }
+      return true;
+    });
+    if (productbatchValidate.some((item) => item === false)) {
+      setProductBatchs(newProductBatchs);
       return;
     }
 
-    let imageUrlSubCate = await uploadSubCateImgToFireBase();
-    if (imageUrlSubCate === "") {
+    // validate product batch address
+    let newProductBatchAddress = [...productBatchAddresses];
+    const productBatchAddressesValidate = productBatchAddresses.map(
+      (batch, index) => {
+        // validate supermarketstore
+        if (
+          !batch.supermarketAddress ||
+          !supermarketAddress.some(
+            (item) => item.address === batch?.supermarketAddress?.address
+          )
+        ) {
+          newProductBatchAddress[index] = {
+            ...productBatchs[index],
+            error: {
+              ...productBatchs[index].error,
+              supermarketStores: "Vui lòng chọn chi nhánh",
+            },
+          };
+          return false;
+        }
+        // validate quantity
+        if (batch.quantity === "") {
+          newProductBatchAddress[index] = {
+            ...productBatchs[index],
+            error: {
+              ...productBatchs[index].error,
+              quantity: "Số lượng sản phẩm không thể bỏ trống",
+            },
+          };
+          return false;
+        }
+        if (batch.quantity <= 0) {
+          newProductBatchAddress[index] = {
+            ...productBatchs[index],
+            error: {
+              ...productBatchs[index].error,
+              quantity: "Số lượng sản phẩm không thể bé hơn 0",
+            },
+          };
+          return false;
+        }
+
+        return true;
+      }
+    );
+    if (productBatchAddressesValidate.some((item) => item === false)) {
+      setProductBatchAddresses(newProductBatchAddress);
+      return;
+    }
+
+    // const uniqueValues = new Set(
+    //   productBatchs.map((v) => v?.supermarketAddress?.address)
+    // );
+
+    // if (uniqueValues.size < productBatchs.length) {
+    //   setOpenValidateSnackbar({
+    //     ...openValidateSnackbar,
+    //     open: true,
+    //     severity: "error",
+    //     text: "Tồn tại lô hàng trùng chi nhánh siêu thị",
+    //   });
+    //   return;
+    // }
+
+    let newImageUrlSubCate = await uploadSubCateImgToFireBase();
+    if (newImageUrlSubCate === null) {
       setError({ ...error, imageUrlSubCate: "Chưa có ảnh sản phẩm" });
       return;
     }
 
-    let imageUrl = await uploadProductImgToFirebase();
-    if (imageUrl === "") {
+    let imageUrls = await uploadProductImagesToFireBase(imgToFirebase);
+    if (imageUrls.length === 0) {
       setError({ ...error, imageUrl: "Chưa có ảnh sản phẩm" });
       return;
     }
@@ -300,7 +480,7 @@ const CreateProduct = ({
     const submitProductSubCategory = {
       id: subCategoryId ? subCategoryId : "",
       name: subCateName,
-      imageUrl: imageUrlSubCate,
+      imageUrl: newImageUrlSubCate ? newImageUrlSubCate : imageUrlSubCate,
       allowableDisplayThreshold: allowableDisplayThreshold,
       productCategory: {
         id: categoryId ? categoryId : "",
@@ -310,18 +490,34 @@ const CreateProduct = ({
       totalDiscountUsage: 0,
     };
     // -----------------------------------------------------------------
+    // ProductBatchAddresses
+    const submitProductBatchListAddress = productBatchAddresses.map((item) => {
+      return {
+        quantity: item.quantity,
+        supermarketAddressId: item.supermarketAddressId,
+      };
+    });
+
+    // -----------------------------------------------------------------
+    // ProductBatchList
+    const submitProductBatchList = newProductBatchs.map((item) => {
+      return {
+        price: item.price,
+        priceOriginal: item.priceOriginal,
+        expiredDate: item.expiredDate,
+        productBatchAddresses: submitProductBatchListAddress,
+      };
+    });
+    // -----------------------------------------------------------------
     const productToCreate = {
       name: productName,
-      price: price,
-      priceOriginal: priceOriginal,
       description: description,
-      expiredDate: expiredDate,
-      quantity: quantity,
-      imageUrl: imageUrl,
+      unit: unit,
+      imageUrls: imageUrls,
+      supermarketId: supermarketId,
+      productBatchList: submitProductBatchList,
       productSubCategory: submitProductSubCategory,
-      supermarket: submitSupermarket,
     };
-
     const tokenId = await auth.currentUser.getIdToken();
     setLoading(true);
     fetch(`${API.baseURL}/api/product/create`, {
@@ -373,7 +569,12 @@ const CreateProduct = ({
 
   return (
     <>
-      <div className="modal__container">
+      <div
+        className="modal__container"
+        style={{
+          width: "650px",
+        }}
+      >
         <div className="modal__container-header">
           <h3 className="modal__container-header-title">Thêm sản phẩm mới</h3>
           <FontAwesomeIcon icon={faXmark} onClick={handleClose} />
@@ -386,328 +587,68 @@ const CreateProduct = ({
           style={{ height: "65vh", overflowY: "scroll" }}
         >
           {/* Supermarket */}
-          {isCreateNewSupermarket === false && (
-            <>
-              <div className="modal__container-body-inputcontrol">
-                <h4 className="modal__container-body-inputcontrol-label">
-                  Tên siêu thị
-                </h4>
-                <div>
-                  <div
-                    style={{
-                      display: "flex",
-                    }}
-                  >
-                    <div className="dropdown">
-                      <div
-                        className="dropdown-btn"
-                        onClick={(e) => setIsActiveDropdown(!isActiveDropdown)}
-                      >
-                        {selectedDropdownItem}
-                        <FontAwesomeIcon icon={faCaretDown} />
-                      </div>
-                      {isActiveDropdown && (
-                        <div className="dropdown-content">
-                          {supermarkets.map((item, index) => (
-                            <div
-                              onClick={(e) => {
-                                setSelectedDropdownItem(item.name);
-                                setIsActiveDropdown(false);
-                                setSupermarketId(item.id);
-                                setSupermarket(item.name);
-                                setError({ ...error, supermarket: "" });
-                                setSupermarketAddress(
-                                  item.supermarketAddressList
-                                );
-                                setSuperMarketHotline(item.phone);
-                                const tempArrAddressList = addressList.map(
-                                  (data) => {
-                                    return { ...data, isCreateNew: false };
-                                  }
-                                );
-                                setAddressList(tempArrAddressList);
-                              }}
-                              className="dropdown-item"
-                              key={index}
-                            >
-                              {item.name}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <button
-                      style={{
-                        width: "120px",
-                      }}
-                      className="buttonSwitchSelectSuperMarket"
-                      onClick={(e) => {
-                        setIsCreateNewSupermarket(true);
-                        setSupermarket("");
-                        setSuperMarketHotline("");
-                        setSupermarketAddress([]);
-                        setAddressList([
-                          {
-                            isFocused: false,
-                            selectAddress: "",
-                            searchAddress: "",
-                          },
-                        ]);
-                      }}
-                    >
-                      Thêm mới
-                      <FontAwesomeIcon
-                        icon={faRepeat}
-                        style={{ paddingLeft: 10 }}
-                      />
-                    </button>
-                  </div>
-                  {error.supermarket && (
-                    <p
-                      style={{ fontSize: "14px", marginBottom: "-10px" }}
-                      className="text-danger"
-                    >
-                      {error.supermarket}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
-          {/* Create Supermarket */}
-          {isCreateNewSupermarket && (
-            <>
-              <button
-                className="buttonSwitchSelectSuperMarket"
-                onClick={(e) => {
-                  setIsCreateNewSupermarket(false);
-                  setSupermarket("");
-                  setSelectedDropdownItem("Chọn siêu thị");
+          <div className="modal__container-body-inputcontrol">
+            <h4 className="modal__container-body-inputcontrol-label">
+              Tên siêu thị
+            </h4>
+            <div>
+              <div
+                style={{
+                  display: "flex",
                 }}
               >
-                Thêm siêu thị có sẵn
-                <FontAwesomeIcon icon={faRepeat} style={{ paddingLeft: 10 }} />
-              </button>
-              <div className="modal__container-body-inputcontrol">
-                <h4 className="modal__container-body-inputcontrol-label">
-                  Tên siêu thị
-                </h4>
-                <div>
-                  <input
-                    placeholder="Nhập tên siêu thị"
-                    type="text"
-                    className="modal__container-body-inputcontrol-input"
-                    value={supermarket}
-                    onChange={(e) => {
-                      setSupermarket(e.target.value);
-                      setError({ ...error, supermarket: "" });
-                    }}
-                  />
-                  {error.supermarket && (
-                    <p
-                      style={{ fontSize: "14px", marginBottom: "-10px" }}
-                      className="text-danger"
-                    >
-                      {error.supermarket}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="modal__container-body-inputcontrol">
-                <h4 className="modal__container-body-inputcontrol-label">
-                  Hotline siêu thị
-                </h4>
-                <div>
-                  <input
-                    placeholder="Nhập Hotline siêu thị"
-                    type="text"
-                    className="modal__container-body-inputcontrol-input"
-                    value={supermarketHotline}
-                    onChange={(e) => {
-                      setSuperMarketHotline(e.target.value);
-                      setError({ ...error, supermarketHotline: "" });
-                    }}
-                  />
-                  {error.supermarketHotline && (
-                    <p
-                      style={{ fontSize: "14px", marginBottom: "-10px" }}
-                      className="text-danger"
-                    >
-                      {error.supermarketHotline}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {addressList.map((item, i) => {
-                return (
-                  <div className="modal__container-body-inputcontrol input-address">
-                    <div className="modal__container-body-inputcontrol-label-icon">
-                      {addressList.length !== 1 && (
-                        <div
-                          onClick={() => {
-                            setAddressList(
-                              addressList.filter((address) => address !== item)
-                            );
-                            setError({ ...error, supermarketAddress: "" });
-                          }}
-                          className="button__minus"
-                        >
-                          <FontAwesomeIcon icon={faMinus} />
-                        </div>
-                      )}
-
-                      <h4 className="modal__container-body-inputcontrol-label">
-                        Chi nhánh {i + 1}
-                      </h4>
-                    </div>
-
-                    <div>
-                      <input
-                        style={{ paddingRight: 20 }}
-                        value={item.searchAddress}
-                        onChange={(e) => {
-                          const newAddressList1 = addressList.map(
-                            (data, index) => {
-                              if (index === i) {
-                                return {
-                                  ...data,
-                                  searchAddress: e.target.value,
-                                  selectAddress: "",
-                                };
-                              }
-                              return data;
-                            }
-                          );
-                          setAddressList(newAddressList1);
-                          setError({ ...error, supermarketAddress: "" });
-
-                          if (typingTimeoutRef.current) {
-                            clearTimeout(typingTimeoutRef.current);
-                          }
-                          typingTimeoutRef.current = setTimeout(() => {
-                            fetch(
-                              `https://rsapi.goong.io/Place/AutoComplete?api_key=${API.GoongAPIKey}&limit=4&input=${item.searchAddress}`
-                            )
-                              .then((res) => res.json())
-                              .then((respond) => {
-                                if (!respond.predictions) {
-                                  setLocationData([]);
-                                  return;
-                                }
-                                setLocationData(respond.predictions);
-                              })
-                              .catch((err) => console.log(err));
-                          }, 400);
-                        }}
-                        onFocus={() => {
-                          setLocationData([]);
-                          const newAddressList1 = addressList.map(
-                            (data, index) => {
-                              if (index === i) {
-                                return { ...data, isFocused: true };
-                              }
-                              return { ...data, isFocused: false };
-                            }
-                          );
-                          setAddressList(newAddressList1);
-                        }}
-                        placeholder="Nhập địa chỉ"
-                        type="text"
-                        className="modal__container-body-inputcontrol-input"
-                      />
-                      {item.searchAddress && (
-                        <FontAwesomeIcon
-                          onClick={() => {
-                            const newAddressList1 = addressList.map(
-                              (data, index) => {
-                                if (index === i) {
-                                  return {
-                                    ...data,
-                                    searchAddress: "",
-                                    selectAddress: "",
-                                  };
-                                }
-                                return data;
-                              }
-                            );
-                            setAddressList(newAddressList1);
-                          }}
-                          className="input-icon-x"
-                          icon={faX}
-                        />
-                      )}
-
-                      {item.isFocused && locationData.length !== 0 && (
-                        <div
-                          className="suggest-location"
-                          style={{
-                            left: "155px",
-                          }}
-                        >
-                          {locationData.map((data) => (
-                            <div
-                              onClick={() => {
-                                const newAddressList1 = addressList.map(
-                                  (address, index) => {
-                                    if (index === i) {
-                                      return {
-                                        isFocused: false,
-                                        searchAddress: data.description,
-                                        selectAddress: data.description,
-                                      };
-                                    }
-                                    return address;
-                                  }
-                                );
-                                setAddressList(newAddressList1);
-                              }}
-                              className="suggest-location-item"
-                            >
-                              <h4>{data.description}</h4>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                <div
+                  className="dropdown"
+                  style={{
+                    width: "400px",
+                  }}
+                >
+                  <div
+                    className="dropdown-btn"
+                    onClick={(e) => setIsActiveDropdown(!isActiveDropdown)}
+                  >
+                    {selectedDropdownItem}
+                    <FontAwesomeIcon icon={faCaretDown} />
                   </div>
-                );
-              })}
-
-              {error.supermarketAddress && (
+                  {isActiveDropdown && (
+                    <div className="dropdown-content">
+                      {supermarkets.map((item, index) => (
+                        <div
+                          onClick={(e) => {
+                            setSelectedDropdownItem(item.name);
+                            setIsActiveDropdown(false);
+                            setSupermarketId(item.id);
+                            setSupermarket(item.name);
+                            setError({ ...error, supermarket: "" });
+                            setSupermarketAddress(item.supermarketAddressList);
+                            setSuperMarketHotline(item.phone);
+                            const tempArrAddressList = addressList.map(
+                              (data) => {
+                                return { ...data, isCreateNew: false };
+                              }
+                            );
+                            setAddressList(tempArrAddressList);
+                          }}
+                          className="dropdown-item"
+                          key={index}
+                        >
+                          {item.name}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+              {error.supermarket && (
                 <p
                   style={{ fontSize: "14px", marginBottom: "-10px" }}
                   className="text-danger"
                 >
-                  {error.supermarketAddress}
+                  {error.supermarket}
                 </p>
               )}
-
-              <div className="modal__container-body-inputcontrol">
-                <button
-                  onClick={() => {
-                    setAddressList([
-                      ...addressList,
-                      {
-                        isFocused: false,
-                        selectAddress: "",
-                        searchAddress: "",
-                      },
-                    ]);
-                    setError({ ...error, supermarketAddress: "" });
-                  }}
-                  className="buttonAddSupermarkerAddress"
-                >
-                  Thêm chi nhánh mới
-                  <FontAwesomeIcon
-                    icon={faPlusCircle}
-                    style={{ paddingLeft: 10 }}
-                  />
-                </button>
-              </div>
-            </>
-          )}
+            </div>
+          </div>
 
           {/* Categories */}
           {isCreateNewCate === false && (
@@ -858,6 +799,11 @@ const CreateProduct = ({
                             setFileNameSubCate(
                               "Chưa có hình ảnh loại sản phẩm phụ"
                             );
+                            setSubcategoryId(null);
+                            setSubCateName("");
+                            setError({ ...error, subCateName: "" });
+                            setImageUrlSubCate("");
+                            setAllowableDisplayThreshold(0);
                           }}
                         >
                           Thêm mới
@@ -1219,57 +1165,28 @@ const CreateProduct = ({
               )}
             </div>
           </div>
-          {/* Price */}
+          {/* unit */}
           <div className="modal__container-body-inputcontrol">
             <h4 className="modal__container-body-inputcontrol-label">
-              Giá tiền
+              Đơn vị bán
             </h4>
             <div>
               <input
-                value={price}
-                min={0}
-                placeholder="Nhập số giá tiền"
-                type="number"
+                value={unit}
+                placeholder="Nhập tên sản phẩm"
+                type="text"
                 className="modal__container-body-inputcontrol-input"
                 onChange={(e) => {
-                  setPrice(e.target.value);
-                  setError({ ...error, price: "" });
+                  setUnit(e.target.value);
+                  setError({ ...error, unit: "" });
                 }}
               />
-              {error.price && (
+              {error.unit && (
                 <p
                   style={{ fontSize: "14px", marginBottom: "-10px" }}
                   className="text-danger"
                 >
-                  {error.price}
-                </p>
-              )}
-            </div>
-          </div>
-          {/* PriceOriginal */}
-          <div className="modal__container-body-inputcontrol">
-            <h4 className="modal__container-body-inputcontrol-label">
-              Giá gốc
-            </h4>
-
-            <div>
-              <input
-                value={priceOriginal}
-                min={0}
-                placeholder="Nhập giá gốc"
-                type="number"
-                className="modal__container-body-inputcontrol-input"
-                onChange={(e) => {
-                  setPriceOriginal(e.target.value);
-                  setError({ ...error, priceOriginal: "" });
-                }}
-              />
-              {error.priceOriginal && (
-                <p
-                  style={{ fontSize: "14px", marginBottom: "-10px" }}
-                  className="text-danger"
-                >
-                  {error.priceOriginal}
+                  {error.unit}
                 </p>
               )}
             </div>
@@ -1299,93 +1216,411 @@ const CreateProduct = ({
               )}
             </div>
           </div>
-          {/* ExpiredDate */}
-          <div className="modal__container-body-inputcontrol">
-            <h4 className="modal__container-body-inputcontrol-label">
-              Ngày hết hạn
-            </h4>
-            <div>
-              <input
-                placeholder="Nhập Ngày hết hạn"
-                type="date"
-                className="modal__container-body-inputcontrol-input"
-                value={expiredDate}
-                onChange={(e) => {
-                  const date = new Date();
-                  let day = date.getDate();
-                  let month = date.getMonth() + 1;
-                  let year = date.getFullYear();
-                  let currentDate = `${year}-${month}-${day}`;
-                  setExpiredDate(e.target.value);
-                  setAllowableDate(dayjs(e.target.value).$D - day);
-                  let allowableThresholdDate = dayjs(
-                    getDateAfterToday(allowableDisplayThreshold)
-                  ).format("DD/MM/YYYY");
+          {/* Product Batch */}
+          {productBatchs.map((item, index) => (
+            <>
+              <div
+                style={{ textAlign: "center" }}
+                className="buttonSwitchSelectSuperMarket"
+              >
+                Lô hàng {index + 1}
+              </div>
+              {/* Price */}
+              <div className="modal__container-body-inputcontrol">
+                <h4 className="modal__container-body-inputcontrol-label">
+                  Giá tiền
+                </h4>
+                <div>
+                  <input
+                    value={item?.price}
+                    min={0}
+                    placeholder="Nhập số giá tiền"
+                    type="number"
+                    className="modal__container-body-inputcontrol-input"
+                    onChange={(e) => {
+                      const newProductBatchs = [...productBatchs];
+                      newProductBatchs[index] = {
+                        ...productBatchs[index],
+                        price: e.target.value,
+                        error: { ...productBatchs[index].error, price: "" },
+                      };
+                      setProductBatchs(newProductBatchs);
+                    }}
+                  />
+                  {item.error.price && (
+                    <p
+                      style={{ fontSize: "14px", marginBottom: "-10px" }}
+                      className="text-danger"
+                    >
+                      {item.error.price}
+                    </p>
+                  )}
+                </div>
+              </div>
+              {/* PriceOriginal */}
+              <div className="modal__container-body-inputcontrol">
+                <h4 className="modal__container-body-inputcontrol-label">
+                  Giá gốc
+                </h4>
 
-                  if (currentDate > e.target.value) {
-                    setError({
-                      ...error,
-                      expiredDate: "Ngày hết hạn không thể trước ngày hiện tại",
-                    });
-                  } else if (
-                    dayjs(e.target.value).$D - day <
-                    allowableDisplayThreshold
-                  ) {
-                    setError({
-                      ...error,
-                      expiredDate: `Ngày hết hạn bạn nhập đã bé hơn giới hạn số ngày trước HSD. \n Số ngày tổi thiểu của ${subCateName} là ${allowableThresholdDate}`,
-                    });
-                  } else {
-                    setError({ ...error, expiredDate: "" });
-                  }
-                }}
-              />
-              {error.expiredDate && (
-                <p
-                  style={{
-                    fontSize: "14px",
-                    marginBottom: "-10px",
-                    maxWidth: "400px",
-                  }}
-                  className="text-danger"
-                >
-                  {error.expiredDate}
-                </p>
+                <div>
+                  <input
+                    value={item?.priceOriginal}
+                    min={0}
+                    placeholder="Nhập giá gốc"
+                    type="number"
+                    className="modal__container-body-inputcontrol-input"
+                    onChange={(e) => {
+                      const newProductBatchs = [...productBatchs];
+                      newProductBatchs[index] = {
+                        ...productBatchs[index],
+                        priceOriginal: e.target.value,
+                        error: {
+                          ...productBatchs[index].error,
+                          priceOriginal: "",
+                        },
+                      };
+                      setProductBatchs(newProductBatchs);
+                    }}
+                  />
+                  {item.error.priceOriginal && (
+                    <p
+                      style={{ fontSize: "14px", marginBottom: "-10px" }}
+                      className="text-danger"
+                    >
+                      {item.error.priceOriginal}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* ExpiredDate */}
+              <div className="modal__container-body-inputcontrol">
+                <h4 className="modal__container-body-inputcontrol-label">
+                  Ngày hết hạn
+                </h4>
+                <div>
+                  <input
+                    placeholder="Nhập Ngày hết hạn"
+                    type="date"
+                    className="modal__container-body-inputcontrol-input"
+                    value={item?.expiredDate}
+                    onChange={(e) => {
+                      const newProductBatchs = [...productBatchs];
+                      newProductBatchs[index] = {
+                        ...productBatchs[index],
+                        expiredDate: e.target.value,
+                        error: {
+                          ...productBatchs[index].error,
+                          expiredDate: "",
+                        },
+                      };
+
+                      const date = new Date();
+                      let day = date.getDate();
+                      let month = date.getMonth() + 1;
+                      let year = date.getFullYear();
+                      let currentDate = `${year}-${month}-${day}`;
+                      let allowableThresholdDate = dayjs(
+                        getDateAfterToday(allowableDisplayThreshold)
+                      ).format("DD/MM/YYYY");
+
+                      const daysFromToday = dayDiffFromToday(
+                        dayjs(e.target.value).$d
+                      );
+
+                      if (daysFromToday < allowableDisplayThreshold) {
+                        setError({
+                          ...error,
+                          expiredDate: `Ngày hết hạn bạn nhập đã bé hơn giới hạn số ngày trước HSD. \n Số ngày tổi thiểu của ${subCateName} là ${allowableThresholdDate}`,
+                        });
+                      } else {
+                        setError({ ...error, expiredDate: "" });
+                      }
+                      setProductBatchs(newProductBatchs);
+                    }}
+                  />
+                  {item.error.expiredDate && (
+                    <p
+                      style={{ fontSize: "14px", marginBottom: "-10px" }}
+                      className="text-danger"
+                    >
+                      {item.error.expiredDate}
+                    </p>
+                  )}
+                  {error.expiredDate && (
+                    <p
+                      style={{
+                        fontSize: "14px",
+                        marginBottom: "-10px",
+                        maxWidth: "400px",
+                        marginTop: 5,
+                      }}
+                      className="text-danger"
+                    >
+                      {error.expiredDate}
+                    </p>
+                  )}
+                </div>
+              </div>
+              {productBatchAddresses.map((data, index) => {
+                return (
+                  <>
+                    {/* Store */}
+                    <div className="modal__container-body-inputcontrol">
+                      {productBatchAddresses.length !== 1 && (
+                        <div
+                          onClick={() => {
+                            setProductBatchAddresses(
+                              productBatchAddresses.filter(
+                                (address) => address !== data
+                              )
+                            );
+                          }}
+                          className="button__minus"
+                        >
+                          <FontAwesomeIcon icon={faMinus} />
+                        </div>
+                      )}
+                      <h4 className="modal__container-body-inputcontrol-label">
+                        Chi nhánh {index + 1}
+                      </h4>
+                      <div>
+                        <div style={{ display: "flex" }}>
+                          <div
+                            style={{ width: "350px", marginRight: "-2px" }}
+                            className="dropdown"
+                          >
+                            <div
+                              className="dropdown-btn"
+                              onClick={(e) => {
+                                if (selectedDropdownItem !== "Chọn siêu thị") {
+                                  const newProductBatchAddresses = [
+                                    ...productBatchAddresses,
+                                  ];
+                                  newProductBatchAddresses[index] = {
+                                    ...productBatchAddresses[index],
+                                    isActiveDropdownSupermarketStore:
+                                      !productBatchAddresses[index]
+                                        .isActiveDropdownSupermarketStore,
+                                  };
+                                  setProductBatchAddresses(
+                                    newProductBatchAddresses
+                                  );
+                                }
+                              }}
+                            >
+                              {data?.supermarketAddress?.address
+                                ? data?.supermarketAddress?.address
+                                : "Chọn chi nhánh"}
+                              <FontAwesomeIcon icon={faCaretDown} />
+                            </div>
+                            {selectedDropdownItem === "Chọn siêu thị" && (
+                              <span
+                                style={{
+                                  color: "red",
+                                  fontSize: "14px",
+                                }}
+                                className="text-danger"
+                              >
+                                Hãy chọn siêu thị trước
+                              </span>
+                            )}
+
+                            {data.isActiveDropdownSupermarketStore && (
+                              <div className="dropdown-content">
+                                {supermarketAddress.map((item, i) => (
+                                  <div
+                                    onClick={(e) => {
+                                      const newProductBatchAddresses = [
+                                        ...productBatchAddresses,
+                                      ];
+                                      newProductBatchAddresses[index] = {
+                                        ...productBatchAddresses[index],
+                                        isActiveDropdownSupermarketStore: false,
+                                        supermarketAddressId: item.id,
+                                        supermarketAddress: item,
+                                        error: {
+                                          ...productBatchAddresses[index].error,
+                                          supermarketStores: "",
+                                        },
+                                      };
+                                      setProductBatchAddresses(
+                                        newProductBatchAddresses
+                                      );
+                                    }}
+                                    className="dropdown-item"
+                                    key={i}
+                                  >
+                                    {item.address}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          <FontAwesomeIcon
+                            className="iconCreateStoresAddress"
+                            icon={faPlusCircle}
+                            size="4x"
+                            style={{ paddingLeft: 10, paddingTop: 5 }}
+                            onClick={() => {
+                              if (
+                                supermarketAddress.length ===
+                                productBatchAddresses.length
+                              ) {
+                                setOpenValidateSnackbar({
+                                  ...openValidateSnackbar,
+                                  open: true,
+                                  severity: "error",
+                                  text: `Siêu thị này chỉ có ${supermarketAddress.length} chi nhánh! Không thể tạo thêm`,
+                                });
+                                return;
+                              }
+                              if (selectedDropdownItem === "Chọn siêu thị") {
+                                setOpenValidateSnackbar({
+                                  ...openValidateSnackbar,
+                                  open: true,
+                                  severity: "error",
+                                  text: `Chọn siêu thị trước`,
+                                });
+                                return;
+                              }
+                              const newProductBatchAddresses = [
+                                ...productBatchAddresses,
+                                {
+                                  quantity: 0,
+                                  supermarketAddress: null,
+                                  error: {
+                                    expiredDate: "",
+                                    supermarketStores: "",
+                                  },
+                                  isActiveDropdownSupermarketStore: false,
+                                },
+                              ];
+                              setProductBatchAddresses(
+                                newProductBatchAddresses
+                              );
+                            }}
+                          />
+                        </div>
+                        {data.error.supermarketStores && (
+                          <p
+                            style={{ fontSize: "14px", marginBottom: "-10px" }}
+                            className="text-danger"
+                          >
+                            {data.error.supermarketStores}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Quantity */}
+                    <div className="modal__container-body-inputcontrol">
+                      <h4 className="modal__container-body-inputcontrol-label">
+                        Số lượng
+                      </h4>
+                      <div>
+                        <input
+                          min={0}
+                          placeholder="Nhập số lượng"
+                          type="number"
+                          className="modal__container-body-inputcontrol-input"
+                          value={item?.quantity}
+                          onChange={(e) => {
+                            const newProductBatchAddresses = [
+                              ...productBatchAddresses,
+                            ];
+                            newProductBatchAddresses[index] = {
+                              ...productBatchAddresses[index],
+                              quantity: e.target.value,
+                              error: {
+                                ...productBatchAddresses[index].error,
+                                quantity: "",
+                              },
+                            };
+                            setProductBatchAddresses(newProductBatchAddresses);
+                          }}
+                        />
+                        {data.error.quantity && (
+                          <p
+                            style={{ fontSize: "14px", marginBottom: "-10px" }}
+                            className="text-danger"
+                          >
+                            {data.error.quantity}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                );
+              })}
+
+              {productBatchs.length !== 1 && (
+                <div className="modal__container-body-inputcontrol">
+                  <button
+                    onClick={() => {
+                      setProductBatchs(
+                        productBatchs.filter((item, i) => i !== index)
+                      );
+                    }}
+                    className="buttonAddSupermarkerAddress"
+                  >
+                    Xóa lô hàng
+                    <FontAwesomeIcon
+                      icon={faCircleMinus}
+                      style={{ paddingLeft: 10 }}
+                    />
+                  </button>
+                </div>
               )}
-            </div>
-          </div>
-          {/* Quantity */}
+            </>
+          ))}
+
+          {/* Button add Batch */}
           <div className="modal__container-body-inputcontrol">
-            <h4 className="modal__container-body-inputcontrol-label">
-              Số lượng
-            </h4>
-            <div>
-              <input
-                min={0}
-                placeholder="Nhập số lượng"
-                type="number"
-                className="modal__container-body-inputcontrol-input"
-                value={quantity}
-                onChange={(e) => {
-                  setQuantity(e.target.value);
-                  setError({ ...error, quantity: "" });
-                }}
+            <button
+              style={{ width: "100%" }}
+              onClick={() => {
+                const newProductBatchs = [
+                  ...productBatchs,
+                  {
+                    expiredDate: null,
+                    price: 0,
+                    priceOriginal: 0,
+                    productBatchAddresses: productBatchAddresses,
+                    error: {
+                      price: "",
+                      priceOriginal: "",
+                      expiredDate: "",
+                    },
+                  },
+                ];
+
+                setProductBatchs(newProductBatchs);
+              }}
+              className="buttonAddSupermarkerAddress"
+            >
+              Thêm lô hàng mới
+              <FontAwesomeIcon
+                icon={faPlusCircle}
+                style={{ paddingLeft: 10 }}
               />
-              {error.quantity && (
-                <p
-                  style={{ fontSize: "14px", marginBottom: "-10px" }}
-                  className="text-danger"
-                >
-                  {error.quantity}
-                </p>
-              )}
-            </div>
+            </button>
           </div>
           {/* Image Upload */}
-          <div className="modal__container-body-inputcontrol">
-            <h4 className="modal__container-body-inputcontrol-label">
-              Tải ảnh
-            </h4>
+          <div
+            className="modal__container-body-inputcontrol"
+            style={{
+              position: "relative",
+            }}
+          >
+            <div className="modal__container-body-inputcontrol-label-icon">
+              <h4 className="modal__container-body-inputcontrol-label">
+                Tải ảnh
+              </h4>
+            </div>
+
             <div style={{ maxWidth: "400px" }}>
               <div
                 className="imgWrapper"
@@ -1394,24 +1629,39 @@ const CreateProduct = ({
                 <input
                   id="imgUpload"
                   type="file"
+                  multiple
                   accept="image/*"
                   hidden
                   onChange={({ target: { files } }) => {
-                    files[0] && setFileName(files[0].name);
-                    if (files && files[0]) {
-                      setImage(URL.createObjectURL(files[0]));
-                      setImgToFirebase(files[0]);
-                      console.log(files[0]);
+                    if (files) {
+                      const fileArray = Object.entries(files).map(
+                        ([key, value]) => {
+                          return { index: key, value: value };
+                        }
+                      );
+                      let imageUrlListToShow = [];
+                      let imageUrlListToFireBase = [];
+                      fileArray.map((item) => {
+                        imageUrlListToShow.push(
+                          URL.createObjectURL(item.value)
+                        );
+                        imageUrlListToFireBase.push(item.value);
+                      });
+                      setImage(imageUrlListToShow);
+                      setImgToFirebase(
+                        imageUrlListToFireBase
+                          ? imageUrlListToFireBase
+                          : files[0]
+                      );
                       setError({ ...error, imageUrl: "" });
                     }
                   }}
                 />
-                {image ? (
+                {image.length !== 0 ? (
                   <img
-                    src={image}
+                    src={image[0]}
                     width={360}
                     height={160}
-                    alt={fileName}
                     style={{ borderRadius: "5px", maxWidth: 360 }}
                   />
                 ) : (
@@ -1421,22 +1671,21 @@ const CreateProduct = ({
                   </>
                 )}
               </div>
-              <section className="uploaded-row">
-                <AiFillFileImage color="#37a65b" size={25} />
-                <span className="upload-content">
-                  {fileName} -
-                  <MdDelete
-                    color="#37a65b"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => {
-                      setFileName("Chưa có hình ảnh sản phẩm");
-                      setImage(null);
-                      setImgToFirebase("");
-                    }}
-                    size={25}
-                  />
-                </span>
-              </section>
+              {image.length > 1 && (
+                <section
+                  className="uploaded-row"
+                  style={{
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    {
+                      handleOpenImageUrlList();
+                    }
+                  }}
+                >
+                  <h4>Xem tất cả hình đã tải lên</h4>
+                </section>
+              )}
               {error.imageUrl && (
                 <p
                   style={{ fontSize: "14px", marginBottom: "-10px" }}
@@ -1469,6 +1718,34 @@ const CreateProduct = ({
         </div>
         {/* *********************** */}
       </div>
+      <Dialog
+        onClose={handleCloseImageUrlList}
+        aria-labelledby="customized-dialog-title"
+        open={openImageUrlList}
+      >
+        <CreateProductImageSlider
+          handleClose={handleCloseImageUrlList}
+          imageUrlList={image}
+        />
+      </Dialog>
+      <Snackbar
+        open={openValidateSnackbar.open}
+        autoHideDuration={2000}
+        anchorOrigin={{ vertical, horizontal }}
+        onClose={handleCloseValidateSnackbar}
+      >
+        <Alert
+          onClose={handleCloseValidateSnackbar}
+          severity={openValidateSnackbar.severity}
+          sx={{
+            width: "100%",
+            fontSize: "15px",
+            alignItem: "center",
+          }}
+        >
+          {openValidateSnackbar.text}
+        </Alert>
+      </Snackbar>
       {loading && <LoadingScreen />}
     </>
   );

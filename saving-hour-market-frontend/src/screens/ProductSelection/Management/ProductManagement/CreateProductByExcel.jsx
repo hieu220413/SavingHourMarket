@@ -105,7 +105,7 @@ const CreateProductByExcel = ({
         <div className="modal__container-body-wrapper">
           <div className="template-wrapper">
             <h3>Tải bản mẫu tại đây :</h3>
-            <a href="https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/ExcelTemplate%2FProductUploadTemplate.xlsx?alt=media&token=109b0aad-c298-4d1c-a9ca-fb449b2a229a&_gl=1*gg9veo*_ga*MTYxMzkwMjU5MC4xNjg4NDU2Mzc5*_ga_CW55HF8NVT*MTY5Nzc4MzgxNC4zNC4xLjE2OTc3ODM4NzYuNjAuMC4w">
+            <a href="https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/ExcelTemplate%2FProductUploadTemplate.xlsx?alt=media&token=daa531a9-59f9-41be-9799-3cc3161f4816&_gl=1*rg67ju*_ga*MTYxMzkwMjU5MC4xNjg4NDU2Mzc5*_ga_CW55HF8NVT*MTY5OTQxNzQ1NS40NS4xLjE2OTk0MTc1MDYuOS4wLjA.">
               Bản mẫu
             </a>
           </div>
