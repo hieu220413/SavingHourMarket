@@ -105,6 +105,8 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/productConsolidationArea/updateStatus").hasRole("ADMIN")
                             .requestMatchers("/api/productConsolidationArea/updatePickupPointList").hasRole("ADMIN")
                             .requestMatchers("/api/productConsolidationArea/getAllForStaff").hasAnyRole(allStaffAndAdmin)
+                            .requestMatchers("/api/productConsolidationArea/getByPickupPointForStaff").hasAnyRole(allStaffAndAdmin)
+
 
                             .requestMatchers("/api/transaction/processPaymentResult").permitAll()
 //                            .requestMatchers("/api/staff/getInfoAfterGoogleLogged").hasAnyRole(allStaffAndAdmin)

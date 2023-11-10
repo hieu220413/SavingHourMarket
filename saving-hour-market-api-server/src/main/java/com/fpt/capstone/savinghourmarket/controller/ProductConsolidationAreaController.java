@@ -38,6 +38,15 @@ public class ProductConsolidationAreaController {
         return ResponseEntity.status(HttpStatus.OK).body(productConsolidationAreaList);
     }
 
+    @RequestMapping(value = "/getByPickupPointForStaff", method = RequestMethod.GET)
+    public ResponseEntity<List<ProductConsolidationArea>> getByPickupPointForStaff(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @RequestParam UUID pickupPointId) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        List<ProductConsolidationArea> productConsolidationAreaList = productConsolidationAreaService.getByPickupPointForStaff(pickupPointId);
+        return ResponseEntity.status(HttpStatus.OK).body(productConsolidationAreaList);
+    }
+
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     public ResponseEntity<ProductConsolidationArea> createProductConsolidationArea(
             @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,

@@ -185,6 +185,7 @@ INSERT INTO `saving_hour_market`.`pickup_point` (`id`, `address`, `latitude`, `l
 INSERT INTO `saving_hour_market`.`pickup_point_product_consolidation_area` (`pickup_point_id`, `product_consolidation_area_id`)
 --      VALUES (`pickup_point_id`, `product_consolidation_area_id`)
     VALUES  (UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5dfa4a-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5dfde4-56dc-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('accf0d06-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5dfa4a-56dc-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('accf0e1e-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5dfde4-56dc-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('accf105d-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5dfde4-56dc-11ee-8a50-a85e45c41921'));

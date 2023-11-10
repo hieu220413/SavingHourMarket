@@ -20,4 +20,6 @@ public interface ProductConsolidationAreaService {
     ProductConsolidationArea updateStatus(EnableDisableStatusChangeBody enableDisableStatusChangeBody);
 
     ProductConsolidationArea updatePickupPointList(ProductConsolidationAreaPickupPointUpdateListBody productConsolidationAreaPickupPointUpdateListBody);
+
+    List<ProductConsolidationArea> getByPickupPointForStaff(UUID pickupPointId);
 }
