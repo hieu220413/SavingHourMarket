@@ -825,10 +825,14 @@ public class ProductServiceImpl implements ProductService {
         productCreate.getImageUrls().forEach(imageUrl -> {
             ProductImage image = new ProductImage();
             image.setImageUrl(imageUrl);
+            image.setProduct(product);
             productImageList.add(image);
         });
         product.setProductImageList(productImageList);
         product.setSupermarket(supermarket.get());
+        productBatchList.forEach(productBatch -> {
+            productBatch.setProduct(product);
+        });
         product.setProductBatchList(productBatchList);
         String unit = product.getUnit().toLowerCase();
         product.setUnit(unit);
