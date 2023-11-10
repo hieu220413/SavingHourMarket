@@ -15,7 +15,7 @@ const leftArrow = require('../assets/icons/left-arrow.png');
 const location = require('../assets/icons/location.png');
 const rightArrow = require('../assets/icons/right-arrow.png');
 const calendar = require('../assets/icons/calendar.png');
-// const time = require('../assets/icons/time.png');
+const time = require('../assets/icons/time.png');
 // const cash = require('../assets/icons/cash.png');
 // const creditCard = require('../assets/icons/credit-card.png');
 // const plusCircle = require('../assets/icons/plus-circle.png');
@@ -57,7 +57,7 @@ export default {
   location,
   rightArrow,
   calendar,
-  // time,
+  time,
   // cash,
   // creditCard,
   // plusCircle,

@@ -13,6 +13,8 @@ import SelectPickupPoint from './src/screens/orderStaff/SelectPickupPoint';
 import OrderGroupDetail from './src/screens/deliveryManager/OrderGroupDetail';
 import OrderDetailForManager from './src/screens/deliveryManager/OrderDetailForManager';
 import PickStaff from './src/screens/deliveryManager/PickStaff';
+import SelectTimeFrame from './src/screens/deliveryManager/SelectTimeFrame';
+import SelectProductConsolidationArea from './src/screens/deliveryManager/SelectProductConsolidationArea';
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -47,6 +49,11 @@ export default function App() {
             component={OrderDetailForManager}
           />
           <Stack.Screen name="PickStaff" component={PickStaff} />
+          <Stack.Screen name="SelectTimeFrame" component={SelectTimeFrame} />
+          <Stack.Screen
+            name="SelectProductConsolidationArea"
+            component={SelectProductConsolidationArea}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </>
