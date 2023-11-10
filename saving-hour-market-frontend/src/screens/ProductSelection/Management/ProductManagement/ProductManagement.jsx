@@ -348,9 +348,9 @@ const ProductManagement = () => {
             />
           </td>
           <td style={{ paddingTop: 30 }}>{item.name}</td>
-          <td style={{ paddingTop: 30 }}>
-            {item.productSubCategory.productCategory.name}
-          </td>
+          <td style={{ paddingTop: 30 }}>{item.unit}</td>
+          <td style={{ paddingTop: 30 }}>{item.productSubCategory.name}</td>
+
           <td style={{ paddingTop: 30 }}>
             <i
               onClick={() => {
@@ -359,6 +359,8 @@ const ProductManagement = () => {
               }}
               className="bi bi-eye"
             ></i>
+          </td>
+          <td style={{ paddingTop: 30 }}>
             <i
               onClick={() => {
                 setProductToEdit(item);
@@ -385,10 +387,27 @@ const ProductManagement = () => {
         <tr className="table-body-row">
           <td style={{ paddingTop: 30 }}>{index + 1}</td>
           <td>
-            <img width="80px" height="60px" src={item.imageUrl} />
+            <img
+              width="80px"
+              height="60px"
+              onClick={() => {
+                setImageUrlList(item.productImageList);
+                handleOpenImageUrlList();
+              }}
+              src={item.productImageList[0].imageUrl}
+            />
           </td>
+          <td style={{ paddingTop: 30 }}>{item.name}</td>
+          <td style={{ paddingTop: 30 }}>{item.unit}</td>
+          <td style={{ paddingTop: 30 }}>{item.productSubCategory.name}</td>
           <td style={{ paddingTop: 30 }}>
-            {item.productSubCategory.productCategory.name}
+            <i
+              onClick={() => {
+                setProductBatch(item.productBatchList);
+                handleOpenProductBatch();
+              }}
+              className="bi bi-eye"
+            ></i>
           </td>
           <td style={{ paddingTop: 30 }}>
             <i
@@ -410,21 +429,19 @@ const ProductManagement = () => {
       <div className="supermarket__container">
         <div className="supermarket__header">
           {/* search bar */}
-          {products.length !== 0 && (
-            <div className="search">
-              <form onSubmit={(e) => onSubmitSearch(e)}>
-                <div onClick={(e) => onSubmitSearch(e)} className="search-icon">
-                  <FontAwesomeIcon icon={faMagnifyingGlass} />
-                </div>
-                <input
-                  value={textSearch}
-                  onChange={(e) => setTextSearch(e.target.value)}
-                  type="text"
-                  placeholder="Từ khóa tìm kiếm"
-                />
-              </form>
-            </div>
-          )}
+          <div className="search">
+            <form onSubmit={(e) => onSubmitSearch(e)}>
+              <div onClick={(e) => onSubmitSearch(e)} className="search-icon">
+                <FontAwesomeIcon icon={faMagnifyingGlass} />
+              </div>
+              <input
+                value={textSearch}
+                onChange={(e) => setTextSearch(e.target.value)}
+                type="text"
+                placeholder="Từ khóa tìm kiếm"
+              />
+            </form>
+          </div>
           {/* ****************** */}
           {!isSwitchRecovery && (
             <div onClick={handleClick} className="supermarket__header-button">
@@ -471,11 +488,17 @@ const ProductManagement = () => {
             <table class="table ">
               <thead>
                 <tr className="table-header-row">
-                  <th>No.</th>
-                  <th>Hình ảnh</th>
-                  <th>Tên Sản phẩm</th>
-                  <th>Tên loại sản phẩm</th>
-                  <th>Thao tác</th>
+                  {products.length !== 0 && (
+                    <>
+                      <th>No.</th>
+                      <th>Hình ảnh</th>
+                      <th>Tên Sản phẩm</th>
+                      <th>Đơn vị</th>
+                      <th>Tên loại sản phẩm phụ </th>
+                      <th>Lô hàng</th>
+                      <th>Thao tác</th>
+                    </>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -484,6 +507,28 @@ const ProductManagement = () => {
                 ))}
               </tbody>
             </table>
+            {products.length === 0 && (
+              <div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <img src={Empty} alt="" />
+                </div>
+                <p
+                  style={{
+                    textAlign: "center",
+                    color: "grey",
+                    fontSize: 24,
+                  }}
+                >
+                  Không có sản phẩm nào
+                </p>
+              </div>
+            )}
             {/* ********************** */}
 
             <div>
@@ -500,107 +545,109 @@ const ProductManagement = () => {
             </div>
 
             {/* pagination */}
-            <div className="row pageBtn">
-              <div className="col" style={{ textAlign: "right" }}>
-                <br />
-                <form action="">
-                  <button
-                    type="submit"
-                    disabled={page === 1}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setPage(1);
-                      setTextPage(1);
-                    }}
-                    className="btn btn-success  "
-                    name="op"
-                    value="FirstPage"
-                    title="First Page"
-                  >
-                    <i className="bi bi-chevron-bar-left"></i>
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={page === 1}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setPage(page - 1);
-                      setTextPage(page - 1);
-                    }}
-                    className="btn btn-success  "
-                    name="op"
-                    value="PreviousPage"
-                    title="Previous Page"
-                  >
-                    <i className="bi bi-chevron-left"></i>
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={page === totalPage}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setPage(page + 1);
-                      setTextPage(page + 1);
-                    }}
-                    className="btn btn-success  "
-                    name="op"
-                    value="NextPage"
-                    title="Next Page"
-                  >
-                    <i className="bi bi-chevron-right"></i>
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={page === totalPage}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setPage(totalPage);
-                      setTextPage(totalPage);
-                    }}
-                    className="btn btn-success  "
-                    name="op"
-                    value="LastPage"
-                    title="Last Page"
-                  >
-                    <i className="bi bi-chevron-bar-right"></i>
-                  </button>
-                  <input
-                    type="number"
-                    name="gotoPage"
-                    value={textPage}
-                    onChange={(e) => {
-                      setTextPage(e.target.value);
-                    }}
-                    className=" "
-                    style={{
-                      padding: "12px",
-                      textAlign: "center",
-                      color: "#000",
-                      width: "40px",
-                    }}
-                    title="Enter page number"
-                  />
-                  <button
-                    type="submit"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (textPage >= 1 && textPage <= totalPage) {
-                        setPage(parseInt(textPage));
-                      } else {
-                        setTextPage(page);
-                      }
-                    }}
-                    className="btn btn-success  "
-                    name="op"
-                    value="GotoPage"
-                    title="Goto Page"
-                  >
-                    <i className="bi bi-arrow-up-right-circle"></i>
-                  </button>
-                </form>
-                Page {page}/{totalPage}
+            {products.length !== 0 && (
+              <div className="row pageBtn">
+                <div className="col" style={{ textAlign: "right" }}>
+                  <br />
+                  <form action="">
+                    <button
+                      type="submit"
+                      disabled={page === 1}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setPage(1);
+                        setTextPage(1);
+                      }}
+                      className="btn btn-success  "
+                      name="op"
+                      value="FirstPage"
+                      title="First Page"
+                    >
+                      <i className="bi bi-chevron-bar-left"></i>
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={page === 1}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setPage(page - 1);
+                        setTextPage(page - 1);
+                      }}
+                      className="btn btn-success  "
+                      name="op"
+                      value="PreviousPage"
+                      title="Previous Page"
+                    >
+                      <i className="bi bi-chevron-left"></i>
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={page === totalPage}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setPage(page + 1);
+                        setTextPage(page + 1);
+                      }}
+                      className="btn btn-success  "
+                      name="op"
+                      value="NextPage"
+                      title="Next Page"
+                    >
+                      <i className="bi bi-chevron-right"></i>
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={page === totalPage}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setPage(totalPage);
+                        setTextPage(totalPage);
+                      }}
+                      className="btn btn-success  "
+                      name="op"
+                      value="LastPage"
+                      title="Last Page"
+                    >
+                      <i className="bi bi-chevron-bar-right"></i>
+                    </button>
+                    <input
+                      type="number"
+                      name="gotoPage"
+                      value={textPage}
+                      onChange={(e) => {
+                        setTextPage(e.target.value);
+                      }}
+                      className=" "
+                      style={{
+                        padding: "12px",
+                        textAlign: "center",
+                        color: "#000",
+                        width: "40px",
+                      }}
+                      title="Enter page number"
+                    />
+                    <button
+                      type="submit"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (textPage >= 1 && textPage <= totalPage) {
+                          setPage(parseInt(textPage));
+                        } else {
+                          setTextPage(page);
+                        }
+                      }}
+                      className="btn btn-success  "
+                      name="op"
+                      value="GotoPage"
+                      title="Goto Page"
+                    >
+                      <i className="bi bi-arrow-up-right-circle"></i>
+                    </button>
+                  </form>
+                  Page {page}/{totalPage}
+                </div>
               </div>
-            </div>
+            )}
             {/* ********************** */}
           </div>
         )}
@@ -616,7 +663,10 @@ const ProductManagement = () => {
                       <>
                         <th>No.</th>
                         <th>Hình ảnh</th>
+                        <th>Tên</th>
+                        <th>Đơn vị</th>
                         <th>Tên Sản phẩm</th>
+                        <th>Lô hàng</th>
                         <th>Thao tác</th>
                       </>
                     )}

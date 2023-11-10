@@ -9,7 +9,12 @@ const CreateProductImageSlider = ({ imageUrlList }) => {
         {imageUrlList.map((item, index) => (
           <>
             <div style={{ position: "relative" }}>
-              <img width="600px" height="400px" src={item} key={index} />
+              <img
+                width="600px"
+                height="400px"
+                src={item.imageUrl ? item.imageUrl : item}
+                key={index}
+              />
               <div
                 style={{
                   position: "absolute",

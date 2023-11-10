@@ -61,6 +61,7 @@
     color: #333;
     width: 100%;
     z-index: 9999;
+    width: 400px;
 
     .dropdown-item {
       padding: 10px;
@@ -116,4 +117,13 @@
     background-color: #cccccc;
     color: #666666;
   }
+}
+
+.iconCreateStoresAddress {
+  transition: 0.3s linear all;
+  cursor: pointer;
+  color: var(--primary);
+}
+.iconCreateStoresAddress:hover {
+  color: rgb(18, 90, 18);
 }

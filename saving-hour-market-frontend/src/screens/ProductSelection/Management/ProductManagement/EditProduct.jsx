@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
 import "./CreateProduct.scss";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faXmark, faCaretDown } from "@fortawesome/free-solid-svg-icons";
+import {
+  faXmark,
+  faCaretDown,
+  faPlusCircle,
+  faCircleMinus,
+} from "@fortawesome/free-solid-svg-icons";
 import { MdCloudUpload, MdDelete } from "react-icons/md";
 import { AiFillFileImage } from "react-icons/ai";
 import dayjs from "dayjs";
@@ -10,6 +15,14 @@ import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { v4 } from "uuid";
 import { API } from "../../../../contanst/api";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
+import { format } from "date-fns";
+import MuiAlert from "@mui/material/Alert";
+import { Dialog, Snackbar } from "@mui/material";
+import CreateProductImageSlider from "./CreateProductImageSlider";
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 const EditProduct = ({
   handleClose,
@@ -22,7 +35,19 @@ const EditProduct = ({
   setOpenSnackbar,
   setMsg,
 }) => {
-  const [image, setImage] = useState(product.imageUrl);
+  const [image, setImage] = useState(
+    product.productImageList.map((item) => {
+      return {
+        ...item,
+        error: {
+          image: "",
+        },
+      };
+    })
+  );
+  const [openImageUrlList, setOpenImageUrlList] = useState(false);
+  const handleOpenImageUrlList = () => setOpenImageUrlList(true);
+  const handleCloseImageUrlList = () => setOpenImageUrlList(false);
   const [fileName, setFileName] = useState("Chưa có hình ảnh sản phẩm");
   const [imgToFirebase, setImgToFirebase] = useState("");
 
@@ -44,6 +69,18 @@ const EditProduct = ({
     useState(product.productSubCategory.name);
 
   const [allowableDate, setAllowableDate] = useState("");
+
+  const [openValidateSnackbar, setOpenValidateSnackbar] = useState({
+    open: false,
+    vertical: "top",
+    horizontal: "right",
+    severity: "success",
+    text: "",
+  });
+  const { vertical, horizontal } = openValidateSnackbar;
+  const handleCloseValidateSnackbar = () => {
+    setOpenValidateSnackbar({ ...openValidateSnackbar, open: false });
+  };
 
   // validate data
   const [productName, setProductName] = useState(product.name);
@@ -78,6 +115,25 @@ const EditProduct = ({
   );
   const [imageUrlSubCate, setImageUrlSubCate] = useState(
     product.productSubCategory.imageUrl
+  );
+  const [unit, setUnit] = useState(product.unit);
+  const [productBatchs, setProductBatchs] = useState(
+    product.productBatchList.map((item) => {
+      return {
+        ...item,
+        isActiveDropdownSupermarketStore: false,
+        expiredDate: item.expiredDate
+          ? format(new Date(item.expiredDate), "yyyy-MM-dd")
+          : null,
+        error: {
+          price: "",
+          priceOriginal: "",
+          quantity: "",
+          expiredDate: "",
+          supermarketStores: "",
+        },
+      };
+    })
   );
 
   const [loading, setLoading] = useState(false);
@@ -115,7 +171,7 @@ const EditProduct = ({
           setSupermarkets(data.supermarketList);
         });
 
-      fetch(`${API.baseURL}/api/product/getAllCategory`, {
+      fetch(`${API.baseURL}/api/product/getCategoryForStaff`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -124,29 +180,40 @@ const EditProduct = ({
       })
         .then((res) => res.json())
         .then((data) => {
-          setCategories(data);
+          setCategories(data.productCategoryList);
         });
     };
     fetchData();
   }, []);
 
-  const handleUploadImageToFirebase = async () => {
-    if (imgToFirebase !== "") {
-      const imgRef = ref(imageDB, `productImage/${v4()}`);
-      await uploadBytes(imgRef, imgToFirebase);
-      try {
-        const url = await getDownloadURL(imgRef);
-        return url;
-      } catch (error) {
-        console.log(error);
-      }
+  const uploadProductImgToFirebase = async (image) => {
+    const imgRef = ref(imageDB, `productImage/${v4()}`);
+    await uploadBytes(imgRef, image);
+    try {
+      const url = await getDownloadURL(imgRef);
+      return url;
+    } catch (error) {
+      console.log(error);
     }
   };
+
+  const uploadProductImagesToFireBase = async (images) => {
+    const imageList = Array.from(images, (image) =>
+      uploadProductImgToFirebase(image)
+    );
+    const imageUrls = await Promise.all(imageList);
+    return imageUrls;
+  };
+
   const getDateAfterToday = (numberOfDays) => {
     const today = new Date();
     const nextDate = new Date(today);
     nextDate.setDate(today.getDate() + numberOfDays);
     return nextDate;
+  };
+
+  const dayDiffFromToday = (expDate) => {
+    return Math.ceil((expDate - new Date()) / (1000 * 3600 * 24));
   };
 
   const handleEdit = async () => {
@@ -165,18 +232,126 @@ const EditProduct = ({
       setError({ ...error, productName: "Vui lòng không để trống" });
       return;
     }
-    if (price <= 0 || !price) {
-      setError({ ...error, price: "Số tiền nhập vào phải lớn hớn 0" });
-      return;
-    }
-    if (priceOriginal <= 0 || !priceOriginal) {
-      setError({ ...error, priceOriginal: "Số tiền nhập vào phải lớn hớn 0" });
-      return;
-    }
     if (description === "") {
       setError({ ...error, description: "Vui lòng không để trống" });
       return;
     }
+    // validate product batch
+    let newProductBatchs = [...productBatchs];
+    const productbatchValidate = productBatchs.map((batch, index) => {
+      // validate price
+      if (batch.price === "") {
+        newProductBatchs[index] = {
+          ...productBatchs[index],
+          error: {
+            ...productBatchs[index].error,
+            price: "Giá sản phẩm không thể là bỏ trống",
+          },
+        };
+        return false;
+      }
+      if (batch.price <= 0) {
+        newProductBatchs[index] = {
+          ...productBatchs[index],
+          error: {
+            ...productBatchs[index].error,
+            price: "Giá sản phẩm không thể bé hơn 0",
+          },
+        };
+        return false;
+      }
+      // validate priceOriginal
+      if (batch.priceOriginal === "") {
+        newProductBatchs[index] = {
+          ...productBatchs[index],
+          error: {
+            ...productBatchs[index].error,
+            priceOriginal: "Giá gốc sản phẩm không thể là bỏ trống",
+          },
+        };
+        return false;
+      }
+      if (batch.priceOriginal <= 0) {
+        newProductBatchs[index] = {
+          ...productBatchs[index],
+          error: {
+            ...productBatchs[index].error,
+            priceOriginal: "Giá gốc sản phẩm không thể bé hơn 0",
+          },
+        };
+        return false;
+      }
+      // validate expiredDate
+      if (!batch.expiredDate) {
+        newProductBatchs[index] = {
+          ...productBatchs[index],
+          error: {
+            ...productBatchs[index].error,
+            expiredDate: "Vui lòng nhập ngày hết hạn",
+          },
+        };
+        return false;
+      }
+      if (
+        new Date(batch.expiredDate).getTime() <
+        getDateAfterToday(allowableDisplayThreshold).getTime()
+      ) {
+        newProductBatchs[index] = {
+          ...productBatchs[index],
+          error: {
+            ...productBatchs[index].error,
+            expiredDate:
+              "Ngày hết hạn bạn nhập đã bé hơn giới hạn số ngày trước HSD",
+          },
+        };
+        return false;
+      }
+      // validate quantity
+      if (batch.quantity === "") {
+        newProductBatchs[index] = {
+          ...productBatchs[index],
+          error: {
+            ...productBatchs[index].error,
+            quantity: "Số lượng sản phẩm không thể là bỏ trống",
+          },
+        };
+        return false;
+      }
+      if (batch.quantity <= 0) {
+        newProductBatchs[index] = {
+          ...productBatchs[index],
+          error: {
+            ...productBatchs[index].error,
+            quantity: "Số lượng sản phẩm không thể bé hơn 0",
+          },
+        };
+        return false;
+      }
+      // validate supermarketstore
+      if (
+        !batch.supermarketAddress?.id ||
+        !batch.supermarketAddress ||
+        !supermarketAddress.some(
+          (item) => item.address === batch?.supermarketAddress?.address
+        )
+      ) {
+        newProductBatchs[index] = {
+          ...productBatchs[index],
+          error: {
+            ...productBatchs[index].error,
+            supermarketStores: "Vui lòng chọn chi nhánh",
+          },
+        };
+        return false;
+      }
+
+      return true;
+    });
+    if (productbatchValidate.some((item) => item === false)) {
+      setProductBatchs(newProductBatchs);
+      return;
+    }
+
     if (error.expiredDate !== "") {
       return;
     }
@@ -187,12 +362,8 @@ const EditProduct = ({
       });
       return;
     }
-    if (quantity <= 0 || !quantity) {
-      setError({ ...error, quantity: "Số lượng nhập vào phải lớn hớn 0" });
-      return;
-    }
-    let imageUrlNew = await handleUploadImageToFirebase();
-    if (imageUrlNew === "") {
+    let imageUrlNew = await uploadProductImagesToFireBase(imgToFirebase);
+    if (imageUrlNew.length === 0 && product.productImageList.length === 0) {
       setError({ ...error, imageUrl: "Chưa có ảnh sản phẩm" });
       return;
     }
@@ -220,19 +391,41 @@ const EditProduct = ({
       totalDiscountUsage: 0,
     };
     // -----------------------------------------------------------------
+    // ProductBatchList
+    const submitProductBatchList = newProductBatchs.map((item) => {
+      return {
+        id: item.id,
+        price: item.price,
+        priceOriginal: item.priceOriginal,
+        sellingDate: null,
+        expiredDate: item.expiredDate,
+        quantity: item.quantity,
+        supermarketAddress: item.supermarketAddress,
+      };
+    });
+    // ProductImageList
+    const productImageList = Object.entries(imageUrlNew).map(
+      ([index, value]) => {
+        return { id: null, imageUrl: value };
+      }
+    );
+
+    // -----------------------------------------------------------------
     const productToEdit = {
       id: product.id,
       name: productName,
-      price: price,
-      priceOriginal: priceOriginal,
       description: description,
-      expiredDate: expiredDate,
-      quantity: quantity,
+      unit: unit,
       status: 1,
-      imageUrl: imageUrlNew ? imageUrlNew : imageUrl,
       productSubCategory: submitProductSubCategory,
       supermarket: submitSupermarket,
+      productBatchList: submitProductBatchList,
+      productImageList:
+        productImageList.length !== 0
+          ? productImageList
+          : product.productImageList,
     };
+    // console.log(JSON.stringify(productToEdit));
 
     const tokenId = await auth.currentUser.getIdToken();
     setLoading(true);
@@ -494,57 +687,28 @@ const EditProduct = ({
               )}
             </div>
           </div>
-          {/* Price */}
+          {/* unit name */}
           <div className="modal__container-body-inputcontrol">
             <h4 className="modal__container-body-inputcontrol-label">
-              Giá tiền
+              Đơn vị bán
             </h4>
             <div>
               <input
-                value={price}
-                min={0}
-                placeholder="Nhập số giá tiền"
-                type="number"
+                value={unit}
+                placeholder="Nhập tên sản phẩm"
+                type="text"
                 className="modal__container-body-inputcontrol-input"
                 onChange={(e) => {
-                  setPrice(e.target.value);
-                  setError({ ...error, price: "" });
+                  setUnit(e.target.value);
+                  setError({ ...error, unit: "" });
                 }}
               />
-              {error.price && (
+              {error.unit && (
                 <p
                   style={{ fontSize: "14px", marginBottom: "-10px" }}
                   className="text-danger"
                 >
-                  {error.price}
-                </p>
-              )}
-            </div>
-          </div>
-          {/* PriceOriginal */}
-          <div className="modal__container-body-inputcontrol">
-            <h4 className="modal__container-body-inputcontrol-label">
-              Giá gốc
-            </h4>
-
-            <div>
-              <input
-                value={priceOriginal}
-                min={0}
-                placeholder="Nhập giá gốc"
-                type="number"
-                className="modal__container-body-inputcontrol-input"
-                onChange={(e) => {
-                  setPriceOriginal(e.target.value);
-                  setError({ ...error, priceOriginal: "" });
-                }}
-              />
-              {error.priceOriginal && (
-                <p
-                  style={{ fontSize: "14px", marginBottom: "-10px" }}
-                  className="text-danger"
-                >
-                  {error.priceOriginal}
+                  {error.unit}
                 </p>
               )}
             </div>
@@ -574,95 +738,332 @@ const EditProduct = ({
               )}
             </div>
           </div>
-          {/* ExpiredDate */}
-          <div className="modal__container-body-inputcontrol">
-            <h4 className="modal__container-body-inputcontrol-label">
-              Ngày hết hạn
-            </h4>
-            <div>
-              <input
-                placeholder="Nhập Ngày hết hạn"
-                type="date"
-                className="modal__container-body-inputcontrol-input"
-                value={expiredDate}
-                onChange={(e) => {
-                  const date = new Date();
-                  let day = date.getDate();
-                  let month = date.getMonth() + 1;
-                  let year = date.getFullYear();
-                  let currentDate = `${year}-${month}-${day}`;
-                  setExpiredDate(e.target.value);
-                  setAllowableDate(dayjs(e.target.value).$D - day);
+          {productBatchs.map((item, index) => (
+            <>
+              <div
+                style={{ textAlign: "center" }}
+                className="buttonSwitchSelectSuperMarket"
+                onClick={(e) => {}}
+              >
+                Lô hàng {index + 1}
+              </div>
+              {/* Price */}
+              <div className="modal__container-body-inputcontrol">
+                <h4 className="modal__container-body-inputcontrol-label">
+                  Giá tiền
+                </h4>
+                <div>
+                  <input
+                    value={item?.price}
+                    min={0}
+                    placeholder="Nhập số giá tiền"
+                    type="number"
+                    className="modal__container-body-inputcontrol-input"
+                    onChange={(e) => {
+                      const newProductBatchs = [...productBatchs];
+                      newProductBatchs[index] = {
+                        ...productBatchs[index],
+                        price: e.target.value,
+                        error: { ...productBatchs[index].error, price: "" },
+                      };
+                      setProductBatchs(newProductBatchs);
+                    }}
+                  />
+                  {item.error.price && (
+                    <p
+                      style={{ fontSize: "14px", marginBottom: "-10px" }}
+                      className="text-danger"
+                    >
+                      {item.error.price}
+                    </p>
+                  )}
+                </div>
+              </div>
+              {/* PriceOriginal */}
+              <div className="modal__container-body-inputcontrol">
+                <h4 className="modal__container-body-inputcontrol-label">
+                  Giá gốc
+                </h4>
 
-                  let allowableThresholdDate = dayjs(
-                    getDateAfterToday(allowableDisplayThreshold)
-                  ).format("DD/MM/YYYY");
+                <div>
+                  <input
+                    value={item?.priceOriginal}
+                    min={0}
+                    placeholder="Nhập giá gốc"
+                    type="number"
+                    className="modal__container-body-inputcontrol-input"
+                    onChange={(e) => {
+                      const newProductBatchs = [...productBatchs];
+                      newProductBatchs[index] = {
+                        ...productBatchs[index],
+                        priceOriginal: e.target.value,
+                        error: {
+                          ...productBatchs[index].error,
+                          priceOriginal: "",
+                        },
+                      };
+                      setProductBatchs(newProductBatchs);
+                    }}
+                  />
+                  {item.error.priceOriginal && (
+                    <p
+                      style={{ fontSize: "14px", marginBottom: "-10px" }}
+                      className="text-danger"
+                    >
+                      {item.error.priceOriginal}
+                    </p>
+                  )}
+                </div>
+              </div>
 
-                  if (currentDate > e.target.value) {
-                    setError({
-                      ...error,
-                      expiredDate:
-                        "Ngày hết hạn không thể bé hơn ngày hiện tại",
-                    });
-                  } else if (
-                    dayjs(e.target.value).$D - day <
-                    allowableDisplayThreshold
-                  ) {
-                    setError({
-                      ...error,
-                      expiredDate: `Ngày hết hạn bạn nhập đã bé hơn giới hạn số ngày trước HSD. \n Số ngày tổi thiểu của ${subCateName} là ${allowableThresholdDate}`,
-                    });
-                  } else {
-                    setError({ ...error, expiredDate: "" });
-                  }
-                }}
-              />
-              {error.expiredDate && (
-                <p
-                  style={{
-                    fontSize: "14px",
-                    marginBottom: "-10px",
-                    maxWidth: "400px",
+              {/* ExpiredDate */}
+              <div className="modal__container-body-inputcontrol">
+                <h4 className="modal__container-body-inputcontrol-label">
+                  Ngày hết hạn
+                </h4>
+                <div>
+                  <input
+                    placeholder="Nhập Ngày hết hạn"
+                    type="date"
+                    className="modal__container-body-inputcontrol-input"
+                    value={item?.expiredDate}
+                    onChange={(e) => {
+                      const newProductBatchs = [...productBatchs];
+                      newProductBatchs[index] = {
+                        ...productBatchs[index],
+                        expiredDate: e.target.value,
+                        error: {
+                          ...productBatchs[index].error,
+                          expiredDate: "",
+                        },
+                      };
+                      const date = new Date();
+                      let day = date.getDate();
+                      let month = date.getMonth() + 1;
+                      let year = date.getFullYear();
+                      let currentDate = `${year}-${month}-${day}`;
+                      let allowableThresholdDate = dayjs(
+                        getDateAfterToday(allowableDisplayThreshold)
+                      ).format("DD/MM/YYYY");
+                      const daysFromToday = dayDiffFromToday(
+                        dayjs(e.target.value).$d
+                      );
+                      if (daysFromToday < allowableDisplayThreshold) {
+                        setError({
+                          ...error,
+                          expiredDate: `Ngày hết hạn bạn nhập đã bé hơn giới hạn số ngày trước HSD. \n Số ngày tổi thiểu của ${subCateName} là ${allowableThresholdDate}`,
+                        });
+                      } else {
+                        console.log("eles");
+                        setError({ ...error, expiredDate: "" });
+                      }
+                      setProductBatchs(newProductBatchs);
+                    }}
+                  />
+                  {item.error.expiredDate && (
+                    <p
+                      style={{ fontSize: "14px", marginBottom: "-10px" }}
+                      className="text-danger"
+                    >
+                      {item.error.expiredDate}
+                    </p>
+                  )}
+                  {error.expiredDate && (
+                    <p
+                      style={{
+                        fontSize: "14px",
+                        marginBottom: "-10px",
+                        maxWidth: "400px",
+                        marginTop: 5,
+                      }}
+                      className="text-danger"
+                    >
+                      {error.expiredDate}
+                    </p>
+                  )}
+                </div>
+              </div>
+              {/* Quantity */}
+              <div className="modal__container-body-inputcontrol">
+                <h4 className="modal__container-body-inputcontrol-label">
+                  Số lượng
+                </h4>
+                <div>
+                  <input
+                    min={0}
+                    placeholder="Nhập số lượng"
+                    type="number"
+                    className="modal__container-body-inputcontrol-input"
+                    value={item?.quantity}
+                    onChange={(e) => {
+                      const newProductBatchs = [...productBatchs];
+                      newProductBatchs[index] = {
+                        ...productBatchs[index],
+                        quantity: e.target.value,
+                        error: { ...productBatchs[index].error, quantity: "" },
+                      };
+                      setProductBatchs(newProductBatchs);
+                    }}
+                  />
+                  {item.error.quantity && (
+                    <p
+                      style={{ fontSize: "14px", marginBottom: "-10px" }}
+                      className="text-danger"
+                    >
+                      {item.error.quantity}
+                    </p>
+                  )}
+                </div>
+              </div>
+              {/* Store */}
+              <div className="modal__container-body-inputcontrol">
+                <h4 className="modal__container-body-inputcontrol-label">
+                  Chi nhánh
+                </h4>
+                <div>
+                  <div style={{ display: "flex" }}>
+                    <div
+                      style={{ width: "401px", marginRight: "-2px" }}
+                      className="dropdown"
+                    >
+                      <div
+                        className="dropdown-btn"
+                        onClick={(e) => {
+                          if (selectedDropdownItem) {
+                            const newProductBatchs = [...productBatchs];
+                            newProductBatchs[index] = {
+                              ...productBatchs[index],
+                              isActiveDropdownSupermarketStore:
+                                !productBatchs[index]
+                                  .isActiveDropdownSupermarketStore,
+                            };
+                            setProductBatchs(newProductBatchs);
+                          }
+                        }}
+                      >
+                        {item?.supermarketAddress?.id && selectedDropdownItem
+                          ? item?.supermarketAddress?.address
+                          : "Chọn chi nhánh"}
+                        <FontAwesomeIcon icon={faCaretDown} />
+                      </div>
+                      {!selectedDropdownItem && (
+                        <span
+                          style={{
+                            color: "red",
+                            fontSize: "14px",
+                          }}
+                          className="text-danger"
+                        >
+                          Hãy chọn siêu thị trước
+                        </span>
+                      )}
+
+                      {item.isActiveDropdownSupermarketStore && (
+                        <div className="dropdown-content">
+                          {supermarketAddress.map((item, i) => (
+                            <div
+                              onClick={(e) => {
+                                const newProductBatchs = [...productBatchs];
+                                newProductBatchs[index] = {
+                                  ...productBatchs[index],
+                                  isActiveDropdownSupermarketStore: false,
+                                  supermarketAddress: item,
+                                  error: {
+                                    ...productBatchs[index].error,
+                                    supermarketStores: "",
+                                  },
+                                };
+                                setProductBatchs(newProductBatchs);
+                              }}
+                              className="dropdown-item"
+                              key={i}
+                            >
+                              {item.address}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  {item.error.supermarketStores && (
+                    <p
+                      style={{ fontSize: "14px", marginBottom: "-10px" }}
+                      className="text-danger"
+                    >
+                      {item.error.supermarketStores}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="modal__container-body-inputcontrol">
+                <button
+                  onClick={() => {
+                    setProductBatchs(
+                      productBatchs.filter((item, i) => i !== index)
+                    );
                   }}
-                  className="text-danger"
+                  className="buttonAddSupermarkerAddress"
                 >
-                  {error.expiredDate}
-                </p>
-              )}
-            </div>
-          </div>
-          {/* Quantity */}
+                  Xóa lô hàng
+                  <FontAwesomeIcon
+                    icon={faCircleMinus}
+                    style={{ paddingLeft: 10 }}
+                  />
+                </button>
+              </div>
+            </>
+          ))}
+
           <div className="modal__container-body-inputcontrol">
-            <h4 className="modal__container-body-inputcontrol-label">
-              Số lượng
-            </h4>
-            <div>
-              <input
-                min={0}
-                placeholder="Nhập số lượng"
-                type="number"
-                className="modal__container-body-inputcontrol-input"
-                value={quantity}
-                onChange={(e) => {
-                  setQuantity(e.target.value);
-                  setError({ ...error, quantity: "" });
-                }}
+            <button
+              style={{ width: "100%" }}
+              onClick={() => {
+                const newProductBatchs = [
+                  ...productBatchs,
+                  {
+                    expiredDate: null,
+                    id: null,
+                    price: 0,
+                    priceOriginal: 0,
+                    quantity: 0,
+                    sellingDate: 0,
+                    supermarketAddress: null,
+                    error: {
+                      price: "",
+                      priceOriginal: "",
+                      quantity: "",
+                      expiredDate: "",
+                      supermarketStores: "",
+                    },
+                    isActiveDropdownSupermarketStore: false,
+                  },
+                ];
+
+                setProductBatchs(newProductBatchs);
+              }}
+              className="buttonAddSupermarkerAddress"
+            >
+              Thêm lô hàng mới
+              <FontAwesomeIcon
+                icon={faPlusCircle}
+                style={{ paddingLeft: 10 }}
               />
-              {error.quantity && (
-                <p
-                  style={{ fontSize: "14px", marginBottom: "-10px" }}
-                  className="text-danger"
-                >
-                  {error.quantity}
-                </p>
-              )}
-            </div>
+            </button>
           </div>
+
           {/* Image Upload */}
-          <div className="modal__container-body-inputcontrol">
-            <h4 className="modal__container-body-inputcontrol-label">
-              Tải ảnh
-            </h4>
+          <div
+            className="modal__container-body-inputcontrol"
+            style={{
+              position: "relative",
+            }}
+          >
+            <div className="modal__container-body-inputcontrol-label-icon">
+              <h4 className="modal__container-body-inputcontrol-label">
+                Tải ảnh
+              </h4>
+            </div>
+
             <div style={{ maxWidth: "400px" }}>
               <div
                 className="imgWrapper"
@@ -671,24 +1072,39 @@ const EditProduct = ({
                 <input
                   id="imgUpload"
                   type="file"
+                  multiple
                   accept="image/*"
                   hidden
                   onChange={({ target: { files } }) => {
-                    files[0] && setFileName(files[0].name);
-                    if (files && files[0]) {
-                      setImage(URL.createObjectURL(files[0]));
-                      setImgToFirebase(files[0]);
-                      console.log(files[0]);
+                    if (files) {
+                      const fileArray = Object.entries(files).map(
+                        ([key, value]) => {
+                          return { index: key, value: value };
+                        }
+                      );
+                      let imageUrlListToShow = [];
+                      let imageUrlListToFireBase = [];
+                      fileArray.map((item) => {
+                        imageUrlListToShow.push(
+                          URL.createObjectURL(item.value)
+                        );
+                        imageUrlListToFireBase.push(item.value);
+                      });
+                      setImage(imageUrlListToShow);
+                      setImgToFirebase(
+                        imageUrlListToFireBase
+                          ? imageUrlListToFireBase
+                          : files[0]
+                      );
                       setError({ ...error, imageUrl: "" });
                     }
                   }}
                 />
-                {image ? (
+                {image.length !== 0 ? (
                   <img
-                    src={image}
+                    src={image[0].imageUrl ? image[0].imageUrl : image[0]}
                     width={360}
                     height={160}
-                    alt={fileName}
                     style={{ borderRadius: "5px", maxWidth: 360 }}
                   />
                 ) : (
@@ -698,22 +1114,21 @@ const EditProduct = ({
                   </>
                 )}
               </div>
-              <section className="uploaded-row">
-                <AiFillFileImage color="#37a65b" size={25} />
-                <span className="upload-content">
-                  {/* {fileName} - */}
-                  <MdDelete
-                    color="#37a65b"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => {
-                      setFileName("Chưa có hình ảnh sản phẩm");
-                      setImage(null);
-                      setImgToFirebase("");
-                    }}
-                    size={25}
-                  />
-                </span>
-              </section>
+              {image.length > 1 && (
+                <section
+                  className="uploaded-row"
+                  style={{
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    {
+                      handleOpenImageUrlList();
+                    }
+                  }}
+                >
+                  <h4>Xem tất cả hình đã tải lên</h4>
+                </section>
+              )}
               {error.imageUrl && (
                 <p
                   style={{ fontSize: "14px", marginBottom: "-10px" }}
@@ -745,6 +1160,16 @@ const EditProduct = ({
         </div>
         {/* *********************** */}
       </div>
+      <Dialog
+        onClose={handleCloseImageUrlList}
+        aria-labelledby="customized-dialog-title"
+        open={openImageUrlList}
+      >
+        <CreateProductImageSlider
+          handleClose={handleCloseImageUrlList}
+          imageUrlList={image}
+        />
+      </Dialog>
       {loading && <LoadingScreen />}
     </>
   );
