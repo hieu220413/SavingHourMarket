@@ -35,6 +35,10 @@ const packaged = require('../assets/icons/packaged.png');
 const qrCodeScanner = require('../assets/icons/QRCodeScanner.png');
 const packager = require('../assets/icons/package1.png');
 const product = require('../assets/icons/product.png');
+const assign = require('../assets/icons/assign.png');
+const homedelivery = require('../assets/icons/home-delivery.png');
+const pickuppoint = require('../assets/icons/pickuppoint.png');
+const batching = require('../assets/icons/batching.png');
 
 export default {
   home,
@@ -73,4 +77,8 @@ export default {
   qrCodeScanner,
   packager,
   product,
+  assign,
+  homedelivery,
+  pickuppoint,
+  batching,
 };

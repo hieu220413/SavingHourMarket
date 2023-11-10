@@ -13,6 +13,9 @@ import Report from '../screens/orderStaff/Report';
 import HomeDeliver from '../screens/deliveryStaff/HomeDeliver';
 import QrCodeScanner from '../screens/deliveryStaff/QrCodeScanner';
 import Product from '../screens/orderStaff/Product';
+import OrderGroup from '../screens/deliveryManager/OrderGroup';
+import OrderBatch from '../screens/deliveryManager/OrderBatch';
+import Batching from '../screens/deliveryManager/Batching';
 
 const Tab = createBottomTabNavigator();
 
@@ -106,29 +109,37 @@ const Tabs = () => {
       {user?.role === 'STAFF_DLV_1' && (
         <>
           <Tab.Screen
-            name="Home"
-            component={Home}
+            name="OrderGroup"
+            component={OrderGroup}
             options={{
               tabBarIcon: ({focused}) => (
-                <TabIcon display={'DLV1'} focused={focused} icon={icons.home} />
+                <TabIcon
+                  display={'Đơn điểm giao hàng'}
+                  focused={focused}
+                  icon={icons.pickuppoint}
+                />
               ),
             }}
           />
           <Tab.Screen
-            name="Home2"
-            component={Home}
+            name="OrderBatch"
+            component={OrderBatch}
             options={{
               tabBarIcon: ({focused}) => (
-                <TabIcon display={'DLV1'} focused={focused} icon={icons.home} />
+                <TabIcon
+                  display={'Đơn giao tận nhà'}
+                  focused={focused}
+                  icon={icons.homedelivery}
+                />
               ),
             }}
           />
           <Tab.Screen
-            name="Home3"
-            component={Home}
+            name="Batching"
+            component={Batching}
             options={{
               tabBarIcon: ({focused}) => (
-                <TabIcon display={'DLV1'} focused={focused} icon={icons.home} />
+                <TabIcon display={'Gom đơn hàng'} focused={focused} icon={icons.batching} />
               ),
             }}
           />

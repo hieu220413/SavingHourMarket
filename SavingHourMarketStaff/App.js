@@ -10,6 +10,9 @@ import OrderDetail from './src/screens/orderStaff/OrderDetail';
 import EditDeliveryDate from './src/screens/deliveryStaff/EditDeliveryDate';
 import {LogBox} from 'react-native';
 import SelectPickupPoint from './src/screens/orderStaff/SelectPickupPoint';
+import OrderGroupDetail from './src/screens/deliveryManager/OrderGroupDetail';
+import OrderDetailForManager from './src/screens/deliveryManager/OrderDetailForManager';
+import PickStaff from './src/screens/deliveryManager/PickStaff';
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -38,6 +41,12 @@ export default function App() {
             name="SelectPickupPoint"
             component={SelectPickupPoint}
           />
+          <Stack.Screen name="OrderGroupDetail" component={OrderGroupDetail} />
+          <Stack.Screen
+            name="OrderDetailForManager"
+            component={OrderDetailForManager}
+          />
+          <Stack.Screen name="PickStaff" component={PickStaff} />
         </Stack.Navigator>
       </NavigationContainer>
     </>

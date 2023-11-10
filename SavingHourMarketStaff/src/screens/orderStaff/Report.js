@@ -25,7 +25,7 @@ import {
 import LoadingScreen from '../../components/LoadingScreen';
 import {BarChart, LineChart, PieChart} from 'react-native-gifted-charts';
 
-const Report = () => {
+const Report = ({navigation}) => {
   const barData = [
     {
       value: 40,
