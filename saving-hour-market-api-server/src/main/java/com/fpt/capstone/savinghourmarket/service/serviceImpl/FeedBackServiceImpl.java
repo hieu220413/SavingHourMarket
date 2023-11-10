@@ -71,7 +71,7 @@ public class FeedBackServiceImpl implements FeedBackService {
     @Override
     @Transactional
     public String updateStatus(UUID feedbackId, FeedbackStatus feedbackStatus) {
-        FeedBack feedBack = feedBackRepository.findById(feedbackId).orElseThrow(() -> new NoSuchElementException("Feedback not found with id " + feedbackId));
+        FeedBack feedBack = feedBackRepository.findById(feedbackId).orElseThrow(() -> new ResourceNotFoundException("Feedback not found with id " + feedbackId));
         feedBack.setStatus(feedbackStatus);
         return "Feedback updated successfully";
     }

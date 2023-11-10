@@ -1,45 +1,42 @@
 package com.fpt.capstone.savinghourmarket.model;
 
-import com.fpt.capstone.savinghourmarket.entity.ProductBatch;
+import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
 import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
-import com.fpt.capstone.savinghourmarket.entity.Supermarket;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
-@NoArgsConstructor
 @AllArgsConstructor
-@Getter
+@NoArgsConstructor
 @Setter
-public class ProductCreate {
+@Getter
+public class DiscountCreate {
 
     @NotNull
     private String name;
 
     @NotNull
-    private String description;
+    private Integer percentage;
 
     @NotNull
-    private String unit;
+    private Integer spentAmountRequired;
 
     @NotNull
-    private List<String> imageUrls;
+    private LocalDate expiredDate;
 
     @NotNull
-    private UUID supermarketId;
+    private String imageUrl;
 
     @NotNull
-    private List<ProductBatchCreate> productBatchList;
+    private Integer quantity;
 
     @NotNull
-    private ProductSubCategory productSubCategory;
+    private UUID productCategoryId;
 
 }

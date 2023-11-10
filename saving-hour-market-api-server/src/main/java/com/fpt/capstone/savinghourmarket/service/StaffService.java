@@ -33,4 +33,6 @@ public interface StaffService {
     Staff assignPickupPoint(StaffPickupPointAssignmentBody staffPickupPointAssignmentBody);
 
     Staff unAssignPickupPoint(StaffPickupPointAssignmentBody staffPickupPointAssignmentBody);
+
+    StaffListResponseBody getStaffForDeliverManager(String name, Integer page, Integer limit);
 }

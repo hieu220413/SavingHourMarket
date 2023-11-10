@@ -1,6 +1,7 @@
 package com.fpt.capstone.savinghourmarket.repository;
 
 import com.fpt.capstone.savinghourmarket.entity.OrderGroup;
+import com.fpt.capstone.savinghourmarket.entity.PickupPoint;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,6 +24,14 @@ public interface OrderGroupRepository extends JpaRepository<OrderGroup, UUID> {
             "WHERE " +
             "((:timeFrameId IS NULL) OR (og.timeFrame.id = :timeFrameId)) " +
             "AND " +
+            "(((:getOldOrderGroup IS NULL) " +
+            "OR " +
+            "((:getOldOrderGroup = FALSE) AND (og.deliverDate > CURRENT_DATE)) " +
+            "OR " +
+            "((:getOldOrderGroup = TRUE) AND (og.deliverDate < CURRENT_DATE)))) " +
+            "AND " +
+            "(((:pickupPointId IS NULL) AND (og.pickupPoint IN :pickupPointList)) OR (og.pickupPoint.id = :pickupPointId)) " +
+            "AND " +
             "(og.orderList IS NOT EMPTY) " +
             "AND " +
             "((:pickupPointId IS NULL) OR (og.pickupPoint.id = :pickupPointId)) " +
@@ -30,7 +39,37 @@ public interface OrderGroupRepository extends JpaRepository<OrderGroup, UUID> {
             "((:delivererId IS NULL) OR (og.deliverer.id = :delivererId)) " +
             "AND " +
             "((:deliveryDate IS NULL) OR (og.deliverDate = :deliveryDate))")
-    List<OrderGroup> findByTimeFrameOrPickupPointOrDeliverDate(UUID timeFrameId, UUID pickupPointId, UUID delivererId, LocalDate deliveryDate);
+    List<OrderGroup> findByTimeFrameOrPickupPointOrDeliverDateForPackageStaff(List<PickupPoint> pickupPointList,
+                                                                              Boolean getOldOrderGroup,
+                                                                              UUID timeFrameId,
+                                                                              UUID pickupPointId,
+                                                                              UUID delivererId,
+                                                                              LocalDate deliveryDate,
+                                                                              Pageable pageable);
+
+    @Query("SELECT og FROM OrderGroup og " +
+            "WHERE " +
+            "((:timeFrameId IS NULL) OR (og.timeFrame.id = :timeFrameId)) " +
+            "AND " +
+            "(((:getOldOrderGroup IS NULL) " +
+            "OR " +
+            "((:getOldOrderGroup = FALSE) AND (og.deliverDate > CURRENT_DATE)) " +
+            "OR " +
+            "((:getOldOrderGroup = TRUE) AND (og.deliverDate < CURRENT_DATE)))) " +
+            "AND " +
+            "(og.orderList IS NOT EMPTY) " +
+            "AND " +
+            "((:pickupPointId IS NULL) OR (og.pickupPoint.id = :pickupPointId)) " +
+            "AND " +
+            "((:delivererId IS NULL) OR (og.deliverer.id = :delivererId)) " +
+            "AND " +
+            "((:deliveryDate IS NULL) OR (og.deliverDate = :deliveryDate))")
+    List<OrderGroup> findByTimeFrameOrPickupPointOrDeliverDate(Boolean getOldOrderGroup,
+                                                               UUID timeFrameId,
+                                                               UUID pickupPointId,
+                                                               UUID delivererId,
+                                                               LocalDate deliveryDate,
+                                                               Pageable pageable);
 
     @Query("SELECT og FROM OrderGroup og " +
             "JOIN og.deliverer delv " +

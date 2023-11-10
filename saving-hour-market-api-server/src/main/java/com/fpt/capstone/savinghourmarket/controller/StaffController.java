@@ -110,6 +110,21 @@ public class StaffController {
         return ResponseEntity.status(HttpStatus.OK).body(staffListResponseBody);
     }
 
+
+    @RequestMapping(value = "/getStaffForDeliverManager", method = RequestMethod.GET)
+    public ResponseEntity<StaffListResponseBody> getStaffForDeliverManager(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+//            , @RequestParam(required = false) EnableDisableStatus status
+//            , @RequestParam(required = false) StaffRole role
+            , @RequestParam(defaultValue = "") String name
+            , @RequestParam(defaultValue = "0") Integer page
+            , @RequestParam(defaultValue = "5") Integer limit) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        StaffListResponseBody staffListResponseBody = staffService.getStaffForDeliverManager(name, page, limit);
+        return ResponseEntity.status(HttpStatus.OK).body(staffListResponseBody);
+    }
+
+
     @RequestMapping(value = "/updateStaffAccountStatus", method = RequestMethod.PUT)
     public ResponseEntity<Staff> updateCustomerAccountStatus(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
             ,@RequestBody @Valid AccountStatusChangeBody accountStatusChangeBody) throws FirebaseAuthException {

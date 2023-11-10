@@ -65,11 +65,25 @@ const Home = ({navigation}) => {
         try {
           setLoading(true);
           const value = await AsyncStorage.getItem('PickupPoint');
-          setPickupPoint(value ? JSON.parse(value) : pickupPoint);
-          const cartListNew = await AsyncStorage.getItem('CartList'+JSON.parse(value).id);
-          console.log(cartListNew);
-          setCartList(cartListNew ? JSON.parse(cartListNew) : []);
-          setLoading(false);
+          if (value == null) {
+            AsyncStorage.removeItem('PickupPoint');
+            try {
+              await AsyncStorage.setItem(
+                'PickupPoint',
+                JSON.stringify(pickupPoint),
+              );
+              setCartList([]);
+              setLoading(false);
+            } catch (error) {
+              setLoading(false);
+              console.log(error);
+            }
+          } else {
+            setPickupPoint(value ? JSON.parse(value) : pickupPoint);
+            const cartListNew = await AsyncStorage.getItem('CartList' + JSON.parse(value).id);
+            setCartList(cartListNew ? JSON.parse(cartListNew) : []);
+            setLoading(false);
+          }
         } catch (err) {
           console.log(err);
           setLoading(false);
@@ -186,7 +200,7 @@ const Home = ({navigation}) => {
             style={styles.itemImage}
           />
 
-          <View style={{ justifyContent: 'center', flex: 1, marginRight: 10,marginTop:5 }}>
+          <View style={{ justifyContent: 'center', flex: 1, marginRight: 10, marginTop: 5 }}>
             <Text
               numberOfLines={1}
               style={{
@@ -202,7 +216,7 @@ const Home = ({navigation}) => {
               style={{
                 fontFamily: FONTS.fontFamily,
                 fontSize: 16,
-                marginTop:8,
+                marginTop: 8,
                 marginBottom: 10,
               }}>
               HSD:{' '}

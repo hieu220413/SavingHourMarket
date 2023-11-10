@@ -281,6 +281,18 @@ public class StaffServiceImpl implements StaffService {
         return staff.get();
     }
 
+    @Override
+    public StaffListResponseBody getStaffForDeliverManager(String name, Integer page, Integer limit) {
+        Pageable pageable = PageRequest.of(page, limit);
+        Page<Staff> result = staffRepository.getStaffForDeliverManager(name, StaffRole.STAFF_DLV_0.toString(), pageable);
+        int totalPage = result.getTotalPages();
+        long totalCustomer = result.getTotalElements();
+
+        List<Staff> staffList = result.stream().toList();
+
+        return new StaffListResponseBody(staffList, totalPage, totalCustomer);
+    }
+
     private UserRecord checkIsStaffInOrderProcess(Optional<Staff> staff) throws FirebaseAuthException {
         UserRecord userRecord = firebaseAuth.getUserByEmail(staff.get().getEmail());
         String staffRole = (String) userRecord.getCustomClaims().get("user_role");
