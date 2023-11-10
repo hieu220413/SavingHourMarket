@@ -16,7 +16,7 @@ import java.util.UUID;
 public interface FeedBackService {
     String createFeedback(String jwtToken, FeedbackCreate feedBackCreate) throws FirebaseAuthException, ResourceNotFoundException;
 
-    String updateStatus(UUID feedbackId, FeedbackStatus feedbackStatus);
+    String updateStatus(UUID feedbackId, FeedbackStatus feedbackStatus) throws ResourceNotFoundException;
 
     List<FeedBack> getFeedbackForCustomer(String jwtToken,
                                           SortType createTimeSortType,
