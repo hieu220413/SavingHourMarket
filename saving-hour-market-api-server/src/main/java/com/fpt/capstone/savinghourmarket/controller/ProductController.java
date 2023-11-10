@@ -227,7 +227,7 @@ public class ProductController {
 
     @RequestMapping(value = "/create/list", method = RequestMethod.POST)
     @Operation(description = "Save list of products to database")
-    public ResponseEntity<ProductExcelResponse> uploadProductList(@Valid @RequestBody List<Product> productList,
+    public ResponseEntity<ProductExcelResponse> uploadProductList(@Valid @RequestBody List<ProductCreateList> productList,
                                                            @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws ResourceNotFoundException, FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
