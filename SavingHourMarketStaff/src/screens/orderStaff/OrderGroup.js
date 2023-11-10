@@ -841,7 +841,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                 </Text>
               </View>
             ) : (
-              <View style={{marginTop: 10, marginBottom: 10}}>
+              <View style={{marginTop: 10, marginBottom: 100}}>
                 <FlatList
                   data={orderGroupList.filter(group => {
                     if (currentStatus.value === 'NOAREA') {
