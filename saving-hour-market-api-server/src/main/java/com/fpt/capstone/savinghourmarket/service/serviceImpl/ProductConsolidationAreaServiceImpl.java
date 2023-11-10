@@ -42,6 +42,12 @@ public class ProductConsolidationAreaServiceImpl implements ProductConsolidation
     }
 
     @Override
+    public List<ProductConsolidationArea> getByPickupPointForStaff(UUID pickupPointId) {
+        List<ProductConsolidationArea> productConsolidationAreaList = productConsolidationAreaRepository.getByPickupPoint(pickupPointId);
+        return productConsolidationAreaList;
+    }
+
+    @Override
     @Transactional
     public ProductConsolidationArea create(ProductConsolidationAreaCreateBody productConsolidationAreaCreateBody) {
         HashMap errorFields = new HashMap<>();

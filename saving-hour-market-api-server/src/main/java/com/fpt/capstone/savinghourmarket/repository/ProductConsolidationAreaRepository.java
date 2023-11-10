@@ -28,4 +28,12 @@ public interface ProductConsolidationAreaRepository extends JpaRepository<Produc
 
     @Query("SELECT pca FROM ProductConsolidationArea  pca WHERE pca.id IN :productConsolidationAreaIdList ")
     List<ProductConsolidationArea> getAllByIdList(List<UUID> productConsolidationAreaIdList);
+
+    @Query("SELECT a FROM ProductConsolidationArea a " +
+            "LEFT JOIN a.pickupPointList pp " +
+            "WHERE " +
+            "pp.id = :pickupPointId " +
+            "AND " +
+            "a.status = 1")
+    List<ProductConsolidationArea> getByPickupPoint(UUID pickupPointId);
 }
