@@ -34,7 +34,7 @@ const ProductDuplicated = ({ handleClose, item, confirmProductList }) => {
         className="text-danger"
         style={{ textAlign: "center", fontSize: "18px", marginTop: 20 }}
       >
-        Sản phẩm đã tồn tại bạn có muốn thay thế sản phẩm này
+        Sản phẩm đã tồn tại
       </h4>
       <div className="modal__container-body">
         <div style={{ height: "fit-content" }} className="table__container">
@@ -140,7 +140,7 @@ const ProductDuplicated = ({ handleClose, item, confirmProductList }) => {
             onClick={handleClose}
             className="modal__container-footer-buttons-create"
           >
-            Thay thế
+            Tôi đã hiểu
           </button>
         </div>
       </div>

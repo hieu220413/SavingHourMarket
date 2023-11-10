@@ -1,6 +1,6 @@
 import { faCaretDown, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { API } from "../../../../contanst/api";
 import { auth } from "../../../../firebase/firebase.config";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
@@ -27,6 +27,7 @@ const CreateStaff = ({
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
   const roleList = [
     "ADMIN",
     "STAFF_SLT",
@@ -35,12 +36,7 @@ const CreateStaff = ({
     "STAFF_DLV_0",
     "STAFF_DLV_1",
   ];
-  const [pickupPointList, setPickupPointList] = useState([
-    "121 Tran Van Du,P.13, Quan Tan Binh, TP.HCM",
-    "121 Tran Van Du,P.13, Quan Tan Binh, TP.HCM",
-    "121 Tran Van Du,P.13, Quan Tan Binh, TP.HCM",
-    "121 Tran Van Du,P.13, Quan Tan Binh, TP.HCM",
-  ]);
+  const [pickupPointList, setPickupPointList] = useState([]);
   const [error, setError] = useState({
     name: "",
     email: "",
@@ -50,6 +46,26 @@ const CreateStaff = ({
     common: "",
     pickupPoint: "",
   });
+
+  useEffect(() => {
+    const fetchPickupPoint = async () => {
+      const tokenId = await auth.currentUser.getIdToken();
+      fetch(`${API.baseURL}/api/pickupPoint/getAll`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenId}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((res) => {
+          console.log(res);
+          setPickupPointList(res);
+        })
+        .catch((err) => {});
+    };
+    fetchPickupPoint();
+  }, []);
 
   const handleCreate = async () => {
     if (name === "") {
@@ -66,6 +82,13 @@ const CreateStaff = ({
     }
     if (selectedRole === "Chọn vai trò") {
       setError({ ...error, role: "Vui lòng chọn vai trò" });
+      return;
+    }
+    if (
+      selectedRole === "STAFF_ORD" &&
+      selectedPickupPoint === "Chọn điểm giao hàng"
+    ) {
+      setError({ ...error, pickupPoint: "Vui lòng chọn điểm giao hàng" });
       return;
     }
     if (
@@ -123,34 +146,81 @@ const CreateStaff = ({
           setLoading(false);
           return;
         }
-        fetch(
-          `${API.baseURL}/api/staff/getStaffForAdmin?page=${
-            page - 1
-          }&limit=6&name=${searchValue}${
-            isSwitchRecovery ? "&status=DISABLE" : "&status=ENABLE"
-          }`,
-          {
-            method: "GET",
+        if (selectedRole === "STAFF_ORD") {
+          fetch(`${API.baseURL}/api/staff/assignPickupPoint`, {
+            method: "PUT",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${tokenId}`,
             },
-          }
-        )
-          .then((res) => res.json())
-          .then((respond) => {
-            setStaffList(respond.staffList);
-            setTotalPage(respond.totalPage);
-            handleClose();
-            setLoading(false);
-            setOpenSnackbar({
-              ...openSnackbar,
-              open: true,
-              severity: "success",
-              text: "Tạo mới thành công",
-            });
+            body: JSON.stringify({
+              staffEmail: email,
+              pickupPointId: selectedPickupPoint.id,
+            }),
           })
-          .catch((err) => console.log(err));
+            .then((res) => res.json())
+            .then((res) => {
+              console.log(res);
+              fetch(
+                `${API.baseURL}/api/staff/getStaffForAdmin?page=${
+                  page - 1
+                }&limit=6&name=${searchValue}${
+                  isSwitchRecovery ? "&status=DISABLE" : "&status=ENABLE"
+                }`,
+                {
+                  method: "GET",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${tokenId}`,
+                  },
+                }
+              )
+                .then((res) => res.json())
+                .then((respond) => {
+                  setStaffList(respond.staffList);
+                  setTotalPage(respond.totalPage);
+                  handleClose();
+                  setLoading(false);
+                  setOpenSnackbar({
+                    ...openSnackbar,
+                    open: true,
+                    severity: "success",
+                    text: "Tạo mới thành công",
+                  });
+                })
+                .catch((err) => console.log(err));
+            })
+            .catch((err) => {});
+        } else {
+          fetch(
+            `${API.baseURL}/api/staff/getStaffForAdmin?page=${
+              page - 1
+            }&limit=6&name=${searchValue}${
+              isSwitchRecovery ? "&status=DISABLE" : "&status=ENABLE"
+            }`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${tokenId}`,
+              },
+            }
+          )
+            .then((res) => res.json())
+            .then((respond) => {
+              setStaffList(respond.staffList);
+              setTotalPage(respond.totalPage);
+              handleClose();
+              setLoading(false);
+              setOpenSnackbar({
+                ...openSnackbar,
+                open: true,
+                severity: "success",
+                text: "Tạo mới thành công",
+              });
+            })
+            .catch((err) => console.log(err));
+        }
       })
       .catch((err) => console.log(err));
   };
@@ -265,7 +335,9 @@ const CreateStaff = ({
                       )
                     }
                   >
-                    {selectedPickupPoint}
+                    {selectedPickupPoint.address
+                      ? selectedPickupPoint.address
+                      : selectedPickupPoint}
                     <FontAwesomeIcon icon={faCaretDown} />
                   </div>
                   {isActiveDropdownPickupPoint && (
@@ -285,7 +357,7 @@ const CreateStaff = ({
                           className="dropdown-item"
                           key={index}
                         >
-                          {item}
+                          {item.address}
                         </div>
                       ))}
                     </div>

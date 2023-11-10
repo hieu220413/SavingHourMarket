@@ -21,6 +21,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 import Empty from "../../../../assets/Empty.png";
 import { useIdToken, useAuthState } from "react-firebase-hooks/auth";
+import SupermarketStoreManagement from "./SupermarketStoreManagement";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -37,6 +38,8 @@ const SuperMarketManagement = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isSwitchRecovery, setIsSwitchRecovery] = useState(false);
+  const [supermarketStore, setSupermarketStore] = useState([]);
+  const [currentId, setCurrentId] = useState(null);
 
   const [openSnackbar, setOpenSnackbar] = useState({
     open: false,
@@ -51,6 +54,10 @@ const SuperMarketManagement = () => {
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
+  const [openSupermarketStore, setOpenSupermarketStore] = useState(false);
+  const handleOpenSupermarketStore = () => setOpenSupermarketStore(true);
+  const handleCloseSupermarketStore = () => setOpenSupermarketStore(false);
 
   const userState = useAuthState(auth);
 
@@ -76,6 +83,7 @@ const SuperMarketManagement = () => {
           )
             .then((res) => res.json())
             .then((respond) => {
+              console.log(respond);
               setSuperMarketList(respond.supermarketList);
               setTotalPage(respond.totalPage);
               setLoading(false);
@@ -147,14 +155,16 @@ const SuperMarketManagement = () => {
                   <tr className="table-header-row">
                     <th>No.</th>
                     <th>Tên</th>
-                    <th>Địa chỉ</th>
                     <th>Số điện thoại</th>
-                    <th></th>
+                    <th>Chi nhánh</th>
+                    <th>Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
                   {superMarketList.map((item, i) => (
                     <SupermarketItem
+                      handleOpenSupermarketStore={handleOpenSupermarketStore}
+                      setSupermarketStore={setSupermarketStore}
                       setTotalPage={setTotalPage}
                       page={page}
                       searchValue={searchValue}
@@ -164,6 +174,7 @@ const SuperMarketManagement = () => {
                       setError={setError}
                       error={error}
                       setLoading={setLoading}
+                      setCurrentId={setCurrentId}
                       isSwitchRecovery={isSwitchRecovery}
                     />
                   ))}
@@ -192,7 +203,7 @@ const SuperMarketManagement = () => {
                     fontSize: 24,
                   }}
                 >
-                  Không có tài khoản nào
+                  Không có siêu thị nào
                 </p>
               </div>
             )}
@@ -338,6 +349,22 @@ const SuperMarketManagement = () => {
           setOpenSnackbar={setOpenSnackbar}
           setError={setError}
           setIsSwitchRecovery={setIsSwitchRecovery}
+        />
+      </Dialog>
+      <Dialog
+        onClose={handleCloseSupermarketStore}
+        aria-labelledby="customized-dialog-title"
+        open={openSupermarketStore}
+      >
+        <SupermarketStoreManagement
+          page={page}
+          setTotalPage={setTotalPage}
+          setSuperMarketList={setSuperMarketList}
+          handleClose={handleCloseSupermarketStore}
+          searchValue={searchValue}
+          stores={supermarketStore}
+          supermarketId={currentId}
+          isSwitchRecovery={isSwitchRecovery}
         />
       </Dialog>
       <Snackbar

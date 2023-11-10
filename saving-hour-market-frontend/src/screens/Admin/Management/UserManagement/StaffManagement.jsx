@@ -238,11 +238,7 @@ const StaffManagement = () => {
             </>
           )}
         </td>
-        <Dialog
-          onClose={handleCloseEditDialog}
-          aria-labelledby="customized-dialog-title"
-          open={openEditDialog}
-        >
+        <Dialog aria-labelledby="customized-dialog-title" open={openEditDialog}>
           <EditStaff
             staff={staff}
             setOpenSnackbar={setOpenSnackbar}

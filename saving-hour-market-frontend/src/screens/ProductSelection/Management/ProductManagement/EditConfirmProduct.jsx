@@ -16,6 +16,8 @@ import { v4 } from "uuid";
 import MuiAlert from "@mui/material/Alert";
 import { Dialog, Snackbar } from "@mui/material";
 import ProductDuplicated from "./ProductDuplicated";
+import CreateProductImageSlider from "./CreateProductImageSlider";
+import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -29,6 +31,7 @@ const EditConfirmProduct = ({
   setConfirmProductList,
   setOpenSnackbar,
   openSnackbar,
+  setErrorList,
 }) => {
   const [supermarkets, setSupermarkets] = useState([]);
   const [isActiveDropdown, setIsActiveDropdown] = useState(false);
@@ -51,10 +54,17 @@ const EditConfirmProduct = ({
   const handleCloseProductDuplicated = () => setOpenProductDuplicated(false);
   const [productDuplicated, setProductDuplicated] = useState(null);
 
+  const [openImageUrlList, setOpenImageUrlList] = useState(false);
+  const handleOpenImageUrlList = () => setOpenImageUrlList(true);
+  const handleCloseImageUrlList = () => setOpenImageUrlList(false);
+  const [loading, setLoading] = useState(false);
+
   const [productName, setProductName] = useState(product?.name);
   const [unit, setUnit] = useState(product?.unit);
   const [description, setDescription] = useState(product.description);
-  const [image, setImage] = useState("");
+  const [image, setImage] = useState(
+    product?.productImageList ? product?.productImageList : []
+  );
   const [imageToFireBase, setImageToFireBase] = useState("");
   const [supermarketStores, setSupermarketStores] = useState([]);
   const [productBatchs, setProductBatchs] = useState(
@@ -105,7 +115,9 @@ const EditConfirmProduct = ({
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       const tokenId = await auth.currentUser.getIdToken();
+
       fetch(`${API.baseURL}/api/supermarket/getSupermarketForStaff`, {
         method: "GET",
         headers: {
@@ -120,8 +132,10 @@ const EditConfirmProduct = ({
           );
           setSupermarketStores(currentSupermarket?.supermarketAddressList);
           setSupermarkets(data.supermarketList);
+          setLoading(false);
         });
 
+      setLoading(true);
       fetch(`${API.baseURL}/api/product/getCategoryForStaff`, {
         method: "GET",
         headers: {
@@ -137,6 +151,7 @@ const EditConfirmProduct = ({
             (item) => item.name === selectedDropdownItemCate?.name
           );
           setSubCategories(currentCate?.productSubCategories);
+          setLoading(false);
         });
     };
     fetchData();
@@ -147,6 +162,25 @@ const EditConfirmProduct = ({
     const nextDate = new Date(today);
     nextDate.setDate(today.getDate() + numberOfDays);
     return nextDate;
+  };
+
+  const uploadProductImgToFirebase = async (image) => {
+    const imgRef = ref(imageDB, `productImage/${v4()}`);
+    await uploadBytes(imgRef, image);
+    try {
+      const url = await getDownloadURL(imgRef);
+      return url;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const uploadProductImagesToFireBase = async (images) => {
+    const imageList = Array.from(images, (image) =>
+      uploadProductImgToFirebase(image)
+    );
+    const imageUrls = await Promise.all(imageList);
+    return imageUrls;
   };
 
   const onConfirm = async () => {
@@ -268,7 +302,9 @@ const EditConfirmProduct = ({
     }
 
     const uniqueValues = new Set(
-      productBatchs.map((v) => v?.supermarketAddress?.address)
+      productBatchs.map(({ price, expiredDate, supermarketAddress }) =>
+        JSON.stringify([price, expiredDate, supermarketAddress])
+      )
     );
 
     if (uniqueValues.size < productBatchs.length) {
@@ -276,7 +312,7 @@ const EditConfirmProduct = ({
         ...openValidateSnackbar,
         open: true,
         severity: "error",
-        text: "Tồn tại lô hàng trùng chi nhánh siêu thị",
+        text: "Tồn tại lô hàng trùng nhau",
       });
       return;
     }
@@ -300,6 +336,11 @@ const EditConfirmProduct = ({
       return;
     }
 
+    if (image.length === 0) {
+      setError({ ...error, imageUrl: "Chưa có ảnh sản phẩm" });
+      return;
+    }
+
     let submitUpdate = {};
     if (!imageToFireBase) {
       submitUpdate = {
@@ -308,7 +349,6 @@ const EditConfirmProduct = ({
         description: description,
         unit: unit,
         status: 1,
-        imageUrl: image,
         productSubCategory: {
           ...selectedDropdownItemSubCate,
           productCategory: {
@@ -318,38 +358,33 @@ const EditConfirmProduct = ({
         },
         supermarket: selectedSupermarketDropdownItem,
         productBatchList: productBatchs,
-        productImageList: null,
+        productImageList: image,
+      };
+    } else {
+      setLoading(true);
+      let imageUrls = await uploadProductImagesToFireBase(imageToFireBase);
+      setLoading(false);
+      const productImageList = imageUrls.map((item) => {
+        return { imageUrl: item };
+      });
+      submitUpdate = {
+        id: null,
+        name: productName,
+        description: description,
+        unit: unit,
+        status: 1,
+        productSubCategory: {
+          ...selectedDropdownItemSubCate,
+          productCategory: {
+            id: selectedDropdownItemCate.id,
+            name: selectedDropdownItemCate.name,
+          },
+        },
+        supermarket: selectedSupermarketDropdownItem,
+        productBatchList: productBatchs,
+        productImageList: productImageList,
       };
     }
-    console.log(submitUpdate);
-    // if (imageToFireBase) {
-    //   const imgRef = ref(imageDB, `productImage/${v4()}`);
-    //   await uploadBytes(imgRef, imageToFireBase);
-    //   try {
-    //     const url = await getDownloadURL(imgRef);
-    //     submitUpdate = {
-    //       id: null,
-    //       name: productName,
-    //       price: parseInt(price),
-    //       priceOriginal: priceOriginal,
-    //       description: description,
-    //       expiredDate: format(new Date(expiredDate), "yyyy-MM-dd"),
-    //       quantity: quantity,
-    //       status: 1,
-    //       imageUrl: url,
-    //       productSubCategory: {
-    //         ...selectedDropdownItemSubCate,
-    //         productCategory: {
-    //           id: selectedDropdownItemCate.id,
-    //           name: selectedDropdownItemCate.name,
-    //         },
-    //       },
-    //       supermarket: selectedSupermarketDropdownItem,
-    //     };
-    //   } catch (error) {
-    //     console.log(error);
-    //   }
-    // }
 
     const newProductList = confirmProductList.productList.map((item, i) => {
       if (index === i) {
@@ -360,6 +395,11 @@ const EditConfirmProduct = ({
 
     const newErrorList = { ...confirmProductList.errorFields };
     delete newErrorList[index + 1];
+    setErrorList(
+      Object.entries(newErrorList).map(([key, value]) => {
+        return { index: key, value: value };
+      })
+    );
 
     setOpenSnackbar({ ...openSnackbar, open: true, severity: "success" });
     setConfirmProductList({
@@ -828,8 +868,10 @@ const EditConfirmProduct = ({
                         }
                       }}
                     >
-                      {item?.supermarketAddress?.id &&
-                      selectedSupermarketDropdownItem
+                      {selectedSupermarketDropdownItem?.supermarketAddressList.some(
+                        (address) =>
+                          address.address === item?.supermarketAddress?.address
+                      ) && selectedSupermarketDropdownItem
                         ? item?.supermarketAddress?.address
                         : "Chọn chi nhánh"}
                       <FontAwesomeIcon icon={faCaretDown} />
@@ -883,22 +925,24 @@ const EditConfirmProduct = ({
                 )}
               </div>
             </div>
-            <div className="modal__container-body-inputcontrol">
-              <button
-                onClick={() => {
-                  setProductBatchs(
-                    productBatchs.filter((item, i) => i !== index)
-                  );
-                }}
-                className="buttonAddSupermarkerAddress"
-              >
-                Xóa lô hàng
-                <FontAwesomeIcon
-                  icon={faCircleMinus}
-                  style={{ paddingLeft: 10 }}
-                />
-              </button>
-            </div>
+            {productBatchs.length !== 1 && (
+              <div className="modal__container-body-inputcontrol">
+                <button
+                  onClick={() => {
+                    setProductBatchs(
+                      productBatchs.filter((item, i) => i !== index)
+                    );
+                  }}
+                  className="buttonAddSupermarkerAddress"
+                >
+                  Xóa lô hàng
+                  <FontAwesomeIcon
+                    icon={faCircleMinus}
+                    style={{ paddingLeft: 10 }}
+                  />
+                </button>
+              </div>
+            )}
           </>
         ))}
 
@@ -951,16 +995,34 @@ const EditConfirmProduct = ({
                 multiple
                 onChange={({ target: { files } }) => {
                   if (files && files[0]) {
-                    // setImage(URL.createObjectURL(files[0]));
-                    // setImageToFireBase(files[0]);
-                    // setError({ ...error, imageUrl: "" });
-                    console.log(URL.createObjectURL(files[0]));
+                    if (files) {
+                      const fileArray = Object.entries(files).map(
+                        ([key, value]) => {
+                          return { index: key, value: value };
+                        }
+                      );
+                      let imageUrlListToShow = [];
+                      let imageUrlListToFireBase = [];
+                      fileArray.map((item) => {
+                        imageUrlListToShow.push(
+                          URL.createObjectURL(item.value)
+                        );
+                        imageUrlListToFireBase.push(item.value);
+                      });
+                      setImage(imageUrlListToShow);
+                      setImageToFireBase(
+                        imageUrlListToFireBase
+                          ? imageUrlListToFireBase
+                          : files[0]
+                      );
+                      setError({ ...error, imageUrl: "" });
+                    }
                   }
                 }}
               />
-              {image ? (
+              {image.length !== 0 ? (
                 <img
-                  src={image}
+                  src={image[0]?.imageUrl ? image[0].imageUrl : image[0]}
                   width={360}
                   height={160}
                   alt={productName}
@@ -973,6 +1035,21 @@ const EditConfirmProduct = ({
                 </>
               )}
             </div>
+            {image.length > 1 && (
+              <section
+                className="uploaded-row"
+                style={{
+                  cursor: "pointer",
+                }}
+                onClick={() => {
+                  {
+                    handleOpenImageUrlList();
+                  }
+                }}
+              >
+                <h4>Xem tất cả hình đã tải lên</h4>
+              </section>
+            )}
             {/* <section className="uploaded-row">
               <AiFillFileImage color="#37a65b" size={25} />
               <span className="upload-content">
@@ -1030,6 +1107,18 @@ const EditConfirmProduct = ({
           confirmProductList={confirmProductList}
         />
       </Dialog>
+      <Dialog
+        onClose={handleCloseImageUrlList}
+        aria-labelledby="customized-dialog-title"
+        open={openImageUrlList}
+      >
+        <CreateProductImageSlider
+          handleClose={handleCloseImageUrlList}
+          imageUrlList={
+            image[0]?.imageUrl ? image.map((item) => item.imageUrl) : image
+          }
+        />
+      </Dialog>
       <Snackbar
         open={openValidateSnackbar.open}
         autoHideDuration={2000}
@@ -1048,6 +1137,7 @@ const EditConfirmProduct = ({
           {openValidateSnackbar.text}
         </Alert>
       </Snackbar>
+      {loading && <LoadingScreen />}
     </div>
   );
 };

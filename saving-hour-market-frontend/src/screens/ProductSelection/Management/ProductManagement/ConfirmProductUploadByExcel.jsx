@@ -12,6 +12,8 @@ import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 import NullImage from "../../../../assets/Null-Image.png";
 import ProductBatchUploadByExcel from "./ProductBatchUploadByExcel";
 import ErrorProductUploadByExcel from "./ErrorProductUploadByExcel";
+import ProductImageSlider from "./ProductImageSlider";
+import CreateProductImageSlider from "./CreateProductImageSlider";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -35,6 +37,7 @@ const ConfirmProductUploadByExcel = ({
     vertical: "top",
     horizontal: "right",
     severity: "success",
+    edit: true,
   });
   const { vertical, horizontal } = openSnackbar;
   const handleCloseSnackbar = () => {
@@ -48,6 +51,11 @@ const ConfirmProductUploadByExcel = ({
     })
   );
 
+  const [openImageUrlList, setOpenImageUrlList] = useState(false);
+  const handleOpenImageUrlList = () => setOpenImageUrlList(true);
+  const handleCloseImageUrlList = () => setOpenImageUrlList(false);
+  const [imageUrlList, setImageUrlList] = useState(null);
+
   const handleConfirm = async () => {
     setLoading(true);
     const tokenId = await auth.currentUser.getIdToken();
@@ -57,10 +65,16 @@ const ConfirmProductUploadByExcel = ({
         "Content-Type": "application/json",
         Authorization: `Bearer ${tokenId}`,
       },
-      body: JSON.stringify(confirmProductList),
+      body: JSON.stringify(confirmProductList.productList),
     })
       .then((res) => res.json())
       .then(async (res) => {
+        if (res.status === 500) {
+          setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
+          setLoading(false);
+          return;
+        }
+
         fetch(
           `${API.baseURL}/api/product/getProductsForStaff?page=${
             page - 1
@@ -124,9 +138,16 @@ const ConfirmProductUploadByExcel = ({
             {item.productImageList ? (
               <img
                 alt="hình"
+                style={{ cursor: "pointer" }}
                 width="80px"
                 height="60px"
-                src={item?.productImageList[0]?.image}
+                onClick={() => {
+                  setImageUrlList(
+                    item.productImageList.map((img) => img.imageUrl)
+                  );
+                  handleOpenImageUrlList();
+                }}
+                src={item?.productImageList[0]?.imageUrl}
               />
             ) : (
               <img alt="hình" width="80px" height="60px" src={NullImage} />
@@ -202,6 +223,7 @@ const ConfirmProductUploadByExcel = ({
             product={item}
             index={index}
             setOpenSnackbar={setOpenSnackbar}
+            setErrorList={setErrorList}
             openSnackbar={openSnackbar}
           />
         </Dialog>
@@ -326,7 +348,7 @@ const ConfirmProductUploadByExcel = ({
       {/* *********************** */}
       <Snackbar
         open={openSnackbar.open}
-        autoHideDuration={1000}
+        autoHideDuration={2000}
         anchorOrigin={{ vertical, horizontal }}
         onClose={handleCloseSnackbar}
       >
@@ -339,9 +361,21 @@ const ConfirmProductUploadByExcel = ({
             alignItem: "center",
           }}
         >
-          Chỉnh sửa thành công
+          {openSnackbar.severity === "success"
+            ? "Chỉnh sửa thành công"
+            : "Vui lòng sửa hết lỗi còn tồn tại"}
         </Alert>
       </Snackbar>
+      <Dialog
+        onClose={handleCloseImageUrlList}
+        aria-labelledby="customized-dialog-title"
+        open={openImageUrlList}
+      >
+        <CreateProductImageSlider
+          handleClose={handleCloseImageUrlList}
+          imageUrlList={imageUrlList}
+        />
+      </Dialog>
 
       {loading && <LoadingScreen />}
     </div>
