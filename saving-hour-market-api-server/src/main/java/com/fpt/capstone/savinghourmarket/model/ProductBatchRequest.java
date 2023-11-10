@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @Setter
 @Getter
-public class ProductBatchCreate {
+public class ProductBatchRequest {
 
     private Integer price;
 
