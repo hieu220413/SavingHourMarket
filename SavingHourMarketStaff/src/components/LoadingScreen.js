@@ -21,7 +21,7 @@ const LoadingScreen = () => {
         strokeCap="butt"
         fill="transparent"
         size={80}
-        color={COLORS.se}
+        color={COLORS.secondary}
         thickness={4}
       />
     </View>

@@ -133,7 +133,9 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/supermarket/deleteSupermarketAddressForSupermarket").hasAnyRole(selectionStaffAndAdmin)
 
                             .requestMatchers("/api/order/staff/**").hasAnyRole(allStaffAndAdmin)
-                            .requestMatchers("/staff/deliveryManager/**").hasRole(StaffRole.STAFF_DLV_1.toString())
+                            .requestMatchers("/api/order/deliveryManager/**").hasRole(StaffRole.STAFF_DLV_1.toString())
+                            .requestMatchers("/api/order/deliveryStaff/**").hasRole(StaffRole.STAFF_DLV_0.toString())
+                            .requestMatchers("/api/order/packageStaff/**").hasRole(StaffRole.STAFF_ORD.toString())
                             .requestMatchers("/api/order/sendNotification").permitAll()
 
                             .requestMatchers("/api/feedback/updateStatus").hasAnyRole(allStaffAndAdmin)

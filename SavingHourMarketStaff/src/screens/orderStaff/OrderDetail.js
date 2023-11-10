@@ -3,15 +3,15 @@
 import React, {useState, useCallback, useEffect} from 'react';
 import {View, Image, Text, Modal, Pressable, StyleSheet} from 'react-native';
 import {ScrollView, TouchableOpacity} from 'react-native-gesture-handler';
-import {icons} from '../constants';
-import {COLORS} from '../constants/theme';
-import QrCode from '../assets/image/test-qrcode.png';
-import {API} from '../constants/api';
+import {icons} from '../../constants';
+import {COLORS} from '../../constants/theme';
+import QrCode from '../../assets/image/test-qrcode.png';
+import {API} from '../../constants/api';
 import {useFocusEffect} from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
 import {format} from 'date-fns';
 import Toast from 'react-native-toast-message';
-import LoadingScreen from '../components/LoadingScreen';
+import LoadingScreen from '../../components/LoadingScreen';
 
 const OrderDetail = ({navigation, route}) => {
   const {id, orderSuccess} = route.params;
@@ -262,7 +262,7 @@ const OrderDetail = ({navigation, route}) => {
                   }}>
                   <Image
                     source={{
-                      uri: product.imageUrl,
+                      uri: product.images[0].imageUrl,
                     }}
                     style={{flex: 4, width: '100%', height: '95%'}}
                   />
@@ -297,6 +297,21 @@ const OrderDetail = ({navigation, route}) => {
                         fontWeight: 700,
                       }}>
                       {product.productCategory}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 18,
+                        color: 'black',
+                        fontFamily: 'Roboto',
+                        fontWeight: 'bold',
+                      }}>
+                      HSD:
+                      {format(
+                        new Date(
+                          product.orderDetailProductBatches[0].expiredDate,
+                        ),
+                        'dd/MM/yyyy',
+                      )}
                     </Text>
                     <View
                       style={{

@@ -8,9 +8,7 @@ const search = require('../assets/icons/search.png');
 // const clearText = require('../assets/icons/clearText.png');
 // const star = require('../assets/icons/star.png');
 // const logo = require('../assets/icons/logo.png');
-
 const edit = require('../assets/icons/edit.png');
-
 const leftArrow = require('../assets/icons/left-arrow.png');
 // const plus = require('../assets/icons/plus.png');
 // const minus = require('../assets/icons/minus.png');
@@ -32,10 +30,15 @@ const filter = require('../assets/icons/filter.png');
 // const searchIcon = require('../assets/icons/searchIcon.png');
 const statistic = require('../assets/icons/statistic.png');
 const userCircle = require('../assets/icons/user-circle.png');
-const qrCodeScanner = require('../assets/icons/QRCodeScanner.png');
-const packager = require('../assets/icons/package1.png');
 const packaging = require('../assets/icons/packaging.png');
 const packaged = require('../assets/icons/packaged.png');
+const qrCodeScanner = require('../assets/icons/QRCodeScanner.png');
+const packager = require('../assets/icons/package1.png');
+const product = require('../assets/icons/product.png');
+const assign = require('../assets/icons/assign.png');
+const homedelivery = require('../assets/icons/home-delivery.png');
+const pickuppoint = require('../assets/icons/pickuppoint.png');
+const batching = require('../assets/icons/batching.png');
 
 export default {
   home,
@@ -69,8 +72,13 @@ export default {
   // searchIcon,
   statistic,
   userCircle,
-  qrCodeScanner,
-  packager,
   packaging,
   packaged,
+  qrCodeScanner,
+  packager,
+  product,
+  assign,
+  homedelivery,
+  pickuppoint,
+  batching,
 };
