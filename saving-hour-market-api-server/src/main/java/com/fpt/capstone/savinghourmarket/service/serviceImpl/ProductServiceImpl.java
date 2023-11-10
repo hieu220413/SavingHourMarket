@@ -437,7 +437,6 @@ public class ProductServiceImpl implements ProductService {
                 }
 
                 productBatchCreate.getProductBatchAddresses().forEach(productBatchAddressCreateList -> {
-
                     if(supermarket.isPresent()){
                         if(supermarket.get().getSupermarketAddressList().stream()
                                 .noneMatch(supermarketAddress -> productBatchAddressCreateList.getSupermarketAddress().equals(supermarketAddress))){
@@ -458,6 +457,10 @@ public class ProductServiceImpl implements ProductService {
                 errorFields.put(productCount, errors);
             }
             productCount++;
+        }
+
+        if(errorFields.size() > 0) {
+            return new ProductExcelResponse(productList, errorFields);
         }
 
         productList.stream().forEach(product -> {
