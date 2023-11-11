@@ -799,6 +799,11 @@ const CreateProduct = ({
                             setFileNameSubCate(
                               "Chưa có hình ảnh loại sản phẩm phụ"
                             );
+                            setSubcategoryId(null);
+                            setSubCateName("");
+                            setError({ ...error, subCateName: "" });
+                            setImageUrlSubCate("");
+                            setAllowableDisplayThreshold(0);
                           }}
                         >
                           Thêm mới
@@ -1460,12 +1465,24 @@ const CreateProduct = ({
                             size="4x"
                             style={{ paddingLeft: 10, paddingTop: 5 }}
                             onClick={() => {
-                              if (supermarketAddress.length === index + 1) {
+                              if (
+                                supermarketAddress.length ===
+                                productBatchAddresses.length
+                              ) {
                                 setOpenValidateSnackbar({
                                   ...openValidateSnackbar,
                                   open: true,
                                   severity: "error",
                                   text: `Siêu thị này chỉ có ${supermarketAddress.length} chi nhánh! Không thể tạo thêm`,
+                                });
+                                return;
+                              }
+                              if (selectedDropdownItem === "Chọn siêu thị") {
+                                setOpenValidateSnackbar({
+                                  ...openValidateSnackbar,
+                                  open: true,
+                                  severity: "error",
+                                  text: `Chọn siêu thị trước`,
                                 });
                                 return;
                               }

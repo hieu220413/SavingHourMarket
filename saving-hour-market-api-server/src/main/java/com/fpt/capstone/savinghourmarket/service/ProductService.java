@@ -45,7 +45,7 @@ public interface ProductService {
 
     ProductSubCategory updateProductSubCategory(ProductSubCategoryUpdateBody productSubCategoryUpdateBody, UUID subCategoryId);
 
-    ProductExcelResponse createProductList(List<Product> productList) throws ResourceNotFoundException;
+    ProductExcelResponse createProductList(List<ProductCreateList> productList) throws ResourceNotFoundException;
     
     Product updateProduct(Product product) throws ResourceNotFoundException;
 
