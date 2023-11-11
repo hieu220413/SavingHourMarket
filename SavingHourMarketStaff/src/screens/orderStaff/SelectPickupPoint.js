@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   StyleSheet,
   Text,
@@ -150,6 +151,14 @@ const SelectPickupPoint = ({navigation, route}) => {
                 onPress={() => {
                   //   storedPickupPoint(item);
                   route.params.setPickupPoint(item);
+                  if (
+                    route.params.isFromOrderGroupRoute &&
+                    route.params.isFromOrderGroupRoute === true
+                  ) {
+                    console.log('is OrderGroupForOrderStaff')
+                    navigation.navigate('OrderGroupForOrderStaff');
+                    return;
+                  }
                   navigation.navigate('Home');
                 }}
                 style={{
