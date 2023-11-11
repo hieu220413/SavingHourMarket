@@ -23,7 +23,7 @@ import {SwipeListView} from 'react-native-swipe-list-view';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const OrderGroupDetail = ({navigation, route}) => {
-  const {orderList, deliverer, orderGroupId} = route.params;
+  const {orderList, deliverer, orderGroupId, mode} = route.params;
   const [initializing, setInitializing] = useState(true);
   const [tokenId, setTokenId] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -196,6 +196,7 @@ const OrderGroupDetail = ({navigation, route}) => {
                         navigation.navigate('PickStaff', {
                           orderGroupId: orderGroupId,
                           staff: deliverer,
+                          mode: mode,
                         });
                       }}>
                       <Text
@@ -269,6 +270,7 @@ const OrderGroupDetail = ({navigation, route}) => {
                         navigation.navigate('PickStaff', {
                           orderGroupId: orderGroupId,
                           staff: deliverer,
+                          mode: mode,
                         });
                       }}>
                       <Text

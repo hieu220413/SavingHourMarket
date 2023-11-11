@@ -15,6 +15,7 @@ import OrderDetailForManager from './src/screens/deliveryManager/OrderDetailForM
 import PickStaff from './src/screens/deliveryManager/PickStaff';
 import SelectTimeFrame from './src/screens/deliveryManager/SelectTimeFrame';
 import SelectProductConsolidationArea from './src/screens/deliveryManager/SelectProductConsolidationArea';
+import {ModalPortal} from 'react-native-modals';
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -56,6 +57,7 @@ export default function App() {
           />
         </Stack.Navigator>
       </NavigationContainer>
+      <ModalPortal />
     </>
   );
 }
