@@ -214,6 +214,22 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.confirmPackaged(orderId, staffEmail));
     }
 
+    @PutMapping("/packageStaff/confirmPackagedGroup")
+    public ResponseEntity<String> confirmPackagedGroup(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
+                                                  @RequestParam UUID orderGroupId) throws NoSuchOrderException, IOException, FirebaseAuthException, ResourceNotFoundException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        String staffEmail = Utils.validateIdToken(idToken, firebaseAuth);
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.confirmPackagedGroup(orderGroupId, staffEmail));
+    }
+
+    @PutMapping("/packageStaff/printOrderPackaging")
+    public ResponseEntity<String> printOrderPackaging(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
+                                                      @RequestParam UUID orderId) throws NoSuchOrderException, IOException, FirebaseAuthException, ResourceNotFoundException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        String staffEmail = Utils.validateIdToken(idToken, firebaseAuth);
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.printOrderPackaging(orderId, staffEmail));
+    }
+
     @PutMapping("/deliveryStaff/confirmSucceeded")
     public ResponseEntity<String> confirmSucceeded(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
                                                    @RequestParam UUID orderId) throws NoSuchOrderException, IOException, FirebaseAuthException, ResourceNotFoundException {
