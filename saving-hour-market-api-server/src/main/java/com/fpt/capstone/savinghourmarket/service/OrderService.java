@@ -90,6 +90,8 @@ public interface OrderService {
 
     String confirmPackagingGroup(UUID orderGroupId, String staffEmail, UUID productConsolidationAreaId) throws NoSuchOrderException, IOException, ResourceNotFoundException;
 
+    String confirmPackagedGroup(UUID orderGroupId, String staffEmail) throws NoSuchOrderException, IOException, ResourceNotFoundException;
+
     String confirmPackaged(UUID orderId, String staffEmail) throws NoSuchOrderException, IOException, ResourceNotFoundException;
 
     String confirmSucceeded(UUID orderId, String staffEmail) throws IOException, NoSuchOrderException, ResourceNotFoundException;
@@ -111,9 +113,9 @@ public interface OrderService {
 
     Order editDeliverDate(UUID orderId, Date deliverDate) throws ResourceNotFoundException;
 
-//    Order chooseConsolidationArea(UUID orderId, UUID consolidationAreaId) throws ResourceNotFoundException;
-
     ReportOrdersResponse getReportOrders(OrderReportMode mode, LocalDate startDate, LocalDate endDate, Integer month, Integer year);
 
     List<OrderBatch> createBatches(List<OrderBatchCreateBody> orderBatchCreateBodyList);
+
+    String  printOrderPackaging(UUID orderId, String staffEmail) throws ResourceNotFoundException;
 }

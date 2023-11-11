@@ -448,7 +448,6 @@ public class ProductServiceImpl implements ProductService {
                             errors.add("Số lượng của lô sản phẩm " + productBatchCreate.getExpiredDate() + "đang âm hoặc bằng 0!");
                         }
                     }
-
                 });
 
             });
@@ -980,7 +979,7 @@ public class ProductServiceImpl implements ProductService {
                                 Optional<SupermarketAddress> supermarketAddress = supermarketAddressRepository.findByAddress(productExcelBatchAddressCreate.getSupermarketAddress());
                                 if (supermarketAddress.isEmpty()) {
                                     errors.add("Địa chỉ kho lưu trữ " + productExcelBatchAddressCreate.getSupermarketAddress() + " không tìm thấy trong hệ thống!");
-                                } else if (!supermarketAddress.get().getSupermarket().getId().equals(supermarket.getId())) {
+                                } else if (supermarket.getId() !=null && !supermarketAddress.get().getSupermarket().getId().equals(supermarket.getId())) {
                                     errors.add("Địa chỉ kho lưu trữ " + supermarketAddress.get().getAddress() + " không nằm trong danh sách các địa chỉ của siêu thị được chọn!");
                                 }
                                 productBatchAddress.setQuantity(productExcelBatchAddressCreate.getQuantity());

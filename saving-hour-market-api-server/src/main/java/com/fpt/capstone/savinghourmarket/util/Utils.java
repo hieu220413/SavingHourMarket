@@ -75,7 +75,11 @@ public final class Utils {
     }
 
     public static String generatePublicImageUrlFirebaseStorage(String imageName) throws UnsupportedEncodingException {
-        return "https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/"+ URLEncoder.encode(imageName, StandardCharsets.UTF_8.toString()) + "?alt=media";
+        return "https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/"+ URLEncoder.encode(imageName, StandardCharsets.UTF_8) + "?alt=media";
+    }
+
+    public static String generatePublicWordUrlFirebaseStorage(String fileName) throws UnsupportedEncodingException {
+        return "https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/"+ URLEncoder.encode(fileName, StandardCharsets.UTF_8) + "?alt=media";
     }
 
     public static String hmacSHA512VNPay(final String key, final String data) {

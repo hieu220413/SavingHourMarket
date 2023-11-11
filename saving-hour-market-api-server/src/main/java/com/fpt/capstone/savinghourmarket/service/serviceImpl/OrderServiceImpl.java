@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.glxn.qrgen.QRCode;
 import net.glxn.qrgen.image.ImageType;
+import org.apache.poi.xwpf.usermodel.*;
 import org.modelmapper.ModelMapper;
 import org.redisson.api.RLock;
 import org.redisson.api.RMapCache;
@@ -39,6 +40,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.sql.Date;
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -243,11 +245,26 @@ public class OrderServiceImpl implements OrderService {
         Staff staff = staffRepository.findByEmail(staffEmail).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với email: " + staffEmail));
         ProductConsolidationArea productConsolidationArea = productConsolidationAreaRepository.findById(productConsolidationAreaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy điểm tập kết với ID: " + productConsolidationAreaId));
+        orderGroup.setProductConsolidationArea(productConsolidationArea);
         for (Order order : orderGroup.getOrderList()) {
             order.setPackager(staff);
             order.setProductConsolidationArea(productConsolidationArea);
             order.setStatus(OrderStatus.PACKAGING.ordinal());
             FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
+        }
+        return "Nhóm đơn hàng này đã được nhận đóng gói thành công!";
+    }
+
+    @Override
+    @Transactional
+    public String confirmPackagedGroup(UUID orderGroupId, String staffEmail) throws NoSuchOrderException, IOException, ResourceNotFoundException {
+        OrderGroup orderGroup = orderGroupRepository.findById(orderGroupId)
+                .orElseThrow(() -> new NoSuchOrderException("Không tìm thấy nhóm đơn hàng với ID " + orderGroupId));
+        Staff staff = staffRepository.findByEmail(staffEmail).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với email: " + staffEmail));
+        for (Order order : orderGroup.getOrderList()) {
+            order.setPackager(staff);
+            order.setStatus(OrderStatus.PACKAGED.ordinal());
+            FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được đóng gói!", order.getCustomer().getId().toString());
         }
         return "Nhóm đơn hàng này đã được nhận đóng gói thành công!";
     }
@@ -262,7 +279,7 @@ public class OrderServiceImpl implements OrderService {
             if (order.getStatus() == OrderStatus.PACKAGING.ordinal()) {
                 order.setPackager(staff);
                 order.setStatus(OrderStatus.PACKAGED.ordinal());
-                FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được đóng gói!", order.getCustomer().getId().toString());
+                FirebaseService.sendPushNotification("SHM", "Đơn hàng đã hoàn thành giai đoạn đóng gói!", order.getCustomer().getId().toString());
             } else {
                 return "Đơn hàng này chưa được nhận đóng gói (PACKAGING)!";
             }
@@ -279,12 +296,8 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new NoSuchOrderException("No order found with this id " + orderId));
         if (order.getDeliveryDate().equals(LocalDate.now())) {
             Staff staff = staffRepository.findByEmail(staffEmail).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với email: " + staffEmail));
-            if (order.getDeliverer().getId().equals(staff.getId())) {
-                order.setStatus(OrderStatus.SUCCESS.ordinal());
-                FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được giao thành công! Hãy đánh giá dịch vụ của chúng tôi để đóng góp xây dưng hệ thống tốt hơn!", order.getCustomer().getId().toString());
-            } else {
-                return "Nhân viên này không phải là nhân Viên GIAO HÀNG của đơn hàng này!";
-            }
+            order.setStatus(OrderStatus.SUCCESS.ordinal());
+            FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được giao thành công! Hãy đánh giá dịch vụ của chúng tôi để đóng góp xây dưng hệ thống tốt hơn!", order.getCustomer().getId().toString());
         } else {
             return "Đơn hàng này chưa tới ngày giao!";
         }
@@ -742,12 +755,12 @@ public class OrderServiceImpl implements OrderService {
     public Order editDeliverDate(UUID orderId, Date deliverDate) throws ResourceNotFoundException {
         Order order = repository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id " + orderId));
-        order.getOrderDetailList().forEach(orderDetail ->{
-            orderDetail.getOrderDetailProductBatches().forEach(productBatch ->{
+        order.getOrderDetailList().forEach(orderDetail -> {
+            orderDetail.getOrderDetailProductBatches().forEach(productBatch -> {
                 LocalDate expDateOrderProduct = productBatch.getProductBatch().getExpiredDate();
-                if(deliverDate.toLocalDate().isAfter(expDateOrderProduct)){
+                if (deliverDate.toLocalDate().isAfter(expDateOrderProduct)) {
                     LinkedHashMap<String, String> errorFieldsFile = new LinkedHashMap<>();
-                    errorFieldsFile.put("Lỗi sản phẩm quá hạn khi thay đổi ngày giao" + deliverDate,"Sản phẩm " + orderDetail.getProduct().getName() + " trong đơn hàng có lô HSD: "+expDateOrderProduct+"!");
+                    errorFieldsFile.put("Lỗi sản phẩm quá hạn khi thay đổi ngày giao" + deliverDate, "Sản phẩm " + orderDetail.getProduct().getName() + " trong đơn hàng có lô HSD: " + expDateOrderProduct + "!");
                     throw new InvalidExcelFileDataException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFieldsFile);
                 }
             });
@@ -984,6 +997,93 @@ public class OrderServiceImpl implements OrderService {
             }
         }
         return orderBatchList;
+    }
+
+    @Override
+    public String printOrderPackaging(UUID orderId, String staffEmail) throws ResourceNotFoundException {
+        Order order = repository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id " + orderId));
+
+        try (XWPFDocument document = new XWPFDocument()) {
+            int titleFontSize = 36;
+            int bodyFontSize = 28;
+            String fontFamilyBody = "Calibri (Body)";
+
+            XWPFParagraph orderParagraph = document.createParagraph();
+            XWPFRun orderTile = orderParagraph.createRun();
+            orderTile.setText("Mã đơn hàng: ");
+            orderTile.setBold(true); // Bold text
+            orderTile.setFontSize(titleFontSize);
+            orderTile.setFontFamily(fontFamilyBody);
+
+            XWPFRun orderCode = orderParagraph.createRun();
+            orderCode.setText(order.getId().toString());
+            orderCode.setFontSize(bodyFontSize);
+            orderCode.setFontFamily(fontFamilyBody);
+
+            document.createParagraph().setBorderBottom(Borders.SINGLE);
+
+            // Create a paragraph
+            XWPFRun titleDeliverInfo = document.createParagraph().createRun();
+            titleDeliverInfo.setText("Thông tin giao hàng");
+            titleDeliverInfo.setBold(true); // Bold text
+            titleDeliverInfo.setFontFamily(fontFamilyBody);
+            titleDeliverInfo.setFontSize(titleFontSize);
+
+            XWPFRun address = document.createParagraph().createRun();
+            address.setText("Địa chỉ: " + order.getAddressDeliver());
+            address.setFontFamily(fontFamilyBody);
+            address.setFontSize(bodyFontSize);
+
+            XWPFRun timeFrame = document.createParagraph().createRun();
+            timeFrame.setText("Khung giờ giao: " + order.getTimeFrame().getFromHour() + " đến " + order.getTimeFrame().getToHour());
+            timeFrame.setFontFamily(fontFamilyBody);
+            timeFrame.setFontSize(bodyFontSize);
+
+            XWPFRun deliverDate = document.createParagraph().createRun();
+            deliverDate.setText("Ngày giao: " + order.getDeliveryDate());
+            deliverDate.setFontFamily(fontFamilyBody);
+            deliverDate.setFontSize(bodyFontSize);
+            deliverDate.getParagraph().setBorderBottom(Borders.SINGLE);
+
+            document.createParagraph().setBorderBottom(Borders.SINGLE);
+
+            XWPFRun titleContactInfo = document.createParagraph().createRun();
+            titleContactInfo.setText("Thông tin liên lạc");
+            titleContactInfo.setFontFamily(fontFamilyBody);
+            titleContactInfo.setBold(true); // Bold text
+            titleContactInfo.setFontSize(titleFontSize);
+
+            XWPFRun name = document.createParagraph().createRun();
+            name.setText("Tên KH: " + order.getReceiverName());
+            name.setFontFamily(fontFamilyBody);
+            name.setFontSize(bodyFontSize);
+
+            XWPFRun phone = document.createParagraph().createRun();
+            phone.setText("SĐT: " + order.getReceiverPhone());
+            phone.setFontFamily(fontFamilyBody);
+            phone.setFontSize(bodyFontSize);
+            phone.getParagraph().setBorderBottom(Borders.SINGLE);
+            document.createParagraph().setBorderBottom(Borders.SINGLE);
+
+            // Create a Locale for Vietnam
+            Locale locale = new Locale("vi", "VN");
+
+            // Create a NumberFormat for the currency
+            NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(locale);
+            XWPFRun totalPrice = document.createParagraph().createRun();
+            totalPrice.setText("Tổng chi phí: " + currencyFormat.format(order.getTotalPrice()));
+            totalPrice.setFontFamily(fontFamilyBody);
+            totalPrice.setFontSize(bodyFontSize);
+
+
+            // Save the document to a byte array
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            document.write(byteArrayOutputStream);
+            return  FirebaseService.uploadWordToStorage(byteArrayOutputStream, orderId);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // GOOGLE MAP IMPLEMENT
