@@ -41,14 +41,15 @@ const HomeDeliver = ({ navigation }) => {
     });
 
     const [selectItem, setSelectItem] = useState(orderStatus);
-
+    const getUser = async () => {
+        const currentUser = await AsyncStorage.getItem('userInfo');
+        // setUser(currentUser ? JSON.parse(currentUser) : null);
+        return currentUser ? JSON.parse(currentUser) : null;
+    };
     useFocusEffect(
         useCallback(() => {
-            const getUser = async () => {
-                const currentUser = await AsyncStorage.getItem('userInfo');
-                setUser(currentUser ? JSON.parse(currentUser) : null);
-            };
-            getUser();
+            const userFromAS = getUser();
+            setUser(userFromAS);
         }, []),
     );
 
@@ -94,12 +95,14 @@ const HomeDeliver = ({ navigation }) => {
     }, []);
     const fetchOrders = async (id) => {
         const tokenId = await auth().currentUser.getIdToken();
+        const userFromAS = await getUser();
         console.log(id);
-        console.log(user);
+        console.log('user', userFromAS);
+        // console.log(userFromAS.id);
         if (tokenId) {
             setLoading(true);
             if (id === 0) {
-                fetch(`${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${user?.id}&deliverDateSortType=ASC&page=0&size=9999`, {
+                fetch(`${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}&deliverDateSortType=ASC&page=0&size=9999`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -116,7 +119,7 @@ const HomeDeliver = ({ navigation }) => {
                         console.log(err);
                     });
             } else if (id === 1) {
-                fetch(`${API.baseURL}/api/order/staff/getOrderBatch?delivererId=${user?.id}`, {
+                fetch(`${API.baseURL}/api/order/staff/getOrderBatch?delivererId=${userFromAS?.id}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -134,7 +137,7 @@ const HomeDeliver = ({ navigation }) => {
                         setLoading(false);
                     });
             } else if (id === 2) {
-                fetch(`${API.baseURL}/api/order/staff/getOrders?delivererId=${user?.id}&orderStatus=DELIVERING&deliveryDateSortType=ASC&page=0&size=9999`, {
+                fetch(`${API.baseURL}/api/order/staff/getOrders?delivererId=${userFromAS?.id}&orderStatus=DELIVERING&deliveryDateSortType=ASC&page=0&size=9999`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -185,7 +188,7 @@ const HomeDeliver = ({ navigation }) => {
 
     const handleClear = () => {
         setModalVisible(!modalVisible);
-        fetchOrders(currentOptions.id);
+        // fetchOrders(currentOptions.id, user);
     };
 
     const OrderItem = ({ item }) => {
@@ -411,7 +414,7 @@ const HomeDeliver = ({ navigation }) => {
                         <View style={styles.areaAndLogout}>
                             <View style={styles.area}>
                                 <Text style={{ fontSize: 18, fontFamily: FONTS.fontFamily, color: COLORS.primary, fontWeight: 'bold' }}>
-                                    Xin Chào, {user.fullName}
+                                    Xin Chào, {user?.fullName}
                                 </Text>
                                 {/*  <TouchableOpacity>
                                     <View style={styles.pickArea}>
@@ -442,7 +445,7 @@ const HomeDeliver = ({ navigation }) => {
                                     <Image
                                         resizeMode="contain"
                                         style={{ width: 38, height: 38 }}
-                                        source={user.avatarUrl ? { uri: user.avatarUrl } : icons.userCircle}
+                                        source={user?.avatarUrl ? { uri: user?.avatarUrl } : icons.userCircle}
                                     />
                                 </TouchableOpacity>
                                 {open && (
