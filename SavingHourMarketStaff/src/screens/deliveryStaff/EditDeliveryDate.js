@@ -13,6 +13,9 @@ import { API } from '../../constants/api';
 import LoadingScreen from '../../components/LoadingScreen';
 import dayjs from "dayjs";
 import Modal, { ModalButton, ModalFooter, ScaleAnimation } from 'react-native-modals';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import auth from '@react-native-firebase/auth';
+import { useEffect } from 'react';
 
 const EditDeliveryDate = ({ navigation, route }) => {
     const [timeFrameList, setTimeFrameList] = useState([]);
@@ -22,7 +25,11 @@ const EditDeliveryDate = ({ navigation, route }) => {
     const [timeFrame, setTimeFrame] = useState(null);
     const [date, setDate] = useState(null);
     const [orderItems, setOrderItems] = useState(route.params.orderItems);
-    // console.log(route.params);
+    const [initializing, setInitializing] = useState(true);
+    const [tokenId, setTokenId] = useState(null);
+    const orderId = route.params.orderId;
+    console.log('order item', route.params.orderItems);
+
 
     // Check valid 
     const [minDate, setMinDate] = useState(new Date());
@@ -47,6 +54,46 @@ const EditDeliveryDate = ({ navigation, route }) => {
         maxDate.setDate(expDate.getDate() - 1);
         return maxDate;
     };
+
+    const onAuthStateChange = async userInfo => {
+        setLoading(true);
+        if (initializing) {
+            setInitializing(false);
+        }
+        if (userInfo) {
+            // check if user sessions is still available. If yes => redirect to another screen
+            const userTokenId = await userInfo
+                .getIdToken(true)
+                .then(token => token)
+                .catch(async e => {
+                    console.log(e);
+                    setLoading(false);
+                    return null;
+                });
+            if (!userTokenId) {
+                // sessions end. (revoke refresh token like password change, disable account, ....)
+                await AsyncStorage.removeItem('userInfo');
+                setLoading(false);
+                navigation.navigate('Login');
+                return;
+            }
+            const token = await auth().currentUser.getIdToken();
+            setTokenId(token);
+            setLoading(false);
+        } else {
+            // no sessions found.
+            console.log('user is not logged in');
+            await AsyncStorage.removeItem('userInfo');
+            setLoading(false);
+            navigation.navigate('Login');
+        }
+    };
+    useEffect(() => {
+        const subscriber = auth().onAuthStateChanged(
+            async userInfo => await onAuthStateChange(userInfo),
+        );
+        return subscriber;
+    }, []);
 
     useFocusEffect(
         useCallback(() => {
@@ -78,36 +125,38 @@ const EditDeliveryDate = ({ navigation, route }) => {
             };
 
 
-            // const minExpDateOrderItems = new Date(
-            //     Math.min(...orderItems.map(item => Date.parse(item.expiredDate))),
-            // );
-            // console.log(dayDiffFromToday(minExpDateOrderItems));
+            const minExpDateOrderItems = new Date(
+                Math.min(...orderItems.map(item => Date.parse(item.expiredDate))),
+            );
+            console.log('minExpDateOrderItems', dayDiffFromToday(minExpDateOrderItems));
 
 
-            // if (dayDiffFromToday(minExpDateOrderItems) > 3) {
-            //     setMinDate(getDateAfterToday(2));
-            //     setMaxDate(getMaxDate(minExpDateOrderItems));
-            // }
-            // if (
-            //     dayDiffFromToday(minExpDateOrderItems) === 1 ||
-            //     dayDiffFromToday(minExpDateOrderItems) === 2
-            // ) {
-            //     setMinDate(getDateAfterToday(1));
-            //     setMaxDate(getDateAfterToday(1));
-            //     setDate(getDateAfterToday(1));
-            //     setCannotChangeDate(true);
-            // }
-            // if (dayDiffFromToday(minExpDateOrderItems) === 3) {
-            //     setMinDate(getDateAfterToday(2));
-            //     setMaxDate(getDateAfterToday(2));
-            //     setDate(getDateAfterToday(2));
-            //     setCannotChangeDate(true);
-            // }
+            if (dayDiffFromToday(minExpDateOrderItems) > 3) {
+                setMinDate(getDateAfterToday(2));
+                setMaxDate(getMaxDate(minExpDateOrderItems));
+            }
+            if (
+                dayDiffFromToday(minExpDateOrderItems) === 1 ||
+                dayDiffFromToday(minExpDateOrderItems) === 2
+            ) {
+                setMinDate(getDateAfterToday(1));
+                setMaxDate(getDateAfterToday(1));
+                setDate(getDateAfterToday(1));
+                setCannotChangeDate(true);
+            }
+            if (dayDiffFromToday(minExpDateOrderItems) === 3) {
+                setMinDate(getDateAfterToday(2));
+                setMaxDate(getDateAfterToday(2));
+                setDate(getDateAfterToday(2));
+                setCannotChangeDate(true);
+            }
             fetchTimeFrame();
-        }, [route.params.picked]),
+        }, [orderItems, route.params.picked]),
     );
 
     const handleEdit = () => {
+        console.log('orderId', orderId);
+        console.log('deli date', route.params.deliveryDate);
         if (!date) {
             setValidateMessage('Vui lòng chọn ngày giao hàng');
             setOpenValidateDialog(true);
@@ -119,6 +168,26 @@ const EditDeliveryDate = ({ navigation, route }) => {
             setOpenValidateDialog(true);
             return false;
         }
+        setLoading(true);
+        fetch(`${API.baseURL}/api/order/deliveryStaff/editDeliverDate/${orderId}?deliverDate=${date}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
+            },
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                console.log('data', data);
+                setLoading(false);
+                navigation.navigate('OrderDetails', {
+                    id: route.params.orderId,
+                    picked: route.params.picked,
+                });
+            })
+            .catch(err => {
+                console.log(err);
+            });
     };
 
 
@@ -210,7 +279,7 @@ const EditDeliveryDate = ({ navigation, route }) => {
                         modal
                         mode="date"
                         open={open}
-                        date={date ? date : minDate}
+                        date={date ? date : new Date()}
                         onConfirm={date => {
                             const getDate = new Date();
                             let day = getDate.getDate();
@@ -219,7 +288,6 @@ const EditDeliveryDate = ({ navigation, route }) => {
                             let currentDate = `${year}-${month}-${day}`;
 
                             if (dayjs(currentDate).format("YYYY/MM/DD") > dayjs(date).format("YYYY/MM/DD")) {
-                                console.log('Không thể chọn ngày giao trước ngày hôm nay');
                                 setValidateMessage(
                                     'Không thể chọn ngày giao trước ngày hôm nay',
                                 );
@@ -227,8 +295,26 @@ const EditDeliveryDate = ({ navigation, route }) => {
                                 return;
                             }
 
+                            if (date.getTime() < minDate.getTime()) {
+                                setOpen(false);
+                                setValidateMessage(
+                                    'Đơn hàng luôn được giao sau 2 ngày kể từ ngày đặt hàng',
+                                );
+                                setOpenValidateDialog(true);
+                                return;
+                            }
+                            if (date.getTime() > maxDate.getTime()) {
+                                setOpen(false);
+                                setValidateMessage(
+                                    'Đơn hàng phải giao trước HSD của sản phẩm có HSD gần nhất 1 ngày',
+                                );
+                                setOpenValidateDialog(true);
+                                return;
+                            }
+                            console.log('date', date);
                             setOpen(false);
                             setDate(date);
+                            route.params.setDate(date);
                         }}
                         onCancel={() => {
                             setOpen(false);
@@ -318,7 +404,7 @@ const EditDeliveryDate = ({ navigation, route }) => {
                     </View>
                 </ScrollView>
             </View >
-            {/* <Modal
+            <Modal
                 width={0.8}
                 visible={openValidateDialog}
                 onTouchOutside={() => {
@@ -353,7 +439,7 @@ const EditDeliveryDate = ({ navigation, route }) => {
                         {validateMessage}
                     </Text>
                 </View>
-            </Modal> */}
+            </Modal>
             <View
                 style={{
                     position: 'absolute',

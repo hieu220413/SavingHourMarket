@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 // eslint-disable-next-line prettier/prettier
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TouchableWithoutFeedback, Keyboard, Modal } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
 import { Image } from 'react-native-animatable';
@@ -11,12 +11,15 @@ import { API } from '../../constants/api';
 import { format } from 'date-fns';
 import Empty from '../../assets/image/search-empty.png';
 import LoadingScreen from '../../components/LoadingScreen';
+import { useFocusEffect } from '@react-navigation/native';
 
 const HomeDeliver = ({ navigation }) => {
     const [initializing, setInitializing] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
     const [loading, setLoading] = useState(false);
     const [orders, setOrders] = useState(null);
+    const [open, setOpen] = useState(false);
+    const [user, setUser] = useState(null);
     const orderStatus = [
         { id: 0, display: 'Chờ xác nhận', value: 'PROCESSING', active: false },
         { id: 1, display: 'Đóng gói', value: 'PACKAGING', active: false },
@@ -29,6 +32,7 @@ const HomeDeliver = ({ navigation }) => {
     const deliveryOptions = [
         { id: 0, display: 'Giao hàng tại điểm nhận' },
         { id: 1, display: 'Giao hàng tận nhà' },
+        { id: 2, display: 'Đơn hàng lẻ' },
     ];
 
     const [currentOptions, setCurrentOptions] = useState({
@@ -37,6 +41,16 @@ const HomeDeliver = ({ navigation }) => {
     });
 
     const [selectItem, setSelectItem] = useState(orderStatus);
+
+    useFocusEffect(
+        useCallback(() => {
+            const getUser = async () => {
+                const currentUser = await AsyncStorage.getItem('userInfo');
+                setUser(currentUser ? JSON.parse(currentUser) : null);
+            };
+            getUser();
+        }, []),
+    );
 
     const onAuthStateChange = async userInfo => {
         setLoading(true);
@@ -80,25 +94,66 @@ const HomeDeliver = ({ navigation }) => {
     }, []);
     const fetchOrders = async (id) => {
         const tokenId = await auth().currentUser.getIdToken();
+        console.log(id);
+        console.log(user);
         if (tokenId) {
             setLoading(true);
-            fetch(`${API.baseURL}/api/order/staff/getOrders?${id === 1 ? 'isGrouped=false' : 'isGrouped=true'}&deliveryDateSortType=ASC&page=0&size=10`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${tokenId}`,
-                },
-            })
-                .then(res => res.json())
-                .then(respond => {
-                    // console.log('item', respond);
-                    setOrders(respond);
-                    setLoading(false);
+            if (id === 0) {
+                fetch(`${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${user?.id}&deliverDateSortType=ASC&page=0&size=9999`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${tokenId}`,
+                    },
                 })
-                .catch(err => {
-                    console.log(err);
-                    setLoading(false);
-                });
+                    .then(res => res.json())
+                    .then(respond => {
+                        console.log('group order', respond);
+                        setOrders(respond);
+                        setLoading(false);
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    });
+            } else if (id === 1) {
+                fetch(`${API.baseURL}/api/order/staff/getOrderBatch?delivererId=${user?.id}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${tokenId}`,
+                    },
+                })
+                    .then(res => res.json())
+                    .then(respond => {
+                        console.log('batch order', respond);
+                        setOrders(respond);
+                        setLoading(false);
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        setLoading(false);
+                    });
+            } else if (id === 2) {
+                fetch(`${API.baseURL}/api/order/staff/getOrders?delivererId=${user?.id}&orderStatus=DELIVERING&deliveryDateSortType=ASC&page=0&size=9999`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${tokenId}`,
+                    },
+                })
+                    .then(res => res.json())
+                    .then(respond => {
+                        console.log('item', respond);
+                        setOrders(respond);
+                        setLoading(false);
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        setLoading(false);
+                    });
+            }
+
+
         }
     };
 
@@ -355,8 +410,10 @@ const HomeDeliver = ({ navigation }) => {
                     <View style={styles.header}>
                         <View style={styles.areaAndLogout}>
                             <View style={styles.area}>
-                                <Text style={{ fontSize: 16, fontFamily: FONTS.fontFamily, }}>Khu vực:</Text>
-                                <TouchableOpacity>
+                                <Text style={{ fontSize: 18, fontFamily: FONTS.fontFamily, color: COLORS.primary, fontWeight: 'bold' }}>
+                                    Xin Chào, {user.fullName}
+                                </Text>
+                                {/*  <TouchableOpacity>
                                     <View style={styles.pickArea}>
                                         <View style={styles.pickAreaItem}>
                                             <Image
@@ -375,16 +432,46 @@ const HomeDeliver = ({ navigation }) => {
                                         </View>
 
                                     </View>
-                                </TouchableOpacity>
+                                </TouchableOpacity> */}
                             </View>
                             <View style={styles.logout}>
-                                <TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        setOpen(!open);
+                                    }}>
                                     <Image
                                         resizeMode="contain"
                                         style={{ width: 38, height: 38 }}
-                                        source={icons.userCircle}
+                                        source={user.avatarUrl ? { uri: user.avatarUrl } : icons.userCircle}
                                     />
                                 </TouchableOpacity>
+                                {open && (
+                                    <TouchableOpacity
+                                        style={{
+                                            position: 'absolute',
+                                            bottom: -40,
+                                            left: -12,
+                                            zIndex: 100,
+                                            width: 75,
+                                            height: 35,
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            borderRadius: 10,
+                                            backgroundColor: 'rgb(240,240,240)',
+                                        }}
+                                        onPress={() => {
+                                            auth()
+                                                .signOut()
+                                                .then(async () => {
+                                                    await AsyncStorage.removeItem('userInfo');
+                                                })
+                                                .catch(e => console.log(e));
+                                        }}>
+                                        <Text style={{ color: 'red', fontWeight: 'bold' }}>
+                                            Đăng xuất
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
                             </View>
                         </View>
 
@@ -464,11 +551,7 @@ const HomeDeliver = ({ navigation }) => {
                                 paddingBottom: 100,
                             }}
                         >
-                            {orders?.map((item, index) => (
-                                <OrderItem item={item} key={index} />
-                            ))}
-
-                            {orders?.length === 0 && (
+                            {orders?.length === 0 ? (
                                 <View style={{ alignItems: 'center', marginTop: '20%' }}>
                                     <Image
                                         style={{ width: 200, height: 200 }}
@@ -484,6 +567,12 @@ const HomeDeliver = ({ navigation }) => {
                                         Không tìm thấy sản phẩm
                                     </Text>
                                 </View>
+                            ) : (
+                                <>
+                                    {orders?.map((item, index) => (
+                                        <OrderItem item={item} key={index} />
+                                    ))}
+                                </>
                             )}
 
                         </ScrollView>
