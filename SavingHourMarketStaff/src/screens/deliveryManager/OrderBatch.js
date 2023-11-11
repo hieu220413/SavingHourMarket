@@ -388,6 +388,8 @@ const OrderBatch = ({navigation}) => {
                             navigation.navigate('OrderGroupDetail', {
                               orderList: data.item.orderList,
                               orderSuccess: false,
+                              orderGroupId: data.item.id,
+                              mode: 2,
                             });
                           }}>
                           <View
@@ -458,8 +460,8 @@ const OrderBatch = ({navigation}) => {
                                     fontFamily: 'Roboto',
                                     color: 'black',
                                   }}>
-                                  Điểm giao hàng : 123
-                                  {/* {data.item?.pickupPoint.address} */}
+                                  Điểm gom hàng : 123
+                                  {data.item?.pickupPoint.address}
                                 </Text>
                               </View>
                               <Text
@@ -508,9 +510,10 @@ const OrderBatch = ({navigation}) => {
                             justifyContent: 'center',
                           }}
                           onPress={() => {
-                            // setVisible(true);
-                            // console.log(data.item.id);
-                            // setOrder(data.item);
+                            navigation.navigate('PickStaff', {
+                              orderGroupId: data.item.id,
+                              staff: data.item?.deliverer,
+                            });
                           }}>
                           <View>
                             <Image
@@ -571,6 +574,8 @@ const OrderBatch = ({navigation}) => {
                             navigation.navigate('OrderGroupDetail', {
                               orderList: data.item.orderList,
                               deliverer: data.item.deliverer,
+                              orderGroupId: data.item.id,
+                              mode: 2,
                             });
                           }}>
                           <View
@@ -641,7 +646,7 @@ const OrderBatch = ({navigation}) => {
                                     fontFamily: 'Roboto',
                                     color: 'black',
                                   }}>
-                                  Điểm giao hàng :{' '}
+                                  Điểm gom hàng :{' '}
                                   {data.item?.pickupPoint?.address}
                                 </Text>
                               </View>
@@ -691,9 +696,11 @@ const OrderBatch = ({navigation}) => {
                             justifyContent: 'center',
                           }}
                           onPress={() => {
-                            // setVisible(true);
-                            // console.log(data.item.id);
-                            // setOrder(data.item);
+                            navigation.navigate('PickStaff', {
+                              orderGroupId: data.item.id,
+                              staff: data.item?.deliverer,
+                              mode: 2,
+                            });
                           }}>
                           <View>
                             <Image

@@ -1,13 +1,13 @@
 /* eslint-disable prettier/prettier */
-import React, {useEffect, useState, useCallback} from 'react';
-import {View} from 'react-native';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View } from 'react-native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import TabIcon from '../components/TabIcon';
 import Home from '../screens/orderStaff/Home';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {icons} from '../constants';
-import {COLORS} from '../constants/theme';
-import {useFocusEffect} from '@react-navigation/native';
+import { icons } from '../constants';
+import { COLORS } from '../constants/theme';
+import { useFocusEffect } from '@react-navigation/native';
 import Test from '../components/Test';
 import Report from '../screens/orderStaff/Report';
 import HomeDeliver from '../screens/deliveryStaff/HomeDeliver';
@@ -33,8 +33,6 @@ const Tabs = () => {
     }, []),
   );
 
-  console.log(user);
-
   return (
     <Tab.Navigator
       screenOptions={{
@@ -57,7 +55,7 @@ const Tabs = () => {
           name="Temp"
           component={Test}
           options={{
-            tabBarIcon: ({focused}) => (
+            tabBarIcon: ({ focused }) => (
               <TabIcon display={'Order'} focused={focused} icon={icons.home} />
             ),
           }}
@@ -70,7 +68,7 @@ const Tabs = () => {
             name="Home"
             component={Home}
             options={{
-              tabBarIcon: ({focused}) => (
+              tabBarIcon: ({ focused }) => (
                 <TabIcon
                   display={'Đơn hàng'}
                   focused={focused}
@@ -83,7 +81,7 @@ const Tabs = () => {
             name="OrderGroupForOrderStaff"
             component={OrderGroupForOrderStaff}
             options={{
-              tabBarIcon: ({focused}) => (
+              tabBarIcon: ({ focused }) => (
                 <TabIcon
                   display={'Nhóm Đơn'}
                   focused={focused}
@@ -96,7 +94,7 @@ const Tabs = () => {
             name="Product"
             component={Product}
             options={{
-              tabBarIcon: ({focused}) => (
+              tabBarIcon: ({ focused }) => (
                 <TabIcon
                   display={'Sản phẩm'}
                   focused={focused}
@@ -109,7 +107,7 @@ const Tabs = () => {
             name="Report"
             component={Report}
             options={{
-              tabBarIcon: ({focused}) => (
+              tabBarIcon: ({ focused }) => (
                 <TabIcon
                   display={'Thống kê'}
                   focused={focused}
@@ -126,7 +124,7 @@ const Tabs = () => {
             name="OrderGroup"
             component={OrderGroup}
             options={{
-              tabBarIcon: ({focused}) => (
+              tabBarIcon: ({ focused }) => (
                 <TabIcon
                   display={'Đơn điểm giao hàng'}
                   focused={focused}
@@ -139,7 +137,7 @@ const Tabs = () => {
             name="OrderBatch"
             component={OrderBatch}
             options={{
-              tabBarIcon: ({focused}) => (
+              tabBarIcon: ({ focused }) => (
                 <TabIcon
                   display={'Đơn giao tận nhà'}
                   focused={focused}
@@ -152,7 +150,7 @@ const Tabs = () => {
             name="Batching"
             component={Batching}
             options={{
-              tabBarIcon: ({focused}) => (
+              tabBarIcon: ({ focused }) => (
                 <TabIcon display={'Gom đơn hàng'} focused={focused} icon={icons.batching} />
               ),
             }}
@@ -165,7 +163,7 @@ const Tabs = () => {
             name="HomeDeliver"
             component={HomeDeliver}
             options={{
-              tabBarIcon: ({focused}) => (
+              tabBarIcon: ({ focused }) => (
                 <TabIcon
                   display={'Trang chủ'}
                   focused={focused}
@@ -175,24 +173,15 @@ const Tabs = () => {
             }}
           />
           <Tab.Screen
-            name="Home2"
+            name="QrCodeScanner"
             component={QrCodeScanner}
             options={{
-              tabBarIcon: ({focused}) => (
+              tabBarIcon: ({ focused }) => (
                 <TabIcon
                   display={'Scan QR'}
                   focused={focused}
                   icon={icons.qrCodeScanner}
                 />
-              ),
-            }}
-          />
-          <Tab.Screen
-            name="Home3"
-            component={Home}
-            options={{
-              tabBarIcon: ({focused}) => (
-                <TabIcon display={'DLV0'} focused={focused} icon={icons.home} />
               ),
             }}
           />

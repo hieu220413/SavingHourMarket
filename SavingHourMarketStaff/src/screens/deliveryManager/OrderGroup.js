@@ -389,6 +389,7 @@ const OrderGroup = ({navigation}) => {
                               orderList: data.item.orderList,
                               orderSuccess: false,
                               orderGroupId: data.item.id,
+                              mode: 1,
                             });
                           }}>
                           <View
@@ -512,6 +513,7 @@ const OrderGroup = ({navigation}) => {
                             navigation.navigate('PickStaff', {
                               orderGroupId: data.item.id,
                               staff: data.item?.deliverer,
+                              mode: 1,
                             });
 
                             // setVisible(true);
@@ -578,6 +580,7 @@ const OrderGroup = ({navigation}) => {
                               orderList: data.item.orderList,
                               deliverer: data.item.deliverer,
                               orderGroupId: data.item.id,
+                              mode: 1,
                             });
                           }}>
                           <View
@@ -701,6 +704,7 @@ const OrderGroup = ({navigation}) => {
                             navigation.navigate('PickStaff', {
                               orderGroupId: data.item.id,
                               staff: data.item?.deliverer,
+                              mode: 1,
                             });
                             // setVisible(true);
                             // console.log(data.item.id);

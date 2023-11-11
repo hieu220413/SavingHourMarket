@@ -29,13 +29,13 @@ const Batching = ({navigation}) => {
   const [initializing, setInitializing] = useState(true);
   const [tokenId, setTokenId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
   const [open, setOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [date, setDate] = useState(null);
   const [timeFrame, setTimeFrame] = useState(null);
 
   const onAuthStateChange = async userInfo => {
-    setLoading(true);
     // console.log(userInfo);
     if (initializing) {
       setInitializing(false);
@@ -52,28 +52,31 @@ const Batching = ({navigation}) => {
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
         await AsyncStorage.removeItem('userInfo');
-        setLoading(false);
+        navigation.navigate('Login');
         return;
       }
-
-      const token = await auth().currentUser.getIdToken();
-      setTokenId(token);
-      setLoading(false);
+      const currentUser = await AsyncStorage.getItem('userInfo');
+      // console.log('currentUser', currentUser);
+      setCurrentUser(JSON.parse(currentUser));
     } else {
       // no sessions found.
       console.log('user is not logged in');
-      setLoading(false);
+      await AsyncStorage.removeItem('userInfo');
+      navigation.navigate('Login');
     }
   };
 
-  useEffect(() => {
-    // auth().currentUser.reload()
-    const subscriber = auth().onAuthStateChanged(
-      async userInfo => await onAuthStateChange(userInfo),
-    );
-    return subscriber;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      // auth().currentUser.reload()
+      const subscriber = auth().onAuthStateChanged(
+        async userInfo => await onAuthStateChange(userInfo),
+      );
+
+      return subscriber;
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
+  );
 
   return (
     <TouchableWithoutFeedback
