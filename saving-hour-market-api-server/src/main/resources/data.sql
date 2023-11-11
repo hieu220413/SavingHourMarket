@@ -626,6 +626,13 @@ INSERT INTO `saving_hour_market`.`orders` (`id`, `total_price`, `total_discount_
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), null, null, null, UUID_TO_BIN('ec5e0855-56dc-11ee-8a50-a85e45c41921'), null, UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), null),
             (UUID_TO_BIN('16fd94c6-8078-11ee-bef9-a85e45c41921'), 111111, 0, 16000, '2023-11-18 13:00:00', '2023-11-20 13:00:00', @vnpay, @DoorToDoor, @paid, '640 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.84472, 106.82994, 'qr code url here', @processing,
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), null, null, null, UUID_TO_BIN('ec5e070b-56dc-11ee-8a50-a85e45c41921'), null, UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), null),
+    --delivering status (for nguoigiaohang1 - ec5e00f7-56dc-11ee-8a50-a85e45c41921 + QR code)
+            (UUID_TO_BIN('b0eebddf-dc69-4494-8217-03146ebbf7f1'), 111111, 0, 16000, '2023-11-18 13:00:00', '2023-11-20 13:00:00', @vnpay, @DoorToDoor, @paid, '178 Phước Thiện, Quận 9, Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.84472, 106.82994, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/Order_QR_code%2Fb0eebddf-dc69-4494-8217-03146ebbf7f1.png?alt=media', @delivering,
+             UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), null, null, null, UUID_TO_BIN('ec5e099f-56dc-11ee-8a50-a85e45c41921'), null, UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e00f7-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('39011105-9258-4f6c-bc5e-1faca44abfee'), 111111, 0, 16000, '2023-11-18 13:00:00', '2023-11-20 13:00:00', @vnpay, @DoorToDoor, @paid, '188 Phước Thiện, Quận 9, Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.84472, 106.82994, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/Order_QR_code%2F39011105-9258-4f6c-bc5e-1faca44abfee.png?alt=media', @delivering,
+             UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), null, null, null, UUID_TO_BIN('ec5e0855-56dc-11ee-8a50-a85e45c41921'), null, UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e00f7-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('1b2eb7c3-e86a-4799-8877-828c2ac9c66f'), 111111, 0, 16000, '2023-11-18 13:00:00', '2023-11-20 13:00:00', @vnpay, @DoorToDoor, @paid, '200 Phước Thiện, Quận 9, Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.84472, 106.82994, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/Order_QR_code%2F1b2eb7c3-e86a-4799-8877-828c2ac9c66f.png?alt=media', @delivering,
+             UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), null, null, null, UUID_TO_BIN('ec5e0855-56dc-11ee-8a50-a85e45c41921'), null, UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e00f7-56dc-11ee-8a50-a85e45c41921')),
 
 
 --  dummy order for run batching grouping
@@ -778,6 +785,15 @@ INSERT INTO `saving_hour_market`.`order_detail` (`id`, `product_id`, `bought_qua
 
             (UUID_TO_BIN('16fda454-8078-11ee-bef9-a85e45c41921'), UUID_TO_BIN('accf343c-5541-11ee-8a50-a85e45c41921'), 1, 42000, 35000, UUID_TO_BIN('16fd94c6-8078-11ee-bef9-a85e45c41921')),
             (UUID_TO_BIN('16fda52c-8078-11ee-bef9-a85e45c41921'), UUID_TO_BIN('accf3552-5541-11ee-8a50-a85e45c41921'), 1, 25000, 21000, UUID_TO_BIN('16fd94c6-8078-11ee-bef9-a85e45c41921')),
+        --delivering status (for nguoigiaohang1 + QR code)
+            (UUID_TO_BIN('16fdb10c-8078-11ee-bef9-a85e45c41921'), UUID_TO_BIN('accf3be3-5541-11ee-8a50-a85e45c41921'), 1, 58000, 49000, UUID_TO_BIN('b0eebddf-dc69-4494-8217-03146ebbf7f1')),
+            (UUID_TO_BIN('16fdb1f7-8078-11ee-bef9-a85e45c41921'), UUID_TO_BIN('accf3079-5541-11ee-8a50-a85e45c41921'), 1, 60000, 49000, UUID_TO_BIN('b0eebddf-dc69-4494-8217-03146ebbf7f1')),
+
+            (UUID_TO_BIN('16fdb2d0-8078-11ee-bef9-a85e45c41921'), UUID_TO_BIN('accf2f65-5541-11ee-8a50-a85e45c41921'), 1, 75000, 62000, UUID_TO_BIN('39011105-9258-4f6c-bc5e-1faca44abfee')),
+            (UUID_TO_BIN('16fdb39f-8078-11ee-bef9-a85e45c41921'), UUID_TO_BIN('accf3cf4-5541-11ee-8a50-a85e45c41921'), 1, 31000, 27000, UUID_TO_BIN('39011105-9258-4f6c-bc5e-1faca44abfee')),
+
+            (UUID_TO_BIN('16fdb473-8078-11ee-bef9-a85e45c41921'), UUID_TO_BIN('accf2d37-5541-11ee-8a50-a85e45c41921'), 2, 90000, 75000, UUID_TO_BIN('1b2eb7c3-e86a-4799-8877-828c2ac9c66f')),
+            (UUID_TO_BIN('16fdb542-8078-11ee-bef9-a85e45c41921'), UUID_TO_BIN('accf3552-5541-11ee-8a50-a85e45c41921'), 1, 25000, 21000, UUID_TO_BIN('1b2eb7c3-e86a-4799-8877-828c2ac9c66f')),
 
 
     -- for dummy order for batching (no deliverer)
@@ -916,6 +932,15 @@ INSERT INTO `saving_hour_market`.`order_detail_product_batch` (`id`, `bought_qua
 
             (UUID_TO_BIN('16fdaae7-8078-11ee-bef9-a85e45c41921'), 1, UUID_TO_BIN('16fda454-8078-11ee-bef9-a85e45c41921'), UUID_TO_BIN('ec5eaf69-56dc-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('16fdabba-8078-11ee-bef9-a85e45c41921'), 1, UUID_TO_BIN('16fda52c-8078-11ee-bef9-a85e45c41921'), UUID_TO_BIN('ec5eb268-56dc-11ee-8a50-a85e45c41921')),
+        --delivering status (for nguoigiaohang1 + QR code)
+            (UUID_TO_BIN('16fdb612-8078-11ee-bef9-a85e45c41921'), 1, UUID_TO_BIN('16fdb10c-8078-11ee-bef9-a85e45c41921'), UUID_TO_BIN('ec5e7bef-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('16fdb6fd-8078-11ee-bef9-a85e45c41921'), 1, UUID_TO_BIN('16fdb1f7-8078-11ee-bef9-a85e45c41921'), UUID_TO_BIN('ec5eae10-56dc-11ee-8a50-a85e45c41921')),
+
+            (UUID_TO_BIN('16fdb7c5-8078-11ee-bef9-a85e45c41921'), 1, UUID_TO_BIN('16fdb2d0-8078-11ee-bef9-a85e45c41921'), UUID_TO_BIN('ec5eab5f-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('16fdb918-8078-11ee-bef9-a85e45c41921'), 1, UUID_TO_BIN('16fdb39f-8078-11ee-bef9-a85e45c41921'), UUID_TO_BIN('ec5e7e0c-56dc-11ee-8a50-a85e45c41921')),
+
+            (UUID_TO_BIN('16fdba1e-8078-11ee-bef9-a85e45c41921'), 1, UUID_TO_BIN('16fdb473-8078-11ee-bef9-a85e45c41921'), UUID_TO_BIN('ec5ea9a5-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('16fdbb9a-8078-11ee-bef9-a85e45c41921'), 1, UUID_TO_BIN('16fdb542-8078-11ee-bef9-a85e45c41921'), UUID_TO_BIN('ec5eb268-56dc-11ee-8a50-a85e45c41921')),
 
 
     -- for dummy order detail for order for batching (no deliverer)
@@ -1032,6 +1057,14 @@ INSERT INTO `saving_hour_market`.`order_detail_product_batch` (`id`, `bought_qua
 
 
 
+
+
+
+
+
+-- '16fdbc6e-8078-11ee-bef9-a85e45c41921'
+
+-- '16fdb03d-8078-11ee-bef9-a85e45c41921'
 --             '16fda601-8078-11ee-bef9-a85e45c41921'
 --             '16fda6c8-8078-11ee-bef9-a85e45c41921'
 
@@ -1039,23 +1072,9 @@ INSERT INTO `saving_hour_market`.`order_detail_product_batch` (`id`, `bought_qua
 
 
 
--- '16fdadd3-8078-11ee-bef9-a85e45c41921'
--- '16fdaea9-8078-11ee-bef9-a85e45c41921'
--- '16fdaf73-8078-11ee-bef9-a85e45c41921'
--- '16fdb03d-8078-11ee-bef9-a85e45c41921'
--- '16fdb10c-8078-11ee-bef9-a85e45c41921'
--- '16fdb1f7-8078-11ee-bef9-a85e45c41921'
--- '16fdb2d0-8078-11ee-bef9-a85e45c41921'
--- '16fdb39f-8078-11ee-bef9-a85e45c41921'
--- '16fdb473-8078-11ee-bef9-a85e45c41921'
--- '16fdb542-8078-11ee-bef9-a85e45c41921'
--- '16fdb612-8078-11ee-bef9-a85e45c41921'
--- '16fdb6fd-8078-11ee-bef9-a85e45c41921'
--- '16fdb7c5-8078-11ee-bef9-a85e45c41921'
--- '16fdb918-8078-11ee-bef9-a85e45c41921'
--- '16fdba1e-8078-11ee-bef9-a85e45c41921'
--- '16fdbb9a-8078-11ee-bef9-a85e45c41921'
--- '16fdbc6e-8078-11ee-bef9-a85e45c41921'
+
+
+
 -- '16fdbd2c-8078-11ee-bef9-a85e45c41921'
 -- '16fdbde6-8078-11ee-bef9-a85e45c41921'
 -- '16fdbe9d-8078-11ee-bef9-a85e45c41921'
