@@ -141,7 +141,7 @@ const Home = ({navigation}) => {
               )
                 .then(res => res.json())
                 .then(respond => {
-                  console.log('order', respond );
+                  console.log('order', respond);
                   if (respond.error) {
                     setLoading(false);
                     return;
@@ -167,7 +167,7 @@ const Home = ({navigation}) => {
               )
                 .then(res => res.json())
                 .then(respond => {
-                  console.log('order', respond , '1');
+                  console.log('order', respond, '1');
                   if (respond.error) {
                     setLoading(false);
                     return;
@@ -292,7 +292,7 @@ const Home = ({navigation}) => {
                 setLoading(false);
               })
               .catch(err => {
-                console.log(err );
+                console.log(err);
                 setLoading(false);
               });
           }
@@ -327,7 +327,7 @@ const Home = ({navigation}) => {
                 setLoading(false);
               })
               .catch(err => {
-                console.log(err   + '1');
+                console.log(err + '1');
                 setLoading(false);
               });
           }
@@ -536,19 +536,20 @@ const Home = ({navigation}) => {
           <View style={styles.areaAndLogout}>
             <View style={styles.area}>
               <Text style={{fontSize: 16}}>Khu vực:</Text>
-              <TouchableOpacity
-                onPress={() => {
-                  navigation.navigate('SelectPickupPoint', {
-                    setPickupPoint: setPickupPoint,
-                  });
-                }}>
-                <View style={styles.pickArea}>
+              <View style={styles.pickArea}>
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.navigate('SelectPickupPoint', {
+                      setPickupPoint: setPickupPoint,
+                    });
+                  }}>
                   <View style={styles.pickAreaItem}>
                     <Image
                       resizeMode="contain"
                       style={{width: 20, height: 20, tintColor: COLORS.primary}}
                       source={icons.location}
                     />
+
                     <Text
                       style={{
                         fontSize: 16,
@@ -561,17 +562,26 @@ const Home = ({navigation}) => {
                       {/* Chọn điểm giao hàng */}
                     </Text>
                   </View>
-                  <Image
-                    resizeMode="contain"
-                    style={{
-                      width: 22,
-                      height: 22,
-                      tintColor: COLORS.primary,
-                    }}
-                    source={icons.rightArrow}
-                  />
-                </View>
-              </TouchableOpacity>
+                </TouchableOpacity>
+                {pickupPoint ? (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setPickupPoint(null);
+                    }}>
+                    <Image
+                      resizeMode="contain"
+                      style={{
+                        width: 22,
+                        height: 22,
+                        tintColor: COLORS.primary,
+                      }}
+                      source={icons.clearText}
+                    />
+                  </TouchableOpacity>
+                ) : (
+                  <></>
+                )}
+              </View>
             </View>
             <View style={styles.logout}>
               <TouchableOpacity
@@ -1097,7 +1107,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     alignItems: 'center',
-    width: '80%',
+    width: '85%',
   },
   centeredView: {
     flex: 1,
