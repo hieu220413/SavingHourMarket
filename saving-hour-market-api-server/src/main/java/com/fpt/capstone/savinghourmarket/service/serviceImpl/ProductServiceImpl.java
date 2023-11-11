@@ -439,7 +439,7 @@ public class ProductServiceImpl implements ProductService {
                 productBatchCreate.getProductBatchAddresses().forEach(productBatchAddressCreateList -> {
                     if(supermarket.isPresent()){
                         if(supermarket.get().getSupermarketAddressList().stream()
-                                .noneMatch(supermarketAddress -> productBatchAddressCreateList.getSupermarketAddress().equals(supermarketAddress))){
+                                .noneMatch(supermarketAddress -> productBatchAddressCreateList.getSupermarketAddress().getAddress().equals(supermarketAddress.getAddress()))){
                             errors.add("Địa chỉ "+productBatchAddressCreateList.getSupermarketAddress().getAddress()+ " không tìm thấy trong danh sách địa chỉ chi nhánh của siêu thị!");
                         }
                         if (productBatchAddressCreateList.getQuantity() == null) {
