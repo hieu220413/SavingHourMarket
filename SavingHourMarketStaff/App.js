@@ -1,21 +1,21 @@
 /* eslint-disable prettier/prettier */
-import React, {useEffect, useState} from 'react';
-import {createStackNavigator} from '@react-navigation/stack';
-import {NavigationContainer} from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { createStackNavigator } from '@react-navigation/stack';
+import { NavigationContainer } from '@react-navigation/native';
 import 'react-native-gesture-handler';
 import Tabs from './src/navigations/tabs';
 import Login from './src/screens/Login';
 import OrderDetails from './src/screens/deliveryStaff/OrderDetails';
 import OrderDetail from './src/screens/orderStaff/OrderDetail';
 import EditDeliveryDate from './src/screens/deliveryStaff/EditDeliveryDate';
-import {LogBox} from 'react-native';
+import { LogBox } from 'react-native';
 import SelectPickupPoint from './src/screens/orderStaff/SelectPickupPoint';
 import OrderGroupDetail from './src/screens/deliveryManager/OrderGroupDetail';
 import OrderDetailForManager from './src/screens/deliveryManager/OrderDetailForManager';
 import PickStaff from './src/screens/deliveryManager/PickStaff';
 import SelectTimeFrame from './src/screens/deliveryManager/SelectTimeFrame';
 import SelectProductConsolidationArea from './src/screens/deliveryManager/SelectProductConsolidationArea';
-import {ModalPortal} from 'react-native-modals';
+import { ModalPortal } from 'react-native-modals';
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -35,7 +35,7 @@ export default function App() {
           <Stack.Screen
             name="Login"
             component={Login}
-            options={{swipeEnabled: false}}
+            options={{ swipeEnabled: false }}
           />
           <Stack.Screen name="OrderDetail" component={OrderDetail} />
           <Stack.Screen name="OrderDetails" component={OrderDetails} />
