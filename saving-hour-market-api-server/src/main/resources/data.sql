@@ -321,21 +321,21 @@ INSERT INTO `saving_hour_market`.`order_group` (`id`, `deliver_date`, `time_fram
 
 
 -- Order Batch
-INSERT INTO `saving_hour_market`.`order_batch` (`id`, `deliver_date`, `deliverer_id`, `time_frame_id`)
+INSERT INTO `saving_hour_market`.`order_batch` (`id`, `deliver_date`, `deliverer_id`, `time_frame_id`, `product_consolidation_area_id`)
 --     VALUES (`id`, `district`, `deliver_date`, `deliverer_id`);
-    VALUES  (UUID_TO_BIN('ec5def3a-56dc-11ee-8a50-a85e45c41921'), '2023-09-19', UUID_TO_BIN('ec5e0293-56dc-11ee-8a50-a85e45c41921'), null),
-            (UUID_TO_BIN('ec5df0fa-56dc-11ee-8a50-a85e45c41921'), '2023-09-19', null, null),
-            (UUID_TO_BIN('ec5df219-56dc-11ee-8a50-a85e45c41921'), '2023-09-19', null, null),
-            (UUID_TO_BIN('ec5df327-56dc-11ee-8a50-a85e45c41921'), '2023-09-19', null, null),
-            (UUID_TO_BIN('ec5df442-56dc-11ee-8a50-a85e45c41921'), '2023-09-20', null, null),
-            (UUID_TO_BIN('ec5df557-56dc-11ee-8a50-a85e45c41921'), '2023-09-20', null, null),
-            (UUID_TO_BIN('ec5df668-56dc-11ee-8a50-a85e45c41921'), '2023-09-20', null, null),
-            (UUID_TO_BIN('ec5df810-56dc-11ee-8a50-a85e45c41921'), '2023-09-21', null, null),
-            (UUID_TO_BIN('ec5df929-56dc-11ee-8a50-a85e45c41921'), '2023-09-21', null, null),
+    VALUES  (UUID_TO_BIN('ec5def3a-56dc-11ee-8a50-a85e45c41921'), '2023-09-19', UUID_TO_BIN('ec5e0293-56dc-11ee-8a50-a85e45c41921'), null, null),
+            (UUID_TO_BIN('ec5df0fa-56dc-11ee-8a50-a85e45c41921'), '2023-09-19', null, null, null),
+            (UUID_TO_BIN('ec5df219-56dc-11ee-8a50-a85e45c41921'), '2023-09-19', null, null, null),
+            (UUID_TO_BIN('ec5df327-56dc-11ee-8a50-a85e45c41921'), '2023-09-19', null, null, null),
+            (UUID_TO_BIN('ec5df442-56dc-11ee-8a50-a85e45c41921'), '2023-09-20', null, null, null),
+            (UUID_TO_BIN('ec5df557-56dc-11ee-8a50-a85e45c41921'), '2023-09-20', null, null, null),
+            (UUID_TO_BIN('ec5df668-56dc-11ee-8a50-a85e45c41921'), '2023-09-20', null, null, null),
+            (UUID_TO_BIN('ec5df810-56dc-11ee-8a50-a85e45c41921'), '2023-09-21', null, null, null),
+            (UUID_TO_BIN('ec5df929-56dc-11ee-8a50-a85e45c41921'), '2023-09-21', null, null, null),
 -- dummy order_batch for order
-            (UUID_TO_BIN('16fd46ef-8078-11ee-bef9-a85e45c41921'), '2023-11-19', UUID_TO_BIN('ec5e00f7-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e070b-56dc-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('16fd4b5c-8078-11ee-bef9-a85e45c41921'), '2023-11-19', UUID_TO_BIN('ec5e00f7-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e0855-56dc-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('16fd48ef-8078-11ee-bef9-a85e45c41921'), '2023-11-19', UUID_TO_BIN('ec5e00f7-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e099f-56dc-11ee-8a50-a85e45c41921'));
+            (UUID_TO_BIN('16fd46ef-8078-11ee-bef9-a85e45c41921'), '2023-11-19', UUID_TO_BIN('ec5e00f7-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e070b-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5dfa4a-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('16fd4b5c-8078-11ee-bef9-a85e45c41921'), '2023-11-19', UUID_TO_BIN('ec5e00f7-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e0855-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5dfa4a-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('16fd48ef-8078-11ee-bef9-a85e45c41921'), '2023-11-19', UUID_TO_BIN('ec5e00f7-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e099f-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5dfa4a-56dc-11ee-8a50-a85e45c41921'));
 
 
 
