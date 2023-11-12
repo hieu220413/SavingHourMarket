@@ -14,7 +14,7 @@ public interface PickupPointService {
 
     PickupPointsSortWithSuggestionsResponseBody getWithSortAndSuggestion(Double latitude, Double longitude) throws IOException, InterruptedException, ApiException;
 
-    List<PickupPointWithProductConsolidationArea> getAllForAdmin(EnableDisableStatus enableDisableStatus);
+    List<PickupPointWithProductConsolidationArea> getAllForStaff(EnableDisableStatus enableDisableStatus);
 
     PickupPointWithProductConsolidationArea create(PickupPointCreateBody pickupPointCreateBody);
 
@@ -23,4 +23,6 @@ public interface PickupPointService {
     PickupPoint updateStatus(EnableDisableStatusChangeBody enableDisableStatusChangeBody);
 
     PickupPointWithProductConsolidationArea updateProductConsolidationAreaList(ProductConsolidationAreaPickupPointUpdateListBody productConsolidationAreaPickupPointUpdateListBody);
+
+    PickupPointListResponseBody getAllForAdmin(EnableDisableStatus enableDisableStatus,Integer page,Integer limit);
 }
