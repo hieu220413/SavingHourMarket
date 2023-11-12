@@ -28,7 +28,7 @@ const EditDeliveryDate = ({ navigation, route }) => {
     const [initializing, setInitializing] = useState(true);
     const [tokenId, setTokenId] = useState(null);
     const orderId = route.params.orderId;
-    console.log('order item', route.params.orderItems);
+    const expDateList = route.params.expDateList;
 
 
     // Check valid 
@@ -126,11 +126,8 @@ const EditDeliveryDate = ({ navigation, route }) => {
 
 
             const minExpDateOrderItems = new Date(
-                Math.min(...orderItems.map(item => Date.parse(item.expiredDate))),
+                Math.min(...expDateList.map(item => Date.parse(item))),
             );
-            console.log('minExpDateOrderItems', dayDiffFromToday(minExpDateOrderItems));
-
-
             if (dayDiffFromToday(minExpDateOrderItems) > 3) {
                 setMinDate(getDateAfterToday(2));
                 setMaxDate(getMaxDate(minExpDateOrderItems));
@@ -151,25 +148,23 @@ const EditDeliveryDate = ({ navigation, route }) => {
                 setCannotChangeDate(true);
             }
             fetchTimeFrame();
-        }, [orderItems, route.params.picked]),
+        }, [expDateList, route.params.picked]),
     );
 
     const handleEdit = () => {
-        console.log('orderId', orderId);
-        console.log('deli date', route.params.deliveryDate);
         if (!date) {
             setValidateMessage('Vui lòng chọn ngày giao hàng');
             setOpenValidateDialog(true);
             return;
         }
 
-        if (!timeFrame) {
-            setValidateMessage('Vui lòng chọn khung giờ');
-            setOpenValidateDialog(true);
-            return false;
-        }
+        // if (!timeFrame) {
+        //     setValidateMessage('Vui lòng chọn khung giờ');
+        //     setOpenValidateDialog(true);
+        //     return false;
+        // }
         setLoading(true);
-        fetch(`${API.baseURL}/api/order/deliveryStaff/editDeliverDate/${orderId}?deliverDate=${date}`, {
+        fetch(`${API.baseURL}/api/order/deliveryStaff/editDeliverDate/${orderId}?deliverDate=${format(date, 'yyyy-MM-dd')}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -280,6 +275,7 @@ const EditDeliveryDate = ({ navigation, route }) => {
                         mode="date"
                         open={open}
                         date={date ? date : new Date()}
+                        onDateChange={setDate}
                         onConfirm={date => {
                             const getDate = new Date();
                             let day = getDate.getDate();
@@ -321,7 +317,7 @@ const EditDeliveryDate = ({ navigation, route }) => {
                         }}
                     />
                     {/* Time Frame */}
-                    <View style={{ backgroundColor: 'white', padding: 20 }}>
+                    {/* <View style={{ backgroundColor: 'white', padding: 20 }}>
                         <Text
                             style={{
                                 fontSize: 20,
@@ -332,7 +328,6 @@ const EditDeliveryDate = ({ navigation, route }) => {
                             }}>
                             Khung giờ
                         </Text>
-                        {/* Time Frames */}
                         {timeFrameList.map(item => (
                             <TouchableOpacity
                                 key={item.id}
@@ -401,7 +396,7 @@ const EditDeliveryDate = ({ navigation, route }) => {
                                 </View>
                             </TouchableOpacity>
                         ))}
-                    </View>
+                    </View> */}
                 </ScrollView>
             </View >
             <Modal

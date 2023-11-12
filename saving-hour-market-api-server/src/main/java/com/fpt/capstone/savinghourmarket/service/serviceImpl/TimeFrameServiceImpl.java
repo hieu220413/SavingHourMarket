@@ -1,6 +1,7 @@
 package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
 import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
+import com.fpt.capstone.savinghourmarket.common.DeliverMethodAvailableTimeFrame;
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.common.OrderStatus;
 import com.fpt.capstone.savinghourmarket.entity.Order;
@@ -9,12 +10,16 @@ import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.exception.ModifyTimeFrameForbiddenException;
 import com.fpt.capstone.savinghourmarket.model.EnableDisableStatusChangeBody;
+import com.fpt.capstone.savinghourmarket.model.PickupPointWithProductConsolidationArea;
 import com.fpt.capstone.savinghourmarket.model.TimeFrameCreateUpdateBody;
+import com.fpt.capstone.savinghourmarket.model.TimeFrameListResponseBody;
 import com.fpt.capstone.savinghourmarket.repository.OrderRepository;
 import com.fpt.capstone.savinghourmarket.repository.TimeFrameRepository;
 import com.fpt.capstone.savinghourmarket.service.TimeFrameService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,9 +45,23 @@ public class TimeFrameServiceImpl implements TimeFrameService {
     }
 
     @Override
-    public List<TimeFrame> getAllForAdmin(EnableDisableStatus enableDisableStatus) {
-        List<TimeFrame> timeFrames = timeFrameRepository.findAllForAdmin(enableDisableStatus == null ? null : enableDisableStatus.ordinal());
+    public List<TimeFrame> getAllForStaff(EnableDisableStatus enableDisableStatus) {
+        List<TimeFrame> timeFrames = timeFrameRepository.findAllForStaff(enableDisableStatus == null ? null : enableDisableStatus.ordinal());
         return timeFrames;
+    }
+
+    @Override
+    public TimeFrameListResponseBody getAllForAdmin(EnableDisableStatus enableDisableStatus, Integer page, Integer limit) {
+        Pageable pageable = PageRequest.of(page, limit);
+        Page<TimeFrame> result = timeFrameRepository.findAllForAdmin(enableDisableStatus == null ? null : enableDisableStatus.ordinal(), pageable);
+
+        int totalPage = result.getTotalPages();
+        long totalTimeFrame = result.getTotalElements();
+
+        List<TimeFrame> timeFrameList = result.stream().toList();
+
+
+        return new TimeFrameListResponseBody(timeFrameList, totalPage, totalTimeFrame);
     }
 
     @Override

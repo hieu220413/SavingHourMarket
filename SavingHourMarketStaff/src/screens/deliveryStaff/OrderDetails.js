@@ -25,6 +25,7 @@ const OrderDetails = ({ navigation, route }) => {
     const [modalVisible, setModalVisible] = useState(false);
     const [errorModalVisible, setErrorModalVisible] = useState(false);
     const [alertText, setAlertText] = useState('');
+    const [expDateList, setExpDateList] = useState([]);
     const onAuthStateChange = async userInfo => {
         setLoading(true);
         if (initializing) {
@@ -102,6 +103,13 @@ const OrderDetails = ({ navigation, route }) => {
                     .then(res => res.json())
                     .then(respond => {
                         setItem(respond);
+                        const arr = [];
+                        respond.orderDetailList.map(item => {
+                            item.orderDetailProductBatches.map(batch => {
+                                arr.push(batch.expiredDate);
+                            });
+                        });
+                        setExpDateList(arr);
                         setLoading(false);
                     })
                     .catch(err => {
@@ -242,6 +250,7 @@ const OrderDetails = ({ navigation, route }) => {
                                                         picked: route.params.picked,
                                                         orderItems: item?.orderDetailList,
                                                         orderId: route.params.id,
+                                                        expDateList: expDateList,
                                                         setTimeFrame,
                                                         setCustomerTimeFrame,
                                                         setDate,

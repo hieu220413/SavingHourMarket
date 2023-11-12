@@ -1,9 +1,11 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
+import com.fpt.capstone.savinghourmarket.common.DeliverMethodAvailableTimeFrame;
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.entity.TimeFrame;
 import com.fpt.capstone.savinghourmarket.model.EnableDisableStatusChangeBody;
 import com.fpt.capstone.savinghourmarket.model.TimeFrameCreateUpdateBody;
+import com.fpt.capstone.savinghourmarket.model.TimeFrameListResponseBody;
 import com.fpt.capstone.savinghourmarket.service.TimeFrameService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
@@ -38,8 +40,20 @@ public class TimeFrameController {
             , @RequestParam(required = false) EnableDisableStatus enableDisableStatus) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        List<TimeFrame> timeFrameList = timeFrameService.getAllForAdmin(enableDisableStatus);
+        List<TimeFrame> timeFrameList = timeFrameService.getAllForStaff(enableDisableStatus);
         return ResponseEntity.status(HttpStatus.OK).body(timeFrameList);
+    }
+
+    @RequestMapping(value = "/getAllForAdmin", method = RequestMethod.GET)
+    public ResponseEntity<TimeFrameListResponseBody> getAllForAdmin(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+//            , @RequestParam(required = false) DeliverMethodAvailableTimeFrame deliveryMethodAvailable
+            , @RequestParam(required = false) EnableDisableStatus enableDisableStatus
+            , @RequestParam(defaultValue = "0") Integer page
+            , @RequestParam(defaultValue = "5") Integer limit) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        TimeFrameListResponseBody timeFrameListResponseBody = timeFrameService.getAllForAdmin(enableDisableStatus, page, limit);
+        return ResponseEntity.status(HttpStatus.OK).body(timeFrameListResponseBody);
     }
 
 

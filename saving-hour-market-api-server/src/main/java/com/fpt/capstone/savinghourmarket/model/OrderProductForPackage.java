@@ -1,8 +1,13 @@
 package com.fpt.capstone.savinghourmarket.model;
 
+import com.fpt.capstone.savinghourmarket.entity.ProductConsolidationArea;
 import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
 import com.fpt.capstone.savinghourmarket.entity.Supermarket;
+import com.fpt.capstone.savinghourmarket.entity.SupermarketAddress;
 import lombok.*;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -14,15 +19,19 @@ public class OrderProductForPackage {
 
     private String unit;
 
+    private LocalDate expiredDate;
+
+    private List<String> imageUrlImageList;
+
     private Integer boughtQuantity;
-
-    private String description;
-
-    private ProductSubCategory productSubCategory;
 
     private Supermarket supermarket;
 
+    private SupermarketAddress supermarketAddress;
+
     private OrderPackaging orderPackage;
+
+    private ProductConsolidationArea productConsolidationArea;
 
 
 }
