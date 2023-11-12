@@ -136,7 +136,8 @@ const SelectPickupPoint = ({navigation, route}) => {
               paddingBottom: 20,
               borderBottomColor: '#decbcb',
               borderBottomWidth: 0.75,
-              marginHorizontal: 10
+              marginHorizontal: 15,
+              marginVertical: 20,
             }}>
             Các điểm giao hàng bạn phụ trách:
           </Text>
@@ -158,15 +159,6 @@ const SelectPickupPoint = ({navigation, route}) => {
                     navigation.navigate('OrderGroupForOrderStaff');
                     return;
                   }
-                  if (
-                    route.params.isFromProductPackagingRoute &&
-                    route.params.isFromProductPackagingRoute === true
-                  ) {
-                    console.log('is Product')
-                    navigation.navigate('Product');
-                    return;
-                  }
-
                   navigation.navigate('Home');
                 }}
                 style={{

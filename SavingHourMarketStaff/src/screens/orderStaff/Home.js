@@ -11,20 +11,18 @@ import {
   Modal,
   Pressable,
   Alert,
-  FlatList,
 } from 'react-native';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { COLORS } from '../../constants/theme';
-import { icons } from '../../constants';
-import { useFocusEffect } from '@react-navigation/native';
-import { API } from '../../constants/api';
-import { format } from 'date-fns';
+import {COLORS} from '../../constants/theme';
+import {icons} from '../../constants';
+import {useFocusEffect} from '@react-navigation/native';
+import {API} from '../../constants/api';
+import {format} from 'date-fns';
 import CartEmpty from '../../assets/image/search-empty.png';
-import { SwipeListView } from 'react-native-swipe-list-view';
+import {SwipeListView} from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
-import Toast from 'react-native-toast-message';
 
 const SearchBar = () => {
   return (
@@ -66,7 +64,7 @@ const SearchBar = () => {
   );
 };
 
-const Home = ({ navigation }) => {
+const Home = ({navigation}) => {
   const [initializing, setInitializing] = useState(true);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -79,18 +77,6 @@ const Home = ({ navigation }) => {
   const [pickupPoint, setPickupPoint] = useState(null);
   const [order, setOrder] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
-
-  const [consolidationAreaList, setConsolidationAreaList] = useState([]);
-  const [selectedConsolidationAreaId, setSelectedConsolidationAreaId] = useState('');
-
-  const showToast = (message) => {
-    Toast.show({
-      type: 'success',
-      text1: 'Thành công',
-      text2: message + '👋',
-      visibilityTime: 1000,
-    });
-  };
 
   const onAuthStateChange = async userInfo => {
     // console.log(userInfo);
@@ -120,76 +106,6 @@ const Home = ({ navigation }) => {
       console.log('user is not logged in');
       await AsyncStorage.removeItem('userInfo');
       navigation.navigate('Login');
-    }
-  };
-
-  const getConsolidationArea = async pickupPointId => {
-    const tokenId = await auth().currentUser.getIdToken();
-    if (tokenId) {
-      setLoading(true);
-      await fetch(
-        `${API.baseURL}/api/productConsolidationArea/getByPickupPointForStaff?pickupPointId=${pickupPointId}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${tokenId}`,
-          },
-        },
-      )
-        .then(res => res.json())
-        .then(respond => {
-          // console.log('order group', respond);
-          if (respond.error) {
-            setLoading(false);
-            return;
-          }
-          setSelectedConsolidationAreaId('');
-          setConsolidationAreaList(respond);
-          setLoading(false);
-          setVisible(true);
-        })
-        .catch(err => {
-          console.log(err);
-          setLoading(false);
-        });
-    }
-  };
-
-  // edit consolidation  area function
-  const editConsolidationArea = async () => {
-    const tokenId = await auth().currentUser.getIdToken();
-    if (tokenId) {
-      const consolidationAreaEditRequest = await fetch(
-        `${API.baseURL}/api/order/packageStaff/confirmPackagingGroup?orderGroupId=${selectedEditGroupId}&productConsolidationAreaId=${selectedConsolidationAreaId}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${tokenId}`,
-          },
-        },
-      ).catch(err => {
-        console.log(err);
-        return null;
-        // setLoading(false);
-      });
-
-      if (!consolidationAreaEditRequest) {
-        return;
-      }
-
-      if (consolidationAreaEditRequest.status === 200) {
-        const result = await consolidationAreaEditRequest.text();
-        await filterOrderGroup();
-        setMessageResult(result);
-        setOpenResponseDialog(true);
-      } else {
-        const result = await consolidationAreaEditRequest.json();
-        console.log(result);
-        setMessageResult(result.message);
-        setOpenResponseDialog(true);
-      }
     }
   };
 
@@ -307,9 +223,9 @@ const Home = ({ navigation }) => {
   // }, []);
 
   const orderStatus = [
-    { display: 'Chờ đóng gói', value: 'PROCESSING' },
-    { display: 'Đang đóng gói', value: 'PACKAGING' },
-    { display: 'Đã đóng gói', value: 'PACKAGED' },
+    {display: 'Chờ đóng gói', value: 'PROCESSING'},
+    {display: 'Đang đóng gói', value: 'PACKAGING'},
+    {display: 'Đã đóng gói', value: 'PACKAGED'},
   ];
 
   const sortOptions = [
@@ -337,7 +253,6 @@ const Home = ({ navigation }) => {
   const [selectSort, setSelectSort] = useState(sortOptions);
   const [modalVisible, setModalVisible] = useState(false);
 
-  
   const sortOrder = selectSort => {
     const sortItem = selectSort.find(item => item.active === true);
     setLoading(true);
@@ -349,10 +264,14 @@ const Home = ({ navigation }) => {
             setLoading(true);
 
             fetch(
-              `${API.baseURL
-              }/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${pickupPoint ?`pickupPointId=${pickupPoint.id}`:``
-              }&orderStatus=${currentStatus.value}${sortItem?.id == 1 ? '&deliveryDateSortType=ASC' : ''
-              }${sortItem?.id == 2 ? '&deliveryDateSortType=DESC' : ''}${sortItem?.id == 3 ? '&createdTimeSortType=DESC' : ''
+              `${
+                API.baseURL
+              }/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&pickupPointId=${
+                pickupPoint.id
+              }&orderStatus=${currentStatus.value}${
+                sortItem?.id == 1 ? '&deliveryDateSortType=ASC' : ''
+              }${sortItem?.id == 2 ? '&deliveryDateSortType=DESC' : ''}${
+                sortItem?.id == 3 ? '&createdTimeSortType=DESC' : ''
               }${sortItem?.id == 4 ? '&createdTimeSortType=ASC' : ''}`,
               {
                 method: 'GET',
@@ -364,7 +283,7 @@ const Home = ({ navigation }) => {
             )
               .then(res => res.json())
               .then(respond => {
-                console.log('sort');
+                // console.log(respond);
                 if (respond.error) {
                   setLoading(false);
                   return;
@@ -432,7 +351,7 @@ const Home = ({ navigation }) => {
         const tokenId = await auth().currentUser.getIdToken();
         if (tokenId) {
           setLoading(true);
-  
+
           fetch(
             `${API.baseURL}/api/order/packageStaff/getOrders?pickupPointId=${pickupPoint.id}&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
             {
@@ -469,66 +388,6 @@ const Home = ({ navigation }) => {
   };
 
   const handleConfirm = () => {
-    const fetchData = async () => {
-      if (auth().currentUser) {
-        const tokenId = await auth().currentUser.getIdToken();
-        if (tokenId) {
-          setLoading(true);
-          if (pickupPoint) {
-            fetch(
-              `${API.baseURL}/api/order/packageStaff/getOrders?pickupPointId=${pickupPoint?.id}&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
-              {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${tokenId}`,
-                },
-              },
-            )
-              .then(res => res.json())
-              .then(respond => {
-                console.log('order', respond);
-                if (respond.error) {
-                  setLoading(false);
-                  return;
-                }
-                setOrderList(respond);
-                setLoading(false);
-              })
-              .catch(err => {
-                console.log(err);
-                setLoading(false);
-              });
-          } else {
-            fetch(
-              `${API.baseURL}/api/order/packageStaff/getOrders?orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
-              {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${tokenId}`,
-                },
-              },
-            )
-              .then(res => res.json())
-              .then(respond => {
-                console.log('order', respond, '1');
-                if (respond.error) {
-                  setLoading(false);
-                  return;
-                }
-
-                setOrderList(respond);
-                setLoading(false);
-              })
-              .catch(err => {
-                console.log(err);
-                setLoading(false);
-              });
-          }
-        }
-      }
-    };
     const confirmPackaging = async () => {
       if (auth().currentUser) {
         const tokenId = await auth().currentUser.getIdToken();
@@ -537,7 +396,7 @@ const Home = ({ navigation }) => {
           console.log(currentUser.id);
           console.log(order.id);
           fetch(
-            `${API.baseURL}/api/order/packageStaff/confirmPackaging?orderId=${order.id}&productConsolidationAreaId=${selectedConsolidationAreaId}`,
+            `${API.baseURL}/api/order/staff/confirmPackaging?orderId=${order.id}&staffId=${currentUser.id}`,
             {
               method: 'PUT',
               headers: {
@@ -549,8 +408,12 @@ const Home = ({ navigation }) => {
             .then(res => res.text())
             .then(respond => {
               console.log(respond);
-              fetchData();
-              showToast(respond);
+              Alert.alert(respond);
+              // if (respond.error) {
+              //   setLoading(false);
+              //   return;
+              // }
+              setLoading(false);
             })
             .catch(err => {
               console.log(err);
@@ -568,7 +431,7 @@ const Home = ({ navigation }) => {
           console.log(currentUser.id);
           console.log(order.id);
           fetch(
-            `${API.baseURL}/api/order/packageStaff/confirmPackaged?orderId=${order.id}`,
+            `${API.baseURL}/api/order/staff/confirmPackaged?orderId=${order.id}&staffId=${currentUser.id}`,
             {
               method: 'PUT',
               headers: {
@@ -579,8 +442,13 @@ const Home = ({ navigation }) => {
           )
             .then(res => res.text())
             .then(respond => {
-              fetchData();
-              showToast(respond);
+              console.log(respond);
+              Alert.alert(respond);
+              // if (respond.error) {
+              //   setLoading(false);
+              //   return;
+              // }
+              setLoading(false);
             })
             .catch(err => {
               console.log(err);
@@ -592,28 +460,26 @@ const Home = ({ navigation }) => {
     if (order.status === 0) {
       confirmPackaging();
     } else {
-      confirmPackaged();
+      // confirmPackaged();
     }
-    // fetchData();
-    // setLoading(false);
     // The user has pressed the "Delete" button, so here you can do your own logic.
     // ...Your logic
     setVisible(false);
   };
 
-  const ModalSortItem = ({ item }) => {
+  const ModalSortItem = ({item}) => {
     return (
       <TouchableOpacity
         onPress={() => {
           const newArray = selectSort.map(i => {
             if (i.id === item.id) {
               if (i.active === true) {
-                return { ...i, active: false };
+                return {...i, active: false};
               } else {
-                return { ...i, active: true };
+                return {...i, active: true};
               }
             }
-            return { ...i, active: false };
+            return {...i, active: false};
           });
           // console.log(newArray);
           setSelectSort(newArray);
@@ -621,37 +487,37 @@ const Home = ({ navigation }) => {
         style={
           item.active == true
             ? {
-              borderColor: COLORS.primary,
-              borderWidth: 1,
-              borderRadius: 10,
-              margin: 5,
-            }
+                borderColor: COLORS.primary,
+                borderWidth: 1,
+                borderRadius: 10,
+                margin: 5,
+              }
             : {
-              borderColor: '#c8c8c8',
-              borderWidth: 0.2,
-              borderRadius: 10,
-              margin: 5,
-            }
+                borderColor: '#c8c8c8',
+                borderWidth: 0.2,
+                borderRadius: 10,
+                margin: 5,
+              }
         }>
         <Text
           style={
             item.active == true
               ? {
-                width: 150,
-                paddingVertical: 10,
-                textAlign: 'center',
-                color: COLORS.primary,
+                  width: 150,
+                  paddingVertical: 10,
+                  textAlign: 'center',
+                  color: COLORS.primary,
 
-                fontSize: 12,
-              }
+                  fontSize: 12,
+                }
               : {
-                width: 150,
-                paddingVertical: 10,
-                textAlign: 'center',
-                color: 'black',
+                  width: 150,
+                  paddingVertical: 10,
+                  textAlign: 'center',
+                  color: 'black',
 
-                fontSize: 12,
-              }
+                  fontSize: 12,
+                }
           }>
           {item.name}
         </Text>
@@ -669,7 +535,7 @@ const Home = ({ navigation }) => {
         <View style={styles.header}>
           <View style={styles.areaAndLogout}>
             <View style={styles.area}>
-              <Text style={{ fontSize: 16 }}>Khu vực:</Text>
+              <Text style={{fontSize: 16}}>Khu vực:</Text>
               <View style={styles.pickArea}>
                 <TouchableOpacity
                   onPress={() => {
@@ -680,7 +546,7 @@ const Home = ({ navigation }) => {
                   <View style={styles.pickAreaItem}>
                     <Image
                       resizeMode="contain"
-                      style={{ width: 20, height: 20, tintColor: COLORS.primary }}
+                      style={{width: 20, height: 20, tintColor: COLORS.primary}}
                       source={icons.location}
                     />
 
@@ -724,7 +590,7 @@ const Home = ({ navigation }) => {
                 }}>
                 <Image
                   resizeMode="contain"
-                  style={{ width: 38, height: 38 }}
+                  style={{width: 38, height: 38}}
                   source={icons.userCircle}
                 />
               </TouchableOpacity>
@@ -750,7 +616,7 @@ const Home = ({ navigation }) => {
                       })
                       .catch(e => console.log(e));
                   }}>
-                  <Text style={{ color: 'red', fontWeight: 'bold' }}>
+                  <Text style={{color: 'red', fontWeight: 'bold'}}>
                     Đăng xuất
                   </Text>
                 </TouchableOpacity>
@@ -763,7 +629,7 @@ const Home = ({ navigation }) => {
             style={{
               flexDirection: 'row',
             }}>
-            <View style={{ flex: 6 }}>
+            <View style={{flex: 6}}>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {orderStatus.map((item, index) => (
                   <TouchableOpacity
@@ -830,9 +696,9 @@ const Home = ({ navigation }) => {
         <View style={styles.body}>
           {/* Order list */}
           {orderList.length === 0 ? (
-            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+            <View style={{alignItems: 'center', justifyContent: 'center'}}>
               <Image
-                style={{ width: '100%', height: '50%' }}
+                style={{width: '100%', height: '50%'}}
                 resizeMode="contain"
                 source={CartEmpty}
               />
@@ -847,7 +713,7 @@ const Home = ({ navigation }) => {
               </Text>
             </View>
           ) : (
-            <View style={{ height: "87%" }}>
+            <View style={{marginTop: 10, marginBottom: 100}}>
               <SwipeListView
                 data={orderList}
                 renderItem={(data, rowMap) => (
@@ -867,104 +733,24 @@ const Home = ({ navigation }) => {
                           orderSuccess: false,
                         });
                       }}>
-                      <View style={{ flexDirection: 'row', paddingBottom: 9 }}>
-                        <Text
-                          style={{
-                            flex: 13,
-                            fontSize: 20,
-                            paddingTop: 6,
-                            fontWeight: 'bold',
-                            fontFamily: 'Roboto',
-                            color: COLORS.primary,
-                          }}>
-                          {data.item?.status === 0 && 'Chờ đóng gói'}
-                          {data.item?.status === 1 && 'Đang đóng gói'}
-                          {data.item?.status === 2 && 'Đã đóng gói'}
-                        </Text>
-                        {data.item?.status === 2 && data.item?.packager?.fullName != null && (
-                          <>
-                            <View style={{
-                              flex: 3,
-                              alignItems: 'flex-end',
-                              marginTop: 4,
-                              width: 30,
-                              height: 40,
-                              borderRadius: 50, // Half of width and height to make it circular
-                            }}>
-                              <Image
-                                source={icons.packaged}
-                                resizeMode="contain"
-                                style={{
-                                  width: 30,
-                                  height: 30,
-                                  padding: 15,
-                                  tintColor: 'white',
-                                  borderRadius: 50, // Half of width and height to make it circular
-                                  overflow: 'hidden',
-                                  backgroundColor: 'green'
-                                }}
-                              />
-                            </View>
-                            <Text
-                              style={{
-                                flex: 7,
-                                alignItems: 'flex-end',
-                                fontSize: 16,
-                                paddingLeft: 5,
-                                paddingTop: 7,
-                                fontWeight: 'bold',
-                                fontFamily: 'Roboto',
-                                color: COLORS.secondary,
-                              }}>
-                              {data.item?.packager?.fullName}
-                            </Text>
-                          </>
-                        )}
-                        {data.item?.status === 1 && data.item?.packager?.fullName != null && (
-                          <>
-                            <View style={{
-                              marginLeft: 15,
-                              marginTop: 4,
-                              marginBottom: 10,
-                              width: 30,
-                              height: 30,
-                              borderRadius: 50,
-                              backgroundColor: 'green',
-                              alignItems: 'center'
-                            }}>
-                              <Image
-                                source={icons.packaging}
-                                resizeMode="contain"
-                                style={{
-                                  width: 20,
-                                  height: 30,
-                                  tintColor: 'white',
-                                }}
-                              />
-                            </View>
-                            <Text
-                              style={{
-                                flex: 7,
-                                alignItems: 'flex-end',
-                                fontSize: 16,
-                                paddingLeft: 5,
-                                paddingTop: 7,
-                                fontWeight: 'bold',
-                                fontFamily: 'Roboto',
-                                color: COLORS.secondary,
-                              }}>
-                              {data.item?.packager?.fullName}
-                            </Text>
-                          </>
-                        )}
-                      </View>
                       <View
                         style={{
                           flexDirection: 'row',
                           alignItems: 'center',
                           justifyContent: 'space-between',
                         }}>
-                        <View style={{ flexDirection: 'column', gap: 8 }}>
+                        <View style={{flexDirection: 'column', gap: 8}}>
+                          <Text
+                            style={{
+                              fontSize: 20,
+                              fontWeight: 'bold',
+                              fontFamily: 'Roboto',
+                              color: COLORS.primary,
+                            }}>
+                            {data.item?.status === 0 && 'Chờ đóng gói'}
+                            {data.item?.status === 1 && 'Đang đóng gói'}
+                            {data.item?.status === 2 && 'Đã đóng gói'}
+                          </Text>
                           <Text
                             style={{
                               fontSize: 17,
@@ -1004,26 +790,24 @@ const Home = ({ navigation }) => {
                               currency: 'VND',
                             })}
                           </Text>
-                          {data.item?.productConsolidationArea?.address &&
-                            <Text
-                              style={{
-                                fontSize: 17,
-                                fontWeight: 'bold',
-                                fontFamily: 'Roboto',
-                                color: 'black',
-                                maxWidth: '84%'
-                              }}>
-                              Điểm tập kết:{' '}
-                              {data.item?.productConsolidationArea.address}
-                            </Text>
-                          }
+                          <Text
+                            style={{
+                              fontSize: 17,
+                              fontWeight: 'bold',
+                              fontFamily: 'Roboto',
+                              color: 'black',
+                            }}>
+                            Nhân viên đóng gói:{' '}
+                            {data.item?.packager === null
+                              ? 'Chưa có'
+                              : data.item?.packager.fullName}
+                          </Text>
                         </View>
                         <Image
                           resizeMode="contain"
                           style={{
                             width: 30,
                             height: 30,
-                            marginBottom: 30,
                             tintColor: COLORS.primary,
                           }}
                           source={icons.rightArrow}
@@ -1038,7 +822,7 @@ const Home = ({ navigation }) => {
                     style={{
                       flexDirection: 'row',
                       justifyContent: 'flex-end',
-                      height: data.item?.status === 0 ? '87%' : '91.5%',
+                      height: '89%',
                       // marginVertical: '2%',
                     }}>
                     <TouchableOpacity
@@ -1052,9 +836,7 @@ const Home = ({ navigation }) => {
                         justifyContent: 'center',
                       }}
                       onPress={() => {
-                        setLoading(true);
-                        setConsolidationAreaList([]);
-                        getConsolidationArea(data.item.pickupPoint.id);
+                        setVisible(true);
                         // console.log(data.item.id);
                         setOrder(data.item);
                       }}>
@@ -1063,14 +845,14 @@ const Home = ({ navigation }) => {
                           <Image
                             source={icons.packaging}
                             resizeMode="contain"
-                            style={{ width: 40, height: 40, tintColor: 'white' }}
+                            style={{width: 40, height: 40, tintColor: 'white'}}
                           />
                         )}
                         {data.item?.status === 1 && (
                           <Image
                             source={icons.packaged}
                             resizeMode="contain"
-                            style={{ width: 55, height: 55, tintColor: 'white' }}
+                            style={{width: 55, height: 55, tintColor: 'white'}}
                           />
                         )}
                       </View>
@@ -1221,87 +1003,22 @@ const Home = ({ navigation }) => {
                       'Hoàn thành đóng gói đơn hàng'}
                   </Text>
                 </View>
-                {orderList[0]?.status === 0 &&
-                  <><View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between'
-                    }}>
-                    <Text
-                      style={{
-                        color: 'black',
-                        fontSize: 18,
-                        fontWeight: 400,
-                        paddingBottom: 15,
-                      }}>
-                      Vui lòng chọn điểm tập kết:
-                    </Text>
-                  </View>
-                    <FlatList
-                      style={{ maxHeight: 170 }}
-                      data={consolidationAreaList}
-                      renderItem={data => (
-                        <TouchableOpacity
-                          key={data.item.id}
-                          onPress={() => {
-                            setSelectedConsolidationAreaId(data.item.id);
-                          }}
-                          style={{
-                            paddingVertical: 15,
-                            borderTopColor: '#decbcb',
-                            borderTopWidth: 0.75,
-                          }}>
-                          <View
-                            style={{
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                              gap: 15,
-                              flex: 1,
-                              justifyContent: 'space-between',
-                            }}>
-                            <Image
-                              resizeMode="contain"
-                              style={{ width: 20, height: 20 }}
-                              source={icons.location}
-                              tintColor={
-                                data.item.id === selectedConsolidationAreaId
-                                  ? COLORS.secondary
-                                  : 'black'
-                              }
-                            />
-                            <Text
-                              style={{
-                                fontSize: 16,
-                                color:
-                                  data.item.id === selectedConsolidationAreaId
-                                    ? COLORS.secondary
-                                    : 'black',
-                                fontFamily: 'Roboto',
-                                textDecorationColor: 'red',
-                                flexShrink: 1,
-                              }}>
-                              {data.item.address}
-                            </Text>
-                          </View>
-                        </TouchableOpacity>
-                      )}
-                    /></>}
-                {orderList[0]?.status === 1 &&
-                  <Text
-                    style={{
-                      color: 'black',
-                      fontSize: 18,
-                      fontWeight: 400,
-                      paddingBottom: 20,
-                    }}>
-                    Bạn đã hoàn thành đóng gói đơn hàng này ?
-                  </Text>
-                }
-
+                <Text
+                  style={{
+                    color: 'black',
+                    fontSize: 18,
+                    fontWeight: 400,
+                  }}>
+                  {orderList[0]?.status === 0 &&
+                    'Bạn sẽ đóng gói đơn hàng này ?'}
+                  {orderList[0]?.status === 1 &&
+                    'Bạn đã hoàn thành đóng gói đơn hàng này ?'}
+                </Text>
                 <View
                   style={{
                     flexDirection: 'row',
                     justifyContent: 'center',
+                    marginTop: '7%',
                   }}>
                   <TouchableOpacity
                     style={{
@@ -1362,7 +1079,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   body: {
-    flex: 11,
+    flex: 8,
     // backgroundColor: 'pink',
     paddingHorizontal: 20,
   },

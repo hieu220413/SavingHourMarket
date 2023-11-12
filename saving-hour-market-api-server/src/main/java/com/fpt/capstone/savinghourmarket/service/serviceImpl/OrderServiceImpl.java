@@ -176,32 +176,17 @@ public class OrderServiceImpl implements OrderService {
         List<OrderDetail> orderDetailList = orderDetailRepository.findOrderDetailsByOrderPackaging(staff.getPickupPoint(), pickupPointId, supermarketId, staff.getId(), pageable);
         List<OrderProductForPackage> orderProductForPackages = new ArrayList<>();
         orderDetailList.forEach(orderDetail -> {
-            orderDetail.getOrderDetailProductBatches().forEach(orderDetailProductBatch -> {
-                ModelMapper mapper = new ModelMapper();
-                OrderProductForPackage orderProductForPackage = new OrderProductForPackage();
+            ModelMapper mapper = new ModelMapper();
+            OrderProductForPackage orderProductForPackage = new OrderProductForPackage();
 
-                Product product = orderDetail.getProduct();
-                mapper.map(product, orderProductForPackage);
-                orderProductForPackage.setProductConsolidationArea(orderDetail.getOrder().getProductConsolidationArea());
-                orderProductForPackage.setBoughtQuantity(orderDetailProductBatch.getBoughtQuantity());
-                orderProductForPackage.setExpiredDate(orderDetailProductBatch.getProductBatch().getExpiredDate());
-                orderProductForPackage.setSupermarketAddress(orderDetailProductBatch.getProductBatch().getSupermarketAddress());
+            Product product = orderDetail.getProduct();
+            mapper.map(product, orderProductForPackage);
+            orderProductForPackage.setBoughtQuantity(orderDetail.getBoughtQuantity());
 
-                OrderPackaging orderPackaging = new OrderPackaging();
-                mapper.map(orderDetail.getOrder(), orderPackaging);
-                orderProductForPackage.setOrderPackage(orderPackaging);
-
-                List<String> productImageList = new ArrayList<>();
-                orderDetail.getProduct().getProductImageList().forEach(image -> {
-                    String imageUrl = image.getImageUrl();
-                    productImageList.add((imageUrl));
-                });
-
-                orderProductForPackage.setImageUrlImageList(productImageList);
-
-                orderProductForPackages.add(orderProductForPackage);
-            });
-
+            OrderPackaging orderPackaging = new OrderPackaging();
+            mapper.map(orderDetail.getOrder(), orderPackaging);
+            orderProductForPackage.setOrderPackage(orderPackaging);
+            orderProductForPackages.add(orderProductForPackage);
         });
 
         return orderProductForPackages;
@@ -225,20 +210,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderBatch> fetchOrderBatches(SortType deliverDateSortType, LocalDate deliveryDate, UUID delivererID) {
-        Sort sortable = null;
-
-        if (deliverDateSortType != null) {
-            if (deliverDateSortType.equals(SortType.ASC.toString())) {
-                sortable = Sort.by("deliverDate").ascending();
-            } else {
-                sortable = Sort.by("deliverDate").descending();
-            }
-        }
+    public List<OrderBatch> fetchOrderBatches(LocalDate deliveryDate, UUID delivererID) {
         List<OrderBatch> orderBatches = orderBatchRepository.findByDistrictOrDeliverDate(
                 deliveryDate,
-                delivererID,
-                sortable);
+                delivererID);
         return orderBatches;
     }
 
@@ -250,29 +225,19 @@ public class OrderServiceImpl implements OrderService {
         Staff staff = staffRepository.findByEmail(staffEmail).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với email: " + staffEmail));
         ProductConsolidationArea productConsolidationArea = productConsolidationAreaRepository.findById(productConsolidationAreaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy điểm tập kết với ID: " + productConsolidationAreaId));
-//        if (LocalDateTime.now().isAfter(order.getCreatedTime().plus(Utils.getAdminConfiguration().getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS))) {
-        order.setPackager(staff);
-        order.setProductConsolidationArea(productConsolidationArea);
-        order.setStatus(OrderStatus.PACKAGING.ordinal());
-        FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
-//        } else {
-//            return "Đơn hàng này đã chưa quá thời gian khách hàng có thể huỷ nên không thể nhận đóng gói!";
-//        }
-        return "Đơn hàng này đã được nhận đóng gói thành công!";
-    }
-
-    @Override
-    public String editProductConsolidationArea(UUID orderId, UUID productConsolidationAreaId) throws IOException, ResourceNotFoundException {
-        Order order = repository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng với ID " + orderId));
-        ProductConsolidationArea productConsolidationArea = productConsolidationAreaRepository.findById(productConsolidationAreaId)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy điểm tập kết với ID: " + productConsolidationAreaId));
-        if (order.getProductConsolidationArea() != null && order.getStatus() == OrderStatus.PACKAGING.ordinal()) {
-        order.setProductConsolidationArea(productConsolidationArea);
+        if (LocalDateTime.now().isAfter(order.getCreatedTime().plus(systemConfigurationService.getConfiguration().getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS))) {
+            if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_ORD.toString())) {
+                order.setPackager(staff);
+                order.setProductConsolidationArea(productConsolidationArea);
+                order.setStatus(OrderStatus.PACKAGING.ordinal());
+                FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
+            } else {
+                return "Nhân viên này không phải là nhân Viên ĐÓNG GÓI!";
+            }
         } else {
-            return "Đơn hàng này chưa được nhận đóng gói nên không thể sửa điểm tập kết!";
+            return "Đơn hàng này đã chưa quá thời gian khách hàng có thể huỷ nên không thể nhận đóng gói!";
         }
-        return "Đơn hàng này đã sửa điểm tập kết thành công!";
+        return "Đơn hàng này đã được nhận đóng gói thành công!";
     }
 
     @Override
@@ -289,18 +254,6 @@ public class OrderServiceImpl implements OrderService {
             order.setProductConsolidationArea(productConsolidationArea);
             order.setStatus(OrderStatus.PACKAGING.ordinal());
             FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
-        }
-        return "Nhóm đơn hàng này đã được nhận đóng gói thành công!";
-    }
-
-    @Override
-    public String editProductConsolidationAreaGroup(UUID orderGroupId, UUID productConsolidationAreaId) throws NoSuchOrderException, ResourceNotFoundException {
-        OrderGroup orderGroup = orderGroupRepository.findById(orderGroupId)
-                .orElseThrow(() -> new NoSuchOrderException("Không tìm thấy nhóm đơn hàng với ID " + orderGroupId));
-        ProductConsolidationArea productConsolidationArea = productConsolidationAreaRepository.findById(productConsolidationAreaId)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy điểm tập kết với ID: " + productConsolidationAreaId));
-        for (Order order : orderGroup.getOrderList()) {
-            order.setProductConsolidationArea(productConsolidationArea);
         }
         return "Nhóm đơn hàng này đã được nhận đóng gói thành công!";
     }
@@ -528,7 +481,6 @@ public class OrderServiceImpl implements OrderService {
 
                     Product product = o.getProduct();
                     orderProduct.setName(product.getName());
-                    orderProduct.setUnit(product.getUnit());
                     orderProduct.setImages(product.getProductImageList());
                     orderProduct.setDescription(product.getDescription());
                     orderProduct.setProductSubCategory(product.getProductSubCategory().getName());
@@ -1137,7 +1089,7 @@ public class OrderServiceImpl implements OrderService {
             // Save the document to a byte array
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             document.write(byteArrayOutputStream);
-            return FirebaseService.uploadWordToStorage(byteArrayOutputStream, orderId);
+            return  FirebaseService.uploadWordToStorage(byteArrayOutputStream, orderId);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
