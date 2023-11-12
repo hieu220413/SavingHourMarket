@@ -33,24 +33,24 @@ import java.util.UUID;
 
 public final class Utils {
 
-    public static Configuration getAdminConfiguration() throws IOException {
-        JsonReader reader = Json.createReader(new ClassPathResource("admin_configuration.json").getInputStream());
-
-        JsonObject jsonObject = reader.readObject();
-
-        reader.close();
-
-        Configuration configuration = new Configuration();
-        configuration.setSystemStatus(jsonObject.getInt("systemStatus"));
-        configuration.setLimitOfOrders(jsonObject.getInt("limitOfOrders"));
-        configuration.setNumberOfSuggestedPickupPoint(jsonObject.getInt("numberOfSuggestedPickupPoint"));
-        configuration.setDeleteUnpaidOrderTime(jsonObject.getInt("deleteUnpaidOrderTime"));
-        configuration.setInitialShippingFee(jsonObject.getInt("initialShippingFee"));
-        configuration.setMinKmDistanceForExtraShippingFee(jsonObject.getInt("minKmDistanceForExtraShippingFee"));
-        configuration.setExtraShippingFeePerKilometer(jsonObject.getInt("extraShippingFeePerKilometer"));
-        configuration.setTimeAllowedForOrderCancellation(jsonObject.getInt("timeAllowedForOrderCancellation"));
-        return configuration;
-    }
+//    public static Configuration getAdminConfiguration() throws IOException {
+//        JsonReader reader = Json.createReader(new ClassPathResource("admin_configuration.json").getInputStream());
+//
+//        JsonObject jsonObject = reader.readObject();
+//
+//        reader.close();
+//
+//        Configuration configuration = new Configuration();
+//        configuration.setSystemStatus(jsonObject.getInt("systemStatus"));
+//        configuration.setLimitOfOrders(jsonObject.getInt("limitOfOrders"));
+//        configuration.setNumberOfSuggestedPickupPoint(jsonObject.getInt("numberOfSuggestedPickupPoint"));
+//        configuration.setDeleteUnpaidOrderTime(jsonObject.getInt("deleteUnpaidOrderTime"));
+//        configuration.setInitialShippingFee(jsonObject.getInt("initialShippingFee"));
+//        configuration.setMinKmDistanceForExtraShippingFee(jsonObject.getInt("minKmDistanceForExtraShippingFee"));
+//        configuration.setExtraShippingFeePerKilometer(jsonObject.getInt("extraShippingFeePerKilometer"));
+//        configuration.setTimeAllowedForOrderCancellation(jsonObject.getInt("timeAllowedForOrderCancellation"));
+//        return configuration;
+//    }
 
     public static String validateIdToken(String idToken, FirebaseAuth firebaseAuth) throws FirebaseAuthException {
         FirebaseToken token = firebaseAuth.verifyIdToken(idToken, true);
