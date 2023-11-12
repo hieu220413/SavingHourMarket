@@ -5,6 +5,7 @@ import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.ProductImage;
 import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
 import com.fpt.capstone.savinghourmarket.entity.Supermarket;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,6 +24,7 @@ public class ProductDisplayStaff {
     public ProductDisplayStaff(Product product) {
         this.id = product.getId();
         this.name = product.getName();
+        this.unit = product.getUnit();
         this.description = product.getDescription();
         this.imageUrlImageList = product.getProductImageList();
         this.status = product.getStatus();
@@ -30,21 +32,24 @@ public class ProductDisplayStaff {
         this.supermarket = product.getSupermarket();
     }
 
+    @NotNull
     private UUID id;
-
+    @NotNull
     private String name;
-
+    @NotNull
+    private String unit;
+    @NotNull
     private String description;
-
-
+    @NotNull
     private List<ProductImage> imageUrlImageList;
-
+    @NotNull
     private Integer status;
-
+    @NotNull
     private ProductSubCategory productSubCategory;
-
+    @NotNull
     private Supermarket supermarket;
 
+    @NotNull
     @JsonProperty("productBatchList")
     private List<ProductBatchDisplayStaff> productBatchDisplayStaffList = new ArrayList<>();
 }

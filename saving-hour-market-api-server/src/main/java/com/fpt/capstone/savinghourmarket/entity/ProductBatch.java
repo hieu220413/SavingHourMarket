@@ -1,6 +1,8 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fpt.capstone.savinghourmarket.model.ProductBatchAddressDisplayStaff;
+import com.fpt.capstone.savinghourmarket.model.ProductBatchDisplayStaff;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,6 +20,15 @@ import java.util.UUID;
 @Setter
 @Getter
 public class ProductBatch {
+
+    public ProductBatch(ProductBatchDisplayStaff productBatchDisplayStaff, ProductBatchAddressDisplayStaff productBatchAddressDisplayStaff) {
+        this.id = productBatchAddressDisplayStaff.getProductBatchId();
+        this.price = productBatchDisplayStaff.getPrice();
+        this.priceOriginal = productBatchDisplayStaff.getPriceOriginal();
+        this.expiredDate = productBatchDisplayStaff.getExpiredDate();
+        this.quantity = productBatchAddressDisplayStaff.getQuantity();
+        this.supermarketAddress = productBatchAddressDisplayStaff.getSupermarketAddress();
+    }
 
     @Id
     @UuidGenerator

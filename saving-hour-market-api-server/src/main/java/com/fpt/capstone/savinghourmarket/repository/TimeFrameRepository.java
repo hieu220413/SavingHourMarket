@@ -1,6 +1,8 @@
 package com.fpt.capstone.savinghourmarket.repository;
 
 import com.fpt.capstone.savinghourmarket.entity.TimeFrame;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -31,10 +33,15 @@ public interface TimeFrameRepository extends JpaRepository<TimeFrame, UUID> {
     @Query("SELECT t FROM TimeFrame t " +
             "WHERE " +
             "((:status IS NULL) OR (t.status = :status))")
-    List<TimeFrame> findAllForAdmin(Integer status);
+    List<TimeFrame> findAllForStaff(Integer status);
 
     @Query("SELECT t from TimeFrame t " +
             "WHERE " +
             "t.fromHour = :fromHour AND t.toHour = :toHour")
     Optional<TimeFrame> findByFromHourAndToHour(LocalTime fromHour, LocalTime toHour);
+
+    @Query("SELECT t FROM TimeFrame t " +
+            "WHERE " +
+            "((:status IS NULL) OR (t.status = :status))")
+    Page<TimeFrame> findAllForAdmin(Integer status, Pageable pageable);
 }

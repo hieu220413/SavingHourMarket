@@ -2,6 +2,7 @@ package com.fpt.capstone.savinghourmarket.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fpt.capstone.savinghourmarket.entity.ProductBatch;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,12 +25,18 @@ public class ProductBatchDisplayStaff {
         this.productBatchAddressDisplayStaffList =  List.of(new ProductBatchAddressDisplayStaff(productBatch)).stream().collect(Collectors.toList());
     }
 
+    @NotNull
     private Integer price;
+
+    @NotNull
 
     private Integer priceOriginal;
 
+    @NotNull
+
     private LocalDate expiredDate;
 
+    @NotNull
     @JsonProperty("productBatchAddressList")
     private List<ProductBatchAddressDisplayStaff> productBatchAddressDisplayStaffList;
 }

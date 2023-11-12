@@ -88,6 +88,7 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/timeframe/getForPickupPoint").permitAll()
                             .requestMatchers("/api/timeframe/getForHomeDelivery").permitAll()
                             .requestMatchers("/api/timeframe/getAllForStaff").hasAnyRole(allStaffAndAdmin)
+                            .requestMatchers("/api/timeframe/getAllForAdmin").hasRole("ADMIN")
                             .requestMatchers("/api/timeframe/create").hasRole("ADMIN")
                             .requestMatchers("/api/timeframe/update").hasRole("ADMIN")
                             .requestMatchers("/api/timeframe/updateStatus").hasRole("ADMIN")
