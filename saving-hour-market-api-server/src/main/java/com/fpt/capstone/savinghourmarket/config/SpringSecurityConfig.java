@@ -95,6 +95,7 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/pickupPoint/getAll").permitAll()
                             .requestMatchers("/api/pickupPoint/getWithSortAndSuggestion").permitAll()
                             .requestMatchers("/api/pickupPoint/getAllForStaff").hasAnyRole(allStaffAndAdmin)
+                            .requestMatchers("/api/pickupPoint/getAllForAdmin").hasRole("ADMIN")
                             .requestMatchers("/api/pickupPoint/create").hasRole("ADMIN")
                             .requestMatchers("/api/pickupPoint/updateInfo").hasRole("ADMIN")
                             .requestMatchers("/api/pickupPoint/updateStatus").hasRole("ADMIN")
@@ -105,6 +106,7 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/productConsolidationArea/updateStatus").hasRole("ADMIN")
                             .requestMatchers("/api/productConsolidationArea/updatePickupPointList").hasRole("ADMIN")
                             .requestMatchers("/api/productConsolidationArea/getAllForStaff").hasAnyRole(allStaffAndAdmin)
+                            .requestMatchers("/api/productConsolidationArea/getAllForAdmin").hasRole("ADMIN")
                             .requestMatchers("/api/productConsolidationArea/getByPickupPointForStaff").hasAnyRole(allStaffAndAdmin)
 
 

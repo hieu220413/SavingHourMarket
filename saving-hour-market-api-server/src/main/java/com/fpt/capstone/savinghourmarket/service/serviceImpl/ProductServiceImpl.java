@@ -87,8 +87,24 @@ public class ProductServiceImpl implements ProductService {
         long totalProduct = result.getTotalElements();
 
         List<Product> productList = result.stream().toList();
+        List<ProductDisplayStaff> productDisplayStaffList = productList.stream().map(ProductDisplayStaff::new).collect(Collectors.toList());
+        HashMap<UUID, ProductDisplayStaff> productDisplayStaffHashMap = new HashMap<>();
+        productDisplayStaffList.forEach(productDisplayStaff -> productDisplayStaffHashMap.put(productDisplayStaff.getId(), productDisplayStaff));
 
-        return new ProductListResponseBody(productList, totalPage, totalProduct);
+        for(Product product : productList) {
+            HashMap<LocalDate, ProductBatchDisplayStaff> sameExpiredDateTrack = new HashMap<>();
+            for(ProductBatch productBatch : product.getProductBatchList()) {
+                if(!sameExpiredDateTrack.containsKey(productBatch.getExpiredDate())){
+                    sameExpiredDateTrack.put(productBatch.getExpiredDate(), new ProductBatchDisplayStaff(productBatch));
+                } else {
+                    sameExpiredDateTrack.get(productBatch.getExpiredDate()).getProductBatchAddressDisplayStaffList().add(new ProductBatchAddressDisplayStaff(productBatch));
+                }
+            }
+            productDisplayStaffHashMap.get(product.getId()).setProductBatchDisplayStaffList(sameExpiredDateTrack.values().stream().collect(Collectors.toList()));
+        }
+
+
+        return new ProductListResponseBody(productDisplayStaffList, totalPage, totalProduct);
     }
 
 //    @Override

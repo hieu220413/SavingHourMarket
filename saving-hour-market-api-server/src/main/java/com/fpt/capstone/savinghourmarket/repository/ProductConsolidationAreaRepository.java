@@ -2,6 +2,8 @@ package com.fpt.capstone.savinghourmarket.repository;
 
 import com.fpt.capstone.savinghourmarket.entity.ProductConsolidationArea;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -18,7 +20,7 @@ public interface ProductConsolidationAreaRepository extends JpaRepository<Produc
             "LEFT JOIN FETCH a.pickupPointList " +
             "WHERE " +
             "((:status IS NULL) OR (a.status = :status))")
-    List<ProductConsolidationArea> getAllWithPickupPoint(Integer status);
+    List<ProductConsolidationArea> getAllWithPickupPointForStaff(Integer status);
 
     Optional<ProductConsolidationArea> findByAddress(String address);
 
@@ -36,4 +38,10 @@ public interface ProductConsolidationAreaRepository extends JpaRepository<Produc
             "AND " +
             "a.status = 1")
     List<ProductConsolidationArea> getByPickupPoint(UUID pickupPointId);
+
+    @Query("SELECT DISTINCT a FROM ProductConsolidationArea a " +
+            "LEFT JOIN FETCH a.pickupPointList " +
+            "WHERE " +
+            "((:status IS NULL) OR (a.status = :status))")
+    Page<ProductConsolidationArea> getAllWithPickupPointForAdmin(Integer status, Pageable pageable);
 }
