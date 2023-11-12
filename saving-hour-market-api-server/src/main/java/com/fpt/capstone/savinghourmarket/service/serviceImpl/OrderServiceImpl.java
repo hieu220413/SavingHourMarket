@@ -7,7 +7,6 @@ import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.repository.*;
 import com.fpt.capstone.savinghourmarket.service.FirebaseService;
 import com.fpt.capstone.savinghourmarket.service.OrderService;
-import com.fpt.capstone.savinghourmarket.service.SystemConfigurationService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.fpt.capstone.savinghourmarket.util.kmean.Centroid;
 import com.fpt.capstone.savinghourmarket.util.kmean.HaversineDistance;
@@ -87,8 +86,6 @@ public class OrderServiceImpl implements OrderService {
     private final StaffRepository staffRepository;
 
     private final DiscountRepository discountRepository;
-
-    private final SystemConfigurationService systemConfigurationService;
 
     private final ProductConsolidationAreaRepository productConsolidationAreaRepository;
 //    private final ConfigurationRepository configurationRepository;
@@ -563,7 +560,7 @@ public class OrderServiceImpl implements OrderService {
         }
         Order order = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
-        if (order.getCreatedTime().isBefore(LocalDateTime.now().plus(systemConfigurationService.getConfiguration().getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS))) {
+        if (order.getCreatedTime().isBefore(LocalDateTime.now().plus(Utils.getAdminConfiguration().getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS))) {
             if (order.getOrderGroup() != null) {
                 order.setOrderGroup(null);
             }
@@ -585,7 +582,7 @@ public class OrderServiceImpl implements OrderService {
             }
             repository.save(order);
         } else {
-            return "Đơn hàng đã quá thời gian huỷ cho phép là " + systemConfigurationService.getConfiguration().getTimeAllowedForOrderCancellation() + " tiếng kể từ khi đặt hàng!";
+            return "Đơn hàng đã quá thời gian huỷ cho phép là " + Utils.getAdminConfiguration().getTimeAllowedForOrderCancellation() + " tiếng kể từ khi đặt hàng!";
         }
 
         return "Successfully canceled order " + id;
@@ -744,7 +741,7 @@ public class OrderServiceImpl implements OrderService {
         if (!pickupPoint.isPresent()) {
             throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.PICKUP_POINT_NOT_FOUND.getCode()), AdditionalResponseCode.PICKUP_POINT_NOT_FOUND.toString());
         }
-        Configuration configuration = systemConfigurationService.getConfiguration();
+        Configuration configuration = Utils.getAdminConfiguration();
 //        PickupPointSuggestionResponseBody closetPickupPoint;
         Integer shippingFee = configuration.getInitialShippingFee();
 //        List<PickupPoint> pickupPoints = pickupPointRepository.getAllSortByDistance(latitude, longitude);
@@ -1204,7 +1201,7 @@ public class OrderServiceImpl implements OrderService {
                 .findByEmail(email)
                 .orElseThrow(() -> new AuthorizationServiceException("Access denied with this account: " + email));
         Order orderCreated = null;
-        if (repository.getOrdersProcessing(customer.getEmail()).size() < systemConfigurationService.getConfiguration().getLimitOfOrders()) {
+        if (repository.getOrdersProcessing(customer.getEmail()).size() < Utils.getAdminConfiguration().getLimitOfOrders()) {
             RLock rLock = redissonClient.getFairLock("createOrderLock");
             boolean res = rLock.tryLock(100, 10, TimeUnit.SECONDS);
             if (res) {
