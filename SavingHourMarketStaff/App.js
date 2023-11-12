@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
+import Toast, { BaseToast } from 'react-native-toast-message';
+import { COLORS } from './src/constants/theme';
 import 'react-native-gesture-handler';
 import Tabs from './src/navigations/tabs';
 import Login from './src/screens/Login';
@@ -21,8 +23,32 @@ LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
 ]);
 
+
 const Stack = createStackNavigator();
 export default function App() {
+  const toastConfig = {
+    /*
+    Overwrite 'success' type,
+    by modifying the existing `BaseToast` component
+  */
+    success: props => (
+      <BaseToast
+        {...props}
+        style={{ backgroundColor: COLORS.primary, borderLeftWidth: 0 }}
+        contentContainerStyle={{ paddingHorizontal: 15 }}
+        text1Style={{
+          fontSize: 16,
+          fontWeight: '700',
+          color: 'white',
+        }}
+        text2Style={{
+          fontSize: 14,
+          fontWeight: '400',
+          color: 'white',
+        }}
+      />
+    ),
+  };
   return (
     <>
       <NavigationContainer>
@@ -58,6 +84,7 @@ export default function App() {
         </Stack.Navigator>
       </NavigationContainer>
       <ModalPortal />
+      <Toast config={toastConfig} />
     </>
   );
 }
