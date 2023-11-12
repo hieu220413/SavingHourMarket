@@ -344,7 +344,7 @@ public class OrderServiceImpl implements OrderService {
     public String confirmSucceeded(UUID orderId, String staffEmail) throws IOException, NoSuchOrderException, ResourceNotFoundException {
         Order order = repository.findById(orderId)
                 .orElseThrow(() -> new NoSuchOrderException("No order found with this id " + orderId));
-        if (order.getDeliveryDate().equals(LocalDate.now())) {
+        if (order.getDeliveryDate().toLocalDate().equals(LocalDate.now())) {
             Staff staff = staffRepository.findByEmail(staffEmail).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với email: " + staffEmail));
             order.setStatus(OrderStatus.SUCCESS.ordinal());
             FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được giao thành công! Hãy đánh giá dịch vụ của chúng tôi để đóng góp xây dưng hệ thống tốt hơn!", order.getCustomer().getId().toString());
