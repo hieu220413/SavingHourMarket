@@ -44,4 +44,8 @@ public interface ProductConsolidationAreaRepository extends JpaRepository<Produc
             "WHERE " +
             "((:status IS NULL) OR (a.status = :status))")
     Page<ProductConsolidationArea> getAllWithPickupPointForAdmin(Integer status, Pageable pageable);
+
+    @Query("SELECT a FROM ProductConsolidationArea a " +
+            "WHERE a.id = :productConsolidationAreaId AND a.status = 1")
+    Optional<ProductConsolidationArea> findConsolidationAreaActiveById(UUID productConsolidationAreaId);
 }

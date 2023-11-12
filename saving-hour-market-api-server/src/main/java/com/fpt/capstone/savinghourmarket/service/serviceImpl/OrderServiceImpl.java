@@ -962,6 +962,11 @@ public class OrderServiceImpl implements OrderService {
                     errorFields.put("timeFrameIdError", "No time frame id " + orderBatchCreateBody.getTimeFrameId() + " found");
                 }
 
+                Optional<ProductConsolidationArea> productConsolidationArea = productConsolidationAreaRepository.findConsolidationAreaActiveById(orderBatchCreateBody.getProductConsolidationAreaId());
+                if(!productConsolidationArea.isPresent()) {
+                    errorFields.put("productConsolidationAreaIdError", "No product consolidation area id" + orderBatchCreateBody.getProductConsolidationAreaId() + " found");
+                }
+
                 if (orderBatchCreateBody.getDeliverDate().isBefore(LocalDate.now())) {
                     errorFields.put("deliverDateError", "Date value must be equal or after current date");
                 }
@@ -989,6 +994,7 @@ public class OrderServiceImpl implements OrderService {
                 OrderBatch orderBatch = new OrderBatch();
                 orderBatch.setDeliverDate(orderBatchCreateBody.getDeliverDate());
                 orderBatch.setTimeFrame(timeFrame.get());
+                orderBatch.setProductConsolidationArea(productConsolidationArea.get());
                 orderBatch.setOrderList(orderTrackList);
                 for (Order order : orderTrackList) {
                     order.setOrderBatch(orderBatch);
