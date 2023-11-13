@@ -4,7 +4,7 @@ import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import dayjs from "dayjs";
 
 const ProductBatchUploadByExcel = ({ handleClose, productBatch }) => {
-  const ProductBatchRow = ({ item, index }) => {
+  const ProductBatchRow = ({ item, index, address }) => {
     return (
       <>
         <tr key={index} className="table-body-row">
@@ -19,10 +19,10 @@ const ProductBatchUploadByExcel = ({ handleClose, productBatch }) => {
               </p>
             )}
           </td>
-          <td>{item?.quantity}</td>
+          <td>{address?.quantity}</td>
           <td>
-            {item?.supermarketAddress ? (
-              item?.supermarketAddress?.address
+            {address?.supermarketAddress ? (
+              address?.supermarketAddress?.address
             ) : (
               <p style={{ fontWeight: 700 }} className="text-danger">
                 Lỗi địa chỉ
@@ -70,7 +70,16 @@ const ProductBatchUploadByExcel = ({ handleClose, productBatch }) => {
             </thead>
             <tbody>
               {productBatch.map((item, index) => (
-                <ProductBatchRow item={item} key={index} index={index} />
+                <>
+                  {item.productBatchAddresses.map((address) => (
+                    <ProductBatchRow
+                      address={address}
+                      item={item}
+                      key={index}
+                      index={index}
+                    />
+                  ))}
+                </>
               ))}
             </tbody>
           </table>
