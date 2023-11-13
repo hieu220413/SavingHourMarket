@@ -118,6 +118,7 @@ const ProductManagement = () => {
         )
           .then((res) => res.json())
           .then((data) => {
+            console.log(data);
             setProducts(data.productList);
             setTotalPage(data.totalPage);
             setLoading(false);
