@@ -452,18 +452,6 @@ const OrderBatch = ({navigation}) => {
                                 Giờ giao hàng : {data.item?.timeFrame?.fromHour}{' '}
                                 đến {data.item?.timeFrame?.toHour}
                               </Text>
-                              <View style={{width: 320}}>
-                                <Text
-                                  style={{
-                                    fontSize: 17,
-                                    fontWeight: 'bold',
-                                    fontFamily: 'Roboto',
-                                    color: 'black',
-                                  }}>
-                                  Điểm gom hàng : 123
-                                  {data.item?.pickupPoint.address}
-                                </Text>
-                              </View>
                               <Text
                                 style={{
                                   fontSize: 17,
@@ -496,7 +484,7 @@ const OrderBatch = ({navigation}) => {
                         style={{
                           flexDirection: 'row',
                           justifyContent: 'flex-end',
-                          height: '90%',
+                          height: '87%',
                           // marginVertical: '2%',
                         }}>
                         <TouchableOpacity
@@ -638,18 +626,6 @@ const OrderBatch = ({navigation}) => {
                                 Giờ giao hàng : {data.item?.timeFrame?.fromHour}{' '}
                                 đến {data.item?.timeFrame?.toHour}
                               </Text>
-                              <View style={{width: 320}}>
-                                <Text
-                                  style={{
-                                    fontSize: 17,
-                                    fontWeight: 'bold',
-                                    fontFamily: 'Roboto',
-                                    color: 'black',
-                                  }}>
-                                  Điểm gom hàng :{' '}
-                                  {data.item?.pickupPoint?.address}
-                                </Text>
-                              </View>
                               <Text
                                 style={{
                                   fontSize: 17,
@@ -682,7 +658,7 @@ const OrderBatch = ({navigation}) => {
                         style={{
                           flexDirection: 'row',
                           justifyContent: 'flex-end',
-                          height: '90%',
+                          height: '87%',
                           // marginVertical: '2%',
                         }}>
                         <TouchableOpacity
