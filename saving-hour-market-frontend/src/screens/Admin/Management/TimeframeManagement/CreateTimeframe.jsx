@@ -12,16 +12,28 @@ import { format } from "date-fns";
 import dayjs from "dayjs";
 import MuiAlert from "@mui/material/Alert";
 import { Dialog, Snackbar } from "@mui/material";
+import { API } from "../../../../contanst/api";
+import { auth } from "../../../../firebase/firebase.config";
+import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-const CreateTimeframe = ({ handleClose }) => {
+const CreateTimeframe = ({
+  handleClose,
+  setOpenSnackbar,
+  openSnackbar,
+  setTimeframeList,
+  searchValue,
+  page,
+  setTotalPage,
+}) => {
   const [selectedDeliveryMethod, setSelectedDeliveryMethod] = useState(null);
   const [openDayOfWeekDropdown, setOpenDayOfWeekDropdown] = useState(false);
   const [fromHour, setFromHour] = useState(null);
   const [toHour, setToHour] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState({
     deliveryMethods: "",
     fromHour: "",
@@ -40,7 +52,7 @@ const CreateTimeframe = ({ handleClose }) => {
   };
   const deliveryMethods = [
     { display: "Điểm giao hàng", value: "PICKUP_POINT" },
-    { display: "Giao tận nhà", value: "DOOR__TO_DOOR" },
+    { display: "Giao tận nhà", value: "DOOR_TO_DOOR" },
     { display: "Tất cả", value: "ALL" },
   ];
 
@@ -65,6 +77,59 @@ const CreateTimeframe = ({ handleClose }) => {
       });
       return;
     }
+    const submitCreate = {
+      fromHour: fromHour,
+      toHour: toHour,
+      allowableDeliverMethod: selectedDeliveryMethod.value,
+    };
+    console.log(submitCreate);
+    setLoading(true);
+    const tokenId = await auth.currentUser.getIdToken();
+    fetch(`${API.baseURL}/api/timeframe/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${tokenId}`,
+      },
+      body: JSON.stringify(submitCreate),
+    })
+      .then((res) => res.json())
+      .then((respond) => {
+        console.log(respond);
+
+        fetch(
+          `${API.baseURL}/api/timeframe/getAllForAdmin?page=${
+            page - 1
+          }&limit=6&enableDisableStatus=ENABLE
+          `,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${tokenId}`,
+            },
+          }
+        )
+          .then((res) => res.json())
+          .then((respond) => {
+            if (respond?.code === 404 || respond.status === 500) {
+              setLoading(false);
+              return;
+            }
+            setTimeframeList(respond.pickupPointList);
+            setTotalPage(respond.totalPage);
+            handleClose();
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "success",
+              text: "Tạo thành công !",
+            });
+            setLoading(false);
+          })
+          .catch((err) => console.log(err));
+      })
+      .catch((err) => {});
   };
   return (
     <div style={{ width: 450 }} className={`modal__container `}>
@@ -216,6 +281,7 @@ const CreateTimeframe = ({ handleClose }) => {
           {openValidateSnackbar.text}
         </Alert>
       </Snackbar>
+      {loading && <LoadingScreen />}
     </div>
   );
 };
