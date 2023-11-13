@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import MuiAlert from "@mui/material/Alert";
@@ -12,6 +12,9 @@ import {
 import ManagementMenu from "../../../../components/ManagementMenu/ManagementMenu";
 import CreateTimeframe from "./CreateTimeframe";
 import EditTimeframe from "./EditTimeframe";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "../../../../firebase/firebase.config";
+import { API } from "../../../../contanst/api";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -21,10 +24,11 @@ const TimeframeManagement = () => {
   const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(1);
   const [textPage, setTextPage] = useState(1);
-  const [timeframeList, setTimeframeList] = useState([1, 2, 3]);
+  const [timeframeList, setTimeframeList] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   const [textSearch, setTextSearch] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isSwitchRecovery, setIsSwitchRecovery] = useState(false);
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState({
     open: false,
@@ -40,6 +44,46 @@ const TimeframeManagement = () => {
   const handleOpenCreateDialog = () => setOpenCreateDialog(true);
   const handleCloseCreateDialog = () => setOpenCreateDialog(false);
 
+  const userState = useAuthState(auth);
+  useEffect(() => {
+    const fetchStaff = async () => {
+      setLoading(true);
+      if (!userState[1]) {
+        const tokenId = await auth.currentUser.getIdToken();
+
+        fetch(
+          `${API.baseURL}/api/timeframe/getAllForAdmin?page=${
+            page - 1
+          }&limit=6&${
+            isSwitchRecovery
+              ? "&enableDisableStatus=DISABLE"
+              : "&enableDisableStatus=ENABLE"
+          }`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${tokenId}`,
+            },
+          }
+        )
+          .then((res) => res.json())
+          .then((respond) => {
+            if (respond?.code === 404 || respond.status === 500) {
+              setLoading(false);
+              return;
+            }
+            setTimeframeList(respond.pickupPointList);
+            setTotalPage(respond.totalPage);
+
+            setLoading(false);
+          })
+          .catch((err) => console.log(err));
+      }
+    };
+    fetchStaff();
+  }, [page, isSwitchRecovery, userState[1]]);
+
   const TimeframeItem = ({ item, index }) => {
     const [openEditDialog, setOpenEditDialog] = useState(false);
     const handleOpenEditDialog = () => setOpenEditDialog(true);
@@ -50,10 +94,14 @@ const TimeframeManagement = () => {
     const handleCloseDeleteDialog = () => setOpenDeleteDialog(false);
     return (
       <tr className="table-body-row">
-        <td>1</td>
-        <td>19:00</td>
-        <td>21:00</td>
-        <td>Mỗi ngày</td>
+        <td>{index + 1}</td>
+        <td>{item.fromHour.slice(0, 5)}</td>
+        <td>{item.toHour.slice(0, 5)}</td>
+        <td>
+          {item.allowableDeliverMethod === 0 && "Điểm giao hàng"}
+          {item.allowableDeliverMethod === 1 && "Giao tận nhà"}
+          {item.allowableDeliverMethod === 2 && "Tất cả"}
+        </td>
         <td>
           <i onClick={handleOpenEditDialog} class="bi bi-pencil-square"></i>
           <i onClick={handleOpenDeleteDialog} class="bi bi-trash-fill"></i>
@@ -183,7 +231,7 @@ const TimeframeManagement = () => {
                     <th>No.</th>
                     <th>Giờ bắt đầu</th>
                     <th>Giờ kết thúc</th>
-                    <th>Ngày trong tuần</th>
+                    <th>Phương thức giao hàng</th>
                     <th>Thao tác</th>
                   </tr>
                 </thead>

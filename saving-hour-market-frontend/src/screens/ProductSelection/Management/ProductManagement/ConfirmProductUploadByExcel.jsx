@@ -14,6 +14,7 @@ import ProductBatchUploadByExcel from "./ProductBatchUploadByExcel";
 import ErrorProductUploadByExcel from "./ErrorProductUploadByExcel";
 import ProductImageSlider from "./ProductImageSlider";
 import CreateProductImageSlider from "./CreateProductImageSlider";
+import EditImage from "./EditImage";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -54,7 +55,40 @@ const ConfirmProductUploadByExcel = ({
   const [openImageUrlList, setOpenImageUrlList] = useState(false);
   const handleOpenImageUrlList = () => setOpenImageUrlList(true);
   const handleCloseImageUrlList = () => setOpenImageUrlList(false);
+
   const [imageUrlList, setImageUrlList] = useState(null);
+
+  function isEmpty(obj) {
+    for (const prop in obj) {
+      if (Object.hasOwn(obj, prop)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  function isEmptyObject(value) {
+    if (value == null) {
+      // null or undefined
+      return false;
+    }
+
+    if (typeof value !== "object") {
+      // boolean, number, string, function, etc.
+      return false;
+    }
+
+    const proto = Object.getPrototypeOf(value);
+
+    // consider `Object.create(null)`, commonly used as a safe map
+    // before `Map` support, an empty object as well as `{}`
+    if (proto !== null && proto !== Object.prototype) {
+      return false;
+    }
+
+    return isEmpty(value);
+  }
 
   const handleConfirm = async () => {
     setLoading(true);
@@ -69,7 +103,19 @@ const ConfirmProductUploadByExcel = ({
     })
       .then((res) => res.json())
       .then(async (res) => {
+        console.log(res);
         if (res.status === 500) {
+          setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
+          setLoading(false);
+          return;
+        }
+
+        if (!isEmptyObject(res.errorFields)) {
+          setErrorList(
+            Object.entries(res.errorFields).map(([key, value]) => {
+              return { index: key, value: value };
+            })
+          );
           setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
           setLoading(false);
           return;
@@ -114,6 +160,10 @@ const ConfirmProductUploadByExcel = ({
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
+    const [openImageUpload, setOpenImageUpload] = useState(false);
+    const handleOpenImageUpload = () => setOpenImageUpload(true);
+    const handleCloseImageUpload = () => setOpenImageUpload(false);
+
     const [openProductBatch, setOpenProductBatch] = useState(false);
     const handleOpenProductBatch = () => setOpenProductBatch(true);
     const handleCloseProductBatch = () => setOpenProductBatch(false);
@@ -135,22 +185,25 @@ const ConfirmProductUploadByExcel = ({
         <tr key={index} className="table-body-row">
           <td style={{ paddingTop: 30 }}>{index + 1}</td>
           <td>
-            {item.productImageList ? (
+            {item.imageUrls ? (
               <img
                 alt="hình"
                 style={{ cursor: "pointer" }}
                 width="80px"
                 height="60px"
-                onClick={() => {
-                  setImageUrlList(
-                    item.productImageList.map((img) => img.imageUrl)
-                  );
-                  handleOpenImageUrlList();
-                }}
-                src={item?.productImageList[0]?.imageUrl}
+                className="img-scale"
+                onClick={handleOpenImageUpload}
+                src={item?.imageUrls[0]}
               />
             ) : (
-              <img alt="hình" width="80px" height="60px" src={NullImage} />
+              <img
+                className="img-scale"
+                alt="hình"
+                width="80px"
+                height="60px"
+                src={NullImage}
+                onClick={handleOpenImageUpload}
+              />
             )}
           </td>
           <td style={{ paddingTop: 30 }}>
@@ -197,7 +250,7 @@ const ConfirmProductUploadByExcel = ({
           </td>
           <td style={{ paddingTop: 30 }}>
             {errorList.some((item) => parseInt(item.index) === index + 1) ||
-            !item.productImageList ? (
+            !item.imageUrls ? (
               <i
                 onClick={handleOpenErrorList}
                 style={{ marginLeft: "-3px" }}
@@ -279,11 +332,27 @@ const ConfirmProductUploadByExcel = ({
           />
         </Dialog>
         <Dialog
+          onClose={handleCloseImageUpload}
+          aria-labelledby="customized-dialog-title"
+          open={openImageUpload}
+        >
+          <EditImage
+            setConfirmProductList={setConfirmProductList}
+            confirmProductList={confirmProductList}
+            handleClose={handleCloseImageUpload}
+            product={item}
+            index={index}
+            setOpenSnackbar={setOpenSnackbar}
+            openSnackbar={openSnackbar}
+          />
+        </Dialog>
+        <Dialog
           onClose={handleCloseErrorList}
           aria-labelledby="customized-dialog-title"
           open={openErrorList}
         >
           <ErrorProductUploadByExcel
+            imageUrls={item.imageUrls}
             handleClose={handleCloseErrorList}
             errorList={errorField ? errorField.value : []}
           />

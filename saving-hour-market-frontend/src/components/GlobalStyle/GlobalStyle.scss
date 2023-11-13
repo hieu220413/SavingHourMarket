@@ -316,3 +316,11 @@ input {
     }
   }
 }
+
+.img-scale {
+  cursor: pointer;
+  transition: all ease-in-out 0.3s;
+  &:hover {
+    scale: (1.1);
+  }
+}

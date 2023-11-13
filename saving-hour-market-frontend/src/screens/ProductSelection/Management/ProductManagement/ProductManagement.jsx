@@ -41,6 +41,7 @@ const ProductManagement = () => {
   const [msg, setMsg] = useState("Thêm mới thành công");
   const [isSwitchRecovery, setIsSwitchRecovery] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [productBatchAddressList, setProductAddressList] = useState([]);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -117,6 +118,7 @@ const ProductManagement = () => {
         )
           .then((res) => res.json())
           .then((data) => {
+            console.log(data);
             setProducts(data.productList);
             setTotalPage(data.totalPage);
             setLoading(false);
@@ -339,12 +341,12 @@ const ProductManagement = () => {
                 cursor: "pointer",
               }}
               onClick={() => {
-                setImageUrlList(item.productImageList);
+                setImageUrlList(item.imageUrlImageList);
                 handleOpenImageUrlList();
               }}
               width="80px"
               height="60px"
-              src={item.productImageList[0].imageUrl}
+              src={item.imageUrlImageList[0].imageUrl}
             />
           </td>
           <td style={{ paddingTop: 30 }}>{item.name}</td>
@@ -357,13 +359,18 @@ const ProductManagement = () => {
                 setProductBatch(item.productBatchList);
                 handleOpenProductBatch();
               }}
-              className="bi bi-eye"
+              className="bi bi-list"
             ></i>
           </td>
           <td style={{ paddingTop: 30 }}>
             <i
               onClick={() => {
                 setProductToEdit(item);
+                const arr = [];
+                item.productBatchList.map((item) => {
+                  arr.push(item.productBatchAddressList);
+                });
+                setProductAddressList(arr);
                 handleOpenEdit();
               }}
               class="bi bi-pencil-square"
@@ -849,6 +856,7 @@ const ProductManagement = () => {
         <EditProduct
           handleClose={handleCloseEdit}
           product={productToEdit}
+          productBatchAddressList={productBatchAddressList}
           setProducts={setProducts}
           page={page}
           setTotalPage={setTotalPage}

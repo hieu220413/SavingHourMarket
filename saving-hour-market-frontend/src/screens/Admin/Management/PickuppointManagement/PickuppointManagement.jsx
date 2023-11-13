@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ManagementMenu from "../../../../components/ManagementMenu/ManagementMenu";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -14,6 +14,12 @@ import { Dialog } from "@mui/material";
 import CreatePickuppoint from "./CreatePickuppoint";
 import MuiAlert from "@mui/material/Alert";
 import { Snackbar } from "@mui/material";
+import { auth } from "../../../../firebase/firebase.config";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { API } from "../../../../contanst/api";
+import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
+import PickupPointConsolidation from "./PickupPointConsolidation";
+import EditPickuppoint from "./EditPickuppoint";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -23,7 +29,7 @@ const PickuppointManagement = () => {
   const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(1);
   const [textPage, setTextPage] = useState(1);
-  const [pickupPointList, setPickupPointList] = useState([1, 2, 3]);
+  const [pickupPointList, setPickupPointList] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   const [textSearch, setTextSearch] = useState("");
   const [loading, setLoading] = useState(false);
@@ -41,6 +47,47 @@ const PickuppointManagement = () => {
   const handleCloseSnackbar = () => {
     setOpenSnackbar({ ...openSnackbar, open: false });
   };
+
+  const userState = useAuthState(auth);
+  useEffect(() => {
+    const fetchStaff = async () => {
+      setLoading(true);
+      if (!userState[1]) {
+        const tokenId = await auth.currentUser.getIdToken();
+
+        fetch(
+          `${API.baseURL}/api/pickupPoint/getAllForAdmin?page=${
+            page - 1
+          }&limit=6&${
+            isSwitchRecovery
+              ? "&enableDisableStatus=DISABLE"
+              : "&enableDisableStatus=ENABLE"
+          }`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${tokenId}`,
+            },
+          }
+        )
+          .then((res) => res.json())
+          .then((respond) => {
+            if (respond?.code === 404 || respond.status === 500) {
+              setLoading(false);
+              return;
+            }
+            setPickupPointList(respond.pickupPointList);
+            setTotalPage(respond.totalPage);
+
+            setLoading(false);
+          })
+          .catch((err) => console.log(err));
+      }
+    };
+    fetchStaff();
+  }, [page, isSwitchRecovery, userState[1]]);
+
   const menuTabs = [
     {
       display: "Tài khoản",
@@ -67,7 +114,6 @@ const PickuppointManagement = () => {
       to: "/consolidationmanagement",
     },
   ];
-  const onSubmitSearch = (e) => {};
 
   const PickupPointItem = ({ item, index }) => {
     const [openEditDialog, setOpenEditDialog] = useState(false);
@@ -78,135 +124,151 @@ const PickuppointManagement = () => {
     const handleOpenDeleteDialog = () => setOpenDeleteDialog(true);
     const handleCloseDeleteDialog = () => setOpenDeleteDialog(false);
 
-    // const handleDelete = async () => {
-    //   setLoading(true);
-    //   const tokenId = await auth.currentUser.getIdToken();
-    //   fetch(`${API.baseURL}/api/staff/updateStaffAccountStatus`, {
-    //     method: "PUT",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       Authorization: `Bearer ${tokenId}`,
-    //     },
-    //     body: JSON.stringify({
-    //       accountId: staff.id,
-    //       enableDisableStatus: "DISABLE",
-    //     }),
-    //   })
-    //     .then((res) => res.json())
-    //     .then((respond) => {
-    //       console.log(respond);
-    //       if (respond?.error) {
-    //         setOpenSnackbar({
-    //           ...openSnackbar,
-    //           open: true,
-    //           severity: "error",
-    //           text: respond.error,
-    //         });
+    const [openConsolidationDialog, setOpenConsolidationDialog] =
+      useState(false);
+    const handleOpenConsolidationDialog = () =>
+      setOpenConsolidationDialog(true);
+    const handleCloseConsolidationDialog = () =>
+      setOpenConsolidationDialog(false);
 
-    //         setLoading(false);
-    //         return;
-    //       }
-    //       fetch(
-    //         `${API.baseURL}/api/staff/getStaffForAdmin?page=${
-    //           page - 1
-    //         }&limit=6&name=${searchValue}${
-    //           isSwitchRecovery ? "&status=DISABLE" : "&status=ENABLE"
-    //         }`,
-    //         {
-    //           method: "GET",
-    //           headers: {
-    //             "Content-Type": "application/json",
-    //             Authorization: `Bearer ${tokenId}`,
-    //           },
-    //         }
-    //       )
-    //         .then((res) => res.json())
-    //         .then((respond) => {
-    //           console.log(respond.staffList);
-    //           setStaffList(respond.staffList);
-    //           setTotalPage(respond.totalPage);
-    //           handleCloseDeleteDialog();
-    //           setLoading(false);
-    //           setOpenSnackbar({
-    //             ...openSnackbar,
-    //             open: true,
-    //             severity: "success",
-    //             text: "Vô hiệu hóa thành công",
-    //           });
-    //         })
-    //         .catch((err) => console.log(err));
-    //     })
-    //     .catch((err) => console.log(err));
-    // };
+    const handleDelete = async () => {
+      setLoading(true);
+      const tokenId = await auth.currentUser.getIdToken();
+      fetch(`${API.baseURL}/api/pickupPoint/updateStatus`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenId}`,
+        },
+        body: JSON.stringify({
+          id: item.id,
+          enableDisableStatus: "DISABLE",
+        }),
+      })
+        .then((res) => res.json())
+        .then((respond) => {
+          if (respond?.error) {
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "error",
+              text: respond.error,
+            });
 
-    // const handleReverse = async () => {
-    //   setLoading(true);
-    //   const tokenId = await auth.currentUser.getIdToken();
-    //   fetch(`${API.baseURL}/api/staff/updateStaffAccountStatus`, {
-    //     method: "PUT",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       Authorization: `Bearer ${tokenId}`,
-    //     },
-    //     body: JSON.stringify({
-    //       accountId: staff.id,
-    //       enableDisableStatus: "ENABLE",
-    //     }),
-    //   })
-    //     .then((res) => res.json())
-    //     .then((respond) => {
-    //       if (respond?.error) {
-    //         setOpenSnackbar({
-    //           ...openSnackbar,
-    //           open: true,
-    //           severity: "error",
-    //           text: respond.error,
-    //         });
+            setLoading(false);
+            return;
+          }
+          fetch(
+            `${API.baseURL}/api/pickupPoint/getAllForAdmin?page=${
+              page - 1
+            }&limit=6&${
+              isSwitchRecovery
+                ? "&enableDisableStatus=DISABLE"
+                : "&enableDisableStatus=ENABLE"
+            }`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${tokenId}`,
+              },
+            }
+          )
+            .then((res) => res.json())
+            .then((respond) => {
+              setPickupPointList(respond.pickupPointList);
+              setTotalPage(respond.totalPage);
+              handleCloseDeleteDialog();
+              setLoading(false);
+              setOpenSnackbar({
+                ...openSnackbar,
+                open: true,
+                severity: "success",
+                text: "Vô hiệu hóa thành công",
+              });
+            })
+            .catch((err) => console.log(err));
+        })
+        .catch((err) => console.log(err));
+    };
 
-    //         setLoading(false);
-    //         return;
-    //       }
-    //       fetch(
-    //         `${API.baseURL}/api/staff/getStaffForAdmin?page=${
-    //           page - 1
-    //         }&limit=6&name=${searchValue}${
-    //           isSwitchRecovery ? "&status=DISABLE" : "&status=ENABLE"
-    //         }`,
-    //         {
-    //           method: "GET",
-    //           headers: {
-    //             "Content-Type": "application/json",
-    //             Authorization: `Bearer ${tokenId}`,
-    //           },
-    //         }
-    //       )
-    //         .then((res) => res.json())
-    //         .then((respond) => {
-    //           setStaffList(respond.staffList);
-    //           setTotalPage(respond.totalPage);
-    //           handleCloseDeleteDialog();
-    //           setLoading(false);
-    //           setOpenSnackbar({
-    //             ...openSnackbar,
-    //             open: true,
-    //             severity: "success",
-    //             text: "Phục hồi thành công",
-    //           });
-    //         })
-    //         .catch((err) => console.log(err));
-    //     })
-    //     .catch((err) => console.log(err));
-    // };
+    const handleReverse = async () => {
+      setLoading(true);
+      const tokenId = await auth.currentUser.getIdToken();
+      fetch(`${API.baseURL}/api/pickupPoint/updateStatus`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenId}`,
+        },
+        body: JSON.stringify({
+          id: item.id,
+          enableDisableStatus: "ENABLE",
+        }),
+      })
+        .then((res) => res.json())
+        .then((respond) => {
+          if (respond?.error) {
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "error",
+              text: respond.error,
+            });
+
+            setLoading(false);
+            return;
+          }
+          fetch(
+            `${API.baseURL}/api/pickupPoint/getAllForAdmin?page=${
+              page - 1
+            }&limit=6&${
+              isSwitchRecovery
+                ? "&enableDisableStatus=DISABLE"
+                : "&enableDisableStatus=ENABLE"
+            }`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${tokenId}`,
+              },
+            }
+          )
+            .then((res) => res.json())
+            .then((respond) => {
+              setPickupPointList(respond.pickupPointList);
+              setTotalPage(respond.totalPage);
+              handleCloseDeleteDialog();
+              setLoading(false);
+              setOpenSnackbar({
+                ...openSnackbar,
+                open: true,
+                severity: "success",
+                text: "Khôi phục thành công",
+              });
+            })
+            .catch((err) => console.log(err));
+        })
+        .catch((err) => console.log(err));
+    };
     return (
       <tr key={index} className="table-body-row">
         <td>{index + 1}</td>
-        <td>121 Trần Văn Dư , Phường 13 , Quận Tân Bình,TP.HCM</td>
-        <td>121 Trần Văn Dư , Phường 13 , Quận Tân Bình,TP.HCM</td>
+        <td>{item.address}</td>
+        <td>
+          <i
+            onClick={() => {
+              handleOpenConsolidationDialog();
+            }}
+            className="bi bi-eye"
+          ></i>
+        </td>
         <td>
           {isSwitchRecovery ? (
             <i
               onClick={() => {
-                // handleReverse();
+                handleReverse();
               }}
               class="bi bi-arrow-repeat"
             ></i>
@@ -222,7 +284,7 @@ const PickuppointManagement = () => {
           aria-labelledby="customized-dialog-title"
           open={openEditDialog}
         >
-          <CreatePickuppoint
+          <EditPickuppoint
             setOpenSnackbar={setOpenSnackbar}
             openSnackbar={openSnackbar}
             handleClose={handleCloseEditDialog}
@@ -230,7 +292,17 @@ const PickuppointManagement = () => {
             searchValue={searchValue}
             page={page}
             setTotalPage={setTotalPage}
-            isSwitchRecovery={isSwitchRecovery}
+            pickupPoint={item}
+          />
+        </Dialog>
+        <Dialog
+          onClose={handleCloseConsolidationDialog}
+          aria-labelledby="customized-dialog-title"
+          open={openConsolidationDialog}
+        >
+          <PickupPointConsolidation
+            consolidationList={item.productConsolidationAreaList}
+            handleClose={handleCloseConsolidationDialog}
           />
         </Dialog>
         <Dialog
@@ -263,7 +335,7 @@ const PickuppointManagement = () => {
               </button>
               <button
                 onClick={() => {
-                  // handleDelete();
+                  handleDelete();
                 }}
                 className="modal__container-footer-buttons-create"
               >
@@ -280,19 +352,7 @@ const PickuppointManagement = () => {
       <ManagementMenu menuTabs={menuTabs} />
       <div className="pickuppoint__container">
         <div className="pickuppoint__header">
-          <div className="search">
-            <form onSubmit={(e) => onSubmitSearch(e)}>
-              <div onClick={(e) => onSubmitSearch(e)} className="search-icon">
-                <FontAwesomeIcon icon={faMagnifyingGlass} />
-              </div>
-              <input
-                value={textSearch}
-                onChange={(e) => setTextSearch(e.target.value)}
-                type="text"
-                placeholder="Từ khóa tìm kiếm"
-              />
-            </form>
-          </div>
+          <div className="search"></div>
           {/* ****************** */}
 
           {!isSwitchRecovery && (
@@ -321,7 +381,7 @@ const PickuppointManagement = () => {
                 </thead>
                 <tbody>
                   {pickupPointList.map((item, index) => (
-                    <PickupPointItem staff={item} index={index} />
+                    <PickupPointItem item={item} index={index} />
                   ))}
                 </tbody>
               </>
@@ -494,7 +554,6 @@ const PickuppointManagement = () => {
           searchValue={searchValue}
           page={page}
           setTotalPage={setTotalPage}
-          isSwitchRecovery={isSwitchRecovery}
         />
       </Dialog>
       <Snackbar
@@ -515,6 +574,7 @@ const PickuppointManagement = () => {
           {openSnackbar.text}
         </Alert>
       </Snackbar>
+      {loading && <LoadingScreen />}
     </div>
   );
 };

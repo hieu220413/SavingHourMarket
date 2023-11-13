@@ -2,7 +2,7 @@ import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 
-const ErrorProductUploadByExcel = ({ handleClose, errorList }) => {
+const ErrorProductUploadByExcel = ({ handleClose, errorList, imageUrls }) => {
   return (
     <div className="modal__container">
       <div className="modal__container-header">
@@ -10,10 +10,13 @@ const ErrorProductUploadByExcel = ({ handleClose, errorList }) => {
         <FontAwesomeIcon icon={faXmark} onClick={handleClose} />
       </div>
       <div style={{}} className="modal__container-body">
-        <div className="error__container">
-          <i class="bi bi-exclamation-circle-fill text-danger"></i>
-          <h3 className="text-danger">Sản phẩm chưa có hình ảnh</h3>
-        </div>
+        {!imageUrls && (
+          <div className="error__container">
+            <i class="bi bi-exclamation-circle-fill text-danger"></i>
+            <h3 className="text-danger">Sản phẩm chưa có hình ảnh</h3>
+          </div>
+        )}
+
         {errorList.map((item, index) => (
           <div key={index} className="error__container">
             <i class="bi bi-exclamation-circle-fill text-danger"></i>
