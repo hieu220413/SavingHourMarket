@@ -240,6 +240,10 @@ const CreateProduct = ({
   };
 
   const handleSubmit = async () => {
+    const duplicatedCate = categories.find((item) => item == category);
+    console.log(duplicatedCate);
+    const duplicatedSubCate = subCategories.find((item) => item == subCateName);
+    console.log(duplicatedSubCate);
     if (supermarket === "") {
       setError({ ...error, supermarket: "Vui lòng không chọn siêu thị" });
       return;
@@ -1588,7 +1592,16 @@ const CreateProduct = ({
                     expiredDate: null,
                     price: 0,
                     priceOriginal: 0,
-                    productBatchAddresses: productBatchAddresses,
+                    productBatchAddresses: {
+                      quantity: 0,
+                      supermarketAddressId: null,
+                      supermarketAddress: null,
+                      error: {
+                        quantity: "",
+                        supermarketStores: "",
+                      },
+                      isActiveDropdownSupermarketStore: false,
+                    },
                     error: {
                       price: "",
                       priceOriginal: "",
