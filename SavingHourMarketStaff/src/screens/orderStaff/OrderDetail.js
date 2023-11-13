@@ -1,20 +1,32 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
-import React, { useState, useCallback, useEffect } from 'react';
-import { View, Image, Text, Modal, Pressable, StyleSheet, FlatList } from 'react-native';
-import { ScrollView, TouchableOpacity, TouchableWithoutFeedback } from 'react-native-gesture-handler';
-import { icons } from '../../constants';
-import { COLORS } from '../../constants/theme';
+import React, {useState, useCallback, useEffect} from 'react';
+import {
+  View,
+  Image,
+  Text,
+  Modal,
+  TouchableOpacity,
+  Pressable,
+  StyleSheet,
+  FlatList,
+} from 'react-native';
+import {
+  ScrollView,
+  TouchableWithoutFeedback,
+} from 'react-native-gesture-handler';
+import {icons} from '../../constants';
+import {COLORS} from '../../constants/theme';
 import QrCode from '../../assets/image/test-qrcode.png';
-import { API } from '../../constants/api';
-import { useFocusEffect } from '@react-navigation/native';
+import {API} from '../../constants/api';
+import {useFocusEffect} from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
-import { format } from 'date-fns';
+import {format} from 'date-fns';
 import Toast from 'react-native-toast-message';
 import LoadingScreen from '../../components/LoadingScreen';
 
-const OrderDetail = ({ navigation, route }) => {
-  const { id, orderSuccess } = route.params;
+const OrderDetail = ({navigation, route}) => {
+  const {id, orderSuccess} = route.params;
   const [initializing, setInitializing] = useState(true);
   const [tokenId, setTokenId] = useState(null);
   const [item, setItem] = useState(null);
@@ -22,9 +34,10 @@ const OrderDetail = ({ navigation, route }) => {
   const [visible, setVisible] = useState(false);
   const [order, setOrder] = useState(null);
   const [consolidationAreaList, setConsolidationAreaList] = useState([]);
-  const [selectedConsolidationAreaId, setSelectedConsolidationAreaId] = useState('');
+  const [selectedConsolidationAreaId, setSelectedConsolidationAreaId] =
+    useState('');
 
-  const showToast = (message) => {
+  const showToast = message => {
     Toast.show({
       type: 'success',
       text1: 'Thành công',
@@ -227,7 +240,7 @@ const OrderDetail = ({ navigation, route }) => {
             <Image
               source={icons.leftArrow}
               resizeMode="contain"
-              style={{ width: 35, height: 35, tintColor: COLORS.primary }}
+              style={{width: 35, height: 35, tintColor: COLORS.primary}}
             />
           </TouchableOpacity>
           <Text
@@ -242,17 +255,20 @@ const OrderDetail = ({ navigation, route }) => {
           </Text>
         </View>
         {item && (
-          <ScrollView style={{height: (item?.status === 0 || item?.status === 1) ? '84%': '90%'}}>
-            <View style={{ padding: 20, backgroundColor: COLORS.primary }}>
+          <ScrollView
+            style={{
+              height: item?.status === 0 || item?.status === 1 ? '84%' : '90%',
+            }}>
+            <View style={{padding: 20, backgroundColor: COLORS.primary}}>
               <Text
-                style={{ color: 'white', fontSize: 18, fontFamily: 'Roboto' }}>
+                style={{color: 'white', fontSize: 18, fontFamily: 'Roboto'}}>
                 {item?.status === 0 && 'Đơn hàng đang chờ đóng gói'}
                 {item?.status === 1 && 'Đơn hàng đang đóng gói'}
                 {item?.status === 2 && 'Đơn hàng đã đóng gói'}
               </Text>
             </View>
             <View
-              style={{ padding: 20, backgroundColor: 'white', marginBottom: 20 }}>
+              style={{padding: 20, backgroundColor: 'white', marginBottom: 20}}>
               {/* pickup location */}
               <View
                 style={{
@@ -263,42 +279,42 @@ const OrderDetail = ({ navigation, route }) => {
                   borderBottomWidth: 0.75,
                 }}>
                 <View
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
                   <Image
-                    style={{ width: 20, height: 20 }}
+                    style={{width: 20, height: 20}}
                     resizeMode="contain"
                     source={icons.location}
                   />
                   <Text
-                    style={{ fontSize: 20, color: 'black', fontWeight: 'bold' }}>
+                    style={{fontSize: 20, color: 'black', fontWeight: 'bold'}}>
                     Thông tin giao hàng
                   </Text>
                 </View>
                 <View
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                  <View style={{ width: 20 }} />
-                  <View style={{ gap: 8 }}>
-                    <View style={{ gap: 3, paddingRight: 20 }}>
+                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+                  <View style={{width: 20}} />
+                  <View style={{gap: 8}}>
+                    <View style={{gap: 3, paddingRight: 20}}>
                       {/* <Text style={{fontSize: 18, fontWeight: 'bold'}}>
                   Điểm giao hàng:
                 </Text> */}
-                      <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                      <Text style={{fontSize: 18, fontWeight: 'bold'}}>
                         {item?.addressDeliver
                           ? item?.addressDeliver
                           : item?.pickupPoint.address}
                       </Text>
                     </View>
                     {item.timeFrame && (
-                      <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                      <Text style={{fontSize: 18, fontWeight: 'bold'}}>
                         {item?.timeFrame
                           ? `${item?.timeFrame?.fromHour.slice(
-                            0,
-                            5,
-                          )} đến ${item?.timeFrame?.toHour.slice(0, 5)}`
+                              0,
+                              5,
+                            )} đến ${item?.timeFrame?.toHour.slice(0, 5)}`
                           : ''}
                       </Text>
                     )}
-                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                    <Text style={{fontSize: 18, fontWeight: 'bold'}}>
                       Ngày giao hàng:{' '}
                       {format(new Date(item?.deliveryDate), 'dd/MM/yyyy')}
                     </Text>
@@ -314,25 +330,25 @@ const OrderDetail = ({ navigation, route }) => {
                   gap: 10,
                 }}>
                 <View
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
                   <Image
-                    style={{ width: 20, height: 20 }}
+                    style={{width: 20, height: 20}}
                     resizeMode="contain"
                     source={icons.phone}
                   />
                   <Text
-                    style={{ fontSize: 20, color: 'black', fontWeight: 'bold' }}>
+                    style={{fontSize: 20, color: 'black', fontWeight: 'bold'}}>
                     Thông tin liên lạc
                   </Text>
                 </View>
                 <View
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                  <View style={{ width: 20 }} />
-                  <View style={{ gap: 5 }}>
-                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+                  <View style={{width: 20}} />
+                  <View style={{gap: 5}}>
+                    <Text style={{fontSize: 18, fontWeight: 'bold'}}>
                       {item.receiverName}
                     </Text>
-                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                    <Text style={{fontSize: 18, fontWeight: 'bold'}}>
                       {item.receiverPhone}
                     </Text>
                   </View>
@@ -367,27 +383,29 @@ const OrderDetail = ({ navigation, route }) => {
                       gap: 10,
                       flex: 7,
                     }}>
-                    <View style={{
-                      flexDirection: 'row',
-                      gap: 10,
-                      alignItems: 'center',
-                      backgroundColor: 'white',
-                      borderBottomColor: '#decbcb',
-                      borderBottomWidth: 0.5,
-                      paddingVertical: 20,
-                    }}>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        gap: 10,
+                        alignItems: 'center',
+                        backgroundColor: 'white',
+                        borderBottomColor: '#decbcb',
+                        borderBottomWidth: 0.5,
+                        paddingVertical: 20,
+                      }}>
                       <Image
                         source={{
                           uri: product.images[0].imageUrl,
                         }}
-                        style={{ width: 100, height: 100 }}
+                        style={{width: 100, height: 100}}
                       />
                       <View
                         style={{
                           flexDirection: 'column',
                           gap: 10,
                           flex: 7,
-                        }}><Text
+                        }}>
+                        <Text
                           style={{
                             fontSize: 23,
                             color: 'black',
@@ -446,7 +464,6 @@ const OrderDetail = ({ navigation, route }) => {
                           </Text>
                         </View>
                       </View>
-
                     </View>
                     {product.orderDetailProductBatches.map((item, index) => (
                       <>
@@ -457,7 +474,6 @@ const OrderDetail = ({ navigation, route }) => {
                             fontFamily: 'Roboto',
                             fontWeight: 'bold',
                           }}>
-
                           {item.supermarketName}
                         </Text>
                         <Text
@@ -466,8 +482,7 @@ const OrderDetail = ({ navigation, route }) => {
                             color: 'black',
                             fontFamily: 'Roboto',
                           }}>
-                          Chi nhánh:{' '}
-                          {item.supermarketAddress}
+                          Chi nhánh: {item.supermarketAddress}
                         </Text>
                         <Text
                           style={{
@@ -475,8 +490,7 @@ const OrderDetail = ({ navigation, route }) => {
                             color: 'black',
                             fontFamily: 'Roboto',
                           }}>
-                          Số lượng:{' '}
-                          {item.boughtQuantity}{' '}{product.unit}
+                          Số lượng: {item.boughtQuantity} {product.unit}
                         </Text>
                       </>
                     ))}
@@ -554,10 +568,16 @@ const OrderDetail = ({ navigation, route }) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{ fontSize: 20, fontFamily: 'Roboto', color: 'black' }}>
+                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
                   Mã đơn hàng:
                 </Text>
-                <Text style={{ fontSize: 20, fontFamily: 'Roboto', width: '60%', paddingBottom: 9 }}>
+                <Text
+                  style={{
+                    fontSize: 20,
+                    fontFamily: 'Roboto',
+                    width: '60%',
+                    paddingBottom: 9,
+                  }}>
                   {item.id}
                 </Text>
               </View>
@@ -573,10 +593,10 @@ const OrderDetail = ({ navigation, route }) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{ fontSize: 20, fontFamily: 'Roboto', color: 'black' }}>
+                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
                   Trạng thái
                 </Text>
-                <Text style={{ fontSize: 20, fontFamily: 'Roboto' }}>
+                <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
                   {item.paymentStatus === 0
                     ? 'Chưa thanh toán'
                     : 'Đã thanh toán'}
@@ -593,54 +613,53 @@ const OrderDetail = ({ navigation, route }) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{ fontSize: 20, fontFamily: 'Roboto', color: 'black' }}>
+                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
                   Phương thức
                 </Text>
-                <Text style={{ fontSize: 20, fontFamily: 'Roboto' }}>
+                <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
                   {item.paymentMethod === 0 ? 'COD' : 'VN Pay'}
                 </Text>
               </View>
             </View>
 
             {/* ******************* */}
-
           </ScrollView>
         )}
         {/* Modal Package */}
         <Modal
-            animationType="fade"
-            transparent={true}
-            visible={visible}
-            onRequestClose={() => {
-              setVisible(!visible);
-            }}>
-            <Pressable
-              onPress={() => setVisible(false)}
-              style={styles.centeredView}>
-              <View style={styles.modalView}>
-                <View
+          animationType="fade"
+          transparent={true}
+          visible={visible}
+          onRequestClose={() => {
+            setVisible(!visible);
+          }}>
+          <Pressable
+            onPress={() => setVisible(false)}
+            style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                }}>
+                <Text
                   style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
+                    color: 'black',
+                    fontSize: 20,
+                    fontWeight: 700,
+                    textAlign: 'center',
+                    paddingBottom: 20,
                   }}>
-                  <Text
-                    style={{
-                      color: 'black',
-                      fontSize: 20,
-                      fontWeight: 700,
-                      textAlign: 'center',
-                      paddingBottom: 20,
-                    }}>
-                    {item?.status === 0 && 'Xác nhận đóng gói đơn hàng'}
-                    {item?.status === 1 &&
-                      'Hoàn thành đóng gói đơn hàng'}
-                  </Text>
-                </View>
-                {item?.status === 0 &&
-                  <><View
+                  {item?.status === 0 && 'Xác nhận đóng gói đơn hàng'}
+                  {item?.status === 1 && 'Hoàn thành đóng gói đơn hàng'}
+                </Text>
+              </View>
+              {item?.status === 0 && (
+                <>
+                  <View
                     style={{
                       flexDirection: 'row',
-                      justifyContent: 'space-between'
+                      justifyContent: 'space-between',
                     }}>
                     <Text
                       style={{
@@ -652,112 +671,114 @@ const OrderDetail = ({ navigation, route }) => {
                       Vui lòng chọn điểm tập kết:
                     </Text>
                   </View>
-                    <FlatList
-                      style={{ maxHeight: 170 }}
-                      data={consolidationAreaList}
-                      renderItem={data => (
-                        <TouchableOpacity
-                          key={data.item.id}
-                          onPress={() => {
-                            setSelectedConsolidationAreaId(data.item.id);
-                          }}
+                  <FlatList
+                    style={{maxHeight: 170}}
+                    data={consolidationAreaList}
+                    renderItem={data => (
+                      <TouchableOpacity
+                        key={data.item.id}
+                        onPress={() => {
+                          setSelectedConsolidationAreaId(data.item.id);
+                        }}
+                        style={{
+                          paddingVertical: 15,
+                          borderTopColor: '#decbcb',
+                          borderTopWidth: 0.75,
+                        }}>
+                        <View
                           style={{
-                            paddingVertical: 15,
-                            borderTopColor: '#decbcb',
-                            borderTopWidth: 0.75,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 15,
+                            flex: 1,
+                            justifyContent: 'space-between',
                           }}>
-                          <View
+                          <Image
+                            resizeMode="contain"
+                            style={{width: 20, height: 20}}
+                            source={icons.location}
+                            tintColor={
+                              data.item.id === selectedConsolidationAreaId
+                                ? COLORS.secondary
+                                : 'black'
+                            }
+                          />
+                          <Text
                             style={{
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                              gap: 15,
-                              flex: 1,
-                              justifyContent: 'space-between',
-                            }}>
-                            <Image
-                              resizeMode="contain"
-                              style={{ width: 20, height: 20 }}
-                              source={icons.location}
-                              tintColor={
+                              fontSize: 16,
+                              color:
                                 data.item.id === selectedConsolidationAreaId
                                   ? COLORS.secondary
-                                  : 'black'
-                              }
-                            />
-                            <Text
-                              style={{
-                                fontSize: 16,
-                                color:
-                                  data.item.id === selectedConsolidationAreaId
-                                    ? COLORS.secondary
-                                    : 'black',
-                                fontFamily: 'Roboto',
-                                textDecorationColor: 'red',
-                                flexShrink: 1,
-                              }}>
-                              {data.item.address}
-                            </Text>
-                          </View>
-                        </TouchableOpacity>
-                      )}
-                    /></>}
-                {item?.status === 1 &&
+                                  : 'black',
+                              fontFamily: 'Roboto',
+                              textDecorationColor: 'red',
+                              flexShrink: 1,
+                            }}>
+                            {data.item.address}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    )}
+                  />
+                </>
+              )}
+              {item?.status === 1 && (
+                <Text
+                  style={{
+                    color: 'black',
+                    fontSize: 18,
+                    fontWeight: 400,
+                    paddingBottom: 20,
+                  }}>
+                  Bạn đã hoàn thành đóng gói đơn hàng này ?
+                </Text>
+              )}
+
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                }}>
+                <TouchableOpacity
+                  style={{
+                    width: 150,
+                    paddingHorizontal: 15,
+                    paddingVertical: 10,
+                    backgroundColor: 'white',
+                    borderRadius: 10,
+                    borderColor: COLORS.primary,
+                    borderWidth: 0.5,
+                    marginRight: '2%',
+                  }}
+                  onPress={handleCancel}>
                   <Text
                     style={{
-                      color: 'black',
-                      fontSize: 18,
-                      fontWeight: 400,
-                      paddingBottom: 20,
+                      color: COLORS.primary,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
                     }}>
-                    Bạn đã hoàn thành đóng gói đơn hàng này ?
+                    Đóng
                   </Text>
-                }
+                </TouchableOpacity>
 
-                <View
+                <TouchableOpacity
                   style={{
-                    flexDirection: 'row',
-                    justifyContent: 'center',
+                    width: 150,
+                    paddingHorizontal: 15,
+                    paddingVertical: 10,
+                    backgroundColor: COLORS.primary,
+                    color: 'white',
+                    borderRadius: 10,
+                  }}
+                  onPress={() => {
+                    handleConfirm();
                   }}>
-                  <TouchableOpacity
-                    style={{
-                      width: 150,
-                      paddingHorizontal: 15,
-                      paddingVertical: 10,
-                      backgroundColor: 'white',
-                      borderRadius: 10,
-                      borderColor: COLORS.primary,
-                      borderWidth: 0.5,
-                      marginRight: '2%',
-                    }}
-                    onPress={handleCancel}>
-                    <Text
-                      style={{
-                        color: COLORS.primary,
-                        fontWeight: 'bold',
-                        textAlign: 'center',
-                      }}>
-                      Đóng
-                    </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={{
-                      width: 150,
-                      paddingHorizontal: 15,
-                      paddingVertical: 10,
-                      backgroundColor: COLORS.primary,
-                      color: 'white',
-                      borderRadius: 10,
-                    }}
-                    onPress={() => {
-                      handleConfirm();
-                    }}>
-                    <Text style={styles.textStyle}>Xác nhận</Text>
-                  </TouchableOpacity>
-                </View>
+                  <Text style={styles.textStyle}>Xác nhận</Text>
+                </TouchableOpacity>
               </View>
-            </Pressable>
-          </Modal>
+            </View>
+          </Pressable>
+        </Modal>
       </View>
       {item?.status === 0 && (
         <View
@@ -777,7 +798,7 @@ const OrderDetail = ({ navigation, route }) => {
             marginTop: 20,
             elevation: 10,
           }}>
-          <View style={{ width: '95%' }}>
+          <View style={{width: '95%'}}>
             <TouchableOpacity
               onPress={() => {
                 setLoading(true);
@@ -825,7 +846,7 @@ const OrderDetail = ({ navigation, route }) => {
             marginTop: 20,
             elevation: 10,
           }}>
-          <View style={{ width: '95%' }}>
+          <View style={{width: '95%'}}>
             <TouchableOpacity
               onPress={() => {
                 setVisible(true);
@@ -864,7 +885,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     // marginTop: 22,
     backgroundColor: 'rgba(50,50,50,0.5)',
-    
   },
   modalView: {
     backgroundColor: 'white',
@@ -878,7 +898,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-    width:'90%',
+    width: '90%',
     zIndex: 999,
   },
   textStyle: {

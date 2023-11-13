@@ -57,13 +57,14 @@ const CreateTimeframe = ({ handleClose }) => {
       setError({ ...error, toHour: "Vui lòng không để trống" });
       return;
     }
-    const fromHourCompare = format(dayjs(new Date()).$d, "yyyy-MM-dd").concat(
-      fromHour
-    );
-    const toHourCompare = format(dayjs(new Date()).$d, "yyyy-MM-dd").concat(
-      toHour
-    );
-    console.log(fromHour < toHour);
+    if (fromHour >= toHour) {
+      setOpenValidateSnackbar({
+        ...openValidateSnackbar,
+        open: true,
+        text: "Giờ kết thúc không thể sớm hơn giờ bắt đầu",
+      });
+      return;
+    }
   };
   return (
     <div style={{ width: 450 }} className={`modal__container `}>
