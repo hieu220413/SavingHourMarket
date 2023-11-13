@@ -77,10 +77,10 @@ const BatchList = ({navigation, route}) => {
   useFocusEffect(
     useCallback(() => {
       const fetchData = async () => {
+        setLoading(true);
         if (auth().currentUser) {
           const tokenId = await auth().currentUser.getIdToken();
           if (tokenId) {
-            setLoading(true);
             fetch(
               `${API.baseURL}/api/order/deliveryManager/batchingForStaff?deliverDate=${date}&timeFrameId=${timeFrame.id}&productConsolidationAreaId=${productConsolidationArea.id}&batchQuantity=${quantity}`,
               {
@@ -93,7 +93,7 @@ const BatchList = ({navigation, route}) => {
             )
               .then(res => res.json())
               .then(response => {
-                console.log(response[0]);
+                console.log(response[1]);
                 setBatchList(response);
                 setLoading(false);
               })
@@ -119,6 +119,7 @@ const BatchList = ({navigation, route}) => {
       const ob = {
         deliverDate: item.deliverDate,
         timeFrameId: item.timeFrame.id,
+        productConsolidationAreaId: productConsolidationArea.id,
         orderIdList: orderIdList,
       };
       submitBatches.push(ob);
