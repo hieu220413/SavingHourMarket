@@ -9,7 +9,6 @@ import com.fpt.capstone.savinghourmarket.entity.ProductConsolidationArea;
 import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.exception.ModifyPickupPointForbiddenException;
-import com.fpt.capstone.savinghourmarket.exception.ModifyProductConsolidationAreaForbiddenException;
 import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.repository.OrderRepository;
 import com.fpt.capstone.savinghourmarket.repository.PickupPointRepository;
@@ -18,9 +17,10 @@ import com.fpt.capstone.savinghourmarket.service.PickupPointService;
 import com.google.maps.GeoApiContext;
 import com.google.maps.errors.ApiException;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,9 +49,23 @@ public class PickupPointServiceImpl implements PickupPointService {
     }
 
     @Override
-    public List<PickupPointWithProductConsolidationArea> getAllForAdmin(EnableDisableStatus enableDisableStatus) {
-        List<PickupPointWithProductConsolidationArea> pickupPointWithProductConsolidationAreaList = pickupPointRepository.findAllForAdmin(enableDisableStatus == null ? null : enableDisableStatus.ordinal());
+    public List<PickupPointWithProductConsolidationArea> getAllForStaff(EnableDisableStatus enableDisableStatus) {
+        List<PickupPointWithProductConsolidationArea> pickupPointWithProductConsolidationAreaList = pickupPointRepository.findAllForStaff(enableDisableStatus == null ? null : enableDisableStatus.ordinal());
         return pickupPointWithProductConsolidationAreaList;
+    }
+
+    @Override
+    public PickupPointListResponseBody getAllForAdmin(EnableDisableStatus enableDisableStatus, Integer page, Integer limit) {
+        Pageable pageable = PageRequest.of(page, limit);
+
+        Page<PickupPointWithProductConsolidationArea> result = pickupPointRepository.findAllForAdmin(enableDisableStatus == null ? null : enableDisableStatus.ordinal(), pageable);
+
+        int totalPage = result.getTotalPages();
+        long totalPickupPoint = result.getTotalElements();
+
+        List<PickupPointWithProductConsolidationArea> pickupPointWithProductConsolidationAreaList = result.stream().toList();
+
+        return new PickupPointListResponseBody(pickupPointWithProductConsolidationAreaList, totalPage, totalPickupPoint);
     }
 
     @Override

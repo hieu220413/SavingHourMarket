@@ -3,10 +3,7 @@ package com.fpt.capstone.savinghourmarket.controller;
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.entity.ProductConsolidationArea;
 import com.fpt.capstone.savinghourmarket.entity.TimeFrame;
-import com.fpt.capstone.savinghourmarket.model.EnableDisableStatusChangeBody;
-import com.fpt.capstone.savinghourmarket.model.ProductConsolidationAreaCreateBody;
-import com.fpt.capstone.savinghourmarket.model.ProductConsolidationAreaPickupPointUpdateListBody;
-import com.fpt.capstone.savinghourmarket.model.ProductConsolidationAreaUpdateBody;
+import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.service.ProductConsolidationAreaService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
@@ -34,8 +31,19 @@ public class ProductConsolidationAreaController {
             , @RequestParam(required = false) EnableDisableStatus enableDisableStatus) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        List<ProductConsolidationArea> productConsolidationAreaList = productConsolidationAreaService.getAllProductConsolidationAreaForAdmin(enableDisableStatus);
+        List<ProductConsolidationArea> productConsolidationAreaList = productConsolidationAreaService.getAllProductConsolidationAreaForStaff(enableDisableStatus);
         return ResponseEntity.status(HttpStatus.OK).body(productConsolidationAreaList);
+    }
+
+    @RequestMapping(value = "/getAllForAdmin", method = RequestMethod.GET)
+    public ResponseEntity<ProductConsolidationAreaListResponse> getAllProductConsolidationAreaForAdmin(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @RequestParam(required = false) EnableDisableStatus enableDisableStatus
+            , @RequestParam(defaultValue = "0") Integer page
+            , @RequestParam(defaultValue = "5") Integer limit) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        ProductConsolidationAreaListResponse productConsolidationAreaListResponse = productConsolidationAreaService.getAllProductConsolidationAreaForAdmin(enableDisableStatus, page, limit);
+        return ResponseEntity.status(HttpStatus.OK).body(productConsolidationAreaListResponse);
     }
 
     @RequestMapping(value = "/getByPickupPointForStaff", method = RequestMethod.GET)

@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 // eslint-disable-next-line prettier/prettier
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TouchableWithoutFeedback, Keyboard, Modal } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TouchableWithoutFeedback, Keyboard, Modal, FlatList } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
 import { Image } from 'react-native-animatable';
@@ -11,24 +11,398 @@ import { API } from '../../constants/api';
 import { format } from 'date-fns';
 import Empty from '../../assets/image/search-empty.png';
 import LoadingScreen from '../../components/LoadingScreen';
+import { useFocusEffect } from '@react-navigation/native';
+import DatePicker from 'react-native-date-picker';
 
 const HomeDeliver = ({ navigation }) => {
     const [initializing, setInitializing] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [orders, setOrders] = useState(null);
+    const [orderGroupList, setOrderGroupList] = useState([
+        {
+            id: 'accf19db-5541-11ee-8a50-a85e45c41922',
+            isExpand: true,
+            deliverDate: '2023-09-19',
+            timeFrame: {
+                id: 'accf0876-5541-11ee-8a50-a85e45c41921',
+                fromHour: '19:00:00',
+                toHour: '20:30:00',
+                status: 1,
+                allowableDeliverMethod: 0,
+            },
+            pickupPoint: {
+                id: 'accf105d-5541-11ee-8a50-a85e45c41921',
+                address: '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh',
+                status: 1,
+                longitude: 106.73845902300008,
+                latitude: 10.80274197700004,
+            },
+            deliverer: null,
+            orderList: [
+                {
+                    id: 'ec5de351-56dc-11ee-8a50-a85e45c41921',
+                    shippingFee: 0,
+                    totalPrice: 216000,
+                    receiverPhone: null,
+                    receiverName: null,
+                    longitude: null,
+                    latitude: null,
+                    totalDiscountPrice: 0,
+                    createdTime: '2023-11-18T08:00:00',
+                    deliveryDate: '2023-11-17',
+                    qrCodeUrl: 'qr code url here',
+                    status: 1,
+                    paymentMethod: 1,
+                    deliveryMethod: 0,
+                    addressDeliver: null,
+                    paymentStatus: 1,
+                    packager: {
+                        id: 'accf4d19-5541-11ee-8a50-a85e45c41921',
+                        fullName: 'Hong Quang',
+                        email: 'quangphse161539@fpt.edu.vn',
+                        avatarUrl:
+                            'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media',
+                        role: 'STAFF_ORD',
+                        status: 1,
+                        pickupPoint: [
+                            {
+                                id: 'accf0ac0-5541-11ee-8a50-a85e45c41921',
+                                address:
+                                    'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh',
+                                status: 1,
+                                longitude: 106.83102962168277,
+                                latitude: 10.845020092805793,
+                            },
+                            {
+                                id: 'accf0d06-5541-11ee-8a50-a85e45c41921',
+                                address:
+                                    '432 Đ. Liên Phường, Phước Long B, Quận 9, Hồ Chí Minh',
+                                status: 1,
+                                longitude: 106.7891284,
+                                latitude: 10.8059505,
+                            },
+                        ],
+                    },
+                    deliverer: null,
+                    customer: {
+                        id: 'accef2db-5541-11ee-8a50-a85e45c41923',
+                        fullName: 'Luu Gia Vinh',
+                        email: 'luugiavinh0@gmail.com',
+                        phone: '0902828618',
+                        dateOfBirth: '2002-05-05',
+                        avatarUrl:
+                            'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media',
+                        address:
+                            '240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh',
+                        gender: 0,
+                        status: 1,
+                    },
+                    timeFrame: null,
+                    pickupPoint: null,
+                    discountList: [],
+                    transaction: [],
+                    productConsolidationArea: null,
+                },
+            ],
+            productConsolidationArea: null,
+        },
+        {
+            id: 'accf19db-5541-11ee-8a50-a85e45c41925',
+            isExpand: true,
+            deliverDate: '2023-09-19',
+            timeFrame: {
+                id: 'accf0876-5541-11ee-8a50-a85e45c41921',
+                fromHour: '19:00:00',
+                toHour: '20:30:00',
+                status: 1,
+                allowableDeliverMethod: 0,
+            },
+            pickupPoint: {
+                id: 'accf105d-5541-11ee-8a50-a85e45c41921',
+                address: '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh',
+                status: 1,
+                longitude: 106.73845902300008,
+                latitude: 10.80274197700004,
+            },
+            deliverer: null,
+            orderList: [
+                {
+                    id: 'ec5de351-56dc-11ee-8a50-a85e45c41921',
+                    shippingFee: 0,
+                    totalPrice: 216000,
+                    receiverPhone: null,
+                    receiverName: null,
+                    longitude: null,
+                    latitude: null,
+                    totalDiscountPrice: 0,
+                    createdTime: '2023-11-18T08:00:00',
+                    deliveryDate: '2023-11-17',
+                    qrCodeUrl: 'qr code url here',
+                    status: 1,
+                    paymentMethod: 1,
+                    deliveryMethod: 0,
+                    addressDeliver: null,
+                    paymentStatus: 1,
+                    packager: {
+                        id: 'accf4d19-5541-11ee-8a50-a85e45c41921',
+                        fullName: 'Hong Quang',
+                        email: 'quangphse161539@fpt.edu.vn',
+                        avatarUrl:
+                            'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media',
+                        role: 'STAFF_ORD',
+                        status: 1,
+                        pickupPoint: [
+                            {
+                                id: 'accf0ac0-5541-11ee-8a50-a85e45c41921',
+                                address:
+                                    'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh',
+                                status: 1,
+                                longitude: 106.83102962168277,
+                                latitude: 10.845020092805793,
+                            },
+                            {
+                                id: 'accf0d06-5541-11ee-8a50-a85e45c41921',
+                                address:
+                                    '432 Đ. Liên Phường, Phước Long B, Quận 9, Hồ Chí Minh',
+                                status: 1,
+                                longitude: 106.7891284,
+                                latitude: 10.8059505,
+                            },
+                        ],
+                    },
+                    deliverer: null,
+                    customer: {
+                        id: 'accef2db-5541-11ee-8a50-a85e45c41921',
+                        fullName: 'Luu Gia Vinh',
+                        email: 'luugiavinh0@gmail.com',
+                        phone: '0902828618',
+                        dateOfBirth: '2002-05-05',
+                        avatarUrl:
+                            'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media',
+                        address:
+                            '240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh',
+                        gender: 0,
+                        status: 1,
+                    },
+                    timeFrame: null,
+                    pickupPoint: null,
+                    discountList: [],
+                    transaction: [],
+                    productConsolidationArea: null,
+                },
+            ],
+            productConsolidationArea: {
+                id: 'ec5dfde4-56dc-11ee-8a50-a85e45c41921',
+                address: '9 Nam Hòa, Phước Long A, Thủ Đức, Hồ Chí Minh',
+                status: 1,
+                longitude: 106.76009552300007,
+                latitude: 10.821593957000061,
+                pickupPointList: [
+                    {
+                        id: 'accf0e1e-5541-11ee-8a50-a85e45c41921',
+                        address: '857 Phạm Văn Đồng, Linh Tây, Thủ Đức, Hồ Chí Minh',
+                        status: 1,
+                        longitude: 106.75072682500007,
+                        latitude: 10.85273099400007,
+                    },
+                    {
+                        id: 'accf105d-5541-11ee-8a50-a85e45c41921',
+                        address: '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh',
+                        status: 1,
+                        longitude: 106.73845902300008,
+                        latitude: 10.80274197700004,
+                    },
+                ],
+            },
+        },
+        {
+            id: 'accf19db-5541-11ee-8a50-a85e45c41921',
+            isExpand: true,
+            deliverDate: '2023-09-19',
+            timeFrame: {
+                id: 'accf0876-5541-11ee-8a50-a85e45c41921',
+                fromHour: '19:00:00',
+                toHour: '20:30:00',
+                status: 1,
+                allowableDeliverMethod: 0,
+            },
+            pickupPoint: {
+                id: 'accf105d-5541-11ee-8a50-a85e45c41921',
+                address: '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh',
+                status: 1,
+                longitude: 106.73845902300008,
+                latitude: 10.80274197700004,
+            },
+            deliverer: null,
+            orderList: [
+                {
+                    id: 'ec5de351-56dc-11ee-8a50-a85e45c41921',
+                    shippingFee: 0,
+                    totalPrice: 216000,
+                    receiverPhone: null,
+                    receiverName: null,
+                    longitude: null,
+                    latitude: null,
+                    totalDiscountPrice: 0,
+                    createdTime: '2023-11-18T08:00:00',
+                    deliveryDate: '2023-11-17',
+                    qrCodeUrl: 'qr code url here',
+                    status: 1,
+                    paymentMethod: 1,
+                    deliveryMethod: 0,
+                    addressDeliver: null,
+                    paymentStatus: 1,
+                    packager: {
+                        id: 'accf4d19-5541-11ee-8a50-a85e45c41921',
+                        fullName: 'Hong Quang',
+                        email: 'quangphse161539@fpt.edu.vn',
+                        avatarUrl:
+                            'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media',
+                        role: 'STAFF_ORD',
+                        status: 1,
+                        pickupPoint: [
+                            {
+                                id: 'accf0ac0-5541-11ee-8a50-a85e45c41921',
+                                address:
+                                    'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh',
+                                status: 1,
+                                longitude: 106.83102962168277,
+                                latitude: 10.845020092805793,
+                            },
+                            {
+                                id: 'accf0d06-5541-11ee-8a50-a85e45c41921',
+                                address:
+                                    '432 Đ. Liên Phường, Phước Long B, Quận 9, Hồ Chí Minh',
+                                status: 1,
+                                longitude: 106.7891284,
+                                latitude: 10.8059505,
+                            },
+                        ],
+                    },
+                    deliverer: null,
+                    customer: {
+                        id: 'accef2db-5541-11ee-8a50-a85e45c41921',
+                        fullName: 'Luu Gia Vinh',
+                        email: 'luugiavinh0@gmail.com',
+                        phone: '0902828618',
+                        dateOfBirth: '2002-05-05',
+                        avatarUrl:
+                            'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media',
+                        address:
+                            '240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh',
+                        gender: 0,
+                        status: 1,
+                    },
+                    timeFrame: null,
+                    pickupPoint: null,
+                    discountList: [],
+                    transaction: [],
+                    productConsolidationArea: null,
+                },
+                {
+                    id: 'ec5de351-56dc-11ee-8a50-a85e45c41921',
+                    shippingFee: 0,
+                    totalPrice: 216000,
+                    receiverPhone: null,
+                    receiverName: null,
+                    longitude: null,
+                    latitude: null,
+                    totalDiscountPrice: 0,
+                    createdTime: '2023-11-18T08:00:00',
+                    deliveryDate: '2023-11-17',
+                    qrCodeUrl: 'qr code url here',
+                    status: 1,
+                    paymentMethod: 1,
+                    deliveryMethod: 0,
+                    addressDeliver: null,
+                    paymentStatus: 1,
+                    packager: {
+                        id: 'accf4d19-5541-11ee-8a50-a85e45c41921',
+                        fullName: 'Hong Quang',
+                        email: 'quangphse161539@fpt.edu.vn',
+                        avatarUrl:
+                            'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media',
+                        role: 'STAFF_ORD',
+                        status: 1,
+                        pickupPoint: [
+                            {
+                                id: 'accf0ac0-5541-11ee-8a50-a85e45c41921',
+                                address:
+                                    'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh',
+                                status: 1,
+                                longitude: 106.83102962168277,
+                                latitude: 10.845020092805793,
+                            },
+                            {
+                                id: 'accf0d06-5541-11ee-8a50-a85e45c41921',
+                                address:
+                                    '432 Đ. Liên Phường, Phước Long B, Quận 9, Hồ Chí Minh',
+                                status: 1,
+                                longitude: 106.7891284,
+                                latitude: 10.8059505,
+                            },
+                        ],
+                    },
+                    deliverer: null,
+                    customer: {
+                        id: 'accef2db-5541-11ee-8a50-a85e45c41921',
+                        fullName: 'Luu Gia Vinh',
+                        email: 'luugiavinh0@gmail.com',
+                        phone: '0902828618',
+                        dateOfBirth: '2002-05-05',
+                        avatarUrl:
+                            'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media',
+                        address:
+                            '240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh',
+                        gender: 0,
+                        status: 1,
+                    },
+                    timeFrame: null,
+                    pickupPoint: null,
+                    discountList: [],
+                    transaction: [],
+                    productConsolidationArea: null,
+                },
+            ],
+            productConsolidationArea: {
+                id: 'ec5dfde4-56dc-11ee-8a50-a85e45c41921',
+                address: '9 Nam Hòa, Phước Long A, Thủ Đức, Hồ Chí Minh',
+                status: 1,
+                longitude: 106.76009552300007,
+                latitude: 10.821593957000061,
+                pickupPointList: [
+                    {
+                        id: 'accf0e1e-5541-11ee-8a50-a85e45c41921',
+                        address: '857 Phạm Văn Đồng, Linh Tây, Thủ Đức, Hồ Chí Minh',
+                        status: 1,
+                        longitude: 106.75072682500007,
+                        latitude: 10.85273099400007,
+                    },
+                    {
+                        id: 'accf105d-5541-11ee-8a50-a85e45c41921',
+                        address: '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh',
+                        status: 1,
+                        longitude: 106.73845902300008,
+                        latitude: 10.80274197700004,
+                    },
+                ],
+            },
+        },
+    ]);
+    const [orders, setOrders] = useState([]);
+    const [open, setOpen] = useState(false);
+    const [user, setUser] = useState(null);
     const orderStatus = [
-        { id: 0, display: 'Chờ xác nhận', value: 'PROCESSING', active: false },
-        { id: 1, display: 'Đóng gói', value: 'PACKAGING', active: false },
-        { id: 2, display: 'Đang giao', value: 'DELIVERING', active: false },
-        { id: 3, display: 'Đã giao', value: 'SUCCESS', active: false },
-        { id: 4, display: 'Đơn thất bại', value: 'FAIL', active: false },
-        { id: 5, display: 'Đã hủy', value: 'CANCEL', active: false, },
+        { id: 0, display: 'Đóng gói', value: 'PACKAGED', active: false },
+        { id: 1, display: 'Đang giao', value: 'DELIVERING', active: false },
+        { id: 2, display: 'Đã giao', value: 'SUCCESS', active: false },
+        { id: 3, display: 'Đơn thất bại', value: 'FAIL', active: false },
     ];
 
     const deliveryOptions = [
         { id: 0, display: 'Giao hàng tại điểm nhận' },
         { id: 1, display: 'Giao hàng tận nhà' },
+        { id: 2, display: 'Đơn hàng lẻ' },
     ];
 
     const [currentOptions, setCurrentOptions] = useState({
@@ -37,6 +411,29 @@ const HomeDeliver = ({ navigation }) => {
     });
 
     const [selectItem, setSelectItem] = useState(orderStatus);
+    //  filter pickup point
+    const [selectedTimeFrameId, setSelectedTimeFrameId] = useState('');
+    //  filter date
+    const [selectedDate, setSelectedDate] = useState(new Date());
+
+
+
+    const getUser = async () => {
+        const currentUser = await AsyncStorage.getItem('userInfo');
+        return currentUser ? JSON.parse(currentUser) : null;
+    };
+    useFocusEffect(
+        useCallback(() => {
+            (async () => {
+                try {
+                    const userFromAS = await getUser();
+                    setUser(userFromAS);
+                } catch (err) {
+                    console.log(err);
+                }
+            })();
+        }, []),
+    );
 
     const onAuthStateChange = async userInfo => {
         setLoading(true);
@@ -78,60 +475,86 @@ const HomeDeliver = ({ navigation }) => {
 
         return subscriber;
     }, []);
+
     const fetchOrders = async (id) => {
         const tokenId = await auth().currentUser.getIdToken();
+        const userFromAS = await getUser();
+        let currentDate = format(new Date(), 'yyyy-MM-dd');
+        const deliverDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : currentDate;
         if (tokenId) {
             setLoading(true);
-            fetch(`${API.baseURL}/api/order/staff/getOrders?${id === 1 ? 'isGrouped=false' : 'isGrouped=true'}&deliveryDateSortType=ASC&page=0&size=10`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${tokenId}`,
-                },
-            })
-                .then(res => res.json())
-                .then(respond => {
-                    // console.log('item', respond);
-                    setOrders(respond);
-                    setLoading(false);
+            if (id === 0) {
+                fetch(`${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}&deliverDate=${deliverDate}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${tokenId}`,
+                    },
                 })
-                .catch(err => {
-                    console.log(err);
-                    setLoading(false);
-                });
+                    .then(res => res.json())
+                    .then(respond => {
+                        if (respond.error) {
+                            return;
+                        }
+                        console.log('0');
+                        setOrderGroupList(respond);
+                        setLoading(false);
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    });
+            } else if (id === 1) {
+                fetch(`${API.baseURL}/api/order/staff/getOrderBatch?delivererId=${userFromAS?.id}&deliveryDate=${deliverDate}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${tokenId}`,
+                    },
+                })
+                    .then(res => res.json())
+                    .then(respond => {
+                        if (respond.error) {
+                            return;
+                        }
+                        console.log('1');
+                        setOrderGroupList(respond);
+                        setLoading(false);
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        setLoading(false);
+                    });
+            } else if (id === 2) {
+                fetch(`${API.baseURL}/api/order/staff/getOrders?delivererId=${userFromAS?.id}&orderStatus=DELIVERING&deliveryDate=${deliverDate}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${tokenId}`,
+                    },
+                })
+                    .then(res => res.json())
+                    .then(respond => {
+                        console.log('3');
+                        setOrders(respond);
+                        setLoading(false);
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        setLoading(false);
+                    });
+            }
         }
     };
 
     const handleApplyFilter = async () => {
         setModalVisible(!modalVisible);
-        const selected = selectItem.find(item => item.active === true);
-        const tokenId = await auth().currentUser.getIdToken();
-        if (tokenId) {
-            setLoading(true);
-            fetch(`${API.baseURL}/api/order/staff/getOrders?${currentOptions.id === 0 ? 'isGrouped=false' : 'isGrouped=true'}${selected ? `&orderStatus=${selected.value}` : ''}&page=0&size=10`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${tokenId}`,
-                },
-            })
-                .then(res => res.json())
-                .then(respond => {
-                    setSelectItem(orderStatus);
-                    setOrders(respond);
-                    setLoading(false);
-                })
-                .catch(err => {
-                    console.log(err);
-                    setLoading(false);
-                });
-        }
-    };
-
-    const handleClear = () => {
-        setModalVisible(!modalVisible);
         fetchOrders(currentOptions.id);
     };
+
+    // const handleClear = () => {
+    //     setModalVisible(!modalVisible);
+    //     fetchOrders(currentOptions.id);
+    // };
 
     const OrderItem = ({ item }) => {
         return (
@@ -170,13 +593,9 @@ const HomeDeliver = ({ navigation }) => {
                         borderRadius: 10,
                     }}
                 >
-                    {item?.status === 0 && 'Chờ xác nhận'}
-                    {item?.status === 1 && 'Đóng gói'}
                     {item?.status === 3 && 'Đang giao '}
                     {item?.status === 4 && 'Đã Giao'}
                     {item?.status === 5 && 'Giao thất bại'}
-                    {item?.status === 6 && 'Đã hủy'}
-
                 </Text>
                 <Text
                     style={{
@@ -237,7 +656,9 @@ const HomeDeliver = ({ navigation }) => {
                         <Text style={{
                             width: 100, textAlign: 'center', color: COLORS.primary, fontWeight: 'bold', fontSize: 16,
                             fontFamily: FONTS.fontFamily,
-                        }}>5 sản phẩm</Text>
+                        }}>
+                            {item.paymentMethod === 0 ? 'COD' : 'VN Pay'}
+                        </Text>
                     </View>
                     <View style={{ flex: 1, height: 1.5, backgroundColor: COLORS.primary }} />
                 </View>
@@ -355,36 +776,48 @@ const HomeDeliver = ({ navigation }) => {
                     <View style={styles.header}>
                         <View style={styles.areaAndLogout}>
                             <View style={styles.area}>
-                                <Text style={{ fontSize: 16, fontFamily: FONTS.fontFamily, }}>Khu vực:</Text>
-                                <TouchableOpacity>
-                                    <View style={styles.pickArea}>
-                                        <View style={styles.pickAreaItem}>
-                                            <Image
-                                                resizeMode="contain"
-                                                style={{ width: 20, height: 20, tintColor: COLORS.primary }}
-                                                source={icons.location}
-                                            />
-                                            <Text
-                                                style={{
-                                                    fontSize: 18,
-                                                    fontFamily: 'Roboto',
-                                                    color: 'black',
-                                                }}>
-                                                Quận 9
-                                            </Text>
-                                        </View>
-
-                                    </View>
-                                </TouchableOpacity>
+                                <Text style={{ fontSize: 18, fontFamily: FONTS.fontFamily, color: COLORS.primary, fontWeight: 'bold' }}>
+                                    Xin Chào, {user?.fullName}
+                                </Text>
                             </View>
                             <View style={styles.logout}>
-                                <TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        setOpen(!open);
+                                    }}>
                                     <Image
                                         resizeMode="contain"
                                         style={{ width: 38, height: 38 }}
-                                        source={icons.userCircle}
+                                        source={user?.avatarUrl ? { uri: user?.avatarUrl } : icons.userCircle}
                                     />
                                 </TouchableOpacity>
+                                {open && (
+                                    <TouchableOpacity
+                                        style={{
+                                            position: 'absolute',
+                                            bottom: -40,
+                                            left: -12,
+                                            zIndex: 100,
+                                            width: 75,
+                                            height: 35,
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            borderRadius: 10,
+                                            backgroundColor: 'rgb(240,240,240)',
+                                        }}
+                                        onPress={() => {
+                                            auth()
+                                                .signOut()
+                                                .then(async () => {
+                                                    await AsyncStorage.removeItem('userInfo');
+                                                })
+                                                .catch(e => console.log(e));
+                                        }}>
+                                        <Text style={{ color: 'red', fontWeight: 'bold' }}>
+                                            Đăng xuất
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
                             </View>
                         </View>
 
@@ -459,35 +892,346 @@ const HomeDeliver = ({ navigation }) => {
                         >
                             Danh sách các đơn hàng
                         </Text>
-                        <ScrollView
-                            contentContainerStyle={{
-                                paddingBottom: 100,
-                            }}
-                        >
-                            {orders?.map((item, index) => (
-                                <OrderItem item={item} key={index} />
-                            ))}
+                        {currentOptions.id === 0 || currentOptions.id === 1 ? (
+                            <>
+                                {/* Grouping & Batching Order  */}
+                                {orderGroupList.length === 0 ? (
+                                    <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                                        <Image
+                                            style={{ width: '100%', height: '50%' }}
+                                            resizeMode="contain"
+                                            source={Empty}
+                                        />
+                                        <Text
+                                            style={{
+                                                fontSize: 20,
+                                                fontFamily: 'Roboto',
+                                                fontWeight: 'bold',
+                                            }}>
+                                            Không có đơn hàng nào
+                                        </Text>
+                                        <Text
+                                            style={{
+                                                fontSize: 20,
+                                                fontFamily: 'Roboto',
+                                                fontWeight: 'bold',
+                                            }}>
+                                            Hãy chọn lại ngày giao
+                                        </Text>
+                                    </View>
+                                ) : (
+                                    <>
+                                        <View style={{ marginTop: 10, marginBottom: 100, paddingHorizontal: 15 }}>
+                                            <FlatList
+                                                data={orderGroupList.filter(group => {
+                                                    if (currentOptions.id === 0 || currentOptions.id === 1) {
+                                                        return (
+                                                            group.orderList.find(order => order.status === 3) !==
+                                                            undefined
+                                                        );
+                                                    }
+                                                })}
+                                                renderItem={data => (
+                                                    <View
+                                                        key={data.item.id}
+                                                        style={{
+                                                            marginBottom: 20,
+                                                        }}>
+                                                        {/* Group detail */}
+                                                        <View>
+                                                            <TouchableOpacity
+                                                                onPress={() => {
+                                                                    setOrderGroupList(
+                                                                        orderGroupList.map(group => {
+                                                                            if (group.id === data.item.id) {
+                                                                                group.isExpand = !group.isExpand;
+                                                                            }
+                                                                            return group;
+                                                                        }),
+                                                                    );
+                                                                }}>
+                                                                <View
+                                                                    style={{
+                                                                        backgroundColor: COLORS.secondary,
+                                                                        marginBottom: 5,
+                                                                        alignItems: 'center',
+                                                                        borderRadius: 5,
+                                                                        padding: 10,
+                                                                        flexDirection: 'row',
+                                                                    }}>
 
-                            {orders?.length === 0 && (
-                                <View style={{ alignItems: 'center', marginTop: '20%' }}>
-                                    <Image
-                                        style={{ width: 200, height: 200 }}
-                                        resizeMode="contain"
-                                        source={Empty}
-                                    />
-                                    <Text
-                                        style={{
-                                            fontSize: 20,
-                                            fontFamily: 'Roboto',
-                                            fontWeight: 'bold',
-                                        }}>
-                                        Không tìm thấy sản phẩm
-                                    </Text>
-                                </View>
-                            )}
+                                                                    <Image
+                                                                        resizeMode="contain"
+                                                                        style={{
+                                                                            width: 20,
+                                                                            height: 20,
+                                                                            tintColor: 'white',
+                                                                        }}
+                                                                        source={
+                                                                            data.item.isExpand ? icons.plus : icons.minus
+                                                                        }
+                                                                    />
 
-                        </ScrollView>
+                                                                    <View
+                                                                        style={{
+                                                                            flexDirection: 'row',
+                                                                            alignItems: 'center',
+                                                                            flexGrow: 1,
+                                                                            flexShrink: 1,
+                                                                            justifyContent: 'center',
+                                                                        }}>
+                                                                        {data.item.isExpand ? (
+                                                                            <Text
+                                                                                style={{
+                                                                                    fontSize: 18,
+                                                                                    fontWeight: 'bold',
+                                                                                    fontFamily: 'Roboto',
+                                                                                    color: 'white',
+                                                                                }}>
+                                                                                {data.item.timeFrame.fromHour +
+                                                                                    '-' +
+                                                                                    data.item.timeFrame.toHour +
+                                                                                    ' ' +
+                                                                                    format(
+                                                                                        Date.parse(data.item.deliverDate),
+                                                                                        'dd/MM/yyyy',
+                                                                                    )}
+                                                                            </Text>
+                                                                        ) : (
+                                                                            <View style={{ flexDirection: 'column', gap: 8 }}>
+                                                                                <Text
+                                                                                    style={{
+                                                                                        fontSize: 18,
+                                                                                        fontWeight: 'bold',
+                                                                                        fontFamily: 'Roboto',
+                                                                                        color: 'white',
+                                                                                    }}>
+                                                                                    Khung giờ:{' '}
+                                                                                    {data.item.timeFrame.fromHour +
+                                                                                        '-' +
+                                                                                        data.item.timeFrame.toHour}
+                                                                                </Text>
+                                                                                <Text
+                                                                                    style={{
+                                                                                        fontSize: 18,
+                                                                                        fontWeight: 'bold',
+                                                                                        fontFamily: 'Roboto',
+                                                                                        color: 'white',
+                                                                                    }}>
+                                                                                    Ngày giao:{' '}
+                                                                                    {format(
+                                                                                        Date.parse(data.item.deliverDate),
+                                                                                        'dd/MM/yyyy',
+                                                                                    )}
+                                                                                </Text>
+                                                                            </View>
+                                                                        )}
+                                                                    </View>
+                                                                </View>
+                                                            </TouchableOpacity>
+                                                            {/* order list in group */}
+                                                            {data.item.isExpand &&
+                                                                data.item.orderList != null &&
+                                                                data.item.orderList.length > 0 &&
+                                                                data.item.orderList.map((item, index) => (
+                                                                    <TouchableOpacity
+                                                                        onPress={() => {
+                                                                            navigation.navigate('OrderDetails', {
+                                                                                id: item.id,
+                                                                                picked: currentOptions.id,
+                                                                            });
+                                                                        }}
+                                                                        style={{
+                                                                            position: 'relative',
+                                                                            margin: 10,
+                                                                            backgroundColor: 'white',
+                                                                            borderRadius: 10,
+                                                                            padding: 20,
+                                                                            shadowColor: '#000',
+                                                                            shadowOffset: {
+                                                                                width: 0,
+                                                                                height: 2,
+                                                                            },
+                                                                            shadowOpacity: 0.25,
+                                                                            shadowRadius: 4,
+                                                                            elevation: 5,
+                                                                        }}
+                                                                    >
 
+                                                                        <Text
+                                                                            style={{
+                                                                                position: 'absolute',
+                                                                                top: '10%',
+                                                                                right: '5%',
+                                                                                backgroundColor: COLORS.light_green,
+                                                                                color: COLORS.primary,
+                                                                                padding: 10,
+                                                                                borderRadius: 10,
+                                                                            }}
+                                                                        >
+                                                                            {item?.status === 2 && 'Đóng gói'}
+                                                                            {item?.status === 3 && 'Đang giao'}
+                                                                            {item?.status === 4 && 'Đã Giao'}
+                                                                            {item?.status === 5 && 'Giao thất bại'}
+                                                                        </Text>
+                                                                        <Text
+                                                                            style={{
+                                                                                fontSize: 18,
+                                                                                fontFamily: FONTS.fontFamily,
+                                                                                color: 'black',
+                                                                                fontWeight: 'bold',
+                                                                                paddingBottom: 5,
+                                                                                maxWidth: '80%'
+                                                                            }}
+                                                                        >
+                                                                            {item?.customer.fullName}
+                                                                        </Text>
+
+                                                                        <Text style={{
+                                                                            fontSize: 16,
+                                                                            fontFamily: FONTS.fontFamily,
+                                                                            color: 'black',
+                                                                            paddingBottom: 5,
+                                                                        }}>
+                                                                            SĐT: {item?.customer.phone}
+                                                                        </Text>
+                                                                        <Text style={{
+                                                                            fontSize: 16,
+                                                                            fontFamily: FONTS.fontFamily,
+                                                                            color: 'black',
+                                                                            paddingBottom: 5,
+                                                                        }}>
+                                                                            Thời gian: {item?.timeFrame
+                                                                                ? `${item?.timeFrame?.fromHour.slice(
+                                                                                    0,
+                                                                                    5,
+                                                                                )} đến ${item?.timeFrame?.toHour.slice(0, 5)}`
+                                                                                : ''}
+                                                                        </Text>
+                                                                        <Text style={{
+                                                                            fontSize: 16,
+                                                                            fontFamily: FONTS.fontFamily,
+                                                                            color: 'black',
+                                                                            paddingBottom: 5,
+                                                                        }}>
+                                                                            Ngày giao: {format(new Date(item?.deliveryDate), 'dd/MM/yyyy')}
+                                                                        </Text>
+                                                                        <Text style={{
+                                                                            fontSize: 16,
+                                                                            fontFamily: FONTS.fontFamily,
+                                                                            color: 'black',
+                                                                            paddingBottom: 5,
+                                                                        }}>
+                                                                            Địa chỉ: {item?.addressDeliver ? item?.addressDeliver : 'Pickup point Quận 9'}
+                                                                        </Text>
+
+                                                                        <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10 }}>
+                                                                            <View style={{ flex: 1, height: 1.5, backgroundColor: COLORS.primary }} />
+                                                                            <View>
+                                                                                <Text style={{
+                                                                                    width: 100, textAlign: 'center', color: COLORS.primary, fontWeight: 'bold', fontSize: 16,
+                                                                                    fontFamily: FONTS.fontFamily,
+                                                                                }}>
+                                                                                    {item.paymentMethod === 0 ? 'COD' : 'VN Pay'}
+                                                                                </Text>
+                                                                            </View>
+                                                                            <View style={{ flex: 1, height: 1.5, backgroundColor: COLORS.primary }} />
+                                                                        </View>
+
+                                                                        <Text>
+                                                                            <View style={{ flexDirection: 'row' }}>
+                                                                                <Text
+                                                                                    style={{
+                                                                                        fontSize: 18,
+                                                                                        lineHeight: 30,
+                                                                                        color: COLORS.secondary,
+                                                                                        fontWeight: 700,
+                                                                                        fontFamily: FONTS.fontFamily,
+                                                                                        paddingRight: 5,
+                                                                                    }}
+                                                                                >
+                                                                                    Tổng giá tiền:
+                                                                                </Text>
+
+                                                                                <Text
+                                                                                    style={{
+                                                                                        maxWidth: '70%',
+                                                                                        fontSize: 18,
+                                                                                        lineHeight: 30,
+                                                                                        color: COLORS.secondary,
+                                                                                        fontWeight: 700,
+                                                                                        fontFamily: FONTS.fontFamily,
+                                                                                    }}>
+                                                                                    {item.totalPrice.toLocaleString('vi-VN', {
+                                                                                        currency: 'VND',
+                                                                                    })}
+
+                                                                                </Text>
+                                                                                <Text
+                                                                                    style={{
+                                                                                        fontSize: 12,
+                                                                                        lineHeight: 18,
+                                                                                        color: COLORS.secondary,
+                                                                                        fontWeight: 700,
+                                                                                        fontFamily: FONTS.fontFamily,
+                                                                                    }}>
+                                                                                    ₫
+                                                                                </Text>
+                                                                            </View>
+                                                                        </Text>
+
+                                                                    </TouchableOpacity>
+                                                                ))}
+                                                        </View>
+                                                        {/* *********************** */}
+                                                    </View>
+                                                )}
+                                            />
+                                        </View>
+                                    </>
+                                )
+                                }
+                            </>
+                        ) : (
+                            <>
+                                {/* No Groupign No Batching */}
+                                {orders.length === 0 ? (
+                                    <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                                        <Image
+                                            style={{ width: '100%', height: '50%' }}
+                                            resizeMode="contain"
+                                            source={Empty}
+                                        />
+                                        <Text
+                                            style={{
+                                                fontSize: 20,
+                                                fontFamily: 'Roboto',
+                                                fontWeight: 'bold',
+                                            }}>
+                                            Không có đơn hàng nào
+                                        </Text>
+                                        <Text
+                                            style={{
+                                                fontSize: 20,
+                                                fontFamily: 'Roboto',
+                                                fontWeight: 'bold',
+                                            }}>
+                                            Hãy chọn lại ngày giao
+                                        </Text>
+                                    </View>
+                                ) : (
+                                    <ScrollView
+                                        contentContainerStyle={{
+                                            paddingBottom: 100,
+                                        }}
+                                    >
+                                        {orders.map((item, index) => (
+                                            <OrderItem item={item} key={index} />
+                                        ))}
+                                    </ScrollView>
+                                )}
+                            </>
+                        )}
                     </View>
                     {/* Modal filter */}
                     <Modal
@@ -532,7 +1276,7 @@ const HomeDeliver = ({ navigation }) => {
                                         />
                                     </TouchableOpacity>
                                 </View>
-                                <Text
+                                {/* <Text
                                     style={{
                                         color: 'black',
                                         fontFamily: FONTS.fontFamily,
@@ -550,6 +1294,27 @@ const HomeDeliver = ({ navigation }) => {
                                     {selectItem.map((item, index) => (
                                         <ModalItem item={item} key={index} />
                                     ))}
+                                </View> */}
+                                <Text
+                                    style={{
+                                        color: 'black',
+                                        fontSize: 16,
+                                        fontWeight: 700,
+                                    }}>
+                                    Chọn ngày giao hàng
+                                </Text>
+                                <View
+                                    style={{
+                                        flexDirection: 'row',
+                                        flexWrap: 'wrap',
+                                        marginVertical: 10,
+                                    }}>
+                                    <DatePicker
+                                        date={selectedDate}
+                                        mode="date"
+                                        androidVariant="nativeAndroid"
+                                        onDateChange={setSelectedDate}
+                                    />
                                 </View>
 
                                 <View
@@ -569,14 +1334,16 @@ const HomeDeliver = ({ navigation }) => {
                                             borderWidth: 0.5,
                                             marginRight: '2%',
                                         }}
-                                        onPress={handleClear}>
+                                        onPress={() => {
+                                            setModalVisible(!modalVisible)
+                                        }}>
                                         <Text
                                             style={{
                                                 color: COLORS.primary,
                                                 fontWeight: 'bold',
                                                 textAlign: 'center',
                                             }}>
-                                            Thiết lập lại
+                                            Hủy
                                         </Text>
                                     </TouchableOpacity>
 

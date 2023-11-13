@@ -87,8 +87,24 @@ public class ProductServiceImpl implements ProductService {
         long totalProduct = result.getTotalElements();
 
         List<Product> productList = result.stream().toList();
+        List<ProductDisplayStaff> productDisplayStaffList = productList.stream().map(ProductDisplayStaff::new).collect(Collectors.toList());
+        HashMap<UUID, ProductDisplayStaff> productDisplayStaffHashMap = new HashMap<>();
+        productDisplayStaffList.forEach(productDisplayStaff -> productDisplayStaffHashMap.put(productDisplayStaff.getId(), productDisplayStaff));
 
-        return new ProductListResponseBody(productList, totalPage, totalProduct);
+        for(Product product : productList) {
+            HashMap<LocalDate, ProductBatchDisplayStaff> sameExpiredDateTrack = new HashMap<>();
+            for(ProductBatch productBatch : product.getProductBatchList()) {
+                if(!sameExpiredDateTrack.containsKey(productBatch.getExpiredDate())){
+                    sameExpiredDateTrack.put(productBatch.getExpiredDate(), new ProductBatchDisplayStaff(productBatch));
+                } else {
+                    sameExpiredDateTrack.get(productBatch.getExpiredDate()).getProductBatchAddressDisplayStaffList().add(new ProductBatchAddressDisplayStaff(productBatch));
+                }
+            }
+            productDisplayStaffHashMap.get(product.getId()).setProductBatchDisplayStaffList(sameExpiredDateTrack.values().stream().collect(Collectors.toList()));
+        }
+
+
+        return new ProductListResponseBody(productDisplayStaffList, totalPage, totalProduct);
     }
 
 //    @Override
@@ -439,7 +455,7 @@ public class ProductServiceImpl implements ProductService {
                 productBatchCreate.getProductBatchAddresses().forEach(productBatchAddressCreateList -> {
                     if(supermarket.isPresent()){
                         if(supermarket.get().getSupermarketAddressList().stream()
-                                .noneMatch(supermarketAddress -> productBatchAddressCreateList.getSupermarketAddress().equals(supermarketAddress))){
+                                .noneMatch(supermarketAddress -> productBatchAddressCreateList.getSupermarketAddress().getAddress().equals(supermarketAddress.getAddress()))){
                             errors.add("Địa chỉ "+productBatchAddressCreateList.getSupermarketAddress().getAddress()+ " không tìm thấy trong danh sách địa chỉ chi nhánh của siêu thị!");
                         }
                         if (productBatchAddressCreateList.getQuantity() == null) {
@@ -448,7 +464,6 @@ public class ProductServiceImpl implements ProductService {
                             errors.add("Số lượng của lô sản phẩm " + productBatchCreate.getExpiredDate() + "đang âm hoặc bằng 0!");
                         }
                     }
-
                 });
 
             });
@@ -707,57 +722,79 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product updateProduct(Product product) throws ResourceNotFoundException {
+    public Product updateProduct(ProductDisplayStaff productDisplayStaff) throws ResourceNotFoundException {
         HashMap<String, String> errorFields = new HashMap<>();
 
-        if (productRepository.findById(product.getId()).isEmpty()) {
-            throw new ResourceNotFoundException("Sản phảm không tìm thấy với id: " + product.getId());
+        if (productRepository.findById(productDisplayStaff.getId()).isEmpty()) {
+            throw new ResourceNotFoundException("Sản phảm không tìm thấy với id: " + productDisplayStaff.getId());
         }
 
-        UUID productSubCategoryId = product.getProductSubCategory().getId();
+        UUID productSubCategoryId = productDisplayStaff.getProductSubCategory().getId();
         if (productSubCategoryRepository.findById(productSubCategoryId).isEmpty()) {
             throw new ResourceNotFoundException("Loại sản phảm phụ không tìm thấy với id: " + productSubCategoryId);
         }
 
-        UUID supermarketId = product.getSupermarket().getId();
+        UUID supermarketId = productDisplayStaff.getSupermarket().getId();
         if (supermarketRepository.findById(supermarketId).isEmpty()) {
             throw new ResourceNotFoundException("Siêu thị không tìm thấy với id: " + productSubCategoryId);
         }
 
-        if (product.getName().length() > 50) {
+        if (productDisplayStaff.getName().length() > 50) {
             errorFields.put("Lỗi nhập tên sản phẩm", "Tên sản phẩm chỉ có tối đa 50 kí tự!");
         }
 
-        if (product.getUnit().length() > 50) {
+        if (productDisplayStaff.getUnit().length() > 50) {
             errorFields.put("Lỗi nhập đơn vị sản phẩm", "Đơn vị sản phẩm chỉ có tối đa 50 kí tự!");
         }
 
-        if (product.getProductImageList().size() == 0) {
+        if (productDisplayStaff.getImageUrlImageList().size() == 0) {
             errorFields.put("Lỗi hình ảnh sản phẩm", "Vui lòng thêm hình cho sản phẩm!");
         }
 
-        product.getProductBatchList().forEach(productBatch -> {
-            if (productBatch.getPrice() < 0 || productBatch.getPriceOriginal() < 0) {
+        productDisplayStaff.getProductBatchDisplayStaffList().forEach(productBatchDisplayStaff -> {
+            if (productBatchDisplayStaff.getPrice() < 0 || productBatchDisplayStaff.getPriceOriginal() < 0) {
                 errorFields.put("Lỗi nhập giá", "Giá không thế âm!");
             }
-
-            if (productBatch.getQuantity() <= 0) {
-                errorFields.put("Lỗi nhập số lượng", "Số lượng sản phẩm không thể âm hoặc bằng 0!");
-            }
-
-            if (productBatch.getExpiredDate().isBefore(LocalDate.now().plus(product.getProductSubCategory().getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
+            if(productBatchDisplayStaff.getExpiredDate().isBefore(LocalDate.now().plus(productDisplayStaff.getProductSubCategory().getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
                 errorFields.put("Lỗi nhập ngày hết hạn", "Ngày hết hạn phải sau ngày hiện tại cộng thêm số ngày điều kiện cho hàng cận hạn sử dụng có trong SUBCATEGORY!");
-            }
-            if (!productBatch.getSupermarketAddress().getSupermarket().getId().equals(product.getSupermarket().getId())) {
-                errorFields.put("Lỗi địa chỉ siêu thị cho lô HSD: " + productBatch.getExpiredDate(), "Địa chỉ siêu thị không tìm thấy với id hoặc không có trong danh sách địa chỉ của siêu thị: " + product.getSupermarket().getName());
-            }
+            };
+            productBatchDisplayStaff.getProductBatchAddressDisplayStaffList().forEach(productBatchAddressDisplayStaff -> {
+                if (productBatchAddressDisplayStaff.getQuantity() <= 0) {
+                    errorFields.put("Lỗi nhập số lượng", "Số lượng sản phẩm không thể âm hoặc bằng 0!");
+                }
+                if (productDisplayStaff.getSupermarket().getSupermarketAddressList().stream().filter(supermarketAddress -> productBatchAddressDisplayStaff.getSupermarketAddress().getId().equals(supermarketAddress.getId())).toList().size() == 0) {
+                    errorFields.put("Lỗi địa chỉ siêu thị cho lô HSD: " + productBatchDisplayStaff.getExpiredDate(), "Địa chỉ siêu thị không tìm thấy với id hoặc không có trong danh sách địa chỉ của siêu thị: " + productDisplayStaff.getSupermarket().getName());
+                }
+            });
         });
+
+//        product.getProductBatchList().forEach(productBatch -> {
+//            if (productBatch.getPrice() < 0 || productBatch.getPriceOriginal() < 0) {
+//                errorFields.put("Lỗi nhập giá", "Giá không thế âm!");
+//            }
+//
+//            if (productBatch.getQuantity() <= 0) {
+//                errorFields.put("Lỗi nhập số lượng", "Số lượng sản phẩm không thể âm hoặc bằng 0!");
+//            }
+//
+//            if (productBatch.getExpiredDate().isBefore(LocalDate.now().plus(product.getProductSubCategory().getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
+//                errorFields.put("Lỗi nhập ngày hết hạn", "Ngày hết hạn phải sau ngày hiện tại cộng thêm số ngày điều kiện cho hàng cận hạn sử dụng có trong SUBCATEGORY!");
+//            }
+//            if (!productBatch.getSupermarketAddress().getSupermarket().getId().equals(product.getSupermarket().getId())) {
+//                errorFields.put("Lỗi địa chỉ siêu thị cho lô HSD: " + productBatch.getExpiredDate(), "Địa chỉ siêu thị không tìm thấy với id hoặc không có trong danh sách địa chỉ của siêu thị: " + product.getSupermarket().getName());
+//            }
+//        });
 
         if (errorFields.size() > 0) {
             throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
         }
-        String unit = product.getUnit().toLowerCase();
-        product.setUnit(unit);
+
+//        String unit = product.getUnit().toLowerCase();
+//        product.setUnit(unit);
+
+        Product product = new Product(productDisplayStaff);
+
+
         return productRepository.save(product);
     }
 
@@ -770,6 +807,17 @@ public class ProductServiceImpl implements ProductService {
         product.get().setStatus(Status.DISABLE.ordinal());
 
         return productRepository.save(product.get());
+    }
+
+    @Override
+    @Transactional
+    public Product enableProduct(UUID productId) throws ResourceNotFoundException {
+        Optional<Product> product = productRepository.findById(productId);
+        if (product.isEmpty()) {
+            throw new ResourceNotFoundException("Sản phảm không tìm thấy với id: " + productId);
+        }
+        product.get().setStatus(Status.ENABLE.ordinal());
+        return product.get();
     }
 
     @Override
@@ -980,7 +1028,7 @@ public class ProductServiceImpl implements ProductService {
                                 Optional<SupermarketAddress> supermarketAddress = supermarketAddressRepository.findByAddress(productExcelBatchAddressCreate.getSupermarketAddress());
                                 if (supermarketAddress.isEmpty()) {
                                     errors.add("Địa chỉ kho lưu trữ " + productExcelBatchAddressCreate.getSupermarketAddress() + " không tìm thấy trong hệ thống!");
-                                } else if (!supermarketAddress.get().getSupermarket().getId().equals(supermarket.getId())) {
+                                } else if (supermarket.getId() !=null && !supermarketAddress.get().getSupermarket().getId().equals(supermarket.getId())) {
                                     errors.add("Địa chỉ kho lưu trữ " + supermarketAddress.get().getAddress() + " không nằm trong danh sách các địa chỉ của siêu thị được chọn!");
                                 }
                                 productBatchAddress.setQuantity(productExcelBatchAddressCreate.getQuantity());

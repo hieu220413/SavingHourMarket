@@ -1,6 +1,6 @@
 package com.fpt.capstone.savinghourmarket.model;
 
-import com.fpt.capstone.savinghourmarket.entity.Product;
+import com.fpt.capstone.savinghourmarket.entity.TimeFrame;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,8 +10,8 @@ import java.util.List;
 @Getter
 @Setter
 @AllArgsConstructor
-public class ProductListResponseBody {
-    private List<ProductDisplayStaff> productList;
+public class TimeFrameListResponseBody {
+    private List<TimeFrame> pickupPointList;
     private int totalPage;
-    private long totalProduct;
+    private long totalTimeFrame;
 }

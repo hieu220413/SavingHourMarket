@@ -35,6 +35,8 @@ const OrderGroup = ({navigation}) => {
   const [groupList, setGroupList] = useState([]);
   const [showLogout, setShowLogout] = useState(false);
   const [date, setDate] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+
   const [currentStatus, setCurrentStatus] = useState({
     display: 'Chưa có nhân viên giao hàng',
     value: 1,
@@ -122,6 +124,7 @@ const OrderGroup = ({navigation}) => {
                   const Assigned = respond.filter(item => {
                     return item.deliverer !== null;
                   });
+                  
                   setGroupListNotYetAssigned(notYetAssigned);
                   setGroupListAssigned(Assigned);
                   setLoading(false);
@@ -166,6 +169,216 @@ const OrderGroup = ({navigation}) => {
       fetchData();
     }, [date]),
   );
+
+  const ModalSortItem = ({item}) => {
+    return (
+      <TouchableOpacity
+        onPress={() => {
+          const newArray = selectSort.map(i => {
+            if (i.id === item.id) {
+              if (i.active === true) {
+                return {...i, active: false};
+              } else {
+                return {...i, active: true};
+              }
+            }
+            return {...i, active: false};
+          });
+          // console.log(newArray);
+          setSelectSort(newArray);
+        }}
+        style={
+          item.active == true
+            ? {
+                borderColor: COLORS.primary,
+                borderWidth: 1,
+                borderRadius: 10,
+                margin: 5,
+              }
+            : {
+                borderColor: '#c8c8c8',
+                borderWidth: 0.2,
+                borderRadius: 10,
+                margin: 5,
+              }
+        }>
+        <Text
+          style={
+            item.active == true
+              ? {
+                  width: 150,
+                  paddingVertical: 10,
+                  textAlign: 'center',
+                  color: COLORS.primary,
+
+                  fontSize: 12,
+                }
+              : {
+                  width: 150,
+                  paddingVertical: 10,
+                  textAlign: 'center',
+                  color: 'black',
+
+                  fontSize: 12,
+                }
+          }>
+          {item.name}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const sortOptions = [
+    {
+      id: 1,
+      name: 'Ngày giao gần nhất',
+      active: false,
+    },
+    {
+      id: 2,
+      name: 'Ngày giao xa nhất',
+      active: false,
+    },
+  ];
+  const [selectSort, setSelectSort] = useState(sortOptions);
+
+  const sortOrder = selectSort => {
+    const sortItem = selectSort.find(item => item.active === true);
+    setLoading(true);
+    if (sortItem) {
+      const fetchData = async () => {
+        if (auth().currentUser) {
+          const tokenId = await auth().currentUser.getIdToken();
+          if (tokenId) {
+            setLoading(true);
+
+            fetch(
+              `${API.baseURL}/api/order/staff/getOrderGroup?${
+                sortItem?.id == 1 ? '&deliverDateSortType=ASC' : ''
+              }${sortItem?.id == 2 ? '&deliverDateSortType=DESC' : ''}`,
+              {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${tokenId}`,
+                },
+              },
+            )
+              .then(res => res.json())
+              .then(respond => {
+                console.log('group1', respond);
+                if (respond.error) {
+                  setLoading(false);
+                  return;
+                }
+                const notYetAssigned = respond.filter(item => {
+                  return item.deliverer === null;
+                });
+                const Assigned = respond.filter(item => {
+                  return item.deliverer !== null;
+                });
+                setGroupListNotYetAssigned(notYetAssigned);
+                setGroupListAssigned(Assigned);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
+          }
+        }
+      };
+      fetchData();
+    } else {
+      const fetchData = async () => {
+        if (auth().currentUser) {
+          const tokenId = await auth().currentUser.getIdToken();
+          if (tokenId) {
+            setLoading(true);
+            fetch(`${API.baseURL}/api/order/staff/getOrderGroup`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
+              },
+            })
+              .then(res => res.json())
+              .then(respond => {
+                console.log('group1', respond);
+                if (respond.error) {
+                  setLoading(false);
+                  return;
+                }
+                const notYetAssigned = respond.filter(item => {
+                  return item.deliverer === null;
+                });
+                const Assigned = respond.filter(item => {
+                  return item.deliverer !== null;
+                });
+                setGroupListNotYetAssigned(notYetAssigned);
+                setGroupListAssigned(Assigned);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
+          }
+        }
+      };
+      fetchData();
+    }
+  };
+
+  const handleApplySort = async () => {
+    setDate(null);
+    setModalVisible(!modalVisible);
+    setLoading(true);
+    sortOrder(selectSort);
+  };
+
+  const handleClear = () => {
+    setModalVisible(!modalVisible);
+    setLoading(true);
+    const fetchData = async () => {
+      if (auth().currentUser) {
+        const tokenId = await auth().currentUser.getIdToken();
+        if (tokenId) {
+          setLoading(true);
+          fetch(`${API.baseURL}/api/order/staff/getOrderGroup`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${tokenId}`,
+            },
+          })
+            .then(res => res.json())
+            .then(respond => {
+              console.log('group1', respond);
+              if (respond.error) {
+                setLoading(false);
+                return;
+              }
+              const notYetAssigned = respond.filter(item => {
+                return item.deliverer === null;
+              });
+              const Assigned = respond.filter(item => {
+                return item.deliverer !== null;
+              });
+              setSelectSort(sortOptions);
+              setGroupListNotYetAssigned(notYetAssigned);
+              setGroupListAssigned(Assigned);
+              setLoading(false);
+            })
+            .catch(err => {
+              console.log(err);
+              setLoading(false);
+            });
+        }
+      }
+    };
+    fetchData();
+  };
 
   return (
     <TouchableWithoutFeedback
@@ -332,7 +545,7 @@ const OrderGroup = ({navigation}) => {
               }}>
               <TouchableOpacity
                 onPress={() => {
-                  //   setModalVisible(true);
+                  setModalVisible(true);
                 }}>
                 <Image
                   resizeMode="contain"
@@ -389,6 +602,7 @@ const OrderGroup = ({navigation}) => {
                               orderList: data.item.orderList,
                               orderSuccess: false,
                               orderGroupId: data.item.id,
+                              mode: 1,
                             });
                           }}>
                           <View
@@ -512,6 +726,7 @@ const OrderGroup = ({navigation}) => {
                             navigation.navigate('PickStaff', {
                               orderGroupId: data.item.id,
                               staff: data.item?.deliverer,
+                              mode: 1,
                             });
 
                             // setVisible(true);
@@ -578,6 +793,7 @@ const OrderGroup = ({navigation}) => {
                               orderList: data.item.orderList,
                               deliverer: data.item.deliverer,
                               orderGroupId: data.item.id,
+                              mode: 1,
                             });
                           }}>
                           <View
@@ -701,6 +917,7 @@ const OrderGroup = ({navigation}) => {
                             navigation.navigate('PickStaff', {
                               orderGroupId: data.item.id,
                               staff: data.item?.deliverer,
+                              mode: 1,
                             });
                             // setVisible(true);
                             // console.log(data.item.id);
@@ -729,6 +946,110 @@ const OrderGroup = ({navigation}) => {
           )}
 
           {/* ************************ */}
+          <Modal
+            animationType="fade"
+            transparent={true}
+            visible={modalVisible}
+            onRequestClose={() => {
+              setModalVisible(!modalVisible);
+            }}>
+            <Pressable
+              onPress={() => setModalVisible(false)}
+              style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                  }}>
+                  <Text
+                    style={{
+                      color: 'black',
+                      fontSize: 20,
+                      fontWeight: 700,
+                      textAlign: 'center',
+                      paddingBottom: 20,
+                    }}>
+                    Bộ lọc tìm kiếm
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setModalVisible(!modalVisible);
+                      setSelectSort(sortOptions);
+                    }}>
+                    <Image
+                      resizeMode="contain"
+                      style={{
+                        width: 20,
+                        height: 20,
+                        tintColor: 'grey',
+                      }}
+                      source={icons.close}
+                    />
+                  </TouchableOpacity>
+                </View>
+                <Text
+                  style={{
+                    color: 'black',
+                    fontSize: 16,
+                    fontWeight: 700,
+                  }}>
+                  Sắp xếp theo
+                </Text>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                    marginVertical: 10,
+                  }}>
+                  {selectSort.map((item, index) => (
+                    <ModalSortItem item={item} key={index} />
+                  ))}
+                </View>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    marginTop: '5%',
+                  }}>
+                  <TouchableOpacity
+                    style={{
+                      width: '50%',
+                      paddingHorizontal: 15,
+                      paddingVertical: 10,
+                      backgroundColor: 'white',
+                      borderRadius: 10,
+                      borderColor: COLORS.primary,
+                      borderWidth: 0.5,
+                      marginRight: '2%',
+                    }}
+                    onPress={handleClear}>
+                    <Text
+                      style={{
+                        color: COLORS.primary,
+                        fontWeight: 'bold',
+                        textAlign: 'center',
+                      }}>
+                      Thiết lập lại
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={{
+                      width: '50%',
+                      paddingHorizontal: 15,
+                      paddingVertical: 10,
+                      backgroundColor: COLORS.primary,
+                      color: 'white',
+                      borderRadius: 10,
+                    }}
+                    onPress={handleApplySort}>
+                    <Text style={styles.textStyle}>Áp dụng</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Pressable>
+          </Modal>
         </View>
         {loading && <LoadingScreen />}
       </View>
@@ -767,5 +1088,31 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'flex-end',
     marginLeft: 10,
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    // marginTop: 22,
+    backgroundColor: 'rgba(50,50,50,0.5)',
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  textStyle: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });

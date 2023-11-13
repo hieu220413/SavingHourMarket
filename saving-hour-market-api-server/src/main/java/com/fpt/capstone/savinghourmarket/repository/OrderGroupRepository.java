@@ -2,6 +2,7 @@ package com.fpt.capstone.savinghourmarket.repository;
 
 import com.fpt.capstone.savinghourmarket.entity.OrderGroup;
 import com.fpt.capstone.savinghourmarket.entity.PickupPoint;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -53,18 +54,21 @@ public interface OrderGroupRepository extends JpaRepository<OrderGroup, UUID> {
             "AND " +
             "(((:getOldOrderGroup IS NULL) " +
             "OR " +
-            "((:getOldOrderGroup = FALSE) AND (og.deliverDate > CURRENT_DATE)) " +
+            "((:getOldOrderGroup = FALSE) AND (og.deliverDate >= CURRENT_DATE)) " +
             "OR " +
             "((:getOldOrderGroup = TRUE) AND (og.deliverDate < CURRENT_DATE)))) " +
             "AND " +
             "(og.orderList IS NOT EMPTY) " +
+            "AND " +
+            "((:status IS NULL) OR (EXISTS (SELECT 1 FROM Order o WHERE o IN elements(og.orderList) AND o.status = :status))) " +
             "AND " +
             "((:pickupPointId IS NULL) OR (og.pickupPoint.id = :pickupPointId)) " +
             "AND " +
             "((:delivererId IS NULL) OR (og.deliverer.id = :delivererId)) " +
             "AND " +
             "((:deliveryDate IS NULL) OR (og.deliverDate = :deliveryDate))")
-    List<OrderGroup> findByTimeFrameOrPickupPointOrDeliverDate(Boolean getOldOrderGroup,
+    Page<OrderGroup> findByTimeFrameOrPickupPointOrDeliverDate(Integer status,
+                                                               Boolean getOldOrderGroup,
                                                                UUID timeFrameId,
                                                                UUID pickupPointId,
                                                                UUID delivererId,

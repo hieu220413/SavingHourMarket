@@ -190,11 +190,11 @@ public class ProductController {
     }
 
     @RequestMapping(value = "/update", method = RequestMethod.PUT)
-    public ResponseEntity<Product> updateProduct(@Valid @RequestBody Product product,
+    public ResponseEntity<Product> updateProduct(@Valid @RequestBody ProductDisplayStaff productDisplayStaff,
                                                  @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException, ResourceNotFoundException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        return ResponseEntity.status(HttpStatus.OK).body(productService.updateProduct(product));
+        return ResponseEntity.status(HttpStatus.OK).body(productService.updateProduct(productDisplayStaff));
     }
 
     @RequestMapping(value = "/disable", method = RequestMethod.PUT)
@@ -203,6 +203,14 @@ public class ProductController {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(productService.disableProduct(productId));
+    }
+
+    @RequestMapping(value = "/enable", method = RequestMethod.PUT)
+    public ResponseEntity<Product> enableProduct(@Valid @RequestBody UUID productId,
+                                                 @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException, ResourceNotFoundException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        return ResponseEntity.status(HttpStatus.OK).body(productService.enableProduct(productId));
     }
     
     @RequestMapping(value = "/create", method = RequestMethod.POST)

@@ -1,12 +1,15 @@
 /* eslint-disable prettier/prettier */
-import React, {useEffect, useState} from 'react';
-import {createStackNavigator} from '@react-navigation/stack';
-import {NavigationContainer} from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { createStackNavigator } from '@react-navigation/stack';
+import { NavigationContainer } from '@react-navigation/native';
+import Toast, { BaseToast } from 'react-native-toast-message';
+import { COLORS } from './src/constants/theme';
 import 'react-native-gesture-handler';
 import Tabs from './src/navigations/tabs';
 import Login from './src/screens/Login';
 import OrderDetails from './src/screens/deliveryStaff/OrderDetails';
 import OrderDetail from './src/screens/orderStaff/OrderDetail';
+import OrderPrint from './src/screens/orderStaff/OrderPrint';
 import EditDeliveryDate from './src/screens/deliveryStaff/EditDeliveryDate';
 import {LogBox} from 'react-native';
 import SelectPickupPoint from './src/screens/orderStaff/SelectPickupPoint';
@@ -15,13 +18,39 @@ import OrderDetailForManager from './src/screens/deliveryManager/OrderDetailForM
 import PickStaff from './src/screens/deliveryManager/PickStaff';
 import SelectTimeFrame from './src/screens/deliveryManager/SelectTimeFrame';
 import SelectProductConsolidationArea from './src/screens/deliveryManager/SelectProductConsolidationArea';
+import {ModalPortal} from 'react-native-modals';
+import BatchList from './src/screens/deliveryManager/BatchList';
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
 ]);
 
+
 const Stack = createStackNavigator();
 export default function App() {
+  const toastConfig = {
+    /*
+    Overwrite 'success' type,
+    by modifying the existing `BaseToast` component
+  */
+    success: props => (
+      <BaseToast
+        {...props}
+        style={{ backgroundColor: COLORS.primary, borderLeftWidth: 0 }}
+        contentContainerStyle={{ paddingHorizontal: 15 }}
+        text1Style={{
+          fontSize: 16,
+          fontWeight: '700',
+          color: 'white',
+        }}
+        text2Style={{
+          fontSize: 14,
+          fontWeight: '400',
+          color: 'white',
+        }}
+      />
+    ),
+  };
   return (
     <>
       <NavigationContainer>
@@ -37,6 +66,7 @@ export default function App() {
             options={{swipeEnabled: false}}
           />
           <Stack.Screen name="OrderDetail" component={OrderDetail} />
+          <Stack.Screen name="OrderPrint" component={OrderPrint} />
           <Stack.Screen name="OrderDetails" component={OrderDetails} />
           <Stack.Screen name="EditDeliveryDate" component={EditDeliveryDate} />
           <Stack.Screen
@@ -54,8 +84,11 @@ export default function App() {
             name="SelectProductConsolidationArea"
             component={SelectProductConsolidationArea}
           />
+          <Stack.Screen name="BatchList" component={BatchList} />
         </Stack.Navigator>
       </NavigationContainer>
+      <ModalPortal />
+      <Toast config={toastConfig} />
     </>
   );
 }

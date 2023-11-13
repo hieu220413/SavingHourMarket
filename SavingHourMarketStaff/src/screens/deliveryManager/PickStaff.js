@@ -8,10 +8,15 @@ import {
   Image,
   TextInput,
   ScrollView,
-  Modal,
   Pressable,
   Alert,
 } from 'react-native';
+import Modal, {
+  ModalFooter,
+  ModalButton,
+  ScaleAnimation,
+  ModalContent,
+} from 'react-native-modals';
 import React, {useEffect, useState, useCallback} from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -27,7 +32,7 @@ import DatePicker from 'react-native-date-picker';
 import CheckBox from 'react-native-check-box';
 
 const PickStaff = ({navigation, route}) => {
-  const {orderGroupId, staff} = route.params;
+  const {orderGroupId, staff, mode} = route.params;
   const [initializing, setInitializing] = useState(true);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -35,6 +40,9 @@ const PickStaff = ({navigation, route}) => {
   const [staffList, setStaffList] = useState([]);
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [showLogout, setShowLogout] = useState(false);
+  const [openValidateDialog, setOpenValidateDialog] = useState(false);
+  const [openNotificationDialog, setOpenNotificationDialog] = useState(false);
+  const [respondText, setRespondText] = useState(null);
 
   const onAuthStateChange = async userInfo => {
     // console.log(userInfo);
@@ -122,6 +130,70 @@ const PickStaff = ({navigation, route}) => {
     }, []),
   );
 
+  const handlePickStaff = () => {
+    if (!staffList.some(item => item.checked === true)) {
+      setOpenValidateDialog(true);
+      return;
+    }
+    const assignStaff = async () => {
+      if (auth().currentUser) {
+        const tokenId = await auth().currentUser.getIdToken();
+        if (tokenId) {
+          
+          if (mode === 1) {
+            setLoading(true);
+            fetch(
+              `${API.baseURL}/api/order/deliveryManager/assignDeliveryStaffToGroupOrBatch?orderGroupId=${orderGroupId}&staffId=${selectedStaff.id}`,
+              {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${tokenId}`,
+                },
+              },
+            )
+              .then(res => res.text())
+              .then(respond => {
+                console.log('res:', respond);
+                setRespondText(respond);
+                setOpenNotificationDialog(true);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
+          }
+          if (mode === 2) {
+            setLoading(true);
+            fetch(
+              `${API.baseURL}/api/order/deliveryManager/assignDeliveryStaffToGroupOrBatch?orderBatchId=${orderGroupId}&staffId=${selectedStaff.id}`,
+              {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${tokenId}`,
+                },
+              },
+            )
+              .then(res => res.text())
+              .then(respond => {
+                console.log('res:', respond);
+                setRespondText(respond);
+                setOpenNotificationDialog(true);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
+          }
+        }
+      }
+    };
+    assignStaff();
+  };
+
   return (
     <>
       <View
@@ -187,8 +259,10 @@ const PickStaff = ({navigation, route}) => {
                   {/* List staff */}
                   <Pressable
                     onPress={() => {
-                      console.log(staff);
-                      console.log(orderGroupId);
+                      console.log('staff', staff);
+                      console.log('orderGroupId', orderGroupId);
+                      console.log('selectedStaff', selectedStaff);
+                      console.log('mode', mode);
                     }}>
                     <View
                       style={{
@@ -262,7 +336,7 @@ const PickStaff = ({navigation, route}) => {
                             return item.checked === true;
                           });
                           // console.log(selectedStaffArr[0]);
-                          setSelectedStaff(selectedStaffArr[0])
+                          setSelectedStaff(selectedStaffArr[0]);
                         }}
                         isChecked={item.checked}
                       />
@@ -309,7 +383,7 @@ const PickStaff = ({navigation, route}) => {
             </View>
             <TouchableOpacity
               onPress={() => {
-                // handleBuyButton();
+                handlePickStaff();
               }}
               style={{
                 height: '60%',
@@ -331,6 +405,91 @@ const PickStaff = ({navigation, route}) => {
               </Text>
             </TouchableOpacity>
           </View>
+          <Modal
+            width={0.8}
+            visible={openValidateDialog}
+            onTouchOutside={() => {
+              setOpenValidateDialog(false);
+            }}
+            dialogAnimation={
+              new ScaleAnimation({
+                initialValue: 0, // optional
+                useNativeDriver: true, // optional
+              })
+            }
+            footer={
+              <ModalFooter>
+                <ModalButton
+                  // textStyle={{color: 'red'}}
+                  text="Đóng"
+                  onPress={() => {
+                    setOpenValidateDialog(false);
+                  }}
+                />
+              </ModalFooter>
+            }>
+            <ModalContent>
+              <View
+                style={{
+                  padding: 20,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                <Text
+                  style={{
+                    fontSize: 20,
+                    fontFamily: 'Roboto',
+                    color: 'black',
+                    textAlign: 'center',
+                  }}>
+                  Vui lòng chọn nhân viên giao hàng
+                </Text>
+              </View>
+            </ModalContent>
+          </Modal>
+          <Modal
+            width={0.8}
+            visible={openNotificationDialog}
+            onTouchOutside={() => {
+              setOpenValidateDialog(false);
+            }}
+            dialogAnimation={
+              new ScaleAnimation({
+                initialValue: 0, // optional
+                useNativeDriver: true, // optional
+              })
+            }
+            footer={
+              <ModalFooter>
+                <ModalButton
+                  // textStyle={{color: 'red'}}
+                  text="OK"
+                  onPress={() => {
+                    setOpenNotificationDialog(false);
+                    navigation.goBack();
+                  }}
+                />
+              </ModalFooter>
+            }>
+            <ModalContent>
+              <View
+                style={{
+                  padding: 20,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                <Text
+                  style={{
+                    fontSize: 20,
+                    fontFamily: 'Roboto',
+                    color: 'black',
+                    textAlign: 'center',
+                  }}>
+                  {respondText ? respondText : ''}
+                </Text>
+              </View>
+            </ModalContent>
+          </Modal>
         </>
       )}
       {loading && <LoadingScreen />}

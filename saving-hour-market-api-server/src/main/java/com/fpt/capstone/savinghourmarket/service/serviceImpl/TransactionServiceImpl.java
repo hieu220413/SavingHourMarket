@@ -3,11 +3,14 @@ package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
 import com.fpt.capstone.savinghourmarket.common.PaymentMethod;
 import com.fpt.capstone.savinghourmarket.common.PaymentStatus;
+import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Order;
 import com.fpt.capstone.savinghourmarket.entity.Transaction;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.exception.OrderIsPaidException;
 import com.fpt.capstone.savinghourmarket.exception.RequiredEPaymentException;
+import com.fpt.capstone.savinghourmarket.exception.TransactionIsRefundException;
+import com.fpt.capstone.savinghourmarket.model.TransactionListResponseBody;
 import com.fpt.capstone.savinghourmarket.repository.OrderRepository;
 import com.fpt.capstone.savinghourmarket.repository.TransactionRepository;
 import com.fpt.capstone.savinghourmarket.service.TransactionService;
@@ -15,6 +18,10 @@ import com.fpt.capstone.savinghourmarket.util.Utils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
@@ -26,10 +33,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -156,5 +160,47 @@ public class TransactionServiceImpl implements TransactionService {
             return new RedirectView("http://cancel.sdk.merchantbackapp/");
         }
         return  new RedirectView("http://fail.sdk.merchantbackapp/");
+    }
+
+    @Override
+    public TransactionListResponseBody getTransactionForAdmin(SortType timeSortType, LocalDateTime fromDatetime, LocalDateTime toDatetime, Integer page, Integer limit) {
+        Sort sort;
+        if(timeSortType == null || timeSortType.equals(SortType.ASC)) {
+            sort = Sort.by("paymentTime").ascending();
+        } else {
+            sort = Sort.by("paymentTime").descending();
+        }
+
+        Pageable pageableWithSort = PageRequest.of(page, limit, sort);
+
+        Page<Transaction> result = transactionRepository.getTransactionForAdmin(fromDatetime, toDatetime, pageableWithSort);
+
+        Integer totalPage = result.getTotalPages();
+
+        Long totalTransaction = result.getTotalElements();
+
+        List<Transaction> transactionList = result.stream().toList();
+
+        return new TransactionListResponseBody(transactionList, totalPage, totalTransaction);
+    }
+
+    @Override
+    @Transactional
+    public Transaction refundTransaction(UUID transactionId) {
+        Optional<Transaction> transaction = transactionRepository.findById(transactionId);
+        if(!transaction.isPresent()) {
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.TRANSACTION_NOT_FOUND.getCode()), AdditionalResponseCode.TRANSACTION_NOT_FOUND.toString());
+        }
+        if(transaction.get().getRefundTransaction() != null) {
+            throw new TransactionIsRefundException(HttpStatus.valueOf(AdditionalResponseCode.TRANSACTION_IS_REFUNDED.getCode()), AdditionalResponseCode.TRANSACTION_IS_REFUNDED.toString());
+        }
+        Transaction refundTransaction = new Transaction();
+        refundTransaction.setAmountOfMoney(transaction.get().getAmountOfMoney());
+        refundTransaction.setPaymentTime(LocalDateTime.now());
+        refundTransaction.setPaymentMethod(PaymentMethod.VNPAY.ordinal());
+
+        transaction.get().setRefundTransaction(transactionRepository.save(refundTransaction));
+
+        return transaction.get();
     }
 }

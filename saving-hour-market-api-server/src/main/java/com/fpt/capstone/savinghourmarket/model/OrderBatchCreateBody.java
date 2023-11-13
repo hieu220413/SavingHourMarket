@@ -34,6 +34,9 @@ public class OrderBatchCreateBody {
     private UUID timeFrameId;
 
     @NotNull
+    private UUID productConsolidationAreaId;
+
+    @NotNull
     @Size(min = 1)
     private List<UUID> orderIdList;
 

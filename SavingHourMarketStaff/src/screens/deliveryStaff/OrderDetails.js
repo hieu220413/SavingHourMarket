@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 // eslint-disable-next-line prettier/prettier
-import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Image, ScrollView, Modal, StyleSheet } from 'react-native';
 import React, { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
@@ -21,6 +21,11 @@ const OrderDetails = ({ navigation, route }) => {
     const [customerTimeFrame, setCustomerTimeFrame] = useState(null);
     const [date, setDate] = useState(null);
     const id = route.params.id;
+    const isScaned = route.params.isScaned;
+    const [modalVisible, setModalVisible] = useState(false);
+    const [errorModalVisible, setErrorModalVisible] = useState(false);
+    const [alertText, setAlertText] = useState('');
+    const [expDateList, setExpDateList] = useState([]);
     const onAuthStateChange = async userInfo => {
         setLoading(true);
         if (initializing) {
@@ -62,6 +67,28 @@ const OrderDetails = ({ navigation, route }) => {
         return subscriber;
     }, []);
 
+    const fetchOrderDetails = () => {
+        if (tokenId) {
+            setLoading(true);
+            fetch(`${API.baseURL}/api/order/getOrderDetail/${id}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${tokenId}`,
+                },
+            })
+                .then(res => res.json())
+                .then(respond => {
+                    setItem(respond);
+                    setLoading(false);
+                })
+                .catch(err => {
+                    console.log(err);
+                    setLoading(false);
+                });
+        }
+    };
+
     useFocusEffect(
         useCallback(() => {
             if (tokenId) {
@@ -75,8 +102,14 @@ const OrderDetails = ({ navigation, route }) => {
                 })
                     .then(res => res.json())
                     .then(respond => {
-                        console.log(respond)
                         setItem(respond);
+                        const arr = [];
+                        respond.orderDetailList.map(item => {
+                            item.orderDetailProductBatches.map(batch => {
+                                arr.push(batch.expiredDate);
+                            });
+                        });
+                        setExpDateList(arr);
                         setLoading(false);
                     })
                     .catch(err => {
@@ -84,8 +117,29 @@ const OrderDetails = ({ navigation, route }) => {
                         setLoading(false);
                     });
             }
-        }, [tokenId]),
+        }, [id, tokenId])
     );
+
+    const confirmOrder = (bool) => {
+        console.log(bool);
+        setLoading(true);
+        fetch(`${API.baseURL}/api/order/deliveryStaff/${bool === true ? 'confirmSucceeded' : 'confirmFail'}?orderId=${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
+            },
+        })
+            .then((res) => res.text())
+            .then(data => {
+                console.log('data', data);
+                setAlertText(data);
+                setErrorModalVisible(true);
+            })
+            .catch(err => {
+                console.log(err);
+            })
+    };
 
     return (
         <>
@@ -195,6 +249,8 @@ const OrderDetails = ({ navigation, route }) => {
                                                         deliveryDate: item?.deliveryDate,
                                                         picked: route.params.picked,
                                                         orderItems: item?.orderDetailList,
+                                                        orderId: route.params.id,
+                                                        expDateList: expDateList,
                                                         setTimeFrame,
                                                         setCustomerTimeFrame,
                                                         setDate,
@@ -559,7 +615,7 @@ const OrderDetails = ({ navigation, route }) => {
                     </ScrollView>
                 )}
             </View>
-            {item?.status === 3 && (
+            {item?.status === 3 && isScaned === true && (
                 <View
                     style={{
                         position: 'absolute',
@@ -579,7 +635,7 @@ const OrderDetails = ({ navigation, route }) => {
                     <View style={{ width: '95%' }}>
                         <TouchableOpacity
                             onPress={() => {
-                                // cancelOrder();
+                                setModalVisible(true);
                             }}
                             style={{
                                 alignItems: 'center',
@@ -596,15 +652,201 @@ const OrderDetails = ({ navigation, route }) => {
                                     fontFamily: 'Roboto',
                                     fontWeight: 'bold',
                                 }}>
-                                Đổi trạng thái
+                                Xác nhận đơn hàng
                             </Text>
                         </TouchableOpacity>
                     </View>
                 </View>
             )}
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                    setModalVisible(!modalVisible);
+                }}>
+                <TouchableOpacity
+                    onPress={() => setModalVisible(!modalVisible)}
+                    style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <View
+                            style={{
+                                flexDirection: 'row',
+                                justifyContent: 'space-between',
+                            }}>
+                            <Text
+                                style={{
+                                    color: 'black',
+                                    fontFamily: FONTS.fontFamily,
+                                    fontSize: 20,
+                                    fontWeight: 700,
+                                    textAlign: 'center',
+                                    paddingBottom: 20,
+                                }}>
+                                Xác nhận đơn hàng
+                            </Text>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setModalVisible(!modalVisible);
+                                }}>
+                                <Image
+                                    resizeMode="contain"
+                                    style={{
+                                        width: 20,
+                                        height: 20,
+                                        tintColor: 'grey',
+                                    }}
+                                    source={icons.close}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                        <View
+                            style={{
+                                flexDirection: 'row',
+                                justifyContent: 'center',
+                                marginTop: '5%',
+                            }}>
+                            <TouchableOpacity
+                                style={{
+                                    width: '50%',
+                                    paddingHorizontal: 15,
+                                    paddingTop: 10,
+                                    backgroundColor: 'white',
+                                    borderRadius: 10,
+                                    borderColor: COLORS.red,
+                                    borderWidth: 0.5,
+                                    marginRight: '2%',
+                                }}
+                                onPress={() => {
+                                    confirmOrder(false);
+                                    setModalVisible(!modalVisible);
+                                }}>
+                                <Text
+                                    style={{
+                                        color: COLORS.red,
+                                        fontWeight: 'bold',
+                                        textAlign: 'center',
+                                    }}>
+                                    Giao hàng thất bại
+                                </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={{
+                                    width: '50%',
+                                    paddingHorizontal: 15,
+                                    paddingTop: 10,
+                                    backgroundColor: COLORS.primary,
+                                    borderRadius: 10,
+                                }}
+                                onPress={() => {
+                                    confirmOrder(true);
+                                    setModalVisible(!modalVisible);
+                                }}>
+                                <Text style={styles.textStyle}>
+                                    Giao hàng thành công
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </TouchableOpacity>
+            </Modal>
+
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={errorModalVisible}
+                onRequestClose={() => {
+                    setErrorModalVisible(!errorModalVisible);
+                    fetchOrderDetails();
+                    setLoading(false);
+                }}>
+                <TouchableOpacity
+                    onPress={() => {
+                        setErrorModalVisible(!errorModalVisible);
+                        fetchOrderDetails();
+                        setLoading(false);
+                    }
+                    }
+                    style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <View
+                            style={{
+                                flexDirection: 'row',
+                                justifyContent: 'space-between',
+                            }}>
+                            <Text
+                                style={{
+                                    color: 'black',
+                                    fontFamily: FONTS.fontFamily,
+                                    fontSize: 20,
+                                    fontWeight: 700,
+                                    textAlign: 'center',
+                                    paddingBottom: 20,
+                                }}>
+                                Thông báo hệ thống
+                            </Text>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setErrorModalVisible(!errorModalVisible);
+                                }}>
+                                <Image
+                                    resizeMode="contain"
+                                    style={{
+                                        width: 20,
+                                        height: 20,
+                                        tintColor: 'grey',
+                                    }}
+                                    source={icons.close}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                        <View>
+                            <Text
+                                style={{
+                                    fontSize: 18,
+                                    color: 'black',
+                                }}
+                            >
+                                {alertText}
+                            </Text>
+                        </View>
+                    </View>
+                </TouchableOpacity>
+            </Modal>
             {loading && <LoadingScreen />}
         </>
     );
 };
 
 export default OrderDetails;
+
+const styles = StyleSheet.create({
+
+    centeredView: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 22,
+        backgroundColor: 'rgba(50,50,50,0.5)',
+    },
+    modalView: {
+        margin: 20,
+        backgroundColor: 'white',
+        borderRadius: 20,
+        padding: 20,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    textStyle: {
+        color: 'white',
+        fontWeight: 'bold',
+        textAlign: 'center',
+    },
+});

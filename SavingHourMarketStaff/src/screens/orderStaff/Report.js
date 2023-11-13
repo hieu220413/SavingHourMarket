@@ -217,7 +217,7 @@ const Report = ({navigation}) => {
             setLoading(true);
 
             fetch(
-              `${API.baseURL}/api/order/staff/getReportOrders?mode=DATE&startDate=${date}&endDate=${date}`,
+              `${API.baseURL}/api/order/packageStaff/getReportOrders?mode=DATE&startDate=${date}&endDate=${date}`,
               {
                 method: 'GET',
                 headers: {
@@ -266,7 +266,7 @@ const Report = ({navigation}) => {
             fetch(
               `${
                 API.baseURL
-              }/api/order/staff/getReportOrders?mode=MONTH&year=${date.slice(
+              }/api/order/packageStaff/getReportOrders?mode=MONTH&year=${date.slice(
                 0,
                 4,
               )}`,
@@ -314,7 +314,7 @@ const Report = ({navigation}) => {
           const tokenId = await auth().currentUser.getIdToken();
           if (tokenId) {
             setLoading(true);
-            fetch(`${API.baseURL}/api/order/staff/getReportOrders?mode=YEAR`, {
+            fetch(`${API.baseURL}/api/order/packageStaff/getReportOrders?mode=YEAR`, {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',

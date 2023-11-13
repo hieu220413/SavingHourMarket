@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   StyleSheet,
   Text,
@@ -135,8 +136,7 @@ const SelectPickupPoint = ({navigation, route}) => {
               paddingBottom: 20,
               borderBottomColor: '#decbcb',
               borderBottomWidth: 0.75,
-              marginHorizontal: 15,
-              marginVertical: 20,
+              marginHorizontal: 10
             }}>
             Các điểm giao hàng bạn phụ trách:
           </Text>
@@ -150,6 +150,23 @@ const SelectPickupPoint = ({navigation, route}) => {
                 onPress={() => {
                   //   storedPickupPoint(item);
                   route.params.setPickupPoint(item);
+                  if (
+                    route.params.isFromOrderGroupRoute &&
+                    route.params.isFromOrderGroupRoute === true
+                  ) {
+                    console.log('is OrderGroupForOrderStaff')
+                    navigation.navigate('OrderGroupForOrderStaff');
+                    return;
+                  }
+                  if (
+                    route.params.isFromProductPackagingRoute &&
+                    route.params.isFromProductPackagingRoute === true
+                  ) {
+                    console.log('is Product')
+                    navigation.navigate('Product');
+                    return;
+                  }
+
                   navigation.navigate('Home');
                 }}
                 style={{

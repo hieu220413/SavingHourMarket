@@ -15,6 +15,7 @@ const QrCodeScanner = ({ navigation }) => {
 
     const [initializing, setInitializing] = useState(true);
     const [data, setData] = useState('');
+    const isScaned = true;
     const onAuthStateChange = async userInfo => {
         // console.log(userInfo);
         if (initializing) {
@@ -88,9 +89,12 @@ const QrCodeScanner = ({ navigation }) => {
                 }}
             >
                 <QRCodeScanner
-                    onRead={({ data }) => {navigation.navigate('OrderDetails', {
-                        id: data,
-                    });}}
+                    onRead={({ data }) => {
+                        navigation.navigate('OrderDetails', {
+                            id: data,
+                            isScaned: isScaned,
+                        });
+                    }}
                     flashMode={RNCamera.Constants.FlashMode.off}
                     reactivate={true}
                     showMarker={true}
