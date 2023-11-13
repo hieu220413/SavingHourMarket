@@ -25,6 +25,11 @@ import CartEmpty from '../../assets/image/search-empty.png';
 import { SwipeListView } from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
 import Toast from 'react-native-toast-message';
+import Pdf from 'react-native-pdf';
+
+
+
+
 
 const SearchBar = () => {
   return (
@@ -82,6 +87,40 @@ const Home = ({ navigation }) => {
 
   const [consolidationAreaList, setConsolidationAreaList] = useState([]);
   const [selectedConsolidationAreaId, setSelectedConsolidationAreaId] = useState('');
+
+  const print = async (orderId) => {
+    console.log('print');
+    const tokenId = await auth().currentUser.getIdToken();
+    if (tokenId) {
+      await fetch(
+        `${API.baseURL}/api/order/packageStaff/printOrderPackaging?orderId=${orderId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${tokenId}`,
+          },
+        },
+      )
+        .then(res => res.text())
+        .then(respond => {
+          // console.log('order group', respond);
+          if (respond.error) {
+            setLoading(false);
+            return;
+          }
+          console.log(respond);
+          navigation.navigate('OrderPrint', {
+            uri: respond
+          });
+          setLoading(false);
+        })
+        .catch(err => {
+          console.log(err);
+          setLoading(false);
+        });
+    }
+  };
 
   const showToast = (message) => {
     Toast.show({
@@ -337,7 +376,7 @@ const Home = ({ navigation }) => {
   const [selectSort, setSelectSort] = useState(sortOptions);
   const [modalVisible, setModalVisible] = useState(false);
 
-  
+
   const sortOrder = selectSort => {
     const sortItem = selectSort.find(item => item.active === true);
     setLoading(true);
@@ -350,7 +389,7 @@ const Home = ({ navigation }) => {
 
             fetch(
               `${API.baseURL
-              }/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${pickupPoint ?`pickupPointId=${pickupPoint.id}`:``
+              }/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${pickupPoint ? `pickupPointId=${pickupPoint.id}` : ``
               }&orderStatus=${currentStatus.value}${sortItem?.id == 1 ? '&deliveryDateSortType=ASC' : ''
               }${sortItem?.id == 2 ? '&deliveryDateSortType=DESC' : ''}${sortItem?.id == 3 ? '&createdTimeSortType=DESC' : ''
               }${sortItem?.id == 4 ? '&createdTimeSortType=ASC' : ''}`,
@@ -432,7 +471,7 @@ const Home = ({ navigation }) => {
         const tokenId = await auth().currentUser.getIdToken();
         if (tokenId) {
           setLoading(true);
-  
+
           fetch(
             `${API.baseURL}/api/order/packageStaff/getOrders?pickupPointId=${pickupPoint.id}&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
             {
@@ -1034,52 +1073,80 @@ const Home = ({ navigation }) => {
                   </View>
                 )}
                 renderHiddenItem={(data, rowMap) => (
+
                   <View
                     style={{
                       flexDirection: 'row',
-                      justifyContent: 'flex-end',
-                      height: data.item?.status === 0 ? '87%' : '91.5%',
+                      justifyContent: data.item?.status === 1 ? 'space-between' : 'flex-end',
+                      height: data.item?.status === 0 ? '88%' : '91.6%',
                       // marginVertical: '2%',
                     }}>
-                    <TouchableOpacity
-                      style={{
-                        width: 120,
-                        height: '100%',
-                        backgroundColor: COLORS.primary,
-                        borderRadius: 10,
-                        // flex: 1,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                      onPress={() => {
-                        setLoading(true);
-                        setConsolidationAreaList([]);
-                        getConsolidationArea(data.item.pickupPoint.id);
-                        // console.log(data.item.id);
-                        setOrder(data.item);
-                      }}>
-                      <View>
-                        {data.item?.status === 0 && (
+                    {data.item?.status === 1 && (
+                      <TouchableOpacity
+                        style={{
+                          width: 120,
+                          height: '100%',
+                          backgroundColor: 'grey',
+                          borderBottomLeftRadius: 10,
+                          borderTopLeftRadius: 10,
+                          // flex: 1,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                        onPress={() => {
+                          print(data.item?.id);
+                        }}>
+                        <View>
                           <Image
-                            source={icons.packaging}
+                            source={icons.print}
                             resizeMode="contain"
                             style={{ width: 40, height: 40, tintColor: 'white' }}
                           />
-                        )}
-                        {data.item?.status === 1 && (
-                          <Image
-                            source={icons.packaged}
-                            resizeMode="contain"
-                            style={{ width: 55, height: 55, tintColor: 'white' }}
-                          />
-                        )}
-                      </View>
-                    </TouchableOpacity>
+                        </View>
+                      </TouchableOpacity>
+                    )}
+                    {(data.item?.status === 1 || data.item?.status === 0) && (
+                      <TouchableOpacity
+                        style={{
+                          width: 120,
+                          height: '100%',
+                          backgroundColor: COLORS.primary,
+                          borderBottomRightRadius: 10,
+                          borderTopRightRadius: 10,
+                          // flex: 1,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                        onPress={() => {
+                          setLoading(true);
+                          setConsolidationAreaList([]);
+                          getConsolidationArea(data.item.pickupPoint.id);
+                          // console.log(data.item.id);
+                          setOrder(data.item);
+                        }}>
+                        <View>
+                          {data.item?.status === 0 && (
+                            <Image
+                              source={icons.packaging}
+                              resizeMode="contain"
+                              style={{ width: 40, height: 40, tintColor: 'white' }}
+                            />
+                          )}
+                          {data.item?.status === 1 && (
+                            <Image
+                              source={icons.packaged}
+                              resizeMode="contain"
+                              style={{ width: 55, height: 55, tintColor: 'white' }}
+                            />
+                          )}
+                        </View>
+                      </TouchableOpacity>
+                    )}
                   </View>
                 )}
-                disableLeftSwipe={orderList[0]?.status === 2 ? true : false}
-                disableRightSwipe={orderList[0]?.status === 2 ? true : false}
-                leftOpenValue={0}
+                disableLeftSwipe={(orderList[0]?.status === 2) ? true : false}
+                disableRightSwipe={(orderList[0]?.status === 2 || orderList[0]?.status === 0) ? true : false}
+                leftOpenValue={orderList[0]?.status === 1 ? 120 : 0}
                 rightOpenValue={-120}
               />
             </View>

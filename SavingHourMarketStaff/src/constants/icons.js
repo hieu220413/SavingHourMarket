@@ -39,9 +39,11 @@ const assign = require('../assets/icons/assign.png');
 const homedelivery = require('../assets/icons/home-delivery.png');
 const pickuppoint = require('../assets/icons/pickuppoint.png');
 const batching = require('../assets/icons/batching.png');
+const print = require('../assets/icons/print.png');
 
 export default {
   home,
+  print,
   // discount,
   order,
   // cart,

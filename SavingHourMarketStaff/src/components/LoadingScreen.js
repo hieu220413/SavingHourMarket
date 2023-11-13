@@ -14,7 +14,6 @@ const LoadingScreen = () => {
           justifyContent: 'center',
           alignItems: 'center',
           backgroundColor: 'rgba(0,0,0,0.3)',
-          zIndex: 99999,
         },
       ]}>
       <Progress.CircleSnail

@@ -9,6 +9,7 @@ import Tabs from './src/navigations/tabs';
 import Login from './src/screens/Login';
 import OrderDetails from './src/screens/deliveryStaff/OrderDetails';
 import OrderDetail from './src/screens/orderStaff/OrderDetail';
+import OrderPrint from './src/screens/orderStaff/OrderPrint';
 import EditDeliveryDate from './src/screens/deliveryStaff/EditDeliveryDate';
 import { LogBox } from 'react-native';
 import SelectPickupPoint from './src/screens/orderStaff/SelectPickupPoint';
@@ -64,6 +65,7 @@ export default function App() {
             options={{ swipeEnabled: false }}
           />
           <Stack.Screen name="OrderDetail" component={OrderDetail} />
+          <Stack.Screen name="OrderPrint" component={OrderPrint} />
           <Stack.Screen name="OrderDetails" component={OrderDetails} />
           <Stack.Screen name="EditDeliveryDate" component={EditDeliveryDate} />
           <Stack.Screen
