@@ -197,6 +197,7 @@ const EditConfirmProduct = ({
   };
 
   const onConfirm = async () => {
+    debugger;
     if (productName === "") {
       setError({ ...error, productName: "Vui lòng không để trống" });
       return;
@@ -229,6 +230,7 @@ const EditConfirmProduct = ({
 
     // validate product batch
     let newProductBatchs = [...productBatchs];
+    let batchAddressesValidate;
     const productbatchValidate = productBatchs.map((batch, index) => {
       // validate price
       if (parseInt(batch.price) === 0 || !batch.price) {
@@ -278,67 +280,70 @@ const EditConfirmProduct = ({
         return false;
       }
       let newproductBatchAddresses = [...batch.productBatchAddresses];
-      const batchAddressesValidate = batch.productBatchAddresses.map(
-        (store, num) => {
-          // validate supermarketstore
-          if (
-            !store.supermarketAddress?.id ||
-            !store.supermarketAddress ||
-            !supermarketStores.some(
-              (item) => item.address === store?.supermarketAddress?.address
-            )
-          ) {
-            newproductBatchAddresses[num] = {
-              ...newproductBatchAddresses[num],
-              errorStore: "Vui lòng chọn chi nhánh",
-            };
-            newProductBatchs[index] = {
-              ...productBatchs[index],
-              productBatchAddresses: newproductBatchAddresses,
-            };
-            return false;
-          }
-          // validate quantity
-          if (parseInt(store.quantity) === 0 || !store.quantity) {
-            newproductBatchAddresses[num] = {
-              ...newproductBatchAddresses[num],
-              errorQuantity: "Số lượng sản phẩm không thể là 0",
-            };
-            newProductBatchs[index] = {
-              ...productBatchs[index],
-              productBatchAddresses: newproductBatchAddresses,
-            };
-            return false;
-          }
-
-          // validate duplicate store
-          var valueArr = batch.productBatchAddresses.map(function (item) {
-            return item?.supermarketAddress?.address;
-          });
-          var isDuplicateStore = valueArr.some(function (item, idx) {
-            return valueArr.indexOf(item) != idx;
-          });
-
-          if (isDuplicateStore && store?.supermarketAddress) {
-            setOpenValidateSnackbar({
-              ...openValidateSnackbar,
-              open: true,
-              severity: "error",
-              text: "Tồn tại chi nhánh trùng nhau trong một lô hàng",
-            });
-            return false;
-          }
-
-          return true;
+      batchAddressesValidate = batch.productBatchAddresses.map((store, num) => {
+        // validate supermarketstore
+        if (
+          !store.supermarketAddress?.id ||
+          !store.supermarketAddress ||
+          !supermarketStores.some(
+            (item) => item.address === store?.supermarketAddress?.address
+          )
+        ) {
+          newproductBatchAddresses[num] = {
+            ...newproductBatchAddresses[num],
+            errorStore: "Vui lòng chọn chi nhánh",
+          };
+          newProductBatchs[index] = {
+            ...productBatchs[index],
+            productBatchAddresses: newproductBatchAddresses,
+          };
+          return false;
         }
-      );
+        // validate quantity
+        if (parseInt(store.quantity) === 0 || !store.quantity) {
+          newproductBatchAddresses[num] = {
+            ...newproductBatchAddresses[num],
+            errorQuantity: "Số lượng sản phẩm không thể là 0",
+          };
+          newProductBatchs[index] = {
+            ...productBatchs[index],
+            productBatchAddresses: newproductBatchAddresses,
+          };
+          return false;
+        }
 
-      if (!batchAddressesValidate) {
+        // validate duplicate store
+        var valueArr = batch.productBatchAddresses.map(function (item) {
+          return item?.supermarketAddress?.address;
+        });
+        var isDuplicateStore = valueArr.some(function (item, idx) {
+          return valueArr.indexOf(item) != idx;
+        });
+
+        if (isDuplicateStore && store?.supermarketAddress) {
+          setOpenValidateSnackbar({
+            ...openValidateSnackbar,
+            open: true,
+            severity: "error",
+            text: "Tồn tại chi nhánh trùng nhau trong một lô hàng",
+          });
+          return false;
+        }
+
+        return true;
+      });
+
+      if (batchAddressesValidate.some((item) => item === false)) {
         return false;
       }
 
       return true;
     });
+
+    console.log(batchAddressesValidate);
+    if (batchAddressesValidate.some((item) => item === false)) {
+      return;
+    }
 
     setProductBatchs(newProductBatchs);
 
