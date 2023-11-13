@@ -17,6 +17,12 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.maps.GeoApiContext;
 import com.google.maps.errors.ApiException;
+import com.itextpdf.text.Chunk;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfWriter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.glxn.qrgen.QRCode;
@@ -37,8 +43,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.sql.Date;
 import java.text.NumberFormat;
@@ -167,7 +172,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderProductForPackage> getProductOrderDetailAfterPackaging(UUID supermarketId, UUID pickupPointId, String staffEmail, Integer page, Integer size) throws FirebaseAuthException, ResourceNotFoundException {
+    public Map<UUID,List<OrderProductForPackage>> getProductOrderDetailAfterPackaging(UUID supermarketId, UUID pickupPointId, String staffEmail, Integer page, Integer size) throws FirebaseAuthException, ResourceNotFoundException {
         Staff staff = staffRepository.findByEmail(staffEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Nhân viên không tìm thấy với email " + staffEmail));
         Pageable pageable;
@@ -196,15 +201,18 @@ public class OrderServiceImpl implements OrderService {
                     String imageUrl = image.getImageUrl();
                     productImageList.add((imageUrl));
                 });
-
                 orderProductForPackage.setImageUrlImageList(productImageList);
-
                 orderProductForPackages.add(orderProductForPackage);
             });
-
         });
 
-        return orderProductForPackages;
+        Map<UUID,List<OrderProductForPackage>> productWithAddress = new LinkedHashMap<>();
+        productWithAddress = orderProductForPackages.stream()
+                .collect(Collectors.groupingBy(
+                        orderProduct -> orderProduct.getSupermarketAddress().getId()
+                ));
+
+        return productWithAddress;
     }
 
     @Override
@@ -1061,86 +1069,50 @@ public class OrderServiceImpl implements OrderService {
         Order order = repository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id " + orderId));
 
-        try (XWPFDocument document = new XWPFDocument()) {
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+            com.itextpdf.text.Document pdfDocument = new com.itextpdf.text.Document();
+            PdfWriter.getInstance(pdfDocument, byteArrayOutputStream);
+
+            pdfDocument.open();
+
             int titleFontSize = 36;
             int bodyFontSize = 28;
-            String fontFamilyBody = "Calibri (Body)";
+            String fontFamilyBody = "src/main/resources/AndikaNewBasic-R.ttf";
 
-            XWPFParagraph orderParagraph = document.createParagraph();
-            XWPFRun orderTile = orderParagraph.createRun();
-            orderTile.setText("Mã đơn hàng: ");
-            orderTile.setBold(true); // Bold text
-            orderTile.setFontSize(titleFontSize);
-            orderTile.setFontFamily(fontFamilyBody);
-
-            XWPFRun orderCode = orderParagraph.createRun();
-            orderCode.setText(order.getId().toString());
-            orderCode.setFontSize(bodyFontSize);
-            orderCode.setFontFamily(fontFamilyBody);
-
-            document.createParagraph().setBorderBottom(Borders.SINGLE);
-
-            // Create a paragraph
-            XWPFRun titleDeliverInfo = document.createParagraph().createRun();
-            titleDeliverInfo.setText("Thông tin giao hàng");
-            titleDeliverInfo.setBold(true); // Bold text
-            titleDeliverInfo.setFontFamily(fontFamilyBody);
-            titleDeliverInfo.setFontSize(titleFontSize);
-
-            XWPFRun address = document.createParagraph().createRun();
-            address.setText("Địa chỉ: " + order.getAddressDeliver());
-            address.setFontFamily(fontFamilyBody);
-            address.setFontSize(bodyFontSize);
-
-            XWPFRun timeFrame = document.createParagraph().createRun();
-            timeFrame.setText("Khung giờ giao: " + order.getTimeFrame().getFromHour() + " đến " + order.getTimeFrame().getToHour());
-            timeFrame.setFontFamily(fontFamilyBody);
-            timeFrame.setFontSize(bodyFontSize);
-
-            XWPFRun deliverDate = document.createParagraph().createRun();
-            deliverDate.setText("Ngày giao: " + order.getDeliveryDate());
-            deliverDate.setFontFamily(fontFamilyBody);
-            deliverDate.setFontSize(bodyFontSize);
-            deliverDate.getParagraph().setBorderBottom(Borders.SINGLE);
-
-            document.createParagraph().setBorderBottom(Borders.SINGLE);
-
-            XWPFRun titleContactInfo = document.createParagraph().createRun();
-            titleContactInfo.setText("Thông tin liên lạc");
-            titleContactInfo.setFontFamily(fontFamilyBody);
-            titleContactInfo.setBold(true); // Bold text
-            titleContactInfo.setFontSize(titleFontSize);
-
-            XWPFRun name = document.createParagraph().createRun();
-            name.setText("Tên KH: " + order.getReceiverName());
-            name.setFontFamily(fontFamilyBody);
-            name.setFontSize(bodyFontSize);
-
-            XWPFRun phone = document.createParagraph().createRun();
-            phone.setText("SĐT: " + order.getReceiverPhone());
-            phone.setFontFamily(fontFamilyBody);
-            phone.setFontSize(bodyFontSize);
-            phone.getParagraph().setBorderBottom(Borders.SINGLE);
-            document.createParagraph().setBorderBottom(Borders.SINGLE);
+            // Add content to the iText PDF document directly
+            addParagraph(pdfDocument, "Mã đơn hàng: " + order.getId().toString(), titleFontSize, fontFamilyBody, true);
+            addParagraph(pdfDocument, "Địa chỉ giao: " + order.getAddressDeliver(), bodyFontSize, fontFamilyBody, false);
+            addParagraph(pdfDocument, "Khung giờ giao: " + order.getTimeFrame().getFromHour() + " đến " + order.getTimeFrame().getToHour(), bodyFontSize, fontFamilyBody, false);
+            addParagraph(pdfDocument, "Ngày giao: " + order.getDeliveryDate(), bodyFontSize, fontFamilyBody, false);
+            addParagraph(pdfDocument, "Tên KH: " + order.getReceiverName(), bodyFontSize, fontFamilyBody, false);
+            addParagraph(pdfDocument, "SĐT: " + order.getReceiverPhone(), bodyFontSize, fontFamilyBody, false);
 
             // Create a Locale for Vietnam
             Locale locale = new Locale("vi", "VN");
 
             // Create a NumberFormat for the currency
             NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(locale);
-            XWPFRun totalPrice = document.createParagraph().createRun();
-            totalPrice.setText("Tổng chi phí: " + currencyFormat.format(order.getTotalPrice()));
-            totalPrice.setFontFamily(fontFamilyBody);
-            totalPrice.setFontSize(bodyFontSize);
+            addParagraph(pdfDocument, "Tổng tiền: " + currencyFormat.format(order.getTotalPrice())+"đ", bodyFontSize, fontFamilyBody, false);
 
+            pdfDocument.close();
 
             // Save the document to a byte array
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            document.write(byteArrayOutputStream);
             return FirebaseService.uploadWordToStorage(byteArrayOutputStream, orderId);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static void addParagraph(com.itextpdf.text.Document document, String text, int fontSize, String fontFamily, boolean bold) throws DocumentException, IOException {
+        BaseFont baseFont = BaseFont.createFont(fontFamily, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+        Font font = new Font(baseFont, fontSize);
+
+        if (bold) {
+            font.setStyle(Font.BOLD);
+        }
+
+        Paragraph paragraph = new Paragraph(new Chunk(text, font));
+        document.add(paragraph);
     }
 
     // GOOGLE MAP IMPLEMENT
