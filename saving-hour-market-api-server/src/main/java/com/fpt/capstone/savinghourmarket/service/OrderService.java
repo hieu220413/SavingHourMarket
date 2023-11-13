@@ -40,7 +40,8 @@ public interface OrderService {
 
     List<OrderBatch> fetchOrderBatches(SortType deliverDateSortType, LocalDate deliveryDate, UUID delivererID) throws NoSuchOrderException;
 
-    List<OrderGroup> fetchOrderGroups(SortType deliverDateSortType,
+    OrderGroupPageResponse fetchOrderGroups(OrderStatus status,
+                                      SortType deliverDateSortType,
                                       LocalDate deliverDate,
                                       Boolean getOldOrderGroup,
                                       UUID timeFrameId,
@@ -71,11 +72,11 @@ public interface OrderService {
                                                      Integer page,
                                                      Integer size) throws FirebaseAuthException, ResourceNotFoundException;
 
-    Map<UUID,List<OrderProductForPackage>> getProductOrderDetailAfterPackaging(UUID supermarketId,
-                                                                                             UUID pickupPointId,
-                                                                                             String staffEmail,
-                                                                                             Integer page,
-                                                                                             Integer size) throws FirebaseAuthException, ResourceNotFoundException;
+    Map<UUID, List<OrderProductForPackage>> getProductOrderDetailAfterPackaging(UUID supermarketId,
+                                                                                UUID pickupPointId,
+                                                                                String staffEmail,
+                                                                                Integer page,
+                                                                                Integer size) throws FirebaseAuthException, ResourceNotFoundException;
 
 
     OrderWithDetails fetchOrderDetail(UUID id) throws ResourceNotFoundException;
@@ -119,5 +120,5 @@ public interface OrderService {
 
     List<OrderBatch> createBatches(List<OrderBatchCreateBody> orderBatchCreateBodyList);
 
-    String  printOrderPackaging(UUID orderId, String staffEmail) throws ResourceNotFoundException;
+    String printOrderPackaging(UUID orderId, String staffEmail) throws ResourceNotFoundException;
 }

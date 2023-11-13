@@ -100,7 +100,7 @@ public class OrderController {
                                                                 @RequestParam(required = false) Date deliveryDate,
                                                                 @RequestParam(required = false) OrderStatus orderStatus,
                                                                 @RequestParam(required = false) Boolean isPaid,
-                                                                @RequestParam(required = false) DeliveryMethod deliveryMethod,
+                                                                @RequestParam() DeliveryMethod deliveryMethod,
                                                                 @RequestParam(defaultValue = "0") Integer page,
                                                                 @RequestParam(defaultValue = "9999") Integer size) throws ResourceNotFoundException, NoSuchOrderException, FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
@@ -136,10 +136,11 @@ public class OrderController {
     }
 
     @GetMapping("/staff/getOrderGroup")
-    public ResponseEntity<List<OrderGroup>> getOrderGroupForStaff(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
+    public ResponseEntity<OrderGroupPageResponse> getOrderGroupForStaff(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
                                                                   @RequestParam(required = false) SortType deliverDateSortType,
                                                                   @RequestParam(required = false) LocalDate deliverDate,
                                                                   @RequestParam(required = false, defaultValue = "false") Boolean getOldOrderGroup,
+                                                                  @RequestParam(required = false) OrderStatus status,
                                                                   @RequestParam(required = false) UUID timeFrameId,
                                                                   @RequestParam(required = false) UUID pickupPointId,
                                                                   @RequestParam(required = false) UUID delivererId,
@@ -147,7 +148,7 @@ public class OrderController {
                                                                   @RequestParam(defaultValue = "9999") Integer size) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderGroups(deliverDateSortType, deliverDate, getOldOrderGroup, timeFrameId, pickupPointId, delivererId, page, size));
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderGroups(status,deliverDateSortType, deliverDate, getOldOrderGroup, timeFrameId, pickupPointId, delivererId, page, size));
     }
 
     @GetMapping("/staff/getOrderBatch")
