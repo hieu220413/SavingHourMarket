@@ -10,23 +10,61 @@ import React, { useState } from "react";
 import "./TimeframeManagement.scss";
 import { format } from "date-fns";
 import dayjs from "dayjs";
+import MuiAlert from "@mui/material/Alert";
+import { Dialog, Snackbar } from "@mui/material";
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 const CreateTimeframe = ({ handleClose }) => {
-  const [selectedDayOfWeek, setSelectedDayOfWeek] = useState(null);
+  const [selectedDeliveryMethod, setSelectedDeliveryMethod] = useState(null);
   const [openDayOfWeekDropdown, setOpenDayOfWeekDropdown] = useState(false);
   const [fromHour, setFromHour] = useState(null);
-  const [toHour, setToHour] = useState(new Date("10:15"));
-  const daysOfWeek = [
-    { display: "Thứ hai", value: 1 },
-    { display: "Thứ ba", value: 1 },
-    { display: "Thứ tư", value: 1 },
-    { display: "Thứ năm", value: 1 },
-    { display: "Thứ sáu", value: 1 },
-    { display: "Thứ bảy", value: 1 },
-    { display: "Chủ nhật", value: 1 },
-    { display: "Mỗi ngày", value: 1 },
-    { display: "Cuối tuần", value: 1 },
+  const [toHour, setToHour] = useState(null);
+  const [error, setError] = useState({
+    deliveryMethods: "",
+    fromHour: "",
+    toHour: "",
+  });
+  const [openValidateSnackbar, setOpenValidateSnackbar] = useState({
+    open: false,
+    vertical: "top",
+    horizontal: "right",
+    severity: "error",
+    text: "",
+  });
+  const { vertical, horizontal } = openValidateSnackbar;
+  const handleCloseValidateSnackbar = () => {
+    setOpenValidateSnackbar({ ...openValidateSnackbar, open: false });
+  };
+  const deliveryMethods = [
+    { display: "Điểm giao hàng", value: "PICKUP_POINT" },
+    { display: "Giao tận nhà", value: "DOOR__TO_DOOR" },
+    { display: "Tất cả", value: "ALL" },
   ];
+
+  const handleCreate = async () => {
+    if (!selectedDeliveryMethod) {
+      setError({ ...error, deliveryMethods: "Vui lòng không để trống" });
+      return;
+    }
+    if (!fromHour) {
+      setError({ ...error, fromHour: "Vui lòng không để trống" });
+      return;
+    }
+    if (!toHour) {
+      setError({ ...error, toHour: "Vui lòng không để trống" });
+      return;
+    }
+    const fromHourCompare = format(dayjs(new Date()).$d, "yyyy-MM-dd").concat(
+      fromHour
+    );
+    const toHourCompare = format(dayjs(new Date()).$d, "yyyy-MM-dd").concat(
+      toHour
+    );
+    console.log(fromHour < toHour);
+  };
   return (
     <div style={{ width: 450 }} className={`modal__container `}>
       {/* // modal header */}
@@ -38,7 +76,7 @@ const CreateTimeframe = ({ handleClose }) => {
       <div className={`modal__container-body `}>
         <div className="modal__container-body-inputcontrol">
           <h4 className="modal__container-body-inputcontrol-label">
-            Ngày trong tuần
+            Phương thức giao hàng
           </h4>
           <div>
             <div
@@ -56,21 +94,19 @@ const CreateTimeframe = ({ handleClose }) => {
                     setOpenDayOfWeekDropdown(!openDayOfWeekDropdown)
                   }
                 >
-                  {selectedDayOfWeek
-                    ? selectedDayOfWeek.display
-                    : "Chọn ngày trong tuần"}
+                  {selectedDeliveryMethod
+                    ? selectedDeliveryMethod.display
+                    : "Phương thức giao hàng"}
                   <FontAwesomeIcon icon={faCaretDown} />
                 </div>
                 {openDayOfWeekDropdown && (
-                  <div
-                    style={{ height: "180px", overflowY: "scroll" }}
-                    className="dropdown-content"
-                  >
-                    {daysOfWeek.map((item, index) => (
+                  <div style={{ width: 169 }} className="dropdown-content">
+                    {deliveryMethods.map((item, index) => (
                       <div
                         onClick={(e) => {
-                          setSelectedDayOfWeek(item);
+                          setSelectedDeliveryMethod(item);
                           setOpenDayOfWeekDropdown(false);
+                          setError({ ...error, deliveryMethods: "" });
                         }}
                         className="dropdown-item"
                         key={index}
@@ -82,14 +118,14 @@ const CreateTimeframe = ({ handleClose }) => {
                 )}
               </div>
             </div>
-            {/* {error.supermarket && (
-                <p
-                  style={{ fontSize: "14px", marginBottom: "-10px" }}
-                  className="text-danger"
-                >
-                  {error.supermarket}
-                </p>
-              )} */}
+            {error.deliveryMethods && (
+              <p
+                style={{ fontSize: "14px", marginBottom: "-10px" }}
+                className="text-danger"
+              >
+                {error.deliveryMethods}
+              </p>
+            )}
           </div>
         </div>
 
@@ -102,17 +138,18 @@ const CreateTimeframe = ({ handleClose }) => {
               <TimePicker
                 onChange={(e) => {
                   setFromHour(format(e.$d, "HH:mm:ss"));
+                  setError({ ...error, fromHour: "" });
                 }}
               />
             </LocalizationProvider>
-            {/* {error.name && (
+            {error.fromHour && (
               <p
                 style={{ fontSize: "14px", marginBottom: "-10px" }}
                 className="text-danger"
               >
-                {error.name}
+                {error.fromHour}
               </p>
-            )} */}
+            )}
           </div>
         </div>
         <div className="modal__container-body-inputcontrol">
@@ -127,17 +164,18 @@ const CreateTimeframe = ({ handleClose }) => {
                 // )}
                 onChange={(e) => {
                   setToHour(format(e.$d, "HH:mm:ss"));
+                  setError({ ...error, toHour: "" });
                 }}
               />
             </LocalizationProvider>
-            {/* {error.name && (
+            {error.toHour && (
               <p
                 style={{ fontSize: "14px", marginBottom: "-10px" }}
                 className="text-danger"
               >
-                {error.name}
+                {error.toHour}
               </p>
-            )} */}
+            )}
           </div>
         </div>
       </div>
@@ -150,12 +188,33 @@ const CreateTimeframe = ({ handleClose }) => {
           >
             Đóng
           </button>
-          <button className="modal__container-footer-buttons-create">
+          <button
+            onClick={handleCreate}
+            className="modal__container-footer-buttons-create"
+          >
             Tạo mới
           </button>
         </div>
       </div>
       {/* *********************** */}
+      <Snackbar
+        open={openValidateSnackbar.open}
+        autoHideDuration={1500}
+        anchorOrigin={{ vertical, horizontal }}
+        onClose={handleCloseValidateSnackbar}
+      >
+        <Alert
+          onClose={handleCloseValidateSnackbar}
+          severity={openValidateSnackbar.severity}
+          sx={{
+            width: "100%",
+            fontSize: "15px",
+            alignItem: "center",
+          }}
+        >
+          {openValidateSnackbar.text}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
