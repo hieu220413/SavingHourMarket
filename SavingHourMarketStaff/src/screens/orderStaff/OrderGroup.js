@@ -938,7 +938,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
     setEditStatusPackagedModalVisible(false);
     setSelectedEditGroupId('');
     setSelectedConsolidationAreaId('');
-  }
+  };
 
   const handleSubmitAreaEditModal = async () => {
     await editConsolidationArea();
@@ -1276,7 +1276,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                               }}
                               onPress={() => {
                                 navigation.navigate('OrderDetail', {
-                                  id: data.item.id,
+                                  id: order.id,
                                   orderSuccess: false,
                                 });
                               }}
@@ -1705,7 +1705,9 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                     </TouchableOpacity>
                   </View>
 
-                  <Text>Xác nhận đã đóng hoàn thành đóng gói cho nhóm đơn này ?</Text>
+                  <Text>
+                    Xác nhận đã đóng hoàn thành đóng gói cho nhóm đơn này ?
+                  </Text>
 
                   <View
                     style={{
