@@ -31,6 +31,7 @@ import org.redisson.api.RMapCache;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -1067,7 +1068,7 @@ public class OrderServiceImpl implements OrderService {
 
             int titleFontSize = 36;
             int bodyFontSize = 28;
-            String fontFamilyBody = "src/main/resources/AndikaNewBasic-R.ttf";
+            String fontFamilyBody = new ClassPathResource("AndikaNewBasic-R.ttf").getURI().getPath();
 
             // Add content to the iText PDF document directly
             addParagraph(pdfDocument, "Mã đơn hàng: " + order.getId().toString(), titleFontSize, fontFamilyBody, true);
