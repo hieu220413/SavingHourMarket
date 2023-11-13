@@ -38,6 +38,23 @@ public interface FirebaseService {
         }
     }
 
+    static String uploadWordToStorage(ByteArrayOutputStream fileStream, UUID orderId) {
+        try {
+            Storage storage = StorageOptions.newBuilder().setProjectId("capstone-project-398104").build().getService();
+            Bucket bucket = StorageClient.getInstance().bucket();
+
+            byte[] qrCodeBytes = fileStream.toByteArray();
+            String objectName = "OrderPrintWord/" + orderId + ".docx"; // Set the desired object name
+
+            bucket.create(objectName, qrCodeBytes, "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+
+            return Utils.generatePublicWordUrlFirebaseStorage(objectName);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     static String uploadImageToStorage(ByteArrayOutputStream qrCodeStream, String imageName) {
         try {
             Storage storage = StorageOptions.newBuilder().setProjectId("capstone-project-398104").build().getService();

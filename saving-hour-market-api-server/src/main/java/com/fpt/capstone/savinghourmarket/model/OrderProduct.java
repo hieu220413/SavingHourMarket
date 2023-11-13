@@ -29,6 +29,8 @@ public class OrderProduct {
 
     private String name;
 
+    private String unit;
+
     private String description;
 
     private List<ProductImage> images;

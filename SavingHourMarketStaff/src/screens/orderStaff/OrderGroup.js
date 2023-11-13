@@ -16,7 +16,7 @@ import {
   Alert,
   FlatList,
 } from 'react-native';
-import React, {useEffect, useState, useCallback} from 'react';
+import React, {useEffect, useState, useCallback, useRef} from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {COLORS} from '../../constants/theme';
@@ -29,22 +29,29 @@ import {SwipeListView} from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
 import {da} from 'date-fns/locale';
 import DatePicker from 'react-native-date-picker';
+import {
+  ModalButton,
+  ModalContent,
+  ModalFooter,
+  ScaleAnimation,
+} from 'react-native-modals';
 
 const OrderGroupForOrderStaff = ({navigation, route}) => {
   const [initializing, setInitializing] = useState(true);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState({
-    display: 'Chưa có điểm tập kết',
-    value: 'NOAREA',
+    display: 'Chờ đóng gói',
+    value: 'PROCESSING',
   });
   const [visible, setVisible] = useState(false);
   const [pickupPoint, setPickupPoint] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
 
   const orderGroupAreaState = [
-    {display: 'Chưa có điểm tập kết', value: 'NOAREA'},
-    {display: 'Đã có điểm tập kết ', value: 'AREA'},
+    {display: 'Chờ đóng gói', value: 'PROCESSING'},
+    {display: 'Đang đóng gói', value: 'PACKAGING'},
+    {display: 'Đã đóng gói', value: 'PACKAGED'},
   ];
 
   // init fake timeframe
@@ -577,17 +584,104 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
     }, []),
   );
 
+  useFocusEffect(
+    useCallback(() => {
+      // auth().currentUser.reload()
+      const subscriber = auth().onAuthStateChanged(
+        async userInfo => await onAuthStateChange(userInfo),
+      );
+
+      return subscriber;
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
+  );
+
+  // intit fetch time frame + order group
+  useFocusEffect(
+    useCallback(() => {
+      console.log('effect run');
+      const fetchData = async () => {
+        if (auth().currentUser) {
+          const tokenId = await auth().currentUser.getIdToken();
+          if (tokenId) {
+            // setLoading(true);
+            // console.log(format(Date.parse(selectedDate), 'yyyy-MM-dd'));
+            filterOrderGroup();
+            // fetch(
+            //   `${API.baseURL}/api/order/packageStaff/getOrderGroup?${
+            //     pickupPoint ? 'pickupPointId=' + pickupPoint?.id : ''
+            //   }&deliverDate=${format(Date.parse(selectedDate), 'yyyy-MM-dd')}`,
+            //   {
+            //     method: 'GET',
+            //     headers: {
+            //       'Content-Type': 'application/json',
+            //       Authorization: `Bearer ${tokenId}`,
+            //     },
+            //   },
+            // )
+            //   .then(res => res.json())
+            //   .then(respond => {
+            //     // console.log('order group', respond);
+            //     if (respond.error) {
+            //       // setLoading(false);
+            //       return;
+            //     }
+
+            //     setOrderGroupList(respond);
+            //     // setLoading(false);
+            //   })
+            //   .catch(err => {
+            //     console.log(err);
+            //     // setLoading(false);
+            //   });
+          }
+        }
+      };
+      // fetch time frame
+      fetch(`${API.baseURL}/api/timeframe/getForPickupPoint`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(res => res.json())
+        .then(respond => {
+          console.log('time frame', respond);
+          if (respond.error) {
+            // setLoading(false);
+            return;
+          }
+
+          setTimeFrameList(respond);
+
+          // setLoading(false);
+        })
+        .catch(err => {
+          console.log(err);
+          // setLoading(false);
+        });
+      fetchData();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pickupPoint]),
+  );
+
+  // response message view modal
+  const [openResponseDialog, setOpenResponseDialog] = useState(false);
+  const [messageResult, setMessageResult] = useState('');
+
   // handle sort date
   const [sortModalVisible, setSortModalVisible] = useState(false);
   const sortOptions = [
     {
       id: 1,
       name: 'Ngày giao gần nhất',
+      param: '&deliverDateSortType=ASC',
       active: false,
     },
     {
       id: 2,
       name: 'Ngày giao xa nhất',
+      param: '&deliverDateSortType=DESC',
       active: false,
     },
   ];
@@ -601,6 +695,52 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
   //  filter date
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [tempSelectedDate, setTempSelectedDate] = useState(new Date());
+
+  // filter function
+  const filterOrderGroup = async () => {
+    const tokenId = await auth().currentUser.getIdToken();
+    if (tokenId) {
+      // setLoading(true);
+      console.log(format(Date.parse(selectedDate), 'yyyy-MM-dd'));
+      console.log(format(Date.parse(tempSelectedDate), 'yyyy-MM-dd'));
+      console.log(selectedTimeFrameId);
+      await fetch(
+        `${API.baseURL}/api/order/packageStaff/getOrderGroup?${
+          pickupPoint ? 'pickupPointId=' + pickupPoint?.id : ''
+        }&deliverDate=${format(Date.parse(selectedDate), 'yyyy-MM-dd')}${
+          selectedTimeFrameId === ''
+            ? ''
+            : '&timeFrameId=' + selectedTimeFrameId
+        }${
+          tempSelectedSortId === ''
+            ? ''
+            : selectSort.find(item => item.id === tempSelectedSortId)?.param
+        }`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${tokenId}`,
+          },
+        },
+      )
+        .then(res => res.json())
+        .then(respond => {
+          // console.log('order group', respond);
+          if (respond.error) {
+            // setLoading(false);
+            return;
+          }
+
+          setOrderGroupList(respond);
+          // setLoading(false);
+        })
+        .catch(err => {
+          console.log(err);
+          // setLoading(false);
+        });
+    }
+  };
 
   // handle apply filter
   const handleApplyFilter = () => {
@@ -616,6 +756,22 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
     setSelectedDate(tempSelectedDate);
     setSortModalVisible(!sortModalVisible);
   };
+
+  // fetch data after handle apply filter
+  const isMountingRef = useRef(false);
+
+  useEffect(() => {
+    isMountingRef.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (!isMountingRef.current) {
+      filterOrderGroup();
+    } else {
+      isMountingRef.current = false;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectSort, selectedDate, selectedTimeFrameId]);
 
   // handle clear sort modal
   const handleClearSortModal = () => {
@@ -635,31 +791,157 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
     setTempSelectedDate(selectedDate);
     setTempSelectedTimeFrameId(selectedTimeFrameId);
     setSortModalVisible(!sortModalVisible);
-
   };
 
   // handle edit consolidation area model
   const [editAreaModalVisible, setEditAreaModalVisible] = useState(false);
+  const [editStatusPackagedModalVisible, setEditStatusPackagedModalVisible] =
+    useState(false);
   const [selectedEditGroupId, setSelectedEditGroupId] = useState('');
 
   const [selectedConsolidationAreaId, setSelectedConsolidationAreaId] =
     useState('');
 
-  const handleOpenEditModal = groupId => {
+  // fetch area for group
+  const getConsolidationAreaForGroup = async groupPickupPointId => {
+    const tokenId = await auth().currentUser.getIdToken();
+    if (tokenId) {
+      // setLoading(true);
+      console.log(format(Date.parse(selectedDate), 'yyyy-MM-dd'));
+      await fetch(
+        `${API.baseURL}/api/productConsolidationArea/getByPickupPointForStaff?pickupPointId=${groupPickupPointId}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${tokenId}`,
+          },
+        },
+      )
+        .then(res => res.json())
+        .then(respond => {
+          // console.log('order group', respond);
+          if (respond.error) {
+            // setLoading(false);
+            return;
+          }
+
+          setConsolidationAreaList(respond);
+          // setLoading(false);
+        })
+        .catch(err => {
+          console.log(err);
+          // setLoading(false);
+        });
+    }
+  };
+
+  // edit consolidation  area function
+  const editConsolidationArea = async () => {
+    const tokenId = await auth().currentUser.getIdToken();
+    if (tokenId) {
+      const consolidationAreaEditRequest = await fetch(
+        `${API.baseURL}/api/order/packageStaff/confirmPackagingGroup?orderGroupId=${selectedEditGroupId}&productConsolidationAreaId=${selectedConsolidationAreaId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${tokenId}`,
+          },
+        },
+      ).catch(err => {
+        console.log(err);
+        return null;
+        // setLoading(false);
+      });
+
+      if (!consolidationAreaEditRequest) {
+        return;
+      }
+
+      if (consolidationAreaEditRequest.status === 200) {
+        const result = await consolidationAreaEditRequest.text();
+        await filterOrderGroup();
+        setMessageResult(result);
+        setOpenResponseDialog(true);
+      } else {
+        const result = await consolidationAreaEditRequest.json();
+        console.log(result);
+        setMessageResult(result.message);
+        setOpenResponseDialog(true);
+      }
+    }
+  };
+
+  // update group status to packaged
+  const updateStatusToPackaged = async () => {
+    const tokenId = await auth().currentUser.getIdToken();
+    if (tokenId) {
+      const updateStatusToPackagedRequest = await fetch(
+        `${API.baseURL}/api/order/packageStaff/confirmPackagedGroup?orderGroupId=${selectedEditGroupId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${tokenId}`,
+          },
+        },
+      ).catch(err => {
+        console.log(err);
+        return null;
+        // setLoading(false);
+      });
+
+      if (!updateStatusToPackagedRequest) {
+        return;
+      }
+
+      if (updateStatusToPackagedRequest.status === 200) {
+        const result = await updateStatusToPackagedRequest.text();
+        await filterOrderGroup();
+        setMessageResult(result);
+        setOpenResponseDialog(true);
+      } else {
+        const result = await updateStatusToPackagedRequest.json();
+        console.log(result);
+        setMessageResult(result.message);
+        setOpenResponseDialog(true);
+      }
+    }
+  };
+
+  const handleOpenEditModal = async (
+    groupId,
+    isConsolidationAreaNull,
+    groupPickupPointId,
+  ) => {
     setSelectedEditGroupId(groupId);
-    setEditAreaModalVisible(true);
+    if (isConsolidationAreaNull) {
+      // handle add consolidation area
+      await getConsolidationAreaForGroup(groupPickupPointId);
+      setEditAreaModalVisible(true);
+    } else {
+      // handle update status for all order in group to packaged
+      setEditStatusPackagedModalVisible(true);
+    }
   };
 
   const handleCloseEditModal = groupId => {
     setSelectedEditGroupId('');
     setEditAreaModalVisible(false);
+    setEditStatusPackagedModalVisible(false);
     setSelectedConsolidationAreaId('');
   };
 
-  const handleSubmitAreaEditModal = () => {
-    // start api assign area
+  const handleSubmitEditStatusPackaged = async () => {
+    await updateStatusToPackaged();
+    setEditStatusPackagedModalVisible(false);
+    setSelectedEditGroupId('');
+    setSelectedConsolidationAreaId('');
+  }
 
-    // end api assign area
+  const handleSubmitAreaEditModal = async () => {
+    await editConsolidationArea();
     setEditAreaModalVisible(false);
     setSelectedEditGroupId('');
     setSelectedConsolidationAreaId('');
@@ -681,6 +963,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                 onPress={() => {
                   navigation.navigate('SelectPickupPoint', {
                     setPickupPoint: setPickupPoint,
+                    isFromOrderGroupRoute: true,
                   });
                 }}>
                 <View style={styles.pickArea}>
@@ -844,10 +1127,22 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
               <View style={{marginTop: 10, marginBottom: 100}}>
                 <FlatList
                   data={orderGroupList.filter(group => {
-                    if (currentStatus.value === 'NOAREA') {
+                    if (currentStatus.value === 'PROCESSING') {
                       return group.productConsolidationArea === null;
-                    } else {
-                      return group.productConsolidationArea !== null;
+                    }
+                    if (currentStatus.value === 'PACKAGING') {
+                      return (
+                        group.productConsolidationArea !== null &&
+                        group.orderList.find(order => order.status === 1) !==
+                          undefined
+                      );
+                    }
+                    if (currentStatus.value === 'PACKAGED') {
+                      return (
+                        group.productConsolidationArea !== null &&
+                        group.orderList.find(order => order.status === 2) !==
+                          undefined
+                      );
                     }
                   })}
                   renderItem={data => (
@@ -945,8 +1240,17 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                               </View>
                             )}
                           </View>
-                          {data.item.productConsolidationArea === null && (
-                            <TouchableOpacity onPress={handleOpenEditModal}>
+                          {data.item.orderList.filter(
+                            order => order.status === 2,
+                          ).length === 0 && (
+                            <TouchableOpacity
+                              onPress={() =>
+                                handleOpenEditModal(
+                                  data.item.id,
+                                  data.item.productConsolidationArea === null,
+                                  data.item.pickupPoint.id,
+                                )
+                              }>
                               <Image
                                 resizeMode="contain"
                                 style={{
@@ -965,10 +1269,16 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                           data.item.orderList != null &&
                           data.item.orderList.length > 0 &&
                           data.item.orderList.map((order, index) => (
-                            <View
+                            <TouchableOpacity
                               style={{
                                 paddingHorizontal: 0,
                                 paddingVertical: 10,
+                              }}
+                              onPress={() => {
+                                navigation.navigate('OrderDetail', {
+                                  id: data.item.id,
+                                  orderSuccess: false,
+                                });
                               }}
                               key={index}>
                               <View
@@ -1048,7 +1358,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                                       : order?.packager.fullName}
                                   </Text>
                                 </View>
-                                {/* <Image
+                                <Image
                                   resizeMode="contain"
                                   style={{
                                     width: 30,
@@ -1056,9 +1366,9 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                                     tintColor: COLORS.primary,
                                   }}
                                   source={icons.rightArrow}
-                                /> */}
+                                />
                               </View>
-                            </View>
+                            </TouchableOpacity>
                           ))}
                       </View>
                       {/* *********************** */}
@@ -1358,6 +1668,155 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                 </View>
               </View>
             </Modal>
+
+            {/* Modal confirm packaged */}
+            <Modal
+              animationType="fade"
+              transparent={true}
+              visible={editStatusPackagedModalVisible}
+              onRequestClose={handleCloseEditModal}>
+              <View style={styles.centeredView}>
+                <View style={styles.modalView}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                    }}>
+                    <Text
+                      style={{
+                        color: 'black',
+                        fontSize: 20,
+                        fontWeight: 700,
+                        textAlign: 'center',
+                        paddingBottom: 20,
+                      }}>
+                      Xác nhận đóng gói
+                    </Text>
+                    <TouchableOpacity onPress={handleCloseEditModal}>
+                      <Image
+                        resizeMode="contain"
+                        style={{
+                          width: 20,
+                          height: 20,
+                          tintColor: 'grey',
+                        }}
+                        source={icons.close}
+                      />
+                    </TouchableOpacity>
+                  </View>
+
+                  <Text>Xác nhận đã đóng hoàn thành đóng gói cho nhóm đơn này ?</Text>
+
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'center',
+                      marginTop: '5%',
+                    }}>
+                    <TouchableOpacity
+                      style={{
+                        width: '50%',
+                        paddingHorizontal: 15,
+                        paddingVertical: 10,
+                        backgroundColor: 'white',
+                        borderRadius: 10,
+                        borderColor: COLORS.primary,
+                        borderWidth: 0.5,
+                        marginRight: '2%',
+                      }}
+                      onPress={handleCloseEditModal}>
+                      <Text
+                        style={{
+                          color: COLORS.primary,
+                          fontWeight: 'bold',
+                          textAlign: 'center',
+                        }}>
+                        Trở về
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={{
+                        width: '50%',
+                        paddingHorizontal: 15,
+                        paddingVertical: 10,
+                        backgroundColor: COLORS.primary,
+                        color: 'white',
+                        borderRadius: 10,
+                      }}
+                      onPress={handleSubmitEditStatusPackaged}>
+                      <Text style={styles.textStyle}>Xác nhận</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </Modal>
+
+            {/* Modal response dialog */}
+            <Modal
+              animationType="fade"
+              transparent={true}
+              visible={openResponseDialog}
+              onRequestClose={() => {
+                setOpenResponseDialog(false);
+              }}>
+              <View style={styles.centeredView}>
+                <View style={styles.modalView}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                    }}>
+                    <Text
+                      style={{
+                        color: 'black',
+                        fontSize: 20,
+                        fontWeight: 700,
+                        textAlign: 'center',
+                        paddingBottom: 20,
+                      }}>
+                      {messageResult}
+                    </Text>
+                    {/* <TouchableOpacity
+                      onPress={() => {
+                        setOpenResponseDialog(false);
+                      }}>
+                      <Image
+                        resizeMode="contain"
+                        style={{
+                          width: 20,
+                          height: 20,
+                          tintColor: 'grey',
+                        }}
+                        source={icons.close}
+                      />
+                    </TouchableOpacity> */}
+                  </View>
+
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'center',
+                      marginTop: '5%',
+                    }}>
+                    <TouchableOpacity
+                      style={{
+                        width: '100%',
+                        paddingHorizontal: 15,
+                        paddingVertical: 10,
+                        backgroundColor: COLORS.primary,
+                        color: 'white',
+                        borderRadius: 10,
+                      }}
+                      onPress={() => {
+                        setOpenResponseDialog(false);
+                      }}>
+                      <Text style={styles.textStyle}>Đóng</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </Modal>
+
             {/* Modal Edit Consolidation Area */}
             <Modal
               animationType="fade"
@@ -1381,10 +1840,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                       }}>
                       Chọn điểm tập kết
                     </Text>
-                    <TouchableOpacity
-                      onPress={() => {
-                        setEditAreaModalVisible(!editAreaModalVisible);
-                      }}>
+                    <TouchableOpacity onPress={handleCloseEditModal}>
                       <Image
                         resizeMode="contain"
                         style={{
@@ -1445,7 +1901,6 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                       </TouchableOpacity>
                     )}
                   />
-
                   <View
                     style={{
                       flexDirection: 'row',
@@ -1457,10 +1912,14 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                         width: '100%',
                         paddingHorizontal: 15,
                         paddingVertical: 10,
-                        backgroundColor: COLORS.primary,
+                        backgroundColor:
+                          selectedConsolidationAreaId === ''
+                            ? COLORS.light_green
+                            : COLORS.primary,
                         color: 'white',
                         borderRadius: 10,
                       }}
+                      disabled={selectedConsolidationAreaId === ''}
                       onPress={handleSubmitAreaEditModal}>
                       <Text style={styles.textStyle}>Xác nhận</Text>
                     </TouchableOpacity>

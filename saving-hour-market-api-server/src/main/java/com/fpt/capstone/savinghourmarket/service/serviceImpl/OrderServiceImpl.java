@@ -7,6 +7,7 @@ import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.repository.*;
 import com.fpt.capstone.savinghourmarket.service.FirebaseService;
 import com.fpt.capstone.savinghourmarket.service.OrderService;
+import com.fpt.capstone.savinghourmarket.service.SystemConfigurationService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.fpt.capstone.savinghourmarket.util.kmean.Centroid;
 import com.fpt.capstone.savinghourmarket.util.kmean.HaversineDistance;
@@ -20,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.glxn.qrgen.QRCode;
 import net.glxn.qrgen.image.ImageType;
+import org.apache.poi.xwpf.usermodel.*;
 import org.modelmapper.ModelMapper;
 import org.redisson.api.RLock;
 import org.redisson.api.RMapCache;
@@ -39,6 +41,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.sql.Date;
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -84,6 +87,8 @@ public class OrderServiceImpl implements OrderService {
     private final StaffRepository staffRepository;
 
     private final DiscountRepository discountRepository;
+
+    private final SystemConfigurationService systemConfigurationService;
 
     private final ProductConsolidationAreaRepository productConsolidationAreaRepository;
 //    private final ConfigurationRepository configurationRepository;
@@ -171,17 +176,32 @@ public class OrderServiceImpl implements OrderService {
         List<OrderDetail> orderDetailList = orderDetailRepository.findOrderDetailsByOrderPackaging(staff.getPickupPoint(), pickupPointId, supermarketId, staff.getId(), pageable);
         List<OrderProductForPackage> orderProductForPackages = new ArrayList<>();
         orderDetailList.forEach(orderDetail -> {
-            ModelMapper mapper = new ModelMapper();
-            OrderProductForPackage orderProductForPackage = new OrderProductForPackage();
+            orderDetail.getOrderDetailProductBatches().forEach(orderDetailProductBatch -> {
+                ModelMapper mapper = new ModelMapper();
+                OrderProductForPackage orderProductForPackage = new OrderProductForPackage();
 
-            Product product = orderDetail.getProduct();
-            mapper.map(product, orderProductForPackage);
-            orderProductForPackage.setBoughtQuantity(orderDetail.getBoughtQuantity());
+                Product product = orderDetail.getProduct();
+                mapper.map(product, orderProductForPackage);
+                orderProductForPackage.setProductConsolidationArea(orderDetail.getOrder().getProductConsolidationArea());
+                orderProductForPackage.setBoughtQuantity(orderDetailProductBatch.getBoughtQuantity());
+                orderProductForPackage.setExpiredDate(orderDetailProductBatch.getProductBatch().getExpiredDate());
+                orderProductForPackage.setSupermarketAddress(orderDetailProductBatch.getProductBatch().getSupermarketAddress());
 
-            OrderPackaging orderPackaging = new OrderPackaging();
-            mapper.map(orderDetail.getOrder(), orderPackaging);
-            orderProductForPackage.setOrderPackage(orderPackaging);
-            orderProductForPackages.add(orderProductForPackage);
+                OrderPackaging orderPackaging = new OrderPackaging();
+                mapper.map(orderDetail.getOrder(), orderPackaging);
+                orderProductForPackage.setOrderPackage(orderPackaging);
+
+                List<String> productImageList = new ArrayList<>();
+                orderDetail.getProduct().getProductImageList().forEach(image -> {
+                    String imageUrl = image.getImageUrl();
+                    productImageList.add((imageUrl));
+                });
+
+                orderProductForPackage.setImageUrlImageList(productImageList);
+
+                orderProductForPackages.add(orderProductForPackage);
+            });
+
         });
 
         return orderProductForPackages;
@@ -205,10 +225,20 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderBatch> fetchOrderBatches(LocalDate deliveryDate, UUID delivererID) {
+    public List<OrderBatch> fetchOrderBatches(SortType deliverDateSortType, LocalDate deliveryDate, UUID delivererID) {
+        Sort sortable = null;
+
+        if (deliverDateSortType != null) {
+            if (deliverDateSortType.equals(SortType.ASC.toString())) {
+                sortable = Sort.by("deliverDate").ascending();
+            } else {
+                sortable = Sort.by("deliverDate").descending();
+            }
+        }
         List<OrderBatch> orderBatches = orderBatchRepository.findByDistrictOrDeliverDate(
                 deliveryDate,
-                delivererID);
+                delivererID,
+                sortable);
         return orderBatches;
     }
 
@@ -220,19 +250,29 @@ public class OrderServiceImpl implements OrderService {
         Staff staff = staffRepository.findByEmail(staffEmail).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với email: " + staffEmail));
         ProductConsolidationArea productConsolidationArea = productConsolidationAreaRepository.findById(productConsolidationAreaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy điểm tập kết với ID: " + productConsolidationAreaId));
-        if (LocalDateTime.now().isAfter(order.getCreatedTime().plus(Utils.getAdminConfiguration().getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS))) {
-            if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_ORD.toString())) {
-                order.setPackager(staff);
-                order.setProductConsolidationArea(productConsolidationArea);
-                order.setStatus(OrderStatus.PACKAGING.ordinal());
-                FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
-            } else {
-                return "Nhân viên này không phải là nhân Viên ĐÓNG GÓI!";
-            }
-        } else {
-            return "Đơn hàng này đã chưa quá thời gian khách hàng có thể huỷ nên không thể nhận đóng gói!";
-        }
+//        if (LocalDateTime.now().isAfter(order.getCreatedTime().plus(Utils.getAdminConfiguration().getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS))) {
+        order.setPackager(staff);
+        order.setProductConsolidationArea(productConsolidationArea);
+        order.setStatus(OrderStatus.PACKAGING.ordinal());
+        FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
+//        } else {
+//            return "Đơn hàng này đã chưa quá thời gian khách hàng có thể huỷ nên không thể nhận đóng gói!";
+//        }
         return "Đơn hàng này đã được nhận đóng gói thành công!";
+    }
+
+    @Override
+    public String editProductConsolidationArea(UUID orderId, UUID productConsolidationAreaId) throws IOException, ResourceNotFoundException {
+        Order order = repository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng với ID " + orderId));
+        ProductConsolidationArea productConsolidationArea = productConsolidationAreaRepository.findById(productConsolidationAreaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy điểm tập kết với ID: " + productConsolidationAreaId));
+        if (order.getProductConsolidationArea() != null && order.getStatus() == OrderStatus.PACKAGING.ordinal()) {
+        order.setProductConsolidationArea(productConsolidationArea);
+        } else {
+            return "Đơn hàng này chưa được nhận đóng gói nên không thể sửa điểm tập kết!";
+        }
+        return "Đơn hàng này đã sửa điểm tập kết thành công!";
     }
 
     @Override
@@ -243,11 +283,38 @@ public class OrderServiceImpl implements OrderService {
         Staff staff = staffRepository.findByEmail(staffEmail).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với email: " + staffEmail));
         ProductConsolidationArea productConsolidationArea = productConsolidationAreaRepository.findById(productConsolidationAreaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy điểm tập kết với ID: " + productConsolidationAreaId));
+        orderGroup.setProductConsolidationArea(productConsolidationArea);
         for (Order order : orderGroup.getOrderList()) {
             order.setPackager(staff);
             order.setProductConsolidationArea(productConsolidationArea);
             order.setStatus(OrderStatus.PACKAGING.ordinal());
             FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
+        }
+        return "Nhóm đơn hàng này đã được nhận đóng gói thành công!";
+    }
+
+    @Override
+    public String editProductConsolidationAreaGroup(UUID orderGroupId, UUID productConsolidationAreaId) throws NoSuchOrderException, ResourceNotFoundException {
+        OrderGroup orderGroup = orderGroupRepository.findById(orderGroupId)
+                .orElseThrow(() -> new NoSuchOrderException("Không tìm thấy nhóm đơn hàng với ID " + orderGroupId));
+        ProductConsolidationArea productConsolidationArea = productConsolidationAreaRepository.findById(productConsolidationAreaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy điểm tập kết với ID: " + productConsolidationAreaId));
+        for (Order order : orderGroup.getOrderList()) {
+            order.setProductConsolidationArea(productConsolidationArea);
+        }
+        return "Nhóm đơn hàng này đã được nhận đóng gói thành công!";
+    }
+
+    @Override
+    @Transactional
+    public String confirmPackagedGroup(UUID orderGroupId, String staffEmail) throws NoSuchOrderException, IOException, ResourceNotFoundException {
+        OrderGroup orderGroup = orderGroupRepository.findById(orderGroupId)
+                .orElseThrow(() -> new NoSuchOrderException("Không tìm thấy nhóm đơn hàng với ID " + orderGroupId));
+        Staff staff = staffRepository.findByEmail(staffEmail).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với email: " + staffEmail));
+        for (Order order : orderGroup.getOrderList()) {
+            order.setPackager(staff);
+            order.setStatus(OrderStatus.PACKAGED.ordinal());
+            FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được đóng gói!", order.getCustomer().getId().toString());
         }
         return "Nhóm đơn hàng này đã được nhận đóng gói thành công!";
     }
@@ -262,7 +329,7 @@ public class OrderServiceImpl implements OrderService {
             if (order.getStatus() == OrderStatus.PACKAGING.ordinal()) {
                 order.setPackager(staff);
                 order.setStatus(OrderStatus.PACKAGED.ordinal());
-                FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được đóng gói!", order.getCustomer().getId().toString());
+                FirebaseService.sendPushNotification("SHM", "Đơn hàng đã hoàn thành giai đoạn đóng gói!", order.getCustomer().getId().toString());
             } else {
                 return "Đơn hàng này chưa được nhận đóng gói (PACKAGING)!";
             }
@@ -277,14 +344,10 @@ public class OrderServiceImpl implements OrderService {
     public String confirmSucceeded(UUID orderId, String staffEmail) throws IOException, NoSuchOrderException, ResourceNotFoundException {
         Order order = repository.findById(orderId)
                 .orElseThrow(() -> new NoSuchOrderException("No order found with this id " + orderId));
-        if (order.getDeliveryDate().equals(LocalDate.now())) {
+        if (order.getDeliveryDate().toLocalDate().equals(LocalDate.now())) {
             Staff staff = staffRepository.findByEmail(staffEmail).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với email: " + staffEmail));
-            if (order.getDeliverer().getId().equals(staff.getId())) {
-                order.setStatus(OrderStatus.SUCCESS.ordinal());
-                FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được giao thành công! Hãy đánh giá dịch vụ của chúng tôi để đóng góp xây dưng hệ thống tốt hơn!", order.getCustomer().getId().toString());
-            } else {
-                return "Nhân viên này không phải là nhân Viên GIAO HÀNG của đơn hàng này!";
-            }
+            order.setStatus(OrderStatus.SUCCESS.ordinal());
+            FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được giao thành công! Hãy đánh giá dịch vụ của chúng tôi để đóng góp xây dưng hệ thống tốt hơn!", order.getCustomer().getId().toString());
         } else {
             return "Đơn hàng này chưa tới ngày giao!";
         }
@@ -465,6 +528,7 @@ public class OrderServiceImpl implements OrderService {
 
                     Product product = o.getProduct();
                     orderProduct.setName(product.getName());
+                    orderProduct.setUnit(product.getUnit());
                     orderProduct.setImages(product.getProductImageList());
                     orderProduct.setDescription(product.getDescription());
                     orderProduct.setProductSubCategory(product.getProductSubCategory().getName());
@@ -499,7 +563,7 @@ public class OrderServiceImpl implements OrderService {
         }
         Order order = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
-        if (order.getCreatedTime().isBefore(LocalDateTime.now().plus(Utils.getAdminConfiguration().getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS))) {
+        if (order.getCreatedTime().isBefore(LocalDateTime.now().plus(systemConfigurationService.getConfiguration().getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS))) {
             if (order.getOrderGroup() != null) {
                 order.setOrderGroup(null);
             }
@@ -521,7 +585,7 @@ public class OrderServiceImpl implements OrderService {
             }
             repository.save(order);
         } else {
-            return "Đơn hàng đã quá thời gian huỷ cho phép là " + Utils.getAdminConfiguration().getTimeAllowedForOrderCancellation() + " tiếng kể từ khi đặt hàng!";
+            return "Đơn hàng đã quá thời gian huỷ cho phép là " + systemConfigurationService.getConfiguration().getTimeAllowedForOrderCancellation() + " tiếng kể từ khi đặt hàng!";
         }
 
         return "Successfully canceled order " + id;
@@ -680,7 +744,7 @@ public class OrderServiceImpl implements OrderService {
         if (!pickupPoint.isPresent()) {
             throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.PICKUP_POINT_NOT_FOUND.getCode()), AdditionalResponseCode.PICKUP_POINT_NOT_FOUND.toString());
         }
-        Configuration configuration = Utils.getAdminConfiguration();
+        Configuration configuration = systemConfigurationService.getConfiguration();
 //        PickupPointSuggestionResponseBody closetPickupPoint;
         Integer shippingFee = configuration.getInitialShippingFee();
 //        List<PickupPoint> pickupPoints = pickupPointRepository.getAllSortByDistance(latitude, longitude);
@@ -742,12 +806,12 @@ public class OrderServiceImpl implements OrderService {
     public Order editDeliverDate(UUID orderId, Date deliverDate) throws ResourceNotFoundException {
         Order order = repository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id " + orderId));
-        order.getOrderDetailList().forEach(orderDetail ->{
-            orderDetail.getOrderDetailProductBatches().forEach(productBatch ->{
+        order.getOrderDetailList().forEach(orderDetail -> {
+            orderDetail.getOrderDetailProductBatches().forEach(productBatch -> {
                 LocalDate expDateOrderProduct = productBatch.getProductBatch().getExpiredDate();
-                if(deliverDate.toLocalDate().isAfter(expDateOrderProduct)){
+                if (deliverDate.toLocalDate().isAfter(expDateOrderProduct)) {
                     LinkedHashMap<String, String> errorFieldsFile = new LinkedHashMap<>();
-                    errorFieldsFile.put("Lỗi sản phẩm quá hạn khi thay đổi ngày giao" + deliverDate,"Sản phẩm " + orderDetail.getProduct().getName() + " trong đơn hàng có lô HSD: "+expDateOrderProduct+"!");
+                    errorFieldsFile.put("Lỗi sản phẩm quá hạn khi thay đổi ngày giao" + deliverDate, "Sản phẩm " + orderDetail.getProduct().getName() + " trong đơn hàng có lô HSD: " + expDateOrderProduct + "!");
                     throw new InvalidExcelFileDataException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFieldsFile);
                 }
             });
@@ -949,6 +1013,11 @@ public class OrderServiceImpl implements OrderService {
                     errorFields.put("timeFrameIdError", "No time frame id " + orderBatchCreateBody.getTimeFrameId() + " found");
                 }
 
+                Optional<ProductConsolidationArea> productConsolidationArea = productConsolidationAreaRepository.findConsolidationAreaActiveById(orderBatchCreateBody.getProductConsolidationAreaId());
+                if(!productConsolidationArea.isPresent()) {
+                    errorFields.put("productConsolidationAreaIdError", "No product consolidation area id" + orderBatchCreateBody.getProductConsolidationAreaId() + " found");
+                }
+
                 if (orderBatchCreateBody.getDeliverDate().isBefore(LocalDate.now())) {
                     errorFields.put("deliverDateError", "Date value must be equal or after current date");
                 }
@@ -976,6 +1045,7 @@ public class OrderServiceImpl implements OrderService {
                 OrderBatch orderBatch = new OrderBatch();
                 orderBatch.setDeliverDate(orderBatchCreateBody.getDeliverDate());
                 orderBatch.setTimeFrame(timeFrame.get());
+                orderBatch.setProductConsolidationArea(productConsolidationArea.get());
                 orderBatch.setOrderList(orderTrackList);
                 for (Order order : orderTrackList) {
                     order.setOrderBatch(orderBatch);
@@ -984,6 +1054,93 @@ public class OrderServiceImpl implements OrderService {
             }
         }
         return orderBatchList;
+    }
+
+    @Override
+    public String printOrderPackaging(UUID orderId, String staffEmail) throws ResourceNotFoundException {
+        Order order = repository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id " + orderId));
+
+        try (XWPFDocument document = new XWPFDocument()) {
+            int titleFontSize = 36;
+            int bodyFontSize = 28;
+            String fontFamilyBody = "Calibri (Body)";
+
+            XWPFParagraph orderParagraph = document.createParagraph();
+            XWPFRun orderTile = orderParagraph.createRun();
+            orderTile.setText("Mã đơn hàng: ");
+            orderTile.setBold(true); // Bold text
+            orderTile.setFontSize(titleFontSize);
+            orderTile.setFontFamily(fontFamilyBody);
+
+            XWPFRun orderCode = orderParagraph.createRun();
+            orderCode.setText(order.getId().toString());
+            orderCode.setFontSize(bodyFontSize);
+            orderCode.setFontFamily(fontFamilyBody);
+
+            document.createParagraph().setBorderBottom(Borders.SINGLE);
+
+            // Create a paragraph
+            XWPFRun titleDeliverInfo = document.createParagraph().createRun();
+            titleDeliverInfo.setText("Thông tin giao hàng");
+            titleDeliverInfo.setBold(true); // Bold text
+            titleDeliverInfo.setFontFamily(fontFamilyBody);
+            titleDeliverInfo.setFontSize(titleFontSize);
+
+            XWPFRun address = document.createParagraph().createRun();
+            address.setText("Địa chỉ: " + order.getAddressDeliver());
+            address.setFontFamily(fontFamilyBody);
+            address.setFontSize(bodyFontSize);
+
+            XWPFRun timeFrame = document.createParagraph().createRun();
+            timeFrame.setText("Khung giờ giao: " + order.getTimeFrame().getFromHour() + " đến " + order.getTimeFrame().getToHour());
+            timeFrame.setFontFamily(fontFamilyBody);
+            timeFrame.setFontSize(bodyFontSize);
+
+            XWPFRun deliverDate = document.createParagraph().createRun();
+            deliverDate.setText("Ngày giao: " + order.getDeliveryDate());
+            deliverDate.setFontFamily(fontFamilyBody);
+            deliverDate.setFontSize(bodyFontSize);
+            deliverDate.getParagraph().setBorderBottom(Borders.SINGLE);
+
+            document.createParagraph().setBorderBottom(Borders.SINGLE);
+
+            XWPFRun titleContactInfo = document.createParagraph().createRun();
+            titleContactInfo.setText("Thông tin liên lạc");
+            titleContactInfo.setFontFamily(fontFamilyBody);
+            titleContactInfo.setBold(true); // Bold text
+            titleContactInfo.setFontSize(titleFontSize);
+
+            XWPFRun name = document.createParagraph().createRun();
+            name.setText("Tên KH: " + order.getReceiverName());
+            name.setFontFamily(fontFamilyBody);
+            name.setFontSize(bodyFontSize);
+
+            XWPFRun phone = document.createParagraph().createRun();
+            phone.setText("SĐT: " + order.getReceiverPhone());
+            phone.setFontFamily(fontFamilyBody);
+            phone.setFontSize(bodyFontSize);
+            phone.getParagraph().setBorderBottom(Borders.SINGLE);
+            document.createParagraph().setBorderBottom(Borders.SINGLE);
+
+            // Create a Locale for Vietnam
+            Locale locale = new Locale("vi", "VN");
+
+            // Create a NumberFormat for the currency
+            NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(locale);
+            XWPFRun totalPrice = document.createParagraph().createRun();
+            totalPrice.setText("Tổng chi phí: " + currencyFormat.format(order.getTotalPrice()));
+            totalPrice.setFontFamily(fontFamilyBody);
+            totalPrice.setFontSize(bodyFontSize);
+
+
+            // Save the document to a byte array
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            document.write(byteArrayOutputStream);
+            return FirebaseService.uploadWordToStorage(byteArrayOutputStream, orderId);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // GOOGLE MAP IMPLEMENT
@@ -1047,7 +1204,7 @@ public class OrderServiceImpl implements OrderService {
                 .findByEmail(email)
                 .orElseThrow(() -> new AuthorizationServiceException("Access denied with this account: " + email));
         Order orderCreated = null;
-        if (repository.getOrdersProcessing(customer.getEmail()).size() < Utils.getAdminConfiguration().getLimitOfOrders()) {
+        if (repository.getOrdersProcessing(customer.getEmail()).size() < systemConfigurationService.getConfiguration().getLimitOfOrders()) {
             RLock rLock = redissonClient.getFairLock("createOrderLock");
             boolean res = rLock.tryLock(100, 10, TimeUnit.SECONDS);
             if (res) {

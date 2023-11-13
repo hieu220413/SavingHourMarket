@@ -3,14 +3,17 @@ package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
 import com.fpt.capstone.savinghourmarket.entity.Configuration;
 import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
+import com.fpt.capstone.savinghourmarket.repository.ConfigurationRepository;
 import com.fpt.capstone.savinghourmarket.service.SystemConfigurationService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import jakarta.json.*;
 import jakarta.json.stream.JsonGenerator;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -20,12 +23,16 @@ import java.util.Map;
 
 
 @Service
+@RequiredArgsConstructor
 public class ConfigurationSystemServiceImpl implements SystemConfigurationService {
 
-    @Value("classpath:admin_configuration.json")
-    private Resource adminConfigurationResource;
+//    @Value("classpath:admin_configuration.json")
+//    private Resource adminConfigurationResource;
+
+    private final ConfigurationRepository configurationRepository;
 
     @Override
+    @Transactional
     public Configuration updateConfiguration(Configuration configurationUpdateBody) throws IOException {
         HashMap errorFields = new HashMap<>();
 
@@ -65,39 +72,51 @@ public class ConfigurationSystemServiceImpl implements SystemConfigurationServic
             throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
         }
 
-        JsonObjectBuilder configurationBuilder = Json.createObjectBuilder();
+        Configuration configuration = getConfiguration();
 
-        configurationBuilder.add("systemStatus", configurationUpdateBody.getSystemStatus());
-        configurationBuilder.add("limitOfOrders",  configurationUpdateBody.getLimitOfOrders());
-        configurationBuilder.add("numberOfSuggestedPickupPoint",  configurationUpdateBody.getNumberOfSuggestedPickupPoint());
-        configurationBuilder.add("deleteUnpaidOrderTime",  configurationUpdateBody.getDeleteUnpaidOrderTime());
-        configurationBuilder.add("initialShippingFee", configurationUpdateBody.getInitialShippingFee());
-        configurationBuilder.add("minKmDistanceForExtraShippingFee", configurationUpdateBody.getMinKmDistanceForExtraShippingFee());
-        configurationBuilder.add("extraShippingFeePerKilometer", configurationUpdateBody.getExtraShippingFeePerKilometer());
-        configurationBuilder.add("timeAllowedForOrderCancellation", configurationUpdateBody.getTimeAllowedForOrderCancellation());
+        configuration.setSystemStatus(configurationUpdateBody.getSystemStatus());
+        configuration.setLimitOfOrders(configurationUpdateBody.getLimitOfOrders());
+        configuration.setNumberOfSuggestedPickupPoint(configurationUpdateBody.getNumberOfSuggestedPickupPoint());
+        configuration.setDeleteUnpaidOrderTime(configurationUpdateBody.getDeleteUnpaidOrderTime());
+        configuration.setInitialShippingFee(configurationUpdateBody.getInitialShippingFee());
+        configuration.setMinKmDistanceForExtraShippingFee(configurationUpdateBody.getMinKmDistanceForExtraShippingFee());
+        configuration.setExtraShippingFeePerKilometer(configurationUpdateBody.getExtraShippingFeePerKilometer());
+        configuration.setTimeAllowedForOrderCancellation(configurationUpdateBody.getTimeAllowedForOrderCancellation());
 
-        JsonObject configurationJsonObject = configurationBuilder.build();
+//        JsonObjectBuilder configurationBuilder = Json.createObjectBuilder();
+//
+//        configurationBuilder.add("systemStatus", configurationUpdateBody.getSystemStatus());
+//        configurationBuilder.add("limitOfOrders",  configurationUpdateBody.getLimitOfOrders());
+//        configurationBuilder.add("numberOfSuggestedPickupPoint",  configurationUpdateBody.getNumberOfSuggestedPickupPoint());
+//        configurationBuilder.add("deleteUnpaidOrderTime",  configurationUpdateBody.getDeleteUnpaidOrderTime());
+//        configurationBuilder.add("initialShippingFee", configurationUpdateBody.getInitialShippingFee());
+//        configurationBuilder.add("minKmDistanceForExtraShippingFee", configurationUpdateBody.getMinKmDistanceForExtraShippingFee());
+//        configurationBuilder.add("extraShippingFeePerKilometer", configurationUpdateBody.getExtraShippingFeePerKilometer());
+//        configurationBuilder.add("timeAllowedForOrderCancellation", configurationUpdateBody.getTimeAllowedForOrderCancellation());
+//
+//        JsonObject configurationJsonObject = configurationBuilder.build();
+//
+//        OutputStream os = new FileOutputStream(adminConfigurationResource.getFile());
+//
+//        JsonWriter jsonWriter;
+//
+//        Map< String, Boolean > config = new HashMap < String, Boolean > ();
+//        config.put(JsonGenerator.PRETTY_PRINTING, true);
+//
+//        JsonWriterFactory factory = Json.createWriterFactory(config);
+//        jsonWriter = factory.createWriter(os);
+//
+//        jsonWriter.writeObject(configurationJsonObject);
+//
+//        jsonWriter.close();
+//        os.close();
 
-        OutputStream os = new FileOutputStream(adminConfigurationResource.getFile());
-
-        JsonWriter jsonWriter;
-
-        Map< String, Boolean > config = new HashMap < String, Boolean > ();
-        config.put(JsonGenerator.PRETTY_PRINTING, true);
-
-        JsonWriterFactory factory = Json.createWriterFactory(config);
-        jsonWriter = factory.createWriter(os);
-
-        jsonWriter.writeObject(configurationJsonObject);
-
-        jsonWriter.close();
-        os.close();
-
-        return configurationUpdateBody;
+        return configuration;
     }
 
     @Override
-    public Configuration getConfiguration() throws IOException {
-        return Utils.getAdminConfiguration();
+    public Configuration getConfiguration() {
+        Configuration configuration = configurationRepository.findAll().get(0);
+        return configuration;
     }
 }

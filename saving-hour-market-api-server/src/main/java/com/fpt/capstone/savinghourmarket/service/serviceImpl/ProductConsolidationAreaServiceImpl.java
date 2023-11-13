@@ -9,16 +9,15 @@ import com.fpt.capstone.savinghourmarket.entity.ProductConsolidationArea;
 import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.exception.ModifyProductConsolidationAreaForbiddenException;
-import com.fpt.capstone.savinghourmarket.model.EnableDisableStatusChangeBody;
-import com.fpt.capstone.savinghourmarket.model.ProductConsolidationAreaCreateBody;
-import com.fpt.capstone.savinghourmarket.model.ProductConsolidationAreaPickupPointUpdateListBody;
-import com.fpt.capstone.savinghourmarket.model.ProductConsolidationAreaUpdateBody;
+import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.repository.OrderRepository;
 import com.fpt.capstone.savinghourmarket.repository.PickupPointRepository;
 import com.fpt.capstone.savinghourmarket.repository.ProductConsolidationAreaRepository;
 import com.fpt.capstone.savinghourmarket.service.ProductConsolidationAreaService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,9 +35,23 @@ public class ProductConsolidationAreaServiceImpl implements ProductConsolidation
     private final OrderRepository orderRepository;
 
     @Override
-    public List<ProductConsolidationArea> getAllProductConsolidationAreaForAdmin(EnableDisableStatus enableDisableStatus) {
-        List<ProductConsolidationArea> productConsolidationAreaList = productConsolidationAreaRepository.getAllWithPickupPoint(enableDisableStatus == null ? null : enableDisableStatus.ordinal());
+    public List<ProductConsolidationArea> getAllProductConsolidationAreaForStaff(EnableDisableStatus enableDisableStatus) {
+        List<ProductConsolidationArea> productConsolidationAreaList = productConsolidationAreaRepository.getAllWithPickupPointForStaff(enableDisableStatus == null ? null : enableDisableStatus.ordinal());
         return productConsolidationAreaList;
+    }
+
+    @Override
+    public ProductConsolidationAreaListResponse getAllProductConsolidationAreaForAdmin(EnableDisableStatus enableDisableStatus, Integer page, Integer limit) {
+        Pageable pageable = PageRequest.of(page, limit);
+
+        Page<ProductConsolidationArea> result = productConsolidationAreaRepository.getAllWithPickupPointForAdmin(enableDisableStatus == null ? null : enableDisableStatus.ordinal(), pageable);
+
+        int totalPage = result.getTotalPages();
+        long totalProductConsolidationArea = result.getTotalElements();
+
+        List<ProductConsolidationArea> productConsolidationAreaList = result.stream().toList();
+
+        return new ProductConsolidationAreaListResponse(productConsolidationAreaList, totalPage, totalProductConsolidationArea);
     }
 
     @Override

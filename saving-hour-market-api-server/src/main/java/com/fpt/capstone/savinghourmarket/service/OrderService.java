@@ -40,7 +40,7 @@ public interface OrderService {
                                        int page,
                                        int limit) throws FirebaseAuthException;
 
-    List<OrderBatch> fetchOrderBatches(LocalDate deliveryDate, UUID delivererID) throws NoSuchOrderException;
+    List<OrderBatch> fetchOrderBatches(SortType deliverDateSortType, LocalDate deliveryDate, UUID delivererID) throws NoSuchOrderException;
 
     List<OrderGroup> fetchOrderGroups(SortType deliverDateSortType,
                                       LocalDate deliverDate,
@@ -88,7 +88,13 @@ public interface OrderService {
 
     String confirmPackaging(UUID orderId, String staffEmail, UUID productConsolidationAreaId) throws NoSuchOrderException, IOException, ResourceNotFoundException;
 
+    String editProductConsolidationArea(UUID orderId, UUID productConsolidationAreaId) throws NoSuchOrderException, IOException, ResourceNotFoundException;
+
     String confirmPackagingGroup(UUID orderGroupId, String staffEmail, UUID productConsolidationAreaId) throws NoSuchOrderException, IOException, ResourceNotFoundException;
+
+    String editProductConsolidationAreaGroup(UUID orderGroupId, UUID productConsolidationAreaId) throws NoSuchOrderException, IOException, ResourceNotFoundException;
+
+    String confirmPackagedGroup(UUID orderGroupId, String staffEmail) throws NoSuchOrderException, IOException, ResourceNotFoundException;
 
     String confirmPackaged(UUID orderId, String staffEmail) throws NoSuchOrderException, IOException, ResourceNotFoundException;
 
@@ -111,9 +117,9 @@ public interface OrderService {
 
     Order editDeliverDate(UUID orderId, Date deliverDate) throws ResourceNotFoundException;
 
-//    Order chooseConsolidationArea(UUID orderId, UUID consolidationAreaId) throws ResourceNotFoundException;
-
     ReportOrdersResponse getReportOrders(OrderReportMode mode, LocalDate startDate, LocalDate endDate, Integer month, Integer year);
 
     List<OrderBatch> createBatches(List<OrderBatchCreateBody> orderBatchCreateBodyList);
+
+    String  printOrderPackaging(UUID orderId, String staffEmail) throws ResourceNotFoundException;
 }

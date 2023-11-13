@@ -47,4 +47,11 @@ public class OrderBatch {
             referencedColumnName = "id"
     )
     private TimeFrame timeFrame;
+
+    @ManyToOne
+    @JoinColumn(
+            name = "product_consolidation_area_id",
+            referencedColumnName = "id"
+    )
+    private ProductConsolidationArea productConsolidationArea;
 }

@@ -43,8 +43,19 @@ public class PickupPointController {
             , @RequestParam(required = false)EnableDisableStatus enableDisableStatus) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        List<PickupPointWithProductConsolidationArea> pickupPointWithProductConsolidationAreaList = pickupPointService.getAllForAdmin(enableDisableStatus);
+        List<PickupPointWithProductConsolidationArea> pickupPointWithProductConsolidationAreaList = pickupPointService.getAllForStaff(enableDisableStatus);
         return ResponseEntity.status(HttpStatus.OK).body(pickupPointWithProductConsolidationAreaList);
+    }
+
+    @RequestMapping(value = "/getAllForAdmin", method = RequestMethod.GET)
+    public ResponseEntity<PickupPointListResponseBody> getAllForAdmin(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @RequestParam(required = false)EnableDisableStatus enableDisableStatus
+            , @RequestParam(defaultValue = "0") Integer page
+            , @RequestParam(defaultValue = "5") Integer limit) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        PickupPointListResponseBody pickupPointListResponseBody = pickupPointService.getAllForAdmin(enableDisableStatus, page, limit);
+        return ResponseEntity.status(HttpStatus.OK).body(pickupPointListResponseBody);
     }
 
     @RequestMapping(value = "/getWithSortAndSuggestion", method = RequestMethod.GET)
