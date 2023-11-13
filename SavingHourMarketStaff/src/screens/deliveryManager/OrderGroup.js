@@ -36,6 +36,7 @@ const OrderGroup = ({navigation}) => {
   const [showLogout, setShowLogout] = useState(false);
   const [date, setDate] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [dateToShow, setDateToShow] = useState(null);
 
   const [currentStatus, setCurrentStatus] = useState({
     display: 'Chưa có nhân viên giao hàng',
@@ -118,13 +119,13 @@ const OrderGroup = ({navigation}) => {
                     setLoading(false);
                     return;
                   }
-                  const notYetAssigned = respond.filter(item => {
+                  const notYetAssigned = respond.orderGroups.filter(item => {
                     return item.deliverer === null;
                   });
-                  const Assigned = respond.filter(item => {
+                  const Assigned = respond.orderGroups.filter(item => {
                     return item.deliverer !== null;
                   });
-                  
+
                   setGroupListNotYetAssigned(notYetAssigned);
                   setGroupListAssigned(Assigned);
                   setLoading(false);
@@ -143,15 +144,15 @@ const OrderGroup = ({navigation}) => {
               })
                 .then(res => res.json())
                 .then(respond => {
-                  console.log('group', respond);
+                  console.log('group', respond.orderGroups);
                   if (respond.error) {
                     setLoading(false);
                     return;
                   }
-                  const notYetAssigned = respond.filter(item => {
+                  const notYetAssigned = respond.orderGroups.filter(item => {
                     return item.deliverer === null;
                   });
-                  const Assigned = respond.filter(item => {
+                  const Assigned = respond.orderGroups.filter(item => {
                     return item.deliverer !== null;
                   });
                   setGroupListNotYetAssigned(notYetAssigned);
@@ -271,10 +272,10 @@ const OrderGroup = ({navigation}) => {
                   setLoading(false);
                   return;
                 }
-                const notYetAssigned = respond.filter(item => {
+                const notYetAssigned = respond.orderGroups.filter(item => {
                   return item.deliverer === null;
                 });
-                const Assigned = respond.filter(item => {
+                const Assigned = respond.orderGroups.filter(item => {
                   return item.deliverer !== null;
                 });
                 setGroupListNotYetAssigned(notYetAssigned);
@@ -309,10 +310,10 @@ const OrderGroup = ({navigation}) => {
                   setLoading(false);
                   return;
                 }
-                const notYetAssigned = respond.filter(item => {
+                const notYetAssigned = respond.orderGroups.filter(item => {
                   return item.deliverer === null;
                 });
-                const Assigned = respond.filter(item => {
+                const Assigned = respond.orderGroups.filter(item => {
                   return item.deliverer !== null;
                 });
                 setGroupListNotYetAssigned(notYetAssigned);
@@ -331,13 +332,14 @@ const OrderGroup = ({navigation}) => {
   };
 
   const handleApplySort = async () => {
-    setDate(null);
+    setDateToShow(null);
     setModalVisible(!modalVisible);
     setLoading(true);
     sortOrder(selectSort);
   };
 
   const handleClear = () => {
+    setDateToShow(null);
     setModalVisible(!modalVisible);
     setLoading(true);
     const fetchData = async () => {
@@ -359,10 +361,10 @@ const OrderGroup = ({navigation}) => {
                 setLoading(false);
                 return;
               }
-              const notYetAssigned = respond.filter(item => {
+              const notYetAssigned = respond.orderGroups.filter(item => {
                 return item.deliverer === null;
               });
-              const Assigned = respond.filter(item => {
+              const Assigned = respond.orderGroups.filter(item => {
                 return item.deliverer !== null;
               });
               setSelectSort(sortOptions);
@@ -473,7 +475,7 @@ const OrderGroup = ({navigation}) => {
                     fontSize: 16,
                     paddingLeft: 20,
                   }}>
-                  {date ? format(date, 'dd/MM/yyyy') : 'Chọn ngày giao'}
+                  {dateToShow ? format(dateToShow, 'dd/MM/yyyy') : 'Chọn ngày giao'}
                 </Text>
               </View>
             </View>
@@ -483,13 +485,17 @@ const OrderGroup = ({navigation}) => {
             modal
             mode="date"
             open={open}
-            date={date ? date : new Date()}
+            date={dateToShow ? dateToShow : new Date()}
             onConfirm={date => {
+              setSelectSort(sortOptions);
               setOpen(false);
               setDate(date);
+              setDateToShow(date);
             }}
             onCancel={() => {
+              setSelectSort(sortOptions);
               setDate(null);
+              setDateToShow(null);
               setOpen(false);
             }}
           />

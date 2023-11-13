@@ -56,10 +56,6 @@ const ConfirmProductUploadByExcel = ({
   const handleOpenImageUrlList = () => setOpenImageUrlList(true);
   const handleCloseImageUrlList = () => setOpenImageUrlList(false);
 
-  const [openImageUpload, setOpenImageUpload] = useState(false);
-  const handleOpenImageUpload = () => setOpenImageUpload(true);
-  const handleCloseImageUpload = () => setOpenImageUpload(false);
-
   const [imageUrlList, setImageUrlList] = useState(null);
 
   function isEmpty(obj) {
@@ -163,6 +159,10 @@ const ConfirmProductUploadByExcel = ({
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
+
+    const [openImageUpload, setOpenImageUpload] = useState(false);
+    const handleOpenImageUpload = () => setOpenImageUpload(true);
+    const handleCloseImageUpload = () => setOpenImageUpload(false);
 
     const [openProductBatch, setOpenProductBatch] = useState(false);
     const handleOpenProductBatch = () => setOpenProductBatch(true);
