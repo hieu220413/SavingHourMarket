@@ -110,6 +110,7 @@ const EditImage = ({
                           return { index: key, value: value };
                         }
                       );
+
                       let imageUrlListToShow = [];
                       let imageUrlListToFireBase = [];
                       fileArray.map((item) => {
@@ -131,7 +132,7 @@ const EditImage = ({
               />
               {image.length !== 0 ? (
                 <img
-                  src={image[0]?.imageUrl ? image[0].imageUrl : image[0]}
+                  src={image[0]}
                   width={360}
                   height={160}
                   alt={product.name}
