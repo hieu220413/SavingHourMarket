@@ -132,13 +132,14 @@ const OrderDetails = ({ navigation, route }) => {
         })
             .then((res) => res.text())
             .then(data => {
-                console.log('data', data);
                 setAlertText(data);
                 setErrorModalVisible(true);
+                setLoading(false);
             })
             .catch(err => {
                 console.log(err);
-            })
+                setLoading(false);
+            });
     };
 
     return (
