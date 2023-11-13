@@ -811,6 +811,17 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
+    public Product enableProduct(UUID productId) throws ResourceNotFoundException {
+        Optional<Product> product = productRepository.findById(productId);
+        if (product.isEmpty()) {
+            throw new ResourceNotFoundException("Sản phảm không tìm thấy với id: " + productId);
+        }
+        product.get().setStatus(Status.ENABLE.ordinal());
+        return product.get();
+    }
+
+    @Override
+    @Transactional
     public Product createProduct(ProductCreate productCreate) throws ResourceNotFoundException {
         HashMap<String, String> errorFields = new HashMap<>();
         Product product = new Product();

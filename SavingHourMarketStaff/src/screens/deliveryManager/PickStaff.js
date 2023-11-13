@@ -139,8 +139,9 @@ const PickStaff = ({navigation, route}) => {
       if (auth().currentUser) {
         const tokenId = await auth().currentUser.getIdToken();
         if (tokenId) {
-          setLoading(true);
+          
           if (mode === 1) {
+            setLoading(true);
             fetch(
               `${API.baseURL}/api/order/deliveryManager/assignDeliveryStaffToGroupOrBatch?orderGroupId=${orderGroupId}&staffId=${selectedStaff.id}`,
               {
@@ -164,6 +165,7 @@ const PickStaff = ({navigation, route}) => {
               });
           }
           if (mode === 2) {
+            setLoading(true);
             fetch(
               `${API.baseURL}/api/order/deliveryManager/assignDeliveryStaffToGroupOrBatch?orderBatchId=${orderGroupId}&staffId=${selectedStaff.id}`,
               {
