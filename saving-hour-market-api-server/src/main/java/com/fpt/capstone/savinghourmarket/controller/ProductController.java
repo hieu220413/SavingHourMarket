@@ -204,6 +204,14 @@ public class ProductController {
         Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(productService.disableProduct(productId));
     }
+
+    @RequestMapping(value = "/enable", method = RequestMethod.PUT)
+    public ResponseEntity<Product> enableProduct(@Valid @RequestBody UUID productId,
+                                                 @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException, ResourceNotFoundException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        return ResponseEntity.status(HttpStatus.OK).body(productService.enableProduct(productId));
+    }
     
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     @Operation(description = "Upload new product, if id of each entities (ex: subCategory, Category, Supermarket) in product is not null, it's mean to upload with existed entities.If not, it's mean to upload with new entities.")

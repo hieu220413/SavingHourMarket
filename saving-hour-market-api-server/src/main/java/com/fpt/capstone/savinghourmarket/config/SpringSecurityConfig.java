@@ -77,6 +77,7 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/product/create").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/product/create/list").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/product/disable").hasAnyRole(selectionStaffAndAdmin)
+                            .requestMatchers("/api/product/enable").hasAnyRole(selectionStaffAndAdmin)
 
                             .requestMatchers("/api/discount/getDiscountsForCustomer").permitAll()
                             .requestMatchers("/api/discount/getDiscountById").permitAll()
@@ -112,6 +113,8 @@ public class SpringSecurityConfig {
 
 
                             .requestMatchers("/api/transaction/processPaymentResult").permitAll()
+                            .requestMatchers("/api/transaction/getTransactionForAdmin").hasRole("ADMIN")
+                            .requestMatchers("/api/transaction/refundTransaction").hasRole("ADMIN")
 //                            .requestMatchers("/api/staff/getInfoAfterGoogleLogged").hasAnyRole(allStaffAndAdmin)
 
                             .requestMatchers("/api/staff/getInfo").hasAnyRole(allStaffAndAdmin)
