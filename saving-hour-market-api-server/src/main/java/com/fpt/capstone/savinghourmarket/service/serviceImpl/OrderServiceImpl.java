@@ -44,6 +44,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.sql.Date;
 import java.text.NumberFormat;
 import java.time.LocalDate;
@@ -1067,7 +1068,9 @@ public class OrderServiceImpl implements OrderService {
 
             int titleFontSize = 36;
             int bodyFontSize = 28;
-            String fontFamilyBody = "src/main/resources/AndikaNewBasic-R.ttf";
+            ClassLoader classLoader = getClass().getClassLoader();
+            URL fontUrl = classLoader.getResource("AndikaNewBasic-R.ttf");
+            String fontFamilyBody = fontUrl.getPath();
 
             // Add content to the iText PDF document directly
             addParagraph(pdfDocument, "Mã đơn hàng: " + order.getId().toString(), titleFontSize, fontFamilyBody, true);
