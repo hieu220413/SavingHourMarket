@@ -241,7 +241,7 @@ const ConfirmProductUploadByExcel = ({
               onClick={() => {
                 handleOpenProductBatch();
               }}
-              class="bi bi-eye-fill"
+              className="bi bi-list"
             ></i>
           </td>
           <td style={{ paddingTop: 30 }}>
