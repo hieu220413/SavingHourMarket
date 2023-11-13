@@ -21,6 +21,7 @@ import Toast from 'react-native-toast-message';
 import LoadingScreen from '../../components/LoadingScreen';
 import {SwipeListView} from 'react-native-swipe-list-view';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CartEmpty from '../../assets/image/search-empty.png';
 
 const OrderGroupDetail = ({navigation, route}) => {
   const {orderList, deliverer, orderGroupId, mode} = route.params;
@@ -160,7 +161,7 @@ const OrderGroupDetail = ({navigation, route}) => {
             <View
               style={{
                 backgroundColor: 'rgb(240,240,240)',
-                marginBottom: 20,
+                marginBottom: 10,
                 borderRadius: 10,
                 marginTop: 10,
               }}>
@@ -288,11 +289,7 @@ const OrderGroupDetail = ({navigation, route}) => {
               )}
             </View>
           </View>
-          <View>
-            <Text style={{fontSize: 20, fontWeight: '500', color: 'black'}}>
-              Danh sách đơn hàng :
-            </Text>
-          </View>
+
           {orderList.length === 0 ? (
             <View style={{alignItems: 'center', justifyContent: 'center'}}>
               <Image
@@ -313,6 +310,12 @@ const OrderGroupDetail = ({navigation, route}) => {
           ) : (
             <ScrollView contentContainerStyle={{marginTop: 10}}>
               <View style={{marginBottom: 10}}>
+                <View style={{marginBottom: 10}}>
+                  <Text
+                    style={{fontSize: 20, fontWeight: '500', color: 'black'}}>
+                    Danh sách đơn hàng :
+                  </Text>
+                </View>
                 {orderList.map(item => (
                   <View
                     key={item.id}
@@ -373,6 +376,27 @@ const OrderGroupDetail = ({navigation, route}) => {
                               'dd/MM/yyyy',
                             )}
                           </Text>
+                          {mode === 1 ? (
+                            <Text
+                              style={{
+                                fontSize: 17,
+                                fontWeight: 'bold',
+                                fontFamily: 'Roboto',
+                                color: 'black',
+                              }}>
+                              Điểm giao hàng : {item?.addressDeliver}
+                            </Text>
+                          ) : (
+                            <Text
+                              style={{
+                                fontSize: 17,
+                                fontWeight: 'bold',
+                                fontFamily: 'Roboto',
+                                color: 'black',
+                              }}>
+                              Địa chỉ : {item?.addressDeliver}
+                            </Text>
+                          )}
                           <Text
                             style={{
                               fontSize: 17,
@@ -385,16 +409,6 @@ const OrderGroupDetail = ({navigation, route}) => {
                               style: 'currency',
                               currency: 'VND',
                             })}
-                          </Text>
-                          <Text
-                            style={{
-                              fontSize: 17,
-                              fontWeight: 'bold',
-                              fontFamily: 'Roboto',
-                              color: 'black',
-                            }}>
-                            Phương thức thanh toán:{' '}
-                            {item?.paymentMethod === 0 ? 'COD' : 'VN Pay'}
                           </Text>
                         </View>
                         {/* <Image

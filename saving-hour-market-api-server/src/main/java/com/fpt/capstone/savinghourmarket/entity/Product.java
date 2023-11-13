@@ -1,6 +1,9 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fpt.capstone.savinghourmarket.model.ProductBatchAddressDisplayStaff;
+import com.fpt.capstone.savinghourmarket.model.ProductBatchDisplayStaff;
+import com.fpt.capstone.savinghourmarket.model.ProductDisplayStaff;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,6 +13,7 @@ import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,6 +32,35 @@ public class Product {
 ////        this.priceOriginal = priceOriginal.intValue();
 ////        this.quantity = quantity.intValue();
 //    }
+
+    public Product(ProductDisplayStaff productDisplayStaff) {
+        this.id = productDisplayStaff.getId();
+        this.name = productDisplayStaff.getName();
+        this.description = productDisplayStaff.getDescription();
+        this.unit = productDisplayStaff.getUnit();
+        this.status = productDisplayStaff.getStatus();
+        this.productSubCategory = productDisplayStaff.getProductSubCategory();
+        this.supermarket = productDisplayStaff.getSupermarket();
+
+
+        Product product = new Product();
+        product.setId(productDisplayStaff.getId());
+        // set image
+        productDisplayStaff.getImageUrlImageList().forEach(productImage -> productImage.setProduct(product));
+
+        //set batch
+        List<ProductBatch> productBatchListForProduct = new ArrayList<>();
+        for (ProductBatchDisplayStaff productBatchDisplayStaff : productDisplayStaff.getProductBatchDisplayStaffList()) {
+            for(ProductBatchAddressDisplayStaff productBatchAddressDisplayStaff : productBatchDisplayStaff.getProductBatchAddressDisplayStaffList()) {
+                ProductBatch productBatch = new ProductBatch(productBatchDisplayStaff, productBatchAddressDisplayStaff);
+                productBatch.setProduct(product);
+                productBatchListForProduct.add(productBatch);
+            }
+        }
+
+        this.productImageList = productDisplayStaff.getImageUrlImageList();
+        this.productBatchList = productBatchListForProduct;
+    }
 
     @Id
     @UuidGenerator

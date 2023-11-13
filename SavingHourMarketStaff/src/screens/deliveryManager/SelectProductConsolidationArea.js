@@ -15,7 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const SelectProductConsolidationArea = ({navigation, route}) => {
   const [initializing, setInitializing] = useState(true);
   const [tokenId, setTokenId] = useState(null);
-  const [timeFrameList, setTimeFrameList] = useState([]);
+  const [productConsolidationAreaList, setProductConsolidationAreaList] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const onAuthStateChange = async userInfo => {
@@ -66,7 +66,7 @@ const SelectProductConsolidationArea = ({navigation, route}) => {
           const tokenId = await auth().currentUser.getIdToken();
           if (tokenId) {
             setLoading(true);
-            fetch(`${API.baseURL}/api/timeframe/getForHomeDelivery`, {
+            fetch(`${API.baseURL}/api/productConsolidationArea/getAllForStaff`, {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
@@ -75,7 +75,7 @@ const SelectProductConsolidationArea = ({navigation, route}) => {
             })
               .then(res => res.json())
               .then(response => {
-                setTimeFrameList(response);
+                setProductConsolidationAreaList(response);
                 setLoading(false);
               })
               .catch(err => {
@@ -129,14 +129,14 @@ const SelectProductConsolidationArea = ({navigation, route}) => {
               fontWeight: 'bold',
               marginBottom: 20,
             }}>
-            Khung giờ
+            Điểm gom hàng
           </Text>
           {/* Time Frames */}
-          {timeFrameList.map(item => (
+          {productConsolidationAreaList.map(item => (
             <TouchableOpacity
               key={item.id}
               onPress={() => {
-                route.params.setTimeFrame(item);
+                route.params.setProductConsolidationArea(item);
                 navigation.navigate('Batching');
               }}
               style={{
@@ -158,7 +158,7 @@ const SelectProductConsolidationArea = ({navigation, route}) => {
                     color: 'black',
                     fontFamily: 'Roboto',
                   }}>
-                  {item.fromHour.slice(0, 5)} đến {item.toHour.slice(0, 5)}
+                  {item.address}
                 </Text>
                 <Text
                   style={{

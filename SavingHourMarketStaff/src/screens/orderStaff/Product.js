@@ -8,8 +8,7 @@ import {
   Image,
   TextInput,
   ScrollView,
-  Modal,
-  Pressable,
+  FlatList
 } from 'react-native';
 import React, { useEffect, useState, useCallback } from 'react';
 import auth from '@react-native-firebase/auth';
@@ -19,44 +18,34 @@ import { icons } from '../../constants';
 import { useFocusEffect } from '@react-navigation/native';
 import { API } from '../../constants/api';
 import { format } from 'date-fns';
-import CartEmpty from '../../assets/image/search-empty.png';
 import { SwipeListView } from 'react-native-swipe-list-view';
 import SearchBar from '../../components/SearchBar';
-import dayjs from 'dayjs';
 import LoadingScreen from '../../components/LoadingScreen';
+import CartEmpty from '../../assets/image/search-empty.png';
 
 const Product = ({ navigation }) => {
   const [initializing, setInitializing] = useState(true);
   const [open, setOpen] = useState(false);
   const [productsPackaging, setProductsPackaging] = useState([]);
   const [pickupPoint, setPickupPoint] = useState(null);
-  const [result, setResult] = useState([]);
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
-  const onAuthStateChange = async userInfo => {
-    // console.log(userInfo);
+
+  const onAuthStateChange = async (userInfo) => {
     if (initializing) {
       setInitializing(false);
     }
     if (userInfo) {
-      // check if user sessions is still available. If yes => redirect to another screen
-      const userTokenId = await userInfo
-        .getIdToken(true)
-        .then(token => token)
-        .catch(async e => {
-          console.log(e);
-          return null;
-        });
+      const userTokenId = await userInfo.getIdToken(true).catch((e) => {
+        console.log(e);
+        return null;
+      });
       if (!userTokenId) {
-        // sessions end. (revoke refresh token like password change, disable account, ....)
         await AsyncStorage.removeItem('userInfo');
         navigation.navigate('Login');
         return;
       }
-      const currentUser = await AsyncStorage.getItem('userInfo');
-      // console.log(currentUser);
     } else {
-      // no sessions found.
       console.log('user is not logged in');
       await AsyncStorage.removeItem('userInfo');
       navigation.navigate('Login');
@@ -68,56 +57,29 @@ const Product = ({ navigation }) => {
       const tokenId = await auth().currentUser.getIdToken();
       if (tokenId) {
         setLoading(true);
-        if (pickupPoint) {
-          fetch(
-            `${API.baseURL}/api/order/packageStaff/getProductsOrderAfterPackaging?pickupPointId=${pickupPoint?.id}`,
-            {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${tokenId}`,
-              },
+        const url = pickupPoint
+          ? `${API.baseURL}/api/order/packageStaff/getProductsOrderAfterPackaging?pickupPointId=${pickupPoint.id}`
+          : `${API.baseURL}/api/order/packageStaff/getProductsOrderAfterPackaging`;
+
+        try {
+          const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${tokenId}`,
             },
-          )
-            .then(res => res.json())
-            .then(respond => {
-              console.log('order', respond);
-              if (respond.error) {
-                setLoading(false);
-                return;
-              }
-              setProductsPackaging(respond);
-              setLoading(false);
-            })
-            .catch(err => {
-              console.log(err);
-              setLoading(false);
-            });
-        } else {
-          fetch(
-            `${API.baseURL}/api/order/packageStaff/getProductsOrderAfterPackaging`,
-            {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${tokenId}`,
-              },
-            },
-          )
-            .then(res => res.json())
-            .then(respond => {
-              console.log('order', respond, '1');
-              if (respond.error) {
-                setLoading(false);
-                return;
-              }
-              setProductsPackaging(respond);
-              setLoading(false);
-            })
-            .catch(err => {
-              console.log(err);
-              setLoading(false);
-            });
+          });
+
+          const data = await response.json();
+          console.log('order', data);
+
+          if (!data.error) {
+            setProductsPackaging(data);
+          }
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setLoading(false);
         }
       }
     }
@@ -125,48 +87,21 @@ const Product = ({ navigation }) => {
 
   useFocusEffect(
     useCallback(() => {
-      // auth().currentUser.reload()
-      const subscriber = auth().onAuthStateChanged(
-        async userInfo => await onAuthStateChange(userInfo),
-      );
+      const subscriber = auth().onAuthStateChanged((userInfo) => {
+        onAuthStateChange(userInfo);
+      });
 
       return subscriber;
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []),
+    }, [])
   );
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchData()
-    }, []),
-  );
+  useFocusEffect(useCallback(() => {
+    fetchData();
+  }, [pickupPoint]));
 
-  useEffect(async () => {
-    setLoading(true);
-    await fetch(
-      `${API.baseURL}/api/order/packageStaff/getProductsOrderAfterPackaging?pickupPointId=${pickupPoint.id}`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${tokenId}`,
-        },
-      },
-    )
-      .then(res => res.json())
-      .then(data => {
-        if (data.error) {
-          return;
-        }
-        console.log(data);
-        // setProductsPackaging(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.log(err);
-        setLoading(false);
-      });
-  }, [pickupPoint?.id]);
+  useEffect(() => {
+    fetchData();
+  }, [pickupPoint]);
 
   const handleTypingSearch = (value) => {
     if (typingTimeoutRef.current) {
@@ -177,96 +112,103 @@ const Product = ({ navigation }) => {
     }, 400);
   };
 
-  const Item = ({ data }) => {
+
+  const Item = ({ item, index }) => {
     return (
       <TouchableOpacity
-        key={data.id}
-        onPress={() => {
-          navigation.navigate('ProductDetails', {
-            product: data,
-            pickupPointId: pickupPoint.id
-          });
+        key={index}
+        style={{
+          flexDirection: 'row',
+          gap: 10,
+          alignItems: 'center',
+          backgroundColor: 'white',
+          borderBottomColor: '#decbcb',
+          borderBottomWidth: 0.5,
+          paddingVertical: 20,
         }}>
-        <View style={styles.itemContainer}>
-          {/* Image Product */}
-          <Image
-            resizeMode="contain"
-            source={{
-              uri: data?.imageUrlImageList[0],
-            }}
-            style={styles.itemImage}
-          />
-
-          <View style={{ justifyContent: 'center', flex: 1, marginRight: 10}}>
-            <Text
-              numberOfLines={1}
+        <View
+          style={{
+            flexDirection: 'column',
+            gap: 10,
+            flex: 7,
+          }}>
+          <View style={{
+            flexDirection: 'row',
+            gap: 10,
+            alignItems: 'center',
+            backgroundColor: 'white',
+            borderBottomColor: '#decbcb',
+            borderBottomWidth: 0.5,
+            paddingVertical: 20,
+          }}>
+            <Image
+              source={{
+                uri: item.imageUrlImageList[0],
+              }}
+              style={{ width: 100, height: 100 }}
+            />
+            <View
               style={{
-                fontFamily: FONTS.fontFamily,
-                fontSize: 20,
-                fontWeight: 700,
-                maxWidth: '95%',
-                color: 'black',
-              }}>
-              {data.name}
-            </Text>
-            <Text
-              style={{
-                fontFamily: FONTS.fontFamily,
-                fontSize: 16,
-                marginTop: 8,
-                marginBottom: 10,
-              }}>
-              HSD:{' '}
-              {dayjs(data?.expiredDate).format(
-                'DD/MM/YYYY',
-              )}
-            </Text>
+                flexDirection: 'column',
+                gap: 10,
+                flex: 7,
+              }}><Text
+                style={{
+                  fontSize: 23,
+                  color: 'black',
+                  fontFamily: 'Roboto',
+                  fontWeight: 'bold',
+                }}>
+                {item.name}
+              </Text>
 
-            <View style={{ flexDirection: 'row' }}>
               <Text
                 style={{
-                  maxWidth: '70%',
                   fontSize: 18,
-                  lineHeight: 20,
-                  color: COLORS.secondary,
+                  color: 'black',
+                  fontFamily: 'Roboto',
                   fontWeight: 'bold',
-                  fontFamily: FONTS.fontFamily,
                 }}>
-                {data?.boughtQuantity}{' '}
+                HSD:
+                {format(
+                  new Date(
+                    item.expiredDate,
+                  ),
+                  'dd/MM/yyyy',
+                )}
               </Text>
               <Text
                 style={{
                   fontSize: 18,
-                  lineHeight: 20,
-                  color: COLORS.secondary,
-                  fontWeight: 600,
-                  fontFamily: FONTS.fontFamily,
+                  color: 'black',
+                  fontFamily: 'Roboto',
                 }}>
-                {data?.unit}
+                Số lượng:{' '}
+                {item.boughtQuantity}{' '}{item.unit}
+              </Text>
+              <Text
+                style={{
+                  fontSize: 18,
+                  color: 'black',
+                  fontFamily: 'Roboto',
+                }}>
+                Điểm tập kết:{' '}
+                {item.productConsolidationArea.address}
+              </Text>
+              <Text
+                style={{
+                  fontSize: 18,
+                  color: 'black',
+                  fontFamily: 'Roboto',
+                }}>
+                Mã đơn hàng:{' '}
+                {item.orderPackage.id}
               </Text>
             </View>
-
-
-            {/* Button buy */}
-            {/* <TouchableOpacity onPress={() => handleAddToCart(data)}>
-              <Text
-                style={{
-                  maxWidth: 150,
-                  maxHeight: 40,
-                  padding: 10,
-                  backgroundColor: COLORS.primary,
-                  borderRadius: 10,
-                  textAlign: 'center',
-                  color: '#ffffff',
-                  fontFamily: FONTS.fontFamily,
-                }}>
-                Thêm vào giỏ hàng
-              </Text>
-            </TouchableOpacity> */}
           </View>
         </View>
       </TouchableOpacity>
-    );
+    )
   };
 
 
@@ -276,7 +218,7 @@ const Product = ({ navigation }) => {
         Keyboard.dismiss;
         setOpen(false);
       }}
-      accessible={false}>
+      accessible={true}>
       <View style={styles.container}>
         <View style={styles.header}>
           <View style={styles.areaAndLogout}>
@@ -373,55 +315,77 @@ const Product = ({ navigation }) => {
           {/* Search */}
         </View>
         <View style={styles.body}>
-          <ScrollView
-            keyboardShouldPersistTaps="always"
-            contentContainerStyle={{
-              paddingBottom: 100,
-            }}>
-            {/* <View
-            style={{
-              flexDirection: 'row',
-            }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}
-            >
-              <SearchBar
-                text={text}
-                setText={setText}
-                handleTypingSearch={handleTypingSearch}
-                result={result}
+          {Object.keys(productsPackaging).length === 0 ?
+            <View style={{ alignItems: 'center', justifyContent: 'center', marginTop:12 }}>
+              <Image
+                style={{ width: '100%', height: '50%' }}
+                resizeMode="contain"
+                source={CartEmpty}
               />
-            </View>
-            <View
-              style={{
-                justifyContent: 'center',
-                alignItems: 'flex-end',
-                flex: 1,
-              }}>
-              <TouchableOpacity
-                onPress={() => {
-                  setModalVisible(true);
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontFamily: 'Roboto',
+                  // color: 'black',
+                  fontWeight: 'bold',
                 }}>
-                <Image
-                  resizeMode="contain"
-                  style={{
-                    height: 35,
-                    tintColor: COLORS.primary,
-                    width: 35,
-                    marginHorizontal: '1%',
-                  }}
-                  source={icons.filter}
-                />
-              </TouchableOpacity>
+                Chưa có sản phẩm để thực hiện gom
+              </Text>
             </View>
-          </View> */}
-            {productsPackaging?.map((item, index) => (
-              <Item data={item} key={index} />
-            ))}
-          </ScrollView>
+            :
+            <FlatList
+              data={Object.keys(productsPackaging)}
+              keyExtractor={(item) => item.toString()}
+              renderItem={({ item }) =>
+                <>
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      color: COLORS.primary,
+                      fontFamily: 'Roboto',
+                      backgroundColor: 'white',
+                      alignSelf: 'flex-start',
+                      marginTop: 10,
+                      paddingVertical: 5,
+                      paddingHorizontal: 15,
+                      borderRadius: 15,
+                      borderColor: COLORS.primary,
+                      borderWidth: 1.5,
+                      fontWeight: 700,
+                    }}>
+                    {productsPackaging[item][0].supermarket.name}
+                  </Text>
+                  <View style={{
+                    flexDirection: 'row',
+                    marginTop: 13,
+                  }}>
+                    <Image
+                      resizeMode="contain"
+                      style={{ width: 25, height: 25, marginTop: 10, }}
+                      source={icons.location}
+                    />
+                    <Text
+                      style={{
+                        fontSize: 18,
+                        color: 'black',
+                        fontFamily: 'Roboto',
+                        marginLeft: 7,
+                        width: '90%'
+                      }}>
+                      Chi nhánh:{' '}
+                      {productsPackaging[item][0].supermarketAddress.address}
+                    </Text>
+                  </View>
+                  {productsPackaging[item].map((item, index) => (
+                    <Item key={index} item={item} index={index} />
+                  ))}
+                </>
+              }
+              contentContainerStyle={{
+                paddingBottom: 150,// Ensure that the FlatList takes up the full height
+              }}
+            />}
+
         </View>
         {loading && <LoadingScreen />}
       </View>
@@ -438,10 +402,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   header: {
-    flex: 2,
+    flex: 1,
   },
   body: {
-    flex: 20,
+    flex: 8,
   },
   areaAndLogout: {
     paddingTop: 10,
@@ -468,24 +432,5 @@ const styles = StyleSheet.create({
     gap: 10,
     alignItems: 'center',
     width: '80%',
-  },
-  itemContainer: {
-    backgroundColor: '#F5F5F5',
-    maxWidth: '90%',
-    borderRadius: 20,
-    marginHorizontal: '6%',
-    marginBottom: 20,
-    flexDirection: 'row',
-  },
-  itemImage: {
-    width: 130,
-    height: 130,
-    borderRadius: 20,
-    padding: 10,
-    margin: 15,
-  },
-  itemText: {
-    fontFamily: FONTS.fontFamily,
-    fontSize: 20,
-  },
+  }
 });

@@ -47,7 +47,7 @@ public interface ProductService {
 
     ProductExcelResponse createProductList(List<ProductCreateList> productList) throws ResourceNotFoundException;
     
-    Product updateProduct(Product product) throws ResourceNotFoundException;
+    Product updateProduct(ProductDisplayStaff productDisplayStaff) throws ResourceNotFoundException;
 
     Product disableProduct(UUID product) throws ResourceNotFoundException;
     
@@ -66,4 +66,6 @@ public interface ProductService {
     List<ProductSaleReport> getRevenueReportForEachProduct(Month month, Integer year);
 
     List<ProductSaleReport> getRevenueReportForEachProductForSupermarket(Month month, Integer year, UUID supermarketId);
+
+    Product enableProduct(UUID productId) throws ResourceNotFoundException;
 }

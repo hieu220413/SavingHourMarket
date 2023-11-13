@@ -44,9 +44,9 @@ public interface FirebaseService {
             Bucket bucket = StorageClient.getInstance().bucket();
 
             byte[] qrCodeBytes = fileStream.toByteArray();
-            String objectName = "OrderPrintWord/" + orderId + ".docx"; // Set the desired object name
+            String objectName = "OrderPrintWord/" + orderId + ".pdf"; // Set the desired object name
 
-            bucket.create(objectName, qrCodeBytes, "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+            bucket.create(objectName, qrCodeBytes, "application/pdf");
 
             return Utils.generatePublicWordUrlFirebaseStorage(objectName);
         } catch (Exception e) {

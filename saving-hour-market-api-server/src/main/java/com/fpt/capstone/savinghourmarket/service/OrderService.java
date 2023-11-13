@@ -1,10 +1,7 @@
 package com.fpt.capstone.savinghourmarket.service;
 
 import com.fpt.capstone.savinghourmarket.common.*;
-import com.fpt.capstone.savinghourmarket.entity.Order;
-import com.fpt.capstone.savinghourmarket.entity.OrderBatch;
-import com.fpt.capstone.savinghourmarket.entity.OrderDetail;
-import com.fpt.capstone.savinghourmarket.entity.OrderGroup;
+import com.fpt.capstone.savinghourmarket.entity.*;
 import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.*;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -15,6 +12,7 @@ import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface OrderService {
@@ -42,7 +40,8 @@ public interface OrderService {
 
     List<OrderBatch> fetchOrderBatches(SortType deliverDateSortType, LocalDate deliveryDate, UUID delivererID) throws NoSuchOrderException;
 
-    List<OrderGroup> fetchOrderGroups(SortType deliverDateSortType,
+    OrderGroupPageResponse fetchOrderGroups(OrderStatus status,
+                                      SortType deliverDateSortType,
                                       LocalDate deliverDate,
                                       Boolean getOldOrderGroup,
                                       UUID timeFrameId,
@@ -73,11 +72,11 @@ public interface OrderService {
                                                      Integer page,
                                                      Integer size) throws FirebaseAuthException, ResourceNotFoundException;
 
-    List<OrderProductForPackage> getProductOrderDetailAfterPackaging(UUID supermarketId,
-                                                          UUID pickupPointId,
-                                                          String staffEmail,
-                                                          Integer page,
-                                                          Integer size) throws FirebaseAuthException, ResourceNotFoundException;
+    Map<UUID, List<OrderProductForPackage>> getProductOrderDetailAfterPackaging(UUID supermarketId,
+                                                                                UUID pickupPointId,
+                                                                                String staffEmail,
+                                                                                Integer page,
+                                                                                Integer size) throws FirebaseAuthException, ResourceNotFoundException;
 
 
     OrderWithDetails fetchOrderDetail(UUID id) throws ResourceNotFoundException;
@@ -121,5 +120,5 @@ public interface OrderService {
 
     List<OrderBatch> createBatches(List<OrderBatchCreateBody> orderBatchCreateBodyList);
 
-    String  printOrderPackaging(UUID orderId, String staffEmail) throws ResourceNotFoundException;
+    String printOrderPackaging(UUID orderId, String staffEmail) throws ResourceNotFoundException;
 }
