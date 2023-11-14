@@ -52,8 +52,7 @@ const CreateProduct = ({
 
   const [supermarkets, setSupermarkets] = useState([]);
   const [isActiveDropdown, setIsActiveDropdown] = useState(false);
-  const [selectedDropdownItem, setSelectedDropdownItem] =
-    useState("Chọn siêu thị");
+  const [selectedDropdownItem, setSelectedDropdownItem] = useState(null);
 
   const [categories, setCategories] = useState([]);
   const [isActiveDropdownCate, setIsActiveDropdownCate] = useState(false);
@@ -98,32 +97,29 @@ const CreateProduct = ({
   const [subCateName, setSubCateName] = useState("");
   const [allowableDisplayThreshold, setAllowableDisplayThreshold] = useState(0);
   const [imageUrlSubCate, setImageUrlSubCate] = useState("");
-
   const [unit, setUnit] = useState("");
-  const [productBatchAddresses, setProductBatchAddresses] = useState([
-    {
-      quantity: 0,
-      supermarketAddressId: null,
-      supermarketAddress: null,
-      error: {
-        quantity: "",
-        supermarketStores: "",
-      },
-      isActiveDropdownSupermarketStore: false,
-    },
-  ]);
-
   const [productBatchs, setProductBatchs] = useState([
     {
       price: 0,
       priceOriginal: 0,
       expiredDate: null,
-      productBatchAddresses: productBatchAddresses,
+      productBatchAddresses: [
+        {
+          quantity: 0,
+          supermarketAddress: null,
+          isActiveDropdownSupermarketStore: false,
+          errorQuantity: "",
+          errorStore: "",
+        },
+      ],
       error: {
         price: "",
         priceOriginal: "",
+        quantity: "",
         expiredDate: "",
+        supermarketStores: "",
       },
+      isActiveDropdownSupermarketStore: false,
     },
   ]);
 
@@ -133,6 +129,9 @@ const CreateProduct = ({
   const [checkCategorySelected, setCheckCategorySelected] = useState(false);
   const [checkSupermarketSelected, setCheckSupermarketSelected] =
     useState(false);
+  const [checkDuplicatedCategory, setCheckDuplicatedCategory] = useState("");
+  const [checkDuplicatedSubCategory, setCheckDuplicatedSubCategory] =
+    useState("");
   const [error, setError] = useState({
     productName: "",
     unit: "",
@@ -240,10 +239,6 @@ const CreateProduct = ({
   };
 
   const handleSubmit = async () => {
-    const duplicatedCate = categories.find((item) => item == category);
-    console.log(duplicatedCate);
-    const duplicatedSubCate = subCategories.find((item) => item == subCateName);
-    console.log(duplicatedSubCate);
     if (supermarket === "") {
       setError({ ...error, supermarket: "Vui lòng không chọn siêu thị" });
       return;
@@ -277,6 +272,13 @@ const CreateProduct = ({
       setError({ ...error, category: "Vui lòng không để trống" });
       return;
     }
+    const duplicatedCate = categories.find(
+      (item) => item.name === checkDuplicatedCategory
+    );
+    if (duplicatedCate) {
+      setError({ ...error, category: "Loại sản phẩm này đã có rồi" });
+      return;
+    }
 
     if (error.subCateName !== "") {
       console.log("Chưa chọn loại sản phẩm");
@@ -285,6 +287,13 @@ const CreateProduct = ({
 
     if (subCateName === "") {
       setError({ ...error, subCateName: "Vui lòng không để trống" });
+      return;
+    }
+    const duplicatedSubCate = subCategories.find(
+      (item) => item.name === checkDuplicatedSubCategory
+    );
+    if (duplicatedSubCate) {
+      setError({ ...error, subCateName: "Loại sản phẩm phụ này đã có rồi" });
       return;
     }
 
@@ -306,45 +315,26 @@ const CreateProduct = ({
     }
     // validate product batch
     let newProductBatchs = [...productBatchs];
+    let batchAddressesValidate;
     const productbatchValidate = productBatchs.map((batch, index) => {
       // validate price
-      if (batch.price === "") {
+      if (parseInt(batch.price) === 0 || !batch.price) {
         newProductBatchs[index] = {
           ...productBatchs[index],
           error: {
             ...productBatchs[index].error,
-            price: "Giá sản phẩm không thể bỏ trống",
-          },
-        };
-        return false;
-      }
-      if (batch.price <= 0) {
-        newProductBatchs[index] = {
-          ...productBatchs[index],
-          error: {
-            ...productBatchs[index].error,
-            price: "Giá sản phẩm không thể bé hơn 0",
+            price: "Giá sản phẩm không thể là 0",
           },
         };
         return false;
       }
       // validate priceOriginal
-      if (batch.priceOriginal === "") {
+      if (parseInt(batch.priceOriginal) === 0 || !batch.priceOriginal) {
         newProductBatchs[index] = {
           ...productBatchs[index],
           error: {
             ...productBatchs[index].error,
-            priceOriginal: "Giá sản phẩm không thể bỏ trống",
-          },
-        };
-        return false;
-      }
-      if (batch.priceOriginal <= 0) {
-        newProductBatchs[index] = {
-          ...productBatchs[index],
-          error: {
-            ...productBatchs[index].error,
-            priceOriginal: "Giá gốc sản phẩm không thể bé hơn 0",
+            priceOriginal: "Giá gốc sản phẩm không thể là 0",
           },
         };
         return false;
@@ -374,76 +364,85 @@ const CreateProduct = ({
         };
         return false;
       }
-      return true;
-    });
-    if (productbatchValidate.some((item) => item === false)) {
-      setProductBatchs(newProductBatchs);
-      return;
-    }
-
-    // validate product batch address
-    let newProductBatchAddress = [...productBatchAddresses];
-    const productBatchAddressesValidate = productBatchAddresses.map(
-      (batch, index) => {
+      let newproductBatchAddresses = [...batch.productBatchAddresses];
+      batchAddressesValidate = batch.productBatchAddresses.map((store, num) => {
         // validate supermarketstore
         if (
-          !batch.supermarketAddress ||
+          !store.supermarketAddress?.id ||
+          !store.supermarketAddress ||
           !supermarketAddress.some(
-            (item) => item.address === batch?.supermarketAddress?.address
+            (item) => item.address === store?.supermarketAddress?.address
           )
         ) {
-          newProductBatchAddress[index] = {
+          newproductBatchAddresses[num] = {
+            ...newproductBatchAddresses[num],
+            errorStore: "Vui lòng chọn chi nhánh",
+          };
+          newProductBatchs[index] = {
             ...productBatchs[index],
-            error: {
-              ...productBatchs[index].error,
-              supermarketStores: "Vui lòng chọn chi nhánh",
-            },
+            productBatchAddresses: newproductBatchAddresses,
           };
           return false;
         }
         // validate quantity
-        if (batch.quantity === "") {
-          newProductBatchAddress[index] = {
+        if (parseInt(store.quantity) === 0 || !store.quantity) {
+          newproductBatchAddresses[num] = {
+            ...newproductBatchAddresses[num],
+            errorQuantity: "Số lượng sản phẩm không thể là 0",
+          };
+          newProductBatchs[index] = {
             ...productBatchs[index],
-            error: {
-              ...productBatchs[index].error,
-              quantity: "Số lượng sản phẩm không thể bỏ trống",
-            },
+            productBatchAddresses: newproductBatchAddresses,
           };
           return false;
         }
-        if (batch.quantity <= 0) {
-          newProductBatchAddress[index] = {
-            ...productBatchs[index],
-            error: {
-              ...productBatchs[index].error,
-              quantity: "Số lượng sản phẩm không thể bé hơn 0",
-            },
-          };
+
+        // validate duplicate store
+        var valueArr = batch.productBatchAddresses.map(function (item) {
+          return item?.supermarketAddress?.address;
+        });
+        var isDuplicateStore = valueArr.some(function (item, idx) {
+          return valueArr.indexOf(item) != idx;
+        });
+
+        if (isDuplicateStore && store?.supermarketAddress) {
+          setOpenValidateSnackbar({
+            ...openValidateSnackbar,
+            open: true,
+            severity: "error",
+            text: "Tồn tại chi nhánh trùng nhau trong một lô hàng",
+          });
           return false;
         }
 
         return true;
+      });
+
+      if (batchAddressesValidate.some((item) => item === false)) {
+        return false;
       }
-    );
-    if (productBatchAddressesValidate.some((item) => item === false)) {
-      setProductBatchAddresses(newProductBatchAddress);
+
+      return true;
+    });
+    setProductBatchs(newProductBatchs);
+
+    if (productbatchValidate.some((item) => item === false)) {
       return;
     }
 
-    // const uniqueValues = new Set(
-    //   productBatchs.map((v) => v?.supermarketAddress?.address)
-    // );
+    const uniqueValues = new Set(
+      productBatchs.map(({ expiredDate }) => JSON.stringify([expiredDate]))
+    );
 
-    // if (uniqueValues.size < productBatchs.length) {
-    //   setOpenValidateSnackbar({
-    //     ...openValidateSnackbar,
-    //     open: true,
-    //     severity: "error",
-    //     text: "Tồn tại lô hàng trùng chi nhánh siêu thị",
-    //   });
-    //   return;
-    // }
+    if (uniqueValues.size < productBatchs.length) {
+      setOpenValidateSnackbar({
+        ...openValidateSnackbar,
+        open: true,
+        severity: "error",
+        text: "Tồn tại lô hàng trùng HSD",
+      });
+      return;
+    }
 
     let newImageUrlSubCate = await uploadSubCateImgToFireBase();
     if (newImageUrlSubCate === null) {
@@ -469,16 +468,16 @@ const CreateProduct = ({
       id: "",
       address: item,
     }));
-    const submitSupermarket = {
-      id: supermarketId ? supermarketId : "",
-      name: supermarket,
-      status: 1,
-      phone: supermarketHotline,
-      supermarketAddressList:
-        listSupermarketAddress.length !== 0
-          ? listSupermarketAddress
-          : listAddress,
-    };
+    // const submitSupermarket = {
+    //   id: supermarketId ? supermarketId : "",
+    //   name: supermarket,
+    //   status: 1,
+    //   phone: supermarketHotline,
+    //   supermarketAddressList:
+    //     listSupermarketAddress.length !== 0
+    //       ? listSupermarketAddress
+    //       : listAddress,
+    // };
     // -----------------------------------------------------------------
     // Category & Subcategory Data
     const submitProductSubCategory = {
@@ -495,21 +494,29 @@ const CreateProduct = ({
     };
     // -----------------------------------------------------------------
     // ProductBatchAddresses
-    const submitProductBatchListAddress = productBatchAddresses.map((item) => {
-      return {
-        quantity: item.quantity,
-        supermarketAddressId: item.supermarketAddressId,
-      };
-    });
+    // const submitProductBatchListAddress = productBatchAddresses.map((item) => {
+    //   return {
+    //     quantity: item.quantity,
+    //     supermarketAddressId: item.supermarketAddressId,
+    //   };
+    // });
 
     // -----------------------------------------------------------------
     // ProductBatchList
-    const submitProductBatchList = newProductBatchs.map((item) => {
+    const submitProductBatchList = productBatchs.map((item) => {
+      const productBatchAddresses = item.productBatchAddresses.map(
+        (address) => {
+          return {
+            quantity: address.quantity,
+            supermarketAddress: address.supermarketAddressId,
+          };
+        }
+      );
       return {
         price: item.price,
         priceOriginal: item.priceOriginal,
         expiredDate: item.expiredDate,
-        productBatchAddresses: submitProductBatchListAddress,
+        productBatchAddresses: productBatchAddresses,
       };
     });
     // -----------------------------------------------------------------
@@ -611,7 +618,9 @@ const CreateProduct = ({
                     className="dropdown-btn"
                     onClick={(e) => setIsActiveDropdown(!isActiveDropdown)}
                   >
-                    {selectedDropdownItem}
+                    {selectedDropdownItem === null
+                      ? "Chọn chi nhánh"
+                      : selectedDropdownItem.name}
                     <FontAwesomeIcon icon={faCaretDown} />
                   </div>
                   {isActiveDropdown && (
@@ -619,7 +628,7 @@ const CreateProduct = ({
                       {supermarkets.map((item, index) => (
                         <div
                           onClick={(e) => {
-                            setSelectedDropdownItem(item.name);
+                            setSelectedDropdownItem(item);
                             setIsActiveDropdown(false);
                             setSupermarketId(item.id);
                             setSupermarket(item.name);
@@ -808,6 +817,7 @@ const CreateProduct = ({
                             setError({ ...error, subCateName: "" });
                             setImageUrlSubCate("");
                             setAllowableDisplayThreshold(0);
+                            setCheckDuplicatedSubCategory("");
                           }}
                         >
                           Thêm mới
@@ -841,6 +851,7 @@ const CreateProduct = ({
                       setImageUrlSubCate("");
                       setSelectedDropdownItemSubCate("Chọn loại sản phẩm phụ");
                       setImageSubCate(null);
+                      setCheckDuplicatedSubCategory("");
                     }}
                   >
                     Thêm loại sản phẩm phụ có sẵn
@@ -862,6 +873,7 @@ const CreateProduct = ({
                         value={subCateName}
                         onChange={(e) => {
                           setSubCateName(e.target.value);
+                          setCheckDuplicatedSubCategory(e.target.value);
                           setError({ ...error, subCateName: "" });
                           if (category === "") {
                             setError({
@@ -986,6 +998,8 @@ const CreateProduct = ({
                   setImageUrlSubCate("");
                   setSelectedDropdownItemCate("Chọn loại sản phẩm");
                   setSelectedDropdownItemSubCate("Chọn loại sản phẩm phụ");
+                  setCheckDuplicatedCategory("");
+                  setCheckDuplicatedSubCategory("");
                   setImageSubCate(null);
                 }}
               >
@@ -1004,6 +1018,8 @@ const CreateProduct = ({
                     value={category}
                     onChange={(e) => {
                       setCategory(e.target.value);
+                      console.log(e.target.value);
+                      setCheckDuplicatedCategory(e.target.value);
                       setError({ ...error, category: "" });
                     }}
                   />
@@ -1030,6 +1046,7 @@ const CreateProduct = ({
                     value={subCateName}
                     onChange={(e) => {
                       setSubCateName(e.target.value);
+                      setCheckDuplicatedSubCategory(e.target.value);
                       setError({ ...error, subCateName: "" });
                     }}
                   />
@@ -1226,6 +1243,7 @@ const CreateProduct = ({
               <div
                 style={{ textAlign: "center" }}
                 className="buttonSwitchSelectSuperMarket"
+                onClick={(e) => {}}
               >
                 Lô hàng {index + 1}
               </div>
@@ -1311,14 +1329,6 @@ const CreateProduct = ({
                     value={item?.expiredDate}
                     onChange={(e) => {
                       const newProductBatchs = [...productBatchs];
-                      newProductBatchs[index] = {
-                        ...productBatchs[index],
-                        expiredDate: e.target.value,
-                        error: {
-                          ...productBatchs[index].error,
-                          expiredDate: "",
-                        },
-                      };
 
                       const date = new Date();
                       let day = date.getDate();
@@ -1334,12 +1344,23 @@ const CreateProduct = ({
                       );
 
                       if (daysFromToday < allowableDisplayThreshold) {
-                        setError({
-                          ...error,
-                          expiredDate: `Ngày hết hạn bạn nhập đã bé hơn giới hạn số ngày trước HSD. \n Số ngày tổi thiểu của ${subCateName} là ${allowableThresholdDate}`,
-                        });
+                        newProductBatchs[index] = {
+                          ...productBatchs[index],
+                          expiredDate: e.target.value,
+                          error: {
+                            ...productBatchs[index].error,
+                            expiredDate: `Ngày hết hạn bạn nhập đã bé hơn giới hạn số ngày trước HSD`,
+                          },
+                        };
                       } else {
-                        setError({ ...error, expiredDate: "" });
+                        newProductBatchs[index] = {
+                          ...productBatchs[index],
+                          expiredDate: e.target.value,
+                          error: {
+                            ...productBatchs[index].error,
+                            expiredDate: "",
+                          },
+                        };
                       }
                       setProductBatchs(newProductBatchs);
                     }}
@@ -1352,213 +1373,232 @@ const CreateProduct = ({
                       {item.error.expiredDate}
                     </p>
                   )}
-                  {error.expiredDate && (
-                    <p
-                      style={{
-                        fontSize: "14px",
-                        marginBottom: "-10px",
-                        maxWidth: "400px",
-                        marginTop: 5,
-                      }}
-                      className="text-danger"
-                    >
-                      {error.expiredDate}
-                    </p>
-                  )}
                 </div>
               </div>
-              {productBatchAddresses.map((data, index) => {
-                return (
-                  <>
-                    {/* Store */}
-                    <div className="modal__container-body-inputcontrol">
-                      {productBatchAddresses.length !== 1 && (
-                        <div
-                          onClick={() => {
-                            setProductBatchAddresses(
-                              productBatchAddresses.filter(
-                                (address) => address !== data
-                              )
-                            );
-                          }}
-                          className="button__minus"
-                        >
-                          <FontAwesomeIcon icon={faMinus} />
-                        </div>
-                      )}
-                      <h4 className="modal__container-body-inputcontrol-label">
-                        Chi nhánh {index + 1}
-                      </h4>
-                      <div>
-                        <div style={{ display: "flex" }}>
-                          <div
-                            style={{ width: "350px", marginRight: "-2px" }}
-                            className="dropdown"
-                          >
-                            <div
-                              className="dropdown-btn"
-                              onClick={(e) => {
-                                if (selectedDropdownItem !== "Chọn siêu thị") {
-                                  const newProductBatchAddresses = [
-                                    ...productBatchAddresses,
-                                  ];
-                                  newProductBatchAddresses[index] = {
-                                    ...productBatchAddresses[index],
-                                    isActiveDropdownSupermarketStore:
-                                      !productBatchAddresses[index]
-                                        .isActiveDropdownSupermarketStore,
-                                  };
-                                  setProductBatchAddresses(
-                                    newProductBatchAddresses
-                                  );
-                                }
-                              }}
-                            >
-                              {data?.supermarketAddress?.address
-                                ? data?.supermarketAddress?.address
-                                : "Chọn chi nhánh"}
-                              <FontAwesomeIcon icon={faCaretDown} />
-                            </div>
-                            {selectedDropdownItem === "Chọn siêu thị" && (
-                              <span
-                                style={{
-                                  color: "red",
-                                  fontSize: "14px",
-                                }}
-                                className="text-danger"
-                              >
-                                Hãy chọn siêu thị trước
-                              </span>
-                            )}
+              {item.productBatchAddresses.map((address, i) => (
+                <>
+                  {/* Store */}
+                  <div className="modal__container-body-inputcontrol">
+                    {item.productBatchAddresses.length !== 1 && (
+                      <div
+                        onClick={() => {
+                          const newProductBatchs = [...productBatchs];
+                          newProductBatchs[index] = {
+                            ...productBatchs[index],
+                            productBatchAddresses: productBatchs[
+                              index
+                            ].productBatchAddresses.filter(
+                              (newAddress, newAddressIndex) =>
+                                i !== newAddressIndex
+                            ),
+                          };
+                          setProductBatchs(newProductBatchs);
+                        }}
+                        className="button__minus"
+                      >
+                        <FontAwesomeIcon icon={faMinus} />
+                      </div>
+                    )}
 
-                            {data.isActiveDropdownSupermarketStore && (
-                              <div className="dropdown-content">
-                                {supermarketAddress.map((item, i) => (
+                    <h4 className="modal__container-body-inputcontrol-label">
+                      Chi nhánh {i + 1}
+                    </h4>
+                    <div>
+                      <div style={{ display: "flex" }}>
+                        <div
+                          style={{ width: "351px", marginRight: "-2px" }}
+                          className="dropdown"
+                        >
+                          <div
+                            className="dropdown-btn"
+                            onClick={(e) => {
+                              if (selectedDropdownItem) {
+                                const newProductBatchs = [...productBatchs];
+                                newProductBatchs[index] = {
+                                  ...productBatchs[index],
+                                  productBatchAddresses: productBatchs[
+                                    index
+                                  ].productBatchAddresses.map(
+                                    (newAddress, num) => {
+                                      if (num === i) {
+                                        return {
+                                          ...newAddress,
+                                          isActiveDropdownSupermarketStore:
+                                            !newAddress.isActiveDropdownSupermarketStore,
+                                        };
+                                      }
+                                      return newAddress;
+                                    }
+                                  ),
+                                };
+                                setProductBatchs(newProductBatchs);
+                              }
+                            }}
+                          >
+                            {selectedDropdownItem !== null &&
+                            selectedDropdownItem?.supermarketAddressList?.some(
+                              (childAddress) =>
+                                childAddress.address ===
+                                address?.supermarketAddress?.address
+                            ) &&
+                            selectedDropdownItem
+                              ? address?.supermarketAddress?.address
+                              : "Chọn chi nhánh"}
+                            <FontAwesomeIcon icon={faCaretDown} />
+                          </div>
+                          {!selectedDropdownItem && (
+                            <span
+                              style={{
+                                color: "red",
+                                fontSize: "14px",
+                              }}
+                              className="text-danger"
+                            >
+                              Hãy chọn siêu thị trước
+                            </span>
+                          )}
+
+                          {address.isActiveDropdownSupermarketStore && (
+                            <div className="dropdown-content">
+                              {supermarketAddress.map(
+                                (supermarketItem, supermarketIndex) => (
                                   <div
                                     onClick={(e) => {
-                                      const newProductBatchAddresses = [
-                                        ...productBatchAddresses,
+                                      const newProductBatchs = [
+                                        ...productBatchs,
                                       ];
-                                      newProductBatchAddresses[index] = {
-                                        ...productBatchAddresses[index],
-                                        isActiveDropdownSupermarketStore: false,
-                                        supermarketAddressId: item.id,
-                                        supermarketAddress: item,
-                                        error: {
-                                          ...productBatchAddresses[index].error,
-                                          supermarketStores: "",
-                                        },
+                                      newProductBatchs[index] = {
+                                        ...productBatchs[index],
+                                        productBatchAddresses: productBatchs[
+                                          index
+                                        ].productBatchAddresses.map(
+                                          (newAddress, num) => {
+                                            if (num === i) {
+                                              return {
+                                                ...newAddress,
+                                                supermarketAddress:
+                                                  supermarketItem,
+                                                isActiveDropdownSupermarketStore:
+                                                  !newAddress.isActiveDropdownSupermarketStore,
+                                                errorStore: "",
+                                              };
+                                            }
+                                            return newAddress;
+                                          }
+                                        ),
                                       };
-                                      setProductBatchAddresses(
-                                        newProductBatchAddresses
-                                      );
+                                      setProductBatchs(newProductBatchs);
                                     }}
                                     className="dropdown-item"
-                                    key={i}
+                                    key={supermarketIndex}
                                   >
-                                    {item.address}
+                                    {supermarketItem.address}
                                   </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          <FontAwesomeIcon
-                            className="iconCreateStoresAddress"
-                            icon={faPlusCircle}
-                            size="4x"
-                            style={{ paddingLeft: 10, paddingTop: 5 }}
-                            onClick={() => {
+                                )
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <FontAwesomeIcon
+                          className="iconCreateStoresAddress"
+                          icon={faPlusCircle}
+                          size="4x"
+                          style={{ paddingLeft: 10, paddingTop: 5 }}
+                          onClick={() => {
+                            if (selectedDropdownItem) {
                               if (
-                                supermarketAddress.length ===
-                                productBatchAddresses.length
+                                item.productBatchAddresses.length ===
+                                selectedDropdownItem.supermarketAddressList
+                                  .length
                               ) {
                                 setOpenValidateSnackbar({
                                   ...openValidateSnackbar,
                                   open: true,
                                   severity: "error",
-                                  text: `Siêu thị này chỉ có ${supermarketAddress.length} chi nhánh! Không thể tạo thêm`,
+                                  text: `Siêu thị này có ${selectedDropdownItem.supermarketAddressList.length} chi nhánh! Không thể tạo thêm `,
                                 });
                                 return;
                               }
-                              if (selectedDropdownItem === "Chọn siêu thị") {
-                                setOpenValidateSnackbar({
-                                  ...openValidateSnackbar,
-                                  open: true,
-                                  severity: "error",
-                                  text: `Chọn siêu thị trước`,
-                                });
-                                return;
-                              }
-                              const newProductBatchAddresses = [
-                                ...productBatchAddresses,
-                                {
-                                  quantity: 0,
-                                  supermarketAddress: null,
-                                  error: {
-                                    expiredDate: "",
-                                    supermarketStores: "",
+                              const newProductBatchs = [...productBatchs];
+                              newProductBatchs[index] = {
+                                ...productBatchs[index],
+                                productBatchAddresses: [
+                                  ...productBatchs[index].productBatchAddresses,
+                                  {
+                                    quantity: 0,
+                                    supermarketAddress: null,
+                                    errorQuantity: "",
+                                    errorStore: "",
                                   },
-                                  isActiveDropdownSupermarketStore: false,
-                                },
-                              ];
-                              setProductBatchAddresses(
-                                newProductBatchAddresses
-                              );
-                            }}
-                          />
-                        </div>
-                        {data.error.supermarketStores && (
-                          <p
-                            style={{ fontSize: "14px", marginBottom: "-10px" }}
-                            className="text-danger"
-                          >
-                            {data.error.supermarketStores}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Quantity */}
-                    <div className="modal__container-body-inputcontrol">
-                      <h4 className="modal__container-body-inputcontrol-label">
-                        Số lượng
-                      </h4>
-                      <div>
-                        <input
-                          min={0}
-                          placeholder="Nhập số lượng"
-                          type="number"
-                          className="modal__container-body-inputcontrol-input"
-                          value={item?.quantity}
-                          onChange={(e) => {
-                            const newProductBatchAddresses = [
-                              ...productBatchAddresses,
-                            ];
-                            newProductBatchAddresses[index] = {
-                              ...productBatchAddresses[index],
-                              quantity: e.target.value,
-                              error: {
-                                ...productBatchAddresses[index].error,
-                                quantity: "",
-                              },
-                            };
-                            setProductBatchAddresses(newProductBatchAddresses);
+                                ],
+                              };
+                              setProductBatchs(newProductBatchs);
+                            } else {
+                              setOpenValidateSnackbar({
+                                ...openValidateSnackbar,
+                                open: true,
+                                text: "Vui lòng chọn siêu thị trước",
+                                severity: "error",
+                              });
+                            }
                           }}
                         />
-                        {data.error.quantity && (
-                          <p
-                            style={{ fontSize: "14px", marginBottom: "-10px" }}
-                            className="text-danger"
-                          >
-                            {data.error.quantity}
-                          </p>
-                        )}
                       </div>
+
+                      {address.errorStore && (
+                        <p
+                          style={{ fontSize: "14px", marginBottom: "-10px" }}
+                          className="text-danger"
+                        >
+                          {address.errorStore}
+                        </p>
+                      )}
                     </div>
-                  </>
-                );
-              })}
+                  </div>
+                  {/* Quantity */}
+                  <div className="modal__container-body-inputcontrol">
+                    <h4 className="modal__container-body-inputcontrol-label">
+                      Số lượng
+                    </h4>
+                    <div>
+                      <input
+                        min={0}
+                        placeholder="Nhập số lượng"
+                        type="number"
+                        className="modal__container-body-inputcontrol-input"
+                        value={address?.quantity}
+                        onChange={(e) => {
+                          const newProductBatchs = [...productBatchs];
+                          newProductBatchs[index] = {
+                            ...productBatchs[index],
+                            productBatchAddresses: productBatchs[
+                              index
+                            ].productBatchAddresses.map((newAddress, num) => {
+                              if (num === i) {
+                                return {
+                                  ...newAddress,
+                                  quantity: e.target.value,
+                                  errorQuantity: "",
+                                };
+                              }
+                              return newAddress;
+                            }),
+                          };
+                          setProductBatchs(newProductBatchs);
+                        }}
+                      />
+                      {address.errorQuantity && (
+                        <p
+                          style={{ fontSize: "14px", marginBottom: "-10px" }}
+                          className="text-danger"
+                        >
+                          {address.errorQuantity}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </>
+              ))}
 
               {productBatchs.length !== 1 && (
                 <div className="modal__container-body-inputcontrol">
