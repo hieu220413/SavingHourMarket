@@ -56,489 +56,489 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
 
   // init fake timeframe
   const [timeFrameList, setTimeFrameList] = useState([
-    {
-      id: 'accf0876-5541-11ee-8a50-a85e45c41921',
-      fromHour: '19:00:00',
-      toHour: '20:30:00',
-      status: 1,
-      allowableDeliverMethod: 0,
-    },
-    {
-      id: 'accf0996-5541-11ee-8a50-a85e45c41921',
-      fromHour: '21:00:00',
-      toHour: '22:30:00',
-      status: 1,
-      allowableDeliverMethod: 0,
-    },
+    // {
+    //   id: 'accf0876-5541-11ee-8a50-a85e45c41921',
+    //   fromHour: '19:00:00',
+    //   toHour: '20:30:00',
+    //   status: 1,
+    //   allowableDeliverMethod: 0,
+    // },
+    // {
+    //   id: 'accf0996-5541-11ee-8a50-a85e45c41921',
+    //   fromHour: '21:00:00',
+    //   toHour: '22:30:00',
+    //   status: 1,
+    //   allowableDeliverMethod: 0,
+    // },
   ]);
 
   // init area fake data
   const [consolidationAreaList, setConsolidationAreaList] = useState([
-    {
-      id: 'ec5dfa4a-56dc-11ee-8a50-a85e45c41921',
-      address: 'Đường N7, Tăng Nhơn Phú A, Thủ Đức, Hồ Chí Minh',
-      status: 1,
-      longitude: 106.80459035612381,
-      latitude: 10.846756594531838,
-      pickupPointList: [
-        {
-          id: 'accf0ac0-5541-11ee-8a50-a85e45c41921',
-          address: 'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh',
-          status: 1,
-          longitude: 106.83102962168277,
-          latitude: 10.845020092805793,
-        },
-        {
-          id: 'accf0d06-5541-11ee-8a50-a85e45c41921',
-          address: '432 Đ. Liên Phường, Phước Long B, Quận 9, Hồ Chí Minh',
-          status: 1,
-          longitude: 106.7891284,
-          latitude: 10.8059505,
-        },
-      ],
-    },
-    {
-      id: 'ec5dfde4-56dc-11ee-8a50-a85e45c41921',
-      address: '9 Nam Hòa, Phước Long A, Thủ Đức, Hồ Chí Minh',
-      status: 1,
-      longitude: 106.76009552300007,
-      latitude: 10.821593957000061,
-      pickupPointList: [
-        {
-          id: 'accf0e1e-5541-11ee-8a50-a85e45c41921',
-          address: '857 Phạm Văn Đồng, Linh Tây, Thủ Đức, Hồ Chí Minh',
-          status: 1,
-          longitude: 106.75072682500007,
-          latitude: 10.85273099400007,
-        },
-        {
-          id: 'accf105d-5541-11ee-8a50-a85e45c41921',
-          address: '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh',
-          status: 1,
-          longitude: 106.73845902300008,
-          latitude: 10.80274197700004,
-        },
-      ],
-    },
-    {
-      id: 'ec5dfde4-56dc-11ee-8a50-a85e45c41927',
-      address: '9 Nam Hòa, Phước Long A, Thủ Đức, Hồ Chí Minh',
-      status: 1,
-      longitude: 106.76009552300007,
-      latitude: 10.821593957000061,
-      pickupPointList: [
-        {
-          id: 'accf0e1e-5541-11ee-8a50-a85e45c41921',
-          address: '857 Phạm Văn Đồng, Linh Tây, Thủ Đức, Hồ Chí Minh',
-          status: 1,
-          longitude: 106.75072682500007,
-          latitude: 10.85273099400007,
-        },
-        {
-          id: 'accf105d-5541-11ee-8a50-a85e45c41921',
-          address: '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh',
-          status: 1,
-          longitude: 106.73845902300008,
-          latitude: 10.80274197700004,
-        },
-      ],
-    },
-    {
-      id: 'ec5dfde4-56dc-11ee-8a50-a85e45c41926',
-      address: '9 Nam Hòa, Phước Long A, Thủ Đức, Hồ Chí Minh',
-      status: 1,
-      longitude: 106.76009552300007,
-      latitude: 10.821593957000061,
-      pickupPointList: [
-        {
-          id: 'accf0e1e-5541-11ee-8a50-a85e45c41921',
-          address: '857 Phạm Văn Đồng, Linh Tây, Thủ Đức, Hồ Chí Minh',
-          status: 1,
-          longitude: 106.75072682500007,
-          latitude: 10.85273099400007,
-        },
-        {
-          id: 'accf105d-5541-11ee-8a50-a85e45c41921',
-          address: '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh',
-          status: 1,
-          longitude: 106.73845902300008,
-          latitude: 10.80274197700004,
-        },
-      ],
-    },
+    // {
+    //   id: 'ec5dfa4a-56dc-11ee-8a50-a85e45c41921',
+    //   address: 'Đường N7, Tăng Nhơn Phú A, Thủ Đức, Hồ Chí Minh',
+    //   status: 1,
+    //   longitude: 106.80459035612381,
+    //   latitude: 10.846756594531838,
+    //   pickupPointList: [
+    //     {
+    //       id: 'accf0ac0-5541-11ee-8a50-a85e45c41921',
+    //       address: 'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh',
+    //       status: 1,
+    //       longitude: 106.83102962168277,
+    //       latitude: 10.845020092805793,
+    //     },
+    //     {
+    //       id: 'accf0d06-5541-11ee-8a50-a85e45c41921',
+    //       address: '432 Đ. Liên Phường, Phước Long B, Quận 9, Hồ Chí Minh',
+    //       status: 1,
+    //       longitude: 106.7891284,
+    //       latitude: 10.8059505,
+    //     },
+    //   ],
+    // },
+    // {
+    //   id: 'ec5dfde4-56dc-11ee-8a50-a85e45c41921',
+    //   address: '9 Nam Hòa, Phước Long A, Thủ Đức, Hồ Chí Minh',
+    //   status: 1,
+    //   longitude: 106.76009552300007,
+    //   latitude: 10.821593957000061,
+    //   pickupPointList: [
+    //     {
+    //       id: 'accf0e1e-5541-11ee-8a50-a85e45c41921',
+    //       address: '857 Phạm Văn Đồng, Linh Tây, Thủ Đức, Hồ Chí Minh',
+    //       status: 1,
+    //       longitude: 106.75072682500007,
+    //       latitude: 10.85273099400007,
+    //     },
+    //     {
+    //       id: 'accf105d-5541-11ee-8a50-a85e45c41921',
+    //       address: '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh',
+    //       status: 1,
+    //       longitude: 106.73845902300008,
+    //       latitude: 10.80274197700004,
+    //     },
+    //   ],
+    // },
+    // {
+    //   id: 'ec5dfde4-56dc-11ee-8a50-a85e45c41927',
+    //   address: '9 Nam Hòa, Phước Long A, Thủ Đức, Hồ Chí Minh',
+    //   status: 1,
+    //   longitude: 106.76009552300007,
+    //   latitude: 10.821593957000061,
+    //   pickupPointList: [
+    //     {
+    //       id: 'accf0e1e-5541-11ee-8a50-a85e45c41921',
+    //       address: '857 Phạm Văn Đồng, Linh Tây, Thủ Đức, Hồ Chí Minh',
+    //       status: 1,
+    //       longitude: 106.75072682500007,
+    //       latitude: 10.85273099400007,
+    //     },
+    //     {
+    //       id: 'accf105d-5541-11ee-8a50-a85e45c41921',
+    //       address: '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh',
+    //       status: 1,
+    //       longitude: 106.73845902300008,
+    //       latitude: 10.80274197700004,
+    //     },
+    //   ],
+    // },
+    // {
+    //   id: 'ec5dfde4-56dc-11ee-8a50-a85e45c41926',
+    //   address: '9 Nam Hòa, Phước Long A, Thủ Đức, Hồ Chí Minh',
+    //   status: 1,
+    //   longitude: 106.76009552300007,
+    //   latitude: 10.821593957000061,
+    //   pickupPointList: [
+    //     {
+    //       id: 'accf0e1e-5541-11ee-8a50-a85e45c41921',
+    //       address: '857 Phạm Văn Đồng, Linh Tây, Thủ Đức, Hồ Chí Minh',
+    //       status: 1,
+    //       longitude: 106.75072682500007,
+    //       latitude: 10.85273099400007,
+    //     },
+    //     {
+    //       id: 'accf105d-5541-11ee-8a50-a85e45c41921',
+    //       address: '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh',
+    //       status: 1,
+    //       longitude: 106.73845902300008,
+    //       latitude: 10.80274197700004,
+    //     },
+    //   ],
+    // },
   ]);
 
   // init fake order group data
   const [orderGroupList, setOrderGroupList] = useState([
-    {
-      id: 'accf19db-5541-11ee-8a50-a85e45c41922',
-      isExpand: true,
-      deliverDate: '2023-09-19',
-      timeFrame: {
-        id: 'accf0876-5541-11ee-8a50-a85e45c41921',
-        fromHour: '19:00:00',
-        toHour: '20:30:00',
-        status: 1,
-        allowableDeliverMethod: 0,
-      },
-      pickupPoint: {
-        id: 'accf105d-5541-11ee-8a50-a85e45c41921',
-        address: '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh',
-        status: 1,
-        longitude: 106.73845902300008,
-        latitude: 10.80274197700004,
-      },
-      deliverer: null,
-      orderList: [
-        {
-          id: 'ec5de351-56dc-11ee-8a50-a85e45c41921',
-          shippingFee: 0,
-          totalPrice: 216000,
-          receiverPhone: null,
-          receiverName: null,
-          longitude: null,
-          latitude: null,
-          totalDiscountPrice: 0,
-          createdTime: '2023-11-18T08:00:00',
-          deliveryDate: '2023-11-17',
-          qrCodeUrl: 'qr code url here',
-          status: 1,
-          paymentMethod: 1,
-          deliveryMethod: 0,
-          addressDeliver: null,
-          paymentStatus: 1,
-          packager: {
-            id: 'accf4d19-5541-11ee-8a50-a85e45c41921',
-            fullName: 'Hong Quang',
-            email: 'quangphse161539@fpt.edu.vn',
-            avatarUrl:
-              'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media',
-            role: 'STAFF_ORD',
-            status: 1,
-            pickupPoint: [
-              {
-                id: 'accf0ac0-5541-11ee-8a50-a85e45c41921',
-                address:
-                  'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh',
-                status: 1,
-                longitude: 106.83102962168277,
-                latitude: 10.845020092805793,
-              },
-              {
-                id: 'accf0d06-5541-11ee-8a50-a85e45c41921',
-                address:
-                  '432 Đ. Liên Phường, Phước Long B, Quận 9, Hồ Chí Minh',
-                status: 1,
-                longitude: 106.7891284,
-                latitude: 10.8059505,
-              },
-            ],
-          },
-          deliverer: null,
-          customer: {
-            id: 'accef2db-5541-11ee-8a50-a85e45c41923',
-            fullName: 'Luu Gia Vinh',
-            email: 'luugiavinh0@gmail.com',
-            phone: '0902828618',
-            dateOfBirth: '2002-05-05',
-            avatarUrl:
-              'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media',
-            address:
-              '240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh',
-            gender: 0,
-            status: 1,
-          },
-          timeFrame: null,
-          pickupPoint: null,
-          discountList: [],
-          transaction: [],
-          productConsolidationArea: null,
-        },
-      ],
-      productConsolidationArea: null,
-    },
-    {
-      id: 'accf19db-5541-11ee-8a50-a85e45c41925',
-      isExpand: true,
-      deliverDate: '2023-09-19',
-      timeFrame: {
-        id: 'accf0876-5541-11ee-8a50-a85e45c41921',
-        fromHour: '19:00:00',
-        toHour: '20:30:00',
-        status: 1,
-        allowableDeliverMethod: 0,
-      },
-      pickupPoint: {
-        id: 'accf105d-5541-11ee-8a50-a85e45c41921',
-        address: '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh',
-        status: 1,
-        longitude: 106.73845902300008,
-        latitude: 10.80274197700004,
-      },
-      deliverer: null,
-      orderList: [
-        {
-          id: 'ec5de351-56dc-11ee-8a50-a85e45c41921',
-          shippingFee: 0,
-          totalPrice: 216000,
-          receiverPhone: null,
-          receiverName: null,
-          longitude: null,
-          latitude: null,
-          totalDiscountPrice: 0,
-          createdTime: '2023-11-18T08:00:00',
-          deliveryDate: '2023-11-17',
-          qrCodeUrl: 'qr code url here',
-          status: 1,
-          paymentMethod: 1,
-          deliveryMethod: 0,
-          addressDeliver: null,
-          paymentStatus: 1,
-          packager: {
-            id: 'accf4d19-5541-11ee-8a50-a85e45c41921',
-            fullName: 'Hong Quang',
-            email: 'quangphse161539@fpt.edu.vn',
-            avatarUrl:
-              'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media',
-            role: 'STAFF_ORD',
-            status: 1,
-            pickupPoint: [
-              {
-                id: 'accf0ac0-5541-11ee-8a50-a85e45c41921',
-                address:
-                  'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh',
-                status: 1,
-                longitude: 106.83102962168277,
-                latitude: 10.845020092805793,
-              },
-              {
-                id: 'accf0d06-5541-11ee-8a50-a85e45c41921',
-                address:
-                  '432 Đ. Liên Phường, Phước Long B, Quận 9, Hồ Chí Minh',
-                status: 1,
-                longitude: 106.7891284,
-                latitude: 10.8059505,
-              },
-            ],
-          },
-          deliverer: null,
-          customer: {
-            id: 'accef2db-5541-11ee-8a50-a85e45c41921',
-            fullName: 'Luu Gia Vinh',
-            email: 'luugiavinh0@gmail.com',
-            phone: '0902828618',
-            dateOfBirth: '2002-05-05',
-            avatarUrl:
-              'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media',
-            address:
-              '240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh',
-            gender: 0,
-            status: 1,
-          },
-          timeFrame: null,
-          pickupPoint: null,
-          discountList: [],
-          transaction: [],
-          productConsolidationArea: null,
-        },
-      ],
-      productConsolidationArea: {
-        id: 'ec5dfde4-56dc-11ee-8a50-a85e45c41921',
-        address: '9 Nam Hòa, Phước Long A, Thủ Đức, Hồ Chí Minh',
-        status: 1,
-        longitude: 106.76009552300007,
-        latitude: 10.821593957000061,
-        pickupPointList: [
-          {
-            id: 'accf0e1e-5541-11ee-8a50-a85e45c41921',
-            address: '857 Phạm Văn Đồng, Linh Tây, Thủ Đức, Hồ Chí Minh',
-            status: 1,
-            longitude: 106.75072682500007,
-            latitude: 10.85273099400007,
-          },
-          {
-            id: 'accf105d-5541-11ee-8a50-a85e45c41921',
-            address: '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh',
-            status: 1,
-            longitude: 106.73845902300008,
-            latitude: 10.80274197700004,
-          },
-        ],
-      },
-    },
-    {
-      id: 'accf19db-5541-11ee-8a50-a85e45c41921',
-      isExpand: true,
-      deliverDate: '2023-09-19',
-      timeFrame: {
-        id: 'accf0876-5541-11ee-8a50-a85e45c41921',
-        fromHour: '19:00:00',
-        toHour: '20:30:00',
-        status: 1,
-        allowableDeliverMethod: 0,
-      },
-      pickupPoint: {
-        id: 'accf105d-5541-11ee-8a50-a85e45c41921',
-        address: '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh',
-        status: 1,
-        longitude: 106.73845902300008,
-        latitude: 10.80274197700004,
-      },
-      deliverer: null,
-      orderList: [
-        {
-          id: 'ec5de351-56dc-11ee-8a50-a85e45c41921',
-          shippingFee: 0,
-          totalPrice: 216000,
-          receiverPhone: null,
-          receiverName: null,
-          longitude: null,
-          latitude: null,
-          totalDiscountPrice: 0,
-          createdTime: '2023-11-18T08:00:00',
-          deliveryDate: '2023-11-17',
-          qrCodeUrl: 'qr code url here',
-          status: 1,
-          paymentMethod: 1,
-          deliveryMethod: 0,
-          addressDeliver: null,
-          paymentStatus: 1,
-          packager: {
-            id: 'accf4d19-5541-11ee-8a50-a85e45c41921',
-            fullName: 'Hong Quang',
-            email: 'quangphse161539@fpt.edu.vn',
-            avatarUrl:
-              'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media',
-            role: 'STAFF_ORD',
-            status: 1,
-            pickupPoint: [
-              {
-                id: 'accf0ac0-5541-11ee-8a50-a85e45c41921',
-                address:
-                  'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh',
-                status: 1,
-                longitude: 106.83102962168277,
-                latitude: 10.845020092805793,
-              },
-              {
-                id: 'accf0d06-5541-11ee-8a50-a85e45c41921',
-                address:
-                  '432 Đ. Liên Phường, Phước Long B, Quận 9, Hồ Chí Minh',
-                status: 1,
-                longitude: 106.7891284,
-                latitude: 10.8059505,
-              },
-            ],
-          },
-          deliverer: null,
-          customer: {
-            id: 'accef2db-5541-11ee-8a50-a85e45c41921',
-            fullName: 'Luu Gia Vinh',
-            email: 'luugiavinh0@gmail.com',
-            phone: '0902828618',
-            dateOfBirth: '2002-05-05',
-            avatarUrl:
-              'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media',
-            address:
-              '240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh',
-            gender: 0,
-            status: 1,
-          },
-          timeFrame: null,
-          pickupPoint: null,
-          discountList: [],
-          transaction: [],
-          productConsolidationArea: null,
-        },
-        {
-          id: 'ec5de351-56dc-11ee-8a50-a85e45c41921',
-          shippingFee: 0,
-          totalPrice: 216000,
-          receiverPhone: null,
-          receiverName: null,
-          longitude: null,
-          latitude: null,
-          totalDiscountPrice: 0,
-          createdTime: '2023-11-18T08:00:00',
-          deliveryDate: '2023-11-17',
-          qrCodeUrl: 'qr code url here',
-          status: 1,
-          paymentMethod: 1,
-          deliveryMethod: 0,
-          addressDeliver: null,
-          paymentStatus: 1,
-          packager: {
-            id: 'accf4d19-5541-11ee-8a50-a85e45c41921',
-            fullName: 'Hong Quang',
-            email: 'quangphse161539@fpt.edu.vn',
-            avatarUrl:
-              'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media',
-            role: 'STAFF_ORD',
-            status: 1,
-            pickupPoint: [
-              {
-                id: 'accf0ac0-5541-11ee-8a50-a85e45c41921',
-                address:
-                  'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh',
-                status: 1,
-                longitude: 106.83102962168277,
-                latitude: 10.845020092805793,
-              },
-              {
-                id: 'accf0d06-5541-11ee-8a50-a85e45c41921',
-                address:
-                  '432 Đ. Liên Phường, Phước Long B, Quận 9, Hồ Chí Minh',
-                status: 1,
-                longitude: 106.7891284,
-                latitude: 10.8059505,
-              },
-            ],
-          },
-          deliverer: null,
-          customer: {
-            id: 'accef2db-5541-11ee-8a50-a85e45c41921',
-            fullName: 'Luu Gia Vinh',
-            email: 'luugiavinh0@gmail.com',
-            phone: '0902828618',
-            dateOfBirth: '2002-05-05',
-            avatarUrl:
-              'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media',
-            address:
-              '240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh',
-            gender: 0,
-            status: 1,
-          },
-          timeFrame: null,
-          pickupPoint: null,
-          discountList: [],
-          transaction: [],
-          productConsolidationArea: null,
-        },
-      ],
-      productConsolidationArea: {
-        id: 'ec5dfde4-56dc-11ee-8a50-a85e45c41921',
-        address: '9 Nam Hòa, Phước Long A, Thủ Đức, Hồ Chí Minh',
-        status: 1,
-        longitude: 106.76009552300007,
-        latitude: 10.821593957000061,
-        pickupPointList: [
-          {
-            id: 'accf0e1e-5541-11ee-8a50-a85e45c41921',
-            address: '857 Phạm Văn Đồng, Linh Tây, Thủ Đức, Hồ Chí Minh',
-            status: 1,
-            longitude: 106.75072682500007,
-            latitude: 10.85273099400007,
-          },
-          {
-            id: 'accf105d-5541-11ee-8a50-a85e45c41921',
-            address: '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh',
-            status: 1,
-            longitude: 106.73845902300008,
-            latitude: 10.80274197700004,
-          },
-        ],
-      },
-    },
+    // {
+    //   id: 'accf19db-5541-11ee-8a50-a85e45c41922',
+    //   isExpand: true,
+    //   deliverDate: '2023-09-19',
+    //   timeFrame: {
+    //     id: 'accf0876-5541-11ee-8a50-a85e45c41921',
+    //     fromHour: '19:00:00',
+    //     toHour: '20:30:00',
+    //     status: 1,
+    //     allowableDeliverMethod: 0,
+    //   },
+    //   pickupPoint: {
+    //     id: 'accf105d-5541-11ee-8a50-a85e45c41921',
+    //     address: '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh',
+    //     status: 1,
+    //     longitude: 106.73845902300008,
+    //     latitude: 10.80274197700004,
+    //   },
+    //   deliverer: null,
+    //   orderList: [
+    //     {
+    //       id: 'ec5de351-56dc-11ee-8a50-a85e45c41921',
+    //       shippingFee: 0,
+    //       totalPrice: 216000,
+    //       receiverPhone: null,
+    //       receiverName: null,
+    //       longitude: null,
+    //       latitude: null,
+    //       totalDiscountPrice: 0,
+    //       createdTime: '2023-11-18T08:00:00',
+    //       deliveryDate: '2023-11-17',
+    //       qrCodeUrl: 'qr code url here',
+    //       status: 1,
+    //       paymentMethod: 1,
+    //       deliveryMethod: 0,
+    //       addressDeliver: null,
+    //       paymentStatus: 1,
+    //       packager: {
+    //         id: 'accf4d19-5541-11ee-8a50-a85e45c41921',
+    //         fullName: 'Hong Quang',
+    //         email: 'quangphse161539@fpt.edu.vn',
+    //         avatarUrl:
+    //           'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media',
+    //         role: 'STAFF_ORD',
+    //         status: 1,
+    //         pickupPoint: [
+    //           {
+    //             id: 'accf0ac0-5541-11ee-8a50-a85e45c41921',
+    //             address:
+    //               'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh',
+    //             status: 1,
+    //             longitude: 106.83102962168277,
+    //             latitude: 10.845020092805793,
+    //           },
+    //           {
+    //             id: 'accf0d06-5541-11ee-8a50-a85e45c41921',
+    //             address:
+    //               '432 Đ. Liên Phường, Phước Long B, Quận 9, Hồ Chí Minh',
+    //             status: 1,
+    //             longitude: 106.7891284,
+    //             latitude: 10.8059505,
+    //           },
+    //         ],
+    //       },
+    //       deliverer: null,
+    //       customer: {
+    //         id: 'accef2db-5541-11ee-8a50-a85e45c41923',
+    //         fullName: 'Luu Gia Vinh',
+    //         email: 'luugiavinh0@gmail.com',
+    //         phone: '0902828618',
+    //         dateOfBirth: '2002-05-05',
+    //         avatarUrl:
+    //           'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media',
+    //         address:
+    //           '240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh',
+    //         gender: 0,
+    //         status: 1,
+    //       },
+    //       timeFrame: null,
+    //       pickupPoint: null,
+    //       discountList: [],
+    //       transaction: [],
+    //       productConsolidationArea: null,
+    //     },
+    //   ],
+    //   productConsolidationArea: null,
+    // },
+    // {
+    //   id: 'accf19db-5541-11ee-8a50-a85e45c41925',
+    //   isExpand: true,
+    //   deliverDate: '2023-09-19',
+    //   timeFrame: {
+    //     id: 'accf0876-5541-11ee-8a50-a85e45c41921',
+    //     fromHour: '19:00:00',
+    //     toHour: '20:30:00',
+    //     status: 1,
+    //     allowableDeliverMethod: 0,
+    //   },
+    //   pickupPoint: {
+    //     id: 'accf105d-5541-11ee-8a50-a85e45c41921',
+    //     address: '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh',
+    //     status: 1,
+    //     longitude: 106.73845902300008,
+    //     latitude: 10.80274197700004,
+    //   },
+    //   deliverer: null,
+    //   orderList: [
+    //     {
+    //       id: 'ec5de351-56dc-11ee-8a50-a85e45c41921',
+    //       shippingFee: 0,
+    //       totalPrice: 216000,
+    //       receiverPhone: null,
+    //       receiverName: null,
+    //       longitude: null,
+    //       latitude: null,
+    //       totalDiscountPrice: 0,
+    //       createdTime: '2023-11-18T08:00:00',
+    //       deliveryDate: '2023-11-17',
+    //       qrCodeUrl: 'qr code url here',
+    //       status: 1,
+    //       paymentMethod: 1,
+    //       deliveryMethod: 0,
+    //       addressDeliver: null,
+    //       paymentStatus: 1,
+    //       packager: {
+    //         id: 'accf4d19-5541-11ee-8a50-a85e45c41921',
+    //         fullName: 'Hong Quang',
+    //         email: 'quangphse161539@fpt.edu.vn',
+    //         avatarUrl:
+    //           'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media',
+    //         role: 'STAFF_ORD',
+    //         status: 1,
+    //         pickupPoint: [
+    //           {
+    //             id: 'accf0ac0-5541-11ee-8a50-a85e45c41921',
+    //             address:
+    //               'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh',
+    //             status: 1,
+    //             longitude: 106.83102962168277,
+    //             latitude: 10.845020092805793,
+    //           },
+    //           {
+    //             id: 'accf0d06-5541-11ee-8a50-a85e45c41921',
+    //             address:
+    //               '432 Đ. Liên Phường, Phước Long B, Quận 9, Hồ Chí Minh',
+    //             status: 1,
+    //             longitude: 106.7891284,
+    //             latitude: 10.8059505,
+    //           },
+    //         ],
+    //       },
+    //       deliverer: null,
+    //       customer: {
+    //         id: 'accef2db-5541-11ee-8a50-a85e45c41921',
+    //         fullName: 'Luu Gia Vinh',
+    //         email: 'luugiavinh0@gmail.com',
+    //         phone: '0902828618',
+    //         dateOfBirth: '2002-05-05',
+    //         avatarUrl:
+    //           'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media',
+    //         address:
+    //           '240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh',
+    //         gender: 0,
+    //         status: 1,
+    //       },
+    //       timeFrame: null,
+    //       pickupPoint: null,
+    //       discountList: [],
+    //       transaction: [],
+    //       productConsolidationArea: null,
+    //     },
+    //   ],
+    //   productConsolidationArea: {
+    //     id: 'ec5dfde4-56dc-11ee-8a50-a85e45c41921',
+    //     address: '9 Nam Hòa, Phước Long A, Thủ Đức, Hồ Chí Minh',
+    //     status: 1,
+    //     longitude: 106.76009552300007,
+    //     latitude: 10.821593957000061,
+    //     pickupPointList: [
+    //       {
+    //         id: 'accf0e1e-5541-11ee-8a50-a85e45c41921',
+    //         address: '857 Phạm Văn Đồng, Linh Tây, Thủ Đức, Hồ Chí Minh',
+    //         status: 1,
+    //         longitude: 106.75072682500007,
+    //         latitude: 10.85273099400007,
+    //       },
+    //       {
+    //         id: 'accf105d-5541-11ee-8a50-a85e45c41921',
+    //         address: '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh',
+    //         status: 1,
+    //         longitude: 106.73845902300008,
+    //         latitude: 10.80274197700004,
+    //       },
+    //     ],
+    //   },
+    // },
+    // {
+    //   id: 'accf19db-5541-11ee-8a50-a85e45c41921',
+    //   isExpand: true,
+    //   deliverDate: '2023-09-19',
+    //   timeFrame: {
+    //     id: 'accf0876-5541-11ee-8a50-a85e45c41921',
+    //     fromHour: '19:00:00',
+    //     toHour: '20:30:00',
+    //     status: 1,
+    //     allowableDeliverMethod: 0,
+    //   },
+    //   pickupPoint: {
+    //     id: 'accf105d-5541-11ee-8a50-a85e45c41921',
+    //     address: '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh',
+    //     status: 1,
+    //     longitude: 106.73845902300008,
+    //     latitude: 10.80274197700004,
+    //   },
+    //   deliverer: null,
+    //   orderList: [
+    //     {
+    //       id: 'ec5de351-56dc-11ee-8a50-a85e45c41921',
+    //       shippingFee: 0,
+    //       totalPrice: 216000,
+    //       receiverPhone: null,
+    //       receiverName: null,
+    //       longitude: null,
+    //       latitude: null,
+    //       totalDiscountPrice: 0,
+    //       createdTime: '2023-11-18T08:00:00',
+    //       deliveryDate: '2023-11-17',
+    //       qrCodeUrl: 'qr code url here',
+    //       status: 1,
+    //       paymentMethod: 1,
+    //       deliveryMethod: 0,
+    //       addressDeliver: null,
+    //       paymentStatus: 1,
+    //       packager: {
+    //         id: 'accf4d19-5541-11ee-8a50-a85e45c41921',
+    //         fullName: 'Hong Quang',
+    //         email: 'quangphse161539@fpt.edu.vn',
+    //         avatarUrl:
+    //           'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media',
+    //         role: 'STAFF_ORD',
+    //         status: 1,
+    //         pickupPoint: [
+    //           {
+    //             id: 'accf0ac0-5541-11ee-8a50-a85e45c41921',
+    //             address:
+    //               'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh',
+    //             status: 1,
+    //             longitude: 106.83102962168277,
+    //             latitude: 10.845020092805793,
+    //           },
+    //           {
+    //             id: 'accf0d06-5541-11ee-8a50-a85e45c41921',
+    //             address:
+    //               '432 Đ. Liên Phường, Phước Long B, Quận 9, Hồ Chí Minh',
+    //             status: 1,
+    //             longitude: 106.7891284,
+    //             latitude: 10.8059505,
+    //           },
+    //         ],
+    //       },
+    //       deliverer: null,
+    //       customer: {
+    //         id: 'accef2db-5541-11ee-8a50-a85e45c41921',
+    //         fullName: 'Luu Gia Vinh',
+    //         email: 'luugiavinh0@gmail.com',
+    //         phone: '0902828618',
+    //         dateOfBirth: '2002-05-05',
+    //         avatarUrl:
+    //           'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media',
+    //         address:
+    //           '240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh',
+    //         gender: 0,
+    //         status: 1,
+    //       },
+    //       timeFrame: null,
+    //       pickupPoint: null,
+    //       discountList: [],
+    //       transaction: [],
+    //       productConsolidationArea: null,
+    //     },
+    //     {
+    //       id: 'ec5de351-56dc-11ee-8a50-a85e45c41921',
+    //       shippingFee: 0,
+    //       totalPrice: 216000,
+    //       receiverPhone: null,
+    //       receiverName: null,
+    //       longitude: null,
+    //       latitude: null,
+    //       totalDiscountPrice: 0,
+    //       createdTime: '2023-11-18T08:00:00',
+    //       deliveryDate: '2023-11-17',
+    //       qrCodeUrl: 'qr code url here',
+    //       status: 1,
+    //       paymentMethod: 1,
+    //       deliveryMethod: 0,
+    //       addressDeliver: null,
+    //       paymentStatus: 1,
+    //       packager: {
+    //         id: 'accf4d19-5541-11ee-8a50-a85e45c41921',
+    //         fullName: 'Hong Quang',
+    //         email: 'quangphse161539@fpt.edu.vn',
+    //         avatarUrl:
+    //           'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media',
+    //         role: 'STAFF_ORD',
+    //         status: 1,
+    //         pickupPoint: [
+    //           {
+    //             id: 'accf0ac0-5541-11ee-8a50-a85e45c41921',
+    //             address:
+    //               'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh',
+    //             status: 1,
+    //             longitude: 106.83102962168277,
+    //             latitude: 10.845020092805793,
+    //           },
+    //           {
+    //             id: 'accf0d06-5541-11ee-8a50-a85e45c41921',
+    //             address:
+    //               '432 Đ. Liên Phường, Phước Long B, Quận 9, Hồ Chí Minh',
+    //             status: 1,
+    //             longitude: 106.7891284,
+    //             latitude: 10.8059505,
+    //           },
+    //         ],
+    //       },
+    //       deliverer: null,
+    //       customer: {
+    //         id: 'accef2db-5541-11ee-8a50-a85e45c41921',
+    //         fullName: 'Luu Gia Vinh',
+    //         email: 'luugiavinh0@gmail.com',
+    //         phone: '0902828618',
+    //         dateOfBirth: '2002-05-05',
+    //         avatarUrl:
+    //           'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdefault-avatar.jpg?alt=media',
+    //         address:
+    //           '240 Phạm Văn Đồng, Hiệp Bình Chánh, Thủ Đức, Thành phố Hồ Chí Minh',
+    //         gender: 0,
+    //         status: 1,
+    //       },
+    //       timeFrame: null,
+    //       pickupPoint: null,
+    //       discountList: [],
+    //       transaction: [],
+    //       productConsolidationArea: null,
+    //     },
+    //   ],
+    //   productConsolidationArea: {
+    //     id: 'ec5dfde4-56dc-11ee-8a50-a85e45c41921',
+    //     address: '9 Nam Hòa, Phước Long A, Thủ Đức, Hồ Chí Minh',
+    //     status: 1,
+    //     longitude: 106.76009552300007,
+    //     latitude: 10.821593957000061,
+    //     pickupPointList: [
+    //       {
+    //         id: 'accf0e1e-5541-11ee-8a50-a85e45c41921',
+    //         address: '857 Phạm Văn Đồng, Linh Tây, Thủ Đức, Hồ Chí Minh',
+    //         status: 1,
+    //         longitude: 106.75072682500007,
+    //         latitude: 10.85273099400007,
+    //       },
+    //       {
+    //         id: 'accf105d-5541-11ee-8a50-a85e45c41921',
+    //         address: '77C Trần Ngọc Diện, Thảo Điền, Thủ Đức, Hồ Chí Minh',
+    //         status: 1,
+    //         longitude: 106.73845902300008,
+    //         latitude: 10.80274197700004,
+    //       },
+    //     ],
+    //   },
+    // },
   ]);
 
   const onAuthStateChange = async userInfo => {
@@ -604,9 +604,20 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
         if (auth().currentUser) {
           const tokenId = await auth().currentUser.getIdToken();
           if (tokenId) {
+            //       console.log('selectedDate: ', selectedDate);
+            // // console.log(format(Date.parse(tempSelectedDate), 'yyyy-MM-dd'));
+            // console.log('selectedTimeFrame: ', selectedTimeFrameId);
+            // console.log('tempSelectedDate: ', tempSelectedDate);
+            // console.log('tempSelectedTimeFrame: ', tempSelectedTimeFrameId);
             // setLoading(true);
             // console.log(format(Date.parse(selectedDate), 'yyyy-MM-dd'));
-            filterOrderGroup();
+            setSelectSort(sortOptions);
+            setTempSelectedSortId('');
+            setSelectedDate('');
+            setTempSelectedDate('');
+            setSelectedTimeFrameId('');
+            setTempSelectedTimeFrameId('');
+            // filterOrderGroup();
             // fetch(
             //   `${API.baseURL}/api/order/packageStaff/getOrderGroup?${
             //     pickupPoint ? 'pickupPointId=' + pickupPoint?.id : ''
@@ -646,7 +657,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
       })
         .then(res => res.json())
         .then(respond => {
-          console.log('time frame', respond);
+          // console.log('time frame', respond);
           if (respond.error) {
             // setLoading(false);
             return;
@@ -660,7 +671,24 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
           console.log(err);
           // setLoading(false);
         });
+        // setSelectSort(sortOptions);
+        // setTempSelectedSortId('');
+        // setSelectedDate('');
+        // setTempSelectedDate('');
+        // setSelectedTimeFrameId('');
+        // setTempSelectedTimeFrameId('');
       fetchData();
+
+      // return () => {
+      //   console.log('clean up')
+      //   setSelectSort(sortOptions);
+      //   setTempSelectedSortId('');
+      //   setSelectedDate('');
+      //   setTempSelectedDate('');
+      //   setSelectedTimeFrameId('');
+      //   setTempSelectedTimeFrameId('');
+      //   // filterOrderGroup();
+      // }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pickupPoint]),
   );
@@ -693,21 +721,27 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
   const [selectedTimeFrameId, setSelectedTimeFrameId] = useState('');
   const [tempSelectedTimeFrameId, setTempSelectedTimeFrameId] = useState('');
   //  filter date
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [tempSelectedDate, setTempSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState('');
+  const [tempSelectedDate, setTempSelectedDate] = useState('');
 
   // filter function
   const filterOrderGroup = async () => {
     const tokenId = await auth().currentUser.getIdToken();
     if (tokenId) {
       // setLoading(true);
-      console.log(format(Date.parse(selectedDate), 'yyyy-MM-dd'));
-      console.log(format(Date.parse(tempSelectedDate), 'yyyy-MM-dd'));
-      console.log(selectedTimeFrameId);
+      console.log('selectedDate: ', selectedDate);
+      // console.log(format(Date.parse(tempSelectedDate), 'yyyy-MM-dd'));
+      console.log('selectedTimeFrame: ', selectedTimeFrameId);
+      console.log('tempSelectedDate: ', tempSelectedDate);
+      console.log('tempSelectedTimeFrame: ', tempSelectedTimeFrameId);
       await fetch(
         `${API.baseURL}/api/order/packageStaff/getOrderGroup?${
           pickupPoint ? 'pickupPointId=' + pickupPoint?.id : ''
-        }&deliverDate=${format(Date.parse(selectedDate), 'yyyy-MM-dd')}${
+        }${
+          selectedDate === ''
+            ? ''
+            : '&deliverDate=' + format(Date.parse(selectedDate), 'yyyy-MM-dd')
+        }${
           selectedTimeFrameId === ''
             ? ''
             : '&timeFrameId=' + selectedTimeFrameId
@@ -726,13 +760,20 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
       )
         .then(res => res.json())
         .then(respond => {
-          // console.log('order group', respond);
+          console.log('order group', respond);
           if (respond.error) {
             // setLoading(false);
             return;
           }
 
-          setOrderGroupList(respond);
+          setOrderGroupList(
+            respond.map(item => {
+              return {
+                ...item,
+                isExpand: false,
+              };
+            }),
+          );
           // setLoading(false);
         })
         .catch(err => {
@@ -777,7 +818,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
   const handleClearSortModal = () => {
     // setSelectSort(sortOptions);
     setTempSelectedSortId('');
-    setTempSelectedTimeFrameId('');
+    setTempSelectedTimeFrameId(' ');
     setTempSelectedDate(new Date());
     // setSelectedDate(new Date());
     console.log('thiet lap lai');
@@ -1617,7 +1658,9 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                       marginVertical: 10,
                     }}>
                     <DatePicker
-                      date={tempSelectedDate}
+                      date={
+                        tempSelectedDate === '' ? new Date() : tempSelectedDate
+                      }
                       mode="date"
                       androidVariant="nativeAndroid"
                       onDateChange={setTempSelectedDate}
