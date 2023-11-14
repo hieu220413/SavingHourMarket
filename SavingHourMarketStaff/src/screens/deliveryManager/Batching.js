@@ -415,7 +415,7 @@ const Batching = ({navigation}) => {
                           color: 'black',
                           paddingBottom: 10,
                         }}>
-                        Điểm gom hàng :
+                        Điểm tập kết :
                       </Text>
                       <TouchableOpacity
                         onPress={() => {
@@ -462,7 +462,7 @@ const Batching = ({navigation}) => {
                               }}>
                               {productConsolidationArea
                                 ? productConsolidationArea.address
-                                : 'Chọn điểm gom hàng'}
+                                : 'Chọn điểm tập kết'}
                             </Text>
                           </View>
                         </View>
@@ -516,7 +516,7 @@ const Batching = ({navigation}) => {
                 </View>
               </View>
               <Text style={{fontSize: 20, fontWeight: '500', color: 'black'}}>
-                Danh sách đơn hàng :
+                Danh sách đơn hàng chưa được gom:
               </Text>
               <View style={{marginBottom: 0}}>
                 {orderList.map(item => (

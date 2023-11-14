@@ -30,6 +30,7 @@ import {SwipeListView} from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
 import DatePicker from 'react-native-date-picker';
 import CheckBox from 'react-native-check-box';
+import Toast from 'react-native-toast-message';
 
 const PickStaff = ({navigation, route}) => {
   const {orderGroupId, staff, mode} = route.params;
@@ -41,8 +42,6 @@ const PickStaff = ({navigation, route}) => {
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [showLogout, setShowLogout] = useState(false);
   const [openValidateDialog, setOpenValidateDialog] = useState(false);
-  const [openNotificationDialog, setOpenNotificationDialog] = useState(false);
-  const [respondText, setRespondText] = useState(null);
 
   const onAuthStateChange = async userInfo => {
     // console.log(userInfo);
@@ -130,6 +129,15 @@ const PickStaff = ({navigation, route}) => {
     }, []),
   );
 
+  const showToast = message => {
+    Toast.show({
+      type: 'success',
+      text1: 'Thành công',
+      text2: message + '👋',
+      visibilityTime: 1000,
+    });
+  };
+
   const handlePickStaff = () => {
     if (!staffList.some(item => item.checked === true)) {
       setOpenValidateDialog(true);
@@ -139,7 +147,6 @@ const PickStaff = ({navigation, route}) => {
       if (auth().currentUser) {
         const tokenId = await auth().currentUser.getIdToken();
         if (tokenId) {
-          
           if (mode === 1) {
             setLoading(true);
             fetch(
@@ -155,9 +162,9 @@ const PickStaff = ({navigation, route}) => {
               .then(res => res.text())
               .then(respond => {
                 console.log('res:', respond);
-                setRespondText(respond);
-                setOpenNotificationDialog(true);
+                showToast(respond);
                 setLoading(false);
+                navigation.navigate('OrderGroup');
               })
               .catch(err => {
                 console.log(err);
@@ -179,9 +186,9 @@ const PickStaff = ({navigation, route}) => {
               .then(res => res.text())
               .then(respond => {
                 console.log('res:', respond);
-                setRespondText(respond);
-                setOpenNotificationDialog(true);
+                showToast(respond);
                 setLoading(false);
+                navigation.navigate('OrderBatch');
               })
               .catch(err => {
                 console.log(err);
@@ -443,49 +450,6 @@ const PickStaff = ({navigation, route}) => {
                     textAlign: 'center',
                   }}>
                   Vui lòng chọn nhân viên giao hàng
-                </Text>
-              </View>
-            </ModalContent>
-          </Modal>
-          <Modal
-            width={0.8}
-            visible={openNotificationDialog}
-            onTouchOutside={() => {
-              setOpenValidateDialog(false);
-            }}
-            dialogAnimation={
-              new ScaleAnimation({
-                initialValue: 0, // optional
-                useNativeDriver: true, // optional
-              })
-            }
-            footer={
-              <ModalFooter>
-                <ModalButton
-                  // textStyle={{color: 'red'}}
-                  text="OK"
-                  onPress={() => {
-                    setOpenNotificationDialog(false);
-                    navigation.goBack();
-                  }}
-                />
-              </ModalFooter>
-            }>
-            <ModalContent>
-              <View
-                style={{
-                  padding: 20,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontFamily: 'Roboto',
-                    color: 'black',
-                    textAlign: 'center',
-                  }}>
-                  {respondText ? respondText : ''}
                 </Text>
               </View>
             </ModalContent>

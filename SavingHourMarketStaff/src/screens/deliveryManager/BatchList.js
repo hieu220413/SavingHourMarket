@@ -108,6 +108,15 @@ const BatchList = ({navigation, route}) => {
     }, []),
   );
 
+  const showToast = message => {
+    Toast.show({
+      type: 'success',
+      text1: 'Thành công',
+      text2: message + '👋',
+      visibilityTime: 1000,
+    });
+  };
+
   const handleCreate = async () => {
     const tokenId = await auth().currentUser.getIdToken();
     let submitBatches = [];
@@ -125,6 +134,7 @@ const BatchList = ({navigation, route}) => {
       submitBatches.push(ob);
     });
     console.log(submitBatches);
+
     setLoading(true);
     fetch(`${API.baseURL}/api/order/deliveryManager/createBatches`, {
       method: 'POST',
@@ -140,7 +150,8 @@ const BatchList = ({navigation, route}) => {
       .then(async respond => {
         console.log(respond);
         setLoading(false);
-        navigation.navigate('OrderBatch');
+        showToast('Tạo nhóm đơn hàng thành công !');
+        navigation.navigate('Batching');
       })
       .catch(err => {
         console.log(err);
@@ -213,11 +224,10 @@ const BatchList = ({navigation, route}) => {
                       {/* Order detail */}
                       <Pressable
                         onPress={() => {
-                          console.log(item.id);
-                          // navigation.navigate('OrderDetailForManager', {
-                          //   id: item.id,
-                          //   orderSuccess: false,
-                          // });
+                          console.log(item.orderList);
+                          navigation.navigate('BatchingDetail', {
+                            orderList: item.orderList,
+                          });
                         }}>
                         <View
                           style={{
