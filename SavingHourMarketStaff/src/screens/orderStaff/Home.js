@@ -81,11 +81,13 @@ const Home = ({ navigation }) => {
     value: 'PROCESSING',
   });
   const [visible, setVisible] = useState(false);
+  const [editVisible, setEditVisible] = useState(false);
   const [pickupPoint, setPickupPoint] = useState(null);
   const [order, setOrder] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
 
   const [consolidationAreaList, setConsolidationAreaList] = useState([]);
+  const [editConsolidationAreaList, isEditConsolidationAreaList] = useState(false);
   const [selectedConsolidationAreaId, setSelectedConsolidationAreaId] = useState('');
 
   const print = async (orderId) => {
@@ -162,7 +164,7 @@ const Home = ({ navigation }) => {
     }
   };
 
-  const getConsolidationArea = async pickupPointId => {
+  const getConsolidationArea = async (pickupPointId, orderStatus) => {
     const tokenId = await auth().currentUser.getIdToken();
     if (tokenId) {
       setLoading(true);
@@ -183,10 +185,16 @@ const Home = ({ navigation }) => {
             setLoading(false);
             return;
           }
-          setSelectedConsolidationAreaId('');
-          setConsolidationAreaList(respond);
-          setLoading(false);
-          setVisible(true);
+          if (orderStatus === 1) {
+            setConsolidationAreaList(respond);
+            setLoading(false);
+            setEditVisible(true);
+          } else {
+            setSelectedConsolidationAreaId('');
+            setConsolidationAreaList(respond);
+            setLoading(false);
+            setVisible(true);
+          }
         })
         .catch(err => {
           console.log(err);
@@ -197,10 +205,70 @@ const Home = ({ navigation }) => {
 
   // edit consolidation  area function
   const editConsolidationArea = async () => {
+    const fetchData = async () => {
+      if (auth().currentUser) {
+        const tokenId = await auth().currentUser.getIdToken();
+        if (tokenId) {
+          setLoading(true);
+          if (pickupPoint) {
+            fetch(
+              `${API.baseURL}/api/order/packageStaff/getOrders?pickupPointId=${pickupPoint?.id}&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
+              {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${tokenId}`,
+                },
+              },
+            )
+              .then(res => res.json())
+              .then(respond => {
+                console.log('order', respond);
+                if (respond.error) {
+                  setLoading(false);
+                  return;
+                }
+                setOrderList(respond);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
+          } else {
+            fetch(
+              `${API.baseURL}/api/order/packageStaff/getOrders?orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
+              {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${tokenId}`,
+                },
+              },
+            )
+              .then(res => res.json())
+              .then(respond => {
+                console.log('order', respond, '1');
+                if (respond.error) {
+                  setLoading(false);
+                  return;
+                }
+
+                setOrderList(respond);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
+          }
+        }
+      }
+    };
     const tokenId = await auth().currentUser.getIdToken();
     if (tokenId) {
       const consolidationAreaEditRequest = await fetch(
-        `${API.baseURL}/api/order/packageStaff/confirmPackagingGroup?orderGroupId=${selectedEditGroupId}&productConsolidationAreaId=${selectedConsolidationAreaId}`,
+        `${API.baseURL}/api/order/packageStaff/editProductConsolidationArea?orderId=${order.id}&productConsolidationAreaId=${selectedConsolidationAreaId}`,
         {
           method: 'PUT',
           headers: {
@@ -220,14 +288,12 @@ const Home = ({ navigation }) => {
 
       if (consolidationAreaEditRequest.status === 200) {
         const result = await consolidationAreaEditRequest.text();
-        await filterOrderGroup();
-        setMessageResult(result);
-        setOpenResponseDialog(true);
+        console.log(result);
+        fetchData();
+        showToast(result);
       } else {
         const result = await consolidationAreaEditRequest.json();
         console.log(result);
-        setMessageResult(result.message);
-        setOpenResponseDialog(true);
       }
     }
   };
@@ -505,6 +571,7 @@ const Home = ({ navigation }) => {
 
   const handleCancel = () => {
     setVisible(false);
+    setEditVisible(false);
   };
 
   const handleConfirm = () => {
@@ -895,8 +962,19 @@ const Home = ({ navigation }) => {
                     style={{
                       marginBottom: 20,
                       backgroundColor: 'rgb(240,240,240)',
+                      zIndex: 100,
                       padding: 10,
                       borderRadius: 10,
+                      shadowColor: "#000",
+                      shadowOffset: {
+                        width: 0,
+                        height: 3,
+                      },
+                      shadowOpacity: 0.27,
+                      shadowRadius: 4.65,
+                      elevation: 6,
+                      paddingHorizontal: 10,
+                      margin: 4
                     }}>
                     {/* Order detail */}
                     <TouchableOpacity
@@ -1078,8 +1156,9 @@ const Home = ({ navigation }) => {
                     style={{
                       flexDirection: 'row',
                       justifyContent: data.item?.status === 1 ? 'space-between' : 'flex-end',
-                      height: data.item?.status === 0 ? '88%' : '91.6%',
-                      // marginVertical: '2%',
+                      height: data.item?.status === 0 ? '86%' : '90.5%',
+                      paddingHorizontal: 10,
+                      margin: 4
                     }}>
                     {data.item?.status === 1 && (
                       <TouchableOpacity
@@ -1088,6 +1167,7 @@ const Home = ({ navigation }) => {
                           height: '100%',
                           backgroundColor: 'grey',
                           borderBottomLeftRadius: 10,
+
                           borderTopLeftRadius: 10,
                           // flex: 1,
                           alignItems: 'center',
@@ -1106,48 +1186,81 @@ const Home = ({ navigation }) => {
                       </TouchableOpacity>
                     )}
                     {(data.item?.status === 1 || data.item?.status === 0) && (
-                      <TouchableOpacity
-                        style={{
-                          width: 120,
-                          height: '100%',
-                          backgroundColor: COLORS.primary,
-                          borderBottomRightRadius: 10,
-                          borderTopRightRadius: 10,
-                          // flex: 1,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                        onPress={() => {
-                          setLoading(true);
-                          setConsolidationAreaList([]);
-                          getConsolidationArea(data.item.pickupPoint.id);
-                          // console.log(data.item.id);
-                          setOrder(data.item);
-                        }}>
-                        <View>
-                          {data.item?.status === 0 && (
-                            <Image
-                              source={icons.packaging}
-                              resizeMode="contain"
-                              style={{ width: 40, height: 40, tintColor: 'white' }}
-                            />
-                          )}
-                          {data.item?.status === 1 && (
-                            <Image
-                              source={icons.packaged}
-                              resizeMode="contain"
-                              style={{ width: 55, height: 55, tintColor: 'white' }}
-                            />
-                          )}
-                        </View>
-                      </TouchableOpacity>
+                      <>
+                        {data.item?.status === 1 && (
+                          <TouchableOpacity
+                            style={{
+                              width: 100,
+                              height: '100%',
+                              backgroundColor: COLORS.secondary,
+                              // flex: 1,
+                              marginLeft: 20,
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                            onPress={() => {
+                              setLoading(true);
+                              setConsolidationAreaList([]);
+                              getConsolidationArea(data.item.pickupPoint.id, data.item.status);
+                              setSelectedConsolidationAreaId(data.item?.productConsolidationArea.id);
+                              isEditConsolidationAreaList(true);
+                              // console.log(data.item.id);
+                              setOrder(data.item);
+                            }}>
+                            <View>
+                              <Image
+                                source={icons.edit}
+                                resizeMode="contain"
+                                style={{ width: 30, height: 30, tintColor: 'white' }}
+                              />
+                            </View>
+                          </TouchableOpacity>
+                        )}
+
+                        <TouchableOpacity
+                          style={{
+                            width: 110,
+                            height: '100%',
+                            backgroundColor: COLORS.primary,
+                            borderBottomRightRadius: 10,
+                            borderTopRightRadius: 10,
+                            // flex: 1,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                          onPress={() => {
+                            setLoading(true);
+                            setConsolidationAreaList([]);
+                            getConsolidationArea(data.item.pickupPoint.id);
+                            // console.log(data.item.id);
+                            setOrder(data.item);
+                          }}>
+                          <View>
+                            {data.item?.status === 0 && (
+                              <Image
+                                source={icons.packaging}
+                                resizeMode="contain"
+                                style={{ width: 40, height: 40, tintColor: 'white' }}
+                              />
+                            )}
+                            {data.item?.status === 1 && (
+                              <Image
+                                source={icons.packaged}
+                                resizeMode="contain"
+                                style={{ width: 55, height: 55, tintColor: 'white' }}
+                              />
+                            )}
+                          </View>
+                        </TouchableOpacity>
+                      </>
+
                     )}
                   </View>
                 )}
                 disableLeftSwipe={(orderList[0]?.status === 2) ? true : false}
                 disableRightSwipe={(orderList[0]?.status === 2 || orderList[0]?.status === 0) ? true : false}
                 leftOpenValue={orderList[0]?.status === 1 ? 120 : 0}
-                rightOpenValue={-120}
+                rightOpenValue={orderList[0]?.status === 0 ? -120 : -200}
               />
             </View>
           )}
@@ -1403,6 +1516,144 @@ const Home = ({ navigation }) => {
                     }}
                     onPress={() => {
                       handleConfirm();
+                    }}>
+                    <Text style={styles.textStyle}>Xác nhận</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Pressable>
+          </Modal>
+          {/* Modal Edit */}
+          <Modal
+            animationType="fade"
+            transparent={true}
+            visible={editVisible}
+            onRequestClose={() => {
+              setEditVisible(!editVisible);
+            }}>
+            <Pressable
+              onPress={() => setEditVisible(false)}
+              style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                  }}>
+                  <Text
+                    style={{
+                      color: 'black',
+                      fontSize: 20,
+                      fontWeight: 700,
+                      textAlign: 'center',
+                      paddingBottom: 20,
+                    }}>
+                    Chỉnh sửa điểm tập kết
+                  </Text>
+                </View>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between'
+                  }}>
+                  <Text
+                    style={{
+                      color: 'black',
+                      fontSize: 18,
+                      fontWeight: 400,
+                      paddingBottom: 15,
+                    }}>
+                    Vui lòng chọn điểm tập kết:
+                  </Text>
+                </View>
+                <FlatList
+                  style={{ maxHeight: 200, marginHorizontal: 7 }}
+                  data={consolidationAreaList}
+                  renderItem={data => (
+                    <TouchableOpacity
+                      key={data.item.id}
+                      onPress={() => {
+                        setSelectedConsolidationAreaId(data.item.id);
+                      }}
+                      style={{
+                        paddingVertical: 15,
+                        borderTopColor: '#decbcb',
+                        borderTopWidth: 0.75,
+                      }}>
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 15,
+                          flex: 1,
+                          justifyContent: 'space-between',
+                        }}>
+                        <Image
+                          resizeMode="contain"
+                          style={{ width: 20, height: 20 }}
+                          source={icons.location}
+                          tintColor={
+                            data.item.id === selectedConsolidationAreaId
+                              ? COLORS.secondary
+                              : 'black'
+                          }
+                        />
+                        <Text
+                          style={{
+                            fontSize: 16,
+                            color:
+                              data.item.id === selectedConsolidationAreaId
+                                ? COLORS.secondary
+                                : 'black',
+                            fontFamily: 'Roboto',
+                            textDecorationColor: 'red',
+                            flexShrink: 1,
+                          }}>
+                          {data.item.address}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  )}
+                />
+
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                  }}>
+                  <TouchableOpacity
+                    style={{
+                      width: '50%',
+                      paddingHorizontal: 15,
+                      paddingVertical: 10,
+                      backgroundColor: 'white',
+                      borderRadius: 10,
+                      borderColor: COLORS.primary,
+                      borderWidth: 0.5,
+                      marginRight: '2%',
+                    }}
+                    onPress={handleCancel}>
+                    <Text
+                      style={{
+                        color: COLORS.primary,
+                        fontWeight: 'bold',
+                        textAlign: 'center',
+                      }}>
+                      Đóng
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={{
+                      width: '50%',
+                      paddingHorizontal: 15,
+                      paddingVertical: 10,
+                      backgroundColor: COLORS.primary,
+                      color: 'white',
+                      borderRadius: 10,
+                    }}
+                    onPress={() => {
+                      editConsolidationArea();
                     }}>
                     <Text style={styles.textStyle}>Xác nhận</Text>
                   </TouchableOpacity>
