@@ -2,7 +2,9 @@
   position: absolute;
   bottom: 4%;
   outline: none;
-  width: 185px;
+  width: max-content;
+  padding-left: 10px !important;
+  padding-right: 10px !important;
   height: 36px;
   padding: 7px 0px;
   display: flex;
