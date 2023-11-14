@@ -450,16 +450,18 @@ const EditProduct = ({
       const productBatchAddresses = item.productBatchAddresses.map(
         (address) => {
           return {
+            productBatchId: address.productBatchId,
             quantity: address.quantity,
             supermarketAddress: address.supermarketAddress,
           };
         }
       );
+      console.log(JSON.stringify(productBatchAddresses));
       return {
         price: parseInt(item.price),
         priceOriginal: parseInt(item.priceOriginal),
         expiredDate: format(new Date(item.expiredDate), "yyyy-MM-dd"),
-        productBatchAddresses: productBatchAddresses,
+        productBatchAddressList: productBatchAddresses,
       };
     });
     // ProductImageList

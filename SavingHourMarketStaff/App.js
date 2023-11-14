@@ -1,9 +1,9 @@
 /* eslint-disable prettier/prettier */
-import React, { useEffect, useState } from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
-import { NavigationContainer } from '@react-navigation/native';
-import Toast, { BaseToast } from 'react-native-toast-message';
-import { COLORS } from './src/constants/theme';
+import React, {useEffect, useState} from 'react';
+import {createStackNavigator} from '@react-navigation/stack';
+import {NavigationContainer} from '@react-navigation/native';
+import Toast, {BaseToast} from 'react-native-toast-message';
+import {COLORS} from './src/constants/theme';
 import 'react-native-gesture-handler';
 import Tabs from './src/navigations/tabs';
 import Login from './src/screens/Login';
@@ -20,11 +20,11 @@ import SelectTimeFrame from './src/screens/deliveryManager/SelectTimeFrame';
 import SelectProductConsolidationArea from './src/screens/deliveryManager/SelectProductConsolidationArea';
 import {ModalPortal} from 'react-native-modals';
 import BatchList from './src/screens/deliveryManager/BatchList';
+import BatchingDetail from './src/screens/deliveryManager/BatchingDetail';
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
 ]);
-
 
 const Stack = createStackNavigator();
 export default function App() {
@@ -36,8 +36,25 @@ export default function App() {
     success: props => (
       <BaseToast
         {...props}
-        style={{ backgroundColor: COLORS.primary, borderLeftWidth: 0 }}
-        contentContainerStyle={{ paddingHorizontal: 15 }}
+        style={{backgroundColor: COLORS.primary, borderLeftWidth: 0}}
+        contentContainerStyle={{paddingHorizontal: 15}}
+        text1Style={{
+          fontSize: 16,
+          fontWeight: '700',
+          color: 'white',
+        }}
+        text2Style={{
+          fontSize: 14,
+          fontWeight: '400',
+          color: 'white',
+        }}
+      />
+    ),
+    unsuccess: props => (
+      <BaseToast
+        {...props}
+        style={{backgroundColor: 'red', borderLeftWidth: 0}}
+        contentContainerStyle={{paddingHorizontal: 15}}
         text1Style={{
           fontSize: 16,
           fontWeight: '700',
@@ -85,6 +102,7 @@ export default function App() {
             component={SelectProductConsolidationArea}
           />
           <Stack.Screen name="BatchList" component={BatchList} />
+          <Stack.Screen name="BatchingDetail" component={BatchingDetail} />
         </Stack.Navigator>
       </NavigationContainer>
       <ModalPortal />

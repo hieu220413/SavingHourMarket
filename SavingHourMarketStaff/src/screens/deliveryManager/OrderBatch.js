@@ -90,6 +90,20 @@ const OrderBatch = ({navigation}) => {
     }, []),
   );
 
+  const sortOptions = [
+    {
+      id: 1,
+      name: 'Ngày giao gần nhất',
+      active: false,
+    },
+    {
+      id: 2,
+      name: 'Ngày giao xa nhất',
+      active: false,
+    },
+  ];
+  const [selectSort, setSelectSort] = useState(sortOptions);
+
   useFocusEffect(
     useCallback(() => {
       const fetchData = async () => {
@@ -97,76 +111,42 @@ const OrderBatch = ({navigation}) => {
           const tokenId = await auth().currentUser.getIdToken();
           if (tokenId) {
             setLoading(true);
-            if (date) {
-              const deliverDate = format(date, 'yyyy-MM-dd');
-              fetch(
-                `${API.baseURL}/api/order/staff/getOrderBatch?deliverDate=${deliverDate}`,
-                {
-                  method: 'GET',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${tokenId}`,
-                  },
-                },
-              )
-                .then(res => res.json())
-                .then(respond => {
-                  console.log('group', respond);
-                  if (respond.code === 404) {
-                    setGroupListNotYetAssigned([]);
-                    setGroupListAssigned([]);
-                    setLoading(false);
-                    return;
-                  }
-                  const notYetAssigned = respond.filter(item => {
-                    return item.deliverer === null;
-                  });
-                  const Assigned = respond.filter(item => {
-                    return item.deliverer !== null;
-                  });
-                  setGroupListNotYetAssigned(notYetAssigned);
-                  setGroupListAssigned(Assigned);
+
+            fetch(`${API.baseURL}/api/order/staff/getOrderBatch`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
+              },
+            })
+              .then(res => res.json())
+              .then(respond => {
+                console.log('batch', respond[0].orderList);
+                if (respond.error) {
                   setLoading(false);
-                })
-                .catch(err => {
-                  console.log(err);
-                  setLoading(false);
+                  return;
+                }
+                const notYetAssigned = respond.filter(item => {
+                  return item.deliverer === null;
                 });
-            } else {
-              fetch(`${API.baseURL}/api/order/staff/getOrderBatch`, {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${tokenId}`,
-                },
+                const Assigned = respond.filter(item => {
+                  return item.deliverer !== null;
+                });
+                setGroupListNotYetAssigned(notYetAssigned);
+                setGroupListAssigned(Assigned);
+                setLoading(false);
               })
-                .then(res => res.json())
-                .then(respond => {
-                  console.log('batch', respond[0].orderList);
-                  if (respond.error) {
-                    setLoading(false);
-                    return;
-                  }
-                  const notYetAssigned = respond.filter(item => {
-                    return item.deliverer === null;
-                  });
-                  const Assigned = respond.filter(item => {
-                    return item.deliverer !== null;
-                  });
-                  setGroupListNotYetAssigned(notYetAssigned);
-                  setGroupListAssigned(Assigned);
-                  setLoading(false);
-                })
-                .catch(err => {
-                  console.log(err);
-                  setLoading(false);
-                });
-            }
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
           }
         }
       };
+      setDate(null);
+      setSelectSort(sortOptions);
       fetchData();
-    }, [date]),
+    }, []),
   );
 
   const ModalSortItem = ({item}) => {
@@ -226,20 +206,6 @@ const OrderBatch = ({navigation}) => {
       </TouchableOpacity>
     );
   };
-
-  const sortOptions = [
-    {
-      id: 1,
-      name: 'Ngày giao gần nhất',
-      active: false,
-    },
-    {
-      id: 2,
-      name: 'Ngày giao xa nhất',
-      active: false,
-    },
-  ];
-  const [selectSort, setSelectSort] = useState(sortOptions);
 
   const sortOrder = selectSort => {
     const sortItem = selectSort.find(item => item.active === true);
@@ -465,7 +431,7 @@ const OrderBatch = ({navigation}) => {
                     width: 20,
                     height: 20,
                   }}
-                  source={icons.search}
+                  source={icons.calendar}
                 />
                 <Text
                   style={{
@@ -484,12 +450,95 @@ const OrderBatch = ({navigation}) => {
             open={open}
             date={date ? date : new Date()}
             onConfirm={date => {
+              setSelectSort(sortOptions);
               setOpen(false);
               setDate(date);
+              const fetchData = async () => {
+                if (auth().currentUser) {
+                  const tokenId = await auth().currentUser.getIdToken();
+                  if (tokenId) {
+                    setLoading(true);
+                    const deliverDate = format(date, 'yyyy-MM-dd');
+                    fetch(
+                      `${API.baseURL}/api/order/staff/getOrderBatch?deliveryDate=${deliverDate}`,
+                      {
+                        method: 'GET',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          Authorization: `Bearer ${tokenId}`,
+                        },
+                      },
+                    )
+                      .then(res => res.json())
+                      .then(respond => {
+                        console.log('group', respond);
+                        if (respond.code === 404) {
+                          setGroupListNotYetAssigned([]);
+                          setGroupListAssigned([]);
+                          setLoading(false);
+                          return;
+                        }
+                        const notYetAssigned = respond.filter(item => {
+                          return item.deliverer === null;
+                        });
+                        const Assigned = respond.filter(item => {
+                          return item.deliverer !== null;
+                        });
+                        setGroupListNotYetAssigned(notYetAssigned);
+                        setGroupListAssigned(Assigned);
+                        setLoading(false);
+                      })
+                      .catch(err => {
+                        console.log(err);
+                        setLoading(false);
+                      });
+                  }
+                }
+              };
+              fetchData();
             }}
             onCancel={() => {
+              setSelectSort(sortOptions);
               setDate(null);
               setOpen(false);
+              const fetchData = async () => {
+                if (auth().currentUser) {
+                  const tokenId = await auth().currentUser.getIdToken();
+                  if (tokenId) {
+                    setLoading(true);
+
+                    fetch(`${API.baseURL}/api/order/staff/getOrderBatch`, {
+                      method: 'GET',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${tokenId}`,
+                      },
+                    })
+                      .then(res => res.json())
+                      .then(respond => {
+                        console.log('batch', respond[0].orderList);
+                        if (respond.error) {
+                          setLoading(false);
+                          return;
+                        }
+                        const notYetAssigned = respond.filter(item => {
+                          return item.deliverer === null;
+                        });
+                        const Assigned = respond.filter(item => {
+                          return item.deliverer !== null;
+                        });
+                        setGroupListNotYetAssigned(notYetAssigned);
+                        setGroupListAssigned(Assigned);
+                        setLoading(false);
+                      })
+                      .catch(err => {
+                        console.log(err);
+                        setLoading(false);
+                      });
+                  }
+                }
+              };
+              fetchData();
             }}
           />
           <View
@@ -671,7 +720,7 @@ const OrderBatch = ({navigation}) => {
                                   fontFamily: 'Roboto',
                                   color: 'black',
                                 }}>
-                                Nhân viên đóng gói:{' '}
+                                Nhân viên giao hàng :{' '}
                                 {data.item?.deliverer === null
                                   ? 'Chưa có'
                                   : data.item?.deliverer.fullName}
@@ -845,7 +894,7 @@ const OrderBatch = ({navigation}) => {
                                   fontFamily: 'Roboto',
                                   color: 'black',
                                 }}>
-                                Nhân viên đóng gói:{' '}
+                                Nhân viên giao hàng :{' '}
                                 {data.item?.deliverer === null
                                   ? 'Chưa có'
                                   : data.item?.deliverer.fullName}

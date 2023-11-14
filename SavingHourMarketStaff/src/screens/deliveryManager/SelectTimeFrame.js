@@ -66,7 +66,7 @@ const SelectTimeFrame = ({navigation, route}) => {
           const tokenId = await auth().currentUser.getIdToken();
           if (tokenId) {
             setLoading(true);
-            fetch(`${API.baseURL}/api/timeframe/getForHomeDelivery`, {
+            fetch(`${API.baseURL}/api/timeframe/getAllForStaff`, {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',

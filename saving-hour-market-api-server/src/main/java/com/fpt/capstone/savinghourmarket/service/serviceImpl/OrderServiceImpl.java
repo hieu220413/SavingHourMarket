@@ -103,14 +103,14 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderGroupPageResponse fetchOrderGroups(OrderStatus status,
-                                             SortType deliverDateSortType,
-                                             LocalDate deliverDate,
-                                             Boolean getOldOrderGroup,
-                                             UUID timeFrameId,
-                                             UUID pickupPointId,
-                                             UUID delivererId,
-                                             Integer page,
-                                             Integer size) {
+                                                   SortType deliverDateSortType,
+                                                   LocalDate deliverDate,
+                                                   Boolean getOldOrderGroup,
+                                                   UUID timeFrameId,
+                                                   UUID pickupPointId,
+                                                   UUID delivererId,
+                                                   Integer page,
+                                                   Integer size) {
         Sort sortable = null;
 
         if (deliverDateSortType != null) {
@@ -411,7 +411,7 @@ public class OrderServiceImpl implements OrderService {
                 throw new ConflictGroupAndBatchException("Group or batch must be specified");
             }
         } else {
-            return "Staff with id" + staffId + "is not DELIVERER LEVEL 0";
+            return "Staff with id" + staffId + "is not DELIVERER STAFF";
         }
 
         return "Staff with id" + staffId + "set successfully";
@@ -422,14 +422,14 @@ public class OrderServiceImpl implements OrderService {
     public String assignDeliverToOrder(UUID orderId, UUID staffId) throws ResourceNotFoundException, IOException {
         Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new ResourceNotFoundException("No staff found with this id " + staffId));
         Order order = repository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("No order found with this id " + orderId));
-        if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_DLV_0.toString())) {
-            if (order.getStatus() == OrderStatus.PACKAGED.ordinal()) {
-                order.setDeliverer(staff);
-                order.setStatus(OrderStatus.DELIVERING.ordinal());
-                FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getId().toString());
-            } else {
-                return "Đơn hàng " + order.getId() + " chưa được đóng gói!";
-            }
+        if (order.getStatus() > OrderStatus.PACKAGED.ordinal()) {
+            order.setDeliverer(staff);
+        } else if(order.getStatus() == OrderStatus.PACKAGED.ordinal()){
+            order.setDeliverer(staff);
+            order.setStatus(OrderStatus.DELIVERING.ordinal());
+            FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getId().toString());
+        }else{
+            return "Đơn hàng chưa được đóng gói!";
         }
         return "Staff with id" + staffId + "set successfully";
     }
@@ -1068,7 +1068,7 @@ public class OrderServiceImpl implements OrderService {
 
             int titleFontSize = 36;
             int bodyFontSize = 28;
-            String fontFamilyBody = new ClassPathResource("AndikaNewBasic-R.ttf").getURI().getPath();
+            String fontFamilyBody = new ClassPathResource("AndikaNewBasic-R.ttf").getURL().toExternalForm();
 
             // Add content to the iText PDF document directly
             addParagraph(pdfDocument, "Mã đơn hàng: " + order.getId().toString(), titleFontSize, fontFamilyBody, true);

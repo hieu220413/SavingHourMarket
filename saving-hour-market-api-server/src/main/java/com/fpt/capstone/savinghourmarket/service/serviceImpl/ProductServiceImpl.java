@@ -49,6 +49,8 @@ public class ProductServiceImpl implements ProductService {
     private final ProductBatchRepository productBatchRepository;
     private final SupermarketAddressRepository supermarketAddressRepository;
 
+    private final OrderRepository orderRepository;
+
     @Override
     public ProductListResponseBody getProductsForStaff(Boolean isExpiredShown, String name, String supermarketId, String productCategoryId, String productSubCategoryId, EnableDisableStatus status, Integer page, Integer limit, SortType quantitySortType, SortType expiredSortType, SortType priceSort) {
         Sort sortable = Sort.by("expiredDate").ascending();
@@ -722,10 +724,12 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public Product updateProduct(ProductDisplayStaff productDisplayStaff) throws ResourceNotFoundException {
         HashMap<String, String> errorFields = new HashMap<>();
+        Optional<Product> product = productRepository.findById(productDisplayStaff.getId());
 
-        if (productRepository.findById(productDisplayStaff.getId()).isEmpty()) {
+        if (product.isEmpty()) {
             throw new ResourceNotFoundException("Sản phảm không tìm thấy với id: " + productDisplayStaff.getId());
         }
 
@@ -751,6 +755,7 @@ public class ProductServiceImpl implements ProductService {
             errorFields.put("Lỗi hình ảnh sản phẩm", "Vui lòng thêm hình cho sản phẩm!");
         }
 
+        HashSet<UUID> productBatchIdList = new HashSet<>();
         productDisplayStaff.getProductBatchDisplayStaffList().forEach(productBatchDisplayStaff -> {
             if (productBatchDisplayStaff.getPrice() < 0 || productBatchDisplayStaff.getPriceOriginal() < 0) {
                 errorFields.put("Lỗi nhập giá", "Giá không thế âm!");
@@ -765,8 +770,26 @@ public class ProductServiceImpl implements ProductService {
                 if (productDisplayStaff.getSupermarket().getSupermarketAddressList().stream().filter(supermarketAddress -> productBatchAddressDisplayStaff.getSupermarketAddress().getId().equals(supermarketAddress.getId())).toList().size() == 0) {
                     errorFields.put("Lỗi địa chỉ siêu thị cho lô HSD: " + productBatchDisplayStaff.getExpiredDate(), "Địa chỉ siêu thị không tìm thấy với id hoặc không có trong danh sách địa chỉ của siêu thị: " + productDisplayStaff.getSupermarket().getName());
                 }
+                productBatchIdList.add(productBatchAddressDisplayStaff.getProductBatchId());
             });
+
         });
+
+        // delete batch
+        List<ProductBatch> productBatchList = product.get().getProductBatchList();
+        List<UUID> productBatchDeleteIdList = new ArrayList<>();
+        for(ProductBatch productBatch : productBatchList) {
+            if(!productBatchIdList.contains(productBatch.getId())) {
+                if(orderRepository.findOrderByProductBatchId(productBatch.getId(), PageRequest.of(0, 1)).size() > 0) {
+                    errorFields.put("Lỗi địa chỉ hoặc lô hàng", "Lô hàng ở địa chỉ "+ productBatch.getSupermarketAddress().getAddress() + " đã tồn tại trong một hoặc nhiều đơn hàng nên không thể xóa");
+                }
+                productBatchDeleteIdList.add(productBatch.getId());
+            }
+        }
+        if(!errorFields.containsKey("Lỗi địa chỉ hoặc lô hàng") && productBatchDeleteIdList.size() > 0) {
+            productBatchRepository.deleteAllById(productBatchDeleteIdList);
+        }
+
 
 //        product.getProductBatchList().forEach(productBatch -> {
 //            if (productBatch.getPrice() < 0 || productBatch.getPriceOriginal() < 0) {
@@ -792,10 +815,10 @@ public class ProductServiceImpl implements ProductService {
 //        String unit = product.getUnit().toLowerCase();
 //        product.setUnit(unit);
 
-        Product product = new Product(productDisplayStaff);
+        Product productResult = new Product(productDisplayStaff);
 
 
-        return productRepository.save(product);
+        return productRepository.save(productResult);
     }
 
     @Override

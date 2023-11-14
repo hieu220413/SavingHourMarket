@@ -118,7 +118,6 @@ const ProductManagement = () => {
         )
           .then((res) => res.json())
           .then((data) => {
-            console.log(data);
             setProducts(data.productList);
             setTotalPage(data.totalPage);
             setLoading(false);
@@ -221,56 +220,25 @@ const ProductManagement = () => {
     });
   };
 
-  const handleRecoveryProduct = async (product) => {
-    const submitSupermarket = {
-      id: product.supermarket.id,
-      name: product.supermarket.name,
-      status: 1,
-      phone: product.supermarket.phone,
-      supermarketAddressList: product.supermarket.supermarketAddressList,
-    };
-    // -----------------------------------------------------------------
-    const submitProductSubCategory = {
-      id: product.productSubCategory.id,
-      name: product.productSubCategory.name,
-      imageUrl: product.productSubCategory.imageUrl,
-      allowableDisplayThreshold:
-        product.productSubCategory.allowableDisplayThreshold,
-      productCategory: {
-        id: product.productSubCategory.productCategory.id,
-        name: product.productSubCategory.productCategory.name,
-        totalDiscountUsage: 0,
-      },
-      totalDiscountUsage: 0,
-    };
-    // -----------------------------------------------------------------
-    const productToRecovery = {
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      priceOriginal: product.priceOriginal,
-      description: product.description,
-      expiredDate: dayjs(product.expiredDate).format("YYYY-MM-DD"),
-      quantity: product.quantity,
-      status: 1,
-      imageUrl: product.imageUrl,
-      productSubCategory: submitProductSubCategory,
-      supermarket: submitSupermarket,
-    };
-
-    const tokenId = await auth.currentUser.getIdToken();
+  const handleRecoveryProduct = async (id) => {
     setLoading(true);
-    fetch(`${API.baseURL}/api/product/update`, {
+    const tokenId = await auth.currentUser.getIdToken();
+    fetch(`${API.baseURL}/api/product/enable`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${tokenId}`,
       },
-      body: JSON.stringify(productToRecovery),
+      body: JSON.stringify(id),
     })
       .then((res) => res.json())
       .then((res) => {
-        console.log(res);
+        if (res?.error) {
+          setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
+          setMsg(res.error);
+          setLoading(false);
+          return;
+        }
         fetch(
           `${API.baseURL}/api/product/getProductsForStaff?page=${
             page - 1
@@ -290,22 +258,21 @@ const ProductManagement = () => {
             setProducts(data.productList);
             setTotalPage(data.totalPage);
             setLoading(false);
-            handleClose();
-            setOpenSnackbar({
-              ...openSnackbar,
-              open: true,
-              severity: "success",
-            });
-            setMsg("Phục hồi sản phẩm thành công");
           })
           .catch((err) => {
             console.log(err);
             setLoading(false);
           });
+        handleCloseDelete();
+        setOpenSnackbar({
+          ...openSnackbar,
+          open: true,
+          severity: "success",
+        });
+        setMsg("Phục hồi sản phẩm thành công");
       })
       .catch((err) => {
         console.log(err);
-        setLoading(false);
       });
   };
 
@@ -398,10 +365,10 @@ const ProductManagement = () => {
               width="80px"
               height="60px"
               onClick={() => {
-                setImageUrlList(item.productImageList);
+                setImageUrlList(item.imageUrlImageList);
                 handleOpenImageUrlList();
               }}
-              src={item.productImageList[0].imageUrl}
+              src={item.imageUrlImageList[0].imageUrl}
             />
           </td>
           <td style={{ paddingTop: 30 }}>{item.name}</td>
@@ -419,8 +386,7 @@ const ProductManagement = () => {
           <td style={{ paddingTop: 30 }}>
             <i
               onClick={() => {
-                console.log("click");
-                handleRecoveryProduct(item);
+                handleRecoveryProduct(item.id);
               }}
               class="bi bi-arrow-repeat"
             ></i>
