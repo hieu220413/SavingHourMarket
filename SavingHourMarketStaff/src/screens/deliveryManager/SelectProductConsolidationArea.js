@@ -117,7 +117,7 @@ const SelectProductConsolidationArea = ({navigation, route}) => {
               fontWeight: 'bold',
               fontFamily: 'Roboto',
             }}>
-            Chọn khung giờ
+            Chọn điểm tập kết
           </Text>
         </View>
         <View style={{backgroundColor: 'white', padding: 20}}>
@@ -129,7 +129,7 @@ const SelectProductConsolidationArea = ({navigation, route}) => {
               fontWeight: 'bold',
               marginBottom: 20,
             }}>
-            Điểm gom hàng
+            Điểm tập kết
           </Text>
           {/* Time Frames */}
           {productConsolidationAreaList.map(item => (

@@ -36,7 +36,6 @@ const OrderGroup = ({navigation}) => {
   const [showLogout, setShowLogout] = useState(false);
   const [date, setDate] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [dateToShow, setDateToShow] = useState(null);
 
   const [currentStatus, setCurrentStatus] = useState({
     display: 'Chưa có nhân viên giao hàng',
@@ -91,6 +90,20 @@ const OrderGroup = ({navigation}) => {
     }, []),
   );
 
+  const sortOptions = [
+    {
+      id: 1,
+      name: 'Ngày giao gần nhất',
+      active: false,
+    },
+    {
+      id: 2,
+      name: 'Ngày giao xa nhất',
+      active: false,
+    },
+  ];
+  const [selectSort, setSelectSort] = useState(sortOptions);
+
   useFocusEffect(
     useCallback(() => {
       const fetchData = async () => {
@@ -98,77 +111,42 @@ const OrderGroup = ({navigation}) => {
           const tokenId = await auth().currentUser.getIdToken();
           if (tokenId) {
             setLoading(true);
-            if (date) {
-              const deliverDate = format(date, 'yyyy-MM-dd');
-              fetch(
-                `${API.baseURL}/api/order/staff/getOrderGroup?deliverDate=${deliverDate}`,
-                {
-                  method: 'GET',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${tokenId}`,
-                  },
-                },
-              )
-                .then(res => res.json())
-                .then(respond => {
-                  console.log('group', respond);
-                  if (respond.code === 404) {
-                    setGroupListNotYetAssigned([]);
-                    setGroupListAssigned([]);
-                    setLoading(false);
-                    return;
-                  }
-                  const notYetAssigned = respond.orderGroups.filter(item => {
-                    return item.deliverer === null;
-                  });
-                  const Assigned = respond.orderGroups.filter(item => {
-                    return item.deliverer !== null;
-                  });
 
-                  setGroupListNotYetAssigned(notYetAssigned);
-                  setGroupListAssigned(Assigned);
+            fetch(`${API.baseURL}/api/order/staff/getOrderGroup`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
+              },
+            })
+              .then(res => res.json())
+              .then(respond => {
+                console.log('group', respond.orderGroups);
+                if (respond.error) {
                   setLoading(false);
-                })
-                .catch(err => {
-                  console.log(err);
-                  setLoading(false);
+                  return;
+                }
+                const notYetAssigned = respond.orderGroups.filter(item => {
+                  return item.deliverer === null;
                 });
-            } else {
-              fetch(`${API.baseURL}/api/order/staff/getOrderGroup`, {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${tokenId}`,
-                },
+                const Assigned = respond.orderGroups.filter(item => {
+                  return item.deliverer !== null;
+                });
+                setGroupListNotYetAssigned(notYetAssigned);
+                setGroupListAssigned(Assigned);
+                setLoading(false);
               })
-                .then(res => res.json())
-                .then(respond => {
-                  console.log('group', respond.orderGroups);
-                  if (respond.error) {
-                    setLoading(false);
-                    return;
-                  }
-                  const notYetAssigned = respond.orderGroups.filter(item => {
-                    return item.deliverer === null;
-                  });
-                  const Assigned = respond.orderGroups.filter(item => {
-                    return item.deliverer !== null;
-                  });
-                  setGroupListNotYetAssigned(notYetAssigned);
-                  setGroupListAssigned(Assigned);
-                  setLoading(false);
-                })
-                .catch(err => {
-                  console.log(err);
-                  setLoading(false);
-                });
-            }
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
           }
         }
       };
+      setDate(null);
+      setSelectSort(sortOptions);
       fetchData();
-    }, [date]),
+    }, []),
   );
 
   const ModalSortItem = ({item}) => {
@@ -228,20 +206,6 @@ const OrderGroup = ({navigation}) => {
       </TouchableOpacity>
     );
   };
-
-  const sortOptions = [
-    {
-      id: 1,
-      name: 'Ngày giao gần nhất',
-      active: false,
-    },
-    {
-      id: 2,
-      name: 'Ngày giao xa nhất',
-      active: false,
-    },
-  ];
-  const [selectSort, setSelectSort] = useState(sortOptions);
 
   const sortOrder = selectSort => {
     const sortItem = selectSort.find(item => item.active === true);
@@ -332,14 +296,14 @@ const OrderGroup = ({navigation}) => {
   };
 
   const handleApplySort = async () => {
-    setDateToShow(null);
+    setDate(null);
     setModalVisible(!modalVisible);
     setLoading(true);
     sortOrder(selectSort);
   };
 
   const handleClear = () => {
-    setDateToShow(null);
+    setDate(null);
     setModalVisible(!modalVisible);
     setLoading(true);
     const fetchData = async () => {
@@ -468,14 +432,14 @@ const OrderGroup = ({navigation}) => {
                     width: 20,
                     height: 20,
                   }}
-                  source={icons.search}
+                  source={icons.calendar}
                 />
                 <Text
                   style={{
                     fontSize: 16,
                     paddingLeft: 20,
                   }}>
-                  {dateToShow ? format(dateToShow, 'dd/MM/yyyy') : 'Chọn ngày giao'}
+                  {date ? format(date, 'dd/MM/yyyy') : 'Chọn ngày giao'}
                 </Text>
               </View>
             </View>
@@ -485,18 +449,104 @@ const OrderGroup = ({navigation}) => {
             modal
             mode="date"
             open={open}
-            date={dateToShow ? dateToShow : new Date()}
+            date={date ? date : new Date()}
             onConfirm={date => {
               setSelectSort(sortOptions);
               setOpen(false);
               setDate(date);
-              setDateToShow(date);
+              const fetchData = async () => {
+                if (auth().currentUser) {
+                  const tokenId = await auth().currentUser.getIdToken();
+                  if (tokenId) {
+                    setLoading(true);
+                    const deliverDate = format(date, 'yyyy-MM-dd');
+                    fetch(
+                      `${API.baseURL}/api/order/staff/getOrderGroup?deliverDate=${deliverDate}`,
+                      {
+                        method: 'GET',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          Authorization: `Bearer ${tokenId}`,
+                        },
+                      },
+                    )
+                      .then(res => res.json())
+                      .then(respond => {
+                        console.log('group', respond);
+                        if (respond.code === 404) {
+                          setGroupListNotYetAssigned([]);
+                          setGroupListAssigned([]);
+                          setLoading(false);
+                          return;
+                        }
+                        const notYetAssigned = respond.orderGroups.filter(
+                          item => {
+                            return item.deliverer === null;
+                          },
+                        );
+                        const Assigned = respond.orderGroups.filter(item => {
+                          return item.deliverer !== null;
+                        });
+
+                        setGroupListNotYetAssigned(notYetAssigned);
+                        setGroupListAssigned(Assigned);
+                        setLoading(false);
+                      })
+                      .catch(err => {
+                        console.log(err);
+                        setLoading(false);
+                      });
+                  }
+                }
+              };
+              fetchData();
             }}
             onCancel={() => {
               setSelectSort(sortOptions);
               setDate(null);
-              setDateToShow(null);
               setOpen(false);
+              const fetchData = async () => {
+                if (auth().currentUser) {
+                  const tokenId = await auth().currentUser.getIdToken();
+                  if (tokenId) {
+                    setLoading(true);
+                    fetch(`${API.baseURL}/api/order/staff/getOrderGroup`, {
+                      method: 'GET',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${tokenId}`,
+                      },
+                    })
+                      .then(res => res.json())
+                      .then(respond => {
+                        console.log('group', respond);
+                        if (respond.code === 404) {
+                          setGroupListNotYetAssigned([]);
+                          setGroupListAssigned([]);
+                          setLoading(false);
+                          return;
+                        }
+                        const notYetAssigned = respond.orderGroups.filter(
+                          item => {
+                            return item.deliverer === null;
+                          },
+                        );
+                        const Assigned = respond.orderGroups.filter(item => {
+                          return item.deliverer !== null;
+                        });
+
+                        setGroupListNotYetAssigned(notYetAssigned);
+                        setGroupListAssigned(Assigned);
+                        setLoading(false);
+                      })
+                      .catch(err => {
+                        console.log(err);
+                        setLoading(false);
+                      });
+                  }
+                }
+              };
+              fetchData();
             }}
           />
           <View
@@ -690,7 +740,7 @@ const OrderGroup = ({navigation}) => {
                                   fontFamily: 'Roboto',
                                   color: 'black',
                                 }}>
-                                Nhân viên đóng gói:{' '}
+                                Nhân viên giao hàng :{' '}
                                 {data.item?.deliverer === null
                                   ? 'Chưa có'
                                   : data.item?.deliverer.fullName}
@@ -881,7 +931,7 @@ const OrderGroup = ({navigation}) => {
                                   fontFamily: 'Roboto',
                                   color: 'black',
                                 }}>
-                                Nhân viên đóng gói:{' '}
+                                Nhân viên giao hàng :{' '}
                                 {data.item?.deliverer === null
                                   ? 'Chưa có'
                                   : data.item?.deliverer.fullName}
