@@ -15,6 +15,6 @@ import java.util.List;
 @NoArgsConstructor
 public class StaffListResponseBody {
     private List<Staff> staffList;
-    private int totalPage;
-    private long totalStaff;
+    private Integer totalPage;
+    private Long totalStaff;
 }

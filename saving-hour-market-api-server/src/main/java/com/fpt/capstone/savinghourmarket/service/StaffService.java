@@ -1,6 +1,7 @@
 package com.fpt.capstone.savinghourmarket.service;
 
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
+import com.fpt.capstone.savinghourmarket.common.OrderType;
 import com.fpt.capstone.savinghourmarket.common.StaffRole;
 import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.entity.Staff;
@@ -10,6 +11,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.UUID;
 
 public interface StaffService {
 //    Staff getInfoGoogleLogged(String email) throws FirebaseAuthException;
@@ -34,5 +38,5 @@ public interface StaffService {
 
     Staff unAssignPickupPoint(StaffPickupPointAssignmentBody staffPickupPointAssignmentBody);
 
-    StaffListResponseBody getStaffForDeliverManager(String name, Integer page, Integer limit);
+    StaffListResponseBody getStaffForDeliverManager(String name, OrderType orderType, LocalDate deliverDate, UUID timeFrameId);
 }

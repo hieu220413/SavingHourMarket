@@ -1,5 +1,7 @@
 package com.fpt.capstone.savinghourmarket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.common.StaffRole;
 import com.fpt.capstone.savinghourmarket.model.StaffCreateRequestBody;
@@ -49,6 +51,28 @@ public class Staff {
             inverseJoinColumns = @JoinColumn(name = "pickup_point_id")
     )
     private List<PickupPoint> pickupPoint;
+
+    @OneToMany(
+            mappedBy = "deliverer"
+    )
+    @JsonIgnore
+    private List<OrderGroup> orderGroupList;
+
+    @OneToMany(
+            mappedBy = "deliverer"
+    )
+    @JsonIgnore
+    private List<Order> orderList;
+
+    @OneToMany(
+            mappedBy = "deliverer"
+    )
+    @JsonIgnore
+    private List<OrderBatch> orderBatchList;
+
+    @Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Long collideOrderBatchQuantity;
     
 
     public Staff(StaffCreateRequestBody staffCreateRequestBody, StaffRole role) throws UnsupportedEncodingException {
