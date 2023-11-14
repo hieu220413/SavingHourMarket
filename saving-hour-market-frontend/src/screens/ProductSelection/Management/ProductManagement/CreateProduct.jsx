@@ -1592,16 +1592,15 @@ const CreateProduct = ({
                     expiredDate: null,
                     price: 0,
                     priceOriginal: 0,
-                    productBatchAddresses: {
-                      quantity: 0,
-                      supermarketAddressId: null,
-                      supermarketAddress: null,
-                      error: {
-                        quantity: "",
-                        supermarketStores: "",
+                    productBatchAddresses: [
+                      {
+                        quantity: 0,
+                        supermarketAddress: null,
+                        isActiveDropdownSupermarketStore: false,
+                        errorQuantity: "",
+                        errorStore: "",
                       },
-                      isActiveDropdownSupermarketStore: false,
-                    },
+                    ],
                     error: {
                       price: "",
                       priceOriginal: "",

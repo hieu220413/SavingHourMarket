@@ -11,20 +11,20 @@ import {
   Modal,
   FlatList,
 } from 'react-native';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
-import {Image} from 'react-native-animatable';
-import {icons} from '../../constants';
-import {COLORS, FONTS} from '../../constants/theme';
-import {API} from '../../constants/api';
-import {format} from 'date-fns';
+import { Image } from 'react-native-animatable';
+import { icons } from '../../constants';
+import { COLORS, FONTS } from '../../constants/theme';
+import { API } from '../../constants/api';
+import { format } from 'date-fns';
 import Empty from '../../assets/image/search-empty.png';
 import LoadingScreen from '../../components/LoadingScreen';
-import {useFocusEffect} from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import DatePicker from 'react-native-date-picker';
 
-const HomeDeliver = ({navigation}) => {
+const HomeDeliver = ({ navigation }) => {
   const [initializing, setInitializing] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -403,16 +403,16 @@ const HomeDeliver = ({navigation}) => {
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState(null);
   const orderStatus = [
-    {id: 0, display: 'Đóng gói', value: 'PACKAGED', active: false},
-    {id: 1, display: 'Đang giao', value: 'DELIVERING', active: false},
-    {id: 2, display: 'Đã giao', value: 'SUCCESS', active: false},
-    {id: 3, display: 'Đơn thất bại', value: 'FAIL', active: false},
+    { id: 0, display: 'Đóng gói', value: 'PACKAGED', active: false },
+    { id: 1, display: 'Đang giao', value: 'DELIVERING', active: false },
+    { id: 2, display: 'Đã giao', value: 'SUCCESS', active: false },
+    { id: 3, display: 'Đơn thất bại', value: 'FAIL', active: false },
   ];
 
   const deliveryOptions = [
-    {id: 0, display: 'Giao hàng tại điểm nhận'},
-    {id: 1, display: 'Giao hàng tận nhà'},
-    {id: 2, display: 'Đơn hàng lẻ'},
+    { id: 0, display: 'Giao hàng tại điểm nhận' },
+    { id: 1, display: 'Giao hàng tận nhà' },
+    { id: 2, display: 'Đơn hàng lẻ' },
   ];
 
   const [currentOptions, setCurrentOptions] = useState({
@@ -424,7 +424,7 @@ const HomeDeliver = ({navigation}) => {
   //  filter pickup point
   const [selectedTimeFrameId, setSelectedTimeFrameId] = useState('');
   //  filter date
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(null);
 
   const getUser = async () => {
     const currentUser = await AsyncStorage.getItem('userInfo');
@@ -495,7 +495,7 @@ const HomeDeliver = ({navigation}) => {
       setLoading(true);
       if (id === 0) {
         fetch(
-          `${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}&deliverDate=${deliverDate}`,
+          `${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliverDate=${deliverDate}`}`,
           {
             method: 'GET',
             headers: {
@@ -519,7 +519,7 @@ const HomeDeliver = ({navigation}) => {
           });
       } else if (id === 1) {
         fetch(
-          `${API.baseURL}/api/order/staff/getOrderBatch?delivererId=${userFromAS?.id}&deliveryDate=${deliverDate}`,
+          `${API.baseURL}/api/order/staff/getOrderBatch?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliverDate=${deliverDate}`}`,
           {
             method: 'GET',
             headers: {
@@ -543,7 +543,7 @@ const HomeDeliver = ({navigation}) => {
           });
       } else if (id === 2) {
         fetch(
-          `${API.baseURL}/api/order/staff/getOrders?delivererId=${userFromAS?.id}&orderStatus=DELIVERING&deliveryDate=${deliverDate}`,
+          `${API.baseURL}/api/order/staff/getOrders?delivererId=${userFromAS?.id}&orderStatus=DELIVERING${selectedDate === null ? '' : `&deliverDate=${deliverDate}`}`,
           {
             method: 'GET',
             headers: {
@@ -576,7 +576,7 @@ const HomeDeliver = ({navigation}) => {
   //     fetchOrders(currentOptions.id);
   // };
 
-  const OrderItem = ({item}) => {
+  const OrderItem = ({ item }) => {
     return (
       <TouchableOpacity
         onPress={() => {
@@ -645,9 +645,9 @@ const HomeDeliver = ({navigation}) => {
           Thời gian:{' '}
           {item?.timeFrame
             ? `${item?.timeFrame?.fromHour.slice(
-                0,
-                5,
-              )} đến ${item?.timeFrame?.toHour.slice(0, 5)}`
+              0,
+              5,
+            )} đến ${item?.timeFrame?.toHour.slice(0, 5)}`
             : ''}
         </Text>
         <Text
@@ -678,7 +678,7 @@ const HomeDeliver = ({navigation}) => {
             paddingVertical: 10,
           }}>
           <View
-            style={{flex: 1, height: 1.5, backgroundColor: COLORS.primary}}
+            style={{ flex: 1, height: 1.5, backgroundColor: COLORS.primary }}
           />
           <View>
             <Text
@@ -694,12 +694,12 @@ const HomeDeliver = ({navigation}) => {
             </Text>
           </View>
           <View
-            style={{flex: 1, height: 1.5, backgroundColor: COLORS.primary}}
+            style={{ flex: 1, height: 1.5, backgroundColor: COLORS.primary }}
           />
         </View>
 
         <Text>
-          <View style={{flexDirection: 'row'}}>
+          <View style={{ flexDirection: 'row' }}>
             <Text
               style={{
                 fontSize: 18,
@@ -741,58 +741,58 @@ const HomeDeliver = ({navigation}) => {
     );
   };
 
-  const ModalItem = ({item}) => {
+  const ModalItem = ({ item }) => {
     return (
       <TouchableOpacity
         onPress={() => {
           const newArray = selectItem.map(i => {
             if (i.id === item.id) {
               if (i.active === true) {
-                return {...i, active: false};
+                return { ...i, active: false };
               } else {
-                return {...i, active: true};
+                return { ...i, active: true };
               }
             }
-            return {...i, active: false};
+            return { ...i, active: false };
           });
           setSelectItem(newArray);
         }}
         style={
           item.active == true
             ? {
-                borderColor: COLORS.primary,
-                borderWidth: 1,
-                borderRadius: 10,
-                margin: 5,
-              }
+              borderColor: COLORS.primary,
+              borderWidth: 1,
+              borderRadius: 10,
+              margin: 5,
+            }
             : {
-                borderColor: '#c8c8c8',
-                borderWidth: 0.2,
-                borderRadius: 10,
-                margin: 5,
-              }
+              borderColor: '#c8c8c8',
+              borderWidth: 0.2,
+              borderRadius: 10,
+              margin: 5,
+            }
         }>
         <Text
           style={
             item.active == true
               ? {
-                  width: 150,
-                  paddingHorizontal: 20,
-                  paddingVertical: 10,
-                  textAlign: 'center',
-                  color: COLORS.primary,
-                  fontFamily: FONTS.fontFamily,
-                  fontSize: 12,
-                }
+                width: 150,
+                paddingHorizontal: 20,
+                paddingVertical: 10,
+                textAlign: 'center',
+                color: COLORS.primary,
+                fontFamily: FONTS.fontFamily,
+                fontSize: 12,
+              }
               : {
-                  width: 150,
-                  paddingHorizontal: 20,
-                  paddingVertical: 10,
-                  textAlign: 'center',
-                  color: 'black',
-                  fontFamily: FONTS.fontFamily,
-                  fontSize: 12,
-                }
+                width: 150,
+                paddingHorizontal: 20,
+                paddingVertical: 10,
+                textAlign: 'center',
+                color: 'black',
+                fontFamily: FONTS.fontFamily,
+                fontSize: 12,
+              }
           }>
           {item.display}
         </Text>
@@ -824,10 +824,10 @@ const HomeDeliver = ({navigation}) => {
                   }}>
                   <Image
                     resizeMode="contain"
-                    style={{width: 38, height: 38}}
+                    style={{ width: 38, height: 38 }}
                     source={
                       user?.avatarUrl
-                        ? {uri: user?.avatarUrl}
+                        ? { uri: user?.avatarUrl }
                         : icons.userCircle
                     }
                   />
@@ -854,7 +854,7 @@ const HomeDeliver = ({navigation}) => {
                         })
                         .catch(e => console.log(e));
                     }}>
-                    <Text style={{color: 'red', fontWeight: 'bold'}}>
+                    <Text style={{ color: 'red', fontWeight: 'bold' }}>
                       Đăng xuất
                     </Text>
                   </TouchableOpacity>
@@ -862,7 +862,7 @@ const HomeDeliver = ({navigation}) => {
               </View>
             </View>
 
-            <View style={{flexDirection: 'row'}}>
+            <View style={{ flexDirection: 'row' }}>
               {/*  */}
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {deliveryOptions.map((item, index) => (
@@ -937,9 +937,9 @@ const HomeDeliver = ({navigation}) => {
                 {/* Grouping & Batching Order  */}
                 {orderGroupList.length === 0 ? (
                   <View
-                    style={{alignItems: 'center', justifyContent: 'center'}}>
+                    style={{ alignItems: 'center', justifyContent: 'center' }}>
                     <Image
-                      style={{width: '100%', height: '50%'}}
+                      style={{ width: '100%', height: '50%' }}
                       resizeMode="contain"
                       source={Empty}
                     />
@@ -1157,12 +1157,12 @@ const HomeDeliver = ({navigation}) => {
                                       Thời gian:{' '}
                                       {item?.timeFrame
                                         ? `${item?.timeFrame?.fromHour.slice(
-                                            0,
-                                            5,
-                                          )} đến ${item?.timeFrame?.toHour.slice(
-                                            0,
-                                            5,
-                                          )}`
+                                          0,
+                                          5,
+                                        )} đến ${item?.timeFrame?.toHour.slice(
+                                          0,
+                                          5,
+                                        )}`
                                         : ''}
                                     </Text>
                                     <Text
@@ -1229,7 +1229,7 @@ const HomeDeliver = ({navigation}) => {
                                     </View>
 
                                     <Text>
-                                      <View style={{flexDirection: 'row'}}>
+                                      <View style={{ flexDirection: 'row' }}>
                                         <Text
                                           style={{
                                             fontSize: 18,
@@ -1286,9 +1286,9 @@ const HomeDeliver = ({navigation}) => {
                 {/* No Groupign No Batching */}
                 {orders.length === 0 ? (
                   <View
-                    style={{alignItems: 'center', justifyContent: 'center'}}>
+                    style={{ alignItems: 'center', justifyContent: 'center' }}>
                     <Image
-                      style={{width: '100%', height: '50%'}}
+                      style={{ width: '100%', height: '50%' }}
                       resizeMode="contain"
                       source={Empty}
                     />
@@ -1399,7 +1399,7 @@ const HomeDeliver = ({navigation}) => {
                     marginVertical: 10,
                   }}>
                   <DatePicker
-                    date={selectedDate}
+                    date={selectedDate === null ? new Date() : selectedDate}
                     mode="date"
                     androidVariant="nativeAndroid"
                     onDateChange={setSelectedDate}

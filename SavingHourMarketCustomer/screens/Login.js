@@ -25,6 +25,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {API} from '../constants/api';
 import {useFocusEffect} from '@react-navigation/native';
 import LoadingScreen from '../components/LoadingScreen';
+import Toast from 'react-native-toast-message';
 
 const Login = ({navigation}) => {
   const [password, setPassword] = useState('');
@@ -56,14 +57,16 @@ const Login = ({navigation}) => {
           .catch(async e => {
             // sessions end. (revoke refresh token like password change, disable account, ....)
             console.log(e);
-            Alert.alert('Session ended. Required re-authenticate');
+            showToast('Vui lòng đăng nhập lại');
+            console.log('Session ended. Required re-authenticate');
             await AsyncStorage.removeItem('userInfo');
             setLoading(false);
             return null;
           });
         if (userTokenId) {
           // session van con. redirect qua trang khac
-          Alert.alert('User session van con. Redirect qua screen nao do di');
+          console.log('User session van con. Redirect qua screen nao do di');
+          navigation.navigate('Start');
           setLoading(false);
           return;
         }
@@ -90,9 +93,10 @@ const Login = ({navigation}) => {
         // internal error handle
         if (!userInfoAfterGooleLoginRequest) {
           await logout();
-          Alert.alert(
+          console.log(
             'internal error happened in fetching user info with google',
           );
+          showToast('Lỗi mạng');
           setLoading(false);
           return;
         }
@@ -101,7 +105,7 @@ const Login = ({navigation}) => {
           const responseBody = await userInfoAfterGooleLoginRequest.json();
           if (responseBody.message === 'STAFF_ACCESS_FORBIDDEN') {
             await logout();
-            Alert.alert('Staff account can not access to customer application');
+            showToast('Tài khoản của bạn không có quyền truy cập');
             setLoading(false);
             return;
           }
@@ -119,6 +123,7 @@ const Login = ({navigation}) => {
           //   'Login thanh cong, da save user. Redirect qua screen nao do di',
           // );
           setLoading(false);
+          showToastSuccess('Đăng nhập thành công');
           navigation.goBack();
         }
       }
@@ -146,9 +151,10 @@ const Login = ({navigation}) => {
         // internal error handle
         if (!userInfoAfterEmailPasswordLoginRequest) {
           await logout();
-          Alert.alert(
+          console.log(
             'internal error happened in fetching user info with email & password',
           );
+          showToast('Lỗi mạng');
           setLoading(false);
           return;
         }
@@ -158,13 +164,13 @@ const Login = ({navigation}) => {
             await userInfoAfterEmailPasswordLoginRequest.json();
           if (responseBody.message === 'STAFF_ACCESS_FORBIDDEN') {
             await logout();
-            Alert.alert('Staff account can not access to customer application');
+            showToast('Tài khoản của bạn không có quyền truy cập');
             setLoading(false);
             return;
           }
           if (responseBody.message === 'UNVERIFIED_EMAIL') {
             await logout();
-            Alert.alert('Email is not verified');
+            showToast('Địa chỉ email chưa được xác thực');
             setLoading(false);
             return;
           }
@@ -186,7 +192,7 @@ const Login = ({navigation}) => {
           // Alert.alert(
           //   'Login thanh cong, da save user. Redirect qua screen nao do di',
           // );
-
+          showToastSuccess('Đăng nhập thành công');
           navigation.goBack();
         }
       }
@@ -205,15 +211,34 @@ const Login = ({navigation}) => {
     }
   };
 
+  const showToast = message => {
+    Toast.show({
+      type: 'unsuccess',
+      text1: 'Thất bại',
+      text2: message,
+      visibilityTime: 2000,
+    });
+  };
+
+  const showToastSuccess = message => {
+    Toast.show({
+      type: 'success',
+      text1: 'Thành công',
+      text2: message,
+      visibilityTime: 2000,
+    });
+  };
+
   const login = () => {
     auth()
       .signInWithEmailAndPassword(email, password)
       .then(() => {
+        // showToastSuccess('Đăng nhập thành công');
         console.log('User singed in successfully with email and password');
       })
       .catch(error => {
         // handle wrong password or email
-        Alert.alert('Wrong password or email');
+        showToast('Sai địa chỉ email hoặc mật khẩu');
         console.log(error);
       });
   };
@@ -232,9 +257,11 @@ const Login = ({navigation}) => {
       return auth()
         .signInWithCredential(googleCredential)
         .then(() => {
+          // showToastSuccess('Đăng nhập thành công');
           console.log('User signed in successfully with google account');
         })
         .catch(error => {
+          showToast('Đăng nhập thất bại');
           console.log(error);
         });
     }

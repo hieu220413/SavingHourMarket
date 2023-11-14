@@ -17,6 +17,8 @@ import * as Animatable from 'react-native-animatable';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
 import {COLORS} from '../constants/theme';
+import LoadingScreen from '../components/LoadingScreen';
+import Toast from 'react-native-toast-message';
 
 const Login = ({navigation}) => {
   const [password, setPassword] = useState('');
@@ -65,7 +67,26 @@ const Login = ({navigation}) => {
     return subscriber;
   }, []);
 
+  const showToast = message => {
+    Toast.show({
+      type: 'unsuccess',
+      text1: 'Thất bại',
+      text2: message,
+      visibilityTime: 2000,
+    });
+  };
+
+  const showToastSuccess = message => {
+    Toast.show({
+      type: 'success',
+      text1: 'Thành công',
+      text2: message,
+      visibilityTime: 2000,
+    });
+  };
+
   const login = () => {
+    setLoading(true);
     auth()
       .signInWithEmailAndPassword(email, password)
       .then(async () => {
@@ -85,7 +106,8 @@ const Login = ({navigation}) => {
                 .signOut()
                 .then(async () => {
                   // Sign-out successful
-                  Alert.alert('Tài khoản của bạn không có quyền truy cập');
+                  showToast('Tài khoản của bạn không có quyền truy cập');
+                  setLoading(false);
                   await AsyncStorage.removeItem('userInfo');
                 })
                 .catch(error => {
@@ -107,7 +129,8 @@ const Login = ({navigation}) => {
                 .signOut()
                 .then(async () => {
                   // Sign-out successful.
-                  Alert.alert('Tài khoản của bạn không có quyền truy cập');
+                  showToast('Tài khoản của bạn không có quyền truy cập');
+                  setLoading(false);
                   await AsyncStorage.removeItem('userInfo');
                 })
                 .catch(error => {
@@ -119,6 +142,8 @@ const Login = ({navigation}) => {
             // * *
 
             // login successfull
+            setLoading(false);
+            showToastSuccess('Đăng nhập thành công');
             await AsyncStorage.setItem('userInfo', JSON.stringify(respond));
             navigation.navigate('Start');
             // **
@@ -130,7 +155,8 @@ const Login = ({navigation}) => {
       })
       .catch(error => {
         // handle wrong password or email
-        Alert.alert('Wrong password or email');
+        setLoading(false);
+        showToast('Sai địa chỉ email hoặc mật khẩu');
         console.log(error);
       });
   };
@@ -295,6 +321,7 @@ const Login = ({navigation}) => {
             </View>
           </Animatable.View>
         </ImageBackground>
+        {loading && <LoadingScreen />}
       </View>
     </TouchableWithoutFeedback>
   );

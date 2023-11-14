@@ -2,9 +2,16 @@ import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import dayjs from "dayjs";
+import { Dialog } from "@mui/material";
+import { ViewProductBatchAddressList } from "./ViewProductBatchAddressList";
 
 const ProductBatchUploadByExcel = ({ handleClose, productBatch }) => {
-  const ProductBatchRow = ({ item, index, address }) => {
+  const [productBatchAddressList, setProductBatchAddressList] = useState([]);
+  const [openAddressList, setOpenAddressList] = useState(false);
+  const handleOpenAddressList = () => setOpenAddressList(true);
+  const handleCloseAddressList = () => setOpenAddressList(false);
+  console.log(productBatch);
+  const ProductBatchRow = ({ item, index }) => {
     return (
       <>
         <tr key={index} className="table-body-row">
@@ -19,7 +26,7 @@ const ProductBatchUploadByExcel = ({ handleClose, productBatch }) => {
               </p>
             )}
           </td>
-          <td>{address?.quantity}</td>
+          {/* <td>{address?.quantity}</td>
           <td>
             {address?.supermarketAddress ? (
               address?.supermarketAddress?.address
@@ -28,7 +35,7 @@ const ProductBatchUploadByExcel = ({ handleClose, productBatch }) => {
                 Lỗi địa chỉ
               </p>
             )}
-          </td>
+          </td> */}
           <td>
             {item?.price.toLocaleString("vi-VN", {
               style: "currency",
@@ -40,6 +47,15 @@ const ProductBatchUploadByExcel = ({ handleClose, productBatch }) => {
               style: "currency",
               currency: "VND",
             })}
+          </td>
+          <td>
+            <i
+              onClick={() => {
+                setProductBatchAddressList(item.productBatchAddresses);
+                handleOpenAddressList();
+              }}
+              class="bi bi-receipt"
+            ></i>
           </td>
         </tr>
       </>
@@ -53,7 +69,7 @@ const ProductBatchUploadByExcel = ({ handleClose, productBatch }) => {
       </div>
 
       <div
-        style={{ height: "65vh", overflowY: "scroll" }}
+        style={{ height: "75vh", overflowY: "scroll" }}
         className="modal__container-body"
       >
         <div className="table__container">
@@ -62,24 +78,14 @@ const ProductBatchUploadByExcel = ({ handleClose, productBatch }) => {
               <tr className="table-header-row">
                 <th>No.</th>
                 <th>Ngày hết hạn</th>
-                <th>Số lượng</th>
-                <th>Kho</th>
                 <th>Giá</th>
                 <th>Giá gốc</th>
+                <th>Kho & Số lượng</th>
               </tr>
             </thead>
             <tbody>
               {productBatch.map((item, index) => (
-                <>
-                  {item.productBatchAddresses.map((address) => (
-                    <ProductBatchRow
-                      address={address}
-                      item={item}
-                      key={index}
-                      index={index}
-                    />
-                  ))}
-                </>
+                <ProductBatchRow item={item} key={index} index={index} />
               ))}
             </tbody>
           </table>
@@ -96,6 +102,16 @@ const ProductBatchUploadByExcel = ({ handleClose, productBatch }) => {
           </button>
         </div>
       </div>
+      <Dialog
+        onClose={handleCloseAddressList}
+        aria-labelledby="customized-dialog-title"
+        open={openAddressList}
+      >
+        <ViewProductBatchAddressList
+          handleClose={handleCloseAddressList}
+          productBatchAddressList={productBatchAddressList}
+        />
+      </Dialog>
     </div>
   );
 };

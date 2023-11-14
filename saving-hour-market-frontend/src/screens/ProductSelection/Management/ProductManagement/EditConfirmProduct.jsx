@@ -67,6 +67,7 @@ const EditConfirmProduct = ({
   const [image, setImage] = useState(
     product?.imageUrls ? product?.imageUrls : []
   );
+
   const [imageToFireBase, setImageToFireBase] = useState("");
   const [supermarketStores, setSupermarketStores] = useState([]);
   const [productBatchs, setProductBatchs] = useState(
@@ -197,7 +198,6 @@ const EditConfirmProduct = ({
   };
 
   const onConfirm = async () => {
-    debugger;
     if (productName === "") {
       setError({ ...error, productName: "Vui lòng không để trống" });
       return;
@@ -340,10 +340,10 @@ const EditConfirmProduct = ({
       return true;
     });
 
-    console.log(batchAddressesValidate);
-    if (batchAddressesValidate.some((item) => item === false)) {
-      return;
-    }
+    // console.log(batchAddressesValidate);
+    // if (batchAddressesValidate.some((item) => item === false)) {
+    //   return;
+    // }
 
     setProductBatchs(newProductBatchs);
 
@@ -1026,6 +1026,19 @@ const EditConfirmProduct = ({
                         style={{ paddingLeft: 10, paddingTop: 5 }}
                         onClick={() => {
                           if (selectedSupermarketDropdownItem) {
+                            if (
+                              item.productBatchAddresses.length ===
+                              selectedSupermarketDropdownItem
+                                .supermarketAddressList.length
+                            ) {
+                              setOpenValidateSnackbar({
+                                ...openValidateSnackbar,
+                                open: true,
+                                severity: "error",
+                                text: `Siêu thị này có ${selectedSupermarketDropdownItem.supermarketAddressList.length} chi nhánh! Không thể tạo thêm `,
+                              });
+                              return;
+                            }
                             const newProductBatchs = [...productBatchs];
                             newProductBatchs[index] = {
                               ...productBatchs[index],
