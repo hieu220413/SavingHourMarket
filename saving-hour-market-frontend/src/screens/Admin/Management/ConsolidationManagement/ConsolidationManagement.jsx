@@ -1,17 +1,23 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import MuiAlert from "@mui/material/Alert";
 import { Dialog, Snackbar } from "@mui/material";
 import Empty from "../../../../assets/Empty.png";
 import {
+  faClipboard,
   faMagnifyingGlass,
   faPlus,
+  faTrashCanArrowUp,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import ManagementMenu from "../../../../components/ManagementMenu/ManagementMenu";
 import CreateConsolidation from "./CreateConsolidation";
 import EditConsolidation from "./EditConsolidation";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "../../../../firebase/firebase.config";
+import { API } from "../../../../contanst/api";
+import ConsolidationPickupPoint from "./ConsolidationPickupPoint";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -39,6 +45,46 @@ const ConsolidationManagement = () => {
   };
   const handleOpenCreateDialog = () => setOpenCreateDialog(true);
   const handleCloseCreateDialog = () => setOpenCreateDialog(false);
+  const [isSwitchRecovery, setIsSwitchRecovery] = useState(false);
+  const userState = useAuthState(auth);
+  useEffect(() => {
+    const fetchStaff = async () => {
+      setLoading(true);
+      if (!userState[1]) {
+        const tokenId = await auth.currentUser.getIdToken();
+
+        fetch(
+          `${API.baseURL}/api/productConsolidationArea/getAllForAdmin?page=${
+            page - 1
+          }&limit=6&${
+            isSwitchRecovery
+              ? "&enableDisableStatus=DISABLE"
+              : "&enableDisableStatus=ENABLE"
+          }`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${tokenId}`,
+            },
+          }
+        )
+          .then((res) => res.json())
+          .then((respond) => {
+            if (respond?.code === 404 || respond.status === 500) {
+              setLoading(false);
+              return;
+            }
+            setConsolidationList(respond.productConsolidationAreaList);
+            setTotalPage(respond.totalPage);
+
+            setLoading(false);
+          })
+          .catch((err) => console.log(err));
+      }
+    };
+    fetchStaff();
+  }, [page, isSwitchRecovery, userState[1]]);
 
   const ConsolidationItem = ({ item, index }) => {
     const [openEditDialog, setOpenEditDialog] = useState(false);
@@ -48,14 +94,160 @@ const ConsolidationManagement = () => {
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const handleOpenDeleteDialog = () => setOpenDeleteDialog(true);
     const handleCloseDeleteDialog = () => setOpenDeleteDialog(false);
+
+    const [openPickupPointDialog, setOpenPickupPointDialog] = useState(false);
+    const handleOpenPickupPointDialog = () => setOpenPickupPointDialog(true);
+    const handleClosePickupPointDialog = () => setOpenPickupPointDialog(false);
+
+    const handleDelete = async () => {
+      setLoading(true);
+      const tokenId = await auth.currentUser.getIdToken();
+      fetch(`${API.baseURL}/api/productConsolidationArea/updateStatus`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenId}`,
+        },
+        body: JSON.stringify({
+          id: item.id,
+          enableDisableStatus: "DISABLE",
+        }),
+      })
+        .then((res) => res.json())
+        .then((respond) => {
+          if (respond?.error) {
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "error",
+              text: respond.error,
+            });
+
+            setLoading(false);
+            return;
+          }
+          fetch(
+            `${API.baseURL}/api/productConsolidationArea/getAllForAdmin?page=${
+              page - 1
+            }&limit=6&${
+              isSwitchRecovery
+                ? "&enableDisableStatus=DISABLE"
+                : "&enableDisableStatus=ENABLE"
+            }`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${tokenId}`,
+              },
+            }
+          )
+            .then((res) => res.json())
+            .then((respond) => {
+              setConsolidationList(respond.productConsolidationAreaList);
+              setTotalPage(respond.totalPage);
+              handleCloseDeleteDialog();
+              setLoading(false);
+              setOpenSnackbar({
+                ...openSnackbar,
+                open: true,
+                severity: "success",
+                text: "Vô hiệu hóa thành công",
+              });
+            })
+            .catch((err) => console.log(err));
+        })
+        .catch((err) => console.log(err));
+    };
+
+    const handleReverse = async () => {
+      setLoading(true);
+      const tokenId = await auth.currentUser.getIdToken();
+      fetch(`${API.baseURL}/api/productConsolidationArea/updateStatus`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenId}`,
+        },
+        body: JSON.stringify({
+          id: item.id,
+          enableDisableStatus: "ENABLE",
+        }),
+      })
+        .then((res) => res.json())
+        .then((respond) => {
+          console.log(respond);
+          if (respond?.error) {
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "error",
+              text: respond.error,
+            });
+
+            setLoading(false);
+            return;
+          }
+          fetch(
+            `${API.baseURL}/api/productConsolidationArea/getAllForAdmin?page=${
+              page - 1
+            }&limit=6&${
+              isSwitchRecovery
+                ? "&enableDisableStatus=DISABLE"
+                : "&enableDisableStatus=ENABLE"
+            }`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${tokenId}`,
+              },
+            }
+          )
+            .then((res) => res.json())
+            .then((respond) => {
+              setConsolidationList(respond.productConsolidationAreaList);
+              setTotalPage(respond.totalPage);
+              handleCloseDeleteDialog();
+              setLoading(false);
+              setOpenSnackbar({
+                ...openSnackbar,
+                open: true,
+                severity: "success",
+                text: "Khôi phục thành công",
+              });
+            })
+            .catch((err) => console.log(err));
+        })
+        .catch((err) => console.log(err));
+    };
     return (
       <tr className="table-body-row">
-        <td>1</td>
-        <td>121 Trần Văn Dư, Phường 13, Q.Tân Bình,Tp.HCM</td>
-
+        <td>{index + 1}</td>
+        <td>{item.address}</td>
         <td>
-          <i onClick={handleOpenEditDialog} class="bi bi-pencil-square"></i>
-          <i onClick={handleOpenDeleteDialog} class="bi bi-trash-fill"></i>
+          {" "}
+          <i
+            onClick={() => {
+              handleOpenPickupPointDialog();
+            }}
+            className="bi bi-eye"
+          ></i>
+        </td>
+        <td>
+          {isSwitchRecovery ? (
+            <i
+              onClick={() => {
+                handleReverse();
+              }}
+              class="bi bi-arrow-repeat"
+            ></i>
+          ) : (
+            <>
+              <i onClick={handleOpenEditDialog} class="bi bi-pencil-square"></i>
+              <i onClick={handleOpenDeleteDialog} class="bi bi-trash-fill"></i>
+            </>
+          )}
         </td>
         <Dialog
           onClose={handleCloseEditDialog}
@@ -63,7 +255,7 @@ const ConsolidationManagement = () => {
           open={openEditDialog}
         >
           <EditConsolidation
-            item={item}
+            consolidationItem={item}
             setOpenSnackbar={setOpenSnackbar}
             openSnackbar={openSnackbar}
             handleClose={handleCloseEditDialog}
@@ -71,6 +263,16 @@ const ConsolidationManagement = () => {
             searchValue={searchValue}
             page={page}
             setTotalPage={setTotalPage}
+          />
+        </Dialog>
+        <Dialog
+          onClose={handleClosePickupPointDialog}
+          aria-labelledby="customized-dialog-title"
+          open={openPickupPointDialog}
+        >
+          <ConsolidationPickupPoint
+            handleClose={handleClosePickupPointDialog}
+            pickupPointList={item.pickupPointList}
           />
         </Dialog>
         <Dialog
@@ -103,7 +305,7 @@ const ConsolidationManagement = () => {
               </button>
               <button
                 onClick={() => {
-                  // handleDelete();
+                  handleDelete();
                 }}
                 className="modal__container-footer-buttons-create"
               >
@@ -148,28 +350,18 @@ const ConsolidationManagement = () => {
       <ManagementMenu menuTabs={menuTabs} />
       <div style={{ marginBottom: 50 }} className="user__container">
         <div className="user__header">
-          <div className="search">
-            <form onSubmit={(e) => onSubmitSearch(e)}>
-              <div onClick={(e) => onSubmitSearch(e)} className="search-icon">
-                <FontAwesomeIcon icon={faMagnifyingGlass} />
-              </div>
-              <input
-                value={textSearch}
-                onChange={(e) => setTextSearch(e.target.value)}
-                type="text"
-                placeholder="Từ khóa tìm kiếm"
-              />
-            </form>
-          </div>
+          <div className="search"></div>
           {/* ****************** */}
 
-          <div
-            onClick={handleOpenCreateDialog}
-            className="pickuppoint__header-button"
-          >
-            <FontAwesomeIcon icon={faPlus} />
-            Thêm điểm tập kết
-          </div>
+          {!isSwitchRecovery && (
+            <div
+              onClick={handleOpenCreateDialog}
+              className="pickuppoint__header-button"
+            >
+              <FontAwesomeIcon icon={faPlus} />
+              Thêm điểm tập kết
+            </div>
+          )}
         </div>
         {/* data table + pagination*/}
         <div className="table__container">
@@ -181,7 +373,7 @@ const ConsolidationManagement = () => {
                   <tr className="table-header-row">
                     <th>No.</th>
                     <th>Địa chỉ</th>
-
+                    <th>Điểm giao hàng</th>
                     <th>Thao tác</th>
                   </tr>
                 </thead>
@@ -215,12 +407,28 @@ const ConsolidationManagement = () => {
                     fontSize: 24,
                   }}
                 >
-                  Không có giao dịch
+                  Không có điểm tập kết
                 </p>
               </div>
             )}
           </table>
           {/* ********************** */}
+          <div>
+            <button
+              onClick={() => {
+                setPage(1);
+                setIsSwitchRecovery(!isSwitchRecovery);
+              }}
+              className=" buttonRecovery"
+            >
+              {isSwitchRecovery
+                ? "Điểm tập kết tồn tại"
+                : "Điểm tập kết đã vô hiệu hóa"}
+              <FontAwesomeIcon
+                icon={isSwitchRecovery ? faClipboard : faTrashCanArrowUp}
+              />
+            </button>
+          </div>
 
           {/* pagination */}
           {consolidationList.length !== 0 && (

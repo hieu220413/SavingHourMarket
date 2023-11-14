@@ -5,8 +5,10 @@ import MuiAlert from "@mui/material/Alert";
 import { Dialog, Snackbar } from "@mui/material";
 import Empty from "../../../../assets/Empty.png";
 import {
+  faClipboard,
   faMagnifyingGlass,
   faPlus,
+  faTrashCanArrowUp,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import ManagementMenu from "../../../../components/ManagementMenu/ManagementMenu";
@@ -92,6 +94,138 @@ const TimeframeManagement = () => {
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const handleOpenDeleteDialog = () => setOpenDeleteDialog(true);
     const handleCloseDeleteDialog = () => setOpenDeleteDialog(false);
+
+    const handleDelete = async () => {
+      setLoading(true);
+      const tokenId = await auth.currentUser.getIdToken();
+      fetch(`${API.baseURL}/api/timeframe/updateStatus`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenId}`,
+        },
+        body: JSON.stringify({
+          id: item.id,
+          enableDisableStatus: "DISABLE",
+        }),
+      })
+        .then((res) => res.json())
+        .then((respond) => {
+          if (respond?.error) {
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "error",
+              text: respond.error,
+            });
+
+            setLoading(false);
+            return;
+          }
+          fetch(
+            `${API.baseURL}/api/timeframe/getAllForAdmin?page=${
+              page - 1
+            }&limit=6&${
+              isSwitchRecovery
+                ? "&enableDisableStatus=DISABLE"
+                : "&enableDisableStatus=ENABLE"
+            }`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${tokenId}`,
+              },
+            }
+          )
+            .then((res) => res.json())
+            .then((respond) => {
+              if (respond?.code === 404 || respond.status === 500) {
+                setLoading(false);
+                return;
+              }
+              setTimeframeList(respond.pickupPointList);
+              setTotalPage(respond.totalPage);
+              handleCloseDeleteDialog();
+
+              setOpenSnackbar({
+                ...openSnackbar,
+                open: true,
+                severity: "success",
+                text: "Vô hiệu hóa thành công",
+              });
+              setLoading(false);
+            })
+            .catch((err) => console.log(err));
+        })
+        .catch((err) => console.log(err));
+    };
+
+    const handleReverse = async () => {
+      setLoading(true);
+      const tokenId = await auth.currentUser.getIdToken();
+      fetch(`${API.baseURL}/api/timeframe/updateStatus`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenId}`,
+        },
+        body: JSON.stringify({
+          id: item.id,
+          enableDisableStatus: "ENABLE",
+        }),
+      })
+        .then((res) => res.json())
+        .then((respond) => {
+          if (respond?.error) {
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "error",
+              text: respond.error,
+            });
+
+            setLoading(false);
+            return;
+          }
+          fetch(
+            `${API.baseURL}/api/timeframe/getAllForAdmin?page=${
+              page - 1
+            }&limit=6&${
+              isSwitchRecovery
+                ? "&enableDisableStatus=DISABLE"
+                : "&enableDisableStatus=ENABLE"
+            }`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${tokenId}`,
+              },
+            }
+          )
+            .then((res) => res.json())
+            .then((respond) => {
+              if (respond?.code === 404 || respond.status === 500) {
+                setLoading(false);
+                return;
+              }
+              setTimeframeList(respond.pickupPointList);
+              setTotalPage(respond.totalPage);
+              handleCloseDeleteDialog();
+
+              setOpenSnackbar({
+                ...openSnackbar,
+                open: true,
+                severity: "success",
+                text: "Khôi phục thành công",
+              });
+              setLoading(false);
+            })
+            .catch((err) => console.log(err));
+        })
+        .catch((err) => console.log(err));
+    };
     return (
       <tr className="table-body-row">
         <td>{index + 1}</td>
@@ -103,8 +237,19 @@ const TimeframeManagement = () => {
           {item.allowableDeliverMethod === 2 && "Tất cả"}
         </td>
         <td>
-          <i onClick={handleOpenEditDialog} class="bi bi-pencil-square"></i>
-          <i onClick={handleOpenDeleteDialog} class="bi bi-trash-fill"></i>
+          {isSwitchRecovery ? (
+            <i
+              onClick={() => {
+                handleReverse();
+              }}
+              class="bi bi-arrow-repeat"
+            ></i>
+          ) : (
+            <>
+              <i onClick={handleOpenEditDialog} class="bi bi-pencil-square"></i>
+              <i onClick={handleOpenDeleteDialog} class="bi bi-trash-fill"></i>
+            </>
+          )}
         </td>
         <Dialog
           onClose={handleCloseEditDialog}
@@ -112,7 +257,7 @@ const TimeframeManagement = () => {
           open={openEditDialog}
         >
           <EditTimeframe
-            item={item}
+            timeframeItem={item}
             setOpenSnackbar={setOpenSnackbar}
             openSnackbar={openSnackbar}
             handleClose={handleCloseEditDialog}
@@ -152,7 +297,7 @@ const TimeframeManagement = () => {
               </button>
               <button
                 onClick={() => {
-                  // handleDelete();
+                  handleDelete();
                 }}
                 className="modal__container-footer-buttons-create"
               >
@@ -197,28 +342,17 @@ const TimeframeManagement = () => {
       <ManagementMenu menuTabs={menuTabs} />
       <div style={{ marginBottom: 50 }} className="user__container">
         <div className="user__header">
-          <div className="search">
-            <form onSubmit={(e) => onSubmitSearch(e)}>
-              <div onClick={(e) => onSubmitSearch(e)} className="search-icon">
-                <FontAwesomeIcon icon={faMagnifyingGlass} />
-              </div>
-              <input
-                value={textSearch}
-                onChange={(e) => setTextSearch(e.target.value)}
-                type="text"
-                placeholder="Từ khóa tìm kiếm"
-              />
-            </form>
-          </div>
+          <div className="search"></div>
           {/* ****************** */}
-
-          <div
-            onClick={handleOpenCreateDialog}
-            className="pickuppoint__header-button"
-          >
-            <FontAwesomeIcon icon={faPlus} />
-            Thêm khung giờ
-          </div>
+          {!isSwitchRecovery && (
+            <div
+              onClick={handleOpenCreateDialog}
+              className="pickuppoint__header-button"
+            >
+              <FontAwesomeIcon icon={faPlus} />
+              Thêm khung giờ
+            </div>
+          )}
         </div>
         {/* data table + pagination*/}
         <div className="table__container">
@@ -265,12 +399,26 @@ const TimeframeManagement = () => {
                     fontSize: 24,
                   }}
                 >
-                  Không có giao dịch
+                  Không có khung giờ
                 </p>
               </div>
             )}
           </table>
           {/* ********************** */}
+          <div>
+            <button
+              onClick={() => {
+                setPage(1);
+                setIsSwitchRecovery(!isSwitchRecovery);
+              }}
+              className=" buttonRecovery"
+            >
+              {isSwitchRecovery ? "Khung giờ tồn tại" : "Khung giờ vô hiệu hóa"}
+              <FontAwesomeIcon
+                icon={isSwitchRecovery ? faClipboard : faTrashCanArrowUp}
+              />
+            </button>
+          </div>
 
           {/* pagination */}
           {timeframeList.length !== 0 && (

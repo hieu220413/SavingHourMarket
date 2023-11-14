@@ -1,6 +1,7 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
+import com.fpt.capstone.savinghourmarket.common.OrderType;
 import com.fpt.capstone.savinghourmarket.common.StaffRole;
 import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.entity.Staff;
@@ -21,6 +22,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/staff")
@@ -115,12 +119,13 @@ public class StaffController {
     public ResponseEntity<StaffListResponseBody> getStaffForDeliverManager(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
 //            , @RequestParam(required = false) EnableDisableStatus status
 //            , @RequestParam(required = false) StaffRole role
-            , @RequestParam(defaultValue = "") String name
-            , @RequestParam(defaultValue = "0") Integer page
-            , @RequestParam(defaultValue = "5") Integer limit) throws FirebaseAuthException {
+            , @RequestParam OrderType orderType
+            , @RequestParam LocalDate deliverDate
+            , @RequestParam UUID timeFrameId
+            , @RequestParam(defaultValue = "") String name) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        StaffListResponseBody staffListResponseBody = staffService.getStaffForDeliverManager(name, page, limit);
+        StaffListResponseBody staffListResponseBody = staffService.getStaffForDeliverManager(name, orderType, deliverDate, timeFrameId);
         return ResponseEntity.status(HttpStatus.OK).body(staffListResponseBody);
     }
 

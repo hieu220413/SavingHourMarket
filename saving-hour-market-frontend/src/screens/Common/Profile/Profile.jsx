@@ -9,11 +9,11 @@ const Profile = () => {
     <div className="profile__wrapper">
       <div className="profile__container">
         <div className="profile__img">
-          <img src={user.avatarUrl} alt="" />
+          <img src={user?.avatarUrl} alt="" />
         </div>
-        <h2 className="profile__name">{user.fullName}</h2>
-        <h2 className="profile__email">{user.email}</h2>
-        <h2 className="profile__email">{user.role}</h2>
+        <h2 className="profile__name">{user?.fullName}</h2>
+        <h2 className="profile__email">{user?.email}</h2>
+        <h2 className="profile__email">{user?.role}</h2>
         <div className="profile__changepassword">Đổi mật khẩu</div>
       </div>
     </div>

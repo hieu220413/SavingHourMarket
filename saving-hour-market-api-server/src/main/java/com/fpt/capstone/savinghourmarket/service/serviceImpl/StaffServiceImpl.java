@@ -1,9 +1,6 @@
 package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
-import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
-import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
-import com.fpt.capstone.savinghourmarket.common.OrderStatus;
-import com.fpt.capstone.savinghourmarket.common.StaffRole;
+import com.fpt.capstone.savinghourmarket.common.*;
 import com.fpt.capstone.savinghourmarket.entity.*;
 import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.*;
@@ -14,6 +11,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
 import lombok.RequiredArgsConstructor;
+import org.redisson.misc.Hash;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,11 +22,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -50,6 +46,8 @@ public class StaffServiceImpl implements StaffService {
     private final OrderBatchRepository orderBatchRepository;
 
     private final OrderGroupRepository orderGroupRepositorys;
+
+    private final TimeFrameRepository timeFrameRepository;
 
 //    @Override
 //    public Staff getInfoGoogleLogged(String email) throws FirebaseAuthException {
@@ -282,15 +280,70 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public StaffListResponseBody getStaffForDeliverManager(String name, Integer page, Integer limit) {
-        Pageable pageable = PageRequest.of(page, limit);
-        Page<Staff> result = staffRepository.getStaffForDeliverManager(name, StaffRole.STAFF_DLV_0.toString(), pageable);
-        int totalPage = result.getTotalPages();
-        long totalCustomer = result.getTotalElements();
+    public StaffListResponseBody getStaffForDeliverManager(String name, OrderType orderType, LocalDate deliverDate, UUID timeFrameId) {
+        if(orderType == null) {
+            orderType = OrderType.SINGLE;
+        }
 
-        List<Staff> staffList = result.stream().toList();
+        Optional<TimeFrame> timeFrame = timeFrameRepository.findById(timeFrameId);
+         if(!timeFrame.isPresent()) {
+             throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.TIME_FRAME_NOT_FOUND.getCode()), AdditionalResponseCode.TIME_FRAME_NOT_FOUND.toString());
+         }
 
-        return new StaffListResponseBody(staffList, totalPage, totalCustomer);
+        List<Staff> staffList = staffRepository.getAllStaffForDeliverManager(name, StaffRole.STAFF_DLV_0.toString());
+        HashMap<UUID, Staff> staffHashMap = new HashMap();
+        for (Staff staff : staffList) {
+            staffHashMap.put(staff.getId(), staff);
+        }
+
+         // check collide with order group
+        List<Staff> removeStaffList = staffRepository.getStaffWithDeliverDateAndTimeFrame(name, StaffRole.STAFF_DLV_0.toString(), deliverDate, timeFrame.get().getFromHour(), timeFrame.get().getToHour());
+        HashMap<UUID, Staff> removeStaffHashMap = new HashMap<>();
+        for (Staff removeStaff : removeStaffList) {
+            removeStaffHashMap.put(removeStaff.getId(), removeStaff);
+        }
+
+        if(orderType.ordinal() == OrderType.ORDER_GROUP.ordinal()) {
+            // check collide with order batch
+            List<Staff> removeStaffByDoorToDoorOrderList = staffRepository.getStaffWithDeliverDateAndTimeFrameByDoorToDoorOrder(name, StaffRole.STAFF_DLV_0.toString(), deliverDate, timeFrame.get().getFromHour(), timeFrame.get().getToHour());
+            for (Staff removeStaffByDoorToDoorOrder : removeStaffByDoorToDoorOrderList) {
+                if(!removeStaffHashMap.containsKey(removeStaffByDoorToDoorOrder.getId())) {
+                    removeStaffHashMap.put(removeStaffByDoorToDoorOrder.getId(), removeStaffByDoorToDoorOrder);
+                    removeStaffList.add(removeStaffByDoorToDoorOrder);
+                }
+            }
+        }
+
+        for (Staff removeStaff : removeStaffList) {
+            staffList.removeIf(staff -> removeStaff.getId() == staff.getId());
+            staffHashMap.remove(removeStaff.getId());
+        }
+
+        if(orderType.ordinal() == OrderType.ORDER_BATCH.ordinal()) {
+            List<Object[]> countCollideBatchForStaffList =  staffRepository.countCollideBatchForStaff(staffList.stream().map(staff -> staff.getId()).collect(Collectors.toList()), deliverDate, timeFrame.get().getFromHour(), timeFrame.get().getToHour());
+            for(Object[] countCollideBatchForStaff : countCollideBatchForStaffList) {
+                UUID staffIdResult = (UUID) countCollideBatchForStaff[0];
+                Long collideBatchCountResult = (Long) countCollideBatchForStaff[1];
+                staffHashMap.get(staffIdResult).setCollideOrderBatchQuantity(collideBatchCountResult);
+            }
+            for (Staff staff : staffList) {
+                if(staff.getCollideOrderBatchQuantity() == null) {
+                    staff.setCollideOrderBatchQuantity(Long.parseLong("0"));
+                }
+            }
+        }
+
+//        Pageable pageable = PageRequest.of(page, limit);
+
+//        if(orderType.ordinal() == OrderType.ORDER_GROUP.ordinal()){
+        // find deliver that have group which collide with current
+
+//        }
+//        List<Staff> result = staffRepository.getStaffForDeliverManager(name, StaffRole.STAFF_DLV_0.toString(), orderType.ordinal(), deliverDate, timeFrameId);
+//        int totalPage = result.getTotalPages();
+//        long totalCustomer = result.getTotalElements();
+
+        return new StaffListResponseBody(staffList, null, null);
     }
 
     private UserRecord checkIsStaffInOrderProcess(Optional<Staff> staff) throws FirebaseAuthException {
