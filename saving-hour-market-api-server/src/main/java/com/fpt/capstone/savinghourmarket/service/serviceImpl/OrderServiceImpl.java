@@ -1068,7 +1068,7 @@ public class OrderServiceImpl implements OrderService {
 
             int titleFontSize = 36;
             int bodyFontSize = 28;
-            String fontFamilyBody = new ClassPathResource("AndikaNewBasic-R.ttf").getURI().getPath();
+            String fontFamilyBody = new ClassPathResource("AndikaNewBasic-R.ttf").getURL().toExternalForm();
 
             // Add content to the iText PDF document directly
             addParagraph(pdfDocument, "Mã đơn hàng: " + order.getId().toString(), titleFontSize, fontFamilyBody, true);
