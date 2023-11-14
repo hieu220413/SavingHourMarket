@@ -209,4 +209,10 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "AND " +
             "o.id IN :orderIdList")
     List<Order> findOrderByIdListWithDeliveredStatus(List<UUID> orderIdList, UUID timeframeId, Date deliverDate);
+
+    @Query("SELECT o FROM Order o " +
+            "JOIN o.orderDetailList od " +
+            "JOIN od.orderDetailProductBatches pb " +
+            "WHERE pb.productBatch.id = :productBatchId ")
+    List<Order> findOrderByProductBatchId(UUID productBatchId, Pageable pageable);
 }
