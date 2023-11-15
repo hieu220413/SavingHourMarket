@@ -13,7 +13,7 @@ import {
   Alert,
   FlatList,
 } from 'react-native';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS } from '../../constants/theme';
@@ -91,6 +91,7 @@ const Home = ({ navigation }) => {
   const [selectedConsolidationAreaId, setSelectedConsolidationAreaId] = useState('');
 
   const print = async (orderId) => {
+    setLoading(true);
     console.log('print');
     const tokenId = await auth().currentUser.getIdToken();
     if (tokenId) {
@@ -203,6 +204,14 @@ const Home = ({ navigation }) => {
     }
   };
 
+  const swipeListViewRef = useRef();
+
+  const closeRow = (rowMap, rowKey) => {
+    if (rowMap[rowKey]) {
+      rowMap[rowKey].closeRow();
+    }
+  };
+
   // edit consolidation  area function
   const editConsolidationArea = async () => {
     const fetchData = async () => {
@@ -223,7 +232,6 @@ const Home = ({ navigation }) => {
             )
               .then(res => res.json())
               .then(respond => {
-                console.log('order', respond);
                 if (respond.error) {
                   setLoading(false);
                   return;
@@ -248,7 +256,6 @@ const Home = ({ navigation }) => {
             )
               .then(res => res.json())
               .then(respond => {
-                console.log('order', respond, '1');
                 if (respond.error) {
                   setLoading(false);
                   return;
@@ -291,8 +298,11 @@ const Home = ({ navigation }) => {
         console.log(result);
         fetchData();
         showToast(result);
+        console.log(editVisible);
+        setEditVisible(false);
       } else {
         const result = await consolidationAreaEditRequest.json();
+        setEditVisible(false);
         console.log(result);
       }
     }
@@ -330,7 +340,6 @@ const Home = ({ navigation }) => {
               )
                 .then(res => res.json())
                 .then(respond => {
-                  console.log('order', respond);
                   if (respond.error) {
                     setLoading(false);
                     return;
@@ -356,7 +365,6 @@ const Home = ({ navigation }) => {
               )
                 .then(res => res.json())
                 .then(respond => {
-                  console.log('order', respond, '1');
                   if (respond.error) {
                     setLoading(false);
                     return;
@@ -504,7 +512,6 @@ const Home = ({ navigation }) => {
             )
               .then(res => res.json())
               .then(respond => {
-                // console.log(respond);
                 if (respond.error) {
                   setLoading(false);
                   return;
@@ -550,7 +557,6 @@ const Home = ({ navigation }) => {
           )
             .then(res => res.json())
             .then(respond => {
-              // console.log(respond);
               if (respond.error) {
                 setLoading(false);
                 return;
@@ -593,7 +599,6 @@ const Home = ({ navigation }) => {
             )
               .then(res => res.json())
               .then(respond => {
-                console.log('order', respond);
                 if (respond.error) {
                   setLoading(false);
                   return;
@@ -618,7 +623,6 @@ const Home = ({ navigation }) => {
             )
               .then(res => res.json())
               .then(respond => {
-                console.log('order', respond, '1');
                 if (respond.error) {
                   setLoading(false);
                   return;
@@ -640,8 +644,6 @@ const Home = ({ navigation }) => {
         const tokenId = await auth().currentUser.getIdToken();
         if (tokenId) {
           setLoading(true);
-          console.log(currentUser.id);
-          console.log(order.id);
           fetch(
             `${API.baseURL}/api/order/packageStaff/confirmPackaging?orderId=${order.id}&productConsolidationAreaId=${selectedConsolidationAreaId}`,
             {
@@ -654,7 +656,6 @@ const Home = ({ navigation }) => {
           )
             .then(res => res.text())
             .then(respond => {
-              console.log(respond);
               fetchData();
               showToast(respond);
             })
@@ -671,8 +672,6 @@ const Home = ({ navigation }) => {
         const tokenId = await auth().currentUser.getIdToken();
         if (tokenId) {
           setLoading(true);
-          console.log(currentUser.id);
-          console.log(order.id);
           fetch(
             `${API.baseURL}/api/order/packageStaff/confirmPackaged?orderId=${order.id}`,
             {
@@ -955,7 +954,9 @@ const Home = ({ navigation }) => {
           ) : (
             <View style={{ height: "87%" }}>
               <SwipeListView
+                ref={swipeListViewRef}
                 data={orderList}
+                keyExtractor={(item, index) => item.id}
                 renderItem={(data, rowMap) => (
                   <View
                     key={data.item.id}
@@ -1151,8 +1152,8 @@ const Home = ({ navigation }) => {
                   </View>
                 )}
                 renderHiddenItem={(data, rowMap) => (
-
                   <View
+                    key={data.item.id}
                     style={{
                       flexDirection: 'row',
                       justifyContent: data.item?.status === 1 ? 'space-between' : 'flex-end',
@@ -1175,6 +1176,7 @@ const Home = ({ navigation }) => {
                         }}
                         onPress={() => {
                           print(data.item?.id);
+                          closeRow(rowMap, data.item.id);
                         }}>
                         <View>
                           <Image
@@ -1204,8 +1206,8 @@ const Home = ({ navigation }) => {
                               getConsolidationArea(data.item.pickupPoint.id, data.item.status);
                               setSelectedConsolidationAreaId(data.item?.productConsolidationArea.id);
                               isEditConsolidationAreaList(true);
-                              // console.log(data.item.id);
                               setOrder(data.item);
+                              closeRow(rowMap, data.item.id);
                             }}>
                             <View>
                               <Image
@@ -1234,6 +1236,7 @@ const Home = ({ navigation }) => {
                             getConsolidationArea(data.item.pickupPoint.id);
                             // console.log(data.item.id);
                             setOrder(data.item);
+                            closeRow(rowMap, data.item.id);
                           }}>
                           <View>
                             {data.item?.status === 0 && (
