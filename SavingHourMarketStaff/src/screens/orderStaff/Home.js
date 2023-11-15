@@ -830,7 +830,9 @@ const Home = ({ navigation }) => {
                 <Image
                   resizeMode="contain"
                   style={{ width: 38, height: 38 }}
-                  source={icons.userCircle}
+                  source={{
+                    uri: currentUser?.avatarUrl,
+                  }}
                 />
               </TouchableOpacity>
               {open && (
@@ -1570,6 +1572,8 @@ const Home = ({ navigation }) => {
                   </Text>
                 </View>
                 <FlatList
+                  showsVerticalScrollIndicator={false}
+                  showsHorizontalScrollIndicator={false}
                   style={{ maxHeight: 200, marginHorizontal: 7 }}
                   data={consolidationAreaList}
                   renderItem={data => (
@@ -1678,18 +1682,30 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   header: {
-    flex: 2.2,
+    flex: 2,
     // backgroundColor: 'orange',
     paddingHorizontal: 20,
+    zIndex: 100,
+    backgroundColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
   body: {
     flex: 11,
     // backgroundColor: 'pink',
+    marginTop:10,
     paddingHorizontal: 20,
   },
   areaAndLogout: {
     paddingTop: 10,
     flexDirection: 'row',
+    
   },
   pickArea: {
     paddingVertical: 6,

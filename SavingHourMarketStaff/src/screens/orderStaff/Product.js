@@ -316,7 +316,7 @@ const Product = ({ navigation }) => {
         </View>
         <View style={styles.body}>
           {Object.keys(productsPackaging).length === 0 ?
-            <View style={{ alignItems: 'center', justifyContent: 'center', marginTop:12 }}>
+            <View style={{ alignItems: 'center', justifyContent: 'center', marginTop: 12 }}>
               <Image
                 style={{ width: '100%', height: '50%' }}
                 resizeMode="contain"
@@ -334,6 +334,8 @@ const Product = ({ navigation }) => {
             </View>
             :
             <FlatList
+              showsVerticalScrollIndicator={false}
+              showsHorizontalScrollIndicator={false}
               data={Object.keys(productsPackaging)}
               keyExtractor={(item) => item.toString()}
               renderItem={({ item }) =>
@@ -399,13 +401,23 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
-    paddingHorizontal: 20,
   },
   header: {
     flex: 1,
+    backgroundColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 2,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    paddingHorizontal: 20,
   },
   body: {
     flex: 8,
+    paddingHorizontal: 20,
   },
   areaAndLogout: {
     paddingTop: 10,

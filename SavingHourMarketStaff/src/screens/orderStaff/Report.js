@@ -8,14 +8,14 @@ import {
   Image,
   ScrollView,
 } from 'react-native';
-import React, {useEffect, useState, useCallback} from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {COLORS} from '../../constants/theme';
-import {icons} from '../../constants';
-import {useFocusEffect} from '@react-navigation/native';
-import {API} from '../../constants/api';
-import {format} from 'date-fns';
+import { COLORS } from '../../constants/theme';
+import { icons } from '../../constants';
+import { useFocusEffect } from '@react-navigation/native';
+import { API } from '../../constants/api';
+import { format } from 'date-fns';
 import {
   ExpandableCalendar,
   AgendaList,
@@ -23,66 +23,66 @@ import {
   WeekCalendar,
 } from 'react-native-calendars';
 import LoadingScreen from '../../components/LoadingScreen';
-import {BarChart, LineChart, PieChart} from 'react-native-gifted-charts';
+import { BarChart, LineChart, PieChart } from 'react-native-gifted-charts';
 
-const Report = ({navigation}) => {
+const Report = ({ navigation }) => {
   const barData = [
     {
       value: 40,
       label: 'Jan',
       spacing: 2,
       labelWidth: 30,
-      labelTextStyle: {color: 'gray'},
+      labelTextStyle: { color: 'gray' },
       frontColor: '#177AD5',
     },
-    {value: 20, frontColor: '#ED6665'},
+    { value: 20, frontColor: '#ED6665' },
     {
       value: 50,
       label: 'Feb',
       spacing: 2,
       labelWidth: 30,
-      labelTextStyle: {color: 'gray'},
+      labelTextStyle: { color: 'gray' },
       frontColor: '#177AD5',
     },
-    {value: 40, frontColor: '#ED6665'},
+    { value: 40, frontColor: '#ED6665' },
     {
       value: 75,
       label: 'Mar',
       spacing: 2,
       labelWidth: 30,
-      labelTextStyle: {color: 'gray'},
+      labelTextStyle: { color: 'gray' },
       frontColor: '#177AD5',
     },
-    {value: 25, frontColor: '#ED6665'},
+    { value: 25, frontColor: '#ED6665' },
     {
       value: 30,
       label: 'Apr',
       spacing: 2,
       labelWidth: 30,
-      labelTextStyle: {color: 'gray'},
+      labelTextStyle: { color: 'gray' },
       frontColor: '#177AD5',
     },
-    {value: 20, frontColor: '#ED6665'},
+    { value: 20, frontColor: '#ED6665' },
     {
       value: 60,
       label: 'May',
       spacing: 2,
       labelWidth: 30,
-      labelTextStyle: {color: 'gray'},
+      labelTextStyle: { color: 'gray' },
       frontColor: '#177AD5',
     },
-    {value: 40, frontColor: '#ED6665'},
+    { value: 40, frontColor: '#ED6665' },
     {
       value: 65,
       label: 'Jun',
       spacing: 2,
       labelWidth: 30,
-      labelTextStyle: {color: 'gray'},
+      labelTextStyle: { color: 'gray' },
       frontColor: '#177AD5',
     },
-    {value: 30, frontColor: '#ED6665'},
+    { value: 30, frontColor: '#ED6665' },
   ];
-
+  const [currentUser, setCurrentUser] = useState(null);
   const [initializing, setInitializing] = useState(true);
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState(
@@ -91,24 +91,24 @@ const Report = ({navigation}) => {
   const [loading, setLoading] = useState(false);
   const [dayReport, setDayReport] = useState(null);
   const [data, setData] = useState([
-    {value: 0, label: 'Jan', month: 1},
-    {value: 0, label: 'Feb', month: 2},
-    {value: 0, label: 'Mar', month: 3},
-    {value: 0, label: 'Apr', month: 4},
-    {value: 0, label: 'May', month: 5},
-    {value: 0, label: 'Jun', month: 6},
-    {value: 0, label: 'Jul', month: 7},
-    {value: 0, label: 'Aug', month: 8},
-    {value: 0, label: 'Sep', month: 9},
-    {value: 0, label: 'Oct', month: 10},
-    {value: 0, label: 'Nov', month: 11},
-    {value: 0, label: 'Dec', month: 12},
+    { value: 0, label: 'Jan', month: 1 },
+    { value: 0, label: 'Feb', month: 2 },
+    { value: 0, label: 'Mar', month: 3 },
+    { value: 0, label: 'Apr', month: 4 },
+    { value: 0, label: 'May', month: 5 },
+    { value: 0, label: 'Jun', month: 6 },
+    { value: 0, label: 'Jul', month: 7 },
+    { value: 0, label: 'Aug', month: 8 },
+    { value: 0, label: 'Sep', month: 9 },
+    { value: 0, label: 'Oct', month: 10 },
+    { value: 0, label: 'Nov', month: 11 },
+    { value: 0, label: 'Dec', month: 12 },
   ]);
   const [yearReport, setYearReport] = useState(null);
 
   const renderTitle = () => {
     return (
-      <View style={{marginVertical: 30}}>
+      <View style={{ marginVertical: 30 }}>
         <Text
           style={{
             color: 'black',
@@ -125,7 +125,7 @@ const Report = ({navigation}) => {
             justifyContent: 'space-around',
             marginTop: 24,
           }}>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <View
               style={{
                 height: 12,
@@ -143,7 +143,7 @@ const Report = ({navigation}) => {
               Đơn thành công
             </Text>
           </View>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <View
               style={{
                 height: 12,
@@ -187,7 +187,9 @@ const Report = ({navigation}) => {
         return;
       }
       const currentUser = await AsyncStorage.getItem('userInfo');
-      // console.log(currentUser);
+      console.log(JSON.parse(currentUser));
+      setCurrentUser(JSON.parse(currentUser));
+
     } else {
       // no sessions found.
       console.log('user is not logged in');
@@ -250,22 +252,21 @@ const Report = ({navigation}) => {
           if (tokenId) {
             setLoading(true);
             const resetData = [
-              {value: 0, label: 'Jan', month: 1},
-              {value: 0, label: 'Feb', month: 2},
-              {value: 0, label: 'Mar', month: 3},
-              {value: 0, label: 'Apr', month: 4},
-              {value: 0, label: 'May', month: 5},
-              {value: 0, label: 'Jun', month: 6},
-              {value: 0, label: 'Jul', month: 7},
-              {value: 0, label: 'Aug', month: 8},
-              {value: 0, label: 'Sep', month: 9},
-              {value: 0, label: 'Oct', month: 10},
-              {value: 0, label: 'Nov', month: 11},
-              {value: 0, label: 'Dec', month: 12},
+              { value: 0, label: 'Jan', month: 1 },
+              { value: 0, label: 'Feb', month: 2 },
+              { value: 0, label: 'Mar', month: 3 },
+              { value: 0, label: 'Apr', month: 4 },
+              { value: 0, label: 'May', month: 5 },
+              { value: 0, label: 'Jun', month: 6 },
+              { value: 0, label: 'Jul', month: 7 },
+              { value: 0, label: 'Aug', month: 8 },
+              { value: 0, label: 'Sep', month: 9 },
+              { value: 0, label: 'Oct', month: 10 },
+              { value: 0, label: 'Nov', month: 11 },
+              { value: 0, label: 'Dec', month: 12 },
             ];
             fetch(
-              `${
-                API.baseURL
+              `${API.baseURL
               }/api/order/packageStaff/getReportOrders?mode=MONTH&year=${date.slice(
                 0,
                 4,
@@ -332,7 +333,7 @@ const Report = ({navigation}) => {
                     label: item.year,
                     spacing: 2,
                     labelWidth: 30,
-                    labelTextStyle: {color: 'gray'},
+                    labelTextStyle: { color: 'gray' },
                     frontColor: '#177AD5',
                   };
                   const obj2 = {
@@ -370,8 +371,8 @@ const Report = ({navigation}) => {
         <View style={styles.header}>
           <View style={styles.pagenameAndLogout}>
             <View style={styles.pageName}>
-              <Text style={{fontSize: 25, color: 'black', fontWeight: 'bold'}}>
-                Thống kê
+              <Text style={{ fontSize: 20, color: 'black', fontWeight: 'bold' }}>
+                Trang chủ
               </Text>
             </View>
             <View style={styles.logout}>
@@ -381,8 +382,10 @@ const Report = ({navigation}) => {
                 }}>
                 <Image
                   resizeMode="contain"
-                  style={{width: 38, height: 38}}
-                  source={icons.userCircle}
+                  style={{ width: 38, height: 38 }}
+                  source={{
+                    uri: currentUser?.avatarUrl,
+                  }}
                 />
               </TouchableOpacity>
               {open && (
@@ -407,7 +410,7 @@ const Report = ({navigation}) => {
                       })
                       .catch(e => console.log(e));
                   }}>
-                  <Text style={{color: 'red', fontWeight: 'bold'}}>
+                  <Text style={{ color: 'red', fontWeight: 'bold' }}>
                     Đăng xuất
                   </Text>
                 </TouchableOpacity>
@@ -415,84 +418,210 @@ const Report = ({navigation}) => {
             </View>
           </View>
         </View>
+
         <View style={styles.body}>
-          <CalendarProvider
-            style={{width: '100%'}}
-            date={date}
-            onDateChanged={e => {
-              console.log(e);
-              setDate(e);
-            }}
-            // onMonthChange={onMonthChange}
-            // todayBottomMargin={16}
-          >
-            <ExpandableCalendar
-              testID="expandableCalendar"
-              allowShadow={false}
-              disablePan={true}
-              hideKnob={true}
-            />
-          </CalendarProvider>
-        </View>
-        <View style={styles.footer}>
-          <ScrollView style={{marginBottom: 80, paddingTop: 10}}>
-            <View style={styles.wrap_container}>
-              <View style={styles.wrap}>
-                <View style={{flex: 1}}>
-                  <Text style={styles.texts}>Tổng số đơn hàng trong ngày:</Text>
-                </View>
-                <View
-                  style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-                  <Text style={styles.numbers}>
-                    {dayReport
-                      ? dayReport.cancelCount +
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
+            style={{ marginBottom: 80 }}>
+            <Text
+              style={{ backgroundColor: 'white', fontSize: 26, fontStyle: 'italic', color: 'black', marginTop: 10, paddingHorizontal: 20 }}>
+              Xin chào! {currentUser?.fullName} 👋
+            </Text>
+            <View style={{
+              paddingTop: 10,
+              paddingBottom: 20,
+              borderRadius: 20,
+              backgroundColor: 'white',
+              shadowColor: '#000',
+              shadowOffset: {
+                width: 2,
+                height: 2,
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 4,
+              elevation: 5,
+              marginHorizontal: 5,
+              marginBottom: 20,
+              marginTop: 10
+            }}>
+              <CalendarProvider
+                style={{ width: '96%', paddingHorizontal: 2 }}
+                date={date}
+                onDateChanged={e => {
+                  console.log(e);
+                  setDate(e);
+                }}
+              // onMonthChange={onMonthChange}
+              // todayBottomMargin={16}
+              >
+                <ExpandableCalendar
+                  testID="expandableCalendar"
+                  allowShadow={false}
+                  disablePan={true}
+                  hideKnob={true}
+                />
+              </CalendarProvider>
+              <View style={styles.wrap_container}>
+                <View style={styles.wrapProcessing}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.texts}>Tổng đơn trong ngày:</Text>
+                  </View>
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <Text style={styles.numbers}>
+                      {dayReport
+                        ? dayReport.cancelCount +
                         dayReport.deliveringCount +
                         dayReport.failCount +
                         dayReport.packagedCount +
                         dayReport.packagingCount +
                         dayReport.successCount
-                      : '0'}
-                  </Text>
+                        : '0'}
+                    </Text>
+                  </View>
                 </View>
-              </View>
+                <View style={styles.wrapPackaging}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.texts}>Tổng đơn trong ngày:</Text>
+                  </View>
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <Text style={styles.numbers}>
+                      {dayReport
+                        ? dayReport.cancelCount +
+                        dayReport.deliveringCount +
+                        dayReport.failCount +
+                        dayReport.packagedCount +
+                        dayReport.packagingCount +
+                        dayReport.successCount
+                        : '0'}
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.wrapPackaged}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.texts}>Tổng đơn trong ngày:</Text>
+                  </View>
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <Text style={styles.numbers}>
+                      {dayReport
+                        ? dayReport.cancelCount +
+                        dayReport.deliveringCount +
+                        dayReport.failCount +
+                        dayReport.packagedCount +
+                        dayReport.packagingCount +
+                        dayReport.successCount
+                        : '0'}
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.wrapCancel}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.texts}>Tổng đơn trong ngày:</Text>
+                  </View>
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <Text style={styles.numbers}>
+                      {dayReport
+                        ? dayReport.cancelCount +
+                        dayReport.deliveringCount +
+                        dayReport.failCount +
+                        dayReport.packagedCount +
+                        dayReport.packagingCount +
+                        dayReport.successCount
+                        : '0'}
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.wrapSuccess}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.texts}>Tổng đơn trong ngày:</Text>
+                  </View>
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <Text style={styles.numbers}>
+                      {dayReport
+                        ? dayReport.cancelCount +
+                        dayReport.deliveringCount +
+                        dayReport.failCount +
+                        dayReport.packagedCount +
+                        dayReport.packagingCount +
+                        dayReport.successCount
+                        : '0'}
+                    </Text>
+                  </View>
+                </View>
 
-              <View style={styles.wrap}>
-                <View style={{flex: 1}}>
-                  <Text style={styles.texts}>Số đơn hàng giao thành công:</Text>
-                </View>
-                <View
-                  style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-                  <Text style={styles.numbers}>
-                    {dayReport ? dayReport.successCount : '0'}
-                  </Text>
+                <View style={styles.wrapDelivering}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.texts}>Số đơn thành công:</Text>
+                  </View>
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <Text style={styles.numbers}>
+                      {dayReport ? dayReport.successCount : '0'}
+                    </Text>
+                  </View>
                 </View>
               </View>
             </View>
-            <View style={{paddingTop: 10}}>
+            <View style={{
+              paddingTop: 10,
+              borderRadius: 20,
+              backgroundColor: 'white',
+              shadowColor: '#000',
+              shadowOffset: {
+                width: 0,
+                height: 2,
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 4,
+              elevation: 10,
+              marginHorizontal: 5,
+              marginBottom: 20
+            }}>
               <View
                 style={{
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  paddingBottom:30
+                  paddingBottom: 30
                 }}>
                 <Text
-                  style={{fontSize: 18, fontWeight: 'bold', color: 'black'}}>
+                  style={{ fontSize: 18, fontWeight: 'bold', color: 'black' }}>
                   SỐ ĐƠN HÀNG ĐÃ GIAO
                 </Text>
               </View>
               <BarChart
                 disablePress={true}
                 data={data}
-                spacing={10}
+                spacing={6.5}
                 barWidth={20}
                 frontColor="red"
                 isAnimated
@@ -500,6 +629,22 @@ const Report = ({navigation}) => {
                 // hideRules
                 showFractionalValue
               />
+            </View>
+            <View style={{
+              paddingTop: 10,
+              borderRadius: 20,
+              backgroundColor: 'white',
+              shadowColor: '#000',
+              shadowOffset: {
+                width: 0,
+                height: 2,
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 4,
+              elevation: 10,
+              marginHorizontal: 5,
+              marginBottom: 20
+            }}>
               <View
                 style={{
                   paddingBottom: 40,
@@ -516,7 +661,7 @@ const Report = ({navigation}) => {
                   disablePress={true}
                   xAxisThickness={0}
                   yAxisThickness={0}
-                  yAxisTextStyle={{color: 'gray'}}
+                  yAxisTextStyle={{ color: 'gray' }}
                   noOfSections={3}
                 />
               </View>
@@ -534,36 +679,75 @@ export default Report;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: 'white'
   },
   header: {
     flex: 0.9,
+    backgroundColor: 'white',
+    zIndex: 40,
+
     // backgroundColor: 'orange',
-    paddingHorizontal: 20,
   },
   body: {
-    flex: 2.2,
+    flex: 10,
     zIndex: 50,
-  },
-  footer: {
-    flex: 8,
-    // paddingHorizontal: 20,
-    // backgroundColor: 'red',
+    paddingHorizontal: 10,
+    paddingTop: 10
   },
   wrap_container: {
     display: 'flex',
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingVertical: 10,
     alignContent: 'center',
     gap: 10,
     justifyContent: 'center',
+    marginTop: 10
     // backgroundColor: 'pink',
   },
-  wrap: {
-    width: 190,
-    height: 130,
-    backgroundColor: 'rgb(240,240,240)',
+  wrapProcessing: {
+    width: 100,
+    height: 108,
+    backgroundColor: COLORS.light_green,
+    borderRadius: 10,
+    padding: 10,
+    display: 'flex',
+  },
+  wrapPackaging: {
+    width: 100,
+    height: 108,
+    backgroundColor: '#9ae4b6',
+    borderRadius: 10,
+    padding: 10,
+    display: 'flex',
+  },
+  wrapPackaged: {
+    width: 100,
+    height: 108,
+    backgroundColor: '#a3e271',
+    borderRadius: 10,
+    padding: 10,
+    display: 'flex',
+  },
+  wrapCancel: {
+    width: 100,
+    height: 108,
+    backgroundColor: '#79f4b4',
+    borderRadius: 10,
+    padding: 10,
+    display: 'flex',
+  },
+  wrapDelivering: {
+    width: 100,
+    height: 108,
+    backgroundColor: '#e7c667',
+    borderRadius: 10,
+    padding: 10,
+    display: 'flex',
+  },
+  wrapSuccess: {
+    width: 100,
+    height: 108,
+    backgroundColor: COLORS.primary,
     borderRadius: 10,
     padding: 10,
     display: 'flex',
@@ -574,13 +758,25 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   texts: {
-    fontSize: 18,
+    fontSize: 14,
     color: 'black',
   },
   pagenameAndLogout: {
     paddingTop: 18,
+    paddingBottom: 16,
     flexDirection: 'row',
     alignItems: 'center',
+    zIndex: 100,
+    backgroundColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    paddingHorizontal: 15,
   },
   pageName: {
     flex: 7,
