@@ -271,6 +271,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public String editProductConsolidationArea(UUID orderId, UUID productConsolidationAreaId) throws ResourceNotFoundException {
         Order order = repository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng với ID " + orderId));

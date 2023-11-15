@@ -32,6 +32,9 @@ const statistic = require('../assets/icons/statistic.png');
 const userCircle = require('../assets/icons/user-circle.png');
 const packaging = require('../assets/icons/packaging.png');
 const packaged = require('../assets/icons/packaged.png');
+const packaged256 = require('../assets/icons/packaged-256.png');
+const packaged512 = require('../assets/icons/packaged-512.png');
+const packageIcon = require('../assets/icons/package.png');
 const qrCodeScanner = require('../assets/icons/QRCodeScanner.png');
 const packager = require('../assets/icons/package1.png');
 const product = require('../assets/icons/product.png');
@@ -75,6 +78,9 @@ export default {
   statistic,
   userCircle,
   packaging,
+  packaged256,
+  packaged512,
+  packageIcon,
   packaged,
   qrCodeScanner,
   packager,

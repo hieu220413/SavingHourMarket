@@ -108,7 +108,18 @@ const SelectPickupPoint = ({navigation, route}) => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+          <TouchableOpacity onPress={() => {
+            if (
+              route.params.isFromOrderGroupRoute &&
+              route.params.isFromOrderGroupRoute === true
+            ) {
+              navigation.navigate('OrderGroupForOrderStaff', {
+                goBackFromPickupPoint: true
+              });
+              return;
+            }
+            navigation.goBack();
+          }}>
             <Image
               source={icons.leftArrow}
               resizeMode="contain"
