@@ -596,57 +596,37 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
   //   }, []),
   // );
 
+  // value to make sure that data not fetch second time when init pickup point
+  // init pickup point
+  const effectTriggerPickupPointNull = useRef(true);
+  useFocusEffect(
+    useCallback(() => {
+      const initPickupPoint = async () => {
+        // console.log('pick up point :', pickupPoint)
+        const pickupPointStorage = await AsyncStorage.getItem('pickupPoint')
+          .then(result => JSON.parse(result))
+          .catch(error => {
+            console.log(error);
+            return null;
+          });
+        if (pickupPointStorage) {
+          setPickupPoint(pickupPointStorage);
+        } else {
+          setPickupPoint(null);
+          effectTriggerPickupPointNull.current =
+            !effectTriggerPickupPointNull.current;
+        }
+      };
+      initPickupPoint();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
+  );
+
   // intit fetch time frame + order group
   useFocusEffect(
     useCallback(() => {
-      console.log('effect run');
       const fetchData = async () => {
-        //   if (auth().currentUser) {
-        //     const tokenId = await auth().currentUser.getIdToken();
-        //     if (tokenId) {
-        //             console.log('selectedDate: ', selectedDate);
-        //       // console.log(format(Date.parse(tempSelectedDate), 'yyyy-MM-dd'));
-        //       console.log('selectedTimeFrame: ', selectedTimeFrameId);
-        //       console.log('tempSelectedDate: ', tempSelectedDate);
-        //       console.log('tempSelectedTimeFrame: ', tempSelectedTimeFrameId);
-        // setLoading(true);
-        //       console.log(format(Date.parse(selectedDate), 'yyyy-MM-dd'));
-        //       setSelectSort(sortOptions);
-        //       setTempSelectedSortId('');
-        //       setSelectedDate('');
-        //       setTempSelectedDate('');
-        //       setSelectedTimeFrameId('');
-        //       setTempSelectedTimeFrameId('');
-        //       await filterOrderGroup();
-        //       fetch(
-        //         `${API.baseURL}/api/order/packageStaff/getOrderGroup?${
-        //           pickupPoint ? 'pickupPointId=' + pickupPoint?.id : ''
-        //         }&deliverDate=${format(Date.parse(selectedDate), 'yyyy-MM-dd')}`,
-        //         {
-        //           method: 'GET',
-        //           headers: {
-        //             'Content-Type': 'application/json',
-        //             Authorization: `Bearer ${tokenId}`,
-        //           },
-        //         },
-        //       )
-        //         .then(res => res.json())
-        //         .then(respond => {
-        //           // console.log('order group', respond);
-        //           if (respond.error) {
-        //             // setLoading(false);
-        //             return;
-        //           }
-        //           setOrderGroupList(respond);
-        //           // setLoading(false);
-        //         })
-        //         .catch(err => {
-        //           console.log(err);
-        //           // setLoading(false);
-        //         });
-        //       setLoading(false);
-        //     }
-        //   }
+        // await filterOrderGroup();
       };
       // fetch time frame
       fetch(`${API.baseURL}/api/timeframe/getForPickupPoint`, {
@@ -657,45 +637,24 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
       })
         .then(res => res.json())
         .then(respond => {
-          // console.log('time frame', respond);
           if (respond.error) {
-            // setLoading(false);
             return;
           }
-
           setTimeFrameList(respond);
-
-          // setLoading(false);
         })
         .catch(err => {
           console.log(err);
         });
-      console.log(route.params?.goBackFromPickupPoint);
-      if (!route.params?.goBackFromPickupPoint) {
-        // console.log(' go back false')
-        setSelectSort(sortOptions);
-        setTempSelectedSortId('');
-        setSelectedDate('');
-        setTempSelectedDate('');
-        setSelectedTimeFrameId('');
-        setTempSelectedTimeFrameId('');
-      } else {
-        route.params.goBackFromPickupPoint = undefined;
-      }
+      // console.log(route.params?.goBackFromPickupPoint);
+      // if (!route.params?.goBackFromPickupPoint) {
+      // console.log(' go back false')
+      // } else {
+      //   route.params.goBackFromPickupPoint = undefined;
+      // }
 
       fetchData();
-      // return () => {
-      //   console.log('clean up')
-      //   setSelectSort(sortOptions);
-      //   setTempSelectedSortId('');
-      //   setSelectedDate('');
-      //   setTempSelectedDate('');
-      //   setSelectedTimeFrameId('');
-      //   setTempSelectedTimeFrameId('');
-      //   // filterOrderGroup();
-      // }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [pickupPoint, route]),
+    }, [selectSort, selectedDate, selectedTimeFrameId]),
   );
 
   // response message view modal
@@ -720,14 +679,14 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
   ];
 
   const [selectSort, setSelectSort] = useState(sortOptions);
-  const [tempSelectedSortId, setTempSelectedSortId] = useState(null);
+  const [tempSelectedSortId, setTempSelectedSortId] = useState('');
 
   //  filter pickup point
-  const [selectedTimeFrameId, setSelectedTimeFrameId] = useState(null);
-  const [tempSelectedTimeFrameId, setTempSelectedTimeFrameId] = useState(null);
+  const [selectedTimeFrameId, setSelectedTimeFrameId] = useState('');
+  const [tempSelectedTimeFrameId, setTempSelectedTimeFrameId] = useState('');
   //  filter date
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [tempSelectedDate, setTempSelectedDate] = useState(null);
+  const [selectedDate, setSelectedDate] = useState('');
+  const [tempSelectedDate, setTempSelectedDate] = useState('');
 
   // filter function
   const filterOrderGroup = async () => {
@@ -735,11 +694,11 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
     const tokenId = await auth().currentUser.getIdToken();
     if (tokenId) {
       setLoading(true);
-      console.log('selectedDate: ', selectedDate);
-      // console.log(format(Date.parse(tempSelectedDate), 'yyyy-MM-dd'));
-      console.log('selectedTimeFrame: ', selectedTimeFrameId);
-      console.log('tempSelectedDate: ', tempSelectedDate);
-      console.log('tempSelectedTimeFrame: ', tempSelectedTimeFrameId);
+      // console.log('selectedDate: ', selectedDate);
+      // console.log('selectedTimeFrame: ', selectedTimeFrameId);
+      // console.log('tempSelectedDate: ', tempSelectedDate);
+      // console.log('tempSelectedTimeFrame: ', tempSelectedTimeFrameId);
+      // console.log('pickupPoint: ', pickupPoint);
       await fetch(
         `${API.baseURL}/api/order/packageStaff/getOrderGroup?${
           pickupPoint ? 'pickupPointId=' + pickupPoint?.id : ''
@@ -811,8 +770,23 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
     isMountingRef.current = true;
   }, []);
 
+  // useEffect(() => {
+  //   if (!isMountingRef.current) {
+  //     console.log('ndafbsdhjfbhsdfbj');
+  //     setSelectSort(sortOptions);
+  //     setTempSelectedSortId('');
+  //     setSelectedDate('');
+  //     setTempSelectedDate('');
+  //     setSelectedTimeFrameId('');
+  //     setTempSelectedTimeFrameId('');
+  //   }
+
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [pickupPoint]);
+
   useEffect(() => {
     const fetchData = async () => {
+      // console.log(pickupPoint);
       if (!isMountingRef.current) {
         await filterOrderGroup();
       } else {
@@ -821,7 +795,13 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
     };
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectSort, selectedDate, selectedTimeFrameId]);
+  }, [
+    selectSort,
+    selectedDate,
+    selectedTimeFrameId,
+    pickupPoint,
+    effectTriggerPickupPointNull.current,
+  ]);
 
   // handle clear sort modal
   const handleClearSortModal = () => {
@@ -1029,7 +1009,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
     }
   };
 
-  const handlOpenEditStatusPackagedModal = (groupId) => {
+  const handlOpenEditStatusPackagedModal = groupId => {
     setSelectedEditGroupId(groupId);
     setEditStatusPackagedModalVisible(true);
   };
@@ -1105,15 +1085,6 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                         {/* Chọn điểm giao hàng */}
                       </Text>
                     </View>
-                    <Image
-                      resizeMode="contain"
-                      style={{
-                        width: 22,
-                        height: 22,
-                        tintColor: COLORS.primary,
-                      }}
-                      source={icons.rightArrow}
-                    />
                   </View>
                 </TouchableOpacity>
               </View>

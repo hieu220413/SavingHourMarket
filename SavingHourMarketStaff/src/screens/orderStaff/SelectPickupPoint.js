@@ -158,9 +158,10 @@ const SelectPickupPoint = ({navigation, route}) => {
             {pickupPointList.map(item => (
               <TouchableOpacity
                 key={item.id}
-                onPress={() => {
+                onPress={async () => {
                   //   storedPickupPoint(item);
-                  route.params.setPickupPoint(item);
+                  await AsyncStorage.setItem('pickupPoint', JSON.stringify(item));
+                  // route.params.setPickupPoint(item);
                   if (
                     route.params.isFromOrderGroupRoute &&
                     route.params.isFromOrderGroupRoute === true
