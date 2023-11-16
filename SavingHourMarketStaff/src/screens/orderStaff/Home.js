@@ -1071,6 +1071,8 @@ const Home = ({navigation}) => {
           ) : (
             <View style={{height: '87%'}}>
               <SwipeListView
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
                 ref={swipeListViewRef}
                 data={orderList}
                 keyExtractor={(item, index) => item.id}
