@@ -425,7 +425,7 @@ const Report = ({ navigation }) => {
             showsHorizontalScrollIndicator={false}
             style={{ marginBottom: 80 }}>
             <Text
-              style={{ backgroundColor: 'white', fontSize: 26, fontStyle: 'italic', color: 'black', marginTop: 10, paddingHorizontal: 20 }}>
+              style={{ backgroundColor: 'white', fontSize: 23, fontStyle: 'italic', color: 'black', marginTop: 10, paddingHorizontal: 20 }}>
               Xin chào! {currentUser?.fullName} 👋
             </Text>
             <View style={{
@@ -465,7 +465,7 @@ const Report = ({ navigation }) => {
               <View style={styles.wrap_container}>
                 <View style={styles.wrapProcessing}>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.texts}>Tổng đơn trong ngày:</Text>
+                    <Text style={styles.texts}>Đơn chờ xác nhận:</Text>
                   </View>
                   <View
                     style={{
@@ -487,7 +487,7 @@ const Report = ({ navigation }) => {
                 </View>
                 <View style={styles.wrapPackaging}>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.texts}>Tổng đơn trong ngày:</Text>
+                    <Text style={styles.texts}>Đơn đang đóng gói:</Text>
                   </View>
                   <View
                     style={{
@@ -509,7 +509,44 @@ const Report = ({ navigation }) => {
                 </View>
                 <View style={styles.wrapPackaged}>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.texts}>Tổng đơn trong ngày:</Text>
+                    <Text style={styles.texts}>Đơn đã đóng gói:</Text>
+                  </View>
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <Text style={styles.numbers}>
+                      {dayReport
+                        ? dayReport.cancelCount +
+                        dayReport.deliveringCount +
+                        dayReport.failCount +
+                        dayReport.packagedCount +
+                        dayReport.packagingCount +
+                        dayReport.successCount
+                        : '0'}
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.wrapDelivering}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.texts}>Đơn đang giao:</Text>
+                  </View>
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <Text style={styles.numbers}>
+                      {dayReport ? dayReport.successCount : '0'}
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.wrapSuccess}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.texts}>Đơn đã giao:</Text>
                   </View>
                   <View
                     style={{
@@ -531,7 +568,7 @@ const Report = ({ navigation }) => {
                 </View>
                 <View style={styles.wrapCancel}>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.texts}>Tổng đơn trong ngày:</Text>
+                    <Text style={styles.texts}>Đơn đã huỷ:</Text>
                   </View>
                   <View
                     style={{
@@ -548,44 +585,6 @@ const Report = ({ navigation }) => {
                         dayReport.packagingCount +
                         dayReport.successCount
                         : '0'}
-                    </Text>
-                  </View>
-                </View>
-                <View style={styles.wrapSuccess}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.texts}>Tổng đơn trong ngày:</Text>
-                  </View>
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}>
-                    <Text style={styles.numbers}>
-                      {dayReport
-                        ? dayReport.cancelCount +
-                        dayReport.deliveringCount +
-                        dayReport.failCount +
-                        dayReport.packagedCount +
-                        dayReport.packagingCount +
-                        dayReport.successCount
-                        : '0'}
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={styles.wrapDelivering}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.texts}>Số đơn thành công:</Text>
-                  </View>
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}>
-                    <Text style={styles.numbers}>
-                      {dayReport ? dayReport.successCount : '0'}
                     </Text>
                   </View>
                 </View>
@@ -685,8 +684,6 @@ const styles = StyleSheet.create({
     flex: 0.9,
     backgroundColor: 'white',
     zIndex: 40,
-
-    // backgroundColor: 'orange',
   },
   body: {
     flex: 10,
@@ -701,7 +698,8 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     gap: 10,
     justifyContent: 'center',
-    marginTop: 10
+    marginTop: 10,
+
     // backgroundColor: 'pink',
   },
   wrapProcessing: {
@@ -711,46 +709,94 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     display: 'flex',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
   wrapPackaging: {
     width: 100,
     height: 108,
-    backgroundColor: '#9ae4b6',
+    backgroundColor: '#b6d8eb',
     borderRadius: 10,
     padding: 10,
     display: 'flex',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 7,
   },
   wrapPackaged: {
     width: 100,
     height: 108,
-    backgroundColor: '#a3e271',
+    backgroundColor: '#8ec9ea',
     borderRadius: 10,
     padding: 10,
     display: 'flex',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 7,
   },
   wrapCancel: {
     width: 100,
     height: 108,
-    backgroundColor: '#79f4b4',
+    backgroundColor: '#e8bfbe',
     borderRadius: 10,
     padding: 10,
     display: 'flex',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 7,
   },
   wrapDelivering: {
     width: 100,
     height: 108,
-    backgroundColor: '#e7c667',
+    backgroundColor: 'white',
     borderRadius: 10,
     padding: 10,
     display: 'flex',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 6,
   },
   wrapSuccess: {
     width: 100,
     height: 108,
-    backgroundColor: COLORS.primary,
+    backgroundColor: '#bee8c8',
     borderRadius: 10,
     padding: 10,
     display: 'flex',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 7,
   },
   numbers: {
     fontSize: 40,

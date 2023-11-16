@@ -393,6 +393,8 @@ public class OrderServiceImpl implements OrderService {
                         order.setDeliverer(staff);
                         order.setStatus(OrderStatus.DELIVERING.ordinal());
                         FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getId().toString());
+                    } else if(order.getStatus() == OrderStatus.DELIVERING.ordinal()) {
+                        order.setDeliverer(staff);
                     } else {
                         return "Đơn hàng " + order.getId() + " chưa được đóng gói!";
                     }
@@ -405,6 +407,8 @@ public class OrderServiceImpl implements OrderService {
                     if (order.getStatus() == OrderStatus.PACKAGED.ordinal()) {
                         order.setStatus(OrderStatus.DELIVERING.ordinal());
                         FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getId().toString());
+                    } else if(order.getStatus() == OrderStatus.DELIVERING.ordinal()) {
+                        order.setDeliverer(staff);
                     } else {
                         return "Đơn hàng " + order.getId() + " chưa được đóng gói!";
                     }
@@ -425,7 +429,7 @@ public class OrderServiceImpl implements OrderService {
     public String assignDeliverToOrder(UUID orderId, UUID staffId) throws ResourceNotFoundException, IOException {
         Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new ResourceNotFoundException("No staff found with this id " + staffId));
         Order order = repository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("No order found with this id " + orderId));
-        if (order.getStatus() > OrderStatus.PACKAGED.ordinal()) {
+        if (order.getStatus() == OrderStatus.DELIVERING.ordinal()) {
             order.setDeliverer(staff);
         } else if(order.getStatus() == OrderStatus.PACKAGED.ordinal()){
             order.setDeliverer(staff);
