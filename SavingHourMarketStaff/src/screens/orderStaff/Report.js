@@ -84,6 +84,30 @@ const Report = ({ navigation }) => {
   ];
   const [currentUser, setCurrentUser] = useState(null);
   const [initializing, setInitializing] = useState(true);
+  const [pickupPoint, setPickupPoint] = useState(null);
+  // init pickup point
+  useFocusEffect(
+    useCallback(() => {
+      const initPickupPoint = async () => {
+        // console.log('pick up point :', pickupPoint)
+        const pickupPointStorage = await AsyncStorage.getItem('pickupPoint')
+          .then(result => JSON.parse(result))
+          .catch(error => {
+            console.log(error);
+            return null;
+          });
+        if (pickupPointStorage) {
+          setPickupPoint(pickupPointStorage);
+        } else {
+          // trick useEffect to trigger 
+          setPickupPoint({
+            id: null,
+          });
+        }
+      };
+      initPickupPoint();
+    }, []),
+  );
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState(
     format(Date.parse(new Date().toString()), 'yyyy-MM-dd'),
@@ -369,11 +393,57 @@ const Report = ({ navigation }) => {
       accessible={false}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <View style={styles.pagenameAndLogout}>
-            <View style={styles.pageName}>
-              <Text style={{ fontSize: 20, color: 'black', fontWeight: 'bold' }}>
-                Trang chủ
-              </Text>
+          <View style={styles.areaAndLogout}>
+            <View style={styles.area}>
+              <Text style={{ fontSize: 16 }}>Khu vực:</Text>
+              <View style={styles.pickArea}>
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.navigate('SelectPickupPoint', {
+                      setPickupPoint: setPickupPoint,
+                      isFromProductPackagingRoute: true,
+                    });
+                  }}>
+                  <View style={styles.pickAreaItem}>
+                    <Image
+                      resizeMode="contain"
+                      style={{ width: 30, height: 20, tintColor: COLORS.primary }}
+                      source={icons.location}
+                    />
+
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        fontFamily: 'Roboto',
+                        color: 'black',
+                      }}>
+                      {pickupPoint && pickupPoint.id
+                        ? pickupPoint.address
+                        : 'Chọn điểm giao hàng'}
+                      {/* Chọn điểm giao hàng */}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+                {pickupPoint && pickupPoint.id ? (
+                  <TouchableOpacity
+                    onPress={async () => {
+                      setPickupPoint(null);
+                      await AsyncStorage.removeItem('pickupPoint');
+                    }}>
+                    <Image
+                      resizeMode="contain"
+                      style={{
+                        width: 22,
+                        height: 22,
+                        tintColor: COLORS.primary,
+                      }}
+                      source={icons.clearText}
+                    />
+                  </TouchableOpacity>
+                ) : (
+                  <></>
+                )}
+              </View>
             </View>
             <View style={styles.logout}>
               <TouchableOpacity
@@ -392,7 +462,7 @@ const Report = ({ navigation }) => {
                 <TouchableOpacity
                   style={{
                     position: 'absolute',
-                    bottom: -38,
+                    bottom: -30,
                     left: -12,
                     zIndex: 100,
                     width: 75,
@@ -446,16 +516,12 @@ const Report = ({ navigation }) => {
               marginTop: 10
             }}>
               <CalendarProvider
-                style={{ width: '96%', paddingHorizontal: 2 }}
+                style={{ paddingHorizontal: 5 }}
                 date={date}
-                onDateChanged={e => {
-                  console.log(e);
-                  setDate(e);
-                }}
-              // onMonthChange={onMonthChange}
-              // todayBottomMargin={16}
+                onDateChanged={(newDate) => setDate(newDate)}
               >
                 <ExpandableCalendar
+                  style={{ paddingHorizontal: 5 }}
                   testID="expandableCalendar"
                   allowShadow={false}
                   disablePan={true}
@@ -497,12 +563,8 @@ const Report = ({ navigation }) => {
                     }}>
                     <Text style={styles.numbers}>
                       {dayReport
-                        ? dayReport.cancelCount +
-                        dayReport.deliveringCount +
-                        dayReport.failCount +
-                        dayReport.packagedCount +
-                        dayReport.packagingCount +
-                        dayReport.successCount
+                        ?
+                        dayReport.packagingCount
                         : '0'}
                     </Text>
                   </View>
@@ -519,12 +581,8 @@ const Report = ({ navigation }) => {
                     }}>
                     <Text style={styles.numbers}>
                       {dayReport
-                        ? dayReport.cancelCount +
-                        dayReport.deliveringCount +
-                        dayReport.failCount +
-                        dayReport.packagedCount +
-                        dayReport.packagingCount +
-                        dayReport.successCount
+                        ?
+                        dayReport.packagedCount
                         : '0'}
                     </Text>
                   </View>
@@ -540,7 +598,7 @@ const Report = ({ navigation }) => {
                       alignItems: 'center',
                     }}>
                     <Text style={styles.numbers}>
-                      {dayReport ? dayReport.successCount : '0'}
+                      {dayReport ? dayReport.deliveringCount : '0'}
                     </Text>
                   </View>
                 </View>
@@ -556,11 +614,7 @@ const Report = ({ navigation }) => {
                     }}>
                     <Text style={styles.numbers}>
                       {dayReport
-                        ? dayReport.cancelCount +
-                        dayReport.deliveringCount +
-                        dayReport.failCount +
-                        dayReport.packagedCount +
-                        dayReport.packagingCount +
+                        ?
                         dayReport.successCount
                         : '0'}
                     </Text>
@@ -578,12 +632,7 @@ const Report = ({ navigation }) => {
                     }}>
                     <Text style={styles.numbers}>
                       {dayReport
-                        ? dayReport.cancelCount +
-                        dayReport.deliveringCount +
-                        dayReport.failCount +
-                        dayReport.packagedCount +
-                        dayReport.packagingCount +
-                        dayReport.successCount
+                        ? dayReport.cancelCount
                         : '0'}
                     </Text>
                   </View>
@@ -681,9 +730,48 @@ const styles = StyleSheet.create({
     backgroundColor: 'white'
   },
   header: {
-    flex: 0.9,
+    flex: 1,
     backgroundColor: 'white',
-    zIndex: 40,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 2,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 10,
+    paddingHorizontal: 20,
+    paddingBottom: 20
+  },
+  body: {
+    flex: 8,
+    paddingHorizontal: 20,
+  },
+  areaAndLogout: {
+    paddingTop: 10,
+    flexDirection: 'row',
+  },
+  pickArea: {
+    paddingVertical: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  area: {
+    flex: 7,
+    // backgroundColor: 'white',
+  },
+  logout: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    marginLeft: 10,
+  },
+  pickAreaItem: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
+    width: '80%',
   },
   body: {
     flex: 10,

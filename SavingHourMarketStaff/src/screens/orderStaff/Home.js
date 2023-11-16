@@ -908,6 +908,7 @@ const Home = ({navigation}) => {
                         fontSize: 16,
                         fontFamily: 'Roboto',
                         color: 'black',
+                        maxHeight:22
                       }}>
                       {pickupPoint && pickupPoint.id
                         ? pickupPoint.address
@@ -1871,7 +1872,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     alignItems: 'center',
-    width: '85%',
+    width: '90%',
   },
   centeredView: {
     flex: 1,
