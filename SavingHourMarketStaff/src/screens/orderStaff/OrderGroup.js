@@ -598,7 +598,6 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
 
   // value to make sure that data not fetch second time when init pickup point
   // init pickup point
-  const effectTriggerPickupPointNull = useRef(true);
   useFocusEffect(
     useCallback(() => {
       const initPickupPoint = async () => {
@@ -612,9 +611,9 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
         if (pickupPointStorage) {
           setPickupPoint(pickupPointStorage);
         } else {
-          setPickupPoint(null);
-          effectTriggerPickupPointNull.current =
-            !effectTriggerPickupPointNull.current;
+          setPickupPoint({
+            id: null,
+          });
         }
       };
       initPickupPoint();
@@ -701,7 +700,9 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
       // console.log('pickupPoint: ', pickupPoint);
       await fetch(
         `${API.baseURL}/api/order/packageStaff/getOrderGroup?${
-          pickupPoint ? 'pickupPointId=' + pickupPoint?.id : ''
+          pickupPoint && pickupPoint.id
+            ? 'pickupPointId=' + pickupPoint?.id
+            : ''
         }${
           selectedDate === ''
             ? ''
@@ -795,13 +796,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
     };
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    selectSort,
-    selectedDate,
-    selectedTimeFrameId,
-    pickupPoint,
-    effectTriggerPickupPointNull.current,
-  ]);
+  }, [selectSort, selectedDate, selectedTimeFrameId, pickupPoint]);
 
   // handle clear sort modal
   const handleClearSortModal = () => {
@@ -995,15 +990,16 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
 
   const handleOpenEditModal = async (
     groupId,
-    isConsolidationAreaNull,
+    groupConsolidationArea,
     groupPickupPointId,
   ) => {
     setSelectedEditGroupId(groupId);
     await getConsolidationAreaForGroup(groupPickupPointId);
-    if (isConsolidationAreaNull) {
+    if (!groupConsolidationArea) {
       // handle confirm packaging
       setConfirmPackagingModalVisible(true);
     } else {
+      setSelectedConsolidationAreaId(groupConsolidationArea.id);
       // handle update status for all order in group to packaged
       setEditConsolidationAreaModalVisible(true);
     }
@@ -1014,11 +1010,16 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
     setEditStatusPackagedModalVisible(true);
   };
 
+  const handlCloseEditStatusPackagedModal = groupId => {
+    setSelectedEditGroupId('');
+    setEditStatusPackagedModalVisible(false);
+  };
+
   const handleCloseEditModal = groupId => {
     setSelectedEditGroupId('');
     setConfirmPackagingModalVisible(false);
     setEditConsolidationAreaModalVisible(false);
-    // setEditStatusPackagedModalVisible(false);
+
     setSelectedConsolidationAreaId('');
   };
 
@@ -1054,40 +1055,55 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
           <View style={styles.header}>
             <View style={styles.areaAndLogout}>
               <View style={styles.area}>
-                <Text style={{fontSize: 16}}>Khu vực:</Text>
+              <Text style={{fontSize: 16}}>Khu vực:</Text>
+              <View style={styles.pickArea}>
                 <TouchableOpacity
                   onPress={() => {
                     navigation.navigate('SelectPickupPoint', {
                       setPickupPoint: setPickupPoint,
-                      isFromOrderGroupRoute: true,
                     });
                   }}>
-                  <View style={styles.pickArea}>
-                    <View style={styles.pickAreaItem}>
-                      <Image
-                        resizeMode="contain"
-                        style={{
-                          width: 20,
-                          height: 20,
-                          tintColor: COLORS.primary,
-                        }}
-                        source={icons.location}
-                      />
-                      <Text
-                        style={{
-                          fontSize: 16,
-                          fontFamily: 'Roboto',
-                          color: 'black',
-                        }}>
-                        {pickupPoint
-                          ? pickupPoint.address
-                          : 'Chọn điểm giao hàng'}
-                        {/* Chọn điểm giao hàng */}
-                      </Text>
-                    </View>
+                  <View style={styles.pickAreaItem}>
+                    <Image
+                      resizeMode="contain"
+                      style={{width: 20, height: 20, tintColor: COLORS.primary}}
+                      source={icons.location}
+                    />
+
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        fontFamily: 'Roboto',
+                        color: 'black',
+                      }}>
+                      {pickupPoint && pickupPoint.id
+                        ? pickupPoint.address
+                        : 'Chọn điểm giao hàng'}
+                      {/* Chọn điểm giao hàng */}
+                    </Text>
                   </View>
                 </TouchableOpacity>
+                {pickupPoint && pickupPoint.id ? (
+                  <TouchableOpacity
+                    onPress={async () => {
+                      setPickupPoint(null);
+                      await AsyncStorage.removeItem('pickupPoint');
+                    }}>
+                    <Image
+                      resizeMode="contain"
+                      style={{
+                        width: 22,
+                        height: 22,
+                        tintColor: COLORS.primary,
+                      }}
+                      source={icons.clearText}
+                    />
+                  </TouchableOpacity>
+                ) : (
+                  <></>
+                )}
               </View>
+            </View>
               <View style={styles.logout}>
                 <TouchableOpacity
                   onPress={() => {
@@ -1396,8 +1412,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                                   onPress={() =>
                                     handleOpenEditModal(
                                       data.item.id,
-                                      data.item.productConsolidationArea ===
-                                        null,
+                                      data.item.productConsolidationArea,
                                       data.item.pickupPoint.id,
                                     )
                                   }>
@@ -1862,7 +1877,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                 animationType="fade"
                 transparent={true}
                 visible={editStatusPackagedModalVisible}
-                onRequestClose={handleCloseEditModal}>
+                onRequestClose={handlCloseEditStatusPackagedModal}>
                 <View style={styles.centeredView}>
                   <View style={styles.modalView}>
                     <View
@@ -1880,7 +1895,8 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                         }}>
                         Xác nhận đóng gói
                       </Text>
-                      <TouchableOpacity onPress={handleCloseEditModal}>
+                      <TouchableOpacity
+                        onPress={handlCloseEditStatusPackagedModal}>
                         <Image
                           resizeMode="contain"
                           style={{
@@ -1914,7 +1930,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                           borderWidth: 0.5,
                           marginRight: '2%',
                         }}
-                        onPress={handleCloseEditModal}>
+                        onPress={handlCloseEditStatusPackagedModal}>
                         <Text
                           style={{
                             color: COLORS.primary,
@@ -2141,9 +2157,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   header: {
-    flex: 2.2,
+    flex: 2,
     // backgroundColor: 'orange',
     paddingHorizontal: 20,
+    zIndex: 100,
+    backgroundColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
   body: {
     flex: 7,
@@ -2174,7 +2200,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     alignItems: 'center',
-    width: '80%',
+    width: '85%',
   },
   centeredView: {
     flex: 1,

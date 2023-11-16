@@ -218,7 +218,7 @@ const Home = ({navigation}) => {
         const tokenId = await auth().currentUser.getIdToken();
         if (tokenId) {
           setLoading(true);
-          if (pickupPoint) {
+          if (pickupPoint && pickupPoint.id) {
             fetch(
               `${API.baseURL}/api/order/packageStaff/getOrders?pickupPointId=${pickupPoint?.id}&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
               {
@@ -333,77 +333,153 @@ const Home = ({navigation}) => {
         if (pickupPointStorage) {
           setPickupPoint(pickupPointStorage);
         } else {
-          setPickupPoint(null);
+          setPickupPoint({
+            id: null,
+          });
         }
       };
       initPickupPoint();
     }, []),
   );
 
-  useFocusEffect(
-    useCallback(() => {
-      const fetchData = async () => {
-        if (auth().currentUser) {
-          const tokenId = await auth().currentUser.getIdToken();
-          if (tokenId) {
-            setLoading(true);
-            if (pickupPoint) {
-              fetch(
-                `${API.baseURL}/api/order/packageStaff/getOrders?pickupPointId=${pickupPoint?.id}&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
-                {
-                  method: 'GET',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${tokenId}`,
-                  },
-                },
-              )
-                .then(res => res.json())
-                .then(respond => {
-                  if (respond.error) {
-                    setLoading(false);
-                    return;
-                  }
+  const isMountingRef = useRef(false);
 
-                  setOrderList(respond);
-                  setLoading(false);
-                })
-                .catch(err => {
-                  console.log(err);
-                  setLoading(false);
-                });
-            } else {
-              fetch(
-                `${API.baseURL}/api/order/packageStaff/getOrders?orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
-                {
-                  method: 'GET',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${tokenId}`,
-                  },
-                },
-              )
-                .then(res => res.json())
-                .then(respond => {
-                  if (respond.error) {
-                    setLoading(false);
-                    return;
-                  }
+  useEffect(() => {
+    isMountingRef.current = true;
+  }, []);
 
-                  setOrderList(respond);
+  useEffect(() => {
+    const fetchData = async () => {
+      if (auth().currentUser) {
+        const tokenId = await auth().currentUser.getIdToken();
+        if (tokenId) {
+          setLoading(true);
+          if (pickupPoint && pickupPoint.id) {
+            fetch(
+              `${API.baseURL}/api/order/packageStaff/getOrders?pickupPointId=${pickupPoint?.id}&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
+              {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${tokenId}`,
+                },
+              },
+            )
+              .then(res => res.json())
+              .then(respond => {
+                if (respond.error) {
                   setLoading(false);
-                })
-                .catch(err => {
-                  console.log(err);
+                  return;
+                }
+
+                setOrderList(respond);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
+          } else {
+            fetch(
+              `${API.baseURL}/api/order/packageStaff/getOrders?orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
+              {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${tokenId}`,
+                },
+              },
+            )
+              .then(res => res.json())
+              .then(respond => {
+                if (respond.error) {
                   setLoading(false);
-                });
-            }
+                  return;
+                }
+
+                setOrderList(respond);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
           }
         }
-      };
+      }
+    };
+
+    if (!isMountingRef.current) {
       fetchData();
-    }, [currentStatus, pickupPoint]),
-  );
+    } else {
+      isMountingRef.current = false;
+    }
+  }, [currentStatus, pickupPoint]);
+
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     const fetchData = async () => {
+  //       if (auth().currentUser) {
+  //         const tokenId = await auth().currentUser.getIdToken();
+  //         if (tokenId) {
+  //           setLoading(true);
+  //           if (pickupPoint) {
+  //             fetch(
+  //               `${API.baseURL}/api/order/packageStaff/getOrders?pickupPointId=${pickupPoint?.id}&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
+  //               {
+  //                 method: 'GET',
+  //                 headers: {
+  //                   'Content-Type': 'application/json',
+  //                   Authorization: `Bearer ${tokenId}`,
+  //                 },
+  //               },
+  //             )
+  //               .then(res => res.json())
+  //               .then(respond => {
+  //                 if (respond.error) {
+  //                   setLoading(false);
+  //                   return;
+  //                 }
+
+  //                 setOrderList(respond);
+  //                 setLoading(false);
+  //               })
+  //               .catch(err => {
+  //                 console.log(err);
+  //                 setLoading(false);
+  //               });
+  //           } else {
+  //             fetch(
+  //               `${API.baseURL}/api/order/packageStaff/getOrders?orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
+  //               {
+  //                 method: 'GET',
+  //                 headers: {
+  //                   'Content-Type': 'application/json',
+  //                   Authorization: `Bearer ${tokenId}`,
+  //                 },
+  //               },
+  //             )
+  //               .then(res => res.json())
+  //               .then(respond => {
+  //                 if (respond.error) {
+  //                   setLoading(false);
+  //                   return;
+  //                 }
+
+  //                 setOrderList(respond);
+  //                 setLoading(false);
+  //               })
+  //               .catch(err => {
+  //                 console.log(err);
+  //                 setLoading(false);
+  //               });
+  //           }
+  //         }
+  //       }
+  //     };
+  //     fetchData();
+  //   }, [currentStatus, pickupPoint]),
+  // );
 
   // useEffect(() => {
   //   const fetchData = async () => {
@@ -484,7 +560,9 @@ const Home = ({navigation}) => {
               `${
                 API.baseURL
               }/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${
-                pickupPoint ? `pickupPointId=${pickupPoint.id}` : ''
+                pickupPoint && pickupPoint.id
+                  ? `pickupPointId=${pickupPoint.id}`
+                  : ''
               }&orderStatus=${currentStatus.value}${
                 sortItem?.id == 1 ? '&deliveryDateSortType=ASC' : ''
               }${sortItem?.id == 2 ? '&deliveryDateSortType=DESC' : ''}${
@@ -524,7 +602,11 @@ const Home = ({navigation}) => {
             setLoading(true);
 
             fetch(
-              `${API.baseURL}/api/order/packageStaff/getOrders?pickupPointId=${pickupPoint.id}&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
+              `${API.baseURL}/api/order/packageStaff/getOrders?${
+                pickupPoint && pickupPoint.id
+                  ? `pickupPointId=${pickupPoint.id}`
+                  : ''
+              }&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
               {
                 method: 'GET',
                 headers: {
@@ -569,7 +651,11 @@ const Home = ({navigation}) => {
           setLoading(true);
 
           fetch(
-            `${API.baseURL}/api/order/packageStaff/getOrders?pickupPointId=${pickupPoint.id}&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
+            `${API.baseURL}/api/order/packageStaff/getOrders?${
+              pickupPoint && pickupPoint.id
+                ? `pickupPointId=${pickupPoint.id}`
+                : ''
+            }&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
             {
               method: 'GET',
               headers: {
@@ -609,7 +695,7 @@ const Home = ({navigation}) => {
         const tokenId = await auth().currentUser.getIdToken();
         if (tokenId) {
           setLoading(true);
-          if (pickupPoint) {
+          if (pickupPoint && pickupPoint.id) {
             fetch(
               `${API.baseURL}/api/order/packageStaff/getOrders?pickupPointId=${pickupPoint?.id}&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
               {
@@ -808,7 +894,11 @@ const Home = ({navigation}) => {
                   <View style={styles.pickAreaItem}>
                     <Image
                       resizeMode="contain"
-                      style={{width: 20, height: 20, tintColor: COLORS.primary}}
+                      style={{
+                        width: 20,
+                        height: 20,
+                        tintColor: COLORS.primary,
+                      }}
                       source={icons.location}
                     />
 
@@ -818,14 +908,14 @@ const Home = ({navigation}) => {
                         fontFamily: 'Roboto',
                         color: 'black',
                       }}>
-                      {pickupPoint
+                      {pickupPoint && pickupPoint.id
                         ? pickupPoint.address
                         : 'Chọn điểm giao hàng'}
                       {/* Chọn điểm giao hàng */}
                     </Text>
                   </View>
                 </TouchableOpacity>
-                {pickupPoint ? (
+                {pickupPoint && pickupPoint.id ? (
                   <TouchableOpacity
                     onPress={async () => {
                       setPickupPoint(null);
@@ -853,10 +943,8 @@ const Home = ({navigation}) => {
                 }}>
                 <Image
                   resizeMode="contain"
-                  style={{ width: 38, height: 38 }}
-                  source={{
-                    uri: currentUser?.avatarUrl,
-                  }}
+                  style={{width: 38, height: 38}}
+                  source={icons.userCircle}
                 />
               </TouchableOpacity>
               {open && (
@@ -1626,7 +1714,7 @@ const Home = ({navigation}) => {
                 <FlatList
                   showsVerticalScrollIndicator={false}
                   showsHorizontalScrollIndicator={false}
-                  style={{ maxHeight: 200, marginHorizontal: 7 }}
+                  style={{maxHeight: 200, marginHorizontal: 7}}
                   data={consolidationAreaList}
                   renderItem={data => (
                     <TouchableOpacity
@@ -1751,13 +1839,12 @@ const styles = StyleSheet.create({
   body: {
     flex: 11,
     // backgroundColor: 'pink',
-    marginTop:10,
+    marginTop: 10,
     paddingHorizontal: 20,
   },
   areaAndLogout: {
     paddingTop: 10,
     flexDirection: 'row',
-    
   },
   pickArea: {
     paddingVertical: 6,

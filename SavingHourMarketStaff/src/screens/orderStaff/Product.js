@@ -23,6 +23,7 @@ import {SwipeListView} from 'react-native-swipe-list-view';
 import SearchBar from '../../components/SearchBar';
 import LoadingScreen from '../../components/LoadingScreen';
 import CartEmpty from '../../assets/image/search-empty.png';
+import { useRef } from 'react';
 
 const Product = ({navigation}) => {
   const [initializing, setInitializing] = useState(true);
@@ -58,7 +59,7 @@ const Product = ({navigation}) => {
       const tokenId = await auth().currentUser.getIdToken();
       if (tokenId) {
         setLoading(true);
-        const url = pickupPoint
+        const url = pickupPoint && pickupPoint.id
           ? `${API.baseURL}/api/order/packageStaff/getProductsOrderAfterPackaging?pickupPointId=${pickupPoint.id}`
           : `${API.baseURL}/api/order/packageStaff/getProductsOrderAfterPackaging`;
 
@@ -110,7 +111,10 @@ const Product = ({navigation}) => {
         if (pickupPointStorage) {
           setPickupPoint(pickupPointStorage);
         } else {
-          setPickupPoint(null);
+          // trick useEffect to trigger 
+          setPickupPoint({
+            id: null,
+          });
         }
       };
       initPickupPoint();
@@ -128,10 +132,25 @@ const Product = ({navigation}) => {
   //   fetchData();
   // }, [pickupPoint]);
 
+  // fetch data after handle apply filter
+  const isMountingRef = useRef(false);
+
   useEffect(() => {
-    fetchData();
+    isMountingRef.current = true;
+  }, []);
+
+  useEffect(() => {
+    const data = async () => {
+      // console.log(pickupPoint);
+      if (!isMountingRef.current) {
+        await fetchData();
+      } else {
+        isMountingRef.current = false;
+      }
+    };
+    data();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pickupPoint]);
+  }, [pickupPoint, setPickupPoint]);
 
   const handleTypingSearch = value => {
     if (typingTimeoutRef.current) {
@@ -267,17 +286,18 @@ const Product = ({navigation}) => {
                         fontFamily: 'Roboto',
                         color: 'black',
                       }}>
-                      {pickupPoint
+                      {pickupPoint && pickupPoint.id
                         ? pickupPoint.address
                         : 'Chọn điểm giao hàng'}
                       {/* Chọn điểm giao hàng */}
                     </Text>
                   </View>
                 </TouchableOpacity>
-                {pickupPoint ? (
+                {pickupPoint && pickupPoint.id ? (
                   <TouchableOpacity
-                    onPress={() => {
+                    onPress={async () => {
                       setPickupPoint(null);
+                      await AsyncStorage.removeItem('pickupPoint');
                     }}>
                     <Image
                       resizeMode="contain"
