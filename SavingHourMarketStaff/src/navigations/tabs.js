@@ -65,6 +65,19 @@ const Tabs = () => {
       {user?.role === 'STAFF_ORD' && (
         <>
           <Tab.Screen
+            name="Report"
+            component={Report}
+            options={{
+              tabBarIcon: ({ focused }) => (
+                <TabIcon
+                  display={'Trang chủ'}
+                  focused={focused}
+                  icon={icons.home}
+                />
+              ),
+            }}
+          />
+          <Tab.Screen
             name="Home"
             component={Home}
             options={{
@@ -103,19 +116,7 @@ const Tabs = () => {
               ),
             }}
           />
-          <Tab.Screen
-            name="Report"
-            component={Report}
-            options={{
-              tabBarIcon: ({ focused }) => (
-                <TabIcon
-                  display={'Thống kê'}
-                  focused={focused}
-                  icon={icons.statistic}
-                />
-              ),
-            }}
-          />
+
         </>
       )}
       {user?.role === 'STAFF_DLV_1' && (

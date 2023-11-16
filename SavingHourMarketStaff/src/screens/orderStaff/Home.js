@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   View,
   Text,
@@ -13,23 +14,19 @@ import {
   Alert,
   FlatList,
 } from 'react-native';
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, {useEffect, useState, useCallback, useRef} from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { COLORS } from '../../constants/theme';
-import { icons } from '../../constants';
-import { useFocusEffect } from '@react-navigation/native';
-import { API } from '../../constants/api';
-import { format } from 'date-fns';
+import {COLORS} from '../../constants/theme';
+import {icons} from '../../constants';
+import {useFocusEffect} from '@react-navigation/native';
+import {API} from '../../constants/api';
+import {format} from 'date-fns';
 import CartEmpty from '../../assets/image/search-empty.png';
-import { SwipeListView } from 'react-native-swipe-list-view';
+import {SwipeListView} from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
 import Toast from 'react-native-toast-message';
 import Pdf from 'react-native-pdf';
-
-
-
-
 
 const SearchBar = () => {
   return (
@@ -65,13 +62,14 @@ const SearchBar = () => {
             fontSize: 16,
             paddingLeft: 20,
           }}
-          placeholder="Tìm kiếm đơn hàng"></TextInput>
+          placeholder="Tìm kiếm đơn hàng"
+        />
       </View>
     </View>
   );
 };
 
-const Home = ({ navigation }) => {
+const Home = ({navigation}) => {
   const [initializing, setInitializing] = useState(true);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -87,11 +85,12 @@ const Home = ({ navigation }) => {
   const [currentUser, setCurrentUser] = useState(null);
 
   const [consolidationAreaList, setConsolidationAreaList] = useState([]);
-  const [editConsolidationAreaList, isEditConsolidationAreaList] = useState(false);
-  const [selectedConsolidationAreaId, setSelectedConsolidationAreaId] = useState('');
+  const [editConsolidationAreaList, isEditConsolidationAreaList] =
+    useState(false);
+  const [selectedConsolidationAreaId, setSelectedConsolidationAreaId] =
+    useState('');
 
-  const print = async (orderId) => {
-    setLoading(true);
+  const print = async orderId => {
     console.log('print');
     const tokenId = await auth().currentUser.getIdToken();
     if (tokenId) {
@@ -114,7 +113,7 @@ const Home = ({ navigation }) => {
           }
           console.log(respond);
           navigation.navigate('OrderPrint', {
-            uri: respond
+            uri: respond,
           });
           setLoading(false);
         })
@@ -125,7 +124,7 @@ const Home = ({ navigation }) => {
     }
   };
 
-  const showToast = (message) => {
+  const showToast = message => {
     Toast.show({
       type: 'success',
       text1: 'Thành công',
@@ -219,7 +218,7 @@ const Home = ({ navigation }) => {
         const tokenId = await auth().currentUser.getIdToken();
         if (tokenId) {
           setLoading(true);
-          if (pickupPoint) {
+          if (pickupPoint && pickupPoint.id) {
             fetch(
               `${API.baseURL}/api/order/packageStaff/getOrders?pickupPointId=${pickupPoint?.id}&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
               {
@@ -320,70 +319,167 @@ const Home = ({ navigation }) => {
     }, []),
   );
 
+  // init pickup point
   useFocusEffect(
     useCallback(() => {
-      const fetchData = async () => {
-        if (auth().currentUser) {
-          const tokenId = await auth().currentUser.getIdToken();
-          if (tokenId) {
-            setLoading(true);
-            if (pickupPoint) {
-              fetch(
-                `${API.baseURL}/api/order/packageStaff/getOrders?pickupPointId=${pickupPoint?.id}&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
-                {
-                  method: 'GET',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${tokenId}`,
-                  },
-                },
-              )
-                .then(res => res.json())
-                .then(respond => {
-                  if (respond.error) {
-                    setLoading(false);
-                    return;
-                  }
-
-                  setOrderList(respond);
-                  setLoading(false);
-                })
-                .catch(err => {
-                  console.log(err);
-                  setLoading(false);
-                });
-            } else {
-              fetch(
-                `${API.baseURL}/api/order/packageStaff/getOrders?orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
-                {
-                  method: 'GET',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${tokenId}`,
-                  },
-                },
-              )
-                .then(res => res.json())
-                .then(respond => {
-                  if (respond.error) {
-                    setLoading(false);
-                    return;
-                  }
-
-                  setOrderList(respond);
-                  setLoading(false);
-                })
-                .catch(err => {
-                  console.log(err);
-                  setLoading(false);
-                });
-            }
-          }
+      const initPickupPoint = async () => {
+        // console.log('pick up point :', pickupPoint)
+        const pickupPointStorage = await AsyncStorage.getItem('pickupPoint')
+          .then(result => JSON.parse(result))
+          .catch(error => {
+            console.log(error);
+            return null;
+          });
+        if (pickupPointStorage) {
+          setPickupPoint(pickupPointStorage);
+        } else {
+          setPickupPoint({
+            id: null,
+          });
         }
       };
-      fetchData();
-    }, [currentStatus, pickupPoint]),
+      initPickupPoint();
+    }, []),
   );
+
+  const isMountingRef = useRef(false);
+
+  useEffect(() => {
+    isMountingRef.current = true;
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (auth().currentUser) {
+        const tokenId = await auth().currentUser.getIdToken();
+        if (tokenId) {
+          setLoading(true);
+          if (pickupPoint && pickupPoint.id) {
+            fetch(
+              `${API.baseURL}/api/order/packageStaff/getOrders?pickupPointId=${pickupPoint?.id}&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
+              {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${tokenId}`,
+                },
+              },
+            )
+              .then(res => res.json())
+              .then(respond => {
+                if (respond.error) {
+                  setLoading(false);
+                  return;
+                }
+
+                setOrderList(respond);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
+          } else {
+            fetch(
+              `${API.baseURL}/api/order/packageStaff/getOrders?orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
+              {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${tokenId}`,
+                },
+              },
+            )
+              .then(res => res.json())
+              .then(respond => {
+                if (respond.error) {
+                  setLoading(false);
+                  return;
+                }
+
+                setOrderList(respond);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
+          }
+        }
+      }
+    };
+
+    if (!isMountingRef.current) {
+      fetchData();
+    } else {
+      isMountingRef.current = false;
+    }
+  }, [currentStatus, pickupPoint]);
+
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     const fetchData = async () => {
+  //       if (auth().currentUser) {
+  //         const tokenId = await auth().currentUser.getIdToken();
+  //         if (tokenId) {
+  //           setLoading(true);
+  //           if (pickupPoint) {
+  //             fetch(
+  //               `${API.baseURL}/api/order/packageStaff/getOrders?pickupPointId=${pickupPoint?.id}&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
+  //               {
+  //                 method: 'GET',
+  //                 headers: {
+  //                   'Content-Type': 'application/json',
+  //                   Authorization: `Bearer ${tokenId}`,
+  //                 },
+  //               },
+  //             )
+  //               .then(res => res.json())
+  //               .then(respond => {
+  //                 if (respond.error) {
+  //                   setLoading(false);
+  //                   return;
+  //                 }
+
+  //                 setOrderList(respond);
+  //                 setLoading(false);
+  //               })
+  //               .catch(err => {
+  //                 console.log(err);
+  //                 setLoading(false);
+  //               });
+  //           } else {
+  //             fetch(
+  //               `${API.baseURL}/api/order/packageStaff/getOrders?orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
+  //               {
+  //                 method: 'GET',
+  //                 headers: {
+  //                   'Content-Type': 'application/json',
+  //                   Authorization: `Bearer ${tokenId}`,
+  //                 },
+  //               },
+  //             )
+  //               .then(res => res.json())
+  //               .then(respond => {
+  //                 if (respond.error) {
+  //                   setLoading(false);
+  //                   return;
+  //                 }
+
+  //                 setOrderList(respond);
+  //                 setLoading(false);
+  //               })
+  //               .catch(err => {
+  //                 console.log(err);
+  //                 setLoading(false);
+  //               });
+  //           }
+  //         }
+  //       }
+  //     };
+  //     fetchData();
+  //   }, [currentStatus, pickupPoint]),
+  // );
 
   // useEffect(() => {
   //   const fetchData = async () => {
@@ -420,9 +516,9 @@ const Home = ({ navigation }) => {
   // }, []);
 
   const orderStatus = [
-    { display: 'Chờ đóng gói', value: 'PROCESSING' },
-    { display: 'Đang đóng gói', value: 'PACKAGING' },
-    { display: 'Đã đóng gói', value: 'PACKAGED' },
+    {display: 'Chờ đóng gói', value: 'PROCESSING'},
+    {display: 'Đang đóng gói', value: 'PACKAGING'},
+    {display: 'Đã đóng gói', value: 'PACKAGED'},
   ];
 
   const sortOptions = [
@@ -450,7 +546,6 @@ const Home = ({ navigation }) => {
   const [selectSort, setSelectSort] = useState(sortOptions);
   const [modalVisible, setModalVisible] = useState(false);
 
-
   const sortOrder = selectSort => {
     const sortItem = selectSort.find(item => item.active === true);
     setLoading(true);
@@ -462,10 +557,16 @@ const Home = ({ navigation }) => {
             setLoading(true);
 
             fetch(
-              `${API.baseURL
-              }/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${pickupPoint ? `pickupPointId=${pickupPoint.id}` : ``
-              }&orderStatus=${currentStatus.value}${sortItem?.id == 1 ? '&deliveryDateSortType=ASC' : ''
-              }${sortItem?.id == 2 ? '&deliveryDateSortType=DESC' : ''}${sortItem?.id == 3 ? '&createdTimeSortType=DESC' : ''
+              `${
+                API.baseURL
+              }/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${
+                pickupPoint && pickupPoint.id
+                  ? `pickupPointId=${pickupPoint.id}`
+                  : ''
+              }&orderStatus=${currentStatus.value}${
+                sortItem?.id == 1 ? '&deliveryDateSortType=ASC' : ''
+              }${sortItem?.id == 2 ? '&deliveryDateSortType=DESC' : ''}${
+                sortItem?.id == 3 ? '&createdTimeSortType=DESC' : ''
               }${sortItem?.id == 4 ? '&createdTimeSortType=ASC' : ''}`,
               {
                 method: 'GET',
@@ -501,7 +602,11 @@ const Home = ({ navigation }) => {
             setLoading(true);
 
             fetch(
-              `${API.baseURL}/api/order/packageStaff/getOrders?pickupPointId=${pickupPoint.id}&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
+              `${API.baseURL}/api/order/packageStaff/getOrders?${
+                pickupPoint && pickupPoint.id
+                  ? `pickupPointId=${pickupPoint.id}`
+                  : ''
+              }&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
               {
                 method: 'GET',
                 headers: {
@@ -546,7 +651,11 @@ const Home = ({ navigation }) => {
           setLoading(true);
 
           fetch(
-            `${API.baseURL}/api/order/packageStaff/getOrders?pickupPointId=${pickupPoint.id}&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
+            `${API.baseURL}/api/order/packageStaff/getOrders?${
+              pickupPoint && pickupPoint.id
+                ? `pickupPointId=${pickupPoint.id}`
+                : ''
+            }&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
             {
               method: 'GET',
               headers: {
@@ -586,7 +695,7 @@ const Home = ({ navigation }) => {
         const tokenId = await auth().currentUser.getIdToken();
         if (tokenId) {
           setLoading(true);
-          if (pickupPoint) {
+          if (pickupPoint && pickupPoint.id) {
             fetch(
               `${API.baseURL}/api/order/packageStaff/getOrders?pickupPointId=${pickupPoint?.id}&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
               {
@@ -706,19 +815,19 @@ const Home = ({ navigation }) => {
     setVisible(false);
   };
 
-  const ModalSortItem = ({ item }) => {
+  const ModalSortItem = ({item}) => {
     return (
       <TouchableOpacity
         onPress={() => {
           const newArray = selectSort.map(i => {
             if (i.id === item.id) {
               if (i.active === true) {
-                return { ...i, active: false };
+                return {...i, active: false};
               } else {
-                return { ...i, active: true };
+                return {...i, active: true};
               }
             }
-            return { ...i, active: false };
+            return {...i, active: false};
           });
           // console.log(newArray);
           setSelectSort(newArray);
@@ -726,37 +835,37 @@ const Home = ({ navigation }) => {
         style={
           item.active == true
             ? {
-              borderColor: COLORS.primary,
-              borderWidth: 1,
-              borderRadius: 10,
-              margin: 5,
-            }
+                borderColor: COLORS.primary,
+                borderWidth: 1,
+                borderRadius: 10,
+                margin: 5,
+              }
             : {
-              borderColor: '#c8c8c8',
-              borderWidth: 0.2,
-              borderRadius: 10,
-              margin: 5,
-            }
+                borderColor: '#c8c8c8',
+                borderWidth: 0.2,
+                borderRadius: 10,
+                margin: 5,
+              }
         }>
         <Text
           style={
             item.active == true
               ? {
-                width: 150,
-                paddingVertical: 10,
-                textAlign: 'center',
-                color: COLORS.primary,
+                  width: 150,
+                  paddingVertical: 10,
+                  textAlign: 'center',
+                  color: COLORS.primary,
 
-                fontSize: 12,
-              }
+                  fontSize: 12,
+                }
               : {
-                width: 150,
-                paddingVertical: 10,
-                textAlign: 'center',
-                color: 'black',
+                  width: 150,
+                  paddingVertical: 10,
+                  textAlign: 'center',
+                  color: 'black',
 
-                fontSize: 12,
-              }
+                  fontSize: 12,
+                }
           }>
           {item.name}
         </Text>
@@ -774,7 +883,7 @@ const Home = ({ navigation }) => {
         <View style={styles.header}>
           <View style={styles.areaAndLogout}>
             <View style={styles.area}>
-              <Text style={{ fontSize: 16 }}>Khu vực:</Text>
+              <Text style={{fontSize: 16}}>Khu vực:</Text>
               <View style={styles.pickArea}>
                 <TouchableOpacity
                   onPress={() => {
@@ -785,7 +894,11 @@ const Home = ({ navigation }) => {
                   <View style={styles.pickAreaItem}>
                     <Image
                       resizeMode="contain"
-                      style={{ width: 20, height: 20, tintColor: COLORS.primary }}
+                      style={{
+                        width: 20,
+                        height: 20,
+                        tintColor: COLORS.primary,
+                      }}
                       source={icons.location}
                     />
 
@@ -795,17 +908,18 @@ const Home = ({ navigation }) => {
                         fontFamily: 'Roboto',
                         color: 'black',
                       }}>
-                      {pickupPoint
+                      {pickupPoint && pickupPoint.id
                         ? pickupPoint.address
                         : 'Chọn điểm giao hàng'}
                       {/* Chọn điểm giao hàng */}
                     </Text>
                   </View>
                 </TouchableOpacity>
-                {pickupPoint ? (
+                {pickupPoint && pickupPoint.id ? (
                   <TouchableOpacity
-                    onPress={() => {
+                    onPress={async () => {
                       setPickupPoint(null);
+                      await AsyncStorage.removeItem('pickupPoint');
                     }}>
                     <Image
                       resizeMode="contain"
@@ -829,7 +943,7 @@ const Home = ({ navigation }) => {
                 }}>
                 <Image
                   resizeMode="contain"
-                  style={{ width: 38, height: 38 }}
+                  style={{width: 38, height: 38}}
                   source={icons.userCircle}
                 />
               </TouchableOpacity>
@@ -855,7 +969,7 @@ const Home = ({ navigation }) => {
                       })
                       .catch(e => console.log(e));
                   }}>
-                  <Text style={{ color: 'red', fontWeight: 'bold' }}>
+                  <Text style={{color: 'red', fontWeight: 'bold'}}>
                     Đăng xuất
                   </Text>
                 </TouchableOpacity>
@@ -868,7 +982,7 @@ const Home = ({ navigation }) => {
             style={{
               flexDirection: 'row',
             }}>
-            <View style={{ flex: 6 }}>
+            <View style={{flex: 6}}>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {orderStatus.map((item, index) => (
                   <TouchableOpacity
@@ -935,9 +1049,9 @@ const Home = ({ navigation }) => {
         <View style={styles.body}>
           {/* Order list */}
           {orderList.length === 0 ? (
-            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+            <View style={{alignItems: 'center', justifyContent: 'center'}}>
               <Image
-                style={{ width: '100%', height: '50%' }}
+                style={{width: '100%', height: '50%'}}
                 resizeMode="contain"
                 source={CartEmpty}
               />
@@ -952,7 +1066,7 @@ const Home = ({ navigation }) => {
               </Text>
             </View>
           ) : (
-            <View style={{ height: "87%" }}>
+            <View style={{height: '87%'}}>
               <SwipeListView
                 ref={swipeListViewRef}
                 data={orderList}
@@ -966,7 +1080,7 @@ const Home = ({ navigation }) => {
                       zIndex: 100,
                       padding: 10,
                       borderRadius: 10,
-                      shadowColor: "#000",
+                      shadowColor: '#000',
                       shadowOffset: {
                         width: 0,
                         height: 3,
@@ -975,7 +1089,7 @@ const Home = ({ navigation }) => {
                       shadowRadius: 4.65,
                       elevation: 6,
                       paddingHorizontal: 10,
-                      margin: 4
+                      margin: 4,
                     }}>
                     {/* Order detail */}
                     <TouchableOpacity
@@ -985,7 +1099,7 @@ const Home = ({ navigation }) => {
                           orderSuccess: false,
                         });
                       }}>
-                      <View style={{ flexDirection: 'row', paddingBottom: 9 }}>
+                      <View style={{flexDirection: 'row', paddingBottom: 9}}>
                         <Text
                           style={{
                             flex: 13,
@@ -999,82 +1113,86 @@ const Home = ({ navigation }) => {
                           {data.item?.status === 1 && 'Đang đóng gói'}
                           {data.item?.status === 2 && 'Đã đóng gói'}
                         </Text>
-                        {data.item?.status === 2 && data.item?.packager?.fullName != null && (
-                          <>
-                            <View style={{
-                              flex: 3,
-                              alignItems: 'flex-end',
-                              marginTop: 4,
-                              width: 30,
-                              height: 40,
-                              borderRadius: 50, // Half of width and height to make it circular
-                            }}>
-                              <Image
-                                source={icons.packaged}
-                                resizeMode="contain"
+                        {data.item?.status === 2 &&
+                          data.item?.packager?.fullName != null && (
+                            <>
+                              <View
                                 style={{
+                                  flex: 3,
+                                  alignItems: 'flex-end',
+                                  marginTop: 4,
+                                  width: 30,
+                                  height: 40,
+                                  borderRadius: 50, // Half of width and height to make it circular
+                                }}>
+                                <Image
+                                  source={icons.packaged}
+                                  resizeMode="contain"
+                                  style={{
+                                    width: 30,
+                                    height: 30,
+                                    padding: 15,
+                                    tintColor: 'white',
+                                    borderRadius: 50, // Half of width and height to make it circular
+                                    overflow: 'hidden',
+                                    backgroundColor: 'green',
+                                  }}
+                                />
+                              </View>
+                              <Text
+                                style={{
+                                  flex: 7,
+                                  alignItems: 'flex-end',
+                                  fontSize: 16,
+                                  paddingLeft: 5,
+                                  paddingTop: 7,
+                                  fontWeight: 'bold',
+                                  fontFamily: 'Roboto',
+                                  color: COLORS.secondary,
+                                }}>
+                                {data.item?.packager?.fullName}
+                              </Text>
+                            </>
+                          )}
+                        {data.item?.status === 1 &&
+                          data.item?.packager?.fullName != null && (
+                            <>
+                              <View
+                                style={{
+                                  marginLeft: 15,
+                                  marginTop: 4,
+                                  marginBottom: 10,
                                   width: 30,
                                   height: 30,
-                                  padding: 15,
-                                  tintColor: 'white',
-                                  borderRadius: 50, // Half of width and height to make it circular
-                                  overflow: 'hidden',
-                                  backgroundColor: 'green'
-                                }}
-                              />
-                            </View>
-                            <Text
-                              style={{
-                                flex: 7,
-                                alignItems: 'flex-end',
-                                fontSize: 16,
-                                paddingLeft: 5,
-                                paddingTop: 7,
-                                fontWeight: 'bold',
-                                fontFamily: 'Roboto',
-                                color: COLORS.secondary,
-                              }}>
-                              {data.item?.packager?.fullName}
-                            </Text>
-                          </>
-                        )}
-                        {data.item?.status === 1 && data.item?.packager?.fullName != null && (
-                          <>
-                            <View style={{
-                              marginLeft: 15,
-                              marginTop: 4,
-                              marginBottom: 10,
-                              width: 30,
-                              height: 30,
-                              borderRadius: 50,
-                              backgroundColor: 'green',
-                              alignItems: 'center'
-                            }}>
-                              <Image
-                                source={icons.packaging}
-                                resizeMode="contain"
+                                  borderRadius: 50,
+                                  backgroundColor: 'green',
+                                  alignItems: 'center',
+                                }}>
+                                <Image
+                                  source={icons.packaging}
+                                  resizeMode="contain"
+                                  style={{
+                                    width: 20,
+                                    height: 30,
+                                    tintColor: 'white',
+                                  }}
+                                />
+                              </View>
+                              <Text
                                 style={{
-                                  width: 20,
-                                  height: 30,
-                                  tintColor: 'white',
-                                }}
-                              />
-                            </View>
-                            <Text
-                              style={{
-                                flex: 7,
-                                alignItems: 'flex-end',
-                                fontSize: 16,
-                                paddingLeft: 5,
-                                paddingTop: 7,
-                                fontWeight: 'bold',
-                                fontFamily: 'Roboto',
-                                color: COLORS.secondary,
-                              }}>
-                              {data.item?.packager?.fullName}
-                            </Text>
-                          </>
-                        )}
+                                  flex: 7,
+                                  alignItems: 'flex-end',
+                                  fontSize: 16,
+                                  paddingLeft: 5,
+                                  paddingTop: 7,
+                                  fontWeight: 'bold',
+                                  fontFamily: 'Roboto',
+                                  color: COLORS.secondary,
+                                }}>
+                                {data.item?.packager?.fullName}
+                              </Text>
+                            </>
+                          )}
                       </View>
                       <View
                         style={{
@@ -1082,7 +1200,7 @@ const Home = ({ navigation }) => {
                           alignItems: 'center',
                           justifyContent: 'space-between',
                         }}>
-                        <View style={{ flexDirection: 'column', gap: 8 }}>
+                        <View style={{flexDirection: 'column', gap: 8}}>
                           <Text
                             style={{
                               fontSize: 17,
@@ -1122,19 +1240,19 @@ const Home = ({ navigation }) => {
                               currency: 'VND',
                             })}
                           </Text>
-                          {data.item?.productConsolidationArea?.address &&
+                          {data.item?.productConsolidationArea?.address && (
                             <Text
                               style={{
                                 fontSize: 17,
                                 fontWeight: 'bold',
                                 fontFamily: 'Roboto',
                                 color: 'black',
-                                maxWidth: '84%'
+                                maxWidth: '84%',
                               }}>
                               Điểm tập kết:{' '}
                               {data.item?.productConsolidationArea.address}
                             </Text>
-                          }
+                          )}
                         </View>
                         <Image
                           resizeMode="contain"
@@ -1156,10 +1274,11 @@ const Home = ({ navigation }) => {
                     key={data.item.id}
                     style={{
                       flexDirection: 'row',
-                      justifyContent: data.item?.status === 1 ? 'space-between' : 'flex-end',
+                      justifyContent:
+                        data.item?.status === 1 ? 'space-between' : 'flex-end',
                       height: data.item?.status === 0 ? '86%' : '90.5%',
                       paddingHorizontal: 10,
-                      margin: 4
+                      margin: 4,
                     }}>
                     {data.item?.status === 1 && (
                       <TouchableOpacity
@@ -1182,7 +1301,7 @@ const Home = ({ navigation }) => {
                           <Image
                             source={icons.print}
                             resizeMode="contain"
-                            style={{ width: 40, height: 40, tintColor: 'white' }}
+                            style={{width: 40, height: 40, tintColor: 'white'}}
                           />
                         </View>
                       </TouchableOpacity>
@@ -1203,8 +1322,13 @@ const Home = ({ navigation }) => {
                             onPress={() => {
                               setLoading(true);
                               setConsolidationAreaList([]);
-                              getConsolidationArea(data.item.pickupPoint.id, data.item.status);
-                              setSelectedConsolidationAreaId(data.item?.productConsolidationArea.id);
+                              getConsolidationArea(
+                                data.item.pickupPoint.id,
+                                data.item.status,
+                              );
+                              setSelectedConsolidationAreaId(
+                                data.item?.productConsolidationArea.id,
+                              );
                               isEditConsolidationAreaList(true);
                               setOrder(data.item);
                               closeRow(rowMap, data.item.id);
@@ -1213,7 +1337,11 @@ const Home = ({ navigation }) => {
                               <Image
                                 source={icons.edit}
                                 resizeMode="contain"
-                                style={{ width: 30, height: 30, tintColor: 'white' }}
+                                style={{
+                                  width: 30,
+                                  height: 30,
+                                  tintColor: 'white',
+                                }}
                               />
                             </View>
                           </TouchableOpacity>
@@ -1243,25 +1371,36 @@ const Home = ({ navigation }) => {
                               <Image
                                 source={icons.packaging}
                                 resizeMode="contain"
-                                style={{ width: 40, height: 40, tintColor: 'white' }}
+                                style={{
+                                  width: 40,
+                                  height: 40,
+                                  tintColor: 'white',
+                                }}
                               />
                             )}
                             {data.item?.status === 1 && (
                               <Image
                                 source={icons.packaged}
                                 resizeMode="contain"
-                                style={{ width: 55, height: 55, tintColor: 'white' }}
+                                style={{
+                                  width: 55,
+                                  height: 55,
+                                  tintColor: 'white',
+                                }}
                               />
                             )}
                           </View>
                         </TouchableOpacity>
                       </>
-
                     )}
                   </View>
                 )}
-                disableLeftSwipe={(orderList[0]?.status === 2) ? true : false}
-                disableRightSwipe={(orderList[0]?.status === 2 || orderList[0]?.status === 0) ? true : false}
+                disableLeftSwipe={orderList[0]?.status === 2 ? true : false}
+                disableRightSwipe={
+                  orderList[0]?.status === 2 || orderList[0]?.status === 0
+                    ? true
+                    : false
+                }
                 leftOpenValue={orderList[0]?.status === 1 ? 120 : 0}
                 rightOpenValue={orderList[0]?.status === 0 ? -120 : -200}
               />
@@ -1404,24 +1543,25 @@ const Home = ({ navigation }) => {
                       'Hoàn thành đóng gói đơn hàng'}
                   </Text>
                 </View>
-                {orderList[0]?.status === 0 &&
-                  <><View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between'
-                    }}>
-                    <Text
+                {orderList[0]?.status === 0 && (
+                  <>
+                    <View
                       style={{
-                        color: 'black',
-                        fontSize: 18,
-                        fontWeight: 400,
-                        paddingBottom: 15,
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
                       }}>
-                      Vui lòng chọn điểm tập kết:
-                    </Text>
-                  </View>
+                      <Text
+                        style={{
+                          color: 'black',
+                          fontSize: 18,
+                          fontWeight: 400,
+                          paddingBottom: 15,
+                        }}>
+                        Vui lòng chọn điểm tập kết:
+                      </Text>
+                    </View>
                     <FlatList
-                      style={{ maxHeight: 170 }}
+                      style={{maxHeight: 170}}
                       data={consolidationAreaList}
                       renderItem={data => (
                         <TouchableOpacity
@@ -1444,7 +1584,7 @@ const Home = ({ navigation }) => {
                             }}>
                             <Image
                               resizeMode="contain"
-                              style={{ width: 20, height: 20 }}
+                              style={{width: 20, height: 20}}
                               source={icons.location}
                               tintColor={
                                 data.item.id === selectedConsolidationAreaId
@@ -1468,8 +1608,10 @@ const Home = ({ navigation }) => {
                           </View>
                         </TouchableOpacity>
                       )}
-                    /></>}
-                {orderList[0]?.status === 1 &&
+                    />
+                  </>
+                )}
+                {orderList[0]?.status === 1 && (
                   <Text
                     style={{
                       color: 'black',
@@ -1479,7 +1621,7 @@ const Home = ({ navigation }) => {
                     }}>
                     Bạn đã hoàn thành đóng gói đơn hàng này ?
                   </Text>
-                }
+                )}
 
                 <View
                   style={{
@@ -1557,7 +1699,7 @@ const Home = ({ navigation }) => {
                 <View
                   style={{
                     flexDirection: 'row',
-                    justifyContent: 'space-between'
+                    justifyContent: 'space-between',
                   }}>
                   <Text
                     style={{
@@ -1570,7 +1712,9 @@ const Home = ({ navigation }) => {
                   </Text>
                 </View>
                 <FlatList
-                  style={{ maxHeight: 200, marginHorizontal: 7 }}
+                  showsVerticalScrollIndicator={false}
+                  showsHorizontalScrollIndicator={false}
+                  style={{maxHeight: 200, marginHorizontal: 7}}
                   data={consolidationAreaList}
                   renderItem={data => (
                     <TouchableOpacity
@@ -1593,7 +1737,7 @@ const Home = ({ navigation }) => {
                         }}>
                         <Image
                           resizeMode="contain"
-                          style={{ width: 20, height: 20 }}
+                          style={{width: 20, height: 20}}
                           source={icons.location}
                           tintColor={
                             data.item.id === selectedConsolidationAreaId
@@ -1678,13 +1822,24 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   header: {
-    flex: 2.2,
+    flex: 2,
     // backgroundColor: 'orange',
     paddingHorizontal: 20,
+    zIndex: 100,
+    backgroundColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
   body: {
     flex: 11,
     // backgroundColor: 'pink',
+    marginTop: 10,
     paddingHorizontal: 20,
   },
   areaAndLogout: {

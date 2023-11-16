@@ -596,57 +596,36 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
   //   }, []),
   // );
 
+  // value to make sure that data not fetch second time when init pickup point
+  // init pickup point
+  useFocusEffect(
+    useCallback(() => {
+      const initPickupPoint = async () => {
+        // console.log('pick up point :', pickupPoint)
+        const pickupPointStorage = await AsyncStorage.getItem('pickupPoint')
+          .then(result => JSON.parse(result))
+          .catch(error => {
+            console.log(error);
+            return null;
+          });
+        if (pickupPointStorage) {
+          setPickupPoint(pickupPointStorage);
+        } else {
+          setPickupPoint({
+            id: null,
+          });
+        }
+      };
+      initPickupPoint();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
+  );
+
   // intit fetch time frame + order group
   useFocusEffect(
     useCallback(() => {
-      console.log('effect run');
       const fetchData = async () => {
-        //   if (auth().currentUser) {
-        //     const tokenId = await auth().currentUser.getIdToken();
-        //     if (tokenId) {
-        //             console.log('selectedDate: ', selectedDate);
-        //       // console.log(format(Date.parse(tempSelectedDate), 'yyyy-MM-dd'));
-        //       console.log('selectedTimeFrame: ', selectedTimeFrameId);
-        //       console.log('tempSelectedDate: ', tempSelectedDate);
-        //       console.log('tempSelectedTimeFrame: ', tempSelectedTimeFrameId);
-        // setLoading(true);
-        //       console.log(format(Date.parse(selectedDate), 'yyyy-MM-dd'));
-        //       setSelectSort(sortOptions);
-        //       setTempSelectedSortId('');
-        //       setSelectedDate('');
-        //       setTempSelectedDate('');
-        //       setSelectedTimeFrameId('');
-        //       setTempSelectedTimeFrameId('');
-        //       await filterOrderGroup();
-        //       fetch(
-        //         `${API.baseURL}/api/order/packageStaff/getOrderGroup?${
-        //           pickupPoint ? 'pickupPointId=' + pickupPoint?.id : ''
-        //         }&deliverDate=${format(Date.parse(selectedDate), 'yyyy-MM-dd')}`,
-        //         {
-        //           method: 'GET',
-        //           headers: {
-        //             'Content-Type': 'application/json',
-        //             Authorization: `Bearer ${tokenId}`,
-        //           },
-        //         },
-        //       )
-        //         .then(res => res.json())
-        //         .then(respond => {
-        //           // console.log('order group', respond);
-        //           if (respond.error) {
-        //             // setLoading(false);
-        //             return;
-        //           }
-        //           setOrderGroupList(respond);
-        //           // setLoading(false);
-        //         })
-        //         .catch(err => {
-        //           console.log(err);
-        //           // setLoading(false);
-        //         });
-        //       setLoading(false);
-        //     }
-        //   }
+        // await filterOrderGroup();
       };
       // fetch time frame
       fetch(`${API.baseURL}/api/timeframe/getForPickupPoint`, {
@@ -657,45 +636,24 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
       })
         .then(res => res.json())
         .then(respond => {
-          // console.log('time frame', respond);
           if (respond.error) {
-            // setLoading(false);
             return;
           }
-
           setTimeFrameList(respond);
-
-          // setLoading(false);
         })
         .catch(err => {
           console.log(err);
         });
-      console.log(route.params?.goBackFromPickupPoint);
-      if (!route.params?.goBackFromPickupPoint) {
-        // console.log(' go back false')
-        setSelectSort(sortOptions);
-        setTempSelectedSortId('');
-        setSelectedDate('');
-        setTempSelectedDate('');
-        setSelectedTimeFrameId('');
-        setTempSelectedTimeFrameId('');
-      } else {
-        route.params.goBackFromPickupPoint = undefined;
-      }
+      // console.log(route.params?.goBackFromPickupPoint);
+      // if (!route.params?.goBackFromPickupPoint) {
+      // console.log(' go back false')
+      // } else {
+      //   route.params.goBackFromPickupPoint = undefined;
+      // }
 
       fetchData();
-      // return () => {
-      //   console.log('clean up')
-      //   setSelectSort(sortOptions);
-      //   setTempSelectedSortId('');
-      //   setSelectedDate('');
-      //   setTempSelectedDate('');
-      //   setSelectedTimeFrameId('');
-      //   setTempSelectedTimeFrameId('');
-      //   // filterOrderGroup();
-      // }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [pickupPoint, route]),
+    }, [selectSort, selectedDate, selectedTimeFrameId]),
   );
 
   // response message view modal
@@ -720,14 +678,14 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
   ];
 
   const [selectSort, setSelectSort] = useState(sortOptions);
-  const [tempSelectedSortId, setTempSelectedSortId] = useState(null);
+  const [tempSelectedSortId, setTempSelectedSortId] = useState('');
 
   //  filter pickup point
-  const [selectedTimeFrameId, setSelectedTimeFrameId] = useState(null);
-  const [tempSelectedTimeFrameId, setTempSelectedTimeFrameId] = useState(null);
+  const [selectedTimeFrameId, setSelectedTimeFrameId] = useState('');
+  const [tempSelectedTimeFrameId, setTempSelectedTimeFrameId] = useState('');
   //  filter date
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [tempSelectedDate, setTempSelectedDate] = useState(null);
+  const [selectedDate, setSelectedDate] = useState('');
+  const [tempSelectedDate, setTempSelectedDate] = useState('');
 
   // filter function
   const filterOrderGroup = async () => {
@@ -735,14 +693,16 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
     const tokenId = await auth().currentUser.getIdToken();
     if (tokenId) {
       setLoading(true);
-      console.log('selectedDate: ', selectedDate);
-      // console.log(format(Date.parse(tempSelectedDate), 'yyyy-MM-dd'));
-      console.log('selectedTimeFrame: ', selectedTimeFrameId);
-      console.log('tempSelectedDate: ', tempSelectedDate);
-      console.log('tempSelectedTimeFrame: ', tempSelectedTimeFrameId);
+      // console.log('selectedDate: ', selectedDate);
+      // console.log('selectedTimeFrame: ', selectedTimeFrameId);
+      // console.log('tempSelectedDate: ', tempSelectedDate);
+      // console.log('tempSelectedTimeFrame: ', tempSelectedTimeFrameId);
+      // console.log('pickupPoint: ', pickupPoint);
       await fetch(
         `${API.baseURL}/api/order/packageStaff/getOrderGroup?${
-          pickupPoint ? 'pickupPointId=' + pickupPoint?.id : ''
+          pickupPoint && pickupPoint.id
+            ? 'pickupPointId=' + pickupPoint?.id
+            : ''
         }${
           selectedDate === ''
             ? ''
@@ -811,8 +771,23 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
     isMountingRef.current = true;
   }, []);
 
+  // useEffect(() => {
+  //   if (!isMountingRef.current) {
+  //     console.log('ndafbsdhjfbhsdfbj');
+  //     setSelectSort(sortOptions);
+  //     setTempSelectedSortId('');
+  //     setSelectedDate('');
+  //     setTempSelectedDate('');
+  //     setSelectedTimeFrameId('');
+  //     setTempSelectedTimeFrameId('');
+  //   }
+
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [pickupPoint]);
+
   useEffect(() => {
     const fetchData = async () => {
+      // console.log(pickupPoint);
       if (!isMountingRef.current) {
         await filterOrderGroup();
       } else {
@@ -821,7 +796,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
     };
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectSort, selectedDate, selectedTimeFrameId]);
+  }, [selectSort, selectedDate, selectedTimeFrameId, pickupPoint]);
 
   // handle clear sort modal
   const handleClearSortModal = () => {
@@ -1015,30 +990,36 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
 
   const handleOpenEditModal = async (
     groupId,
-    isConsolidationAreaNull,
+    groupConsolidationArea,
     groupPickupPointId,
   ) => {
     setSelectedEditGroupId(groupId);
     await getConsolidationAreaForGroup(groupPickupPointId);
-    if (isConsolidationAreaNull) {
+    if (!groupConsolidationArea) {
       // handle confirm packaging
       setConfirmPackagingModalVisible(true);
     } else {
+      setSelectedConsolidationAreaId(groupConsolidationArea.id);
       // handle update status for all order in group to packaged
       setEditConsolidationAreaModalVisible(true);
     }
   };
 
-  const handlOpenEditStatusPackagedModal = (groupId) => {
+  const handlOpenEditStatusPackagedModal = groupId => {
     setSelectedEditGroupId(groupId);
     setEditStatusPackagedModalVisible(true);
+  };
+
+  const handlCloseEditStatusPackagedModal = groupId => {
+    setSelectedEditGroupId('');
+    setEditStatusPackagedModalVisible(false);
   };
 
   const handleCloseEditModal = groupId => {
     setSelectedEditGroupId('');
     setConfirmPackagingModalVisible(false);
     setEditConsolidationAreaModalVisible(false);
-    // setEditStatusPackagedModalVisible(false);
+
     setSelectedConsolidationAreaId('');
   };
 
@@ -1074,37 +1055,40 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
           <View style={styles.header}>
             <View style={styles.areaAndLogout}>
               <View style={styles.area}>
-                <Text style={{fontSize: 16}}>Khu vực:</Text>
+              <Text style={{fontSize: 16}}>Khu vực:</Text>
+              <View style={styles.pickArea}>
                 <TouchableOpacity
                   onPress={() => {
                     navigation.navigate('SelectPickupPoint', {
                       setPickupPoint: setPickupPoint,
-                      isFromOrderGroupRoute: true,
                     });
                   }}>
-                  <View style={styles.pickArea}>
-                    <View style={styles.pickAreaItem}>
-                      <Image
-                        resizeMode="contain"
-                        style={{
-                          width: 20,
-                          height: 20,
-                          tintColor: COLORS.primary,
-                        }}
-                        source={icons.location}
-                      />
-                      <Text
-                        style={{
-                          fontSize: 16,
-                          fontFamily: 'Roboto',
-                          color: 'black',
-                        }}>
-                        {pickupPoint
-                          ? pickupPoint.address
-                          : 'Chọn điểm giao hàng'}
-                        {/* Chọn điểm giao hàng */}
-                      </Text>
-                    </View>
+                  <View style={styles.pickAreaItem}>
+                    <Image
+                      resizeMode="contain"
+                      style={{width: 20, height: 20, tintColor: COLORS.primary}}
+                      source={icons.location}
+                    />
+
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        fontFamily: 'Roboto',
+                        color: 'black',
+                      }}>
+                      {pickupPoint && pickupPoint.id
+                        ? pickupPoint.address
+                        : 'Chọn điểm giao hàng'}
+                      {/* Chọn điểm giao hàng */}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+                {pickupPoint && pickupPoint.id ? (
+                  <TouchableOpacity
+                    onPress={async () => {
+                      setPickupPoint(null);
+                      await AsyncStorage.removeItem('pickupPoint');
+                    }}>
                     <Image
                       resizeMode="contain"
                       style={{
@@ -1112,11 +1096,14 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                         height: 22,
                         tintColor: COLORS.primary,
                       }}
-                      source={icons.rightArrow}
+                      source={icons.clearText}
                     />
-                  </View>
-                </TouchableOpacity>
+                  </TouchableOpacity>
+                ) : (
+                  <></>
+                )}
               </View>
+            </View>
               <View style={styles.logout}>
                 <TouchableOpacity
                   onPress={() => {
@@ -1425,8 +1412,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                                   onPress={() =>
                                     handleOpenEditModal(
                                       data.item.id,
-                                      data.item.productConsolidationArea ===
-                                        null,
+                                      data.item.productConsolidationArea,
                                       data.item.pickupPoint.id,
                                     )
                                   }>
@@ -1891,7 +1877,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                 animationType="fade"
                 transparent={true}
                 visible={editStatusPackagedModalVisible}
-                onRequestClose={handleCloseEditModal}>
+                onRequestClose={handlCloseEditStatusPackagedModal}>
                 <View style={styles.centeredView}>
                   <View style={styles.modalView}>
                     <View
@@ -1909,7 +1895,8 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                         }}>
                         Xác nhận đóng gói
                       </Text>
-                      <TouchableOpacity onPress={handleCloseEditModal}>
+                      <TouchableOpacity
+                        onPress={handlCloseEditStatusPackagedModal}>
                         <Image
                           resizeMode="contain"
                           style={{
@@ -1943,7 +1930,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                           borderWidth: 0.5,
                           marginRight: '2%',
                         }}
-                        onPress={handleCloseEditModal}>
+                        onPress={handlCloseEditStatusPackagedModal}>
                         <Text
                           style={{
                             color: COLORS.primary,
@@ -2170,9 +2157,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   header: {
-    flex: 2.2,
+    flex: 2,
     // backgroundColor: 'orange',
     paddingHorizontal: 20,
+    zIndex: 100,
+    backgroundColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
   body: {
     flex: 7,
@@ -2203,7 +2200,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     alignItems: 'center',
-    width: '80%',
+    width: '85%',
   },
   centeredView: {
     flex: 1,
