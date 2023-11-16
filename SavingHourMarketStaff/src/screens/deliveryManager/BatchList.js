@@ -151,7 +151,7 @@ const BatchList = ({navigation, route}) => {
         console.log(respond);
         setLoading(false);
         showToast('Tạo nhóm đơn hàng thành công !');
-        navigation.navigate('Batching');
+        navigation.navigate('OrderListForManager');
       })
       .catch(err => {
         console.log(err);
@@ -303,7 +303,7 @@ const BatchList = ({navigation, route}) => {
                 }}>
                 <TouchableOpacity
                   onPress={() => {
-                    navigation.navigate('Batching');
+                    navigation.navigate('OrderListForManager');
                   }}
                   style={{
                     height: '60%',
