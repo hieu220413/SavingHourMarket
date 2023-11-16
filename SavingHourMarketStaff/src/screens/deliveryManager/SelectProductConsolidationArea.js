@@ -137,7 +137,7 @@ const SelectProductConsolidationArea = ({navigation, route}) => {
               key={item.id}
               onPress={() => {
                 route.params.setProductConsolidationArea(item);
-                navigation.navigate('Batching');
+                navigation.navigate('OrderListForManager');
               }}
               style={{
                 paddingVertical: 15,

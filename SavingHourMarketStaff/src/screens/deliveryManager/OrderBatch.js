@@ -303,6 +303,7 @@ const OrderBatch = ({navigation}) => {
   };
 
   const handleClear = () => {
+    setDate(null);
     setModalVisible(!modalVisible);
     setLoading(true);
     const fetchData = async () => {
@@ -471,7 +472,7 @@ const OrderBatch = ({navigation}) => {
                     )
                       .then(res => res.json())
                       .then(respond => {
-                        console.log('group', respond);
+                        console.log('batch', respond[0]);
                         if (respond.code === 404) {
                           setGroupListNotYetAssigned([]);
                           setGroupListAssigned([]);
@@ -647,9 +648,11 @@ const OrderBatch = ({navigation}) => {
                         <TouchableOpacity
                           onPress={() => {
                             navigation.navigate('OrderGroupDetail', {
-                              orderList: data.item.orderList,
-                              orderSuccess: false,
-                              orderGroupId: data.item.id,
+                              orderList: data.item?.orderList,
+                              deliverer: data.item?.deliverer,
+                              orderGroupId: data.item?.id,
+                              deliverDate: data.item?.deliverDate,
+                              timeFrameId: data.item?.timeFrame.id,
                               mode: 2,
                             });
                           }}>
@@ -760,8 +763,11 @@ const OrderBatch = ({navigation}) => {
                           }}
                           onPress={() => {
                             navigation.navigate('PickStaff', {
-                              orderGroupId: data.item.id,
+                              orderGroupId: data.item?.id,
+                              deliverDate: data.item?.deliverDate,
+                              timeFrameId: data.item?.timeFrame?.id,
                               staff: data.item?.deliverer,
+                              mode: 2,
                             });
                           }}>
                           <View>
@@ -821,9 +827,11 @@ const OrderBatch = ({navigation}) => {
                         <TouchableOpacity
                           onPress={() => {
                             navigation.navigate('OrderGroupDetail', {
-                              orderList: data.item.orderList,
-                              deliverer: data.item.deliverer,
-                              orderGroupId: data.item.id,
+                              orderList: data.item?.orderList,
+                              deliverer: data.item?.deliverer,
+                              orderGroupId: data.item?.id,
+                              deliverDate: data.item?.deliverDate,
+                              timeFrameId: data.item?.timeFrame?.id,
                               mode: 2,
                             });
                           }}>
@@ -934,7 +942,9 @@ const OrderBatch = ({navigation}) => {
                           }}
                           onPress={() => {
                             navigation.navigate('PickStaff', {
-                              orderGroupId: data.item.id,
+                              orderGroupId: data.item?.id,
+                              deliverDate: data.item?.deliverDate,
+                              timeFrameId: data.item?.timeFrame?.id,
                               staff: data.item?.deliverer,
                               mode: 2,
                             });
