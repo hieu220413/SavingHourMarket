@@ -91,6 +91,7 @@ const Home = ({navigation}) => {
     useState('');
 
   const print = async orderId => {
+    setLoading(true);
     console.log('print');
     const tokenId = await auth().currentUser.getIdToken();
     if (tokenId) {
@@ -944,7 +945,9 @@ const Home = ({navigation}) => {
                 <Image
                   resizeMode="contain"
                   style={{width: 38, height: 38}}
-                  source={icons.userCircle}
+                  source={{
+                    uri: currentUser?.avatarUrl,
+                  }}
                 />
               </TouchableOpacity>
               {open && (

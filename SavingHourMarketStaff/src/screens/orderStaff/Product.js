@@ -32,6 +32,7 @@ const Product = ({navigation}) => {
   const [pickupPoint, setPickupPoint] = useState(null);
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   const onAuthStateChange = async userInfo => {
     if (initializing) {
@@ -47,6 +48,9 @@ const Product = ({navigation}) => {
         navigation.navigate('Login');
         return;
       }
+      const currentUser = await AsyncStorage.getItem('userInfo');
+      console.log(JSON.parse(currentUser));
+      setCurrentUser(JSON.parse(currentUser));
     } else {
       console.log('user is not logged in');
       await AsyncStorage.removeItem('userInfo');
@@ -170,9 +174,18 @@ const Product = ({navigation}) => {
           gap: 10,
           alignItems: 'center',
           backgroundColor: 'white',
-          borderBottomColor: '#decbcb',
-          borderBottomWidth: 0.5,
           paddingVertical: 20,
+          borderRadius:20,
+          shadowColor: '#000',
+          shadowOffset: {
+            width: 0,
+            height: 1,
+          },
+          shadowOpacity: 0.25,
+          shadowRadius: 20,
+          elevation: 6,
+          marginHorizontal:5,
+          marginVertical:20
         }}>
         <View
           style={{
@@ -186,9 +199,8 @@ const Product = ({navigation}) => {
               gap: 10,
               alignItems: 'center',
               backgroundColor: 'white',
-              borderBottomColor: '#decbcb',
-              borderBottomWidth: 0.5,
               paddingVertical: 20,
+
             }}>
             <Image
               source={{
@@ -322,7 +334,9 @@ const Product = ({navigation}) => {
                 <Image
                   resizeMode="contain"
                   style={{width: 38, height: 38}}
-                  source={icons.userCircle}
+                  source={{
+                    uri: currentUser?.avatarUrl,
+                  }}
                 />
               </TouchableOpacity>
               {open && (
@@ -387,6 +401,7 @@ const Product = ({navigation}) => {
               keyExtractor={item => item.toString()}
               renderItem={({item}) => (
                 <>
+                <View style={{borderBottomWidth:0.2,borderColor:'grey'}}/>
                   <Text
                     style={{
                       fontSize: 18,
@@ -401,6 +416,14 @@ const Product = ({navigation}) => {
                       borderColor: COLORS.primary,
                       borderWidth: 1.5,
                       fontWeight: 700,
+                      shadowColor: '#000',
+                      shadowOffset: {
+                        width: 2,
+                        height: 1,
+                      },
+                      shadowOpacity: 0.25,
+                      shadowRadius: 4,
+                      elevation: 5,
                     }}>
                     {productsPackaging[item][0].supermarket.name}
                   </Text>

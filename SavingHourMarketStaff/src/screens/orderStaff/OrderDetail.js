@@ -256,6 +256,8 @@ const OrderDetail = ({ navigation, route }) => {
         </View>
         {item && (
           <ScrollView
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
             style={{
               height: item?.status === 0 || item?.status === 1 ? '84%' : '90%',
             }}>
