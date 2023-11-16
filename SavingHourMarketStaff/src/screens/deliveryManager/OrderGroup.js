@@ -656,8 +656,10 @@ const OrderGroup = ({navigation}) => {
                           onPress={() => {
                             navigation.navigate('OrderGroupDetail', {
                               orderList: data.item.orderList,
-                              orderSuccess: false,
+                              deliverer: data.item.deliverer,
                               orderGroupId: data.item.id,
+                              deliverDate: data.item.deliverDate,
+                              timeFrameId: data.item.timeFrame.id,
                               mode: 1,
                             });
                           }}>
@@ -781,12 +783,14 @@ const OrderGroup = ({navigation}) => {
                           onPress={() => {
                             navigation.navigate('PickStaff', {
                               orderGroupId: data.item.id,
+                              deliverDate: data.item.deliverDate,
+                              timeFrameId: data.item.timeFrame.id,
                               staff: data.item?.deliverer,
                               mode: 1,
                             });
 
                             // setVisible(true);
-                            // console.log(data.item.id);
+                            // console.log(data.item.timeFrame.id);
                             // setOrder(data.item);
                           }}>
                           <View>
@@ -849,6 +853,8 @@ const OrderGroup = ({navigation}) => {
                               orderList: data.item.orderList,
                               deliverer: data.item.deliverer,
                               orderGroupId: data.item.id,
+                              deliverDate: data.item.deliverDate,
+                              timeFrameId: data.item.timeFrame.id,
                               mode: 1,
                             });
                           }}>
@@ -972,6 +978,8 @@ const OrderGroup = ({navigation}) => {
                           onPress={() => {
                             navigation.navigate('PickStaff', {
                               orderGroupId: data.item.id,
+                              deliverDate: data.item.deliverDate,
+                              timeFrameId: data.item.timeFrame.id,
                               staff: data.item?.deliverer,
                               mode: 1,
                             });

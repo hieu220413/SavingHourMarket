@@ -137,7 +137,7 @@ const SelectTimeFrame = ({navigation, route}) => {
               key={item.id}
               onPress={() => {
                 route.params.setTimeFrame(item);
-                navigation.navigate('Batching');
+                navigation.navigate('OrderListForManager');
               }}
               style={{
                 paddingVertical: 15,

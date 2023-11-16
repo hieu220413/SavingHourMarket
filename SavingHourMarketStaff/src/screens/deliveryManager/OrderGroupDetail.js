@@ -24,7 +24,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import CartEmpty from '../../assets/image/search-empty.png';
 
 const OrderGroupDetail = ({navigation, route}) => {
-  const {orderList, deliverer, orderGroupId, mode} = route.params;
+  const {orderList, deliverer, orderGroupId, deliverDate, timeFrameId, mode} =
+    route.params;
   const [initializing, setInitializing] = useState(true);
   const [tokenId, setTokenId] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -165,7 +166,7 @@ const OrderGroupDetail = ({navigation, route}) => {
                 borderRadius: 10,
                 marginTop: 10,
               }}>
-              {deliverer === undefined ? (
+              {deliverer === null ? (
                 <View
                   style={{
                     flexDirection: 'row',
@@ -196,6 +197,8 @@ const OrderGroupDetail = ({navigation, route}) => {
                       onPress={() => {
                         navigation.navigate('PickStaff', {
                           orderGroupId: orderGroupId,
+                          deliverDate: deliverDate,
+                          timeFrameId: timeFrameId,
                           staff: deliverer,
                           mode: mode,
                         });
@@ -244,7 +247,7 @@ const OrderGroupDetail = ({navigation, route}) => {
                         }}
                         resizeMode="contain"
                         source={{
-                          uri: `${deliverer.avatarUrl}`,
+                          uri: `${deliverer?.avatarUrl}`,
                         }}
                       />
                     </View>
@@ -255,7 +258,7 @@ const OrderGroupDetail = ({navigation, route}) => {
                         fontFamily: 'Roboto',
                         color: 'black',
                       }}>
-                      Họ tên : {deliverer.fullName}
+                      Họ tên : {deliverer?.fullName}
                     </Text>
                     <Text
                       style={{
@@ -264,12 +267,14 @@ const OrderGroupDetail = ({navigation, route}) => {
                         fontFamily: 'Roboto',
                         color: 'black',
                       }}>
-                      Email : {deliverer.email}
+                      Email : {deliverer?.email}
                     </Text>
                     <TouchableOpacity
                       onPress={() => {
                         navigation.navigate('PickStaff', {
                           orderGroupId: orderGroupId,
+                          deliverDate: deliverDate,
+                          timeFrameId: timeFrameId,
                           staff: deliverer,
                           mode: mode,
                         });

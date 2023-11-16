@@ -33,7 +33,7 @@ import CheckBox from 'react-native-check-box';
 import Toast from 'react-native-toast-message';
 
 const PickStaff = ({navigation, route}) => {
-  const {orderGroupId, staff, mode} = route.params;
+  const {orderGroupId, deliverDate, timeFrameId, staff, mode} = route.params;
   const [initializing, setInitializing] = useState(true);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -92,36 +92,111 @@ const PickStaff = ({navigation, route}) => {
         if (auth().currentUser) {
           const tokenId = await auth().currentUser.getIdToken();
           if (tokenId) {
-            setLoading(true);
+            if (mode === 1) {
+              setLoading(true);
 
-            fetch(`${API.baseURL}/api/staff/getStaffForDeliverManager`, {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${tokenId}`,
-              },
-            })
-              .then(res => res.json())
-              .then(respond => {
-                console.log('staff:', respond.staffList);
-                let res = [];
-                if (staff) {
-                  res = respond.staffList.filter(item => {
-                    return item.id !== staff.id;
+              fetch(
+                `${API.baseURL}/api/staff/getStaffForDeliverManager?orderType=ORDER_GROUP&deliverDate=${deliverDate}&timeFrameId=${timeFrameId}`,
+                {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${tokenId}`,
+                  },
+                },
+              )
+                .then(res => res.json())
+                .then(respond => {
+                  console.log('staff:', respond.staffList);
+                  let res = [];
+                  if (staff) {
+                    res = respond.staffList.filter(item => {
+                      return item.id !== staff.id;
+                    });
+                  } else {
+                    res = respond.staffList;
+                  }
+                  const list = res.map(item => {
+                    return {...item, checked: false};
                   });
-                } else {
-                  res = respond.staffList;
-                }
-                const list = res.map(item => {
-                  return {...item, checked: false};
+                  setStaffList(list);
+                  setLoading(false);
+                })
+                .catch(err => {
+                  console.log(err);
+                  setLoading(false);
                 });
-                setStaffList(list);
-                setLoading(false);
-              })
-              .catch(err => {
-                console.log(err);
-                setLoading(false);
-              });
+            }
+            if (mode === 2) {
+              setLoading(true);
+
+              fetch(
+                `${API.baseURL}/api/staff/getStaffForDeliverManager?orderType=ORDER_BATCH&deliverDate=${deliverDate}&timeFrameId=${timeFrameId}`,
+                {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${tokenId}`,
+                  },
+                },
+              )
+                .then(res => res.json())
+                .then(respond => {
+                  console.log('staff:', respond.staffList);
+                  let res = [];
+                  if (staff) {
+                    res = respond.staffList.filter(item => {
+                      return item.id !== staff.id;
+                    });
+                  } else {
+                    res = respond.staffList;
+                  }
+                  const list = res.map(item => {
+                    return {...item, checked: false};
+                  });
+                  setStaffList(list);
+                  setLoading(false);
+                })
+                .catch(err => {
+                  console.log(err);
+                  setLoading(false);
+                });
+            }
+            if (mode === 3) {
+              setLoading(true);
+
+              fetch(
+                `${API.baseURL}/api/staff/getStaffForDeliverManager?orderType=SINGLE&deliverDate=${deliverDate}&timeFrameId=${timeFrameId}`,
+                {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${tokenId}`,
+                  },
+                },
+              )
+                .then(res => res.json())
+                .then(respond => {
+                  console.log('staff:', respond.staffList);
+                  let res = [];
+                  if (staff) {
+                    res = respond.staffList.filter(item => {
+                      return item.id !== staff.id;
+                    });
+                  } else {
+                    res = respond.staffList;
+                  }
+                  const list = res.map(item => {
+                    return {...item, checked: false};
+                  });
+                  setStaffList(list);
+                  setLoading(false);
+                })
+                .catch(err => {
+                  console.log(err);
+                  setLoading(false);
+                });
+            }
           }
         }
       };
@@ -189,6 +264,30 @@ const PickStaff = ({navigation, route}) => {
                 showToast(respond);
                 setLoading(false);
                 navigation.navigate('OrderBatch');
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
+          }
+          if (mode === 3) {
+            setLoading(true);
+            fetch(
+              `${API.baseURL}/api/order/deliveryManager/assignDeliveryStaffToOrder?orderId=${orderGroupId}&staffId=${selectedStaff.id}`,
+              {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${tokenId}`,
+                },
+              },
+            )
+              .then(res => res.text())
+              .then(respond => {
+                console.log('res:', respond);
+                showToast(respond);
+                setLoading(false);
+                navigation.navigate('OrderListForManager');
               })
               .catch(err => {
                 console.log(err);
