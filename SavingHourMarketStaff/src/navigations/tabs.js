@@ -117,7 +117,7 @@ const Tabs = () => {
               ),
             }}
           />
-          <Tab.Screen
+          {/* <Tab.Screen
             name="Report"
             component={Report}
             options={{
@@ -129,7 +129,7 @@ const Tabs = () => {
                 />
               ),
             }}
-          />
+          /> */}
         </>
       )}
       {user?.role === 'STAFF_DLV_1' && (
