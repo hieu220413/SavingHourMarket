@@ -13,7 +13,13 @@ export const ViewProductBatchAddressList = ({
           <td style={{ paddingTop: 30 }}>{index + 1}</td>
 
           <td style={{ paddingTop: 30 }}>
-            {item?.supermarketAddress?.address}
+            {item?.supermarketAddress?.address ? (
+              item?.supermarketAddress?.address
+            ) : (
+              <p style={{ fontWeight: 700 }} className="text-danger">
+                Lỗi ngày
+              </p>
+            )}
           </td>
           <td style={{ paddingTop: 30, paddingLeft: 20 }}>{item?.quantity}</td>
         </tr>
