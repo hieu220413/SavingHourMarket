@@ -534,7 +534,7 @@ const PickStaff = ({navigation, route}) => {
                     setOpenValidateDialog(true);
                     return;
                   }
-                  if (selectedStaff?.collideOrderBatchQuantity >= 2) {
+                  if (selectedStaff?.collideOrderBatchQuantity >= 1) {
                     setOpenConfirmModal(true);
                   } else {
                     handlePickStaffForBatch();
