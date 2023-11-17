@@ -8,14 +8,14 @@ import {
   Image,
   ScrollView,
 } from 'react-native';
-import React, {useEffect, useState, useCallback} from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {COLORS} from '../../constants/theme';
-import {icons} from '../../constants';
-import {useFocusEffect} from '@react-navigation/native';
-import {API} from '../../constants/api';
-import {format} from 'date-fns';
+import { COLORS } from '../../constants/theme';
+import { icons } from '../../constants';
+import { useFocusEffect } from '@react-navigation/native';
+import { API } from '../../constants/api';
+import { format } from 'date-fns';
 import {
   ExpandableCalendar,
   AgendaList,
@@ -23,67 +23,91 @@ import {
   WeekCalendar,
 } from 'react-native-calendars';
 import LoadingScreen from '../../components/LoadingScreen';
-import {BarChart, LineChart, PieChart} from 'react-native-gifted-charts';
+import { BarChart, LineChart, PieChart } from 'react-native-gifted-charts';
 
-const Report = ({navigation}) => {
+const Report = ({ navigation }) => {
   const barData = [
     {
       value: 40,
       label: 'Jan',
       spacing: 2,
       labelWidth: 30,
-      labelTextStyle: {color: 'gray'},
+      labelTextStyle: { color: 'gray' },
       frontColor: '#177AD5',
     },
-    {value: 20, frontColor: '#ED6665'},
+    { value: 20, frontColor: '#ED6665' },
     {
       value: 50,
       label: 'Feb',
       spacing: 2,
       labelWidth: 30,
-      labelTextStyle: {color: 'gray'},
+      labelTextStyle: { color: 'gray' },
       frontColor: '#177AD5',
     },
-    {value: 40, frontColor: '#ED6665'},
+    { value: 40, frontColor: '#ED6665' },
     {
       value: 75,
       label: 'Mar',
       spacing: 2,
       labelWidth: 30,
-      labelTextStyle: {color: 'gray'},
+      labelTextStyle: { color: 'gray' },
       frontColor: '#177AD5',
     },
-    {value: 25, frontColor: '#ED6665'},
+    { value: 25, frontColor: '#ED6665' },
     {
       value: 30,
       label: 'Apr',
       spacing: 2,
       labelWidth: 30,
-      labelTextStyle: {color: 'gray'},
+      labelTextStyle: { color: 'gray' },
       frontColor: '#177AD5',
     },
-    {value: 20, frontColor: '#ED6665'},
+    { value: 20, frontColor: '#ED6665' },
     {
       value: 60,
       label: 'May',
       spacing: 2,
       labelWidth: 30,
-      labelTextStyle: {color: 'gray'},
+      labelTextStyle: { color: 'gray' },
       frontColor: '#177AD5',
     },
-    {value: 40, frontColor: '#ED6665'},
+    { value: 40, frontColor: '#ED6665' },
     {
       value: 65,
       label: 'Jun',
       spacing: 2,
       labelWidth: 30,
-      labelTextStyle: {color: 'gray'},
+      labelTextStyle: { color: 'gray' },
       frontColor: '#177AD5',
     },
-    {value: 30, frontColor: '#ED6665'},
+    { value: 30, frontColor: '#ED6665' },
   ];
-
+  const [currentUser, setCurrentUser] = useState(null);
   const [initializing, setInitializing] = useState(true);
+  const [pickupPoint, setPickupPoint] = useState(null);
+  // init pickup point
+  useFocusEffect(
+    useCallback(() => {
+      const initPickupPoint = async () => {
+        // console.log('pick up point :', pickupPoint)
+        const pickupPointStorage = await AsyncStorage.getItem('pickupPoint')
+          .then(result => JSON.parse(result))
+          .catch(error => {
+            console.log(error);
+            return null;
+          });
+        if (pickupPointStorage) {
+          setPickupPoint(pickupPointStorage);
+        } else {
+          // trick useEffect to trigger 
+          setPickupPoint({
+            id: null,
+          });
+        }
+      };
+      initPickupPoint();
+    }, []),
+  );
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState(
     format(Date.parse(new Date().toString()), 'yyyy-MM-dd'),
@@ -91,24 +115,24 @@ const Report = ({navigation}) => {
   const [loading, setLoading] = useState(false);
   const [dayReport, setDayReport] = useState(null);
   const [data, setData] = useState([
-    {value: 0, label: 'Jan', month: 1},
-    {value: 0, label: 'Feb', month: 2},
-    {value: 0, label: 'Mar', month: 3},
-    {value: 0, label: 'Apr', month: 4},
-    {value: 0, label: 'May', month: 5},
-    {value: 0, label: 'Jun', month: 6},
-    {value: 0, label: 'Jul', month: 7},
-    {value: 0, label: 'Aug', month: 8},
-    {value: 0, label: 'Sep', month: 9},
-    {value: 0, label: 'Oct', month: 10},
-    {value: 0, label: 'Nov', month: 11},
-    {value: 0, label: 'Dec', month: 12},
+    { value: 0, label: 'Jan', month: 1 },
+    { value: 0, label: 'Feb', month: 2 },
+    { value: 0, label: 'Mar', month: 3 },
+    { value: 0, label: 'Apr', month: 4 },
+    { value: 0, label: 'May', month: 5 },
+    { value: 0, label: 'Jun', month: 6 },
+    { value: 0, label: 'Jul', month: 7 },
+    { value: 0, label: 'Aug', month: 8 },
+    { value: 0, label: 'Sep', month: 9 },
+    { value: 0, label: 'Oct', month: 10 },
+    { value: 0, label: 'Nov', month: 11 },
+    { value: 0, label: 'Dec', month: 12 },
   ]);
   const [yearReport, setYearReport] = useState(null);
 
   const renderTitle = () => {
     return (
-      <View style={{marginVertical: 30}}>
+      <View style={{ marginVertical: 30 }}>
         <Text
           style={{
             color: 'black',
@@ -125,7 +149,7 @@ const Report = ({navigation}) => {
             justifyContent: 'space-around',
             marginTop: 24,
           }}>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <View
               style={{
                 height: 12,
@@ -143,7 +167,7 @@ const Report = ({navigation}) => {
               Đơn thành công
             </Text>
           </View>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <View
               style={{
                 height: 12,
@@ -187,7 +211,9 @@ const Report = ({navigation}) => {
         return;
       }
       const currentUser = await AsyncStorage.getItem('userInfo');
-      // console.log(currentUser);
+      console.log(JSON.parse(currentUser));
+      setCurrentUser(JSON.parse(currentUser));
+
     } else {
       // no sessions found.
       console.log('user is not logged in');
@@ -250,22 +276,21 @@ const Report = ({navigation}) => {
           if (tokenId) {
             setLoading(true);
             const resetData = [
-              {value: 0, label: 'Jan', month: 1},
-              {value: 0, label: 'Feb', month: 2},
-              {value: 0, label: 'Mar', month: 3},
-              {value: 0, label: 'Apr', month: 4},
-              {value: 0, label: 'May', month: 5},
-              {value: 0, label: 'Jun', month: 6},
-              {value: 0, label: 'Jul', month: 7},
-              {value: 0, label: 'Aug', month: 8},
-              {value: 0, label: 'Sep', month: 9},
-              {value: 0, label: 'Oct', month: 10},
-              {value: 0, label: 'Nov', month: 11},
-              {value: 0, label: 'Dec', month: 12},
+              { value: 0, label: 'Jan', month: 1 },
+              { value: 0, label: 'Feb', month: 2 },
+              { value: 0, label: 'Mar', month: 3 },
+              { value: 0, label: 'Apr', month: 4 },
+              { value: 0, label: 'May', month: 5 },
+              { value: 0, label: 'Jun', month: 6 },
+              { value: 0, label: 'Jul', month: 7 },
+              { value: 0, label: 'Aug', month: 8 },
+              { value: 0, label: 'Sep', month: 9 },
+              { value: 0, label: 'Oct', month: 10 },
+              { value: 0, label: 'Nov', month: 11 },
+              { value: 0, label: 'Dec', month: 12 },
             ];
             fetch(
-              `${
-                API.baseURL
+              `${API.baseURL
               }/api/order/packageStaff/getReportOrders?mode=MONTH&year=${date.slice(
                 0,
                 4,
@@ -332,7 +357,7 @@ const Report = ({navigation}) => {
                     label: item.year,
                     spacing: 2,
                     labelWidth: 30,
-                    labelTextStyle: {color: 'gray'},
+                    labelTextStyle: { color: 'gray' },
                     frontColor: '#177AD5',
                   };
                   const obj2 = {
@@ -368,11 +393,57 @@ const Report = ({navigation}) => {
       accessible={false}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <View style={styles.pagenameAndLogout}>
-            <View style={styles.pageName}>
-              <Text style={{fontSize: 25, color: 'black', fontWeight: 'bold'}}>
-                Thống kê
-              </Text>
+          <View style={styles.areaAndLogout}>
+            <View style={styles.area}>
+              <Text style={{ fontSize: 16 }}>Khu vực:</Text>
+              <View style={styles.pickArea}>
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.navigate('SelectPickupPoint', {
+                      setPickupPoint: setPickupPoint,
+                      isFromProductPackagingRoute: true,
+                    });
+                  }}>
+                  <View style={styles.pickAreaItem}>
+                    <Image
+                      resizeMode="contain"
+                      style={{ width: 30, height: 20, tintColor: COLORS.primary }}
+                      source={icons.location}
+                    />
+
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        fontFamily: 'Roboto',
+                        color: 'black',
+                      }}>
+                      {pickupPoint && pickupPoint.id
+                        ? pickupPoint.address
+                        : 'Chọn điểm giao hàng'}
+                      {/* Chọn điểm giao hàng */}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+                {pickupPoint && pickupPoint.id ? (
+                  <TouchableOpacity
+                    onPress={async () => {
+                      setPickupPoint(null);
+                      await AsyncStorage.removeItem('pickupPoint');
+                    }}>
+                    <Image
+                      resizeMode="contain"
+                      style={{
+                        width: 22,
+                        height: 22,
+                        tintColor: COLORS.primary,
+                      }}
+                      source={icons.clearText}
+                    />
+                  </TouchableOpacity>
+                ) : (
+                  <></>
+                )}
+              </View>
             </View>
             <View style={styles.logout}>
               <TouchableOpacity
@@ -381,15 +452,17 @@ const Report = ({navigation}) => {
                 }}>
                 <Image
                   resizeMode="contain"
-                  style={{width: 38, height: 38}}
-                  source={icons.userCircle}
+                  style={{ width: 38, height: 38 }}
+                  source={{
+                    uri: currentUser?.avatarUrl,
+                  }}
                 />
               </TouchableOpacity>
               {open && (
                 <TouchableOpacity
                   style={{
                     position: 'absolute',
-                    bottom: -38,
+                    bottom: -30,
                     left: -12,
                     zIndex: 100,
                     width: 75,
@@ -407,7 +480,7 @@ const Report = ({navigation}) => {
                       })
                       .catch(e => console.log(e));
                   }}>
-                  <Text style={{color: 'red', fontWeight: 'bold'}}>
+                  <Text style={{ color: 'red', fontWeight: 'bold' }}>
                     Đăng xuất
                   </Text>
                 </TouchableOpacity>
@@ -415,84 +488,188 @@ const Report = ({navigation}) => {
             </View>
           </View>
         </View>
+
         <View style={styles.body}>
-          <CalendarProvider
-            style={{width: '100%'}}
-            date={date}
-            onDateChanged={e => {
-              console.log(e);
-              setDate(e);
-            }}
-            // onMonthChange={onMonthChange}
-            // todayBottomMargin={16}
-          >
-            <ExpandableCalendar
-              testID="expandableCalendar"
-              allowShadow={false}
-              disablePan={true}
-              hideKnob={true}
-            />
-          </CalendarProvider>
-        </View>
-        <View style={styles.footer}>
-          <ScrollView style={{marginBottom: 80, paddingTop: 10}}>
-            <View style={styles.wrap_container}>
-              <View style={styles.wrap}>
-                <View style={{flex: 1}}>
-                  <Text style={styles.texts}>Tổng số đơn hàng trong ngày:</Text>
-                </View>
-                <View
-                  style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-                  <Text style={styles.numbers}>
-                    {dayReport
-                      ? dayReport.cancelCount +
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
+            style={{ marginBottom: 80 }}>
+            <Text
+              style={{ backgroundColor: 'white', fontSize: 23, fontStyle: 'italic', color: 'black', marginTop: 10, paddingHorizontal: 20 }}>
+              Xin chào! {currentUser?.fullName} 👋
+            </Text>
+            <View style={{
+              paddingTop: 10,
+              paddingBottom: 20,
+              borderRadius: 20,
+              backgroundColor: 'white',
+              shadowColor: '#000',
+              shadowOffset: {
+                width: 2,
+                height: 2,
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 4,
+              elevation: 5,
+              marginHorizontal: 5,
+              marginBottom: 20,
+              marginTop: 10
+            }}>
+              <CalendarProvider
+                style={{ paddingHorizontal: 5 }}
+                date={date}
+                onDateChanged={(newDate) => setDate(newDate)}
+              >
+                <ExpandableCalendar
+                  style={{ paddingHorizontal: 5 }}
+                  testID="expandableCalendar"
+                  allowShadow={false}
+                  disablePan={true}
+                  hideKnob={true}
+                />
+              </CalendarProvider>
+              <View style={styles.wrap_container}>
+                <View style={styles.wrapProcessing}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.texts}>Đơn chờ xác nhận:</Text>
+                  </View>
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <Text style={styles.numbers}>
+                      {dayReport
+                        ? dayReport.cancelCount +
                         dayReport.deliveringCount +
                         dayReport.failCount +
                         dayReport.packagedCount +
                         dayReport.packagingCount +
                         dayReport.successCount
-                      : '0'}
-                  </Text>
+                        : '0'}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-
-              <View style={styles.wrap}>
-                <View style={{flex: 1}}>
-                  <Text style={styles.texts}>Số đơn hàng giao thành công:</Text>
+                <View style={styles.wrapPackaging}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.texts}>Đơn đang đóng gói:</Text>
+                  </View>
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <Text style={styles.numbers}>
+                      {dayReport
+                        ?
+                        dayReport.packagingCount
+                        : '0'}
+                    </Text>
+                  </View>
                 </View>
-                <View
-                  style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-                  <Text style={styles.numbers}>
-                    {dayReport ? dayReport.successCount : '0'}
-                  </Text>
+                <View style={styles.wrapPackaged}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.texts}>Đơn đã đóng gói:</Text>
+                  </View>
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <Text style={styles.numbers}>
+                      {dayReport
+                        ?
+                        dayReport.packagedCount
+                        : '0'}
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.wrapDelivering}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.texts}>Đơn đang giao:</Text>
+                  </View>
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <Text style={styles.numbers}>
+                      {dayReport ? dayReport.deliveringCount : '0'}
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.wrapSuccess}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.texts}>Đơn đã giao:</Text>
+                  </View>
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <Text style={styles.numbers}>
+                      {dayReport
+                        ?
+                        dayReport.successCount
+                        : '0'}
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.wrapCancel}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.texts}>Đơn đã huỷ:</Text>
+                  </View>
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <Text style={styles.numbers}>
+                      {dayReport
+                        ? dayReport.cancelCount
+                        : '0'}
+                    </Text>
+                  </View>
                 </View>
               </View>
             </View>
-            <View style={{paddingTop: 10}}>
+            <View style={{
+              paddingTop: 10,
+              borderRadius: 20,
+              backgroundColor: 'white',
+              shadowColor: '#000',
+              shadowOffset: {
+                width: 0,
+                height: 2,
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 4,
+              elevation: 10,
+              marginHorizontal: 5,
+              marginBottom: 20
+            }}>
               <View
                 style={{
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  paddingBottom:30
+                  paddingBottom: 30
                 }}>
                 <Text
-                  style={{fontSize: 18, fontWeight: 'bold', color: 'black'}}>
+                  style={{ fontSize: 18, fontWeight: 'bold', color: 'black' }}>
                   SỐ ĐƠN HÀNG ĐÃ GIAO
                 </Text>
               </View>
               <BarChart
                 disablePress={true}
                 data={data}
-                spacing={10}
+                spacing={6.5}
                 barWidth={20}
                 frontColor="red"
                 isAnimated
@@ -500,6 +677,22 @@ const Report = ({navigation}) => {
                 // hideRules
                 showFractionalValue
               />
+            </View>
+            <View style={{
+              paddingTop: 10,
+              borderRadius: 20,
+              backgroundColor: 'white',
+              shadowColor: '#000',
+              shadowOffset: {
+                width: 0,
+                height: 2,
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 4,
+              elevation: 10,
+              marginHorizontal: 5,
+              marginBottom: 20
+            }}>
               <View
                 style={{
                   paddingBottom: 40,
@@ -516,7 +709,7 @@ const Report = ({navigation}) => {
                   disablePress={true}
                   xAxisThickness={0}
                   yAxisThickness={0}
-                  yAxisTextStyle={{color: 'gray'}}
+                  yAxisTextStyle={{ color: 'gray' }}
                   noOfSections={3}
                 />
               </View>
@@ -534,39 +727,164 @@ export default Report;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: 'white'
   },
   header: {
-    flex: 0.9,
-    // backgroundColor: 'orange',
+    flex: 1,
+    backgroundColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 2,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 10,
     paddingHorizontal: 20,
+    paddingBottom: 20
   },
   body: {
-    flex: 2.2,
-    zIndex: 50,
-  },
-  footer: {
     flex: 8,
-    // paddingHorizontal: 20,
-    // backgroundColor: 'red',
+    paddingHorizontal: 20,
+  },
+  areaAndLogout: {
+    paddingTop: 10,
+    flexDirection: 'row',
+  },
+  pickArea: {
+    paddingVertical: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  area: {
+    flex: 7,
+    // backgroundColor: 'white',
+  },
+  logout: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    marginLeft: 10,
+  },
+  pickAreaItem: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
+    width: '80%',
+  },
+  body: {
+    flex: 10,
+    zIndex: 50,
+    paddingHorizontal: 10,
+    paddingTop: 10
   },
   wrap_container: {
     display: 'flex',
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingVertical: 10,
     alignContent: 'center',
     gap: 10,
     justifyContent: 'center',
+    marginTop: 10,
+
     // backgroundColor: 'pink',
   },
-  wrap: {
-    width: 190,
-    height: 130,
-    backgroundColor: 'rgb(240,240,240)',
+  wrapProcessing: {
+    width: 100,
+    height: 108,
+    backgroundColor: COLORS.light_green,
     borderRadius: 10,
     padding: 10,
     display: 'flex',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  wrapPackaging: {
+    width: 100,
+    height: 108,
+    backgroundColor: '#b6d8eb',
+    borderRadius: 10,
+    padding: 10,
+    display: 'flex',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 7,
+  },
+  wrapPackaged: {
+    width: 100,
+    height: 108,
+    backgroundColor: '#8ec9ea',
+    borderRadius: 10,
+    padding: 10,
+    display: 'flex',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 7,
+  },
+  wrapCancel: {
+    width: 100,
+    height: 108,
+    backgroundColor: '#e8bfbe',
+    borderRadius: 10,
+    padding: 10,
+    display: 'flex',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 7,
+  },
+  wrapDelivering: {
+    width: 100,
+    height: 108,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 10,
+    display: 'flex',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 6,
+  },
+  wrapSuccess: {
+    width: 100,
+    height: 108,
+    backgroundColor: '#bee8c8',
+    borderRadius: 10,
+    padding: 10,
+    display: 'flex',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 7,
   },
   numbers: {
     fontSize: 40,
@@ -574,13 +892,25 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   texts: {
-    fontSize: 18,
+    fontSize: 14,
     color: 'black',
   },
   pagenameAndLogout: {
     paddingTop: 18,
+    paddingBottom: 16,
     flexDirection: 'row',
     alignItems: 'center',
+    zIndex: 100,
+    backgroundColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    paddingHorizontal: 15,
   },
   pageName: {
     flex: 7,

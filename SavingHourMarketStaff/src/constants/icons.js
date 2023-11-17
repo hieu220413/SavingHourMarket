@@ -23,7 +23,7 @@ const phone = require('../assets/icons/phone.png');
 const trashBin = require('../assets/icons/trashbin.png');
 const cross = require('../assets/icons/cross.png');
 const close = require('../assets/icons/close.png');
-// const orderIcon = require('../assets/icons/ordericon.png');
+const orderIcon = require('../assets/icons/ordericon.png');
 // const bike = require('../assets/icons/bike.png');
 // const questionMark = require('../assets/icons/questionMark.png');
 const filter = require('../assets/icons/filter.png');
@@ -32,6 +32,9 @@ const statistic = require('../assets/icons/statistic.png');
 const userCircle = require('../assets/icons/user-circle.png');
 const packaging = require('../assets/icons/packaging.png');
 const packaged = require('../assets/icons/packaged.png');
+const packaged256 = require('../assets/icons/packaged-256.png');
+const packaged512 = require('../assets/icons/packaged-512.png');
+const packageIcon = require('../assets/icons/package.png');
 const qrCodeScanner = require('../assets/icons/QRCodeScanner.png');
 const packager = require('../assets/icons/package1.png');
 const product = require('../assets/icons/product.png');
@@ -67,7 +70,7 @@ export default {
   trashBin,
   cross,
   close,
-  // orderIcon,
+  orderIcon,
   // bike,
   // questionMark,
   filter,
@@ -75,6 +78,9 @@ export default {
   statistic,
   userCircle,
   packaging,
+  packaged256,
+  packaged512,
+  packageIcon,
   packaged,
   qrCodeScanner,
   packager,

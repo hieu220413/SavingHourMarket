@@ -33,7 +33,7 @@ import CheckBox from 'react-native-check-box';
 import Toast from 'react-native-toast-message';
 
 const PickStaff = ({navigation, route}) => {
-  const {orderGroupId, staff, mode} = route.params;
+  const {orderGroupId, deliverDate, timeFrame, staff, mode} = route.params;
   const [initializing, setInitializing] = useState(true);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -42,6 +42,7 @@ const PickStaff = ({navigation, route}) => {
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [showLogout, setShowLogout] = useState(false);
   const [openValidateDialog, setOpenValidateDialog] = useState(false);
+  const [openConfirmModal, setOpenConfirmModal] = useState(false);
 
   const onAuthStateChange = async userInfo => {
     // console.log(userInfo);
@@ -92,36 +93,111 @@ const PickStaff = ({navigation, route}) => {
         if (auth().currentUser) {
           const tokenId = await auth().currentUser.getIdToken();
           if (tokenId) {
-            setLoading(true);
+            if (mode === 1) {
+              setLoading(true);
 
-            fetch(`${API.baseURL}/api/staff/getStaffForDeliverManager`, {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${tokenId}`,
-              },
-            })
-              .then(res => res.json())
-              .then(respond => {
-                console.log('staff:', respond.staffList);
-                let res = [];
-                if (staff) {
-                  res = respond.staffList.filter(item => {
-                    return item.id !== staff.id;
+              fetch(
+                `${API.baseURL}/api/staff/getStaffForDeliverManager?orderType=ORDER_GROUP&deliverDate=${deliverDate}&timeFrameId=${timeFrame.id}`,
+                {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${tokenId}`,
+                  },
+                },
+              )
+                .then(res => res.json())
+                .then(respond => {
+                  console.log('staff:', respond.staffList);
+                  let res = [];
+                  if (staff) {
+                    res = respond.staffList.filter(item => {
+                      return item.id !== staff.id;
+                    });
+                  } else {
+                    res = respond.staffList;
+                  }
+                  const list = res.map(item => {
+                    return {...item, checked: false};
                   });
-                } else {
-                  res = respond.staffList;
-                }
-                const list = res.map(item => {
-                  return {...item, checked: false};
+                  setStaffList(list);
+                  setLoading(false);
+                })
+                .catch(err => {
+                  console.log(err);
+                  setLoading(false);
                 });
-                setStaffList(list);
-                setLoading(false);
-              })
-              .catch(err => {
-                console.log(err);
-                setLoading(false);
-              });
+            }
+            if (mode === 2) {
+              setLoading(true);
+
+              fetch(
+                `${API.baseURL}/api/staff/getStaffForDeliverManager?orderType=ORDER_BATCH&deliverDate=${deliverDate}&timeFrameId=${timeFrame.id}`,
+                {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${tokenId}`,
+                  },
+                },
+              )
+                .then(res => res.json())
+                .then(respond => {
+                  console.log('staff:', respond.staffList);
+                  let res = [];
+                  if (staff) {
+                    res = respond.staffList.filter(item => {
+                      return item.id !== staff.id;
+                    });
+                  } else {
+                    res = respond.staffList;
+                  }
+                  const list = res.map(item => {
+                    return {...item, checked: false};
+                  });
+                  setStaffList(list);
+                  setLoading(false);
+                })
+                .catch(err => {
+                  console.log(err);
+                  setLoading(false);
+                });
+            }
+            if (mode === 3) {
+              setLoading(true);
+
+              fetch(
+                `${API.baseURL}/api/staff/getStaffForDeliverManager?orderType=SINGLE&deliverDate=${deliverDate}&timeFrameId=${timeFrame.id}`,
+                {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${tokenId}`,
+                  },
+                },
+              )
+                .then(res => res.json())
+                .then(respond => {
+                  console.log('staff:', respond.staffList);
+                  let res = [];
+                  if (staff) {
+                    res = respond.staffList.filter(item => {
+                      return item.id !== staff.id;
+                    });
+                  } else {
+                    res = respond.staffList;
+                  }
+                  const list = res.map(item => {
+                    return {...item, checked: false};
+                  });
+                  setStaffList(list);
+                  setLoading(false);
+                })
+                .catch(err => {
+                  console.log(err);
+                  setLoading(false);
+                });
+            }
           }
         }
       };
@@ -171,10 +247,34 @@ const PickStaff = ({navigation, route}) => {
                 setLoading(false);
               });
           }
-          if (mode === 2) {
+          // if (mode === 2) {
+          //   setLoading(true);
+          //   fetch(
+          //     `${API.baseURL}/api/order/deliveryManager/assignDeliveryStaffToGroupOrBatch?orderBatchId=${orderGroupId}&staffId=${selectedStaff.id}`,
+          //     {
+          //       method: 'PUT',
+          //       headers: {
+          //         'Content-Type': 'application/json',
+          //         Authorization: `Bearer ${tokenId}`,
+          //       },
+          //     },
+          //   )
+          //     .then(res => res.text())
+          //     .then(respond => {
+          //       console.log('res:', respond);
+          //       showToast(respond);
+          //       setLoading(false);
+          //       navigation.navigate('OrderBatch');
+          //     })
+          //     .catch(err => {
+          //       console.log(err);
+          //       setLoading(false);
+          //     });
+          // }
+          if (mode === 3) {
             setLoading(true);
             fetch(
-              `${API.baseURL}/api/order/deliveryManager/assignDeliveryStaffToGroupOrBatch?orderBatchId=${orderGroupId}&staffId=${selectedStaff.id}`,
+              `${API.baseURL}/api/order/deliveryManager/assignDeliveryStaffToOrder?orderId=${orderGroupId}&staffId=${selectedStaff.id}`,
               {
                 method: 'PUT',
                 headers: {
@@ -188,13 +288,49 @@ const PickStaff = ({navigation, route}) => {
                 console.log('res:', respond);
                 showToast(respond);
                 setLoading(false);
-                navigation.navigate('OrderBatch');
+                navigation.navigate('OrderListForManager');
               })
               .catch(err => {
                 console.log(err);
                 setLoading(false);
               });
           }
+          setLoading(false);
+        }
+      }
+    };
+    assignStaff();
+  };
+
+  const handlePickStaffForBatch = () => {
+    const assignStaff = async () => {
+      if (auth().currentUser) {
+        const tokenId = await auth().currentUser.getIdToken();
+        if (tokenId) {
+          setLoading(true);
+          fetch(
+            `${API.baseURL}/api/order/deliveryManager/assignDeliveryStaffToGroupOrBatch?orderBatchId=${orderGroupId}&staffId=${selectedStaff.id}`,
+            {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
+              },
+            },
+          )
+            .then(res => res.text())
+            .then(respond => {
+              console.log('res:', respond);
+              showToast(respond);
+              setLoading(false);
+              navigation.navigate('OrderBatch');
+            })
+            .catch(err => {
+              console.log(err);
+              setLoading(false);
+            });
+
+          setLoading(false);
         }
       }
     };
@@ -390,7 +526,21 @@ const PickStaff = ({navigation, route}) => {
             </View>
             <TouchableOpacity
               onPress={() => {
-                handlePickStaff();
+                if (mode === 1 || mode === 3) {
+                  handlePickStaff();
+                }
+                if (mode === 2) {
+                  if (!staffList.some(item => item.checked === true)) {
+                    setOpenValidateDialog(true);
+                    return;
+                  }
+                  if (selectedStaff?.collideOrderBatchQuantity >= 1) {
+                    setOpenConfirmModal(true);
+                  } else {
+                    handlePickStaffForBatch();
+                  }
+                  // setOpenConfirmModal(true);
+                }
               }}
               style={{
                 height: '60%',
@@ -412,6 +562,8 @@ const PickStaff = ({navigation, route}) => {
               </Text>
             </TouchableOpacity>
           </View>
+
+          {/* Validate Dialog */}
           <Modal
             width={0.8}
             visible={openValidateDialog}
@@ -454,6 +606,63 @@ const PickStaff = ({navigation, route}) => {
               </View>
             </ModalContent>
           </Modal>
+          {/* ---------------------------------------- */}
+
+          {/* Confirm Modal */}
+          <Modal
+            width={0.8}
+            visible={openConfirmModal}
+            onTouchOutside={() => {
+              setOpenConfirmModal(false);
+            }}
+            dialogAnimation={
+              new ScaleAnimation({
+                initialValue: 0, // optional
+                useNativeDriver: true, // optional
+              })
+            }
+            footer={
+              <ModalFooter>
+                <ModalButton
+                  textStyle={{color: 'red'}}
+                  text="Đóng"
+                  onPress={() => {
+                    setOpenConfirmModal(false);
+                  }}
+                />
+                <ModalButton
+                  // textStyle={{color: 'red'}}
+                  text="Xác nhận"
+                  onPress={() => {
+                    setOpenConfirmModal(false);
+                    handlePickStaffForBatch();
+                  }}
+                />
+              </ModalFooter>
+            }>
+            <ModalContent>
+              <View
+                style={{
+                  padding: 20,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                <Text
+                  style={{
+                    fontSize: 20,
+                    fontFamily: 'Roboto',
+                    color: 'black',
+                    textAlign: 'center',
+                  }}>
+                  Nhân viên {selectedStaff?.fullName} đã có{' '}
+                  {selectedStaff?.collideOrderBatchQuantity} đơn hàng trong cùng
+                  khoảng thời gian này : {timeFrame?.fromHour} đến{' '}
+                  {timeFrame?.toHour}
+                </Text>
+              </View>
+            </ModalContent>
+          </Modal>
+          {/* ---------------------------------- */}
         </>
       )}
       {loading && <LoadingScreen />}

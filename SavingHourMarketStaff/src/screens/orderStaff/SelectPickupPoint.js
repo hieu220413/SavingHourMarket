@@ -108,7 +108,18 @@ const SelectPickupPoint = ({navigation, route}) => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+          <TouchableOpacity onPress={() => {
+            if (
+              route.params.isFromOrderGroupRoute &&
+              route.params.isFromOrderGroupRoute === true
+            ) {
+              navigation.navigate('OrderGroupForOrderStaff', {
+                goBackFromPickupPoint: true
+              });
+              return;
+            }
+            navigation.goBack();
+          }}>
             <Image
               source={icons.leftArrow}
               resizeMode="contain"
@@ -147,9 +158,10 @@ const SelectPickupPoint = ({navigation, route}) => {
             {pickupPointList.map(item => (
               <TouchableOpacity
                 key={item.id}
-                onPress={() => {
+                onPress={async () => {
                   //   storedPickupPoint(item);
-                  route.params.setPickupPoint(item);
+                  await AsyncStorage.setItem('pickupPoint', JSON.stringify(item));
+                  // route.params.setPickupPoint(item);
                   if (
                     route.params.isFromOrderGroupRoute &&
                     route.params.isFromOrderGroupRoute === true
