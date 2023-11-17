@@ -1283,7 +1283,7 @@ const OrderListForManager = ({navigation}) => {
                             navigation.navigate('PickStaff', {
                               orderGroupId: data.item.id,
                               deliverDate: data.item.deliveryDate,
-                              timeFrameId: data.item.timeFrame.id,
+                              timeFrame: data.item?.timeFrame,
                               staff: data.item?.deliverer,
                               mode: 3,
                             });
@@ -1469,7 +1469,7 @@ const OrderListForManager = ({navigation}) => {
                             navigation.navigate('PickStaff', {
                               orderGroupId: data.item.id,
                               deliverDate: data.item.deliveryDate,
-                              timeFrameId: data.item.timeFrame.id,
+                              timeFrame: data.item?.timeFrame,
                               staff: data.item?.deliverer,
                               mode: 3,
                             });

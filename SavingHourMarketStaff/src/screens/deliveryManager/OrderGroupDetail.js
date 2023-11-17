@@ -24,7 +24,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import CartEmpty from '../../assets/image/search-empty.png';
 
 const OrderGroupDetail = ({navigation, route}) => {
-  const {orderList, deliverer, orderGroupId, deliverDate, timeFrameId, mode} =
+  const {orderList, deliverer, orderGroupId, deliverDate, timeFrame, mode} =
     route.params;
   const [initializing, setInitializing] = useState(true);
   const [tokenId, setTokenId] = useState(null);
@@ -198,7 +198,7 @@ const OrderGroupDetail = ({navigation, route}) => {
                         navigation.navigate('PickStaff', {
                           orderGroupId: orderGroupId,
                           deliverDate: deliverDate,
-                          timeFrameId: timeFrameId,
+                          timeFrame: timeFrame,
                           staff: deliverer,
                           mode: mode,
                         });
@@ -274,7 +274,7 @@ const OrderGroupDetail = ({navigation, route}) => {
                         navigation.navigate('PickStaff', {
                           orderGroupId: orderGroupId,
                           deliverDate: deliverDate,
-                          timeFrameId: timeFrameId,
+                          timeFrame: timeFrame,
                           staff: deliverer,
                           mode: mode,
                         });

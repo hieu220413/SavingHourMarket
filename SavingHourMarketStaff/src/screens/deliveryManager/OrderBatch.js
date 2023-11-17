@@ -652,7 +652,7 @@ const OrderBatch = ({navigation}) => {
                               deliverer: data.item?.deliverer,
                               orderGroupId: data.item?.id,
                               deliverDate: data.item?.deliverDate,
-                              timeFrameId: data.item?.timeFrame.id,
+                              timeFrame: data.item?.timeFrame,
                               mode: 2,
                             });
                           }}>
@@ -765,7 +765,7 @@ const OrderBatch = ({navigation}) => {
                             navigation.navigate('PickStaff', {
                               orderGroupId: data.item?.id,
                               deliverDate: data.item?.deliverDate,
-                              timeFrameId: data.item?.timeFrame?.id,
+                              timeFrame: data.item?.timeFrame,
                               staff: data.item?.deliverer,
                               mode: 2,
                             });
@@ -831,7 +831,7 @@ const OrderBatch = ({navigation}) => {
                               deliverer: data.item?.deliverer,
                               orderGroupId: data.item?.id,
                               deliverDate: data.item?.deliverDate,
-                              timeFrameId: data.item?.timeFrame?.id,
+                              timeFrame: data.item?.timeFrame,
                               mode: 2,
                             });
                           }}>
@@ -944,7 +944,7 @@ const OrderBatch = ({navigation}) => {
                             navigation.navigate('PickStaff', {
                               orderGroupId: data.item?.id,
                               deliverDate: data.item?.deliverDate,
-                              timeFrameId: data.item?.timeFrame?.id,
+                              timeFrame: data.item?.timeFrame,
                               staff: data.item?.deliverer,
                               mode: 2,
                             });
