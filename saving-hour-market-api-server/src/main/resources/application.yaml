@@ -11,11 +11,14 @@ spring:
         enable_lazy_load_no_trans: 'true'
     defer-datasource-initialization: 'true'
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create
   datasource:
     password: admin123
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: admin
+#   new
+#    url: jdbc:mysql://saving-hour-market.c4ugdxmsgfre.ap-southeast-2.rds.amazonaws.com:3306/saving_hour_market?useUnicode=true&characterEncoding=UTF-8
+#   old
     url: jdbc:mysql://saving-hour-market.crx2foufhga2.ap-southeast-2.rds.amazonaws.com:3306/saving_hour_market?useUnicode=true&characterEncoding=UTF-8
   sql:
     init:
@@ -56,6 +59,10 @@ goong-distance-matrix-url: https://rsapi.goong.io/DistanceMatrix
 vnpay-hash-secret: ${VNPAY_HASH_SECRET}
 vnpay-tmn-code: ${VNPAY_TMN_CODE}
 
+#new
+#base-path: ${BASE_PATH:#{'http://savinghourmarket-env.eba-nbbwv3pi.ap-southeast-2.elasticbeanstalk.com'}}
+
+#old
 base-path: ${BASE_PATH:#{'http://saving-hour-market.ap-southeast-2.elasticbeanstalk.com'}}
 REDIS_HOST: localhost
 REDIS_PORT: 6379
