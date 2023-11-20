@@ -17,4 +17,6 @@ public interface TransactionService {
     TransactionListResponseBody getTransactionForAdmin(SortType timeSortType, LocalDateTime fromDatetime, LocalDateTime toDatetime, Integer page, Integer limit);
 
     Transaction refundTransaction(UUID transactionId);
+
+    TransactionListResponseBody getTransactionRequiredRefundForAdmin(SortType timeSortType, LocalDateTime fromDatetime, LocalDateTime toDatetime, Integer page, Integer limit, boolean isRefund);
 }

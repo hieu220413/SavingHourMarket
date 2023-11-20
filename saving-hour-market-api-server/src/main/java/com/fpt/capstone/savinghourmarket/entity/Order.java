@@ -20,6 +20,14 @@ import java.util.UUID;
 @Builder
 @Table(name = "orders")
 public class Order {
+
+//    public Order(Order order) {
+//        this.id = order.getId();
+//        this.receiverName = order.getReceiverName();
+//        this.receiverPhone = order.getReceiverPhone();
+//        this.orderDetailList = order.getOrderDetailList();
+//    }
+
     @Id
     @UuidGenerator
     private UUID id;
@@ -110,6 +118,7 @@ public class Order {
     @OneToMany(
             mappedBy = "order"
     )
+    @JsonIgnore
     private List<Transaction> transaction;
 
     @ManyToOne(

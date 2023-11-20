@@ -13,10 +13,29 @@ import java.util.UUID;
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, UUID> {
     @Query("SELECT t FROM Transaction t " +
+            "JOIN t.order ord " +
             "WHERE " +
+            "ord.status <> 6 " +
+            "AND " +
             "t.paymentTime BETWEEN :fromDatetime AND :toDatetime " +
             "AND " +
             "(t.transactionNo IS NOT NULL)")
 
     Page<Transaction> getTransactionForAdmin(LocalDateTime fromDatetime, LocalDateTime toDatetime, Pageable pageableWithSort);
+
+
+    @Query("SELECT t FROM Transaction t " +
+            "JOIN t.order ord " +
+            "WHERE " +
+            "ord.status = 6 " +
+            "AND " +
+            "t.paymentTime BETWEEN :fromDatetime AND :toDatetime " +
+            "AND " +
+            "(t.transactionNo IS NOT NULL) " +
+            "AND " +
+            "(((:isRefund = true ) AND (t.refundTransaction IS NOT NULL)) " +
+            "OR " +
+            "((:isRefund = false ) AND (t.refundTransaction IS NULL)))")
+
+    Page<Transaction> getTransactionRequiredRefundForAdmin(LocalDateTime fromDatetime, LocalDateTime toDatetime, Pageable pageableWithSort, Boolean isRefund);
 }

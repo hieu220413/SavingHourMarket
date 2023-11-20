@@ -718,6 +718,7 @@ const CreateProduct = ({
                         setFileNameSubCate(
                           "Chưa có hình ảnh loại sản phẩm phụ"
                         );
+                        setError({ ...error, allowableDisplayThreshold: "" });
                       }}
                     >
                       Thêm mới
@@ -818,6 +819,10 @@ const CreateProduct = ({
                             setImageUrlSubCate("");
                             setAllowableDisplayThreshold(0);
                             setCheckDuplicatedSubCategory("");
+                            setError({
+                              ...error,
+                              allowableDisplayThreshold: "",
+                            });
                           }}
                         >
                           Thêm mới
@@ -852,6 +857,7 @@ const CreateProduct = ({
                       setSelectedDropdownItemSubCate("Chọn loại sản phẩm phụ");
                       setImageSubCate(null);
                       setCheckDuplicatedSubCategory("");
+                      setError({ ...error, allowableDisplayThreshold: "" });
                     }}
                   >
                     Thêm loại sản phẩm phụ có sẵn
@@ -905,6 +911,14 @@ const CreateProduct = ({
                         className="modal__container-body-inputcontrol-input"
                         value={allowableDisplayThreshold}
                         onChange={(e) => {
+                          if (!/^[0-9]*$/.test(e.target.value)) {
+                            setError({
+                              ...error,
+                              allowableDisplayThreshold:
+                                "Chỉ được nhập số nguyên",
+                            });
+                            return;
+                          }
                           setAllowableDisplayThreshold(e.target.value);
                           setError({ ...error, allowableDisplayThreshold: "" });
                         }}
@@ -1001,6 +1015,7 @@ const CreateProduct = ({
                   setCheckDuplicatedCategory("");
                   setCheckDuplicatedSubCategory("");
                   setImageSubCate(null);
+                  setError({ ...error, allowableDisplayThreshold: "" });
                 }}
               >
                 Thêm loại sản phẩm có sẵn
@@ -1072,6 +1087,13 @@ const CreateProduct = ({
                     className="modal__container-body-inputcontrol-input"
                     value={allowableDisplayThreshold}
                     onChange={(e) => {
+                      if (!/^[0-9]*$/.test(e.target.value)) {
+                        setError({
+                          ...error,
+                          allowableDisplayThreshold: "Chỉ được nhập số nguyên",
+                        });
+                        return;
+                      }
                       setAllowableDisplayThreshold(e.target.value);
                       setError({ ...error, allowableDisplayThreshold: "" });
                     }}
@@ -1575,6 +1597,13 @@ const CreateProduct = ({
                               index
                             ].productBatchAddresses.map((newAddress, num) => {
                               if (num === i) {
+                                if (!/^[0-9]*$/.test(e.target.value)) {
+                                  return {
+                                    ...newAddress,
+                                    quantity: "",
+                                    errorQuantity: "Chỉ được nhập số nguyên",
+                                  };
+                                }
                                 return {
                                   ...newAddress,
                                   quantity: e.target.value,

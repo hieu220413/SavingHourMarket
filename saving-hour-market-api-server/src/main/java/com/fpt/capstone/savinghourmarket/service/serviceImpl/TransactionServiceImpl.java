@@ -11,6 +11,7 @@ import com.fpt.capstone.savinghourmarket.exception.OrderIsPaidException;
 import com.fpt.capstone.savinghourmarket.exception.RequiredEPaymentException;
 import com.fpt.capstone.savinghourmarket.exception.TransactionIsRefundException;
 import com.fpt.capstone.savinghourmarket.model.TransactionListResponseBody;
+import com.fpt.capstone.savinghourmarket.model.TransactionWithOrderInfo;
 import com.fpt.capstone.savinghourmarket.repository.OrderRepository;
 import com.fpt.capstone.savinghourmarket.repository.TransactionRepository;
 import com.fpt.capstone.savinghourmarket.service.TransactionService;
@@ -179,9 +180,31 @@ public class TransactionServiceImpl implements TransactionService {
 
         Long totalTransaction = result.getTotalElements();
 
-        List<Transaction> transactionList = result.stream().toList();
+        List<TransactionWithOrderInfo> transactionWithOrderInfoList = result.stream().map(TransactionWithOrderInfo::new).toList();
 
-        return new TransactionListResponseBody(transactionList, totalPage, totalTransaction);
+        return new TransactionListResponseBody(transactionWithOrderInfoList, totalPage, totalTransaction);
+    }
+
+    @Override
+    public TransactionListResponseBody getTransactionRequiredRefundForAdmin(SortType timeSortType, LocalDateTime fromDatetime, LocalDateTime toDatetime, Integer page, Integer limit, boolean isRefund) {
+        Sort sort;
+        if(timeSortType == null || timeSortType.equals(SortType.ASC)) {
+            sort = Sort.by("paymentTime").ascending();
+        } else {
+            sort = Sort.by("paymentTime").descending();
+        }
+
+        Pageable pageableWithSort = PageRequest.of(page, limit, sort);
+
+        Page<Transaction> result = transactionRepository.getTransactionRequiredRefundForAdmin(fromDatetime, toDatetime, pageableWithSort, isRefund);
+
+        Integer totalPage = result.getTotalPages();
+
+        Long totalTransaction = result.getTotalElements();
+
+        List<TransactionWithOrderInfo> transactionWithOrderInfoList = result.stream().map(TransactionWithOrderInfo::new).toList();
+
+        return new TransactionListResponseBody(transactionWithOrderInfoList, totalPage, totalTransaction);
     }
 
     @Override

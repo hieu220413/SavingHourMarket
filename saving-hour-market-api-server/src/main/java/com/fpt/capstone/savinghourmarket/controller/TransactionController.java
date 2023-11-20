@@ -43,6 +43,21 @@ public class TransactionController {
         return result;
     }
 
+
+    @RequestMapping(value = "/getTransactionRequiredRefundForAdmin", method = RequestMethod.GET)
+    public ResponseEntity<TransactionListResponseBody> getTransactionRequiredRefundForAdmin(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @RequestParam(defaultValue = "0") Integer page
+            , @RequestParam(defaultValue = "5") Integer limit
+            , @RequestParam boolean isRefund
+            , @RequestParam(required = false) SortType timeSortType
+            , @RequestParam(defaultValue = "2000-01-01T00:00:00") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDatetime
+            , @RequestParam(defaultValue = "2100-01-01T00:00:00") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDatetime) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        TransactionListResponseBody transactionListResponseBody = transactionService.getTransactionRequiredRefundForAdmin(timeSortType, fromDatetime, toDatetime, page, limit, isRefund);
+        return ResponseEntity.status(HttpStatus.OK).body(transactionListResponseBody);
+    }
+
     @RequestMapping(value = "/getTransactionForAdmin", method = RequestMethod.GET)
     public ResponseEntity<TransactionListResponseBody> getTransactionForAdmin(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
             , @RequestParam(defaultValue = "0") Integer page

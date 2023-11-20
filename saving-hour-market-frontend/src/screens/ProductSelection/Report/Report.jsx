@@ -257,23 +257,23 @@ const Report = () => {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="totalIncome" fill="#8884d8" />
-                <Bar dataKey="totalPriceOriginal" fill="#82ca9d" />
+                <Bar dataKey="totalIncome" name="Tổng tiền thu trên những sản phẩm đã bán" fill="#8884d8" />
+                <Bar dataKey="totalPriceOriginal" name="Tổng tiền nhập trên những sản phẩm đã bán" fill="#82ca9d" />
               </BarChart>
             </ResponsiveContainer>
           </div>
           <div className="column_2">
             <text className="text">CHI TIẾT</text>
             <div className="detail_card">
-              <text className="detail_text">Tổng tiền bán</text>
+              <text className="detail_text">Tổng tiền thu trên những sản phẩm đã bán</text>
               <text className="num">{totalIncome}</text>
             </div>
             <div className="detail_card">
-              <text className="detail_text">Tổng tiền nhập</text>
+              <text className="detail_text">Tổng tiền nhập trên những sản phẩm đã bán</text>
               <text className="num">{totalPriceOriginal}</text>
             </div>
             <div className="detail_card">
-              <text className="detail_text">Tổng lợi nhuận</text>
+              <text className="detail_text">Chênh lệch tổng thu và tổng nhập</text>
               <text className="num">{totalDifferentAmount}</text>
             </div>
             <div className="donvi">

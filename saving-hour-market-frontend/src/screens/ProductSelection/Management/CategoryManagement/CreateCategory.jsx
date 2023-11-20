@@ -268,7 +268,7 @@ const CreateCategory = ({
               }}
             >
               <div className="modal__container-footer-buttons">
-                <button
+                {/* <button
                   className="modal__container-footer-buttons-close"
                   onClick={() => {
                     console.log("click");
@@ -276,7 +276,7 @@ const CreateCategory = ({
                   }}
                 >
                   Thêm loại sản phẩm phụ
-                </button>
+                </button> */}
               </div>
               <div className="modal__container-footer-buttons">
                 <button

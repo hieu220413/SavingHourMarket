@@ -907,8 +907,9 @@ const Home = ({navigation}) => {
                       style={{
                         fontSize: 16,
                         fontFamily: 'Roboto',
-                        color: 'black',
-                      }}>
+                        color: 'black'
+                      }}
+                      numberOfLines={1}>
                       {pickupPoint && pickupPoint.id
                         ? pickupPoint.address
                         : 'Chọn điểm giao hàng'}
@@ -1871,7 +1872,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     alignItems: 'center',
-    width: '85%',
+    width: '90%',
   },
   centeredView: {
     flex: 1,

@@ -31,6 +31,7 @@ const CategoryManagement = () => {
   const [textSearch, setTextSearch] = useState("");
   const [searchValue, setSearchValue] = useState("");
   const [msg, setMsg] = useState("");
+  const [categoryName, setCategoryName] = useState("");
 
   const [loading, setLoading] = useState(false);
 
@@ -163,6 +164,7 @@ const CategoryManagement = () => {
               onClick={() => {
                 setSubCategoryToView(item);
                 handleOpenView();
+                setCategoryName(item.name);
               }}
               className="bi bi-eye"
             ></i>
@@ -342,6 +344,7 @@ const CategoryManagement = () => {
             handleClose={handleCloseView}
             setSubCategoryToView={setSubCategoryToView}
             subCategoryToView={subCategoryToView}
+            categoryName={categoryName}
           />
         </Dialog>
 

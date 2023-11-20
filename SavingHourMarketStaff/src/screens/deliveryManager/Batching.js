@@ -98,7 +98,7 @@ const Batching = ({navigation}) => {
           if (tokenId) {
             setLoading(true);
             fetch(
-              `${API.baseURL}/api/order/staff/getOrders?orderStatus=PACKAGED&isBatched=false`,
+              `${API.baseURL}/api/order/staff/getOrders?orderStatus=PACKAGED&isGrouped=false&isBatched=false`,
               {
                 method: 'GET',
                 headers: {
@@ -519,7 +519,7 @@ const Batching = ({navigation}) => {
                 Danh sách đơn hàng chưa được gom:
               </Text>
               <View style={{marginBottom: 0}}>
-                {orderList.map(item => (
+                {orderList?.map(item => (
                   <View
                     key={item.id}
                     style={{
@@ -587,8 +587,7 @@ const Batching = ({navigation}) => {
                               fontFamily: 'Roboto',
                               color: 'black',
                             }}>
-                            Địa chỉ :{' '}
-                            {item?.addressDeliver}
+                            Địa chỉ : {item?.addressDeliver}
                           </Text>
                           <Text
                             style={{

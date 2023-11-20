@@ -1070,8 +1070,9 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                         style={{
                           fontSize: 16,
                           fontFamily: 'Roboto',
-                          color: 'black',
-                        }}>
+                          color: 'black'
+                        }}
+                        numberOfLines={1}>
                         {pickupPoint && pickupPoint.id
                           ? pickupPoint.address
                           : 'Chọn điểm giao hàng'}
@@ -1277,6 +1278,7 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                             shadowOpacity: 0.25,
                             shadowRadius: 4,
                             elevation: 10,
+                            zIndex:20
                           }}>
                           <TouchableOpacity
                             style={{
@@ -2217,7 +2219,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     alignItems: 'center',
-    width: '85%',
+    width: '90%',
   },
   centeredView: {
     flex: 1,

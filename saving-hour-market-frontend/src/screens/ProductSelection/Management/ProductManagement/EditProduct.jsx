@@ -1121,6 +1121,13 @@ const EditProduct = ({
                               index
                             ].productBatchAddresses.map((newAddress, num) => {
                               if (num === i) {
+                                if (!/^[0-9]*$/.test(e.target.value)) {
+                                  return {
+                                    ...newAddress,
+                                    quantity: "",
+                                    errorQuantity: "Chỉ được nhập số nguyên",
+                                  };
+                                }
                                 return {
                                   ...newAddress,
                                   quantity: e.target.value,

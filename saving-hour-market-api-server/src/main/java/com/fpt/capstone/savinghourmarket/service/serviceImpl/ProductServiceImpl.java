@@ -53,7 +53,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductListResponseBody getProductsForStaff(Boolean isExpiredShown, String name, String supermarketId, String productCategoryId, String productSubCategoryId, EnableDisableStatus status, Integer page, Integer limit, SortType quantitySortType, SortType expiredSortType, SortType priceSort) {
-        Sort sortable = Sort.by("expiredDate").ascending();
+//        Sort sortable = Sort.by("expiredDate").ascending();
 //        if(quantitySortType.equals("ASC") ){
 //            sortable = Sort.by("expiredDate").ascending();
 //        }else if (quantitySortType.equals("DESC")) {
@@ -64,17 +64,17 @@ public class ProductServiceImpl implements ProductService {
 //            sortable = Sort.by("expiredDate").descending();
 //        }
 
-        if (quantitySortType != null) {
-            sortable = quantitySortType.toString().equals("ASC") ? Sort.by("quantity").ascending() : Sort.by("quantity").descending();
-        }
-
-        if (priceSort != null) {
-            sortable = priceSort.toString().equals("ASC") ? Sort.by("price").ascending() : Sort.by("price").descending();
-        }
-
-        if (expiredSortType != null) {
-            sortable = expiredSortType.toString().equals("ASC") ? Sort.by("expiredDate").ascending() : Sort.by("expiredDate").descending();
-        }
+//        if (quantitySortType != null) {
+//            sortable = quantitySortType.toString().equals("ASC") ? Sort.by("quantity").ascending() : Sort.by("quantity").descending();
+//        }
+//
+//        if (priceSort != null) {
+//            sortable = priceSort.toString().equals("ASC") ? Sort.by("price").ascending() : Sort.by("price").descending();
+//        }
+//
+//        if (expiredSortType != null) {
+//            sortable = expiredSortType.toString().equals("ASC") ? Sort.by("expiredDate").ascending() : Sort.by("expiredDate").descending();
+//        }
 
         Pageable pageableWithSort = PageRequest.of(page, limit);
         Page<Product> result = productRepository.getProductsForStaff(supermarketId == null ? null : UUID.fromString(supermarketId)
@@ -82,7 +82,7 @@ public class ProductServiceImpl implements ProductService {
                 , productCategoryId == null ? null : UUID.fromString(productCategoryId)
                 , productSubCategoryId == null ? null : UUID.fromString(productSubCategoryId)
                 , status == null ? EnableDisableStatus.ENABLE.ordinal() : status.ordinal()
-                , isExpiredShown
+//                , isExpiredShown
                 , pageableWithSort);
 
         int totalPage = result.getTotalPages();

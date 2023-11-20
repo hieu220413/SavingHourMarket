@@ -21,6 +21,7 @@ import SelectProductConsolidationArea from './src/screens/deliveryManager/Select
 import {ModalPortal} from 'react-native-modals';
 import BatchList from './src/screens/deliveryManager/BatchList';
 import BatchingDetail from './src/screens/deliveryManager/BatchingDetail';
+import OrderListForManager from './src/screens/deliveryManager/OrderListForManager';
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
