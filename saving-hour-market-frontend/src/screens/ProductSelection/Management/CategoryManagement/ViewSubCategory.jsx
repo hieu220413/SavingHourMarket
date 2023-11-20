@@ -9,7 +9,7 @@ import CreateSubCategory from "./CreateSubCategory";
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
-const ViewSubCategory = ({ handleClose, subCategoryToView }) => {
+const ViewSubCategory = ({ handleClose, subCategoryToView, categoryName }) => {
   const categoryId = subCategoryToView.id;
   const [openCreate, setOpenCreate] = useState(false);
   const handleOpenCreate = () => setOpenCreate(true);
@@ -64,7 +64,7 @@ const ViewSubCategory = ({ handleClose, subCategoryToView }) => {
       <div className="modal__container" style={{ width: "100%" }}>
         <div className="modal__container-header">
           <h3 className="modal__container-header-title">
-            Chi tiết các loại sản phẩm phụ
+            Chi tiết các loại sản phẩm phụ cho {categoryName}
           </h3>
           <FontAwesomeIcon icon={faXmark} onClick={handleClose} />
         </div>
