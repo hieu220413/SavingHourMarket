@@ -17,6 +17,7 @@ import com.fpt.capstone.savinghourmarket.repository.ProductSubCategoryRepository
 import com.fpt.capstone.savinghourmarket.service.DiscountService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -40,7 +41,7 @@ public class DiscountServiceImpl implements DiscountService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<DiscountOnly> getDiscountsForStaff(Boolean isExpiredShown, String name, Integer fromPercentage, Integer toPercentage, LocalDateTime fromDatetime, LocalDateTime toDatetime, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, String expiredSortType) {
+    public DiscountOnlyListResponseBody getDiscountsForStaff(Boolean isExpiredShown, String name, Integer fromPercentage, Integer toPercentage, LocalDateTime fromDatetime, LocalDateTime toDatetime, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, String expiredSortType) {
         Sort sortable;
         if (expiredSortType.equals("DESC")) {
             sortable = Sort.by("expiredDate").descending();
@@ -50,7 +51,7 @@ public class DiscountServiceImpl implements DiscountService {
 
         Pageable pageable = PageRequest.of(page, limit, sortable);
 
-        List<DiscountOnly> discountList = discountRepository.getDiscountsForStaff(
+        Page<DiscountOnly> result = discountRepository.getDiscountsForStaff(
                 isExpiredShown,
                 name,
                 fromPercentage,
@@ -61,7 +62,12 @@ public class DiscountServiceImpl implements DiscountService {
                 productSubCategoryId == null ? null : UUID.fromString(productSubCategoryId),
                 pageable
         );
-        return discountList;
+
+        int totalPage = result.getTotalPages();
+        long totalDiscount = result.getTotalElements();
+        List<DiscountOnly> discountList = result.stream().toList();
+
+        return new DiscountOnlyListResponseBody(discountList, totalPage, totalDiscount);
     }
 
     @Override
