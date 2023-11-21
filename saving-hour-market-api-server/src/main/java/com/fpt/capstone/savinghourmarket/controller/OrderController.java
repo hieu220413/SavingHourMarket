@@ -137,29 +137,30 @@ public class OrderController {
 
     @GetMapping("/staff/getOrderGroup")
     public ResponseEntity<OrderGroupPageResponse> getOrderGroupForStaff(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
-                                                                  @RequestParam(required = false) SortType deliverDateSortType,
-                                                                  @RequestParam(required = false) LocalDate deliverDate,
-                                                                  @RequestParam(required = false, defaultValue = "false") Boolean getOldOrderGroup,
-                                                                  @RequestParam(required = false) OrderStatus status,
-                                                                  @RequestParam(required = false) UUID timeFrameId,
-                                                                  @RequestParam(required = false) UUID pickupPointId,
-                                                                  @RequestParam(required = false) UUID delivererId,
-                                                                  @RequestParam(defaultValue = "0") Integer page,
-                                                                  @RequestParam(defaultValue = "9999") Integer size) throws FirebaseAuthException {
+                                                                        @RequestParam(required = false) SortType deliverDateSortType,
+                                                                        @RequestParam(required = false) LocalDate deliverDate,
+                                                                        @RequestParam(required = false, defaultValue = "false") Boolean getOldOrderGroup,
+                                                                        @RequestParam(required = false) OrderStatus status,
+                                                                        @RequestParam(required = false) UUID timeFrameId,
+                                                                        @RequestParam(required = false) UUID pickupPointId,
+                                                                        @RequestParam(required = false) UUID delivererId,
+                                                                        @RequestParam(defaultValue = "0") Integer page,
+                                                                        @RequestParam(defaultValue = "9999") Integer size) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderGroups(status,deliverDateSortType, deliverDate, getOldOrderGroup, timeFrameId, pickupPointId, delivererId, page, size));
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderGroups(status, deliverDateSortType, deliverDate, getOldOrderGroup, timeFrameId, pickupPointId, delivererId, page, size));
     }
 
     @GetMapping("/staff/getOrderBatch")
     public ResponseEntity<List<OrderBatch>> getOrderBatchForStaff(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
 //                                                                  @RequestParam(required = false) District district,
+                                                                  @RequestParam(required = false) OrderStatus status,
                                                                   @RequestParam(required = false) SortType deliverDateSortType,
                                                                   @RequestParam(required = false) LocalDate deliveryDate,
                                                                   @RequestParam(required = false) UUID delivererId) throws NoSuchOrderException, FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderBatches(deliverDateSortType,deliveryDate, delivererId));
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderBatches(status.ordinal(), deliverDateSortType, deliveryDate, delivererId));
     }
 
     @GetMapping("/getOrderDetail/{id}")
@@ -168,11 +169,11 @@ public class OrderController {
     }
 
     @GetMapping("/packageStaff/getProductsOrderAfterPackaging")
-    public ResponseEntity<Map<UUID,List<OrderProductForPackage>>> getProductsOrderAfterPackaging(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
-                                                                                                               @RequestParam(required = false) UUID supermarketId,
-                                                                                                               @RequestParam(required = false) UUID pickupPointId,
-                                                                                                               @RequestParam(defaultValue = "0") Integer page,
-                                                                                                               @RequestParam(defaultValue = "9999") Integer size) throws ResourceNotFoundException, FirebaseAuthException {
+    public ResponseEntity<Map<UUID, List<OrderProductForPackage>>> getProductsOrderAfterPackaging(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
+                                                                                                  @RequestParam(required = false) UUID supermarketId,
+                                                                                                  @RequestParam(required = false) UUID pickupPointId,
+                                                                                                  @RequestParam(defaultValue = "0") Integer page,
+                                                                                                  @RequestParam(defaultValue = "9999") Integer size) throws ResourceNotFoundException, FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         String staffEmail = Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(orderService.getProductOrderDetailAfterPackaging(supermarketId, pickupPointId, staffEmail, page, size));
@@ -196,7 +197,7 @@ public class OrderController {
 
     @PutMapping("/packageStaff/confirmPackaging")
     public ResponseEntity<String> confirmPackaging(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
-                                                   @RequestParam UUID orderId ,@RequestParam UUID productConsolidationAreaId) throws NoSuchOrderException, IOException, FirebaseAuthException, ResourceNotFoundException {
+                                                   @RequestParam UUID orderId, @RequestParam UUID productConsolidationAreaId) throws NoSuchOrderException, IOException, FirebaseAuthException, ResourceNotFoundException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         String staffEmail = Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(orderService.confirmPackaging(orderId, staffEmail, productConsolidationAreaId));
@@ -204,7 +205,7 @@ public class OrderController {
 
     @PutMapping("/packageStaff/editProductConsolidationArea")
     public ResponseEntity<String> editProductConsolidationArea(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
-                                                   @RequestParam UUID orderId ,@RequestParam UUID productConsolidationAreaId) throws NoSuchOrderException, IOException, FirebaseAuthException, ResourceNotFoundException {
+                                                               @RequestParam UUID orderId, @RequestParam UUID productConsolidationAreaId) throws NoSuchOrderException, IOException, FirebaseAuthException, ResourceNotFoundException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(orderService.editProductConsolidationArea(orderId, productConsolidationAreaId));
@@ -212,7 +213,7 @@ public class OrderController {
 
     @PutMapping("/packageStaff/confirmPackagingGroup")
     public ResponseEntity<String> confirmPackagingGroup(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
-                                                        @RequestParam UUID orderGroupId,@RequestParam UUID productConsolidationAreaId) throws NoSuchOrderException, IOException, FirebaseAuthException, ResourceNotFoundException {
+                                                        @RequestParam UUID orderGroupId, @RequestParam UUID productConsolidationAreaId) throws NoSuchOrderException, IOException, FirebaseAuthException, ResourceNotFoundException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         String staffEmail = Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(orderService.confirmPackagingGroup(orderGroupId, staffEmail, productConsolidationAreaId));
@@ -220,7 +221,7 @@ public class OrderController {
 
     @PutMapping("/packageStaff/editProductConsolidationAreaGroup")
     public ResponseEntity<String> editProductConsolidationAreaGroup(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
-                                                               @RequestParam UUID orderGroupId ,@RequestParam UUID productConsolidationAreaId) throws NoSuchOrderException, IOException, FirebaseAuthException, ResourceNotFoundException {
+                                                                    @RequestParam UUID orderGroupId, @RequestParam UUID productConsolidationAreaId) throws NoSuchOrderException, IOException, FirebaseAuthException, ResourceNotFoundException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(orderService.editProductConsolidationAreaGroup(orderGroupId, productConsolidationAreaId));
@@ -236,7 +237,7 @@ public class OrderController {
 
     @PutMapping("/packageStaff/confirmPackagedGroup")
     public ResponseEntity<String> confirmPackagedGroup(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
-                                                  @RequestParam UUID orderGroupId) throws NoSuchOrderException, IOException, FirebaseAuthException, ResourceNotFoundException {
+                                                       @RequestParam UUID orderGroupId) throws NoSuchOrderException, IOException, FirebaseAuthException, ResourceNotFoundException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         String staffEmail = Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(orderService.confirmPackagedGroup(orderGroupId, staffEmail));
