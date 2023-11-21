@@ -58,4 +58,7 @@ public class Configuration {
     @Column(columnDefinition = "tinyint")
     @NotNull
     private Integer timeAllowedForOrderCancellation;
+
+    @NotNull
+    private Integer limitMeterPerMinute;
 }

@@ -26,6 +26,12 @@ public class OrderBatch {
 
     private LocalDate deliverDate;
 
+    @Column(columnDefinition = "decimal(23,20)")
+    private Double averageLongitude;
+
+    @Column(columnDefinition = "decimal(22,20)")
+    private Double averageLatitude;
+
     @ManyToOne(
             fetch = FetchType.EAGER
     )

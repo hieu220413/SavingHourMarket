@@ -34,23 +34,27 @@ public interface StaffRepository extends JpaRepository<Staff, UUID> {
             "WHERE " +
             "UPPER(s.fullName) LIKE UPPER(CONCAT('%',:name,'%')) " +
             "AND " +
-            "((og.deliverDate = :deliverDate) AND ((:fromTime BETWEEN og.timeFrame.fromHour AND og.timeFrame.toHour) OR (:toTime BETWEEN og.timeFrame.fromHour AND og.timeFrame.toHour)))" +
+//            "((og.deliverDate = :deliverDate) AND ((:fromTime BETWEEN og.timeFrame.fromHour AND og.timeFrame.toHour) OR (:toTime BETWEEN og.timeFrame.fromHour AND og.timeFrame.toHour)))" +
+            "((og.deliverDate = :deliverDate) AND (og.timeFrame.id = :timeFrameId))" +
             "AND " +
             "s.status = 1 " +
             "AND " +
             "s.role = :role")
-    List<Staff> getStaffWithDeliverDateAndTimeFrame(String name, String role, LocalDate deliverDate, LocalTime fromTime, LocalTime toTime);
+    List<Staff> getStaffWithDeliverDateAndTimeFrame(String name, String role, LocalDate deliverDate, UUID timeFrameId);
 
     @Query("SELECT DISTINCT s FROM Staff s " +
+            "JOIN s.deliverManagerStaff dlvm " +
             "LEFT JOIN s.orderGroupList og " +
 //            "LEFT JOIN FETCH s.pickupPoint " +
             "WHERE " +
             "UPPER(s.fullName) LIKE UPPER(CONCAT('%',:name,'%')) " +
             "AND " +
+            "dlvm.id = :deliverMangerId " +
+            "AND " +
             "s.status = 1 " +
             "AND " +
             "s.role = :role")
-    List<Staff> getAllStaffForDeliverManager(String name, String role);
+    List<Staff> getAllStaffForDeliverManager(String name, String role, UUID deliverMangerId);
 
     @Query("SELECT DISTINCT s FROM Staff s " +
             "JOIN s.orderList o " +
@@ -58,14 +62,15 @@ public interface StaffRepository extends JpaRepository<Staff, UUID> {
             "WHERE " +
             "UPPER(s.fullName) LIKE UPPER(CONCAT('%',:name,'%')) " +
             "AND " +
-            "((o.deliveryDate = :deliverDate) AND ((:fromHour BETWEEN o.timeFrame.fromHour AND o.timeFrame.toHour) OR (:toHour BETWEEN o.timeFrame.fromHour AND o.timeFrame.toHour)))" +
+//            "((o.deliveryDate = :deliverDate) AND ((:fromHour BETWEEN o.timeFrame.fromHour AND o.timeFrame.toHour) OR (:toHour BETWEEN o.timeFrame.fromHour AND o.timeFrame.toHour)))" +
+            "((o.deliveryDate = :deliverDate) AND (o.timeFrame.id = :timeFrameId))" +
             "AND " +
             "(o.orderGroup IS NULL) " +
             "AND " +
             "s.status = 1 " +
             "AND " +
             "s.role = :role")
-    List<Staff> getStaffWithDeliverDateAndTimeFrameByDoorToDoorOrder(String name, String role, LocalDate deliverDate, LocalTime fromHour, LocalTime toHour);
+    List<Staff> getStaffWithDeliverDateAndTimeFrameByDoorToDoorOrder(String name, String role, LocalDate deliverDate, UUID timeFrameId);
 
     @Query("SELECT s.id, COUNT(s.id) FROM Staff s " +
             "JOIN s.orderBatchList obl " +
@@ -78,4 +83,40 @@ public interface StaffRepository extends JpaRepository<Staff, UUID> {
             "s.status = 1 " +
             "GROUP BY s.id")
     List<Object[]> countCollideBatchForStaff(List<UUID> staffIdList, LocalDate deliverDate, LocalTime fromHour, LocalTime toHour);
+
+    @Query("SELECT DISTINCT s FROM Staff s " +
+            "LEFT JOIN s.orderBatchList obl " +
+//            "LEFT JOIN FETCH s.pickupPoint " +
+            "WHERE " +
+            "s.id IN :staffIdList " +
+            "AND " +
+//            "((obl.deliverDate = :deliverDate) AND ((:fromHour BETWEEN obl.timeFrame.fromHour AND obl.timeFrame.toHour) OR (:toHour BETWEEN obl.timeFrame.fromHour AND obl.timeFrame.toHour)))" +
+            "((obl.deliverDate = :deliverDate) AND (obl.timeFrame.id <> :timeFrameId))" +
+            "AND " +
+            "s.status = 1 ")
+    List<Staff> getStaffWithDeliverDateWithBatchWithDifferentTimeFrame(List<UUID> staffIdList, LocalDate deliverDate, UUID timeFrameId);
+
+    @Query("SELECT DISTINCT s FROM Staff s " +
+            "JOIN s.orderBatchList obl " +
+//            "LEFT JOIN FETCH s.pickupPoint " +
+            "WHERE " +
+            "s.id IN :staffIdList " +
+            "AND " +
+//            "((obl.deliverDate = :deliverDate) AND ((:fromHour BETWEEN obl.timeFrame.fromHour AND obl.timeFrame.toHour) OR (:toHour BETWEEN obl.timeFrame.fromHour AND obl.timeFrame.toHour)))" +
+            "((obl.deliverDate = :deliverDate) AND (obl.timeFrame.id = :timeFrameId))" +
+            "AND " +
+            "s.status = 1 ")
+    List<Staff> getStaffWithDeliverDateWithBatchWithSameTimeFrame(List<UUID> staffIdList, LocalDate deliverDate, UUID timeFrameId);
+
+    @Query("SELECT DISTINCT s FROM Staff s " +
+            "LEFT JOIN s.orderGroupList og " +
+//            "LEFT JOIN FETCH s.pickupPoint " +
+            "WHERE " +
+            "s.id IN :staffIdList " +
+            "AND " +
+//            "((obl.deliverDate = :deliverDate) AND ((:fromHour BETWEEN obl.timeFrame.fromHour AND obl.timeFrame.toHour) OR (:toHour BETWEEN obl.timeFrame.fromHour AND obl.timeFrame.toHour)))" +
+            "((og.deliverDate = :deliverDate) AND (og.timeFrame.id <> :timeFrameId))" +
+            "AND " +
+            "s.status = 1 ")
+    List<Staff> getStaffWithDeliverDateWithGroupWithDifferentTimeFrame(List<UUID> staffIdList, LocalDate deliverDate, UUID timeFrameId);
 }

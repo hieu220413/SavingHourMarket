@@ -82,6 +82,32 @@ public final class Utils {
         return "https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/"+ URLEncoder.encode(fileName, StandardCharsets.UTF_8) + "?alt=media";
     }
 
+
+
+    public static double haversineFormulaCalculate(double firstLatitude, double firstLongitude, double secondLatitude, double secondLongitude) {
+        double lat1 = firstLatitude;
+        double lon1 = firstLongitude;
+        double lat2 = secondLatitude;
+        double lon2 = secondLongitude;
+
+        // distance between latitudes and longitudes
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+
+        // convert to radians
+        lat1 = Math.toRadians(lat1);
+        lat2 = Math.toRadians(lat2);
+
+        // apply formulae
+        double a = Math.pow(Math.sin(dLat / 2), 2) +
+                Math.pow(Math.sin(dLon / 2), 2) *
+                        Math.cos(lat1) *
+                        Math.cos(lat2);
+        double rad = 6371;
+        double c = 2 * Math.asin(Math.sqrt(a));
+        return rad * c;
+    }
+
     public static String hmacSHA512VNPay(final String key, final String data) {
         try {
 

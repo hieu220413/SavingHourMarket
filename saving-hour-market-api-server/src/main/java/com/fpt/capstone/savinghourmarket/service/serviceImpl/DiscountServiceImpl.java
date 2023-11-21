@@ -322,7 +322,7 @@ public class DiscountServiceImpl implements DiscountService {
         Optional<Discount> discount = discountRepository.findById(id);
         if (discount.isPresent()) {
             discountEnable = discount.get();
-            discountEnable.setStatus(Status.DISABLE.ordinal());
+            discountEnable.setStatus(Status.ENABLE.ordinal());
             discountEnable = discountRepository.save(discountEnable);
         } else {
             throw new ResourceNotFoundException("Khuyến mãi không tìm thấy với id: " + id);
