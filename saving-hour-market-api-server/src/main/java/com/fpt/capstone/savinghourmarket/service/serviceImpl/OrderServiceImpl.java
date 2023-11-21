@@ -477,6 +477,7 @@ public class OrderServiceImpl implements OrderService {
                                                   String createdTimeSortType,
                                                   String deliveryDateSortType,
                                                   UUID pickupPointId,
+                                                  UUID timeFrameId,
                                                   Date deliveryDate,
                                                   OrderStatus orderStatus,
                                                   String email,
@@ -488,6 +489,7 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Nhân viên không tìm thấy với email " + email)).getPickupPoint();
         return repository.findOrderForPackageStaff(
                 pickupPointId,
+                timeFrameId,
                 deliveryDate,
                 pickupPointListOfStaff,
                 orderStatus == null ? null : orderStatus.ordinal(),
