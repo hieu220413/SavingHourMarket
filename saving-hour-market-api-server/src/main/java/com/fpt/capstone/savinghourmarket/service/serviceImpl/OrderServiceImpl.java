@@ -1189,7 +1189,7 @@ public class OrderServiceImpl implements OrderService {
 
         if (orderCreated.getPaymentMethod() == PaymentMethod.VNPAY.ordinal()) {
             RMapCache<UUID, Object> map = redissonClient.getMapCache("orderCreatedMap");
-            map.put(orderCreated.getId(), 0, 31, TimeUnit.MINUTES);
+            map.put(orderCreated.getId(), 0, (systemConfigurationService.getConfiguration().getDeleteUnpaidOrderTime()*60)+1, TimeUnit.MINUTES);
         }
 
         return orderCreated;
