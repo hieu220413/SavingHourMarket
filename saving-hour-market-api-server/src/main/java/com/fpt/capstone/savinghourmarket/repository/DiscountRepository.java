@@ -33,8 +33,8 @@ public interface DiscountRepository extends JpaRepository<Discount, UUID> {
             "((:productSubCategoryId IS NULL) OR (subcts.id = :productSubCategoryId)) " +
             "AND " +
             "((:isExpiredShown IS NULL) OR (:isExpiredShown = TRUE AND d.expiredDate < CURRENT_TIMESTAMP) OR (:isExpiredShown = FALSE AND d.expiredDate > CURRENT_TIMESTAMP)) " +
-            "AND d.status = 1")
-    Page<DiscountOnly> getDiscountsForStaff(Boolean isExpiredShown, String name, Integer fromPercentage, Integer toPercentage, LocalDateTime fromDatetime, LocalDateTime toDatetime, UUID productCategoryId, UUID productSubCategoryId, Pageable pageable);
+            "AND d.status = :status")
+    Page<Discount> getDiscountsForStaff(Boolean isExpiredShown, String name, Integer fromPercentage, Integer toPercentage, LocalDateTime fromDatetime, LocalDateTime toDatetime, Integer status, UUID productCategoryId, UUID productSubCategoryId, Pageable pageable);
 
     @Query("SELECT DISTINCT d FROM Discount d " +
             "LEFT JOIN d.productCategory cts " +

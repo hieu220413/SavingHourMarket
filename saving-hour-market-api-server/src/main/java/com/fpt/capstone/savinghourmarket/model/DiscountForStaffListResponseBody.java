@@ -11,8 +11,8 @@ import java.util.List;
 @NoArgsConstructor
 @Setter
 @Getter
-public class DiscountOnlyListResponseBody {
-    List<DiscountOnly> discountList;
+public class DiscountForStaffListResponseBody {
+    List<DiscountForStaff> discountList;
     private Integer totalPage;
     private Long totalDiscount;
 }
