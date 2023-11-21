@@ -54,6 +54,7 @@ public interface OrderService {
                                            String createdTimeSortType,
                                            String deliveryDateSortType,
                                            UUID pickupPointId,
+                                           UUID timeFrameId,
                                            Date deliveryDate,
                                            OrderStatus orderStatus,
                                            String email,
