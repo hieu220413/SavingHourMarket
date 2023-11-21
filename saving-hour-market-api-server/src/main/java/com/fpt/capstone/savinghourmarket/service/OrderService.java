@@ -38,7 +38,7 @@ public interface OrderService {
                                        int page,
                                        int limit) throws FirebaseAuthException;
 
-    List<OrderBatch> fetchOrderBatches(SortType deliverDateSortType, LocalDate deliveryDate, UUID delivererID) throws NoSuchOrderException;
+    List<OrderBatch> fetchOrderBatches(Integer status, SortType deliverDateSortType, LocalDate deliveryDate, UUID delivererID) throws NoSuchOrderException;
 
     OrderGroupPageResponse fetchOrderGroups(OrderStatus status,
                                       SortType deliverDateSortType,
