@@ -27,6 +27,7 @@ public class Discount {
         this.quantity = quantity.intValue();
     }
 
+
     @Id
     @UuidGenerator
     private UUID id;

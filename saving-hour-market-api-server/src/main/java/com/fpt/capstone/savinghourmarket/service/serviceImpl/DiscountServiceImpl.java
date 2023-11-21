@@ -1,9 +1,6 @@
 package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
-import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
-import com.fpt.capstone.savinghourmarket.common.Month;
-import com.fpt.capstone.savinghourmarket.common.Quarter;
-import com.fpt.capstone.savinghourmarket.common.Status;
+import com.fpt.capstone.savinghourmarket.common.*;
 import com.fpt.capstone.savinghourmarket.entity.Discount;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
 import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
@@ -30,6 +27,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +39,7 @@ public class DiscountServiceImpl implements DiscountService {
 
     @Override
     @Transactional(readOnly = true)
-    public DiscountOnlyListResponseBody getDiscountsForStaff(Boolean isExpiredShown, String name, Integer fromPercentage, Integer toPercentage, LocalDateTime fromDatetime, LocalDateTime toDatetime, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, String expiredSortType) {
+    public DiscountForStaffListResponseBody getDiscountsForStaff(Boolean isExpiredShown, String name, Integer fromPercentage, Integer toPercentage, LocalDateTime fromDatetime, LocalDateTime toDatetime, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, String expiredSortType, EnableDisableStatus status) {
         Sort sortable;
         if (expiredSortType.equals("DESC")) {
             sortable = Sort.by("expiredDate").descending();
@@ -51,13 +49,14 @@ public class DiscountServiceImpl implements DiscountService {
 
         Pageable pageable = PageRequest.of(page, limit, sortable);
 
-        Page<DiscountOnly> result = discountRepository.getDiscountsForStaff(
+        Page<Discount> result = discountRepository.getDiscountsForStaff(
                 isExpiredShown,
                 name,
                 fromPercentage,
                 toPercentage,
                 fromDatetime,
                 toDatetime,
+                status == null ? EnableDisableStatus.ENABLE.ordinal() : status.ordinal(),
                 productCategoryId == null ? null : UUID.fromString(productCategoryId),
                 productSubCategoryId == null ? null : UUID.fromString(productSubCategoryId),
                 pageable
@@ -65,9 +64,10 @@ public class DiscountServiceImpl implements DiscountService {
 
         int totalPage = result.getTotalPages();
         long totalDiscount = result.getTotalElements();
-        List<DiscountOnly> discountList = result.stream().toList();
+        List<Discount> discountList = result.stream().toList();
 
-        return new DiscountOnlyListResponseBody(discountList, totalPage, totalDiscount);
+        List<DiscountForStaff> discountForStaffList = discountList.stream().map(DiscountForStaff::new).collect(Collectors.toList());
+        return new DiscountForStaffListResponseBody(discountForStaffList, totalPage, totalDiscount);
     }
 
     @Override

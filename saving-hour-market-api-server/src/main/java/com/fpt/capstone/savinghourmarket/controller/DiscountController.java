@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
+import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.common.Month;
 import com.fpt.capstone.savinghourmarket.common.Quarter;
 import com.fpt.capstone.savinghourmarket.entity.Discount;
@@ -31,8 +32,9 @@ public class DiscountController {
     private final FirebaseAuth firebaseAuth;
 
     @RequestMapping(value = "/getDiscountsForStaff", method = RequestMethod.GET)
-    public ResponseEntity<DiscountOnlyListResponseBody> getDiscountsForStaff(
+    public ResponseEntity<DiscountForStaffListResponseBody> getDiscountsForStaff(
             @RequestParam(required = false) Boolean isExpiredShown,
+            @RequestParam(required = false) EnableDisableStatus status,
             @RequestParam(defaultValue = "") String name,
             @RequestParam(defaultValue = "0") Integer fromPercentage,
             @RequestParam(defaultValue = "100") Integer toPercentage,
@@ -46,7 +48,7 @@ public class DiscountController {
             @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        DiscountOnlyListResponseBody discountOnlyListResponseBody = discountService.getDiscountsForStaff(
+        DiscountForStaffListResponseBody discountForStaffListResponseBody = discountService.getDiscountsForStaff(
                 isExpiredShown,
                 name,
                 fromPercentage,
@@ -57,8 +59,9 @@ public class DiscountController {
                 productSubCategoryId,
                 page,
                 limit,
-                expiredSortType);
-        return ResponseEntity.status(HttpStatus.OK).body(discountOnlyListResponseBody);
+                expiredSortType,
+                status);
+        return ResponseEntity.status(HttpStatus.OK).body(discountForStaffListResponseBody);
     }
 
     @RequestMapping(value = "/getDiscountsForCustomer", method = RequestMethod.GET)
