@@ -34,6 +34,9 @@ public class SpringSecurityConfig {
     private String[] selectionStaffAndAdmin= {StaffRole.STAFF_SLT.toString()
             , "ADMIN"};
 
+    private String[] selectionAndMarketingStaffAndAdmin= {StaffRole.STAFF_SLT.toString(), StaffRole.STAFF_MKT.toString()
+            , "ADMIN"};
+
     private String[] marketingStaffAndAdmin= {StaffRole.STAFF_MKT.toString(), "ADMIN"};
 
     private String[] deliverManagerAndAdmin = {StaffRole.STAFF_DLV_1.toString(), "ADMIN"};
@@ -57,8 +60,8 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/product/getProductsForCustomer").permitAll()
                             .requestMatchers("/api/product/getById").permitAll()
                             .requestMatchers("/api/product/getAllCategory").permitAll()
-                            .requestMatchers("/api/product/getCategoryForStaff").hasAnyRole(selectionStaffAndAdmin)
-                            .requestMatchers("/api/product/getSubCategoryForStaff").hasAnyRole(selectionStaffAndAdmin)
+                            .requestMatchers("/api/product/getCategoryForStaff").hasAnyRole(selectionAndMarketingStaffAndAdmin)
+                            .requestMatchers("/api/product/getSubCategoryForStaff").hasAnyRole(selectionAndMarketingStaffAndAdmin)
                             .requestMatchers("/api/product/getAllSubCategory").permitAll()
                             .requestMatchers("/api/product/getProductsForStaff").hasAnyRole(allStaffAndAdmin)
                             .requestMatchers("/api/product/getSaleReportSupermarket").hasAnyRole(selectionStaffAndAdmin)
