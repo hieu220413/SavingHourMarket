@@ -495,7 +495,7 @@ const HomeDeliver = ({ navigation }) => {
       setLoading(true);
       if (id === 0) {
         fetch(
-          `${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliverDate=${deliverDate}`}`,
+          `${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}&status=DELIVERING`,
           {
             method: 'GET',
             headers: {
@@ -519,7 +519,7 @@ const HomeDeliver = ({ navigation }) => {
           });
       } else if (id === 1) {
         fetch(
-          `${API.baseURL}/api/order/staff/getOrderBatch?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliverDate=${deliverDate}`}`,
+          `${API.baseURL}/api/order/staff/getOrderBatch?status=DELIVERING${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}&delivererId=${userFromAS?.id}`,
           {
             method: 'GET',
             headers: {
@@ -533,7 +533,6 @@ const HomeDeliver = ({ navigation }) => {
             if (respond.error) {
               return;
             }
-
             setOrderGroupList(respond);
             setLoading(false);
           })
@@ -554,7 +553,6 @@ const HomeDeliver = ({ navigation }) => {
         )
           .then(res => res.json())
           .then(respond => {
-            console.log('3');
             setOrders(respond);
             setLoading(false);
           })
@@ -925,6 +923,17 @@ const HomeDeliver = ({ navigation }) => {
             <Text
               style={{
                 fontFamily: FONTS.fontFamily,
+                color: 'grey',
+                fontWeight: 'bold',
+                fontSize: 18,
+                marginLeft: 10,
+                paddingBottom: 20,
+              }}>
+              Số lượng đơn hàng cần giao: {currentOptions.id === 0 || currentOptions.id === 1 ? orderGroupList.length : orders.length} đơn
+            </Text>
+            <Text
+              style={{
+                fontFamily: FONTS.fontFamily,
                 color: 'black',
                 fontSize: 20,
                 marginLeft: 10,
@@ -965,7 +974,7 @@ const HomeDeliver = ({ navigation }) => {
                     <View
                       style={{
                         marginTop: 10,
-                        marginBottom: 100,
+                        marginBottom: 150,
                         paddingHorizontal: 15,
                       }}>
                       <FlatList
@@ -1090,6 +1099,7 @@ const HomeDeliver = ({ navigation }) => {
                                 data.item.orderList.length > 0 &&
                                 data.item.orderList.map((item, index) => (
                                   <TouchableOpacity
+                                    key={index}
                                     onPress={() => {
                                       navigation.navigate('OrderDetails', {
                                         id: item.id,

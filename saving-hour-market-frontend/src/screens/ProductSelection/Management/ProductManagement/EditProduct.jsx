@@ -500,6 +500,15 @@ const EditProduct = ({
       .then((res) => res.json())
       .then((res) => {
         console.log(res);
+        if (res.code === 422) {
+          setOpenValidateSnackbar({
+            ...openValidateSnackbar,
+            open: true,
+            severity: "error",
+            text: "Không thể sửa khi bạn xóa lô hàng đang được đóng gói",
+          });
+          return false;
+        }
         fetch(
           `${API.baseURL}/api/product/getProductsForStaff?page=${
             page - 1

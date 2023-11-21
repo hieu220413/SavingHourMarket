@@ -235,7 +235,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderBatch> fetchOrderBatches(Integer status,SortType deliverDateSortType, LocalDate deliveryDate, UUID delivererID) {
+    public List<OrderBatch> fetchOrderBatches(Integer status, Boolean getOldOrderBatch, SortType deliverDateSortType, LocalDate deliveryDate, UUID delivererID) {
         Sort sortable = null;
 
         if (deliverDateSortType != null) {
@@ -247,6 +247,7 @@ public class OrderServiceImpl implements OrderService {
         }
         return orderBatchRepository.findByDistrictOrDeliverDate(
                 status,
+                getOldOrderBatch,
                 deliveryDate,
                 delivererID,
                 sortable);
@@ -394,7 +395,7 @@ public class OrderServiceImpl implements OrderService {
                         order.setDeliverer(staff);
                         order.setStatus(OrderStatus.DELIVERING.ordinal());
                         FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getId().toString());
-                    } else if(order.getStatus() == OrderStatus.DELIVERING.ordinal()) {
+                    } else if (order.getStatus() == OrderStatus.DELIVERING.ordinal()) {
                         order.setDeliverer(staff);
                     } else {
                         return "Đơn hàng " + order.getId() + " chưa được đóng gói!";
@@ -408,7 +409,7 @@ public class OrderServiceImpl implements OrderService {
                     if (order.getStatus() == OrderStatus.PACKAGED.ordinal()) {
                         order.setStatus(OrderStatus.DELIVERING.ordinal());
                         FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getId().toString());
-                    } else if(order.getStatus() == OrderStatus.DELIVERING.ordinal()) {
+                    } else if (order.getStatus() == OrderStatus.DELIVERING.ordinal()) {
                         order.setDeliverer(staff);
                     } else {
                         return "Đơn hàng " + order.getId() + " chưa được đóng gói!";
@@ -432,11 +433,11 @@ public class OrderServiceImpl implements OrderService {
         Order order = repository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("No order found with this id " + orderId));
         if (order.getStatus() == OrderStatus.DELIVERING.ordinal()) {
             order.setDeliverer(staff);
-        } else if(order.getStatus() == OrderStatus.PACKAGED.ordinal()){
+        } else if (order.getStatus() == OrderStatus.PACKAGED.ordinal()) {
             order.setDeliverer(staff);
             order.setStatus(OrderStatus.DELIVERING.ordinal());
             FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getId().toString());
-        }else{
+        } else {
             return "Đơn hàng chưa được đóng gói!";
         }
         return "Staff with id" + staffId + "set successfully";
@@ -1191,7 +1192,7 @@ public class OrderServiceImpl implements OrderService {
 
         if (orderCreated.getPaymentMethod() == PaymentMethod.VNPAY.ordinal()) {
             RMapCache<UUID, Object> map = redissonClient.getMapCache("orderCreatedMap");
-            map.put(orderCreated.getId(), 0, (systemConfigurationService.getConfiguration().getDeleteUnpaidOrderTime()*60)+1, TimeUnit.MINUTES);
+            map.put(orderCreated.getId(), 0, (systemConfigurationService.getConfiguration().getDeleteUnpaidOrderTime() * 60) + 1, TimeUnit.MINUTES);
         }
 
         return orderCreated;
