@@ -16,6 +16,8 @@ import Report from "../screens/ProductSelection/Report/Report";
 import SuperMarketReport from "../screens/ProductSelection/Management/SuperMarketReport/SuperMarketReport";
 import TimeframeManagement from "../screens/Admin/Management/TimeframeManagement/TimeframeManagement";
 import ConsolidationManagement from "../screens/Admin/Management/ConsolidationManagement/ConsolidationManagement";
+import VoucherManagement from "../screens/MarketingStaff/Management/VouchersManagement/VoucherManagement";
+import ReportVoucherUsage from "../screens/MarketingStaff/ReportVoucherUsage/ReportVoucherUsage";
 
 export const routes = [
   {
@@ -108,6 +110,20 @@ export const routes = [
     layout: DefaultLayout,
     private: true,
     role: "STAFF_SLT",
+  },
+  {
+    path: "/vouchermanagement",
+    component: VoucherManagement,
+    layout: DefaultLayout,
+    private: true,
+    role: "STAFF_MKT",
+  },
+  {
+    path: "/marketingreport",
+    component: ReportVoucherUsage,
+    layout: DefaultLayout,
+    private: true,
+    role: "STAFF_MKT",
   },
   { path: "/login", component: Login, layout: HeaderOnly },
   { path: "/forgetpassword", component: ForgetPassword, layout: HeaderOnly },
