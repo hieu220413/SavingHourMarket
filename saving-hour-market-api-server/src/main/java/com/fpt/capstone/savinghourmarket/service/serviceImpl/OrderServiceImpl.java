@@ -235,7 +235,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderBatch> fetchOrderBatches(SortType deliverDateSortType, LocalDate deliveryDate, UUID delivererID) {
+    public List<OrderBatch> fetchOrderBatches(Integer status,SortType deliverDateSortType, LocalDate deliveryDate, UUID delivererID) {
         Sort sortable = null;
 
         if (deliverDateSortType != null) {
@@ -246,6 +246,7 @@ public class OrderServiceImpl implements OrderService {
             }
         }
         return orderBatchRepository.findByDistrictOrDeliverDate(
+                status,
                 deliveryDate,
                 delivererID,
                 sortable);
