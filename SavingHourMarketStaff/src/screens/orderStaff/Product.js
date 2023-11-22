@@ -297,6 +297,7 @@ const Product = ({navigation}) => {
                         fontSize: 16,
                         fontFamily: 'Roboto',
                         color: 'black',
+                        maxWidth:270
                       }} 
                       numberOfLines={1}>
                       {pickupPoint && pickupPoint.id
@@ -515,6 +516,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     alignItems: 'center',
-    width: '80%',
   },
 });
