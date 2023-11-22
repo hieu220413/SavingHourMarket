@@ -126,7 +126,7 @@ const Home = ({ navigation }) => {
       type: 'success',
       text1: 'Thành công',
       text2: message + '👋',
-      visibilityTime: 1000,
+      visibilityTime: 3000,
     });
   };
 
@@ -368,7 +368,7 @@ const Home = ({ navigation }) => {
           )
             .then(res => res.text())
             .then(respond => {
-              fetchData();
+              fetchOrderWithFilter();
               showToast(respond);
             })
             .catch(err => {
@@ -754,7 +754,7 @@ const Home = ({ navigation }) => {
                             paddingTop: 6,
                             fontWeight: 'bold',
                             fontFamily: 'Roboto',
-                            color: COLORS.primary,
+                            color: data.item?.status === 6 ? COLORS.red :COLORS.primary,
                           }}>
                           {data.item?.status === 0 && 'Chờ đóng gói'}
                           {data.item?.status === 1 && 'Đang đóng gói'}
@@ -949,7 +949,7 @@ const Home = ({ navigation }) => {
                             width: 30,
                             height: 30,
                             marginBottom: 30,
-                            tintColor: COLORS.primary,
+                            tintColor: data.item?.status === 6 ? 'grey' :COLORS.primary,
                           }}
                           source={icons.rightArrow}
                         />
@@ -1083,9 +1083,9 @@ const Home = ({ navigation }) => {
                     )}
                   </View>
                 )}
-                disableLeftSwipe={orderList[0]?.status === 2 ? true : false}
+                disableLeftSwipe={(orderList[0]?.status === 2 || orderList[0]?.status === 6) ? true : false}
                 disableRightSwipe={
-                  orderList[0]?.status === 2 || orderList[0]?.status === 0
+                  (orderList[0]?.status === 2 || orderList[0]?.status === 6 || orderList[0]?.status === 0)
                     ? true
                     : false
                 }
