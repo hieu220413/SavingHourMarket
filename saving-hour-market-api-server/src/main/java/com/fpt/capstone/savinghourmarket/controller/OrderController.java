@@ -4,7 +4,6 @@ import com.fpt.capstone.savinghourmarket.common.*;
 import com.fpt.capstone.savinghourmarket.entity.Order;
 import com.fpt.capstone.savinghourmarket.entity.OrderBatch;
 import com.fpt.capstone.savinghourmarket.entity.OrderGroup;
-import com.fpt.capstone.savinghourmarket.entity.SupermarketAddress;
 import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.service.FirebaseService;
@@ -288,6 +287,28 @@ public class OrderController {
         Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(orderService.assignDeliverToOrder(orderId, staffId));
     }
+
+    @GetMapping("/deliveryManager/getDailyReport")
+    public ResponseEntity<DeliverManagerReport> getDeliverManagerDailyReport(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
+            @RequestParam UUID deliverManagerId,
+            @RequestParam LocalDate reportDate) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.getDeliverManagerDailyReport(deliverManagerId, reportDate));
+    }
+
+    @GetMapping("/deliveryManager/getReport")
+    public ResponseEntity<DeliverManagerReport> getDeliverManagerReport(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Month month,
+            @RequestParam UUID deliverManagerId) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.getDeliverManagerReport(deliverManagerId, year, month));
+    }
+
 
     @GetMapping("/getShippingFeeDetail")
     public ResponseEntity<ShippingFeeDetailResponseBody> getShippingFeeDetail(
