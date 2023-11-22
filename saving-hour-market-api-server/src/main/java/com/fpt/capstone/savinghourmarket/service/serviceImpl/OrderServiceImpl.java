@@ -1052,10 +1052,15 @@ public class OrderServiceImpl implements OrderService {
                     throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
                 }
 
+                Double averageLatitude = orderTrackList.size() > 0 ? (orderTrackList.stream().mapToDouble(order -> order.getLatitude()).sum() / orderTrackList.size()) : 0;
+                Double averageLongitude = orderTrackList.size() > 0 ? (orderTrackList.stream().mapToDouble(order -> order.getLongitude()).sum() / orderTrackList.size()) : 0;
+
                 OrderBatch orderBatch = new OrderBatch();
                 orderBatch.setDeliverDate(orderBatchCreateBody.getDeliverDate());
                 orderBatch.setTimeFrame(timeFrame.get());
                 orderBatch.setProductConsolidationArea(productConsolidationArea.get());
+                orderBatch.setAverageLatitude(averageLatitude);
+                orderBatch.setAverageLongitude(averageLongitude);
                 orderBatch.setOrderList(orderTrackList);
                 for (Order order : orderTrackList) {
                     order.setOrderBatch(orderBatch);
