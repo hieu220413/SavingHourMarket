@@ -7,88 +7,84 @@ import {
   Keyboard,
   StyleSheet,
   Image,
-  TextInput,
   ScrollView,
   Modal,
   Pressable,
-  Alert,
   FlatList,
 } from 'react-native';
-import React, {useEffect, useState, useCallback, useRef} from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {COLORS} from '../../constants/theme';
-import {icons} from '../../constants';
-import {useFocusEffect} from '@react-navigation/native';
-import {API} from '../../constants/api';
-import {format} from 'date-fns';
+import { COLORS } from '../../constants/theme';
+import { icons } from '../../constants';
+import { useFocusEffect } from '@react-navigation/native';
+import { API } from '../../constants/api';
+import { format } from 'date-fns';
 import CartEmpty from '../../assets/image/search-empty.png';
-import {SwipeListView} from 'react-native-swipe-list-view';
+import { SwipeListView } from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
 import Toast from 'react-native-toast-message';
-import Pdf from 'react-native-pdf';
+import DatePicker from 'react-native-date-picker';
 
-const SearchBar = () => {
-  return (
-    <View
-      style={{
-        backgroundColor: '#f5f5f5',
-        width: '100%',
-        height: 45,
-        borderRadius: 40,
-        paddingLeft: 10,
-        marginTop: 10,
-        flexDirection: 'row',
-        alignItems: 'center',
-      }}>
-      <View
-        style={{
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: 40,
-          flexWrap: 'wrap',
-          paddingLeft: 5,
-        }}>
-        <Image
-          resizeMode="contain"
-          style={{
-            width: 20,
-            height: 20,
-          }}
-          source={icons.search}
-        />
-        <TextInput
-          style={{
-            fontSize: 16,
-            paddingLeft: 20,
-          }}
-          placeholder="Tìm kiếm đơn hàng"
-        />
-      </View>
-    </View>
-  );
-};
 
-const Home = ({navigation}) => {
+const Home = ({ navigation }) => {
+  const orderStatus = [
+    { display: 'Chờ đóng gói', value: 'PROCESSING' },
+    { display: 'Đang đóng gói', value: 'PACKAGING' },
+    { display: 'Đã đóng gói', value: 'PACKAGED' },
+    { display: 'Đã huỷ', value: 'CANCEL' },
+  ];
+  const sortOptions = [
+    {
+      id: 1,
+      name: 'Ngày giao gần nhất',
+      param: '&deliveryDateSortType=ASC',
+      active: false,
+    },
+    {
+      id: 2,
+      name: 'Ngày giao xa nhất',
+      param: '&deliveryDateSortType=DESC',
+      active: false,
+    },
+    {
+      id: 3,
+      name: 'Đơn mới nhất',
+      param: '&createdTimeSortType=DESC',
+      active: false,
+    },
+    {
+      id: 4,
+      name: 'Đơn cũ nhất',
+      param: '&createdTimeSortType=ASC',
+      active: false,
+    },
+  ];
   const [initializing, setInitializing] = useState(true);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [orderList, setOrderList] = useState([]);
-  const [currentStatus, setCurrentStatus] = useState({
-    display: 'Chờ đóng gói',
-    value: 'PROCESSING',
-  });
   const [visible, setVisible] = useState(false);
   const [editVisible, setEditVisible] = useState(false);
   const [pickupPoint, setPickupPoint] = useState(null);
   const [order, setOrder] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
-
+  const [timeFrameList, setTimeFrameList] = useState([]);
+  const [selectedTimeFrameId, setSelectedTimeFrameId] = useState('');
+  const [tempSelectedTimeFrameId, setTempSelectedTimeFrameId] = useState('');
+  const [selectedDate, setSelectedDate] = useState('');
+  const [tempSelectedDate, setTempSelectedDate] = useState('');
   const [consolidationAreaList, setConsolidationAreaList] = useState([]);
-  const [editConsolidationAreaList, isEditConsolidationAreaList] =
-    useState(false);
-  const [selectedConsolidationAreaId, setSelectedConsolidationAreaId] =
-    useState('');
+  const [selectedConsolidationAreaId, setSelectedConsolidationAreaId] = useState('');
+  const [selectSort, setSelectSort] = useState(sortOptions);
+  const [tempSelectedSortId, setTempSelectedSortId] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+  const swipeListViewRef = useRef();
+  const isMountingRef = useRef(false);
+  const [currentStatus, setCurrentStatus] = useState({
+    display: 'Chờ đóng gói',
+    value: 'PROCESSING',
+  });
 
   const print = async orderId => {
     setLoading(true);
@@ -132,6 +128,12 @@ const Home = ({navigation}) => {
       text2: message + '👋',
       visibilityTime: 1000,
     });
+  };
+
+  const closeRow = (rowMap, rowKey) => {
+    if (rowMap[rowKey]) {
+      rowMap[rowKey].closeRow();
+    }
   };
 
   const onAuthStateChange = async userInfo => {
@@ -204,74 +206,7 @@ const Home = ({navigation}) => {
     }
   };
 
-  const swipeListViewRef = useRef();
-
-  const closeRow = (rowMap, rowKey) => {
-    if (rowMap[rowKey]) {
-      rowMap[rowKey].closeRow();
-    }
-  };
-
-  // edit consolidation  area function
   const editConsolidationArea = async () => {
-    const fetchData = async () => {
-      if (auth().currentUser) {
-        const tokenId = await auth().currentUser.getIdToken();
-        if (tokenId) {
-          setLoading(true);
-          if (pickupPoint && pickupPoint.id) {
-            fetch(
-              `${API.baseURL}/api/order/packageStaff/getOrders?pickupPointId=${pickupPoint?.id}&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
-              {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${tokenId}`,
-                },
-              },
-            )
-              .then(res => res.json())
-              .then(respond => {
-                if (respond.error) {
-                  setLoading(false);
-                  return;
-                }
-                setOrderList(respond);
-                setLoading(false);
-              })
-              .catch(err => {
-                console.log(err);
-                setLoading(false);
-              });
-          } else {
-            fetch(
-              `${API.baseURL}/api/order/packageStaff/getOrders?orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
-              {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${tokenId}`,
-                },
-              },
-            )
-              .then(res => res.json())
-              .then(respond => {
-                if (respond.error) {
-                  setLoading(false);
-                  return;
-                }
-
-                setOrderList(respond);
-                setLoading(false);
-              })
-              .catch(err => {
-                console.log(err);
-                setLoading(false);
-              });
-          }
-        }
-      }
-    };
     const tokenId = await auth().currentUser.getIdToken();
     if (tokenId) {
       const consolidationAreaEditRequest = await fetch(
@@ -295,10 +230,8 @@ const Home = ({navigation}) => {
 
       if (consolidationAreaEditRequest.status === 200) {
         const result = await consolidationAreaEditRequest.text();
-        console.log(result);
-        fetchData();
+        fetchOrderWithFilter();
         showToast(result);
-        console.log(editVisible);
         setEditVisible(false);
       } else {
         const result = await consolidationAreaEditRequest.json();
@@ -308,381 +241,80 @@ const Home = ({navigation}) => {
     }
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      // auth().currentUser.reload()
-      const subscriber = auth().onAuthStateChanged(
-        async userInfo => await onAuthStateChange(userInfo),
-      );
-
-      return subscriber;
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []),
-  );
-
-  // init pickup point
-  useFocusEffect(
-    useCallback(() => {
-      const initPickupPoint = async () => {
-        // console.log('pick up point :', pickupPoint)
-        const pickupPointStorage = await AsyncStorage.getItem('pickupPoint')
-          .then(result => JSON.parse(result))
-          .catch(error => {
-            console.log(error);
-            return null;
-          });
-        if (pickupPointStorage) {
-          setPickupPoint(pickupPointStorage);
-        } else {
-          setPickupPoint({
-            id: null,
-          });
-        }
-      };
-      initPickupPoint();
-    }, []),
-  );
-
-  const isMountingRef = useRef(false);
-
-  useEffect(() => {
-    isMountingRef.current = true;
-  }, []);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (auth().currentUser) {
-        const tokenId = await auth().currentUser.getIdToken();
-        if (tokenId) {
-          setLoading(true);
-          if (pickupPoint && pickupPoint.id) {
-            fetch(
-              `${API.baseURL}/api/order/packageStaff/getOrders?pickupPointId=${pickupPoint?.id}&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
-              {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${tokenId}`,
-                },
-              },
-            )
-              .then(res => res.json())
-              .then(respond => {
-                if (respond.error) {
-                  setLoading(false);
-                  return;
-                }
-
-                setOrderList(respond);
-                setLoading(false);
-              })
-              .catch(err => {
-                console.log(err);
-                setLoading(false);
-              });
-          } else {
-            fetch(
-              `${API.baseURL}/api/order/packageStaff/getOrders?orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
-              {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${tokenId}`,
-                },
-              },
-            )
-              .then(res => res.json())
-              .then(respond => {
-                if (respond.error) {
-                  setLoading(false);
-                  return;
-                }
-
-                setOrderList(respond);
-                setLoading(false);
-              })
-              .catch(err => {
-                console.log(err);
-                setLoading(false);
-              });
-          }
-        }
-      }
-    };
-
-    if (!isMountingRef.current) {
-      fetchData();
-    } else {
-      isMountingRef.current = false;
-    }
-  }, [currentStatus, pickupPoint]);
-
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     const fetchData = async () => {
-  //       if (auth().currentUser) {
-  //         const tokenId = await auth().currentUser.getIdToken();
-  //         if (tokenId) {
-  //           setLoading(true);
-  //           if (pickupPoint) {
-  //             fetch(
-  //               `${API.baseURL}/api/order/packageStaff/getOrders?pickupPointId=${pickupPoint?.id}&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
-  //               {
-  //                 method: 'GET',
-  //                 headers: {
-  //                   'Content-Type': 'application/json',
-  //                   Authorization: `Bearer ${tokenId}`,
-  //                 },
-  //               },
-  //             )
-  //               .then(res => res.json())
-  //               .then(respond => {
-  //                 if (respond.error) {
-  //                   setLoading(false);
-  //                   return;
-  //                 }
-
-  //                 setOrderList(respond);
-  //                 setLoading(false);
-  //               })
-  //               .catch(err => {
-  //                 console.log(err);
-  //                 setLoading(false);
-  //               });
-  //           } else {
-  //             fetch(
-  //               `${API.baseURL}/api/order/packageStaff/getOrders?orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
-  //               {
-  //                 method: 'GET',
-  //                 headers: {
-  //                   'Content-Type': 'application/json',
-  //                   Authorization: `Bearer ${tokenId}`,
-  //                 },
-  //               },
-  //             )
-  //               .then(res => res.json())
-  //               .then(respond => {
-  //                 if (respond.error) {
-  //                   setLoading(false);
-  //                   return;
-  //                 }
-
-  //                 setOrderList(respond);
-  //                 setLoading(false);
-  //               })
-  //               .catch(err => {
-  //                 console.log(err);
-  //                 setLoading(false);
-  //               });
-  //           }
-  //         }
-  //       }
-  //     };
-  //     fetchData();
-  //   }, [currentStatus, pickupPoint]),
-  // );
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     if (auth().currentUser) {
-  //       const tokenId = await auth().currentUser.getIdToken();
-  //       if (tokenId) {
-  //         setLoading(true);
-
-  //         fetch(`${API.baseURL}/api/staff/getInfo`, {
-  //           method: 'GET',
-  //           headers: {
-  //             'Content-Type': 'application/json',
-  //             Authorization: `Bearer ${tokenId}`,
-  //           },
-  //         })
-  //           .then(res => res.json())
-  //           .then(respond => {
-  //             // console.log(respond.pickupPoint);
-  //             if (respond.error) {
-  //               setLoading(false);
-  //               return;
-  //             }
-  //             setPickupPoint(respond.pickupPoint[0]);
-  //             setLoading(false);
-  //           })
-  //           .catch(err => {
-  //             console.log(err);
-  //             setLoading(false);
-  //           });
-  //       }
-  //     }
-  //   };
-  //   fetchData();
-  // }, []);
-
-  const orderStatus = [
-    {display: 'Chờ đóng gói', value: 'PROCESSING'},
-    {display: 'Đang đóng gói', value: 'PACKAGING'},
-    {display: 'Đã đóng gói', value: 'PACKAGED'},
-  ];
-
-  const sortOptions = [
-    {
-      id: 1,
-      name: 'Ngày giao gần nhất',
-      active: false,
-    },
-    {
-      id: 2,
-      name: 'Ngày giao xa nhất',
-      active: false,
-    },
-    {
-      id: 3,
-      name: 'Đơn mới nhất',
-      active: false,
-    },
-    {
-      id: 4,
-      name: 'Đơn cũ nhất',
-      active: false,
-    },
-  ];
-  const [selectSort, setSelectSort] = useState(sortOptions);
-  const [modalVisible, setModalVisible] = useState(false);
-
-  const sortOrder = selectSort => {
-    const sortItem = selectSort.find(item => item.active === true);
+  const fetchOrderWithFilter = async () => {
     setLoading(true);
-    if (sortItem) {
-      const fetchData = async () => {
-        if (auth().currentUser) {
-          const tokenId = await auth().currentUser.getIdToken();
-          if (tokenId) {
-            setLoading(true);
-
-            fetch(
-              `${
-                API.baseURL
-              }/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${
-                pickupPoint && pickupPoint.id
-                  ? `pickupPointId=${pickupPoint.id}`
-                  : ''
-              }&orderStatus=${currentStatus.value}${
-                sortItem?.id == 1 ? '&deliveryDateSortType=ASC' : ''
-              }${sortItem?.id == 2 ? '&deliveryDateSortType=DESC' : ''}${
-                sortItem?.id == 3 ? '&createdTimeSortType=DESC' : ''
-              }${sortItem?.id == 4 ? '&createdTimeSortType=ASC' : ''}`,
-              {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${tokenId}`,
-                },
-              },
-            )
-              .then(res => res.json())
-              .then(respond => {
-                console.log('sort');
-                if (respond.error) {
-                  setLoading(false);
-                  return;
-                }
-                setOrderList(respond);
-                setLoading(false);
-              })
-              .catch(err => {
-                console.log(err);
-                setLoading(false);
-              });
+    const tokenId = await auth().currentUser.getIdToken();
+    const sortItem = selectSort.find(item => item.active === true);
+    setTempSelectedSortId(sortItem ? sortItem.id : '');
+    if (tokenId) {
+      await fetch(
+        `${API.baseURL}/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${pickupPoint && pickupPoint.id
+          ? `pickupPointId=${pickupPoint.id}`
+          : ''
+        }&orderStatus=${currentStatus.value}
+        ${selectedDate === ''
+          ? ''
+          : '&deliveryDate=' + format(Date.parse(selectedDate), 'yyyy-MM-dd')
+        }${selectedTimeFrameId === ''
+          ? ''
+          : '&timeFrameId=' + selectedTimeFrameId
+        }${tempSelectedSortId === ''
+          ? ''
+          : selectSort.find(item => item.id === tempSelectedSortId)?.param
+        }`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${tokenId}`,
+          },
+        },
+      )
+        .then(res => res.json())
+        .then(respond => {
+          // console.log('order group', respond);
+          if (respond.error) {
+            console.log(err);
+            setLoading(false);
+            return;
           }
-        }
-      };
-      fetchData();
-    } else {
-      const fetchData = async () => {
-        if (auth().currentUser) {
-          const tokenId = await auth().currentUser.getIdToken();
-          if (tokenId) {
-            setLoading(true);
-
-            fetch(
-              `${API.baseURL}/api/order/packageStaff/getOrders?${
-                pickupPoint && pickupPoint.id
-                  ? `pickupPointId=${pickupPoint.id}`
-                  : ''
-              }&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
-              {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${tokenId}`,
-                },
-              },
-            )
-              .then(res => res.json())
-              .then(respond => {
-                if (respond.error) {
-                  setLoading(false);
-                  return;
-                }
-                setOrderList(respond);
-                setLoading(false);
-              })
-              .catch(err => {
-                console.log(err + '1');
-                setLoading(false);
-              });
-          }
-        }
-      };
-      fetchData();
+          setOrderList(respond);
+          setLoading(false);
+        })
+        .catch(err => {
+          console.log(err);
+          setLoading(false);
+        });
     }
+  };
+
+  const handleApplyFilter = () => {
+    setSelectSort(
+      selectSort.map(item => {
+        if (item.id === tempSelectedSortId) {
+          return { ...item, active: true };
+        }
+        return { ...item, active: false };
+      }),
+    );
+    setSelectedTimeFrameId(tempSelectedTimeFrameId);
+    tempSelectedDate != '' && setSelectedDate(tempSelectedDate);
   };
 
   const handleApplySort = () => {
     setModalVisible(!modalVisible);
     setLoading(true);
-    sortOrder(selectSort);
+    handleApplyFilter();
   };
 
   const handleClear = () => {
     setModalVisible(!modalVisible);
-    setLoading(true);
-    const fetchData = async () => {
-      if (auth().currentUser) {
-        const tokenId = await auth().currentUser.getIdToken();
-        if (tokenId) {
-          setLoading(true);
-
-          fetch(
-            `${API.baseURL}/api/order/packageStaff/getOrders?${
-              pickupPoint && pickupPoint.id
-                ? `pickupPointId=${pickupPoint.id}`
-                : ''
-            }&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
-            {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${tokenId}`,
-              },
-            },
-          )
-            .then(res => res.json())
-            .then(respond => {
-              if (respond.error) {
-                setLoading(false);
-                return;
-              }
-              setSelectSort(sortOptions);
-              setOrderList(respond);
-              setLoading(false);
-            })
-            .catch(err => {
-              console.log(err);
-              setLoading(false);
-            });
-        }
-      }
-    };
-    fetchData();
+    setSelectSort(sortOptions);
+    setTempSelectedSortId('');
+    setTempSelectedTimeFrameId('');
+    setTempSelectedDate('');
+    setSelectedTimeFrameId('');
+    setSelectedDate('');
   };
 
   const handleCancel = () => {
@@ -691,64 +323,6 @@ const Home = ({navigation}) => {
   };
 
   const handleConfirm = () => {
-    const fetchData = async () => {
-      if (auth().currentUser) {
-        const tokenId = await auth().currentUser.getIdToken();
-        if (tokenId) {
-          setLoading(true);
-          if (pickupPoint && pickupPoint.id) {
-            fetch(
-              `${API.baseURL}/api/order/packageStaff/getOrders?pickupPointId=${pickupPoint?.id}&orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
-              {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${tokenId}`,
-                },
-              },
-            )
-              .then(res => res.json())
-              .then(respond => {
-                if (respond.error) {
-                  setLoading(false);
-                  return;
-                }
-                setOrderList(respond);
-                setLoading(false);
-              })
-              .catch(err => {
-                console.log(err);
-                setLoading(false);
-              });
-          } else {
-            fetch(
-              `${API.baseURL}/api/order/packageStaff/getOrders?orderStatus=${currentStatus.value}&deliveryMethod=DOOR_TO_DOOR`,
-              {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${tokenId}`,
-                },
-              },
-            )
-              .then(res => res.json())
-              .then(respond => {
-                if (respond.error) {
-                  setLoading(false);
-                  return;
-                }
-
-                setOrderList(respond);
-                setLoading(false);
-              })
-              .catch(err => {
-                console.log(err);
-                setLoading(false);
-              });
-          }
-        }
-      }
-    };
     const confirmPackaging = async () => {
       if (auth().currentUser) {
         const tokenId = await auth().currentUser.getIdToken();
@@ -766,7 +340,7 @@ const Home = ({navigation}) => {
           )
             .then(res => res.text())
             .then(respond => {
-              fetchData();
+              fetchOrderWithFilter();
               showToast(respond);
             })
             .catch(err => {
@@ -816,63 +390,128 @@ const Home = ({navigation}) => {
     setVisible(false);
   };
 
-  const ModalSortItem = ({item}) => {
+  useFocusEffect(
+    useCallback(() => {
+      // auth().currentUser.reload()
+      const subscriber = auth().onAuthStateChanged(
+        async userInfo => await onAuthStateChange(userInfo),
+      );
+
+      return subscriber;
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
+  );
+
+  // init pickup point
+  useFocusEffect(
+    useCallback(() => {
+      const initPickupPoint = async () => {
+        // console.log('pick up point :', pickupPoint)
+        const pickupPointStorage = await AsyncStorage.getItem('pickupPoint')
+          .then(result => JSON.parse(result))
+          .catch(error => {
+            console.log(error);
+            return null;
+          });
+        if (pickupPointStorage) {
+          setPickupPoint(pickupPointStorage);
+        } else {
+          setPickupPoint({
+            id: null,
+          });
+        }
+      };
+      initPickupPoint();
+    }, []),
+  );
+
+  // init time frame
+  useFocusEffect(
+    useCallback(() => {
+      // fetch time frame
+      fetch(`${API.baseURL}/api/timeframe/getForHomeDelivery`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(res => res.json())
+        .then(respond => {
+          if (respond.error) {
+            return;
+          }
+          setTimeFrameList(respond);
+        })
+        .catch(err => {
+          console.log(err);
+        });
+
+    }, [selectSort, selectedDate, selectedTimeFrameId]),
+  );
+
+  useEffect(() => {
+    isMountingRef.current = true;
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!isMountingRef.current) {
+        await fetchOrderWithFilter();
+      } else {
+        isMountingRef.current = false;
+      }
+      setLoading(false);
+    };
+    fetchData();
+  }, [currentStatus, pickupPoint, selectSort, selectedDate, selectedTimeFrameId, pickupPoint]);
+
+  const ModalSortItem = ({ item }) => {
     return (
       <TouchableOpacity
         onPress={() => {
-          const newArray = selectSort.map(i => {
-            if (i.id === item.id) {
-              if (i.active === true) {
-                return {...i, active: false};
-              } else {
-                return {...i, active: true};
-              }
-            }
-            return {...i, active: false};
-          });
-          // console.log(newArray);
-          setSelectSort(newArray);
+          setTempSelectedSortId(item.id);
         }}
         style={
-          item.active == true
+          item.id == tempSelectedSortId
             ? {
-                borderColor: COLORS.primary,
-                borderWidth: 1,
-                borderRadius: 10,
-                margin: 5,
-              }
+              borderColor: COLORS.primary,
+              borderWidth: 1,
+              borderRadius: 10,
+              margin: 5,
+            }
             : {
-                borderColor: '#c8c8c8',
-                borderWidth: 0.2,
-                borderRadius: 10,
-                margin: 5,
-              }
+              borderColor: '#c8c8c8',
+              borderWidth: 0.2,
+              borderRadius: 10,
+              margin: 5,
+            }
         }>
         <Text
           style={
-            item.active == true
+            item.id == tempSelectedSortId
               ? {
-                  width: 150,
-                  paddingVertical: 10,
-                  textAlign: 'center',
-                  color: COLORS.primary,
+                width: 150,
+                paddingVertical: 10,
+                textAlign: 'center',
+                color: COLORS.primary,
 
-                  fontSize: 12,
-                }
+                fontSize: 12,
+              }
               : {
-                  width: 150,
-                  paddingVertical: 10,
-                  textAlign: 'center',
-                  color: 'black',
+                width: 150,
+                paddingVertical: 10,
+                textAlign: 'center',
+                color: 'black',
 
-                  fontSize: 12,
-                }
+                fontSize: 12,
+              }
           }>
           {item.name}
         </Text>
       </TouchableOpacity>
     );
   };
+
   return (
     <TouchableWithoutFeedback
       onPress={() => {
@@ -884,7 +523,7 @@ const Home = ({navigation}) => {
         <View style={styles.header}>
           <View style={styles.areaAndLogout}>
             <View style={styles.area}>
-              <Text style={{fontSize: 16}}>Khu vực:</Text>
+              <Text style={{ fontSize: 16 }}>Khu vực:</Text>
               <View style={styles.pickArea}>
                 <TouchableOpacity
                   onPress={() => {
@@ -907,7 +546,8 @@ const Home = ({navigation}) => {
                       style={{
                         fontSize: 16,
                         fontFamily: 'Roboto',
-                        color: 'black'
+                        color: 'black',
+                        maxWidth: 270
                       }}
                       numberOfLines={1}>
                       {pickupPoint && pickupPoint.id
@@ -945,7 +585,7 @@ const Home = ({navigation}) => {
                 }}>
                 <Image
                   resizeMode="contain"
-                  style={{width: 38, height: 38}}
+                  style={{ width: 38, height: 38 }}
                   source={{
                     uri: currentUser?.avatarUrl,
                   }}
@@ -973,7 +613,7 @@ const Home = ({navigation}) => {
                       })
                       .catch(e => console.log(e));
                   }}>
-                  <Text style={{color: 'red', fontWeight: 'bold'}}>
+                  <Text style={{ color: 'red', fontWeight: 'bold' }}>
                     Đăng xuất
                   </Text>
                 </TouchableOpacity>
@@ -986,12 +626,13 @@ const Home = ({navigation}) => {
             style={{
               flexDirection: 'row',
             }}>
-            <View style={{flex: 6}}>
+            <View style={{ flex: 6 }}>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {orderStatus.map((item, index) => (
                   <TouchableOpacity
                     key={index}
                     onPress={() => {
+                      setLoading(true);
                       setCurrentStatus(item);
                     }}>
                     <View
@@ -1053,9 +694,9 @@ const Home = ({navigation}) => {
         <View style={styles.body}>
           {/* Order list */}
           {orderList.length === 0 ? (
-            <View style={{alignItems: 'center', justifyContent: 'center'}}>
+            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
               <Image
-                style={{width: '100%', height: '50%'}}
+                style={{ width: '100%', height: '50%' }}
                 resizeMode="contain"
                 source={CartEmpty}
               />
@@ -1070,7 +711,7 @@ const Home = ({navigation}) => {
               </Text>
             </View>
           ) : (
-            <View style={{height: '87%'}}>
+            <View style={{ height: '87%' }}>
               <SwipeListView
                 showsVerticalScrollIndicator={false}
                 showsHorizontalScrollIndicator={false}
@@ -1105,7 +746,7 @@ const Home = ({navigation}) => {
                           orderSuccess: false,
                         });
                       }}>
-                      <View style={{flexDirection: 'row', paddingBottom: 9}}>
+                      <View style={{ flexDirection: 'row', paddingBottom: 9 }}>
                         <Text
                           style={{
                             flex: 13,
@@ -1118,6 +759,7 @@ const Home = ({navigation}) => {
                           {data.item?.status === 0 && 'Chờ đóng gói'}
                           {data.item?.status === 1 && 'Đang đóng gói'}
                           {data.item?.status === 2 && 'Đã đóng gói'}
+                          {data.item?.status === 6 && 'Đã huỷ'}
                         </Text>
                         {data.item?.status === 2 &&
                           data.item?.packager?.fullName != null && (
@@ -1199,6 +841,45 @@ const Home = ({navigation}) => {
                               </Text>
                             </>
                           )}
+                        {data.item?.status === 6 &&
+                          data.item?.packager?.fullName != null && (
+                            <>
+                              <View
+                                style={{
+                                  marginLeft: 15,
+                                  marginTop: 4,
+                                  marginBottom: 10,
+                                  width: 30,
+                                  height: 30,
+                                  borderRadius: 50,
+                                  backgroundColor: 'green',
+                                  alignItems: 'center',
+                                }}>
+                                <Image
+                                  source={icons.packaging}
+                                  resizeMode="contain"
+                                  style={{
+                                    width: 20,
+                                    height: 30,
+                                    tintColor: 'white',
+                                  }}
+                                />
+                              </View>
+                              <Text
+                                style={{
+                                  flex: 7,
+                                  alignItems: 'flex-end',
+                                  fontSize: 16,
+                                  paddingLeft: 5,
+                                  paddingTop: 7,
+                                  fontWeight: 'bold',
+                                  fontFamily: 'Roboto',
+                                  color: COLORS.secondary,
+                                }}>
+                                {data.item?.packager?.fullName}
+                              </Text>
+                            </>
+                          )}
                       </View>
                       <View
                         style={{
@@ -1206,7 +887,7 @@ const Home = ({navigation}) => {
                           alignItems: 'center',
                           justifyContent: 'space-between',
                         }}>
-                        <View style={{flexDirection: 'column', gap: 8}}>
+                        <View style={{ flexDirection: 'column', gap: 8 }}>
                           <Text
                             style={{
                               fontSize: 17,
@@ -1240,11 +921,13 @@ const Home = ({navigation}) => {
                               fontFamily: 'Roboto',
                               color: 'black',
                             }}>
-                            Tổng tiền:{' '}
-                            {data.item?.totalPrice?.toLocaleString('vi-VN', {
-                              style: 'currency',
-                              currency: 'VND',
-                            })}
+                            Khung giờ:{' '}
+                            {data.item?.timeFrame
+                              ? `${data.item?.timeFrame?.fromHour.slice(
+                                0,
+                                5,
+                              )} đến ${data.item?.timeFrame?.toHour.slice(0, 5)}`
+                              : ''}
                           </Text>
                           {data.item?.productConsolidationArea?.address && (
                             <Text
@@ -1307,7 +990,7 @@ const Home = ({navigation}) => {
                           <Image
                             source={icons.print}
                             resizeMode="contain"
-                            style={{width: 40, height: 40, tintColor: 'white'}}
+                            style={{ width: 40, height: 40, tintColor: 'white' }}
                           />
                         </View>
                       </TouchableOpacity>
@@ -1335,7 +1018,6 @@ const Home = ({navigation}) => {
                               setSelectedConsolidationAreaId(
                                 data.item?.productConsolidationArea.id,
                               );
-                              isEditConsolidationAreaList(true);
                               setOrder(data.item);
                               closeRow(rowMap, data.item.id);
                             }}>
@@ -1474,6 +1156,95 @@ const Home = ({navigation}) => {
                     <ModalSortItem item={item} key={index} />
                   ))}
                 </View>
+                <Text
+                  style={{
+                    color: 'black',
+                    fontSize: 16,
+                    fontWeight: 700,
+                  }}>
+                  Chọn khung giờ
+                </Text>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                    marginVertical: 10,
+                  }}>
+                  {timeFrameList &&
+                    timeFrameList.map(item => (
+                      <TouchableOpacity
+                        key={item.id}
+                        onPress={() =>
+                          item.id === tempSelectedTimeFrameId
+                            ? setTempSelectedTimeFrameId('')
+                            : setTempSelectedTimeFrameId(item.id)
+                        }
+                        style={
+                          item.id === tempSelectedTimeFrameId
+                            ? {
+                              borderColor: COLORS.primary,
+                              borderWidth: 1,
+                              borderRadius: 10,
+                              margin: 5,
+                            }
+                            : {
+                              borderColor: '#c8c8c8',
+                              borderWidth: 0.2,
+                              borderRadius: 10,
+                              margin: 5,
+                            }
+                        }>
+                        <Text
+                          style={
+                            item.id === tempSelectedTimeFrameId
+                              ? {
+                                width: 150,
+                                paddingVertical: 10,
+                                textAlign: 'center',
+                                color: COLORS.primary,
+
+                                fontSize: 12,
+                              }
+                              : {
+                                width: 150,
+                                paddingVertical: 10,
+                                textAlign: 'center',
+                                color: 'black',
+
+                                fontSize: 12,
+                              }
+                          }>
+                          {item.fromHour.slice(0, 5)} đến{' '}
+                          {item.toHour.slice(0, 5)}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                </View>
+                <Text
+                  style={{
+                    color: 'black',
+                    fontSize: 16,
+                    fontWeight: 700,
+                  }}>
+                  Chọn ngày giao hàng
+                </Text>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                    marginVertical: 10,
+                  }}>
+                  <DatePicker
+                    date={
+                      tempSelectedDate === ''
+                        ? new Date()
+                        : tempSelectedDate
+                    }
+                    mode="date"
+                    androidVariant="nativeAndroid"
+                    onDateChange={setTempSelectedDate}
+                  />
+                </View>
                 <View
                   style={{
                     flexDirection: 'row',
@@ -1515,6 +1286,7 @@ const Home = ({navigation}) => {
                     <Text style={styles.textStyle}>Áp dụng</Text>
                   </TouchableOpacity>
                 </View>
+
               </View>
             </Pressable>
           </Modal>
@@ -1567,7 +1339,7 @@ const Home = ({navigation}) => {
                       </Text>
                     </View>
                     <FlatList
-                      style={{maxHeight: 170}}
+                      style={{ maxHeight: 170 }}
                       data={consolidationAreaList}
                       renderItem={data => (
                         <TouchableOpacity
@@ -1590,7 +1362,7 @@ const Home = ({navigation}) => {
                             }}>
                             <Image
                               resizeMode="contain"
-                              style={{width: 20, height: 20}}
+                              style={{ width: 20, height: 20 }}
                               source={icons.location}
                               tintColor={
                                 data.item.id === selectedConsolidationAreaId
@@ -1720,7 +1492,7 @@ const Home = ({navigation}) => {
                 <FlatList
                   showsVerticalScrollIndicator={false}
                   showsHorizontalScrollIndicator={false}
-                  style={{maxHeight: 200, marginHorizontal: 7}}
+                  style={{ maxHeight: 200, marginHorizontal: 7 }}
                   data={consolidationAreaList}
                   renderItem={data => (
                     <TouchableOpacity
@@ -1743,7 +1515,7 @@ const Home = ({navigation}) => {
                         }}>
                         <Image
                           resizeMode="contain"
-                          style={{width: 20, height: 20}}
+                          style={{ width: 20, height: 20 }}
                           source={icons.location}
                           tintColor={
                             data.item.id === selectedConsolidationAreaId
@@ -1878,7 +1650,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    // marginTop: 22,
+    paddingBottom: '15%',
     backgroundColor: 'rgba(50,50,50,0.5)',
   },
   modalView: {

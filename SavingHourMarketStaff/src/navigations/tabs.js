@@ -45,7 +45,7 @@ const Tabs = () => {
           bottom: 0,
           left: 0,
           right: 0,
-          elevation: 0,
+          elevation: 10,
           backgroundColor: COLORS.tabBackground,
           opacity: 0.95,
           borderTopColor: 'transparent',
