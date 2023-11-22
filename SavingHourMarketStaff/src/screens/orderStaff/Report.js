@@ -35,6 +35,7 @@ const Report = ({ navigation }) => {
   const [numberOfDelivering, setNumberOfDelivering] = useState(0);
   const [numberOfSuccess, setNumberOfSuccess] = useState(0);
   const [numberOfFail, setNumberOfFail] = useState(0);
+  const [numberTotal, setNumberTotal] = useState(0);
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState(
     format(Date.parse(new Date().toString()), 'yyyy-MM-dd'),
@@ -67,6 +68,7 @@ const Report = ({ navigation }) => {
       let numberOfDelivering = 0;
       let numberOfSuccess = 0;
       let numberOfFail = 0;
+      let numberTotal = 0;
 
       await fetch(
         `${API.baseURL}/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${pickupPoint && pickupPoint.id
@@ -129,8 +131,8 @@ const Report = ({ navigation }) => {
             if (orderStatus == '6') {
               console.log('Cancel', statusCounts[orderStatus])
               numberOfCancel = numberOfCancel + statusCounts[orderStatus];
-
             }
+            numberTotal = numberTotal + statusCounts[orderStatus];
           })
           setLoading(false);
         })
@@ -198,6 +200,7 @@ const Report = ({ navigation }) => {
               console.log('Cancel Gr', statusCounts[orderStatus])
               numberOfCancel = numberOfCancel + statusCounts[orderStatus];
             }
+            numberTotal = numberTotal + statusCounts[orderStatus];
           })
           setLoading(false);
         })
@@ -212,6 +215,7 @@ const Report = ({ navigation }) => {
       setNumberOfSuccess(numberOfSuccess)
       setNumberOfFail(numberOfFail)
       setNumberOfCancel(numberOfCancel)
+      setNumberTotal(numberTotal)
     }
   };
 
@@ -532,7 +536,13 @@ const Report = ({ navigation }) => {
                 paddingBottom: 20,
                 marginTop: 10
               }}>
+                <View style={styles.wrapTotal}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{fontSize:20,color:'black'}}>Tổng số đơn hàng: {numberTotal}</Text>
+                    </View>
+                  </View>
                 <View style={styles.wrap_container}>
+                
                   <View style={styles.wrapProcessing}>
                     <View style={{ flex: 1 }}>
                       <Text style={styles.texts}>Đơn chờ xác nhận:</Text>
@@ -672,7 +682,7 @@ const Report = ({ navigation }) => {
                     data={data}
                     spacing={6.5}
                     barWidth={20}
-                    frontColor="red"
+                    frontColor={COLORS.tabIcon}
                     isAnimated
                     showYAxisIndices
                     // hideRules
@@ -781,6 +791,24 @@ const styles = StyleSheet.create({
 
     // backgroundColor: 'pink',
   },
+  wrapTotal: {
+    width: 250,
+    alignSelf:'center',
+    alignItems:'center',
+    backgroundColor: 'white',
+    opacity: 0.9,
+    borderRadius: 20,
+    padding: 10,
+    display: 'flex',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
   wrapProcessing: {
     width: 100,
     height: 108,
@@ -816,7 +844,7 @@ const styles = StyleSheet.create({
   wrapPackaged: {
     width: 100,
     height: 108,
-    backgroundColor: '#8ec9ea',
+    backgroundColor: '#8ec0ef',
     borderRadius: 10,
     padding: 10,
     display: 'flex',

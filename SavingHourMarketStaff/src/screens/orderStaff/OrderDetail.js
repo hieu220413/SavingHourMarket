@@ -222,6 +222,40 @@ const OrderDetail = ({ navigation, route }) => {
     setVisible(false);
   };
 
+  const handleCancelPackage = () => {
+    const confirmCancel = async () => {
+      console.log("confirm");
+      if (auth().currentUser) {
+        const tokenId = await auth().currentUser.getIdToken();
+        if (tokenId) {
+          setLoading(true);
+          fetch(
+            `${API.baseURL}/api/order/packageStaff/cancelOrder/${item.id}`,
+            {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
+              },
+            },
+          )
+            .then(res => res.text())
+            .then(respond => {
+              console.log(respond);
+              showToast(respond);
+              navigation.goBack();
+            })
+            .catch(err => {
+              console.log(err);
+              setLoading(false);
+            });
+        }
+      }
+    };
+    confirmCancel();
+    setVisible(false);
+  };
+
   return (
     <>
       <View>
@@ -785,6 +819,7 @@ const OrderDetail = ({ navigation, route }) => {
             </View>
           </Pressable>
         </Modal>
+        {/* Modal Cancel */}
         <Modal
           animationType="fade"
           transparent={true}
@@ -860,7 +895,7 @@ const OrderDetail = ({ navigation, route }) => {
                     borderRadius: 10,
                   }}
                   onPress={() => {
-                    handleConfirm();
+                    handleCancelPackage();
                   }}>
                   <Text style={styles.textStyle}>Xác nhận</Text>
                 </TouchableOpacity>
@@ -887,7 +922,7 @@ const OrderDetail = ({ navigation, route }) => {
             marginTop: 20,
             elevation: 10,
           }}>
-          <View style={{ width: '95%' }}>
+          <View style={{width: '100%', flexDirection: 'row', gap: 10, justifyContent: 'center'}}>
             <TouchableOpacity
               onPress={() => {
                 setLoading(true);
@@ -899,7 +934,7 @@ const OrderDetail = ({ navigation, route }) => {
                 justifyContent: 'center',
                 backgroundColor: COLORS.primary,
                 paddingVertical: 10,
-                width: '100%',
+                width: '45%',
                 borderRadius: 30,
               }}>
               <Text
@@ -910,6 +945,28 @@ const OrderDetail = ({ navigation, route }) => {
                   fontWeight: 'bold',
                 }}>
                 Nhận đóng gói
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                setVisibleCancel(true);
+              }}
+              style={{
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'grey',
+                paddingVertical: 10,
+                width: '45%',
+                borderRadius: 30,
+              }}>
+              <Text
+                style={{
+                  fontSize: 18,
+                  color: 'white',
+                  fontFamily: 'Roboto',
+                  fontWeight: 'bold',
+                }}>
+                Huỷ đóng gói
               </Text>
             </TouchableOpacity>
           </View>
