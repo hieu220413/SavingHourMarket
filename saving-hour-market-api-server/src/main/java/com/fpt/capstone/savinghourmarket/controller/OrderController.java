@@ -210,10 +210,10 @@ public class OrderController {
     }
 
     @PutMapping("/packageStaff/cancelOrder/{id}")
-    public ResponseEntity<String> cancelPackageOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken, @PathVariable UUID orderId) throws ResourceNotFoundException, OrderCancellationNotAllowedException, FirebaseAuthException, IOException {
+    public ResponseEntity<String> cancelPackageOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken, @PathVariable UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException, FirebaseAuthException, IOException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.cancelPackageOrder(orderId));
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.cancelPackageOrder(id));
     }
 
     @PutMapping("/packageStaff/editProductConsolidationArea")
