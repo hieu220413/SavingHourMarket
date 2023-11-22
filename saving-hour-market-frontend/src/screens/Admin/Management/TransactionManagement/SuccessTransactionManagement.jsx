@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import MuiAlert from "@mui/material/Alert";
@@ -6,6 +6,10 @@ import { Dialog, Snackbar } from "@mui/material";
 import Empty from "../../../../assets/Empty.png";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import TransactionDetail from "./TransactionDetail";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "../../../../firebase/firebase.config";
+import { API } from "../../../../contanst/api";
+import { format } from "date-fns";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -15,7 +19,7 @@ const SuccessTransactionManagement = () => {
   const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(1);
   const [textPage, setTextPage] = useState(1);
-  const [transactionList, setTransactionList] = useState([1, 2, 3]);
+  const [transactionList, setTransactionList] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   const [textSearch, setTextSearch] = useState("");
   const [loading, setLoading] = useState(false);
@@ -32,16 +36,61 @@ const SuccessTransactionManagement = () => {
     setOpenSnackbar({ ...openSnackbar, open: false });
   };
 
+  const userState = useAuthState(auth);
+  useEffect(() => {
+    const fetchStaff = async () => {
+      setLoading(true);
+      if (!userState[1]) {
+        const tokenId = await auth.currentUser.getIdToken();
+
+        fetch(
+          `${API.baseURL}/api/transaction/getTransactionForAdmin?page=${
+            page - 1
+          }&limit=6&`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${tokenId}`,
+            },
+          }
+        )
+          .then((res) => res.json())
+          .then((respond) => {
+            if (respond?.code === 404 || respond.status === 500) {
+              setLoading(false);
+              return;
+            }
+            setTransactionList(respond.transactionList);
+            setTotalPage(respond.totalPage);
+
+            setLoading(false);
+          })
+          .catch((err) => console.log(err));
+      }
+    };
+    fetchStaff();
+  }, [page, userState[1]]);
+
   const TransactionItem = ({ item, index }) => {
     const [openTransactionDetail, setOpenTransactionDetail] = useState(false);
     const handleOpenTransactionDetail = () => setOpenTransactionDetail(true);
     const handleCloseTransactionDetail = () => setOpenTransactionDetail(false);
     return (
       <tr className="table-body-row">
-        <td>1</td>
-        <td>05-05-2023 07:00AM</td>
+        <td>{index + 1}</td>
+        <td>{item.order.receiverName}</td>
+        <td>
+          {format(new Date(item?.paymentTime.slice(0, 10)), "dd-MM-yyyy")}{" "}
+          {item?.paymentTime.slice(11, 16)}h
+        </td>
         <td>VNPAy</td>
-        <td>500.000đ</td>
+        <td>
+          {item?.amountOfMoney.toLocaleString("vi-VN", {
+            style: "currency",
+            currency: "VND",
+          })}
+        </td>
         <td>
           <i onClick={handleOpenTransactionDetail} class="bi bi-eye"></i>
         </td>
@@ -51,6 +100,7 @@ const SuccessTransactionManagement = () => {
           open={openTransactionDetail}
         >
           <TransactionDetail
+            refund={false}
             handleClose={handleCloseTransactionDetail}
             item={item}
           />
@@ -89,7 +139,8 @@ const SuccessTransactionManagement = () => {
               <thead>
                 <tr className="table-header-row">
                   <th>No.</th>
-                  <th>Ngày tạo</th>
+                  <th>Tên người giao dịch</th>
+                  <th>Thời điểm thanh toán</th>
                   <th>Phương thức</th>
                   <th>Tổng cộng</th>
                   <th>Thao tác</th>
@@ -97,7 +148,7 @@ const SuccessTransactionManagement = () => {
               </thead>
               <tbody>
                 {transactionList.map((item, index) => (
-                  <TransactionItem staff={item} index={index} />
+                  <TransactionItem item={item} index={index} />
                 ))}
               </tbody>
             </>
