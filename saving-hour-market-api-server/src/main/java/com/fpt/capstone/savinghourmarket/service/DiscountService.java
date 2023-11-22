@@ -18,9 +18,9 @@ public interface DiscountService {
 
     Discount getDiscountById(String discountId);
 
-    DiscountsUsageReportResponseBody getPerDiscountUsageReport(Month month, Quarter quarter, Integer year, Integer fromPercentage, Integer toPercentage, UUID productCategoryId, UUID productSubCategoryId);
+    List<DiscountsUsageReportEachMonth> getDiscountUsageReportForEachMonth(Integer year, Integer fromPercentage, Integer toPercentage);
 
-    CateWithSubCateDiscountUsageReport getCategoryWithSubCategoryDiscountUsageReport(Month month, Quarter quarter, Integer year, Integer fromPercentage, Integer toPercentage, UUID productCategoryId);
+    List<CategoryDiscountUsageReport> getAllCategoryDiscountUsageReport(Month month, Quarter quarter, Integer year, Integer fromPercentage, Integer toPercentage);
 
     Discount create(DiscountCreate discountCreate);
 
