@@ -122,4 +122,8 @@ public interface OrderService {
     List<OrderBatch> createBatches(List<OrderBatchCreateBody> orderBatchCreateBodyList);
 
     String printOrderPackaging(UUID orderId, String staffEmail) throws ResourceNotFoundException;
+
+    DeliverManagerReport getDeliverManagerDailyReport(UUID deliverManagerId, LocalDate reportDate);
+
+    DeliverManagerReport getDeliverManagerReport(UUID deliverManagerId, Integer year, Month month);
 }
