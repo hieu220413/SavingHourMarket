@@ -447,6 +447,7 @@ public class OrderServiceImpl implements OrderService {
     public List<Order> fetchOrdersForStaff(String totalPriceSortType,
                                            String createdTimeSortType,
                                            String deliveryDateSortType,
+                                           Boolean getOldOrder,
                                            Date deliveryDate,
                                            OrderStatus orderStatus,
                                            UUID packagerId,
@@ -457,6 +458,7 @@ public class OrderServiceImpl implements OrderService {
                                            int page,
                                            int limit) {
         return repository.findOrderForStaff(
+                getOldOrder,
                 deliveryDate,
                 packagerId,
                 delivererId,
@@ -476,6 +478,7 @@ public class OrderServiceImpl implements OrderService {
     public List<Order> fetchOrdersForPackageStaff(String totalPriceSortType,
                                                   String createdTimeSortType,
                                                   String deliveryDateSortType,
+                                                  Boolean getOldOrder,
                                                   UUID pickupPointId,
                                                   UUID timeFrameId,
                                                   Date deliveryDate,
@@ -491,6 +494,7 @@ public class OrderServiceImpl implements OrderService {
                 pickupPointId,
                 timeFrameId,
                 deliveryDate,
+                getOldOrder,
                 pickupPointListOfStaff,
                 orderStatus == null ? null : orderStatus.ordinal(),
                 deliveryMethod.ordinal(),
@@ -600,6 +604,34 @@ public class OrderServiceImpl implements OrderService {
             return "Đơn hàng đã quá thời gian huỷ cho phép là " + systemConfigurationService.getConfiguration().getTimeAllowedForOrderCancellation() + " tiếng kể từ khi đặt hàng!";
         }
 
+        return "Successfully canceled order " + id;
+    }
+
+    @Override
+    public String cancelPackageOrder(UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException {
+        Order order = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
+
+        if (order.getOrderGroup() != null) {
+            order.setOrderGroup(null);
+        }
+
+        if (order.getOrderBatch() != null) {
+            order.setOrderBatch(null);
+        }
+
+        if (order.getStatus() == OrderStatus.PROCESSING.ordinal() || order.getStatus() == OrderStatus.PACKAGING.ordinal()) {
+            order.setStatus(OrderStatus.CANCEL.ordinal());
+            List<OrderDetail> orderDetails = order.getOrderDetailList();
+            increaseProductQuantity(orderDetails);
+            List<Discount> discounts = order.getDiscountList();
+            if (discounts != null && discounts.size() > 0) {
+                increaseDiscountQuantity(order.getDiscountList());
+            }
+        } else {
+            throw new OrderCancellationNotAllowedException("Order with id " + id + " is already in " + order.getStatus().toString() + " process");
+        }
+        repository.save(order);
         return "Successfully canceled order " + id;
     }
 
@@ -1073,21 +1105,21 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public DeliverManagerReport getDeliverManagerDailyReport(UUID deliverManagerId, LocalDate reportDate) {
-        if(reportDate == null) {
+        if (reportDate == null) {
             reportDate = LocalDate.now();
         }
-        Optional<Staff> deliverManager =  staffRepository.findById(deliverManagerId);
-        if(!deliverManager.isPresent()) {
+        Optional<Staff> deliverManager = staffRepository.findById(deliverManagerId);
+        if (!deliverManager.isPresent()) {
             throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_NOT_FOUND.getCode()), AdditionalResponseCode.STAFF_NOT_FOUND.toString());
         }
 
-        Long successDeliveredOrder =  Long.parseLong("0");
+        Long successDeliveredOrder = Long.parseLong("0");
         Long failDeliveredOrder = Long.parseLong("0");
         Long packagedOrder = Long.parseLong("0");
         Long deliveringOrder = Long.parseLong("0");
 
         List<Object[]> reportOrderForManager = repository.getDailyReportOrderForManager(reportDate);
-        for(Object[] result : reportOrderForManager) {
+        for (Object[] result : reportOrderForManager) {
             successDeliveredOrder = (Long) result[1];
             failDeliveredOrder = (Long) result[2];
             packagedOrder = (Long) result[3];
@@ -1098,7 +1130,7 @@ public class OrderServiceImpl implements OrderService {
 
         for (DeliverReport deliverReport : deliverReportList) {
             List<Object[]> reportOrderForDeliverStaff = repository.getDailyReportOrderDeliverStaff(deliverReport.getStaff().getId(), reportDate);
-            for(Object[] result : reportOrderForDeliverStaff) {
+            for (Object[] result : reportOrderForDeliverStaff) {
                 deliverReport.setSuccessDeliveredOrder((Long) result[1]);
                 deliverReport.setFailDeliveredOrder((Long) result[2]);
                 deliverReport.setDeliveringOrder((Long) result[3]);
@@ -1112,21 +1144,21 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public DeliverManagerReport getDeliverManagerReport(UUID deliverManagerId, Integer year, Month month) {
 
-        Optional<Staff> deliverManager =  staffRepository.findById(deliverManagerId);
-        if(!deliverManager.isPresent()) {
+        Optional<Staff> deliverManager = staffRepository.findById(deliverManagerId);
+        if (!deliverManager.isPresent()) {
             throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_NOT_FOUND.getCode()), AdditionalResponseCode.STAFF_NOT_FOUND.toString());
         }
 
-        Long successDeliveredOrder =  Long.parseLong("0");
+        Long successDeliveredOrder = Long.parseLong("0");
         Long failDeliveredOrder = Long.parseLong("0");
         Long packagedOrder = Long.parseLong("0");
         Long deliveringOrder = Long.parseLong("0");
 
         List<Object[]> reportOrderForManager = repository.getReportOrderForManager(year, month == null ? null : month.getMonthInNumber());
-        for(Object[] result : reportOrderForManager) {
+        for (Object[] result : reportOrderForManager) {
             successDeliveredOrder = result[0] == null ? 0 : (Long) result[0];
-            failDeliveredOrder =  result[1] == null ? 0 : (Long) result[1];
-            packagedOrder =  result[2] == null ? 0 : (Long) result[2];
+            failDeliveredOrder = result[1] == null ? 0 : (Long) result[1];
+            packagedOrder = result[2] == null ? 0 : (Long) result[2];
             deliveringOrder = result[3] == null ? 0 : (Long) result[3];
         }
 
@@ -1134,7 +1166,7 @@ public class OrderServiceImpl implements OrderService {
 
         for (DeliverReport deliverReport : deliverReportList) {
             List<Object[]> reportOrderForDeliverStaff = repository.getReportOrderDeliverStaff(deliverReport.getStaff().getId(), year, month == null ? null : month.getMonthInNumber());
-            for(Object[] result : reportOrderForDeliverStaff) {
+            for (Object[] result : reportOrderForDeliverStaff) {
                 deliverReport.setSuccessDeliveredOrder((Long) result[1]);
                 deliverReport.setFailDeliveredOrder((Long) result[2]);
                 deliverReport.setDeliveringOrder((Long) result[3]);

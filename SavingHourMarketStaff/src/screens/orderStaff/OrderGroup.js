@@ -744,6 +744,7 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
         });
     }
   };
+  
 
   // handle apply filter
   const handleApplyFilter = () => {
@@ -1070,7 +1071,8 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                         style={{
                           fontSize: 16,
                           fontFamily: 'Roboto',
-                          color: 'black'
+                          color: 'black',
+                          maxWidth:270
                         }}
                         numberOfLines={1}>
                         {pickupPoint && pickupPoint.id
