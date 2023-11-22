@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.common.StaffRole;
+import com.fpt.capstone.savinghourmarket.model.OverLimitAlertBody;
 import com.fpt.capstone.savinghourmarket.model.StaffCreateRequestBody;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import jakarta.persistence.*;
@@ -14,6 +15,7 @@ import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,6 +43,20 @@ public class Staff {
 
     @Column(columnDefinition = "tinyint")
     private Integer status;
+
+    @ManyToOne
+    @JoinColumn(
+            name = "deliver_manager_id",
+            referencedColumnName = "id"
+    )
+    private Staff deliverManagerStaff;
+
+    @OneToMany(
+            mappedBy = "deliverManagerStaff"
+    )
+    @JsonIgnore
+    private List<Staff> deliverStaffList;
+
 
     @ManyToMany(
             fetch = FetchType.LAZY
@@ -73,6 +89,10 @@ public class Staff {
     @Transient
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long collideOrderBatchQuantity;
+
+    @Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<OverLimitAlertBody> overLimitAlertList;
     
 
     public Staff(StaffCreateRequestBody staffCreateRequestBody, StaffRole role) throws UnsupportedEncodingException {

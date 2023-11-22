@@ -907,9 +907,9 @@ const Home = ({navigation}) => {
                       style={{
                         fontSize: 16,
                         fontFamily: 'Roboto',
-                        color: 'black',
-                        maxHeight:22
-                      }}>
+                        color: 'black'
+                      }}
+                      numberOfLines={1}>
                       {pickupPoint && pickupPoint.id
                         ? pickupPoint.address
                         : 'Chọn điểm giao hàng'}

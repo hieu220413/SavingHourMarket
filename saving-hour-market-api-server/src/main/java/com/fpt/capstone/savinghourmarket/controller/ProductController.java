@@ -45,9 +45,9 @@ public class ProductController {
             , @RequestParam(required = false) EnableDisableStatus status
             , @RequestParam(defaultValue = "0") Integer page
             , @RequestParam(defaultValue = "5") Integer limit
-            , @RequestParam(required = false) SortType quantitySortType
-            , @RequestParam(required = false) SortType expiredSortType
-            , @RequestParam(required = false) SortType priceSort
+//            , @RequestParam(required = false) SortType quantitySortType
+//            , @RequestParam(required = false) SortType expiredSortType
+//            , @RequestParam(required = false) SortType priceSort
             , @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
@@ -59,9 +59,12 @@ public class ProductController {
                 , status
                 , page
                 , limit
-                , quantitySortType
-                , expiredSortType
-                , priceSort);
+                , null
+                , null
+//                , quantitySortType
+//                , expiredSortType
+//                , priceSort
+                , null);
         return ResponseEntity.status(HttpStatus.OK).body(productList);
     }
 

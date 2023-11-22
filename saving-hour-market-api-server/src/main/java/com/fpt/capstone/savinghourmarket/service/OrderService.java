@@ -38,7 +38,7 @@ public interface OrderService {
                                        int page,
                                        int limit) throws FirebaseAuthException;
 
-    List<OrderBatch> fetchOrderBatches(SortType deliverDateSortType, LocalDate deliveryDate, UUID delivererID) throws NoSuchOrderException;
+    List<OrderBatch> fetchOrderBatches(Integer status,Boolean getOldOrderBatch, SortType deliverDateSortType, LocalDate deliveryDate, UUID delivererID) throws NoSuchOrderException;
 
     OrderGroupPageResponse fetchOrderGroups(OrderStatus status,
                                       SortType deliverDateSortType,
@@ -54,6 +54,7 @@ public interface OrderService {
                                            String createdTimeSortType,
                                            String deliveryDateSortType,
                                            UUID pickupPointId,
+                                           UUID timeFrameId,
                                            Date deliveryDate,
                                            OrderStatus orderStatus,
                                            String email,
@@ -121,4 +122,8 @@ public interface OrderService {
     List<OrderBatch> createBatches(List<OrderBatchCreateBody> orderBatchCreateBodyList);
 
     String printOrderPackaging(UUID orderId, String staffEmail) throws ResourceNotFoundException;
+
+    DeliverManagerReport getDeliverManagerDailyReport(UUID deliverManagerId, LocalDate reportDate);
+
+    DeliverManagerReport getDeliverManagerReport(UUID deliverManagerId, Integer year, Month month);
 }

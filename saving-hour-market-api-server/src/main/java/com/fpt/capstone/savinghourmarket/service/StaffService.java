@@ -12,7 +12,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.UUID;
 
 public interface StaffService {
@@ -38,5 +37,5 @@ public interface StaffService {
 
     Staff unAssignPickupPoint(StaffPickupPointAssignmentBody staffPickupPointAssignmentBody);
 
-    StaffListResponseBody getStaffForDeliverManager(String name, OrderType orderType, LocalDate deliverDate, UUID timeFrameId);
+    StaffListResponseBody getStaffForDeliverManager(String name, OrderType orderType, LocalDate deliverDate, UUID timeFrameId, UUID orderBatchId, UUID orderGroupId, UUID deliverMangerId);
 }

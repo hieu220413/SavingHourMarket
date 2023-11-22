@@ -11,7 +11,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 public class TransactionListResponseBody {
-    private List<Transaction> transactionList;
+    private List<TransactionWithOrderInfo> transactionList;
     private int totalPage;
     private long totalTransaction;
 }

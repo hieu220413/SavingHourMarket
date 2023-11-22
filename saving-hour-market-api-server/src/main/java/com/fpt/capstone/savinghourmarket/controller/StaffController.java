@@ -120,12 +120,15 @@ public class StaffController {
 //            , @RequestParam(required = false) EnableDisableStatus status
 //            , @RequestParam(required = false) StaffRole role
             , @RequestParam OrderType orderType
+            , @RequestParam(required = false) UUID orderBatchId
+            , @RequestParam(required = false) UUID orderGroupId
             , @RequestParam LocalDate deliverDate
             , @RequestParam UUID timeFrameId
+            , @RequestParam UUID deliverMangerId
             , @RequestParam(defaultValue = "") String name) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        StaffListResponseBody staffListResponseBody = staffService.getStaffForDeliverManager(name, orderType, deliverDate, timeFrameId);
+        StaffListResponseBody staffListResponseBody = staffService.getStaffForDeliverManager(name, orderType, deliverDate, timeFrameId, orderBatchId, orderGroupId, deliverMangerId);
         return ResponseEntity.status(HttpStatus.OK).body(staffListResponseBody);
     }
 

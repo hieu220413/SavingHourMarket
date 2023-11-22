@@ -234,7 +234,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderBatch> fetchOrderBatches(SortType deliverDateSortType, LocalDate deliveryDate, UUID delivererID) {
+    public List<OrderBatch> fetchOrderBatches(Integer status, Boolean getOldOrderBatch, SortType deliverDateSortType, LocalDate deliveryDate, UUID delivererID) {
         Sort sortable = null;
 
         if (deliverDateSortType != null) {
@@ -245,6 +245,8 @@ public class OrderServiceImpl implements OrderService {
             }
         }
         return orderBatchRepository.findByDistrictOrDeliverDate(
+                status,
+                getOldOrderBatch,
                 deliveryDate,
                 delivererID,
                 sortable);
@@ -392,7 +394,7 @@ public class OrderServiceImpl implements OrderService {
                         order.setDeliverer(staff);
                         order.setStatus(OrderStatus.DELIVERING.ordinal());
                         FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getId().toString());
-                    } else if(order.getStatus() == OrderStatus.DELIVERING.ordinal()) {
+                    } else if (order.getStatus() == OrderStatus.DELIVERING.ordinal()) {
                         order.setDeliverer(staff);
                     } else {
                         return "Đơn hàng " + order.getId() + " chưa được đóng gói!";
@@ -406,7 +408,7 @@ public class OrderServiceImpl implements OrderService {
                     if (order.getStatus() == OrderStatus.PACKAGED.ordinal()) {
                         order.setStatus(OrderStatus.DELIVERING.ordinal());
                         FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getId().toString());
-                    } else if(order.getStatus() == OrderStatus.DELIVERING.ordinal()) {
+                    } else if (order.getStatus() == OrderStatus.DELIVERING.ordinal()) {
                         order.setDeliverer(staff);
                     } else {
                         return "Đơn hàng " + order.getId() + " chưa được đóng gói!";
@@ -430,11 +432,11 @@ public class OrderServiceImpl implements OrderService {
         Order order = repository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("No order found with this id " + orderId));
         if (order.getStatus() == OrderStatus.DELIVERING.ordinal()) {
             order.setDeliverer(staff);
-        } else if(order.getStatus() == OrderStatus.PACKAGED.ordinal()){
+        } else if (order.getStatus() == OrderStatus.PACKAGED.ordinal()) {
             order.setDeliverer(staff);
             order.setStatus(OrderStatus.DELIVERING.ordinal());
             FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getId().toString());
-        }else{
+        } else {
             return "Đơn hàng chưa được đóng gói!";
         }
         return "Staff with id" + staffId + "set successfully";
@@ -474,6 +476,7 @@ public class OrderServiceImpl implements OrderService {
                                                   String createdTimeSortType,
                                                   String deliveryDateSortType,
                                                   UUID pickupPointId,
+                                                  UUID timeFrameId,
                                                   Date deliveryDate,
                                                   OrderStatus orderStatus,
                                                   String email,
@@ -485,6 +488,7 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Nhân viên không tìm thấy với email " + email)).getPickupPoint();
         return repository.findOrderForPackageStaff(
                 pickupPointId,
+                timeFrameId,
                 deliveryDate,
                 pickupPointListOfStaff,
                 orderStatus == null ? null : orderStatus.ordinal(),
@@ -1047,10 +1051,15 @@ public class OrderServiceImpl implements OrderService {
                     throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
                 }
 
+                Double averageLatitude = orderTrackList.size() > 0 ? (orderTrackList.stream().mapToDouble(order -> order.getLatitude()).sum() / orderTrackList.size()) : 0;
+                Double averageLongitude = orderTrackList.size() > 0 ? (orderTrackList.stream().mapToDouble(order -> order.getLongitude()).sum() / orderTrackList.size()) : 0;
+
                 OrderBatch orderBatch = new OrderBatch();
                 orderBatch.setDeliverDate(orderBatchCreateBody.getDeliverDate());
                 orderBatch.setTimeFrame(timeFrame.get());
                 orderBatch.setProductConsolidationArea(productConsolidationArea.get());
+                orderBatch.setAverageLatitude(averageLatitude);
+                orderBatch.setAverageLongitude(averageLongitude);
                 orderBatch.setOrderList(orderTrackList);
                 for (Order order : orderTrackList) {
                     order.setOrderBatch(orderBatch);
@@ -1059,6 +1068,80 @@ public class OrderServiceImpl implements OrderService {
             }
         }
         return orderBatchList;
+    }
+
+    @Override
+    public DeliverManagerReport getDeliverManagerDailyReport(UUID deliverManagerId, LocalDate reportDate) {
+        if(reportDate == null) {
+            reportDate = LocalDate.now();
+        }
+        Optional<Staff> deliverManager =  staffRepository.findById(deliverManagerId);
+        if(!deliverManager.isPresent()) {
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_NOT_FOUND.getCode()), AdditionalResponseCode.STAFF_NOT_FOUND.toString());
+        }
+
+        Long successDeliveredOrder =  Long.parseLong("0");
+        Long failDeliveredOrder = Long.parseLong("0");
+        Long packagedOrder = Long.parseLong("0");
+        Long deliveringOrder = Long.parseLong("0");
+
+        List<Object[]> reportOrderForManager = repository.getDailyReportOrderForManager(reportDate);
+        for(Object[] result : reportOrderForManager) {
+            successDeliveredOrder = (Long) result[1];
+            failDeliveredOrder = (Long) result[2];
+            packagedOrder = (Long) result[3];
+            deliveringOrder = (Long) result[4];
+        }
+
+        List<DeliverReport> deliverReportList = deliverManager.get().getDeliverStaffList().stream().map(DeliverReport::new).collect(Collectors.toList());
+
+        for (DeliverReport deliverReport : deliverReportList) {
+            List<Object[]> reportOrderForDeliverStaff = repository.getDailyReportOrderDeliverStaff(deliverReport.getStaff().getId(), reportDate);
+            for(Object[] result : reportOrderForDeliverStaff) {
+                deliverReport.setSuccessDeliveredOrder((Long) result[1]);
+                deliverReport.setFailDeliveredOrder((Long) result[2]);
+                deliverReport.setDeliveringOrder((Long) result[3]);
+                deliverReport.setAssignedOrder((Long) result[4]);
+            }
+        }
+
+        return new DeliverManagerReport(successDeliveredOrder, failDeliveredOrder, packagedOrder, deliveringOrder, deliverReportList);
+    }
+
+    @Override
+    public DeliverManagerReport getDeliverManagerReport(UUID deliverManagerId, Integer year, Month month) {
+
+        Optional<Staff> deliverManager =  staffRepository.findById(deliverManagerId);
+        if(!deliverManager.isPresent()) {
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_NOT_FOUND.getCode()), AdditionalResponseCode.STAFF_NOT_FOUND.toString());
+        }
+
+        Long successDeliveredOrder =  Long.parseLong("0");
+        Long failDeliveredOrder = Long.parseLong("0");
+        Long packagedOrder = Long.parseLong("0");
+        Long deliveringOrder = Long.parseLong("0");
+
+        List<Object[]> reportOrderForManager = repository.getReportOrderForManager(year, month == null ? null : month.getMonthInNumber());
+        for(Object[] result : reportOrderForManager) {
+            successDeliveredOrder = result[0] == null ? 0 : (Long) result[0];
+            failDeliveredOrder =  result[1] == null ? 0 : (Long) result[1];
+            packagedOrder =  result[2] == null ? 0 : (Long) result[2];
+            deliveringOrder = result[3] == null ? 0 : (Long) result[3];
+        }
+
+        List<DeliverReport> deliverReportList = deliverManager.get().getDeliverStaffList().stream().map(DeliverReport::new).collect(Collectors.toList());
+
+        for (DeliverReport deliverReport : deliverReportList) {
+            List<Object[]> reportOrderForDeliverStaff = repository.getReportOrderDeliverStaff(deliverReport.getStaff().getId(), year, month == null ? null : month.getMonthInNumber());
+            for(Object[] result : reportOrderForDeliverStaff) {
+                deliverReport.setSuccessDeliveredOrder((Long) result[1]);
+                deliverReport.setFailDeliveredOrder((Long) result[2]);
+                deliverReport.setDeliveringOrder((Long) result[3]);
+                deliverReport.setAssignedOrder((Long) result[4]);
+            }
+        }
+
+        return new DeliverManagerReport(successDeliveredOrder, failDeliveredOrder, packagedOrder, deliveringOrder, deliverReportList);
     }
 
     @Override
@@ -1189,7 +1272,7 @@ public class OrderServiceImpl implements OrderService {
 
         if (orderCreated.getPaymentMethod() == PaymentMethod.VNPAY.ordinal()) {
             RMapCache<UUID, Object> map = redissonClient.getMapCache("orderCreatedMap");
-            map.put(orderCreated.getId(), 0, 31, TimeUnit.MINUTES);
+            map.put(orderCreated.getId(), 0, (systemConfigurationService.getConfiguration().getDeleteUnpaidOrderTime() * 60) + 1, TimeUnit.MINUTES);
         }
 
         return orderCreated;

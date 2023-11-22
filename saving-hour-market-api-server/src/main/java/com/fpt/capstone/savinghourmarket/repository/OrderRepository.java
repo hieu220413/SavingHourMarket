@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -59,6 +60,8 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "AND " +
             "((:status IS NULL) OR (o.status = :status)) " +
             "AND " +
+            "((:timeFrameId IS NULL) OR (o.timeFrame.id = :timeFrameId)) " +
+            "AND " +
             "((:deliveryMethod IS NULL) OR (o.deliveryMethod = :deliveryMethod)) " +
             "AND " +
             "(((:isPaid IS NULL) OR (:isPaid = FALSE)) " +
@@ -66,6 +69,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "((:isPaid = TRUE) AND (SIZE(o.transaction) > 0)))"
     )
     List<Order> findOrderForPackageStaff(UUID pickupPointId,
+                                         UUID timeFrameId,
                                          Date deliveryDate,
                                          List<PickupPoint> pickupPointList,
                                          Integer status,
@@ -215,4 +219,54 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "JOIN od.orderDetailProductBatches pb " +
             "WHERE pb.productBatch.id = :productBatchId ")
     List<Order> findOrderByProductBatchId(UUID productBatchId, Pageable pageable);
+
+
+    @Query("SELECT o.deliveryDate as deliverDate," +
+            "SUM(CASE WHEN o.status = 4 THEN 1 ELSE 0 END) AS successCount," +
+            "SUM(CASE WHEN o.status = 5 THEN 1 ELSE 0 END) AS failCount, " +
+            "SUM(CASE WHEN o.status = 2 THEN 1 ELSE 0 END) AS packagedCount, " +
+            "SUM(CASE WHEN o.status = 3 THEN 1 ELSE 0 END) AS deliveringCount " +
+            "FROM Order o " +
+            "WHERE o.deliveryDate = :reportDate " +
+            "GROUP BY o.deliveryDate")
+    List<Object[]> getDailyReportOrderForManager(LocalDate reportDate);
+
+    @Query("SELECT o.deliverer.id as delivererId," +
+            "SUM(CASE WHEN o.status = 4 THEN 1 ELSE 0 END) AS successCount," +
+            "SUM(CASE WHEN o.status = 5 THEN 1 ELSE 0 END) AS failCount, " +
+            "SUM(CASE WHEN o.status = 3 THEN 1 ELSE 0 END) AS deliveringCount," +
+            "COUNT(o.deliverer.id) AS assignedCount " +
+            "FROM Order o " +
+            "WHERE o.deliveryDate = :reportDate " +
+            "AND " +
+            "o.deliverer.id = :deliverId " +
+            "GROUP BY o.deliverer.id")
+    List<Object[]> getDailyReportOrderDeliverStaff(UUID deliverId, LocalDate reportDate);
+
+    @Query("SELECT " +
+            "SUM(CASE WHEN o.status = 4 THEN 1 ELSE 0 END) AS successCount," +
+            "SUM(CASE WHEN o.status = 5 THEN 1 ELSE 0 END) AS failCount, " +
+            "SUM(CASE WHEN o.status = 2 THEN 1 ELSE 0 END) AS packagedCount, " +
+            "SUM(CASE WHEN o.status = 3 THEN 1 ELSE 0 END) AS deliveringCount " +
+            "FROM Order o " +
+            "WHERE " +
+            "((:monthInNumber IS NULL) OR (MONTH(o.createdTime) = :monthInNumber ))" +
+            "AND " +
+            "((:year IS NULL) OR (YEAR(o.createdTime) = :year )) ")
+    List<Object[]> getReportOrderForManager(Integer year, Integer monthInNumber);
+
+    @Query("SELECT o.deliverer.id as delivererId," +
+            "SUM(CASE WHEN o.status = 4 THEN 1 ELSE 0 END) AS successCount," +
+            "SUM(CASE WHEN o.status = 5 THEN 1 ELSE 0 END) AS failCount, " +
+            "SUM(CASE WHEN o.status = 3 THEN 1 ELSE 0 END) AS deliveringCount," +
+            "COUNT(o.deliverer.id) AS assignedCount " +
+            "FROM Order o " +
+            "WHERE " +
+            "((:monthInNumber IS NULL) OR (MONTH(o.createdTime) = :monthInNumber ))" +
+            "AND " +
+            "((:year IS NULL) OR (YEAR(o.createdTime) = :year )) " +
+            "AND " +
+            "o.deliverer.id = :deliverId " +
+            "GROUP BY o.deliverer.id")
+    List<Object[]> getReportOrderDeliverStaff(UUID deliverId, Integer year, Integer monthInNumber);
 }

@@ -297,7 +297,8 @@ const Product = ({navigation}) => {
                         fontSize: 16,
                         fontFamily: 'Roboto',
                         color: 'black',
-                      }}>
+                      }} 
+                      numberOfLines={1}>
                       {pickupPoint && pickupPoint.id
                         ? pickupPoint.address
                         : 'Chọn điểm giao hàng'}

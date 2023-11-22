@@ -500,6 +500,15 @@ const EditProduct = ({
       .then((res) => res.json())
       .then((res) => {
         console.log(res);
+        if (res.code === 422) {
+          setOpenValidateSnackbar({
+            ...openValidateSnackbar,
+            open: true,
+            severity: "error",
+            text: "Không thể sửa khi bạn xóa lô hàng đang được đóng gói",
+          });
+          return false;
+        }
         fetch(
           `${API.baseURL}/api/product/getProductsForStaff?page=${
             page - 1
@@ -1121,6 +1130,13 @@ const EditProduct = ({
                               index
                             ].productBatchAddresses.map((newAddress, num) => {
                               if (num === i) {
+                                if (!/^[0-9]*$/.test(e.target.value)) {
+                                  return {
+                                    ...newAddress,
+                                    quantity: "",
+                                    errorQuantity: "Chỉ được nhập số nguyên",
+                                  };
+                                }
                                 return {
                                   ...newAddress,
                                   quantity: e.target.value,

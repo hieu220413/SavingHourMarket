@@ -105,6 +105,7 @@ const AuthProvider = ({ children }) => {
     <>
       {user?.role === "STAFF_SLT" && <Navigate to="/supermarketmanagement" />}
       {user?.role === "ADMIN" && <Navigate to="/usermanagement" />}
+      {user?.role === "STAFF_MKT" && <Navigate to="/vouchermanagement" />}
     </>
   );
 };
