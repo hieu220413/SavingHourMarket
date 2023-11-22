@@ -19,6 +19,7 @@ public interface OrderService {
     List<Order> fetchOrdersForStaff(String totalPriceSortType,
                                     String createdTimeSortType,
                                     String deliveryDateSortType,
+                                    Boolean getOldOrder,
                                     Date deliveryDate,
                                     OrderStatus orderStatus,
                                     UUID packagerId,
@@ -43,7 +44,7 @@ public interface OrderService {
     OrderGroupPageResponse fetchOrderGroups(OrderStatus status,
                                       SortType deliverDateSortType,
                                       LocalDate deliverDate,
-                                      Boolean getOldOrderGroup,
+                                      Boolean getOldOrder,
                                       UUID timeFrameId,
                                       UUID pickupPointId,
                                       UUID delivererId,
@@ -53,6 +54,7 @@ public interface OrderService {
     List<Order> fetchOrdersForPackageStaff(String totalPriceSortType,
                                            String createdTimeSortType,
                                            String deliveryDateSortType,
+                                           Boolean getOldOrderGroup,
                                            UUID pickupPointId,
                                            UUID timeFrameId,
                                            Date deliveryDate,
@@ -85,6 +87,8 @@ public interface OrderService {
     Order createOrder(String jwtToken, OrderCreate orderCreate) throws Exception;
 
     String cancelOrder(String jwtToken, UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException, FirebaseAuthException, IOException;
+
+    String cancelPackageOrder(UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException;
 
     String confirmPackaging(UUID orderId, String staffEmail, UUID productConsolidationAreaId) throws NoSuchOrderException, IOException, ResourceNotFoundException;
 
