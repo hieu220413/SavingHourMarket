@@ -1059,6 +1059,7 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                   <TouchableOpacity
                     onPress={() => {
                       navigation.navigate('SelectPickupPoint', {
+                        isFromOrderGroupRoute: true,
                         setPickupPoint: setPickupPoint,
                       });
                     }}>
