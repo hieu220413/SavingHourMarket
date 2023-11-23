@@ -485,7 +485,9 @@ const HistoryList = ({ navigation }) => {
     const fetchOrders = async id => {
         const tokenId = await auth().currentUser.getIdToken();
         const userFromAS = await getUser();
-        console.log(userFromAS.id);
+        const filterStatus = selectItem.find(item => item.active === true);
+        // console.log('fs', filterStatus);
+        // console.log(userFromAS.id);
         let currentDate = format(new Date(), 'yyyy-MM-dd');
         const deliverDate = selectedDate
             ? format(selectedDate, 'yyyy-MM-dd')
@@ -494,7 +496,7 @@ const HistoryList = ({ navigation }) => {
             setLoading(true);
             if (id === 0) {
                 fetch(
-                    `${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}&status=SUCCESS`,
+                    `${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliverDate=${deliverDate}`}&status=${filterStatus.value}&getOldOrderGroup=TRUE`,
                     {
                         method: 'GET',
                         headers: {
@@ -505,7 +507,8 @@ const HistoryList = ({ navigation }) => {
                 )
                     .then(res => res.json())
                     .then(respond => {
-                        console.log(respond);
+                        console.log(`${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}&status=${filterStatus.value}&getOldOrderGroup=TRUE`);
+                        console.log('1', respond);
                         if (respond.error) {
                             return;
                         }
@@ -518,7 +521,7 @@ const HistoryList = ({ navigation }) => {
                     });
             } else if (id === 1) {
                 fetch(
-                    `${API.baseURL}/api/order/staff/getOrderBatch?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}&status=SUCCESS`,
+                    `${API.baseURL}/api/order/staff/getOrderBatch?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}&status=${filterStatus.value}&getOldOrderGroup=TRUE`,
                     {
                         method: 'GET',
                         headers: {
@@ -542,7 +545,7 @@ const HistoryList = ({ navigation }) => {
                     });
             } else if (id === 2) {
                 fetch(
-                    `${API.baseURL}/api/order/staff/getOrders?delivererId=${userFromAS?.id}&orderStatus=SUCCESS${selectedDate === null ? '' : `&deliverDate=${deliverDate}`}`,
+                    `${API.baseURL}/api/order/staff/getOrders?delivererId=${userFromAS?.id}&orderStatus=SUCCESS${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}`,
                     {
                         method: 'GET',
                         headers: {

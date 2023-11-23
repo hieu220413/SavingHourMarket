@@ -495,7 +495,7 @@ const HomeDeliver = ({ navigation }) => {
       setLoading(true);
       if (id === 0) {
         fetch(
-          `${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}&status=DELIVERING`,
+          `${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliverDate=${deliverDate}`}&status=DELIVERING`,
           {
             method: 'GET',
             headers: {
@@ -506,11 +506,8 @@ const HomeDeliver = ({ navigation }) => {
         )
           .then(res => res.json())
           .then(respond => {
-            console.log(respond);
-            if (respond.error) {
-              return;
-            }
-
+            console.log(`${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}&status=DELIVERING`);
+            console.log('0', respond);
             setOrderGroupList(respond.orderGroups);
             setLoading(false);
           })
@@ -530,6 +527,7 @@ const HomeDeliver = ({ navigation }) => {
         )
           .then(res => res.json())
           .then(respond => {
+            console.log('1', respond);
             if (respond.error) {
               return;
             }
@@ -542,7 +540,7 @@ const HomeDeliver = ({ navigation }) => {
           });
       } else if (id === 2) {
         fetch(
-          `${API.baseURL}/api/order/staff/getOrders?delivererId=${userFromAS?.id}&orderStatus=DELIVERING${selectedDate === null ? '' : `&deliverDate=${deliverDate}`}`,
+          `${API.baseURL}/api/order/staff/getOrders?delivererId=${userFromAS?.id}&orderStatus=DELIVERING${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}`,
           {
             method: 'GET',
             headers: {
@@ -553,6 +551,7 @@ const HomeDeliver = ({ navigation }) => {
         )
           .then(res => res.json())
           .then(respond => {
+            console.log('3', respond);
             setOrders(respond);
             setLoading(false);
           })
