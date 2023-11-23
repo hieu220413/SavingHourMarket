@@ -104,7 +104,7 @@ const CreateStaff = ({
       setError({ ...error, password: "Vui lòng không để trống" });
       return;
     }
-    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/.test(password)) {
+    if (!/^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,20}$/.test(password)) {
       setError({
         ...error,
         password:
@@ -137,7 +137,7 @@ const CreateStaff = ({
     })
       .then((res) => res.json())
       .then((respond) => {
-        if (respond.code === 403) {
+        if (respond.code === 422 || respond.code === 403) {
           setOpenSnackbar({
             ...openSnackbar,
             open: true,

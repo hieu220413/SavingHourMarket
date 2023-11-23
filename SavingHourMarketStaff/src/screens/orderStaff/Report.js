@@ -9,20 +9,15 @@ import {
   ScrollView,
   ImageBackground,
 } from 'react-native';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS } from '../../constants/theme';
-import { icons } from '../../constants';
 import { useFocusEffect } from '@react-navigation/native';
 import { API } from '../../constants/api';
 import { format } from 'date-fns';
-import {
-  ExpandableCalendar,
-  CalendarProvider,
-} from 'react-native-calendars';
 import LoadingScreen from '../../components/LoadingScreen';
-import { BarChart, LineChart, PieChart } from 'react-native-gifted-charts';
+import { BarChart } from 'react-native-gifted-charts';
 
 const Report = ({ navigation }) => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -69,7 +64,6 @@ const Report = ({ navigation }) => {
       let numberOfSuccess = 0;
       let numberOfFail = 0;
       let numberTotal = 0;
-
       await fetch(
         `${API.baseURL}/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${pickupPoint && pickupPoint.id
           ? `pickupPointId=${pickupPoint.id}`
@@ -134,12 +128,12 @@ const Report = ({ navigation }) => {
             }
             numberTotal = numberTotal + statusCounts[orderStatus];
           })
-          setLoading(false);
         })
         .catch(err => {
-          console.log(err);
           setLoading(false);
+          console.log(err);
         });
+
       await fetch(
         `${API.baseURL}/api/order/packageStaff/getOrders?deliveryMethod=PICKUP_POINT&${pickupPoint && pickupPoint.id
           ? `pickupPointId=${pickupPoint.id}`
@@ -157,12 +151,11 @@ const Report = ({ navigation }) => {
         .then(respond => {
           // console.log('order', respond);
           if (respond.error) {
-            console.log(err);
             setLoading(false);
+            console.log(err);
             return;
           }
           const statusCounts = {};
-
           respond.forEach(order => {
             const status = order.status;
             if (statusCounts[status]) {
@@ -202,12 +195,13 @@ const Report = ({ navigation }) => {
             }
             numberTotal = numberTotal + statusCounts[orderStatus];
           })
-          setLoading(false);
+
         })
         .catch(err => {
-          console.log(err);
           setLoading(false);
+          console.log(err);
         });
+
       setNumberOfProcessing(numberOfProcessing)
       setNumberOfPackaging(numberOfPackageing)
       setNumberOfPackaged(numberOfPackaged)
@@ -216,6 +210,7 @@ const Report = ({ navigation }) => {
       setNumberOfFail(numberOfFail)
       setNumberOfCancel(numberOfCancel)
       setNumberTotal(numberTotal)
+      setLoading(false);
     }
   };
 
@@ -256,7 +251,7 @@ const Report = ({ navigation }) => {
           .then(respond => {
             // console.log(respond.ordersReportByMonth);
             const year = date.slice(0, 4);
-            const keyToAccess = year; // Change this to "2024" to access the 2024 array
+            const keyToAccess = year; 
             // console.log(typeof(keyToAccess));
             const arrayForKey = respond.ordersReportByMonth[keyToAccess];
             // console.log(arrayForKey);
@@ -272,7 +267,6 @@ const Report = ({ navigation }) => {
               };
             });
             setData(newData);
-            setLoading(false);
           })
           .catch(err => {
             console.log(err);
@@ -317,7 +311,6 @@ const Report = ({ navigation }) => {
             });
             // console.log(newData);
             setYearReport(newData);
-            setLoading(false);
           })
           .catch(err => {
             console.log(err);
@@ -537,12 +530,12 @@ const Report = ({ navigation }) => {
                 marginTop: 10
               }}>
                 <View style={styles.wrapTotal}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={{fontSize:20,color:'black'}}>Tổng số đơn hàng: {numberTotal}</Text>
-                    </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 20, color: 'black' }}>Tổng số đơn hàng: {numberTotal}</Text>
                   </View>
+                </View>
                 <View style={styles.wrap_container}>
-                
+
                   <View style={styles.wrapProcessing}>
                     <View style={{ flex: 1 }}>
                       <Text style={styles.texts}>Đơn chờ xác nhận:</Text>
@@ -655,7 +648,7 @@ const Report = ({ navigation }) => {
                     justifyContent: 'center',
                     alignItems: 'center',
                     paddingBottom: 20,
-                    paddingTop:20
+                    paddingTop: 20
                   }}>
                   <Text
                     style={{ fontSize: 18, fontWeight: 'bold', color: 'black' }}>
@@ -793,8 +786,8 @@ const styles = StyleSheet.create({
   },
   wrapTotal: {
     width: 250,
-    alignSelf:'center',
-    alignItems:'center',
+    alignSelf: 'center',
+    alignItems: 'center',
     backgroundColor: 'white',
     opacity: 0.9,
     borderRadius: 20,

@@ -253,7 +253,7 @@ const OrderDetail = ({ navigation, route }) => {
       }
     };
     confirmCancel();
-    setVisible(false);
+    setVisibleCancel(false);
   };
 
   return (
@@ -303,6 +303,7 @@ const OrderDetail = ({ navigation, route }) => {
                 {item?.status === 0 && 'Đơn hàng đang chờ đóng gói'}
                 {item?.status === 1 && 'Đơn hàng đang đóng gói'}
                 {item?.status === 2 && 'Đơn hàng đã đóng gói'}
+                {item?.status === 6 && 'Đơn hàng đã huỷ'}
               </Text>
             </View>
             <View
