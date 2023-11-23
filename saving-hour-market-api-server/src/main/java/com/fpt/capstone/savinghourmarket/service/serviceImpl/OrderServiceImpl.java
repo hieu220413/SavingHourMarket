@@ -94,7 +94,7 @@ public class OrderServiceImpl implements OrderService {
     private final SystemConfigurationService systemConfigurationService;
 
     private final ProductConsolidationAreaRepository productConsolidationAreaRepository;
-//    private final ConfigurationRepository configurationRepository;
+    private final ConfigurationRepository configurationRepository;
 
     @Value("${goong-api-key}")
     private String goongApiKey;
@@ -137,13 +137,16 @@ public class OrderServiceImpl implements OrderService {
         int totalPage = result.getTotalPages();
         long totalGroups = result.getTotalElements();
         OrderGroupPageResponse response = new OrderGroupPageResponse();
+        Configuration configuration = configurationRepository.findAll().get(0);
         List<OrderGroup> orderGroups = result.stream().toList();
         if (status != null) {
             orderGroups.forEach(orderGroup -> {
                 List<Order> orderFilter = orderGroup.getOrderList()
                         .stream()
-                        .filter(order -> order.getStatus().equals(status.ordinal())
-                                && ((order.getPaymentMethod() == 1 && order.getTransaction().size() > 0) || order.getPaymentMethod() == 0))
+                        .filter(order -> (order.getStatus().equals(status.ordinal()) && ((order.getPaymentMethod() == 1 && order.getTransaction().size() > 0) || order.getPaymentMethod() == 0))
+                                &&
+                                (order.getStatus() > OrderStatus.PROCESSING.ordinal() || (order.getStatus() == OrderStatus.PROCESSING.ordinal() && LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS))))
+                        )
                         .toList();
                 orderGroup.setOrderList(orderFilter);
             });
@@ -175,7 +178,7 @@ public class OrderServiceImpl implements OrderService {
         } else {
             pageableWithSort = PageRequest.of(page, size);
         }
-
+        Configuration configuration = configurationRepository.findAll().get(0);
         List<OrderGroup> orderGroups = orderGroupRepository.findByTimeFrameOrPickupPointOrDeliverDateForPackageStaff(
                 pickupPointListOfStaff,
                 getOldOrderGroup,
@@ -186,7 +189,12 @@ public class OrderServiceImpl implements OrderService {
                 pageableWithSort);
         orderGroups.forEach(orderGroup -> {
             List<Order> orders = orderGroup.getOrderList()
-                    .stream().filter(order -> (order.getPaymentMethod() == 1 && order.getTransaction().size() > 0) || order.getPaymentMethod() == 0).toList();
+                    .stream().filter(order -> ((order.getPaymentMethod() == 1 && order.getTransaction().size() > 0)
+                            || order.getPaymentMethod() == 0)
+                            &&
+                            (order.getStatus() > OrderStatus.PROCESSING.ordinal()
+                                    || (order.getStatus() == OrderStatus.PROCESSING.ordinal() && LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS)))))
+                    .toList();
             orderGroup.setOrderList(orders);
         });
         return orderGroups;
@@ -284,14 +292,15 @@ public class OrderServiceImpl implements OrderService {
         Staff staff = staffRepository.findByEmail(staffEmail).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với email: " + staffEmail));
         ProductConsolidationArea productConsolidationArea = productConsolidationAreaRepository.findById(productConsolidationAreaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy điểm tập kết với ID: " + productConsolidationAreaId));
-//        if (LocalDateTime.now().isAfter(order.getCreatedTime().plus(Utils.getAdminConfiguration().getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS))) {
-        order.setPackager(staff);
-        order.setProductConsolidationArea(productConsolidationArea);
-        order.setStatus(OrderStatus.PACKAGING.ordinal());
-        FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
-//        } else {
-//            return "Đơn hàng này đã chưa quá thời gian khách hàng có thể huỷ nên không thể nhận đóng gói!";
-//        }
+        Configuration configuration = configurationRepository.findAll().get(0);
+        if (LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS))) {
+            order.setPackager(staff);
+            order.setProductConsolidationArea(productConsolidationArea);
+            order.setStatus(OrderStatus.PACKAGING.ordinal());
+            FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
+        } else {
+            return "Đơn hàng này đã chưa quá thời gian khách hàng có thể huỷ nên không thể nhận đóng gói!";
+        }
         return "Đơn hàng này đã được nhận đóng gói thành công!";
     }
 
@@ -319,29 +328,38 @@ public class OrderServiceImpl implements OrderService {
         if (productConsolidationAreaId != null) {
             if (orderGroup.getProductConsolidationArea() != null) {
                 for (Order order : orderGroup.getOrderList().stream().filter(order -> order.getStatus() == 0).toList()) {
-                    order.setPackager(staff);
-                    order.setProductConsolidationArea(orderGroup.getProductConsolidationArea());
-                    order.setStatus(OrderStatus.PACKAGING.ordinal());
-                    FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
+                    Configuration configuration = configurationRepository.findAll().get(0);
+                    if (LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS)) && (order.getPaymentMethod() == 0 || (order.getPaymentMethod() == 1 && order.getTransaction().size() > 0))) {
+                        order.setPackager(staff);
+                        order.setProductConsolidationArea(orderGroup.getProductConsolidationArea());
+                        order.setStatus(OrderStatus.PACKAGING.ordinal());
+                        FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
+                    }
                 }
             } else {
                 ProductConsolidationArea productConsolidationArea = productConsolidationAreaRepository.findById(productConsolidationAreaId)
                         .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy điểm tập kết với ID: " + productConsolidationAreaId));
                 orderGroup.setProductConsolidationArea(productConsolidationArea);
                 for (Order order : orderGroup.getOrderList().stream().filter(order -> order.getStatus() == 0).toList()) {
-                    order.setPackager(staff);
-                    order.setProductConsolidationArea(productConsolidationArea);
-                    order.setStatus(OrderStatus.PACKAGING.ordinal());
-                    FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
+                    Configuration configuration = configurationRepository.findAll().get(0);
+                    if (LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS)) && (order.getPaymentMethod() == 0 || (order.getPaymentMethod() == 1 && order.getTransaction().size() > 0))) {
+                        order.setPackager(staff);
+                        order.setProductConsolidationArea(productConsolidationArea);
+                        order.setStatus(OrderStatus.PACKAGING.ordinal());
+                        FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
+                    }
                 }
             }
         } else {
             if (orderGroup.getProductConsolidationArea() != null && orderGroup.getOrderList().stream().filter(order -> order.getStatus() > 0).toList().size() > 0) {
                 for (Order order : orderGroup.getOrderList().stream().filter(order -> order.getStatus() == 0).toList()) {
-                    order.setPackager(staff);
-                    order.setProductConsolidationArea(orderGroup.getProductConsolidationArea());
-                    order.setStatus(OrderStatus.PACKAGING.ordinal());
-                    FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
+                    Configuration configuration = configurationRepository.findAll().get(0);
+                    if (LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS)) && (order.getPaymentMethod() == 0 || (order.getPaymentMethod() == 1 && order.getTransaction().size() > 0))) {
+                        order.setPackager(staff);
+                        order.setProductConsolidationArea(orderGroup.getProductConsolidationArea());
+                        order.setStatus(OrderStatus.PACKAGING.ordinal());
+                        FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
+                    }
                 }
             }
         }
@@ -507,21 +525,25 @@ public class OrderServiceImpl implements OrderService {
                                            Boolean isBatched,
                                            int page,
                                            int limit) {
+        Configuration configuration = configurationRepository.findAll().get(0);
         return repository.findOrderForStaff(
-                getOldOrder,
-                deliveryDate,
-                packagerId,
-                delivererId,
-                orderStatus == null ? null : orderStatus.ordinal(),
-                isGrouped,
-                isBatched,
-                isPaid,
-                getPageableWithSort(totalPriceSortType,
-                        createdTimeSortType,
-                        deliveryDateSortType,
-                        page,
-                        limit)
-        );
+                        getOldOrder,
+                        deliveryDate,
+                        packagerId,
+                        delivererId,
+                        orderStatus == null ? null : orderStatus.ordinal(),
+                        isGrouped,
+                        isBatched,
+                        isPaid,
+                        getPageableWithSort(totalPriceSortType,
+                                createdTimeSortType,
+                                deliveryDateSortType,
+                                page,
+                                limit)
+                ).stream()
+                .filter(order -> order.getStatus() > OrderStatus.PROCESSING.ordinal() ||
+                        (order.getStatus() == OrderStatus.PROCESSING.ordinal()
+                                && LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS)))).toList();
     }
 
     @Override
@@ -540,21 +562,26 @@ public class OrderServiceImpl implements OrderService {
                                                   int limit) throws ResourceNotFoundException {
         List<PickupPoint> pickupPointListOfStaff = staffRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Nhân viên không tìm thấy với email " + email)).getPickupPoint();
+        Configuration configuration = configurationRepository.findAll().get(0);
         return repository.findOrderForPackageStaff(
-                pickupPointId,
-                timeFrameId,
-                deliveryDate,
-                getOldOrder,
-                pickupPointListOfStaff,
-                orderStatus == null ? null : orderStatus.ordinal(),
-                deliveryMethod.ordinal(),
-                isPaid,
-                getPageableWithSort(totalPriceSortType,
-                        createdTimeSortType,
-                        deliveryDateSortType,
-                        page,
-                        limit)
-        );
+                        pickupPointId,
+                        timeFrameId,
+                        deliveryDate,
+                        getOldOrder,
+                        pickupPointListOfStaff,
+                        orderStatus == null ? null : orderStatus.ordinal(),
+                        deliveryMethod.ordinal(),
+                        isPaid,
+                        getPageableWithSort(totalPriceSortType,
+                                createdTimeSortType,
+                                deliveryDateSortType,
+                                page,
+                                limit)
+                ).stream()
+                .filter(order -> order.getStatus() > OrderStatus.PROCESSING.ordinal() ||
+                        (order.getStatus() == OrderStatus.PROCESSING.ordinal()
+                                && LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS)))).toList();
+
     }
 
     @Override
