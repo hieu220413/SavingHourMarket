@@ -508,7 +508,7 @@ const EditProduct = ({
             open: true,
             severity: "error",
           });
-          setMsg("Không thể sửa khi bạn xóa lô hàng đang được đóng gói");
+          setMsg("Không thể sửa khi bạn xóa lô hàng có tồn tại trong đơn hàng");
           return;
         }
         fetch(

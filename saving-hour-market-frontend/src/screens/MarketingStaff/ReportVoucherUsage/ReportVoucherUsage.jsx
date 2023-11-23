@@ -268,7 +268,7 @@ const ReportVoucherUsage = () => {
         <div className="chart_container">
           <div className="barchart">
             <div className="column_1">
-              <text className="text">THỐNG KÊ</text>
+              <text className="text">THỐNG KÊ THEO TỪNG THÁNG</text>
               <ResponsiveContainer width="100%" height="90%">
                 <BarChart
                   data={monthData}
@@ -443,7 +443,9 @@ const ReportVoucherUsage = () => {
         <div className="areachart" style={{ height: "350px" }}>
           <div className="chart">
             <div className="title">
-              <text className="title_text">DOANH THU TỪNG LOẠI SẢN PHẨM</text>
+              <text className="title_text">
+                SỐ MÃ GIẢM GIÁ ĐƯỢC DÙNG TRÊN TỪNG LOẠI SẢN PHẨM
+              </text>
             </div>
             <ResponsiveContainer width="90%" height="90%">
               <BarChart data={categoriesVoucherUsage} barSize={20}>
