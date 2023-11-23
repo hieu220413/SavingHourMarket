@@ -144,7 +144,7 @@ public class OrderServiceImpl implements OrderService {
             orderGroups.forEach(orderGroup -> {
                 List<Order> orderFilter = orderGroup.getOrderList()
                         .stream()
-                        .filter(order -> (order.getStatus().equals(status.ordinal()) && ((order.getPaymentMethod() == 1 && order.getTransaction().size() > 0) || order.getPaymentMethod() == 0))
+                        .filter(order -> (order.getStatus().equals(status.ordinal()) && ((order.getPaymentMethod() == 1 && order.getPaymentStatus() == 1) || order.getPaymentMethod() == 0))
                                 &&
                                 (order.getStatus() > OrderStatus.PROCESSING.ordinal() || (order.getStatus() == OrderStatus.PROCESSING.ordinal() && LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS))))
                         )
@@ -190,7 +190,7 @@ public class OrderServiceImpl implements OrderService {
                 pageableWithSort);
         orderGroups.forEach(orderGroup -> {
             List<Order> orders = orderGroup.getOrderList()
-                    .stream().filter(order -> ((order.getPaymentMethod() == 1 && order.getTransaction().size() > 0)
+                    .stream().filter(order -> ((order.getPaymentMethod() == 1 && order.getPaymentStatus() == 1)
                             || order.getPaymentMethod() == 0)
                             &&
                             (order.getStatus() > OrderStatus.PROCESSING.ordinal()
@@ -330,7 +330,7 @@ public class OrderServiceImpl implements OrderService {
             if (orderGroup.getProductConsolidationArea() != null) {
                 for (Order order : orderGroup.getOrderList().stream().filter(order -> order.getStatus() == 0).toList()) {
                     Configuration configuration = configurationRepository.findAll().get(0);
-                    if (LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS)) && (order.getPaymentMethod() == 0 || (order.getPaymentMethod() == 1 && order.getTransaction().size() > 0))) {
+                    if (LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS)) && (order.getPaymentMethod() == 0 || (order.getPaymentMethod() == 1 && order.getPaymentStatus() == 1))) {
                         order.setPackager(staff);
                         order.setProductConsolidationArea(orderGroup.getProductConsolidationArea());
                         order.setStatus(OrderStatus.PACKAGING.ordinal());
@@ -343,7 +343,7 @@ public class OrderServiceImpl implements OrderService {
                 orderGroup.setProductConsolidationArea(productConsolidationArea);
                 for (Order order : orderGroup.getOrderList().stream().filter(order -> order.getStatus() == 0).toList()) {
                     Configuration configuration = configurationRepository.findAll().get(0);
-                    if (LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS)) && (order.getPaymentMethod() == 0 || (order.getPaymentMethod() == 1 && order.getTransaction().size() > 0))) {
+                    if (LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS)) && (order.getPaymentMethod() == 0 || (order.getPaymentMethod() == 1 && order.getPaymentStatus() == 1))) {
                         order.setPackager(staff);
                         order.setProductConsolidationArea(productConsolidationArea);
                         order.setStatus(OrderStatus.PACKAGING.ordinal());
@@ -355,7 +355,7 @@ public class OrderServiceImpl implements OrderService {
             if (orderGroup.getProductConsolidationArea() != null && orderGroup.getOrderList().stream().filter(order -> order.getStatus() > 0).toList().size() > 0) {
                 for (Order order : orderGroup.getOrderList().stream().filter(order -> order.getStatus() == 0).toList()) {
                     Configuration configuration = configurationRepository.findAll().get(0);
-                    if (LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS)) && (order.getPaymentMethod() == 0 || (order.getPaymentMethod() == 1 && order.getTransaction().size() > 0))) {
+                    if (LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS)) && (order.getPaymentMethod() == 0 || (order.getPaymentMethod() == 1 && order.getPaymentStatus() == 1))) {
                         order.setPackager(staff);
                         order.setProductConsolidationArea(orderGroup.getProductConsolidationArea());
                         order.setStatus(OrderStatus.PACKAGING.ordinal());
