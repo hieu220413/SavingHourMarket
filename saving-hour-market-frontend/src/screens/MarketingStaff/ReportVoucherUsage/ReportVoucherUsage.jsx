@@ -40,6 +40,86 @@ const ReportVoucherUsage = () => {
   const [categoriesVoucherUsage, setCategoriesVoucherUsage] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const months = [
+    {
+      name: "--",
+      value: "",
+    },
+    {
+      name: "Tháng 1",
+      value: "JAN",
+    },
+    {
+      name: "Tháng 2",
+      value: "FEB",
+    },
+    {
+      name: "Tháng 3",
+      value: "MAR",
+    },
+    {
+      name: "Tháng 4",
+      value: "APR",
+    },
+    {
+      name: "Tháng 5",
+      value: "MAY",
+    },
+    {
+      name: "Tháng 6",
+      value: "JUNE",
+    },
+    {
+      name: "Tháng 7",
+      value: "JULY",
+    },
+    {
+      name: "Tháng 8",
+      value: "AUG",
+    },
+    {
+      name: "Tháng 9",
+      value: "SEPT",
+    },
+    {
+      name: "Tháng 10",
+      value: "OCT",
+    },
+    {
+      name: "Tháng 11",
+      value: "NOV",
+    },
+    {
+      name: "Tháng 12",
+      value: "DEC",
+    },
+  ];
+  const quarters = [
+    {
+      name: "--",
+      value: "",
+    },
+    {
+      name: "Quý 1",
+      value: "Q1",
+    },
+    {
+      name: "Quý 2",
+      value: "Q2",
+    },
+    {
+      name: "Quý 3",
+      value: "Q3",
+    },
+    {
+      name: "Quý 4",
+      value: "Q4",
+    },
+  ];
+
+  const [selectMonth, setSelectMonth] = useState("--");
+  const [selectQuarter, setSelectQuarter] = useState("--");
+
   const userState = useAuthState(auth);
 
   useEffect(() => {
@@ -87,10 +167,16 @@ const ReportVoucherUsage = () => {
     };
     const fetchAllCategoriesDiscountUsageReport = async () => {
       setLoading(true);
+      const month = months.find((item) => item.name === selectMonth);
+      const quarter = quarters.find((item) => item.name === selectQuarter);
       if (!userState[1]) {
         const tokenId = await auth.currentUser.getIdToken();
         fetch(
-          `${API.baseURL}/api/discount/getAllCategoryDiscountUsageReport?year=${selectedYear}&fromPercentage=0&toPercentage=100`,
+          `${API.baseURL}/api/discount/getAllCategoryDiscountUsageReport?${
+            month.value === "" ? "" : `&month=${month.value}`
+          }${
+            quarter.value === "" ? "" : `&quarter=${quarter.value}`
+          }&year=${selectedYear}&fromPercentage=0&toPercentage=100`,
           {
             method: "GET",
             headers: {
@@ -100,14 +186,13 @@ const ReportVoucherUsage = () => {
         )
           .then((res) => res.json())
           .then((respond) => {
-            console.log(respond);
             setCategoriesVoucherUsage(respond);
           });
       }
     };
     fetchMonths();
     fetchAllCategoriesDiscountUsageReport();
-  }, []);
+  }, [selectMonth, selectQuarter]);
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
   const RADIAN = Math.PI / 180;
@@ -146,6 +231,15 @@ const ReportVoucherUsage = () => {
     0
   );
 
+  const optionsMonth = [];
+  months.map((month) => {
+    optionsMonth.push(<option value={month.name}>{month.name} </option>);
+  });
+  const optionsQuarter = [];
+  quarters.map((quarter) => {
+    optionsQuarter.push(<option value={quarter.name}>{quarter.name}</option>);
+  });
+
   const onHandleChange = (evt) => {
     // Handle Change Here
     // alert(evt.target.value);
@@ -153,7 +247,7 @@ const ReportVoucherUsage = () => {
   };
 
   return (
-    <>
+    <div>
       <div>
         <div className="year_picker">
           <text style={{ fontSize: "16px" }}>Năm: {selectedYear} </text>
@@ -296,6 +390,56 @@ const ReportVoucherUsage = () => {
             </div>
           </div>
         </div>
+        <div
+          style={{
+            display: "flex",
+            width: "350px",
+          }}
+        >
+          <div
+            style={{
+              marginTop: 30,
+              width: "100%",
+            }}
+          >
+            <text style={{ fontSize: "16px" }}>Tháng: </text>
+            <select
+              style={{
+                width: "60px",
+                height: "25px",
+                position: "relative",
+              }}
+              value={selectMonth}
+              onChange={(e) => {
+                setSelectMonth(e.target.value);
+              }}
+            >
+              {optionsMonth}
+            </select>
+          </div>
+
+          <div
+            style={{
+              marginTop: 30,
+              width: "100%",
+            }}
+          >
+            <text style={{ fontSize: "16px" }}>Quý: </text>
+            <select
+              style={{
+                width: "60px",
+                height: "25px",
+                position: "relative",
+              }}
+              value={selectQuarter}
+              onChange={(e) => {
+                setSelectQuarter(e.target.value);
+              }}
+            >
+              {optionsQuarter}
+            </select>
+          </div>
+        </div>
         <div className="areachart" style={{ height: "350px" }}>
           <div className="chart">
             <div className="title">
@@ -322,7 +466,7 @@ const ReportVoucherUsage = () => {
         </div>
       </div>
       {loading && <LoadingScreen />}
-    </>
+    </div>
   );
 };
 
