@@ -129,7 +129,6 @@ public class OrderServiceImpl implements OrderService {
         }
 
         Page<OrderGroup> result = orderGroupRepository.findByTimeFrameOrPickupPointOrDeliverDate(
-                status != null ? status.ordinal() : null,
                 getOldOrderGroup,
                 timeFrameId,
                 pickupPointId,
@@ -138,9 +137,17 @@ public class OrderServiceImpl implements OrderService {
                 pageableWithSort);
         int totalPage = result.getTotalPages();
         long totalGroups = result.getTotalElements();
-        List<OrderGroup> orderGroups = result.stream().toList();
         OrderGroupPageResponse response = new OrderGroupPageResponse();
-        response.setOrderGroups(orderGroups);
+        List<OrderGroup> orderGroups = result.stream().toList();
+        if (status != null) {
+            orderGroups.forEach(orderGroup -> {
+                List<Order> orderFilter = orderGroup.getOrderList().stream().filter(order -> order.getStatus().equals(status.ordinal())).toList();
+                orderGroup.setOrderList(orderFilter);
+            });
+            response.setOrderGroups(orderGroups.stream().filter(orderGroup -> orderGroup.getOrderList().size() > 0).toList());
+        } else {
+            response.setOrderGroups(orderGroups);
+        }
         response.setTotalPages(totalPage);
         response.setTotalGroups(totalGroups);
         return response;
@@ -245,12 +252,19 @@ public class OrderServiceImpl implements OrderService {
                 sortable = Sort.by("deliverDate").descending();
             }
         }
-        return orderBatchRepository.findByDistrictOrDeliverDate(
-                status,
+        List<OrderBatch> orderBatches = orderBatchRepository.findByDistrictOrDeliverDate(
                 getOldOrderBatch,
                 deliveryDate,
                 delivererID,
                 sortable);
+        if (status != null) {
+            orderBatches.forEach(orderBatch -> {
+                List<Order> orderFilter = orderBatch.getOrderList().stream().filter(order -> order.getStatus().equals(status)).toList();
+                orderBatch.setOrderList(orderFilter);
+            });
+            return orderBatches.stream().filter(orderBatch -> orderBatch.getOrderList().size() > 0).toList();
+        }
+        return orderBatches;
     }
 
     @Override
@@ -293,15 +307,36 @@ public class OrderServiceImpl implements OrderService {
         OrderGroup orderGroup = orderGroupRepository.findById(orderGroupId)
                 .orElseThrow(() -> new NoSuchOrderException("Không tìm thấy nhóm đơn hàng với ID " + orderGroupId));
         Staff staff = staffRepository.findByEmail(staffEmail).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với email: " + staffEmail));
-        ProductConsolidationArea productConsolidationArea = productConsolidationAreaRepository.findById(productConsolidationAreaId)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy điểm tập kết với ID: " + productConsolidationAreaId));
-        orderGroup.setProductConsolidationArea(productConsolidationArea);
-        for (Order order : orderGroup.getOrderList()) {
-            order.setPackager(staff);
-            order.setProductConsolidationArea(productConsolidationArea);
-            order.setStatus(OrderStatus.PACKAGING.ordinal());
-            FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
+        if (productConsolidationAreaId != null) {
+            if (orderGroup.getProductConsolidationArea() != null) {
+                for (Order order : orderGroup.getOrderList().stream().filter(order -> order.getStatus() == 0).toList()) {
+                    order.setPackager(staff);
+                    order.setProductConsolidationArea(orderGroup.getProductConsolidationArea());
+                    order.setStatus(OrderStatus.PACKAGING.ordinal());
+                    FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
+                }
+            } else {
+                ProductConsolidationArea productConsolidationArea = productConsolidationAreaRepository.findById(productConsolidationAreaId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy điểm tập kết với ID: " + productConsolidationAreaId));
+                orderGroup.setProductConsolidationArea(productConsolidationArea);
+                for (Order order : orderGroup.getOrderList().stream().filter(order -> order.getStatus() == 0).toList()) {
+                    order.setPackager(staff);
+                    order.setProductConsolidationArea(productConsolidationArea);
+                    order.setStatus(OrderStatus.PACKAGING.ordinal());
+                    FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
+                }
+            }
+        } else {
+            if (orderGroup.getProductConsolidationArea() != null && orderGroup.getOrderList().stream().filter(order -> order.getStatus() > 0).toList().size() > 0) {
+                for (Order order : orderGroup.getOrderList().stream().filter(order -> order.getStatus() == 0).toList()) {
+                    order.setPackager(staff);
+                    order.setProductConsolidationArea(orderGroup.getProductConsolidationArea());
+                    order.setStatus(OrderStatus.PACKAGING.ordinal());
+                    FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
+                }
+            }
         }
+
         return "Nhóm đơn hàng này đã được nhận đóng gói thành công!";
     }
 
@@ -324,10 +359,16 @@ public class OrderServiceImpl implements OrderService {
         OrderGroup orderGroup = orderGroupRepository.findById(orderGroupId)
                 .orElseThrow(() -> new NoSuchOrderException("Không tìm thấy nhóm đơn hàng với ID " + orderGroupId));
         Staff staff = staffRepository.findByEmail(staffEmail).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với email: " + staffEmail));
-        for (Order order : orderGroup.getOrderList()) {
-            order.setPackager(staff);
-            order.setStatus(OrderStatus.PACKAGED.ordinal());
-            FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được đóng gói!", order.getCustomer().getId().toString());
+        for (Order order : orderGroup.getOrderList().stream().filter(order -> order.getStatus() == 1).toList()) {
+            if(orderGroup.getDeliverer() != null){
+                order.setPackager(orderGroup.getDeliverer());
+                order.setStatus(OrderStatus.DELIVERING.ordinal());
+                FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được đóng gói!", order.getCustomer().getId().toString());
+            } else {
+                order.setPackager(staff);
+                order.setStatus(OrderStatus.PACKAGED.ordinal());
+                FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được đóng gói!", order.getCustomer().getId().toString());
+            }
         }
         return "Nhóm đơn hàng này đã được nhận đóng gói thành công!";
     }
