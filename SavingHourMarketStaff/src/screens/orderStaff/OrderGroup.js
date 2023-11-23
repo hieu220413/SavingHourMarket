@@ -52,6 +52,7 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
     { display: 'Chờ đóng gói', value: 'PROCESSING' },
     { display: 'Đang đóng gói', value: 'PACKAGING' },
     { display: 'Đã đóng gói', value: 'PACKAGED' },
+    { display: 'Đã huỷ', value: 'CANCEL' },
   ];
 
   // init fake timeframe
@@ -803,6 +804,7 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
     setTempSelectedDate(new Date());
     // setSelectedDate(new Date());
     console.log('thiet lap lai');
+    setSortModalVisible(!sortModalVisible);
   };
 
   // handle close sort modal
@@ -1215,7 +1217,25 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
           </View>
           <View style={styles.body}>
             {/* Order list */}
-            {orderGroupList.length === 0 ? (
+            {orderGroupList.filter(group => {
+                    if (currentStatus.value === 'PROCESSING') {
+                      return group.productConsolidationArea === null;
+                    }
+                    if (currentStatus.value === 'PACKAGING') {
+                      return (
+                        group.productConsolidationArea !== null &&
+                        group.orderList.find(order => order.status === 1) !==
+                        undefined
+                      );
+                    }
+                    if (currentStatus.value === 'PACKAGED') {
+                      return (
+                        group.productConsolidationArea !== null &&
+                        group.orderList.find(order => order.status === 2) !==
+                        undefined
+                      );
+                    }
+                  }).length === 0 ? (
               <View style={{ alignItems: 'center', justifyContent: 'center' }}>
                 <Image
                   style={{ width: '100%', height: '50%' }}

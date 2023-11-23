@@ -243,6 +243,7 @@ const Home = ({ navigation }) => {
 
   const fetchOrderWithFilter = async () => {
     setLoading(true);
+    console.log('fetch order with filter');
     const tokenId = await auth().currentUser.getIdToken();
     const sortItem = selectSort.find(item => item.active === true);
     setTempSelectedSortId(sortItem ? sortItem.id : '');
