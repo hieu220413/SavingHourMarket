@@ -440,6 +440,8 @@ const HomeDeliver = ({ navigation }) => {
           console.log(err);
         }
       })();
+      console.log(currentOptions.id);
+      fetchOrders(currentOptions.id);
     }, []),
   );
 
