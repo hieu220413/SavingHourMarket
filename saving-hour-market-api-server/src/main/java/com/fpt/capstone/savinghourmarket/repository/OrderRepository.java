@@ -45,7 +45,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "OR " +
             "((:isBatched = TRUE) AND (o.orderBatch IS NOT NULL)))) " +
             "AND " +
-            "((o.paymentMethod = 0) OR ((o.paymentMethod = 1) AND (SIZE(o.transaction) > 0))) " +
+            "((o.paymentMethod = 0) OR ((o.paymentMethod = 1) AND (o.paymentStatus = 1))) " +
             "AND " +
             "(((:isPaid IS NULL) OR (:isPaid = FALSE)) " +
             "OR " +
@@ -79,11 +79,11 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "OR " +
             "((:getOldOrder = TRUE) AND (o.deliveryDate < CURRENT_DATE)))) " +
             "AND " +
-            "((o.paymentMethod = 0) OR ((o.paymentMethod = 1) AND (SIZE(o.transaction) > 0))) " +
+            "((o.paymentMethod = 0) OR ((o.paymentMethod = 1) AND (o.paymentStatus = 1))) " +
             "AND " +
             "(((:isPaid IS NULL) OR (:isPaid = FALSE)) " +
             "OR " +
-            "((:isPaid = TRUE) AND (SIZE(o.transaction) > 0)))"
+            "((:isPaid = TRUE) AND (o.paymentStatus = 1)))"
     )
     List<Order> findOrderForPackageStaff(UUID pickupPointId,
                                          UUID timeFrameId,
