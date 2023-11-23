@@ -365,7 +365,7 @@ public class OrderServiceImpl implements OrderService {
                 order.setStatus(OrderStatus.DELIVERING.ordinal());
                 FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được đóng gói!", order.getCustomer().getId().toString());
             } else {
-                order.setPackager(staff);
+                order.setPackager(staff); 
                 order.setStatus(OrderStatus.PACKAGED.ordinal());
                 FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được đóng gói!", order.getCustomer().getId().toString());
             }
