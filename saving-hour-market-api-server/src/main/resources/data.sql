@@ -26,6 +26,8 @@ SET @orderDateForOrderGroup = '2023-11-27';
 SET @orderDateForFirstOrderGroupForAssignDeliver = '2023-11-22';
 SET @orderDateForSecondOrderGroupForAssignDeliver = '2023-11-22';
 SET @orderDateForThirdOrderGroupForAssignDeliver = '2023-11-23';
+SET @orderDateForOrderSingleForProcessingStatus = '2023-11-27';
+SET @orderDateForOrderSingleForDeliveringStatus = '2023-11-25';
 
 -- Payment method: COD(0), VNPay(1)
 SET @cod = 0;
@@ -617,7 +619,7 @@ INSERT INTO `saving_hour_market`.`orders` (`id`, `total_price`, `total_discount_
             (UUID_TO_BIN('ec5de351-56dc-11ee-8a50-a85e45c41921'), 216000, 0, 0, '2023-11-18 08:00:00', '2023-11-17 19:00:00', @vnpay, @PickupPoint, @paid, null, null, null, null, null, 'qr code url here', @packaging,
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf4d19-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf19db-5541-11ee-8a50-a85e45c41921'), null, null, null, null, null),
 
-            (UUID_TO_BIN('ec5de6e9-56dc-11ee-8a50-a85e45c41921'), 111000, 0, 0, '2023-11-17 15:00:00', '2023-11-19 19:00:00', @cod, @PickupPoint, @unpaid, null, null, null, null, null, 'qr code url here', @delivering,
+            (UUID_TO_BIN('ec5de6e9-56dc-11ee-8a50-a85e45c41921'), 111000, 0, 0, '2023-11-17 15:00:00', '2023-11-19 19:00:00', @cod, @PickupPoint, @unpaid, null, null, null, null, null, 'qr code url here', @packaging,
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf4d19-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf1baa-5541-11ee-8a50-a85e45c41921'), null, null, null, null, null),
 
             (UUID_TO_BIN('a4e3cf39-78cf-11ee-a832-a85e45c41921'), 111000, 0, 0, '2024-1-17 15:00:00', '2023-11-19 19:00:00', @cod, @PickupPoint, @unpaid, null, null, null, null, null, 'qr code url here', @success,
@@ -633,18 +635,18 @@ INSERT INTO `saving_hour_market`.`orders` (`id`, `total_price`, `total_discount_
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), null, null, null, UUID_TO_BIN('ec5e070b-56dc-11ee-8a50-a85e45c41921'), null, null, null),
 --  dummy order for order without any group
     --processing status
-            (UUID_TO_BIN('16fd9342-8078-11ee-bef9-a85e45c41921'), 111111, 0, 16000, '2023-11-18 13:00:00', '2023-11-20 13:00:00', @vnpay, @DoorToDoor, @paid, '640 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.84472, 106.82994, 'qr code url here', @processing,
+            (UUID_TO_BIN('16fd9342-8078-11ee-bef9-a85e45c41921'), 111111, 0, 16000, '2023-11-18 13:00:00', @orderDateForOrderSingleForProcessingStatus, @vnpay, @DoorToDoor, @paid, '640 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.84472, 106.82994, 'qr code url here', @processing,
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), null, null, null, UUID_TO_BIN('ec5e099f-56dc-11ee-8a50-a85e45c41921'), null, UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), null),
-            (UUID_TO_BIN('16fd9404-8078-11ee-bef9-a85e45c41921'), 111111, 0, 16000, '2023-11-18 13:00:00', '2023-11-20 13:00:00', @vnpay, @DoorToDoor, @paid, '640 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.84472, 106.82994, 'qr code url here', @processing,
+            (UUID_TO_BIN('16fd9404-8078-11ee-bef9-a85e45c41921'), 111111, 0, 16000, '2023-11-18 13:00:00', @orderDateForOrderSingleForProcessingStatus, @vnpay, @DoorToDoor, @paid, '640 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.84472, 106.82994, 'qr code url here', @processing,
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), null, null, null, UUID_TO_BIN('ec5e0855-56dc-11ee-8a50-a85e45c41921'), null, UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), null),
-            (UUID_TO_BIN('16fd94c6-8078-11ee-bef9-a85e45c41921'), 111111, 0, 16000, '2023-11-18 13:00:00', '2023-11-20 13:00:00', @vnpay, @DoorToDoor, @paid, '640 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.84472, 106.82994, 'qr code url here', @processing,
+            (UUID_TO_BIN('16fd94c6-8078-11ee-bef9-a85e45c41921'), 111111, 0, 16000, '2023-11-18 13:00:00', @orderDateForOrderSingleForProcessingStatus, @vnpay, @DoorToDoor, @paid, '640 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.84472, 106.82994, 'qr code url here', @processing,
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), null, null, null, UUID_TO_BIN('ec5e070b-56dc-11ee-8a50-a85e45c41921'), null, UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), null),
     --delivering status (for nguoigiaohang1 - ec5e00f7-56dc-11ee-8a50-a85e45c41921 + QR code)
-            (UUID_TO_BIN('b0eebddf-dc69-4494-8217-03146ebbf7f1'), 111111, 0, 16000, '2023-11-18 13:00:00', '2023-11-20 13:00:00', @vnpay, @DoorToDoor, @paid, '178 Phước Thiện, Quận 9, Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.84472, 106.82994, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/Order_QR_code%2Fb0eebddf-dc69-4494-8217-03146ebbf7f1.png?alt=media', @delivering,
+            (UUID_TO_BIN('b0eebddf-dc69-4494-8217-03146ebbf7f1'), 111111, 0, 16000, '2023-11-18 13:00:00', @orderDateForOrderSingleForDeliveringStatus, @vnpay, @DoorToDoor, @paid, '178 Phước Thiện, Quận 9, Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.84472, 106.82994, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/Order_QR_code%2Fb0eebddf-dc69-4494-8217-03146ebbf7f1.png?alt=media', @delivering,
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), null, null, null, UUID_TO_BIN('ec5e099f-56dc-11ee-8a50-a85e45c41921'), null, UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e00f7-56dc-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('39011105-9258-4f6c-bc5e-1faca44abfee'), 111111, 0, 16000, '2023-11-18 13:00:00', '2023-11-20 13:00:00', @vnpay, @DoorToDoor, @paid, '188 Phước Thiện, Quận 9, Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.84472, 106.82994, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/Order_QR_code%2F39011105-9258-4f6c-bc5e-1faca44abfee.png?alt=media', @delivering,
+            (UUID_TO_BIN('39011105-9258-4f6c-bc5e-1faca44abfee'), 111111, 0, 16000, '2023-11-18 13:00:00', @orderDateForOrderSingleForDeliveringStatus, @vnpay, @DoorToDoor, @paid, '188 Phước Thiện, Quận 9, Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.84472, 106.82994, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/Order_QR_code%2F39011105-9258-4f6c-bc5e-1faca44abfee.png?alt=media', @delivering,
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), null, null, null, UUID_TO_BIN('ec5e0855-56dc-11ee-8a50-a85e45c41921'), null, UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e00f7-56dc-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('1b2eb7c3-e86a-4799-8877-828c2ac9c66f'), 111111, 0, 16000, '2023-11-18 13:00:00', '2023-11-20 13:00:00', @vnpay, @DoorToDoor, @paid, '200 Phước Thiện, Quận 9, Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.84472, 106.82994, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/Order_QR_code%2F1b2eb7c3-e86a-4799-8877-828c2ac9c66f.png?alt=media', @delivering,
+            (UUID_TO_BIN('1b2eb7c3-e86a-4799-8877-828c2ac9c66f'), 111111, 0, 16000, '2023-11-18 13:00:00', @orderDateForOrderSingleForDeliveringStatus, @vnpay, @DoorToDoor, @paid, '200 Phước Thiện, Quận 9, Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.84472, 106.82994, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/Order_QR_code%2F1b2eb7c3-e86a-4799-8877-828c2ac9c66f.png?alt=media', @delivering,
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), null, null, null, UUID_TO_BIN('ec5e0855-56dc-11ee-8a50-a85e45c41921'), null, UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e00f7-56dc-11ee-8a50-a85e45c41921')),
 
 
