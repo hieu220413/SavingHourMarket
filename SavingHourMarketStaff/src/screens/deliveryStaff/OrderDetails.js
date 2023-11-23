@@ -182,7 +182,9 @@ const OrderDetails = ({ navigation, route }) => {
                             paddingBottom: 180,
                         }}
                     >
-                        <View style={{ padding: 20, backgroundColor: COLORS.primary }}>
+                        <View style={
+                            item?.status === 5 && 'Đơn hàng thất bại' ?
+                                { padding: 20, backgroundColor: COLORS.red } : { padding: 20, backgroundColor: COLORS.primary }}>
                             <Text
                                 style={{ color: 'white', fontSize: 18, fontFamily: 'Roboto' }}>
                                 {item?.status === 0 && 'Đơn hàng đang chờ xác nhận'}
@@ -654,6 +656,50 @@ const OrderDetails = ({ navigation, route }) => {
                                     fontWeight: 'bold',
                                 }}>
                                 Xác nhận đơn hàng
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )}
+
+            {item?.status === 3 && !isScaned && (
+                <View
+                    style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        backgroundColor: 'white',
+                        borderTopColor: 'transparent',
+                        height: 70,
+                        width: '100%',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginTop: 20,
+                        elevation: 10,
+                    }}>
+                    <View style={{ width: '95%' }}>
+                        <TouchableOpacity
+                            onPress={() => {
+                                confirmOrder(false);
+                            }}
+                            style={{
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                backgroundColor: COLORS.red,
+                                paddingVertical: 10,
+                                width: '100%',
+                                borderRadius: 30,
+                            }}>
+                            <Text
+                                style={{
+                                    fontSize: 18,
+                                    color: 'white',
+                                    fontFamily: 'Roboto',
+                                    fontWeight: 'bold',
+                                }}>
+                                Giao hàng thất bại
                             </Text>
                         </TouchableOpacity>
                     </View>
