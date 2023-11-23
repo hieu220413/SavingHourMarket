@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -102,7 +103,7 @@ public class StaffController {
     }
 
     @RequestMapping(value = "/getStaffForAdmin", method = RequestMethod.GET)
-    public ResponseEntity<StaffListResponseBody> getStaffForAdmin(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+    public ResponseEntity<StaffListForAdminResponseBody> getStaffForAdmin(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
             , @RequestParam(required = false) EnableDisableStatus status
             , @RequestParam(required = false) StaffRole role
             , @RequestParam(defaultValue = "") String name
@@ -110,7 +111,7 @@ public class StaffController {
             , @RequestParam(defaultValue = "5") Integer limit) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        StaffListResponseBody staffListResponseBody = staffService.getStaffForAdmin(name, role, status, page, limit);
+        StaffListForAdminResponseBody staffListResponseBody = staffService.getStaffForAdmin(name, role, status, page, limit);
         return ResponseEntity.status(HttpStatus.OK).body(staffListResponseBody);
     }
 
@@ -150,5 +151,48 @@ public class StaffController {
         Staff staff = staffService.updateStaffRole(staffRoleUpdateRequestBody, email);
         return ResponseEntity.status(HttpStatus.OK).body(staff);
     }
+
+    @RequestMapping(value = "/updateDeliversForDeliverManager", method = RequestMethod.PUT)
+    public ResponseEntity<Staff> updateDeliversForDeliverManager(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @RequestBody @Valid DeliversAssignmentToManager deliversAssignmentToManager) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        Staff staff = staffService.updateDeliversForDeliverManager(deliversAssignmentToManager);
+        return ResponseEntity.status(HttpStatus.OK).body(staff);
+    }
+
+    @RequestMapping(value = "/updateDeliverManagerForDeliver", method = RequestMethod.PUT)
+    public ResponseEntity<Staff> updateDeliverManagerForDeliver(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @RequestParam UUID deliverId, @RequestParam UUID deliverManagerId) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        Staff staff = staffService.updateDeliverManagerForDeliver(deliverId, deliverManagerId);
+        return ResponseEntity.status(HttpStatus.OK).body(staff);
+    }
+
+    @RequestMapping(value = "/getAllDeliverForAdmin", method = RequestMethod.GET)
+    public ResponseEntity<List<Staff>> getAllDeliverForAdmin(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        List<Staff> staffList = staffService.getAllDeliverForAdmin();
+        return ResponseEntity.status(HttpStatus.OK).body(staffList);
+    }
+
+    @RequestMapping(value = "/getAllDeliverManagerForAdmin", method = RequestMethod.GET)
+    public ResponseEntity<List<Staff>> getAllDeliverManagerForAdmin(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        List<Staff> staffList = staffService.getAllDeliverManagerForAdmin();
+        return ResponseEntity.status(HttpStatus.OK).body(staffList);
+    }
+
+//    @RequestMapping(value = "/getAllDeliverForDeliverManager", method = RequestMethod.GET)
+//    public ResponseEntity<List<Staff>> getAllDeliverForDeliverManager(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+//            , @RequestParam UUID deliverManagerId) throws FirebaseAuthException {
+//        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+//        Utils.validateIdToken(idToken, firebaseAuth);
+//        List<Staff> staff = staffService.updateDeliversForDeliverManager(deliversAssignmentToManager);
+//        return ResponseEntity.status(HttpStatus.OK).body(staff);
+//    }
 
 }

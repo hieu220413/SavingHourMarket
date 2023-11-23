@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
@@ -183,15 +184,15 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public StaffListResponseBody getStaffForAdmin(String name, StaffRole role, EnableDisableStatus status, Integer page, Integer limit) {
+    public StaffListForAdminResponseBody getStaffForAdmin(String name, StaffRole role, EnableDisableStatus status, Integer page, Integer limit) {
         Pageable pageable = PageRequest.of(page, limit);
         Page<Staff> result = staffRepository.getStaffForAdmin(name, role == null ? null : role.toString(), status == null ? null : status.ordinal(), pageable);
         int totalPage = result.getTotalPages();
         long totalCustomer = result.getTotalElements();
 
-        List<Staff> staffList = result.stream().toList();
+        List<StaffForAdmin> staffList = result.stream().map(StaffForAdmin::new).collect(Collectors.toList());
 
-        return new StaffListResponseBody(staffList, totalPage, totalCustomer);
+        return new StaffListForAdminResponseBody(staffList, totalPage, totalCustomer);
     }
 
     @Override
@@ -238,6 +239,13 @@ public class StaffServiceImpl implements StaffService {
         UserRecord userRecord = checkIsStaffInOrderProcess(staff);
 
         Map<String, Object> claims = new HashMap<>();
+        if(staff.get().getRole().equals(StaffRole.STAFF_ORD)) {
+            staff.get().getPickupPoint().clear();
+        }
+        if(staff.get().getRole().equals(StaffRole.STAFF_DLV_1)) {
+            staff.get().getDeliverStaffList().forEach(deliverStaff -> deliverStaff.setDeliverManagerStaff(null));
+            staff.get().getDeliverStaffList().clear();
+        }
         staff.get().setRole(staffRoleUpdateRequestBody.getRole().toString());
         claims.put("user_role", staffRoleUpdateRequestBody.getRole().toString());
         firebaseAuth.setCustomUserClaims(userRecord.getUid(), claims);
@@ -562,6 +570,85 @@ public class StaffServiceImpl implements StaffService {
 //        long totalCustomer = result.getTotalElements();
 
         return new StaffListResponseBody(staffList, null, null);
+    }
+
+    @Override
+    @Transactional
+    public Staff updateDeliversForDeliverManager(DeliversAssignmentToManager deliversAssignmentToManager) {
+        HashMap errorFields = new HashMap<>();
+
+        Optional<Staff> deliverManager = staffRepository.findByIdByDeliverManagerRole(deliversAssignmentToManager.getDeliverManagerId(), StaffRole.STAFF_DLV_1.toString());
+        if(!deliverManager.isPresent()){
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_NOT_FOUND.getCode()), AdditionalResponseCode.STAFF_NOT_FOUND.toString());
+        }
+
+        List<Staff> deliverStaffList = staffRepository.findAllByIdByDeliverRole(deliversAssignmentToManager.getDeliverIdList(), StaffRole.STAFF_DLV_0.toString());
+        HashMap<UUID, Staff> deliverStaffHashMap = new HashMap();
+        deliverStaffList.forEach(staff -> deliverStaffHashMap.put(staff.getId(), staff));
+
+        HashSet<UUID> deliverStaffNotFoundIdList = new HashSet<>();
+        for (UUID deliverStaffId : deliversAssignmentToManager.getDeliverIdList()) {
+            if(!deliverStaffHashMap.containsKey(deliverStaffId)) {
+                deliverStaffNotFoundIdList.add(deliverStaffId);
+            }
+        }
+
+        if(deliverStaffNotFoundIdList.size() > 0) {
+            errorFields.put("deliverIdList", "Deliver staff id " + deliverStaffNotFoundIdList.stream().map(UUID::toString).collect(Collectors.joining(",")) + " not found");
+        }
+
+        if(errorFields.size() > 0){
+            throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
+        }
+
+//       clear deliverStaffList
+        deliverManager.get().getDeliverStaffList().forEach(deliver -> deliver.setDeliverManagerStaff(null));
+        deliverManager.get().getDeliverStaffList().clear();
+
+//       add new deliverStaffList
+        deliverManager.get().setDeliverStaffList(deliverStaffList);
+        deliverStaffList.forEach(deliver -> deliver.setDeliverManagerStaff(deliverManager.get()));
+
+        return deliverManager.get();
+    }
+
+    @Override
+    @Transactional
+    public Staff updateDeliverManagerForDeliver(UUID deliverId, UUID deliverManagerId) {
+        Optional<Staff> deliverManager = staffRepository.findByIdByDeliverManagerRole(deliverManagerId, StaffRole.STAFF_DLV_1.toString());
+        Optional<Staff> deliver = staffRepository.findByIdByDeliverRole(deliverId, StaffRole.STAFF_DLV_0.toString());
+        if(!deliverManager.isPresent() || !deliver.isPresent()){
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_NOT_FOUND.getCode()), AdditionalResponseCode.STAFF_NOT_FOUND.toString());
+        }
+
+        // remove old manager
+        if(deliver.get().getDeliverManagerStaff() != null){
+            deliver.get().getDeliverManagerStaff().getDeliverStaffList().removeIf(d -> d.getId() == deliverId);
+            deliver.get().setDeliverManagerStaff(null);
+        }
+
+        // assign new manager
+        deliver.get().setDeliverManagerStaff(deliverManager.get());
+        deliver.get().getDeliverManagerStaff().getDeliverStaffList().add(deliver.get());
+
+        return deliver.get();
+    }
+
+    @Override
+    public List<Staff> getAllDeliverForAdmin() {
+        List<Staff> deliverList = staffRepository.findAllByDeliverRole(StaffRole.STAFF_DLV_0.toString());
+        deliverList.sort((d1, d2) -> {
+            if(d1.getDeliverManagerStaff() != null && d2.getDeliverManagerStaff() == null) return 1;
+            if(d1.getDeliverManagerStaff() == null && d2.getDeliverManagerStaff() != null) return -1;
+            return 0;
+        });
+        return deliverList;
+    }
+
+    @Override
+    public List<Staff> getAllDeliverManagerForAdmin() {
+        List<Staff> deliverManagerList = staffRepository.findAllByDeliverManagerRole(StaffRole.STAFF_DLV_1.toString());
+        return deliverManagerList;
     }
 
     private UserRecord checkIsStaffInOrderProcess(Optional<Staff> staff) throws FirebaseAuthException {

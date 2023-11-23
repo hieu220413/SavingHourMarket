@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public interface StaffService {
@@ -27,7 +28,7 @@ public interface StaffService {
 
     Staff getStaffByEmail(String email);
 
-    StaffListResponseBody getStaffForAdmin(String name, StaffRole role, EnableDisableStatus status, Integer page, Integer limit);
+    StaffListForAdminResponseBody getStaffForAdmin(String name, StaffRole role, EnableDisableStatus status, Integer page, Integer limit);
 
     Staff updateStaffAccountStatus(AccountStatusChangeBody accountStatusChangeBody, String email) throws FirebaseAuthException;
 
@@ -38,4 +39,12 @@ public interface StaffService {
     Staff unAssignPickupPoint(StaffPickupPointAssignmentBody staffPickupPointAssignmentBody);
 
     StaffListResponseBody getStaffForDeliverManager(String name, OrderType orderType, LocalDate deliverDate, UUID timeFrameId, UUID orderBatchId, UUID orderGroupId, UUID deliverMangerId);
+
+    Staff updateDeliversForDeliverManager(DeliversAssignmentToManager deliversAssignmentToManager);
+
+    List<Staff> getAllDeliverForAdmin();
+
+    List<Staff> getAllDeliverManagerForAdmin();
+
+    Staff updateDeliverManagerForDeliver(UUID deliverId, UUID deliverManagerId);
 }
