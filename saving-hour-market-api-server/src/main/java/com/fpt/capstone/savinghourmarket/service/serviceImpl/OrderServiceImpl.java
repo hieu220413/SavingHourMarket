@@ -141,7 +141,11 @@ public class OrderServiceImpl implements OrderService {
         List<OrderGroup> orderGroups = result.stream().toList();
         if (status != null) {
             orderGroups.forEach(orderGroup -> {
-                List<Order> orderFilter = orderGroup.getOrderList().stream().filter(order -> order.getStatus().equals(status.ordinal())).toList();
+                List<Order> orderFilter = orderGroup.getOrderList()
+                        .stream()
+                        .filter(order -> order.getStatus().equals(status.ordinal())
+                                && ((order.getPaymentMethod() == 1 && order.getTransaction().size() > 0) || order.getPaymentMethod() == 0))
+                        .toList();
                 orderGroup.setOrderList(orderFilter);
             });
             response.setOrderGroups(orderGroups.stream().filter(orderGroup -> orderGroup.getOrderList().size() > 0).toList());
@@ -173,7 +177,7 @@ public class OrderServiceImpl implements OrderService {
             pageableWithSort = PageRequest.of(page, size);
         }
 
-        return orderGroupRepository.findByTimeFrameOrPickupPointOrDeliverDateForPackageStaff(
+        List<OrderGroup> orderGroups = orderGroupRepository.findByTimeFrameOrPickupPointOrDeliverDateForPackageStaff(
                 pickupPointListOfStaff,
                 getOldOrderGroup,
                 timeFrameId,
@@ -181,6 +185,12 @@ public class OrderServiceImpl implements OrderService {
                 delivererId,
                 deliverDate,
                 pageableWithSort);
+        orderGroups.forEach(orderGroup -> {
+            List<Order> orders = orderGroup.getOrderList()
+                    .stream().filter(order -> (order.getPaymentMethod() == 1 && order.getTransaction().size() > 0) || order.getPaymentMethod() == 0).toList();
+            orderGroup.setOrderList(orders);
+        });
+        return orderGroups;
     }
 
     @Override
@@ -360,7 +370,7 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new NoSuchOrderException("Không tìm thấy nhóm đơn hàng với ID " + orderGroupId));
         Staff staff = staffRepository.findByEmail(staffEmail).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với email: " + staffEmail));
         for (Order order : orderGroup.getOrderList().stream().filter(order -> order.getStatus() == 1).toList()) {
-            if(orderGroup.getDeliverer() != null){
+            if (orderGroup.getDeliverer() != null) {
                 order.setPackager(orderGroup.getDeliverer());
                 order.setStatus(OrderStatus.DELIVERING.ordinal());
                 FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được đóng gói!", order.getCustomer().getId().toString());
