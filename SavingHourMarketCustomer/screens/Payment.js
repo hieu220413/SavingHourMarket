@@ -114,17 +114,10 @@ const Payment = ({navigation, route}) => {
   );
 
   useEffect(() => {
-    const getPickupPoint = async () => {
-      const value = await AsyncStorage.getItem('PickupPoint');
-      setPickupPoint(value ? JSON.parse(value) : pickupPoint);
-    };
-  }, []);
-
-  useEffect(() => {
     const getShippingFee = async () => {
       const idToken = await auth().currentUser.getIdToken();
       fetch(
-        `${API.baseURL}/api/order/getShippingFeeDetail?latitude=${customerLocation.lat}&longitude=${customerLocation.long}&pickupPointId=${pickupPoint.id}`,
+        `${API.baseURL}/api/order/getShippingFeeDetail?latitude=${customerLocation.lat}&longitude=${customerLocation.long}`,
         {
           method: 'GET',
           // truyen idToken vao
@@ -136,7 +129,6 @@ const Payment = ({navigation, route}) => {
       )
         .then(res => res.json())
         .then(respond => {
-          console.log(respond);
           if (respond.error) {
             return;
           }
@@ -145,7 +137,7 @@ const Payment = ({navigation, route}) => {
         .catch(err => console.log(err));
     };
     getShippingFee();
-  }, [customerLocation, pickupPoint]);
+  }, [customerLocation]);
 
   //VNPAY function/param
   const orderIdDummy = useRef('ec5dcac6-56dc-11ee-8a50-a85e45c41921');

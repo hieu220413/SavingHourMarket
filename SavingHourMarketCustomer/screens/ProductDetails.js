@@ -8,12 +8,12 @@ import {
   ScrollView,
   StyleSheet,
 } from 'react-native';
-import React, {useCallback, useState, useRef, useMemo} from 'react';
-import {icons} from '../constants';
-import {COLORS, FONTS} from '../constants/theme';
+import React, { useCallback, useState, useRef, useMemo } from 'react';
+import { icons } from '../constants';
+import { COLORS, FONTS } from '../constants/theme';
 import dayjs from 'dayjs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useFocusEffect} from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import Modal, {
   ModalFooter,
   ModalButton,
@@ -27,9 +27,9 @@ import BottomSheet, {
   BottomSheetModalProvider,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import {format} from 'date-fns';
+import { format } from 'date-fns';
 
-const ProductDetails = ({navigation, route}) => {
+const ProductDetails = ({ navigation, route }) => {
   const product = route.params.product;
   const pickupPointId = route.params.pickupPointId;
   const [cartList, setCartList] = useState([]);
@@ -46,7 +46,6 @@ const ProductDetails = ({navigation, route}) => {
   const [selectedProductBatch, setSelectedProductBatch] = useState(null);
   var minPrice = Math.min(...productBatchList.map(item => item.price));
   var maxPrice = Math.max(...productBatchList.map(item => item.price));
-  const [cartQuantity, setCartQuantity] = useState(1);
 
   const totalQuantity = productBatchList.reduce(
     (sum, item) => item.quantity + sum,
@@ -57,7 +56,7 @@ const ProductDetails = ({navigation, route}) => {
   const bottomSheetRef = useRef(null);
 
   // variables
-  const snapPoints = useMemo(() => ['70%'], []);
+  const snapPoints = useMemo(() => ['60%'], []);
 
   const handlePresentBottomSheet = useCallback(() => {
     // bottomSheetRef.current?.present();
@@ -77,9 +76,7 @@ const ProductDetails = ({navigation, route}) => {
     useCallback(() => {
       (async () => {
         try {
-          const cartList = await AsyncStorage.getItem(
-            'CartList' + pickupPointId,
-          );
+          const cartList = await AsyncStorage.getItem('CartList'+pickupPointId);
           setCartList(cartList ? JSON.parse(cartList) : []);
         } catch (err) {
           console.log(err);
@@ -110,7 +107,7 @@ const ProductDetails = ({navigation, route}) => {
           idList: selectedProductBatch.idList,
         },
       ];
-
+      
       await AsyncStorage.setItem('OrderItems', JSON.stringify(orderItem));
       navigation.navigate('Payment');
     } catch (error) {
@@ -130,7 +127,7 @@ const ProductDetails = ({navigation, route}) => {
         return;
       }
 
-      const jsonValue = await AsyncStorage.getItem('CartList' + pickupPointId);
+      const jsonValue = await AsyncStorage.getItem('CartList'+pickupPointId);
       let newCartList = jsonValue ? JSON.parse(jsonValue) : [];
       const itemExisted = newCartList.some(
         item =>
@@ -139,17 +136,12 @@ const ProductDetails = ({navigation, route}) => {
       );
       if (itemExisted) {
         const index = newCartList.findIndex(item => item.id === data.id);
-        newCartList[index].cartQuantity =
-          newCartList[index].cartQuantity + cartQuantity;
+        newCartList[index].cartQuantity = newCartList[index].cartQuantity + 1;
         setCartList(newCartList);
-        await AsyncStorage.setItem(
-          'CartList' + pickupPointId,
-          JSON.stringify(newCartList),
-        );
+        await AsyncStorage.setItem('CartList'+pickupPointId, JSON.stringify(newCartList));
         setIndex(-1);
         bottomSheetRef.current?.close();
         setSelectedProductBatch(null);
-        setCartQuantity(1);
         showToast();
         return;
       }
@@ -161,19 +153,15 @@ const ProductDetails = ({navigation, route}) => {
         priceOriginal: selectedProductBatch.priceOriginal,
         expiredDate: selectedProductBatch.expiredDate,
         isChecked: false,
-        cartQuantity: cartQuantity,
+        cartQuantity: 1,
       };
       newCartList = [...newCartList, cartData];
       setCartList(newCartList);
 
-      setIndex(-1);
+      setIndex(-1)
       bottomSheetRef.current?.close();
-      setSelectedProductBatch(null);
-      setCartQuantity(1);
-      await AsyncStorage.setItem(
-        'CartList' + pickupPointId,
-        JSON.stringify(newCartList),
-      );
+      setSelectedProductBatch(null)
+      await AsyncStorage.setItem('CartList'+pickupPointId, JSON.stringify(newCartList));
       showToast();
     } catch (error) {
       console.log(error);
@@ -197,7 +185,7 @@ const ProductDetails = ({navigation, route}) => {
           <Image
             source={icons.leftArrow}
             resizeMode="contain"
-            style={{width: 35, height: 35, tintColor: COLORS.primary}}
+            style={{ width: 35, height: 35, tintColor: COLORS.primary }}
           />
         </TouchableOpacity>
         <Text
@@ -242,7 +230,7 @@ const ProductDetails = ({navigation, route}) => {
                 justifyContent: 'center',
               }}>
               <Text
-                style={{fontSize: 12, color: 'white', fontFamily: 'Roboto'}}>
+                style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
                 {cartList.length}
               </Text>
             </View>
@@ -255,10 +243,12 @@ const ProductDetails = ({navigation, route}) => {
           style={{
             height: 250,
           }}
-          activeDotColor="#37A65B"
+          activeDotColor='#37A65B'
           showsButtons={false}>
           {product?.imageUrlImageList.map((item, index) => (
-            <View key={index}>
+            <View
+              key={index}
+            >
               <Image
                 style={{
                   width: '85%',
@@ -284,7 +274,7 @@ const ProductDetails = ({navigation, route}) => {
                     borderWidth: 1,
                     borderColor: 'black',
                     borderRadius: 10,
-                    backgroundColor: 'white',
+                    backgroundColor: 'white'
                   }}>
                   <Text
                     style={{
@@ -360,7 +350,7 @@ const ProductDetails = ({navigation, route}) => {
             alignItems: 'center',
             justifyContent: 'space-between',
           }}>
-          <View style={{flexDirection: 'row'}}>
+          <View style={{ flexDirection: 'row' }}>
             <Text
               style={{
                 fontSize: 24,
@@ -449,7 +439,7 @@ const ProductDetails = ({navigation, route}) => {
             />
             <ModalButton
               text="Đăng nhập"
-              textStyle={{color: COLORS.primary}}
+              textStyle={{ color: COLORS.primary }}
               onPress={async () => {
                 try {
                   await AsyncStorage.removeItem('userInfo');
@@ -464,7 +454,7 @@ const ProductDetails = ({navigation, route}) => {
           </ModalFooter>
         }>
         <View
-          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
+          style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
           <Text
             style={{
               fontSize: 20,
@@ -497,7 +487,7 @@ const ProductDetails = ({navigation, route}) => {
           </ModalFooter>
         }>
         <View
-          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
+          style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
           <Text
             style={{
               fontSize: 20,
@@ -515,7 +505,7 @@ const ProductDetails = ({navigation, route}) => {
           enableOverDrag={false}
           index={index}
           snapPoints={snapPoints}>
-          <View style={{padding: 3}}>
+          <View style={{ padding: 3 }}>
             <View
               style={{
                 flexDirection: 'row',
@@ -533,9 +523,9 @@ const ProductDetails = ({navigation, route}) => {
                   borderRadius: 20,
                 }}
                 resizeMode="contain"
-                source={{uri: product.imageUrlImageList[0].imageUrl}}
+                source={{ uri: product.imageUrlImageList[0].imageUrl }}
               />
-              <View style={{flex: 6, justifyContent: 'space-between'}}>
+              <View style={{ flex: 6, justifyContent: 'space-between' }}>
                 <View></View>
                 <View>
                   <Text
@@ -546,16 +536,24 @@ const ProductDetails = ({navigation, route}) => {
                     }}>
                     {minPrice === maxPrice
                       ? `${minPrice.toLocaleString('vi-VN', {
-                          style: 'currency',
-                          currency: 'VND',
-                        })}`
+                        style: 'currency',
+                        currency: 'VND',
+                      })}`
                       : `${minPrice.toLocaleString('vi-VN', {
-                          style: 'currency',
-                          currency: 'VND',
-                        })} - ${maxPrice.toLocaleString('vi-VN', {
-                          style: 'currency',
-                          currency: 'VND',
-                        })}`}
+                        style: 'currency',
+                        currency: 'VND',
+                      })} - ${maxPrice.toLocaleString('vi-VN', {
+                        style: 'currency',
+                        currency: 'VND',
+                      })}`}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      color: 'black',
+                      fontFamily: FONTS.fontFamily,
+                    }}>
+                    Kho: {totalQuantity}
                   </Text>
                 </View>
               </View>
@@ -564,9 +562,9 @@ const ProductDetails = ({navigation, route}) => {
                   bottomSheetRef.current?.close();
                   setIndex(-1);
                 }}
-                style={{flex: 1}}>
+                style={{ flex: 1 }}>
                 <Image
-                  style={{width: 25, height: 25}}
+                  style={{ width: 25, height: 25 }}
                   resizeMode="contain"
                   source={icons.cross}
                 />
@@ -576,149 +574,76 @@ const ProductDetails = ({navigation, route}) => {
           <BottomSheetScrollView>
             <View
               style={{
+                paddingHorizontal: 15,
                 paddingBottom: 15,
                 marginBottom: 140,
               }}>
-              <View style={{paddingHorizontal: 15}}>
-                <Text
-                  style={{
-                    fontSize: 18,
-                    color: 'black',
-                    fontFamily: FONTS.fontFamily,
-                    fontWeight: 'bold',
-                    marginTop: 10,
-                    marginBottom: 10,
-                  }}>
-                  Lô hàng :
-                </Text>
-                {productBatchList.map((item, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() => {
-                      setSelectedProductBatch(item);
-                    }}
-                    style={{
-                      borderColor: '#c8c8c8',
-                      borderWidth: 0.2,
-                      borderRadius: 10,
-                      marginTop: 10,
-                      marginBottom: 10,
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      flexDirection: 'row',
-                      backgroundColor:
-                        item.idList === selectedProductBatch?.idList
-                          ? COLORS.primary
-                          : '#F5F5F5',
-                    }}>
-                    <Text
-                      style={{
-                        paddingHorizontal: 20,
-                        paddingVertical: 10,
-                        textAlign: 'center',
-                        color:
-                          item.idList === selectedProductBatch?.idList
-                            ? 'white'
-                            : 'black',
-                        fontFamily: FONTS.fontFamily,
-                        fontWeight: 'bold',
-                        fontSize: 14,
-                      }}>
-                      HSD: {format(new Date(item.expiredDate), 'dd/MM/yyyy')}
-                    </Text>
-                    <Text
-                      style={{
-                        paddingHorizontal: 20,
-                        paddingVertical: 10,
-                        textAlign: 'center',
-                        color:
-                          item.idList === selectedProductBatch?.idList
-                            ? 'white'
-                            : 'black',
-                        fontFamily: FONTS.fontFamily,
-                        fontWeight: 'bold',
-                        fontSize: 14,
-                      }}>
-                      {item.price.toLocaleString('vi-VN', {
-                        style: 'currency',
-                        currency: 'VND',
-                      })}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-
-              <View
+              <Text
                 style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  borderTopColor: '#decbcb',
-                  borderTopWidth: 0.43,
-                  paddingHorizontal: 15,
-                  marginTop: 20,
-                  paddingTop: 10,
+                  fontSize: 18,
+                  color: 'black',
+                  fontFamily: FONTS.fontFamily,
+                  fontWeight: 'bold',
+                  marginTop: 10,
+                  marginBottom: 10,
                 }}>
-                <Text
+                Lô hàng :
+              </Text>
+              {productBatchList.map((item, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => {
+                    setSelectedProductBatch(item);
+                  }}
                   style={{
-                    fontSize: 18,
-                    color: 'black',
-                    fontFamily: FONTS.fontFamily,
-                    fontWeight: 'bold',
+                    borderColor: '#c8c8c8',
+                    borderWidth: 0.2,
+                    borderRadius: 10,
                     marginTop: 10,
                     marginBottom: 10,
-                  }}>
-                  Số lượng :
-                </Text>
-
-                <View
-                  style={{
-                    flexDirection: 'row',
                     alignItems: 'center',
-                    gap: 12,
+                    justifyContent: 'space-between',
+                    flexDirection: 'row',
+                    backgroundColor:
+                      item.idList === selectedProductBatch?.idList
+                        ? COLORS.primary
+                        : '#F5F5F5',
                   }}>
-                  <TouchableOpacity
-                    onPress={() => {
-                      if (cartQuantity > 1) {
-                        setCartQuantity(cartQuantity - 1);
-                      }
-                    }}
-                    style={{
-                      backgroundColor: '#F5F5F5',
-                      borderRadius: 5,
-                      padding: 5,
-                    }}>
-                    <Image
-                      resizeMode="contain"
-                      style={{height: 20, width: 20}}
-                      source={icons.minus}
-                    />
-                  </TouchableOpacity>
                   <Text
                     style={{
-                      fontSize: 22,
-                      color: 'black',
-                      fontFamily: 'Roboto',
+                      paddingHorizontal: 20,
+                      paddingVertical: 10,
+                      textAlign: 'center',
+                      color:
+                        item.idList === selectedProductBatch?.idList
+                          ? 'white'
+                          : 'black',
+                      fontFamily: FONTS.fontFamily,
+                      fontWeight: 'bold',
+                      fontSize: 14,
                     }}>
-                    {cartQuantity}
+                    HSD: {format(new Date(item.expiredDate), 'dd/MM/yyyy')}
                   </Text>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setCartQuantity(cartQuantity + 1);
-                    }}
+                  <Text
                     style={{
-                      backgroundColor: '#F5F5F5',
-                      borderRadius: 5,
-                      padding: 5,
+                      paddingHorizontal: 20,
+                      paddingVertical: 10,
+                      textAlign: 'center',
+                      color:
+                        item.idList === selectedProductBatch?.idList
+                          ? 'white'
+                          : 'black',
+                      fontFamily: FONTS.fontFamily,
+                      fontWeight: 'bold',
+                      fontSize: 14,
                     }}>
-                    <Image
-                      resizeMode="contain"
-                      style={{height: 20, width: 20}}
-                      source={icons.plus}
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
+                    {item.price.toLocaleString('vi-VN', {
+                      style: 'currency',
+                      currency: 'VND',
+                    })}
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </View>
           </BottomSheetScrollView>
           <View
@@ -739,7 +664,7 @@ const ProductDetails = ({navigation, route}) => {
               marginTop: 20,
               elevation: 10,
             }}>
-            <View style={{width: '95%'}}>
+            <View style={{ width: '95%' }}>
               <TouchableOpacity
                 onPress={() => {
                   isAddToCart ? handleAddToCart(product) : handleBuy();

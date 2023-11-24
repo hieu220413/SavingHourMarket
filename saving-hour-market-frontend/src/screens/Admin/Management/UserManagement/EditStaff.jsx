@@ -49,15 +49,6 @@ const EditStaff = ({
   const handleOpenDeleteDialog = () => setOpenDeleteDialog(true);
   const handleCloseDeleteDialog = () => setOpenDeleteDialog(false);
 
-  const [deliverList, setDeliverList] = useState([]);
-  const [selectedDeliverList, setSelectedDeliverList] = useState(
-    staff.role === "STAFF_DLV_1" && staff.deliverStaffList.length > 0
-      ? staff.deliverStaffList.map((item) => {
-          return { selectedDeliver: item, openDeliver: false, error: "" };
-        })
-      : [{ selectedDeliver: null, openDeliver: false, error: "" }]
-  );
-
   const handleCloseThis = async () => {
     setLoading(true);
     const tokenId = await auth.currentUser.getIdToken();
@@ -105,7 +96,6 @@ const EditStaff = ({
     confirmPassword: "",
     common: "",
     pickupPoint: "",
-    deliverManager: "",
   });
   const roleList = [
     "ADMIN",
@@ -117,15 +107,9 @@ const EditStaff = ({
   ];
   const [pickupPointList, setPickupPointList] = useState([]);
   const [currentPickupPoint, setCurrentPickupPoint] = useState(null);
-  const [deliverManageList, setDeliverManageList] = useState([]);
-  const [selectedDeliverManager, setSelectedDeliverManager] = useState(
-    staff.deliverManagerStaff
-  );
-  const [openSelectDeliverManager, setOpenSelectDeliverManager] =
-    useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchPickupPoint = async () => {
       setLoading(true);
       const tokenId = await auth.currentUser.getIdToken();
       fetch(`${API.baseURL}/api/pickupPoint/getAll`, {
@@ -141,40 +125,8 @@ const EditStaff = ({
           setLoading(false);
         })
         .catch((err) => {});
-      fetch(
-        `${API.baseURL}/api/staff/getStaffForAdmin?limit=1000&role=STAFF_DLV_0&status=ENABLE`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${tokenId}`,
-          },
-        }
-      )
-        .then((res) => res.json())
-        .then((respond) => {
-          setDeliverList(respond.staffList);
-          setLoading(false);
-        })
-        .catch((err) => console.log(err));
-      fetch(
-        `${API.baseURL}/api/staff/getStaffForAdmin?limit=1000&role=STAFF_DLV_1&status=ENABLE`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${tokenId}`,
-          },
-        }
-      )
-        .then((res) => res.json())
-        .then((respond) => {
-          setDeliverManageList(respond.staffList);
-          setLoading(false);
-        })
-        .catch((err) => console.log(err));
     };
-    fetchData();
+    fetchPickupPoint();
   }, []);
 
   const handleDelete = async () => {
@@ -279,11 +231,7 @@ const EditStaff = ({
         text: "Chỉnh sửa thành công",
       });
     }
-    if (
-      selectedRole !== "STAFF_ORD" &&
-      selectedRole !== "STAFF_DLV_1" &&
-      selectedRole !== "STAFF_DLV_0"
-    ) {
+    if (selectedRole !== "STAFF_ORD") {
       fetch(`${API.baseURL}/api/staff/updateStaffRole`, {
         method: "PUT",
         headers: {
@@ -323,163 +271,10 @@ const EditStaff = ({
         })
         .catch((err) => {});
     }
-    if (selectedRole === "STAFF_DLV_1") {
-      const validateDeliver = selectedDeliverList.findIndex(
-        (item) => !item.selectedDeliver
-      );
-      if (validateDeliver !== -1) {
-        const newSelectedDeliverList = [...selectedDeliverList];
-        newSelectedDeliverList[validateDeliver] = {
-          ...newSelectedDeliverList[validateDeliver],
-          error: "Vui lòng chọn nhân viên",
-        };
-        setSelectedDeliverList(newSelectedDeliverList);
-        setLoading(false);
-        return;
-      }
-      var valueArr = selectedDeliverList.map(function (item) {
-        return item?.selectedDeliver?.id;
-      });
-      var isDuplicateDeliver = valueArr.some(function (item, idx) {
-        return valueArr.indexOf(item) != idx;
-      });
-
-      if (isDuplicateDeliver) {
-        setOpenAssignSnackbar({
-          ...openAssignSnackbar,
-          open: true,
-          severity: "error",
-          text: "Có nhân viên trùng nhau !",
-        });
-        setLoading(false);
-        return;
-      }
-      fetch(`${API.baseURL}/api/staff/updateStaffRole`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${tokenId}`,
-        },
-        body: JSON.stringify({ id: staff.id, role: selectedRole }),
-      })
-        .then((respond) => respond.json())
-        .then((res) => {
-          fetch(`${API.baseURL}/api/staff/updateDeliversForDeliverManager`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${tokenId}`,
-            },
-            body: JSON.stringify({
-              deliverManagerId: staff.id,
-              deliverIdList: selectedDeliverList.map((item) => {
-                return item.selectedDeliver.id;
-              }),
-            }),
-          })
-            .then((res) => res.json())
-            .then((res) => {
-              console.log(res);
-              fetch(
-                `${API.baseURL}/api/staff/getStaffForAdmin?page=${
-                  page - 1
-                }&limit=6&name=${searchValue}`,
-                {
-                  method: "GET",
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${tokenId}`,
-                  },
-                }
-              )
-                .then((res) => res.json())
-                .then((respond) => {
-                  setStaffList(respond.staffList);
-                  setTotalPage(respond.totalPage);
-                  handleClose();
-                  setLoading(false);
-                  setOpenSnackbar({
-                    ...openSnackbar,
-                    open: true,
-                    severity: "success",
-                    text: "Chỉnh sửa thành công",
-                  });
-                })
-                .catch((err) => console.log(err));
-            })
-            .catch((er) => {});
-        })
-        .catch((err) => {});
-    }
-    if (selectedRole === "STAFF_DLV_0") {
-      if (!selectedDeliverManager) {
-        setError({ ...error, deliverManager: "Vui lòng chọn người quản lí" });
-        setLoading(false);
-        return;
-      }
-      fetch(`${API.baseURL}/api/staff/updateStaffRole`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${tokenId}`,
-        },
-        body: JSON.stringify({ id: staff.id, role: selectedRole }),
-      })
-        .then((respond) => respond.json())
-        .then((res) => {
-          fetch(
-            `${API.baseURL}/api/staff/updateDeliverManagerForDeliver?deliverId=${staff.id}&deliverManagerId=${selectedDeliverManager.id}`,
-            {
-              method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${tokenId}`,
-              },
-            }
-          )
-            .then((res) => res.json())
-            .then((res) => {
-              console.log(res);
-              fetch(
-                `${API.baseURL}/api/staff/getStaffForAdmin?page=${
-                  page - 1
-                }&limit=6&name=${searchValue}`,
-                {
-                  method: "GET",
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${tokenId}`,
-                  },
-                }
-              )
-                .then((res) => res.json())
-                .then((respond) => {
-                  setStaffList(respond.staffList);
-                  setTotalPage(respond.totalPage);
-                  handleClose();
-                  setLoading(false);
-                  setOpenSnackbar({
-                    ...openSnackbar,
-                    open: true,
-                    severity: "success",
-                    text: "Chỉnh sửa thành công",
-                  });
-                })
-                .catch((err) => console.log(err));
-            })
-            .catch((er) => {});
-        })
-        .catch((err) => {});
-    }
   };
 
   return (
-    <div
-      className={`modal__container ${
-        (selectedDeliverList.length || selectedPickupPointList.length) >= 5 &&
-        "modal-scroll"
-      }`}
-    >
+    <div className={`modal__container `}>
       {/* // modal header */}
       <div className="modal__container-header">
         <h3 className="modal__container-header-title">Chỉnh sửa nhân viên</h3>
@@ -541,216 +336,6 @@ const EditStaff = ({
             )}
           </div>
         </div>
-
-        {/* assign deliver  */}
-        {selectedRole === "STAFF_DLV_0" && (
-          <div className="modal__container-body-inputcontrol">
-            <h4 className="modal__container-body-inputcontrol-label">
-              Quản lí
-            </h4>
-            <div>
-              <div
-                style={{
-                  display: "flex",
-                }}
-              >
-                <div
-                  className="dropdown"
-                  style={{ width: "400px", marginRight: 0 }}
-                >
-                  <div
-                    className="dropdown-btn"
-                    onClick={(e) =>
-                      setOpenSelectDeliverManager(!openSelectDeliverManager)
-                    }
-                  >
-                    {selectedDeliverManager
-                      ? selectedDeliverManager.fullName
-                      : "Chọn người quản lí"}
-                    <FontAwesomeIcon icon={faCaretDown} />
-                  </div>
-                  {openSelectDeliverManager && (
-                    <div
-                      style={
-                        deliverManageList.length > 5
-                          ? {
-                              height: "180px",
-                              overflowY: "scroll",
-                            }
-                          : {}
-                      }
-                      className="dropdown-content"
-                    >
-                      {deliverManageList.map((item, index) => (
-                        <div
-                          onClick={(e) => {
-                            setSelectedDeliverManager(item);
-                            setOpenSelectDeliverManager(
-                              !openSelectDeliverManager
-                            );
-                            setError({ ...error, deliverManager: "" });
-                          }}
-                          className="dropdown-item"
-                          key={index}
-                        >
-                          {item?.fullName}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-              {error.deliverManager && (
-                <p
-                  style={{ fontSize: "14px", marginBottom: "-10px" }}
-                  className="text-danger"
-                >
-                  {error.deliverManager}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* deliver manager  */}
-
-        {selectedRole === "STAFF_DLV_1" && (
-          <>
-            {selectedDeliverList.map((item, index) => (
-              <div className="modal__container-body-inputcontrol">
-                {selectedDeliverList.length !== 1 && (
-                  <div
-                    onClick={() => {
-                      setSelectedDeliverList(
-                        selectedDeliverList.filter((item, i) => i !== index)
-                      );
-                    }}
-                    className="button__minus"
-                  >
-                    <FontAwesomeIcon icon={faMinus} />
-                  </div>
-                )}
-                <h4 className="modal__container-body-inputcontrol-label">
-                  Nhân viên {index + 1}
-                </h4>
-                <div>
-                  <div
-                    style={{
-                      display: "flex",
-                    }}
-                  >
-                    <div
-                      style={{ width: 401, marginRight: "-2px" }}
-                      className="dropdown"
-                    >
-                      <div
-                        className="dropdown-btn"
-                        onClick={(e) => {
-                          const newSelectedDeliverList = [
-                            ...selectedDeliverList,
-                          ];
-                          newSelectedDeliverList[index] = {
-                            ...newSelectedDeliverList[index],
-                            openDeliver:
-                              !newSelectedDeliverList[index].openDeliver,
-                          };
-                          setSelectedDeliverList(newSelectedDeliverList);
-                        }}
-                      >
-                        {item.selectedDeliver
-                          ? item.selectedDeliver.fullName
-                          : "Chọn nhân viên"}
-                        <FontAwesomeIcon icon={faCaretDown} />
-                      </div>
-                      {item.openDeliver && (
-                        <div
-                          style={{ height: "130px", overflowY: "scroll" }}
-                          className="dropdown-content"
-                        >
-                          {deliverList.map((deliver, i) => (
-                            <div
-                              onClick={(e) => {
-                                const newSelectedDeliverList = [
-                                  ...selectedDeliverList,
-                                ];
-                                newSelectedDeliverList[index] = {
-                                  ...newSelectedDeliverList[index],
-                                  openDeliver: false,
-                                  selectedDeliver: deliver,
-                                  error: "",
-                                };
-                                setSelectedDeliverList(newSelectedDeliverList);
-                              }}
-                              className="dropdown-item"
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                                fontSize: "12px",
-                              }}
-                              key={i}
-                            >
-                              <p style={{ marginBottom: 0 }}>
-                                {deliver?.fullName}
-                              </p>
-                              <p
-                                className="text-danger"
-                                style={{ marginBottom: 0 }}
-                              >
-                                {deliver.deliverManagerStaff
-                                  ? `Đã có quản lí : ${deliver.deliverManagerStaff.fullName}`
-                                  : "Chưa có quản lí"}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  {item.error && (
-                    <p
-                      style={{ fontSize: "14px", marginBottom: "-10px" }}
-                      className="text-danger"
-                    >
-                      {item.error}
-                    </p>
-                  )}
-                </div>
-              </div>
-            ))}
-            <div className="modal__container-body-inputcontrol">
-              <button
-                onClick={() => {
-                  if (deliverList.length === selectedDeliverList.length) {
-                    setOpenAssignSnackbar({
-                      ...openAssignSnackbar,
-                      open: true,
-                      severity: "error",
-                      text: `Hiện tại có ${deliverList.length} nhân viên. Không thể tạo thêm !`,
-                    });
-                    return;
-                  }
-                  setSelectedDeliverList([
-                    ...selectedDeliverList,
-                    {
-                      selectedConsolidation: null,
-                      openConsolidation: false,
-                      error: "",
-                    },
-                  ]);
-                }}
-                className="buttonAddSupermarkerAddress"
-              >
-                Thêm nhân viên
-                <FontAwesomeIcon
-                  icon={faPlusCircle}
-                  style={{ paddingLeft: 10 }}
-                />
-              </button>
-            </div>
-          </>
-        )}
-
         {/* pickuppoint */}
         {selectedRole === "STAFF_ORD" &&
           staff.role === "STAFF_ORD" &&

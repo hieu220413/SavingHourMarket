@@ -72,7 +72,6 @@ const StaffManagement = () => {
         )
           .then((res) => res.json())
           .then((respond) => {
-            console.log(respond);
             setStaffList(respond.staffList);
             setTotalPage(respond.totalPage);
             setLoading(false);
