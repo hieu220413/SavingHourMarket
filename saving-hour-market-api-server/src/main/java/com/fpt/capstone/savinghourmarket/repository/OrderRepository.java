@@ -37,7 +37,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "OR " +
             "((:getOldOrder = FALSE) AND (o.deliveryDate > CURRENT_DATE)) " +
             "OR " +
-            "((:getOldOrder = TRUE) AND (o.deliveryDate < CURRENT_DATE)))) " +
+            "((:getOldOrder = TRUE)))) " +
             "AND " +
             "(((:isBatched IS NULL) " +
             "OR " +
@@ -75,7 +75,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "OR " +
             "((:getOldOrder = FALSE) AND (o.deliveryDate > CURRENT_DATE)) " +
             "OR " +
-            "((:getOldOrder = TRUE) AND (o.deliveryDate < CURRENT_DATE)))) " +
+            "((:getOldOrder = TRUE)))) " +
             "AND " +
             "(((:isPaid IS NULL) OR (:isPaid = FALSE)) " +
             "OR " +
