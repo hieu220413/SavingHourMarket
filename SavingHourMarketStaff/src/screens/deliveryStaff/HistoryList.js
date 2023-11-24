@@ -403,7 +403,7 @@ const HistoryList = ({ navigation }) => {
     const [open, setOpen] = useState(false);
     const [user, setUser] = useState(null);
     const orderStatus = [
-        { id: 0, display: 'Giao thành công', value: 'SUCCESS', active: false },
+        { id: 0, display: 'Giao thành công', value: 'SUCCESS', active: true },
         { id: 1, display: 'Giao thất bại', value: 'FAIL', active: false },
     ];
 
@@ -438,6 +438,7 @@ const HistoryList = ({ navigation }) => {
                     console.log(err);
                 }
             })();
+            fetchOrders(currentOptions.id);
         }, []),
     );
 
@@ -485,7 +486,9 @@ const HistoryList = ({ navigation }) => {
     const fetchOrders = async id => {
         const tokenId = await auth().currentUser.getIdToken();
         const userFromAS = await getUser();
-        console.log(userFromAS.id);
+        const filterStatus = selectItem.find(item => item.active === true);
+        console.log('fs', filterStatus);
+        // console.log(userFromAS.id);
         let currentDate = format(new Date(), 'yyyy-MM-dd');
         const deliverDate = selectedDate
             ? format(selectedDate, 'yyyy-MM-dd')
@@ -494,7 +497,7 @@ const HistoryList = ({ navigation }) => {
             setLoading(true);
             if (id === 0) {
                 fetch(
-                    `${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}&status=SUCCESS`,
+                    `${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliverDate=${deliverDate}`}&status=${filterStatus?.value}&getOldOrderGroup=TRUE`,
                     {
                         method: 'GET',
                         headers: {
@@ -505,7 +508,8 @@ const HistoryList = ({ navigation }) => {
                 )
                     .then(res => res.json())
                     .then(respond => {
-                        console.log(respond);
+                        console.log(`${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}&status=${filterStatus?.value}&getOldOrderGroup=TRUE`);
+                        console.log('1', respond);
                         if (respond.error) {
                             return;
                         }
@@ -518,7 +522,7 @@ const HistoryList = ({ navigation }) => {
                     });
             } else if (id === 1) {
                 fetch(
-                    `${API.baseURL}/api/order/staff/getOrderBatch?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}&status=SUCCESS`,
+                    `${API.baseURL}/api/order/staff/getOrderBatch?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}&status=${filterStatus?.value}&getOldOrderGroup=TRUE`,
                     {
                         method: 'GET',
                         headers: {
@@ -529,6 +533,8 @@ const HistoryList = ({ navigation }) => {
                 )
                     .then(res => res.json())
                     .then(respond => {
+                        console.log('1');
+                        console.log(respond);
                         if (respond.error) {
                             return;
                         }
@@ -542,7 +548,7 @@ const HistoryList = ({ navigation }) => {
                     });
             } else if (id === 2) {
                 fetch(
-                    `${API.baseURL}/api/order/staff/getOrders?delivererId=${userFromAS?.id}&orderStatus=SUCCESS${selectedDate === null ? '' : `&deliverDate=${deliverDate}`}`,
+                    `${API.baseURL}/api/order/staff/getOrders?delivererId=${userFromAS?.id}&orderStatus=${filterStatus?.value}${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}`,
                     {
                         method: 'GET',
                         headers: {
@@ -553,6 +559,8 @@ const HistoryList = ({ navigation }) => {
                 )
                     .then(res => res.json())
                     .then(respond => {
+                        console.log('2');
+                        console.log(respond);
                         setOrders(respond);
                         setLoading(false);
                     })
@@ -598,12 +606,20 @@ const HistoryList = ({ navigation }) => {
                     elevation: 5,
                 }}>
                 <Text
-                    style={{
+                    style={item?.status === 4 ? {
                         position: 'absolute',
                         top: '10%',
                         right: '5%',
                         backgroundColor: COLORS.light_green,
                         color: COLORS.primary,
+                        padding: 10,
+                        borderRadius: 10,
+                    } : {
+                        position: 'absolute',
+                        top: '10%',
+                        right: '5%',
+                        backgroundColor: '#FBD9D3',
+                        color: COLORS.red,
                         padding: 10,
                         borderRadius: 10,
                     }}>
@@ -983,7 +999,7 @@ const HistoryList = ({ navigation }) => {
                                                     ) {
                                                         return (
                                                             group.orderList.find(
-                                                                order => order.status === 3,
+                                                                order => order.status === 4 || order.status === 5,
                                                             ) !== undefined
                                                         );
                                                     }
@@ -1120,7 +1136,7 @@ const HistoryList = ({ navigation }) => {
                                                                             elevation: 5,
                                                                         }}>
                                                                         <Text
-                                                                            style={{
+                                                                            style={item?.status === 4 ? {
                                                                                 position: 'absolute',
                                                                                 top: '10%',
                                                                                 right: '5%',
@@ -1128,10 +1144,18 @@ const HistoryList = ({ navigation }) => {
                                                                                 color: COLORS.primary,
                                                                                 padding: 10,
                                                                                 borderRadius: 10,
+                                                                            } : {
+                                                                                position: 'absolute',
+                                                                                top: '10%',
+                                                                                right: '5%',
+                                                                                backgroundColor: '#FBD9D3',
+                                                                                color: COLORS.red,
+                                                                                padding: 10,
+                                                                                borderRadius: 10,
                                                                             }}>
                                                                             {item?.status === 2 && 'Đóng gói'}
                                                                             {item?.status === 3 && 'Đang giao'}
-                                                                            {item?.status === 4 && 'Đã Giao'}
+                                                                            {item?.status === 4 && 'Giao thành công'}
                                                                             {item?.status === 5 && 'Giao thất bại'}
                                                                         </Text>
                                                                         <Text

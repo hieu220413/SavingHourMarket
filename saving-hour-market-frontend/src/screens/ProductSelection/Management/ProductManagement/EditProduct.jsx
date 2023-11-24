@@ -501,13 +501,15 @@ const EditProduct = ({
       .then((res) => {
         console.log(res);
         if (res.code === 422) {
-          setOpenValidateSnackbar({
-            ...openValidateSnackbar,
+          handleClose();
+          setLoading(false);
+          setOpenSnackbar({
+            ...openSnackbar,
             open: true,
             severity: "error",
-            text: "Không thể sửa khi bạn xóa lô hàng đang được đóng gói",
           });
-          return false;
+          setMsg("Không thể sửa khi bạn xóa lô hàng có tồn tại trong đơn hàng");
+          return;
         }
         fetch(
           `${API.baseURL}/api/product/getProductsForStaff?page=${

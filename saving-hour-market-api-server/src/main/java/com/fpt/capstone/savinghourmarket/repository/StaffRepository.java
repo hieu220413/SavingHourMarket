@@ -1,5 +1,6 @@
 package com.fpt.capstone.savinghourmarket.repository;
 
+import com.fpt.capstone.savinghourmarket.common.StaffRole;
 import com.fpt.capstone.savinghourmarket.entity.Staff;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,7 +25,9 @@ public interface StaffRepository extends JpaRepository<Staff, UUID> {
             "AND " +
             "((:status IS NULL) OR (s.status = :status)) " +
             "AND " +
-            "((:role IS NULL) OR (s.role = :role))")
+            "((:role IS NULL) OR (s.role = :role)) " +
+            "AND " +
+            "s.role <> 'ADMIN'")
 
     Page<Staff> getStaffForAdmin(String name, String role, Integer status, Pageable pageable);
 
@@ -119,4 +122,24 @@ public interface StaffRepository extends JpaRepository<Staff, UUID> {
             "AND " +
             "s.status = 1 ")
     List<Staff> getStaffWithDeliverDateWithGroupWithDifferentTimeFrame(List<UUID> staffIdList, LocalDate deliverDate, UUID timeFrameId);
+
+    @Query("SELECT s FROM Staff s " +
+            "WHERE s.id = :deliverManagerId AND s.role = :deliverManagerRole  ")
+    Optional<Staff> findByIdByDeliverManagerRole(UUID deliverManagerId, String deliverManagerRole);
+
+    @Query("SELECT s FROM Staff s " +
+            "WHERE s.id IN :deliverIdList AND s.role = :deliverRole  ")
+    List<Staff> findAllByIdByDeliverRole(List<UUID> deliverIdList, String deliverRole);
+
+    @Query("SELECT s FROM Staff s " +
+            "WHERE s.role = :deliverRole ")
+    List<Staff> findAllByDeliverRole(String deliverRole);
+
+    @Query("SELECT s FROM Staff s " +
+            "WHERE s.role = :deliverManagerRole ")
+    List<Staff> findAllByDeliverManagerRole(String deliverManagerRole);
+
+    @Query("SELECT s FROM Staff s " +
+            "WHERE s.id = :deliverId AND s.role = :deliverRole  ")
+    Optional<Staff> findByIdByDeliverRole(UUID deliverId, String deliverRole);
 }

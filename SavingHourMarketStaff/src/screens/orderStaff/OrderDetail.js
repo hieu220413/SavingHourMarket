@@ -32,6 +32,7 @@ const OrderDetail = ({ navigation, route }) => {
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [visibleCancel, setVisibleCancel] = useState(false);
 
   const [consolidationAreaList, setConsolidationAreaList] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
@@ -148,6 +149,7 @@ const OrderDetail = ({ navigation, route }) => {
 
   const handleCancel = () => {
     setVisible(false);
+    setVisibleCancel(false);
   };
 
   const handleConfirm = () => {
@@ -220,6 +222,40 @@ const OrderDetail = ({ navigation, route }) => {
     setVisible(false);
   };
 
+  const handleCancelPackage = () => {
+    const confirmCancel = async () => {
+      console.log("confirm");
+      if (auth().currentUser) {
+        const tokenId = await auth().currentUser.getIdToken();
+        if (tokenId) {
+          setLoading(true);
+          fetch(
+            `${API.baseURL}/api/order/packageStaff/cancelOrder/${item.id}`,
+            {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
+              },
+            },
+          )
+            .then(res => res.text())
+            .then(respond => {
+              console.log(respond);
+              showToast(respond);
+              navigation.goBack();
+            })
+            .catch(err => {
+              console.log(err);
+              setLoading(false);
+            });
+        }
+      }
+    };
+    confirmCancel();
+    setVisibleCancel(false);
+  };
+
   return (
     <>
       <View>
@@ -267,6 +303,7 @@ const OrderDetail = ({ navigation, route }) => {
                 {item?.status === 0 && 'Đơn hàng đang chờ đóng gói'}
                 {item?.status === 1 && 'Đơn hàng đang đóng gói'}
                 {item?.status === 2 && 'Đơn hàng đã đóng gói'}
+                {item?.status === 6 && 'Đơn hàng đã huỷ'}
               </Text>
             </View>
             <View
@@ -783,6 +820,90 @@ const OrderDetail = ({ navigation, route }) => {
             </View>
           </Pressable>
         </Modal>
+        {/* Modal Cancel */}
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={visibleCancel}
+          onRequestClose={() => {
+            setVisibleCancel(!visibleCancel);
+          }}>
+          <Pressable
+            onPress={() => setVisibleCancel(false)}
+            style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                }}>
+                <Text
+                  style={{
+                    color: 'black',
+                    fontSize: 20,
+                    fontWeight: 700,
+                    textAlign: 'center',
+                    paddingBottom: 20,
+                  }}>
+                  Xác nhận huỷ đóng gói
+                </Text>
+              </View>
+
+              <Text
+                style={{
+                  color: 'black',
+                  fontSize: 18,
+                  fontWeight: 400,
+                  paddingBottom: 20,
+                }}>
+                Đơn hàng này thực sự không thể đóng gói ?
+              </Text>
+
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                }}>
+                <TouchableOpacity
+                  style={{
+                    width: 150,
+                    paddingHorizontal: 15,
+                    paddingVertical: 10,
+                    backgroundColor: 'white',
+                    borderRadius: 10,
+                    borderColor: COLORS.primary,
+                    borderWidth: 0.5,
+                    marginRight: '2%',
+                  }}
+                  onPress={handleCancel}>
+                  <Text
+                    style={{
+                      color: COLORS.primary,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                    }}>
+                    Đóng
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={{
+                    width: 150,
+                    paddingHorizontal: 15,
+                    paddingVertical: 10,
+                    backgroundColor: COLORS.primary,
+                    color: 'white',
+                    borderRadius: 10,
+                  }}
+                  onPress={() => {
+                    handleCancelPackage();
+                  }}>
+                  <Text style={styles.textStyle}>Xác nhận</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Pressable>
+        </Modal>
       </View>
       {item?.status === 0 && (
         <View
@@ -802,7 +923,7 @@ const OrderDetail = ({ navigation, route }) => {
             marginTop: 20,
             elevation: 10,
           }}>
-          <View style={{ width: '95%' }}>
+          <View style={{width: '100%', flexDirection: 'row', gap: 10, justifyContent: 'center'}}>
             <TouchableOpacity
               onPress={() => {
                 setLoading(true);
@@ -814,7 +935,7 @@ const OrderDetail = ({ navigation, route }) => {
                 justifyContent: 'center',
                 backgroundColor: COLORS.primary,
                 paddingVertical: 10,
-                width: '100%',
+                width: '45%',
                 borderRadius: 30,
               }}>
               <Text
@@ -825,6 +946,28 @@ const OrderDetail = ({ navigation, route }) => {
                   fontWeight: 'bold',
                 }}>
                 Nhận đóng gói
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                setVisibleCancel(true);
+              }}
+              style={{
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'grey',
+                paddingVertical: 10,
+                width: '45%',
+                borderRadius: 30,
+              }}>
+              <Text
+                style={{
+                  fontSize: 18,
+                  color: 'white',
+                  fontFamily: 'Roboto',
+                  fontWeight: 'bold',
+                }}>
+                Huỷ đóng gói
               </Text>
             </TouchableOpacity>
           </View>
@@ -848,7 +991,7 @@ const OrderDetail = ({ navigation, route }) => {
             marginTop: 20,
             elevation: 10,
           }}>
-          <View style={{ width: '95%' }}>
+          <View style={{ width: '100%', flexDirection: 'row', gap: 10, justifyContent: 'center' }}>
             <TouchableOpacity
               onPress={() => {
                 setVisible(true);
@@ -858,7 +1001,7 @@ const OrderDetail = ({ navigation, route }) => {
                 justifyContent: 'center',
                 backgroundColor: COLORS.primary,
                 paddingVertical: 10,
-                width: '100%',
+                width: '47%',
                 borderRadius: 30,
               }}>
               <Text
@@ -869,6 +1012,28 @@ const OrderDetail = ({ navigation, route }) => {
                   fontWeight: 'bold',
                 }}>
                 Hoàn thành đóng gói
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                setVisibleCancel(true);
+              }}
+              style={{
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'grey',
+                paddingVertical: 10,
+                width: '45%',
+                borderRadius: 30,
+              }}>
+              <Text
+                style={{
+                  fontSize: 18,
+                  color: 'white',
+                  fontFamily: 'Roboto',
+                  fontWeight: 'bold',
+                }}>
+                Huỷ đóng gói
               </Text>
             </TouchableOpacity>
           </View>

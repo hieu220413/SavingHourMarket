@@ -33,17 +33,26 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "OR " +
             "((:isGrouped = TRUE) AND (o.orderGroup IS NOT NULL)))) " +
             "AND " +
+            "(((:getOldOrder IS NULL) " +
+            "OR " +
+            "((:getOldOrder = FALSE) AND (o.deliveryDate > CURRENT_DATE)) " +
+            "OR " +
+            "((:getOldOrder = TRUE) AND (o.deliveryDate < CURRENT_DATE)))) " +
+            "AND " +
             "(((:isBatched IS NULL) " +
             "OR " +
             "((:isBatched = FALSE) AND (o.orderBatch IS NULL)) " +
             "OR " +
             "((:isBatched = TRUE) AND (o.orderBatch IS NOT NULL)))) " +
             "AND " +
+            "((o.paymentMethod = 0) OR ((o.paymentMethod = 1) AND (o.paymentStatus = 1))) " +
+            "AND " +
             "(((:isPaid IS NULL) OR (:isPaid = FALSE)) " +
             "OR " +
             "((:isPaid = TRUE) AND (SIZE(o.transaction) > 0)))"
     )
-    List<Order> findOrderForStaff(Date deliveryDate,
+    List<Order> findOrderForStaff(Boolean getOldOrder,
+                                  Date deliveryDate,
                                   UUID packageId,
                                   UUID deliverId,
                                   Integer status,
@@ -64,13 +73,22 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "AND " +
             "((:deliveryMethod IS NULL) OR (o.deliveryMethod = :deliveryMethod)) " +
             "AND " +
+            "(((:getOldOrder IS NULL) " +
+            "OR " +
+            "((:getOldOrder = FALSE) AND (o.deliveryDate > CURRENT_DATE)) " +
+            "OR " +
+            "((:getOldOrder = TRUE) AND (o.deliveryDate < CURRENT_DATE)))) " +
+            "AND " +
+            "((o.paymentMethod = 0) OR ((o.paymentMethod = 1) AND (o.paymentStatus = 1))) " +
+            "AND " +
             "(((:isPaid IS NULL) OR (:isPaid = FALSE)) " +
             "OR " +
-            "((:isPaid = TRUE) AND (SIZE(o.transaction) > 0)))"
+            "((:isPaid = TRUE) AND (o.paymentStatus = 1)))"
     )
     List<Order> findOrderForPackageStaff(UUID pickupPointId,
                                          UUID timeFrameId,
                                          Date deliveryDate,
+                                         Boolean getOldOrder,
                                          List<PickupPoint> pickupPointList,
                                          Integer status,
                                          Integer deliveryMethod,

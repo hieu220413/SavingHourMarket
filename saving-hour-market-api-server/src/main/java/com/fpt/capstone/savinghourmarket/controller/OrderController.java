@@ -63,6 +63,7 @@ public class OrderController {
                                                          @RequestParam(required = false) SortType totalPriceSortType,
                                                          @RequestParam(required = false) SortType createdTimeSortType,
                                                          @RequestParam(required = false) SortType deliveryDateSortType,
+                                                         @RequestParam(required = false, defaultValue = "false") Boolean getOldOrder,
                                                          @RequestParam(required = false) Date deliveryDate,
                                                          @RequestParam(required = false) OrderStatus orderStatus,
                                                          @RequestParam(required = false) UUID packagerId,
@@ -78,6 +79,7 @@ public class OrderController {
                 totalPriceSortType == null ? null : totalPriceSortType.name(),
                 createdTimeSortType == null ? null : createdTimeSortType.name(),
                 deliveryDateSortType == null ? null : deliveryDateSortType.name(),
+                getOldOrder,
                 deliveryDate,
                 orderStatus,
                 packagerId,
@@ -95,6 +97,7 @@ public class OrderController {
                                                                 @RequestParam(required = false) SortType totalPriceSortType,
                                                                 @RequestParam(required = false) SortType createdTimeSortType,
                                                                 @RequestParam(required = false) SortType deliveryDateSortType,
+                                                                @RequestParam(required = false, defaultValue = "false") Boolean getOldOrder,
                                                                 @RequestParam(required = false) UUID pickupPointId,
                                                                 @RequestParam(required = false) UUID timeFrameId,
                                                                 @RequestParam(required = false) Date deliveryDate,
@@ -109,6 +112,7 @@ public class OrderController {
                 totalPriceSortType == null ? null : totalPriceSortType.name(),
                 createdTimeSortType == null ? null : createdTimeSortType.name(),
                 deliveryDateSortType == null ? null : deliveryDateSortType.name(),
+                getOldOrder,
                 pickupPointId,
                 timeFrameId,
                 deliveryDate,
@@ -205,6 +209,13 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.confirmPackaging(orderId, staffEmail, productConsolidationAreaId));
     }
 
+    @PutMapping("/packageStaff/cancelOrder/{id}")
+    public ResponseEntity<String> cancelPackageOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken, @PathVariable UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException, FirebaseAuthException, IOException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.cancelPackageOrder(id));
+    }
+
     @PutMapping("/packageStaff/editProductConsolidationArea")
     public ResponseEntity<String> editProductConsolidationArea(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
                                                                @RequestParam UUID orderId, @RequestParam UUID productConsolidationAreaId) throws NoSuchOrderException, IOException, FirebaseAuthException, ResourceNotFoundException {
@@ -215,7 +226,8 @@ public class OrderController {
 
     @PutMapping("/packageStaff/confirmPackagingGroup")
     public ResponseEntity<String> confirmPackagingGroup(@RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken,
-                                                        @RequestParam UUID orderGroupId, @RequestParam UUID productConsolidationAreaId) throws NoSuchOrderException, IOException, FirebaseAuthException, ResourceNotFoundException {
+                                                        @RequestParam UUID orderGroupId,
+                                                        @RequestParam(required = false) UUID productConsolidationAreaId) throws NoSuchOrderException, IOException, FirebaseAuthException, ResourceNotFoundException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         String staffEmail = Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(orderService.confirmPackagingGroup(orderGroupId, staffEmail, productConsolidationAreaId));

@@ -7,113 +7,35 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  ImageBackground,
 } from 'react-native';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS } from '../../constants/theme';
-import { icons } from '../../constants';
 import { useFocusEffect } from '@react-navigation/native';
 import { API } from '../../constants/api';
 import { format } from 'date-fns';
-import {
-  ExpandableCalendar,
-  AgendaList,
-  CalendarProvider,
-  WeekCalendar,
-} from 'react-native-calendars';
 import LoadingScreen from '../../components/LoadingScreen';
-import { BarChart, LineChart, PieChart } from 'react-native-gifted-charts';
+import { BarChart } from 'react-native-gifted-charts';
 
 const Report = ({ navigation }) => {
-  const barData = [
-    {
-      value: 40,
-      label: 'Jan',
-      spacing: 2,
-      labelWidth: 30,
-      labelTextStyle: { color: 'gray' },
-      frontColor: '#177AD5',
-    },
-    { value: 20, frontColor: '#ED6665' },
-    {
-      value: 50,
-      label: 'Feb',
-      spacing: 2,
-      labelWidth: 30,
-      labelTextStyle: { color: 'gray' },
-      frontColor: '#177AD5',
-    },
-    { value: 40, frontColor: '#ED6665' },
-    {
-      value: 75,
-      label: 'Mar',
-      spacing: 2,
-      labelWidth: 30,
-      labelTextStyle: { color: 'gray' },
-      frontColor: '#177AD5',
-    },
-    { value: 25, frontColor: '#ED6665' },
-    {
-      value: 30,
-      label: 'Apr',
-      spacing: 2,
-      labelWidth: 30,
-      labelTextStyle: { color: 'gray' },
-      frontColor: '#177AD5',
-    },
-    { value: 20, frontColor: '#ED6665' },
-    {
-      value: 60,
-      label: 'May',
-      spacing: 2,
-      labelWidth: 30,
-      labelTextStyle: { color: 'gray' },
-      frontColor: '#177AD5',
-    },
-    { value: 40, frontColor: '#ED6665' },
-    {
-      value: 65,
-      label: 'Jun',
-      spacing: 2,
-      labelWidth: 30,
-      labelTextStyle: { color: 'gray' },
-      frontColor: '#177AD5',
-    },
-    { value: 30, frontColor: '#ED6665' },
-  ];
   const [currentUser, setCurrentUser] = useState(null);
   const [initializing, setInitializing] = useState(true);
   const [pickupPoint, setPickupPoint] = useState(null);
-  // init pickup point
-  useFocusEffect(
-    useCallback(() => {
-      const initPickupPoint = async () => {
-        // console.log('pick up point :', pickupPoint)
-        const pickupPointStorage = await AsyncStorage.getItem('pickupPoint')
-          .then(result => JSON.parse(result))
-          .catch(error => {
-            console.log(error);
-            return null;
-          });
-        if (pickupPointStorage) {
-          setPickupPoint(pickupPointStorage);
-        } else {
-          // trick useEffect to trigger 
-          setPickupPoint({
-            id: null,
-          });
-        }
-      };
-      initPickupPoint();
-    }, []),
-  );
+  const [numberOfProcessing, setNumberOfProcessing] = useState(0);
+  const [numberOfPackageing, setNumberOfPackaging] = useState(0);
+  const [numberOfPackaged, setNumberOfPackaged] = useState(0);
+  const [numberOfCancel, setNumberOfCancel] = useState(0);
+  const [numberOfDelivering, setNumberOfDelivering] = useState(0);
+  const [numberOfSuccess, setNumberOfSuccess] = useState(0);
+  const [numberOfFail, setNumberOfFail] = useState(0);
+  const [numberTotal, setNumberTotal] = useState(0);
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState(
     format(Date.parse(new Date().toString()), 'yyyy-MM-dd'),
   );
   const [loading, setLoading] = useState(false);
-  const [dayReport, setDayReport] = useState(null);
   const [data, setData] = useState([
     { value: 0, label: 'Jan', month: 1 },
     { value: 0, label: 'Feb', month: 2 },
@@ -130,24 +52,283 @@ const Report = ({ navigation }) => {
   ]);
   const [yearReport, setYearReport] = useState(null);
 
+  const countTotalOrder = async () => {
+    setLoading(true);
+    const tokenId = await auth().currentUser.getIdToken();
+    if (tokenId) {
+      let numberOfProcessing = 0;
+      let numberOfPackageing = 0;
+      let numberOfPackaged = 0;
+      let numberOfCancel = 0;
+      let numberOfDelivering = 0;
+      let numberOfSuccess = 0;
+      let numberOfFail = 0;
+      let numberTotal = 0;
+      await fetch(
+        `${API.baseURL}/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${pickupPoint && pickupPoint.id
+          ? `pickupPointId=${pickupPoint.id}`
+          : ''
+        }`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${tokenId}`,
+          },
+        },
+      )
+        .then(res => res.json())
+        .then(respond => {
+          // console.log('order', respond);
+          if (respond.error) {
+            console.log(err);
+            setLoading(false);
+            return;
+          }
+          const statusCounts = {};
+
+          respond.forEach(order => {
+            const status = order.status;
+            if (statusCounts[status]) {
+              statusCounts[status]++;
+            } else {
+              statusCounts[status] = 1;
+            }
+          });
+          Object.keys(statusCounts).map(orderStatus => {
+            if (orderStatus == '0') {
+              console.log('Processing', statusCounts[orderStatus])
+              numberOfProcessing = numberOfProcessing + statusCounts[orderStatus];
+            }
+            if (orderStatus == '1') {
+              console.log('Packaging', statusCounts[orderStatus])
+              numberOfPackageing = numberOfPackageing + statusCounts[orderStatus];
+            }
+            if (orderStatus == '2') {
+              console.log('Packaged', statusCounts[orderStatus])
+              numberOfPackaged = numberOfPackaged + statusCounts[orderStatus];
+            }
+            if (orderStatus == '3') {
+              console.log('Delivering', statusCounts[orderStatus])
+              numberOfDelivering = numberOfDelivering + statusCounts[orderStatus];
+            }
+            if (orderStatus == '4') {
+              console.log('Success', statusCounts[orderStatus])
+              numberOfSuccess = numberOfSuccess + statusCounts[orderStatus];
+
+            }
+            if (orderStatus == '5') {
+              console.log('Fail', statusCounts[orderStatus])
+              numberOfFail = numberOfFail + statusCounts[orderStatus];
+
+            }
+            if (orderStatus == '6') {
+              console.log('Cancel', statusCounts[orderStatus])
+              numberOfCancel = numberOfCancel + statusCounts[orderStatus];
+            }
+            numberTotal = numberTotal + statusCounts[orderStatus];
+          })
+        })
+        .catch(err => {
+          setLoading(false);
+          console.log(err);
+        });
+
+      await fetch(
+        `${API.baseURL}/api/order/packageStaff/getOrders?deliveryMethod=PICKUP_POINT&${pickupPoint && pickupPoint.id
+          ? `pickupPointId=${pickupPoint.id}`
+          : ''
+        }`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${tokenId}`,
+          },
+        },
+      )
+        .then(res => res.json())
+        .then(respond => {
+          // console.log('order', respond);
+          if (respond.error) {
+            setLoading(false);
+            console.log(err);
+            return;
+          }
+          const statusCounts = {};
+          respond.forEach(order => {
+            const status = order.status;
+            if (statusCounts[status]) {
+              statusCounts[status]++;
+            } else {
+              statusCounts[status] = 1;
+            }
+          });
+          Object.keys(statusCounts).map(orderStatus => {
+            if (orderStatus == '0') {
+              console.log('Processing GR', statusCounts[orderStatus])
+              numberOfProcessing = numberOfProcessing + statusCounts[orderStatus];
+            }
+            if (orderStatus == '1') {
+              console.log('Packaging Gr', statusCounts[orderStatus])
+              numberOfPackageing = numberOfPackageing + statusCounts[orderStatus];
+            }
+            if (orderStatus == '2') {
+              console.log('Packaged Gr', statusCounts[orderStatus])
+              numberOfPackaged = numberOfPackaged + statusCounts[orderStatus];
+            }
+            if (orderStatus == '3') {
+              console.log('Delivering Gr', statusCounts[orderStatus])
+              numberOfDelivering = numberOfDelivering + statusCounts[orderStatus];
+            }
+            if (orderStatus == '4') {
+              console.log('Success Gr', statusCounts[orderStatus])
+              numberOfSuccess = numberOfSuccess + statusCounts[orderStatus];
+            }
+            if (orderStatus == '5') {
+              console.log('Fail Gr', statusCounts[orderStatus])
+              numberOfFail = numberOfFail + statusCounts[orderStatus];
+            }
+            if (orderStatus == '6') {
+              console.log('Cancel Gr', statusCounts[orderStatus])
+              numberOfCancel = numberOfCancel + statusCounts[orderStatus];
+            }
+            numberTotal = numberTotal + statusCounts[orderStatus];
+          })
+
+        })
+        .catch(err => {
+          setLoading(false);
+          console.log(err);
+        });
+
+      setNumberOfProcessing(numberOfProcessing)
+      setNumberOfPackaging(numberOfPackageing)
+      setNumberOfPackaged(numberOfPackaged)
+      setNumberOfDelivering(numberOfDelivering)
+      setNumberOfSuccess(numberOfSuccess)
+      setNumberOfFail(numberOfFail)
+      setNumberOfCancel(numberOfCancel)
+      setNumberTotal(numberTotal)
+      setLoading(false);
+    }
+  };
+
+  const fetchMonth = async () => {
+    if (auth().currentUser) {
+      const tokenId = await auth().currentUser.getIdToken();
+      if (tokenId) {
+        setLoading(true);
+        const resetData = [
+          { value: 0, label: 'Jan', month: 1 },
+          { value: 0, label: 'Feb', month: 2 },
+          { value: 0, label: 'Mar', month: 3 },
+          { value: 0, label: 'Apr', month: 4 },
+          { value: 0, label: 'May', month: 5 },
+          { value: 0, label: 'Jun', month: 6 },
+          { value: 0, label: 'Jul', month: 7 },
+          { value: 0, label: 'Aug', month: 8 },
+          { value: 0, label: 'Sep', month: 9 },
+          { value: 0, label: 'Oct', month: 10 },
+          { value: 0, label: 'Nov', month: 11 },
+          { value: 0, label: 'Dec', month: 12 },
+        ];
+        fetch(
+          `${API.baseURL
+          }/api/order/packageStaff/getReportOrders?mode=MONTH&year=${date.slice(
+            0,
+            4,
+          )}`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${tokenId}`,
+            },
+          },
+        )
+          .then(res => res.json())
+          .then(respond => {
+            // console.log(respond.ordersReportByMonth);
+            const year = date.slice(0, 4);
+            const keyToAccess = year; 
+            // console.log(typeof(keyToAccess));
+            const arrayForKey = respond.ordersReportByMonth[keyToAccess];
+            // console.log(arrayForKey);
+            let newData = [...resetData];
+            arrayForKey.map((item, i) => {
+              const index = resetData.findIndex(
+                sub => sub.month === item.month,
+              );
+
+              newData[index] = {
+                ...newData[index],
+                value: item.successCount,
+              };
+            });
+            setData(newData);
+          })
+          .catch(err => {
+            console.log(err);
+            setLoading(false);
+          });
+      }
+    }
+  };
+
+  const fetchYear = async () => {
+    if (auth().currentUser) {
+      const tokenId = await auth().currentUser.getIdToken();
+      if (tokenId) {
+        setLoading(true);
+        fetch(`${API.baseURL}/api/order/packageStaff/getReportOrders?mode=YEAR`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${tokenId}`,
+          },
+        })
+          .then(res => res.json())
+          .then(respond => {
+            const respondArr = respond.ordersReportByYear;
+            // console.log(respondArr);
+            let newData = [];
+            respondArr.map(item => {
+              const obj1 = {
+                value: item.successCount,
+                label: item.year,
+                spacing: 2,
+                labelWidth: 30,
+                labelTextStyle: { color: 'gray' },
+                frontColor: '#177AD5',
+              };
+              const obj2 = {
+                value: item.cancelCount + item.failCount,
+                frontColor: '#ED6665',
+              };
+
+              newData.push(obj1, obj2);
+            });
+            // console.log(newData);
+            setYearReport(newData);
+          })
+          .catch(err => {
+            console.log(err);
+            setLoading(false);
+          });
+      }
+    }
+  };
+
   const renderTitle = () => {
     return (
-      <View style={{ marginVertical: 30 }}>
-        <Text
-          style={{
-            color: 'black',
-            fontSize: 18,
-            fontWeight: 'bold',
-            textAlign: 'center',
-          }}>
-          BÁO CÁO TỪNG NĂM
-        </Text>
+      <View style={{ marginVertical: 10 }}>
         <View
           style={{
             flex: 1,
             flexDirection: 'row',
             justifyContent: 'space-around',
-            marginTop: 24,
+            marginTop: 15,
           }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <View
@@ -211,7 +392,7 @@ const Report = ({ navigation }) => {
         return;
       }
       const currentUser = await AsyncStorage.getItem('userInfo');
-      console.log(JSON.parse(currentUser));
+      // console.log(JSON.parse(currentUser));
       setCurrentUser(JSON.parse(currentUser));
 
     } else {
@@ -221,6 +402,30 @@ const Report = ({ navigation }) => {
       navigation.navigate('Login');
     }
   };
+
+  // init pickup point
+  useFocusEffect(
+    useCallback(() => {
+      const initPickupPoint = async () => {
+        // console.log('pick up point :', pickupPoint)
+        const pickupPointStorage = await AsyncStorage.getItem('pickupPoint')
+          .then(result => JSON.parse(result))
+          .catch(error => {
+            console.log(error);
+            return null;
+          });
+        if (pickupPointStorage) {
+          setPickupPoint(pickupPointStorage);
+        } else {
+          // trick useEffect to trigger 
+          setPickupPoint({
+            id: null,
+          });
+        }
+      };
+      initPickupPoint();
+    }, []),
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -236,151 +441,9 @@ const Report = ({ navigation }) => {
 
   useFocusEffect(
     useCallback(() => {
-      const fetchDay = async () => {
-        if (auth().currentUser) {
-          const tokenId = await auth().currentUser.getIdToken();
-          if (tokenId) {
-            setLoading(true);
-
-            fetch(
-              `${API.baseURL}/api/order/packageStaff/getReportOrders?mode=DATE&startDate=${date}&endDate=${date}`,
-              {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${tokenId}`,
-                },
-              },
-            )
-              .then(res => res.json())
-              .then(respond => {
-                // console.log(respond.ordersReportByDay);
-                if (respond.ordersReportByDay.length !== 0) {
-                  setDayReport(respond.ordersReportByDay[0]);
-                } else {
-                  setDayReport(null);
-                }
-                setLoading(false);
-              })
-              .catch(err => {
-                console.log(err);
-                setLoading(false);
-              });
-          }
-        }
-      };
-
-      const fetchMonth = async () => {
-        if (auth().currentUser) {
-          const tokenId = await auth().currentUser.getIdToken();
-          if (tokenId) {
-            setLoading(true);
-            const resetData = [
-              { value: 0, label: 'Jan', month: 1 },
-              { value: 0, label: 'Feb', month: 2 },
-              { value: 0, label: 'Mar', month: 3 },
-              { value: 0, label: 'Apr', month: 4 },
-              { value: 0, label: 'May', month: 5 },
-              { value: 0, label: 'Jun', month: 6 },
-              { value: 0, label: 'Jul', month: 7 },
-              { value: 0, label: 'Aug', month: 8 },
-              { value: 0, label: 'Sep', month: 9 },
-              { value: 0, label: 'Oct', month: 10 },
-              { value: 0, label: 'Nov', month: 11 },
-              { value: 0, label: 'Dec', month: 12 },
-            ];
-            fetch(
-              `${API.baseURL
-              }/api/order/packageStaff/getReportOrders?mode=MONTH&year=${date.slice(
-                0,
-                4,
-              )}`,
-              {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${tokenId}`,
-                },
-              },
-            )
-              .then(res => res.json())
-              .then(respond => {
-                // console.log(respond.ordersReportByMonth);
-                const year = date.slice(0, 4);
-                const keyToAccess = year; // Change this to "2024" to access the 2024 array
-                // console.log(typeof(keyToAccess));
-                const arrayForKey = respond.ordersReportByMonth[keyToAccess];
-                // console.log(arrayForKey);
-                let newData = [...resetData];
-                arrayForKey.map((item, i) => {
-                  const index = resetData.findIndex(
-                    sub => sub.month === item.month,
-                  );
-
-                  newData[index] = {
-                    ...newData[index],
-                    value: item.successCount,
-                  };
-                });
-
-                setData(newData);
-                setLoading(false);
-              })
-              .catch(err => {
-                console.log(err);
-                setLoading(false);
-              });
-          }
-        }
-      };
-
-      const fetchYear = async () => {
-        if (auth().currentUser) {
-          const tokenId = await auth().currentUser.getIdToken();
-          if (tokenId) {
-            setLoading(true);
-            fetch(`${API.baseURL}/api/order/packageStaff/getReportOrders?mode=YEAR`, {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${tokenId}`,
-              },
-            })
-              .then(res => res.json())
-              .then(respond => {
-                const respondArr = respond.ordersReportByYear;
-                console.log(respondArr);
-                let newData = [];
-                respondArr.map(item => {
-                  const obj1 = {
-                    value: item.successCount,
-                    label: item.year,
-                    spacing: 2,
-                    labelWidth: 30,
-                    labelTextStyle: { color: 'gray' },
-                    frontColor: '#177AD5',
-                  };
-                  const obj2 = {
-                    value: item.cancelCount + item.failCount,
-                    frontColor: '#ED6665',
-                  };
-
-                  newData.push(obj1, obj2);
-                });
-                console.log(newData);
-                setYearReport(newData);
-                setLoading(false);
-              })
-              .catch(err => {
-                console.log(err);
-                setLoading(false);
-              });
-          }
-        }
-      };
       fetchYear();
       fetchMonth();
-      fetchDay();
+      countTotalOrder();
     }, [date]),
   );
 
@@ -391,333 +454,276 @@ const Report = ({ navigation }) => {
         setOpen(false);
       }}
       accessible={false}>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.areaAndLogout}>
-            <View style={styles.area}>
-              <Text style={{ fontSize: 16 }}>Khu vực:</Text>
-              <View style={styles.pickArea}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
+        style={{ marginBottom: 80 }}>
+        <ImageBackground
+          source={require('../../assets/image/backgroundStaff.jpeg')}
+          style={styles.container}>
+          <View style={styles.header}>
+            <View style={styles.areaAndLogout}>
+              <View>
+                <Text
+                  style={{ fontSize: 20, fontWeight: '600', color: 'black', marginTop: 10 }}>
+                  Xin chào! {currentUser?.fullName},
+                </Text>
+                <Text
+                  style={{ fontSize: 14, fontStyle: 'italic', color: 'black', marginBottom: 10 }}>
+                  Hãy đóng gói những đơn hàng thật kĩ càng nhé!
+                </Text>
+              </View>
+              <View style={styles.logout}>
                 <TouchableOpacity
                   onPress={() => {
-                    navigation.navigate('SelectPickupPoint', {
-                      setPickupPoint: setPickupPoint,
-                      isFromProductPackagingRoute: true,
-                    });
+                    setOpen(!open);
                   }}>
-                  <View style={styles.pickAreaItem}>
-                    <Image
-                      resizeMode="contain"
-                      style={{ width: 30, height: 20, tintColor: COLORS.primary }}
-                      source={icons.location}
-                    />
-
-                    <Text
-                      style={{
-                        fontSize: 16,
-                        fontFamily: 'Roboto',
-                        color: 'black',
-                      }}>
-                      {pickupPoint && pickupPoint.id
-                        ? pickupPoint.address
-                        : 'Chọn điểm giao hàng'}
-                      {/* Chọn điểm giao hàng */}
-                    </Text>
-                  </View>
+                  <Image
+                    resizeMode="contain"
+                    style={{ width: 50, height: 50, borderRadius: 75 }}
+                    source={{
+                      uri: currentUser?.avatarUrl,
+                    }}
+                  />
                 </TouchableOpacity>
-                {pickupPoint && pickupPoint.id ? (
+                {open && (
                   <TouchableOpacity
-                    onPress={async () => {
-                      setPickupPoint(null);
-                      await AsyncStorage.removeItem('pickupPoint');
+                    style={{
+                      position: 'absolute',
+                      bottom: -30,
+                      left: -12,
+                      zIndex: 100,
+                      width: 75,
+                      height: 35,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      borderRadius: 10,
+                      backgroundColor: 'rgb(240,240,240)',
+                    }}
+                    onPress={() => {
+                      auth()
+                        .signOut()
+                        .then(async () => {
+                          await AsyncStorage.removeItem('userInfo');
+                        })
+                        .catch(e => console.log(e));
                     }}>
-                    <Image
-                      resizeMode="contain"
-                      style={{
-                        width: 22,
-                        height: 22,
-                        tintColor: COLORS.primary,
-                      }}
-                      source={icons.clearText}
-                    />
+                    <Text style={{ color: 'red', fontWeight: 'bold' }}>
+                      Đăng xuất
+                    </Text>
                   </TouchableOpacity>
-                ) : (
-                  <></>
                 )}
               </View>
             </View>
-            <View style={styles.logout}>
-              <TouchableOpacity
-                onPress={() => {
-                  setOpen(!open);
+          </View>
+
+          <View style={styles.body}>
+
+            <View
+              style={{
+                borderTopLeftRadius: 20,
+                borderTopRightRadius: 20,
+              }}>
+              <View style={{
+                paddingTop: 10,
+                paddingBottom: 20,
+                marginTop: 10
+              }}>
+                <View style={styles.wrapTotal}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 20, color: 'black' }}>Tổng số đơn hàng: {numberTotal}</Text>
+                  </View>
+                </View>
+                <View style={styles.wrap_container}>
+
+                  <View style={styles.wrapProcessing}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.texts}>Đơn chờ xác nhận:</Text>
+                    </View>
+                    <View
+                      style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                      <Text style={styles.numbers}>
+                        {numberOfProcessing}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.wrapPackaging}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.texts}>Đơn đang đóng gói:</Text>
+                    </View>
+                    <View
+                      style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                      <Text style={styles.numbers}>
+                        {numberOfPackageing}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.wrapPackaged}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.texts}>Đơn đã đóng gói:</Text>
+                    </View>
+                    <View
+                      style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                      <Text style={styles.numbers}>
+                        {numberOfPackaged}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.wrapDelivering}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.texts}>Đơn đang giao:</Text>
+                    </View>
+                    <View
+                      style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                      <Text style={styles.numbers}>
+                        {numberOfDelivering}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.wrapSuccess}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.texts}>Đơn đã giao:</Text>
+                    </View>
+                    <View
+                      style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                      <Text style={styles.numbers}>
+                        {numberOfSuccess}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.wrapCancel}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.texts}>Đơn đã huỷ:</Text>
+                    </View>
+                    <View
+                      style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                      <Text style={styles.numbers}>
+                        {numberOfCancel}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+              <View
+                style={{
+                  borderTopLeftRadius: 20,
+                  borderTopRightRadius: 20,
+                  backgroundColor: 'white',
+                  shadowColor: '#000',
+                  shadowOffset: {
+                    width: 2,
+                    height: 2,
+                  },
+                  shadowOpacity: 0.25,
+                  shadowRadius: 4,
+                  elevation: 5,
                 }}>
-                <Image
-                  resizeMode="contain"
-                  style={{ width: 38, height: 38 }}
-                  source={{
-                    uri: currentUser?.avatarUrl,
-                  }}
-                />
-              </TouchableOpacity>
-              {open && (
-                <TouchableOpacity
+                <View
                   style={{
-                    position: 'absolute',
-                    bottom: -30,
-                    left: -12,
-                    zIndex: 100,
-                    width: 75,
-                    height: 35,
+                    display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    borderRadius: 10,
-                    backgroundColor: 'rgb(240,240,240)',
-                  }}
-                  onPress={() => {
-                    auth()
-                      .signOut()
-                      .then(async () => {
-                        await AsyncStorage.removeItem('userInfo');
-                      })
-                      .catch(e => console.log(e));
+                    paddingBottom: 20,
+                    paddingTop: 20
                   }}>
-                  <Text style={{ color: 'red', fontWeight: 'bold' }}>
-                    Đăng xuất
+                  <Text
+                    style={{ fontSize: 18, fontWeight: 'bold', color: 'black' }}>
+                    SỐ ĐƠN HÀNG ĐÃ GIAO
                   </Text>
-                </TouchableOpacity>
-              )}
+                </View>
+                <View style={{
+                  paddingVertical: 30,
+                  marginHorizontal: 15,
+                  marginBottom: 20,
+                  borderRadius: 20,
+                  backgroundColor: 'white',
+                  shadowColor: '#000',
+                  shadowOffset: {
+                    width: 0,
+                    height: 2,
+                  },
+                  shadowOpacity: 0.25,
+                  shadowRadius: 4,
+                  elevation: 3,
+                }}>
+                  <BarChart
+                    disablePress={true}
+                    data={data}
+                    spacing={6.5}
+                    barWidth={20}
+                    frontColor={COLORS.tabIcon}
+                    isAnimated
+                    showYAxisIndices
+                    // hideRules
+                    showFractionalValue
+                  />
+                </View>
+                <View style={{
+                  paddingTop: 10,
+                  borderRadius: 20,
+                  backgroundColor: 'white',
+                  shadowColor: '#000',
+                  shadowOffset: {
+                    width: 0,
+                    height: 2,
+                  },
+                  shadowOpacity: 0.25,
+                  shadowRadius: 4,
+                  elevation: 3,
+                  marginHorizontal: 15,
+                  marginBottom: 20
+                }}>
+                  <View
+                    style={{
+                      paddingBottom: 40,
+                      borderRadius: 10,
+                    }}>
+                    {renderTitle()}
+                    <BarChart
+                      data={yearReport}
+                      barWidth={8}
+                      spacing={24}
+                      roundedTop
+                      roundedBottom
+                      hideRules
+                      disablePress={true}
+                      xAxisThickness={0}
+                      yAxisThickness={0}
+                      yAxisTextStyle={{ color: 'gray' }}
+                      noOfSections={3}
+                    />
+                  </View>
+                </View>
+              </View>
             </View>
           </View>
-        </View>
-
-        <View style={styles.body}>
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            showsHorizontalScrollIndicator={false}
-            style={{ marginBottom: 80 }}>
-            <Text
-              style={{ backgroundColor: 'white', fontSize: 23, fontStyle: 'italic', color: 'black', marginTop: 10, paddingHorizontal: 20 }}>
-              Xin chào! {currentUser?.fullName} 👋
-            </Text>
-            <View style={{
-              paddingTop: 10,
-              paddingBottom: 20,
-              borderRadius: 20,
-              backgroundColor: 'white',
-              shadowColor: '#000',
-              shadowOffset: {
-                width: 2,
-                height: 2,
-              },
-              shadowOpacity: 0.25,
-              shadowRadius: 4,
-              elevation: 5,
-              marginHorizontal: 5,
-              marginBottom: 20,
-              marginTop: 10
-            }}>
-              <CalendarProvider
-                style={{ paddingHorizontal: 5 }}
-                date={date}
-                onDateChanged={(newDate) => setDate(newDate)}
-              >
-                <ExpandableCalendar
-                  style={{ paddingHorizontal: 5 }}
-                  testID="expandableCalendar"
-                  allowShadow={false}
-                  disablePan={true}
-                  hideKnob={true}
-                />
-              </CalendarProvider>
-              <View style={styles.wrap_container}>
-                <View style={styles.wrapProcessing}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.texts}>Đơn chờ xác nhận:</Text>
-                  </View>
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}>
-                    <Text style={styles.numbers}>
-                      {dayReport
-                        ? dayReport.cancelCount +
-                        dayReport.deliveringCount +
-                        dayReport.failCount +
-                        dayReport.packagedCount +
-                        dayReport.packagingCount +
-                        dayReport.successCount
-                        : '0'}
-                    </Text>
-                  </View>
-                </View>
-                <View style={styles.wrapPackaging}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.texts}>Đơn đang đóng gói:</Text>
-                  </View>
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}>
-                    <Text style={styles.numbers}>
-                      {dayReport
-                        ?
-                        dayReport.packagingCount
-                        : '0'}
-                    </Text>
-                  </View>
-                </View>
-                <View style={styles.wrapPackaged}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.texts}>Đơn đã đóng gói:</Text>
-                  </View>
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}>
-                    <Text style={styles.numbers}>
-                      {dayReport
-                        ?
-                        dayReport.packagedCount
-                        : '0'}
-                    </Text>
-                  </View>
-                </View>
-                <View style={styles.wrapDelivering}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.texts}>Đơn đang giao:</Text>
-                  </View>
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}>
-                    <Text style={styles.numbers}>
-                      {dayReport ? dayReport.deliveringCount : '0'}
-                    </Text>
-                  </View>
-                </View>
-                <View style={styles.wrapSuccess}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.texts}>Đơn đã giao:</Text>
-                  </View>
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}>
-                    <Text style={styles.numbers}>
-                      {dayReport
-                        ?
-                        dayReport.successCount
-                        : '0'}
-                    </Text>
-                  </View>
-                </View>
-                <View style={styles.wrapCancel}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.texts}>Đơn đã huỷ:</Text>
-                  </View>
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}>
-                    <Text style={styles.numbers}>
-                      {dayReport
-                        ? dayReport.cancelCount
-                        : '0'}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-            <View style={{
-              paddingTop: 10,
-              borderRadius: 20,
-              backgroundColor: 'white',
-              shadowColor: '#000',
-              shadowOffset: {
-                width: 0,
-                height: 2,
-              },
-              shadowOpacity: 0.25,
-              shadowRadius: 4,
-              elevation: 10,
-              marginHorizontal: 5,
-              marginBottom: 20
-            }}>
-              <View
-                style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  paddingBottom: 30
-                }}>
-                <Text
-                  style={{ fontSize: 18, fontWeight: 'bold', color: 'black' }}>
-                  SỐ ĐƠN HÀNG ĐÃ GIAO
-                </Text>
-              </View>
-              <BarChart
-                disablePress={true}
-                data={data}
-                spacing={6.5}
-                barWidth={20}
-                frontColor="red"
-                isAnimated
-                showYAxisIndices
-                // hideRules
-                showFractionalValue
-              />
-            </View>
-            <View style={{
-              paddingTop: 10,
-              borderRadius: 20,
-              backgroundColor: 'white',
-              shadowColor: '#000',
-              shadowOffset: {
-                width: 0,
-                height: 2,
-              },
-              shadowOpacity: 0.25,
-              shadowRadius: 4,
-              elevation: 10,
-              marginHorizontal: 5,
-              marginBottom: 20
-            }}>
-              <View
-                style={{
-                  paddingBottom: 40,
-                  borderRadius: 10,
-                }}>
-                {renderTitle()}
-                <BarChart
-                  data={yearReport}
-                  barWidth={8}
-                  spacing={24}
-                  roundedTop
-                  roundedBottom
-                  hideRules
-                  disablePress={true}
-                  xAxisThickness={0}
-                  yAxisThickness={0}
-                  yAxisTextStyle={{ color: 'gray' }}
-                  noOfSections={3}
-                />
-              </View>
-            </View>
-          </ScrollView>
-        </View>
-        {loading && <LoadingScreen />}
-      </View>
+          {loading && <LoadingScreen />}
+        </ImageBackground>
+      </ScrollView>
     </TouchableWithoutFeedback>
   );
 };
@@ -727,29 +733,21 @@ export default Report;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white'
+    backgroundColor: COLORS.primary
   },
   header: {
     flex: 1,
-    backgroundColor: 'white',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 2,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 10,
     paddingHorizontal: 20,
-    paddingBottom: 20
+    marginTop: 30
   },
   body: {
-    flex: 8,
-    paddingHorizontal: 20,
+    flex: 10,
+    zIndex: 50,
   },
   areaAndLogout: {
     paddingTop: 10,
     flexDirection: 'row',
+
   },
   pickArea: {
     paddingVertical: 6,
@@ -759,6 +757,7 @@ const styles = StyleSheet.create({
   },
   area: {
     flex: 7,
+    paddingHorizontal: 20,
     // backgroundColor: 'white',
   },
   logout: {
@@ -773,12 +772,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '80%',
   },
-  body: {
-    flex: 10,
-    zIndex: 50,
-    paddingHorizontal: 10,
-    paddingTop: 10
-  },
+
   wrap_container: {
     display: 'flex',
     flexDirection: 'row',
@@ -789,6 +783,24 @@ const styles = StyleSheet.create({
     marginTop: 10,
 
     // backgroundColor: 'pink',
+  },
+  wrapTotal: {
+    width: 250,
+    alignSelf: 'center',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    opacity: 0.9,
+    borderRadius: 20,
+    padding: 10,
+    display: 'flex',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
   wrapProcessing: {
     width: 100,
@@ -825,7 +837,7 @@ const styles = StyleSheet.create({
   wrapPackaged: {
     width: 100,
     height: 108,
-    backgroundColor: '#8ec9ea',
+    backgroundColor: '#8ec0ef',
     borderRadius: 10,
     padding: 10,
     display: 'flex',

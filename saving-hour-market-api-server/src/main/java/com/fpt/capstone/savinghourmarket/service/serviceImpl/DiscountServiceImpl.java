@@ -104,84 +104,99 @@ public class DiscountServiceImpl implements DiscountService {
     }
 
     @Override
-    public DiscountsUsageReportResponseBody getPerDiscountUsageReport(Month month, Quarter quarter, Integer year, Integer fromPercentage, Integer toPercentage, UUID productCategoryId, UUID productSubCategoryId) {
+    public List<DiscountsUsageReportEachMonth> getDiscountUsageReportForEachMonth(Integer year, Integer fromPercentage, Integer toPercentage) {
         LocalDate currentDate = LocalDate.now();
-        // get all discount
-        List<DiscountOnly> rawDiscountList = discountRepository.getRawDiscountListForReport(fromPercentage, toPercentage, productCategoryId == null ? null : productCategoryId, productSubCategoryId == null ? null : productSubCategoryId);
-        HashMap<UUID, DiscountOnly> discountUsageReportHashMap = new HashMap<>();
+
         if (year == null) {
             year = currentDate.getYear();
         }
 
-        List<DiscountOnly> discountEntityList = discountRepository.getDiscountReport(month == null ? null : month.getMonthInNumber(), quarter == null ? null : quarter.getQuarterInNumber(), year, fromPercentage, toPercentage, productCategoryId == null ? null : productCategoryId, productSubCategoryId == null ? null : productSubCategoryId);
+        List<Object[]> discountUsageResult = discountRepository.getDiscountReportUsageMonthly(year, fromPercentage, toPercentage);
+        // map result
+        List<DiscountsUsageReportEachMonth> discountsUsageReportEachMonthList = discountUsageResult.stream().map(result -> (DiscountsUsageReportEachMonth) result[1]).collect(Collectors.toList());
+        HashMap<Integer, DiscountsUsageReportEachMonth> discountsUsageReportEachMonthHashMap = new HashMap<>();
+        discountsUsageReportEachMonthList.stream().forEach(discountsUsageReportEachMonth -> {
+            discountsUsageReportEachMonthHashMap.put(discountsUsageReportEachMonth.getMonthValue(), discountsUsageReportEachMonth);
+        });
 
-        DiscountsUsageReportResponseBody discountsUsageReportResponseBody = new DiscountsUsageReportResponseBody();
-        for (DiscountOnly discount : discountEntityList) {
-            discountUsageReportHashMap.put(discount.getId(), discount);
-        }
-
-        for (DiscountOnly rawDiscount : rawDiscountList) {
-            // map usage report
-            if (discountUsageReportHashMap.containsKey(rawDiscount.getId())) {
-                discountsUsageReportResponseBody.getDiscountReportList().add(new DiscountReport(rawDiscount, discountUsageReportHashMap.get(rawDiscount.getId()).getQuantity()));
-                discountsUsageReportResponseBody.setTotalDiscountUsage(discountsUsageReportResponseBody.getTotalDiscountUsage() + discountUsageReportHashMap.get(rawDiscount.getId()).getQuantity());
-            } else {
-                discountsUsageReportResponseBody.getDiscountReportList().add(new DiscountReport(rawDiscount, 0));
+        // 12 months
+        for (int i = 1; i <= 12; i++) {
+            if (!discountsUsageReportEachMonthHashMap.containsKey(i)) {
+                discountsUsageReportEachMonthList.add(new DiscountsUsageReportEachMonth(i, Long.parseLong("0")));
             }
         }
 
-        discountsUsageReportResponseBody.getDiscountReportList().sort((o1, o2) -> o2.getTotalUsage() - o1.getTotalUsage());
+        discountsUsageReportEachMonthList.sort((o1, o2) -> o1.getMonthValue() - o2.getMonthValue());
+//        revenueReportResponseBody.setTotalIncome((RevenueReportResponseBody) revenueResult[0]);
+//        revenueReportResponseBody.setTotalInvestment((Long) revenueResult[1]);
+//        revenueReportResponseBody.setTotalSale((Long) revenueResult[2]);
 
-        return discountsUsageReportResponseBody;
+//        revenueReportResponseBody.setTotalDifferentAmount(revenueReportResponseBody.getTotalIncome()- revenueReportResponseBody.getTotalPriceOriginal());
+
+        return discountsUsageReportEachMonthList;
     }
 
     @Override
-    public CateWithSubCateDiscountUsageReport getCategoryWithSubCategoryDiscountUsageReport(Month month, Quarter quarter, Integer year, Integer fromPercentage, Integer toPercentage, UUID productCategoryId) {
+    public List<CategoryDiscountUsageReport> getAllCategoryDiscountUsageReport(Month month, Quarter quarter, Integer year, Integer fromPercentage, Integer toPercentage) {
         LocalDate currentDate = LocalDate.now();
 
         if (year == null) {
             year = currentDate.getYear();
         }
 
-        Optional<ProductCategory> productCategory = productCategoryRepository.findById(productCategoryId);
-        if (!productCategory.isPresent()) {
-            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.PRODUCT_CATEGORY_NOT_FOUND.getCode()), AdditionalResponseCode.PRODUCT_CATEGORY_NOT_FOUND.toString());
-        }
+        // map result
+        List<Object[]> categoryDiscountUsageResult = discountRepository.getAllCategoryDiscountReportUsage(month == null ? null : month.getMonthInNumber(), quarter == null ? null : quarter.getQuarterInNumber(), year,  fromPercentage, toPercentage);
+        List<CategoryDiscountUsageReport>  categoryDiscountUsageReportList = categoryDiscountUsageResult.stream().map(result -> (CategoryDiscountUsageReport) result[0]).collect(Collectors.toList());
+        HashMap<UUID, CategoryDiscountUsageReport> categoryDiscountUsageReportHashMap = new HashMap<>();
+        categoryDiscountUsageReportList.stream().forEach(categoryDiscountUsageReport -> {
+            categoryDiscountUsageReportHashMap.put(categoryDiscountUsageReport.getProductCategory().getId(), categoryDiscountUsageReport);
+        });
 
-        // handle category total usage
-        ProductCategory productCategoryWithTotalUsage = productCategoryRepository.getCategoryDiscountUsageByCategoryId(month == null ? null : month.getMonthInNumber(), quarter == null ? null : quarter.getQuarterInNumber(), year, fromPercentage, toPercentage, productCategoryId);
 
-        // handle sub category total usage
-        List<ProductSubCategory> rawProductSubCategoryList = productSubCategoryRepository.getAllSubCategoryByCategoryId(productCategoryId);
-        List<ProductSubCategory> productSubCategoryReportList = productSubCategoryRepository.getAllSubCategoryDiscountUsageByCategoryId(month == null ? null : month.getMonthInNumber(), quarter == null ? null : quarter.getQuarterInNumber(), year, fromPercentage, toPercentage, productCategoryId);
+        List<ProductCategory> categoryList = productCategoryRepository.findAll();
 
-        HashMap<UUID, ProductSubCategory> productSubCategoryReportHashmap = new HashMap<>();
-        for (ProductSubCategory productSubCategory : productSubCategoryReportList) {
-            productSubCategoryReportHashmap.put(productSubCategory.getId(), productSubCategory);
-        }
-
-        // add total usage to raw product sub category
-        for (ProductSubCategory productSubCategory : rawProductSubCategoryList) {
-            productSubCategory.setTotalDiscountUsage(0);
-            if (productSubCategoryReportHashmap.containsKey(productSubCategory.getId())) {
-                productSubCategory.setTotalDiscountUsage(productSubCategory.getTotalDiscountUsage() + productSubCategoryReportHashmap.get(productSubCategory.getId()).getTotalDiscountUsage());
+        for (ProductCategory productCategory : categoryList) {
+            if(!categoryDiscountUsageReportHashMap.containsKey(productCategory.getId())) {
+                categoryDiscountUsageReportList.add(new CategoryDiscountUsageReport(productCategory.getId(), productCategory.getName(), Long.parseLong("0")));
             }
         }
 
-        CateWithSubCateDiscountUsageReport cateWithSubCateDiscountUsageReport = new CateWithSubCateDiscountUsageReport();
-        cateWithSubCateDiscountUsageReport.setProductCategoryReport(new ProductCategory(productCategory.get().getId(), productCategory.get().getName(), productCategoryWithTotalUsage == null ? 0 : productCategoryWithTotalUsage.getTotalDiscountUsage().longValue()));
-        cateWithSubCateDiscountUsageReport.getProductSubCategoryReportList().addAll(rawProductSubCategoryList);
+        categoryDiscountUsageReportList.sort((c1, c2) -> c2.getTotalDiscountUsage().compareTo(c1.getTotalDiscountUsage()));
+//
+//        // handle category total usage
+//        ProductCategory productCategoryWithTotalUsage = productCategoryRepository.getCategoryDiscountUsageByCategoryId(month == null ? null : month.getMonthInNumber(), quarter == null ? null : quarter.getQuarterInNumber(), year, fromPercentage, toPercentage, productCategoryId);
+//
+//        // handle sub category total usage
+//        List<ProductSubCategory> rawProductSubCategoryList = productSubCategoryRepository.getAllSubCategoryByCategoryId(productCategoryId);
+//        List<ProductSubCategory> productSubCategoryReportList = productSubCategoryRepository.getAllSubCategoryDiscountUsageByCategoryId(month == null ? null : month.getMonthInNumber(), quarter == null ? null : quarter.getQuarterInNumber(), year, fromPercentage, toPercentage, productCategoryId);
+//
+//        HashMap<UUID, ProductSubCategory> productSubCategoryReportHashmap = new HashMap<>();
+//        for (ProductSubCategory productSubCategory : productSubCategoryReportList) {
+//            productSubCategoryReportHashmap.put(productSubCategory.getId(), productSubCategory);
+//        }
+//
+//        // add total usage to raw product sub category
+//        for (ProductSubCategory productSubCategory : rawProductSubCategoryList) {
+//            productSubCategory.setTotalDiscountUsage(0);
+//            if (productSubCategoryReportHashmap.containsKey(productSubCategory.getId())) {
+//                productSubCategory.setTotalDiscountUsage(productSubCategory.getTotalDiscountUsage() + productSubCategoryReportHashmap.get(productSubCategory.getId()).getTotalDiscountUsage());
+//            }
+//        }
+//
+//        CategoryDiscountUsageReport categoryDiscountUsageReport = new CategoryDiscountUsageReport();
+//        categoryDiscountUsageReport.setProductCategoryReport(new ProductCategory(productCategory.get().getId(), productCategory.get().getName(), productCategoryWithTotalUsage == null ? 0 : productCategoryWithTotalUsage.getTotalDiscountUsage().longValue()));
+//        categoryDiscountUsageReport.getProductSubCategoryReportList().addAll(rawProductSubCategoryList);
+//
+//        // add total usage from all sub cate
+//        for (ProductSubCategory productSubCategory : categoryDiscountUsageReport.getProductSubCategoryReportList()) {
+//            categoryDiscountUsageReport.setTotalDiscountUsage(categoryDiscountUsageReport.getTotalDiscountUsage() + productSubCategory.getTotalDiscountUsage());
+//        }
+//        // add total usage from cate
+//        categoryDiscountUsageReport.setTotalDiscountUsage(categoryDiscountUsageReport.getTotalDiscountUsage() + categoryDiscountUsageReport.getProductCategoryReport().getTotalDiscountUsage());
+//
+//        categoryDiscountUsageReport.getProductSubCategoryReportList().sort((o1, o2) -> o2.getTotalDiscountUsage() - o1.getTotalDiscountUsage());
 
-        // add total usage from all sub cate
-        for (ProductSubCategory productSubCategory : cateWithSubCateDiscountUsageReport.getProductSubCategoryReportList()) {
-            cateWithSubCateDiscountUsageReport.setTotalDiscountUsage(cateWithSubCateDiscountUsageReport.getTotalDiscountUsage() + productSubCategory.getTotalDiscountUsage());
-        }
-        // add total usage from cate
-        cateWithSubCateDiscountUsageReport.setTotalDiscountUsage(cateWithSubCateDiscountUsageReport.getTotalDiscountUsage() + cateWithSubCateDiscountUsageReport.getProductCategoryReport().getTotalDiscountUsage());
-
-        cateWithSubCateDiscountUsageReport.getProductSubCategoryReportList().sort((o1, o2) -> o2.getTotalDiscountUsage() - o1.getTotalDiscountUsage());
-
-        return cateWithSubCateDiscountUsageReport;
+        return categoryDiscountUsageReportList;
     }
 
     @Override

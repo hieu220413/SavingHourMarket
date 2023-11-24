@@ -1,7 +1,5 @@
 package com.fpt.capstone.savinghourmarket.repository;
 
-import com.fpt.capstone.savinghourmarket.common.Month;
-import com.fpt.capstone.savinghourmarket.common.Quarter;
 import com.fpt.capstone.savinghourmarket.entity.Discount;
 import com.fpt.capstone.savinghourmarket.model.DiscountOnly;
 import org.springframework.data.domain.Page;
@@ -103,6 +101,43 @@ public interface DiscountRepository extends JpaRepository<Discount, UUID> {
             "AND " +
             "((:productSubCategoryId IS NULL) OR (subcts.id = :productSubCategoryId)) ")
     List<DiscountOnly> getRawDiscountListForReport(Integer fromPercentage, Integer toPercentage, UUID productCategoryId, UUID productSubCategoryId);
+
+
+    @Query("SELECT MONTH(ord.createdTime) AS monthly, " +
+            "NEW com.fpt.capstone.savinghourmarket.model.DiscountsUsageReportEachMonth(MONTH(ord.createdTime), COUNT(ord)) " +
+            "FROM Order ord " +
+            "JOIN ord.discountList d " +
+            "WHERE " +
+            "EXTRACT(YEAR FROM ord.createdTime) = :year " +
+            "AND " +
+            "(d.percentage  BETWEEN :fromPercentage AND :toPercentage) " +
+            "AND ord.status = 4" +
+            "GROUP BY MONTH(ord.createdTime) ")
+    List<Object[]> getDiscountReportUsageMonthly(Integer year, Integer fromPercentage, Integer toPercentage);
+
+    @Query("SELECT NEW com.fpt.capstone.savinghourmarket.model.CategoryDiscountUsageReport(ct.id, ct.name, COUNT(ct.id)) FROM Order ord " +
+            "JOIN ord.discountList d " +
+            "JOIN d.productCategory ct " +
+            "WHERE " +
+            "(d.percentage  BETWEEN :fromPercentage AND :toPercentage) " +
+            "AND " +
+            "((:quarter IS NOT NULL) OR ((:monthValue IS NULL) OR EXTRACT(MONTH FROM ord.createdTime) =  :monthValue)) " +
+            "AND " +
+            "((:quarter IS NULL) " +
+            "OR " +
+            "((:quarter = 1) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 1 and 3)) " +
+            "OR " +
+            "((:quarter = 2) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 4 and 6)) " +
+            "OR " +
+            "((:quarter = 3) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 7 and 9)) " +
+            "OR " +
+            "((:quarter = 4) AND (EXTRACT(MONTH FROM ord.createdTime) BETWEEN 10 and 12)) " +
+            ")" +
+            "AND " +
+            "EXTRACT(YEAR FROM ord.createdTime) = :year " +
+            "AND ord.status = 4 " +
+            "GROUP BY ct.id, ct.name")
+    List<Object[]> getAllCategoryDiscountReportUsage(Integer monthValue, Integer quarter, Integer year, Integer fromPercentage, Integer toPercentage);
 
 //    @Query("SELECT d FROM Discount d " +
 //            "JOIN FETCH d.productSubCategoryList subcts " +
