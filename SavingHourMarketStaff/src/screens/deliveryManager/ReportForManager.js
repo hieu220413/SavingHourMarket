@@ -215,10 +215,7 @@ const ReportForManager = ({navigation}) => {
                     fontWeight: 'bold',
                     alignSelf: 'center',
                   }}>
-                  {deliveringOrder +
-                    waitingForAssignOrder +
-                    successDeliveredOrder +
-                    failDeliveredOrder}
+                  {deliveringOrder + successDeliveredOrder + failDeliveredOrder}
                 </Text>
               </View>
               <Pressable
@@ -295,7 +292,7 @@ const ReportForManager = ({navigation}) => {
                 </Text>
                 <Text
                   style={{fontSize: 14, fontWeight: 'bold', color: 'black'}}>
-                  {deliveringOrder + waitingForAssignOrder}
+                  {deliveringOrder}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
