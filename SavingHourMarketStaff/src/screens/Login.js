@@ -52,7 +52,7 @@ const Login = ({navigation}) => {
       }
       const currentUser = await AsyncStorage.getItem('userInfo');
       if (currentUser) {
-        navigation.navigate('Start');
+        navigation.navigate('Tabs');
       }
     } else {
       // no sessions found.
