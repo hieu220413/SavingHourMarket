@@ -441,6 +441,7 @@ const HomeDeliver = ({ navigation }) => {
         }
       })();
       console.log(currentOptions.id);
+      setSelectedDate(null);
       fetchOrders(currentOptions.id);
     }, []),
   );
@@ -508,7 +509,6 @@ const HomeDeliver = ({ navigation }) => {
         )
           .then(res => res.json())
           .then(respond => {
-            console.log(`${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}&status=DELIVERING`);
             console.log('0', respond);
             setOrderGroupList(respond.orderGroups);
             setLoading(false);
@@ -570,10 +570,82 @@ const HomeDeliver = ({ navigation }) => {
     fetchOrders(currentOptions.id);
   };
 
-  // const handleClear = () => {
-  //     setModalVisible(!modalVisible);
-  //     fetchOrders(currentOptions.id);
-  // };
+  const handleClear = async () => {
+    setModalVisible(!modalVisible);
+    console.log('clear filter');
+    const tokenId = await auth().currentUser.getIdToken();
+    const userFromAS = await getUser();
+    if (tokenId) {
+      setLoading(true);
+      if (currentOptions.id === 0) {
+        fetch(
+          `${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}&status=DELIVERING`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${tokenId}`,
+            },
+          },
+        )
+          .then(res => res.json())
+          .then(respond => {
+            console.log(`${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}&status=DELIVERING`);
+            console.log('0', respond);
+            setOrderGroupList(respond.orderGroups);
+            setLoading(false);
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      } else if (currentOptions.id === 1) {
+        fetch(
+          `${API.baseURL}/api/order/staff/getOrderBatch?status=DELIVERING&delivererId=${userFromAS?.id}`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${tokenId}`,
+            },
+          },
+        )
+          .then(res => res.json())
+          .then(respond => {
+            console.log('1', respond);
+            if (respond.error) {
+              return;
+            }
+            setOrderGroupList(respond);
+            setLoading(false);
+          })
+          .catch(err => {
+            console.log(err);
+            setLoading(false);
+          });
+      } else if (currentOptions.id === 2) {
+        fetch(
+          `${API.baseURL}/api/order/staff/getOrders?delivererId=${userFromAS?.id}&orderStatus=DELIVERING`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${tokenId}`,
+            },
+          },
+        )
+          .then(res => res.json())
+          .then(respond => {
+            console.log('3', respond);
+            setOrders(respond);
+            setLoading(false);
+          })
+          .catch(err => {
+            console.log(err);
+            setLoading(false);
+          });
+      }
+    }
+  };
 
   const OrderItem = ({ item }) => {
     return (
@@ -1436,6 +1508,7 @@ const HomeDeliver = ({ navigation }) => {
                     }}
                     onPress={() => {
                       setModalVisible(!modalVisible);
+                      handleClear();
                     }}>
                     <Text
                       style={{
@@ -1443,7 +1516,7 @@ const HomeDeliver = ({ navigation }) => {
                         fontWeight: 'bold',
                         textAlign: 'center',
                       }}>
-                      Hủy
+                      Thiết lập lại
                     </Text>
                   </TouchableOpacity>
 

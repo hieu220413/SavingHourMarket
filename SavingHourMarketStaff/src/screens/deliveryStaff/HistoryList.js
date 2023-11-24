@@ -418,7 +418,21 @@ const HistoryList = ({ navigation }) => {
         display: 'Giao hàng tại điểm nhận',
     });
 
+    const sortOptions = [
+        {
+            id: 1,
+            name: 'Ngày giao gần nhất',
+            active: false,
+        },
+        {
+            id: 2,
+            name: 'Ngày giao xa nhất',
+            active: false,
+        },
+    ];
+
     const [selectItem, setSelectItem] = useState(orderStatus);
+    const [selectSort, setSelectSort] = useState(sortOptions);
     //  filter pickup point
     const [selectedTimeFrameId, setSelectedTimeFrameId] = useState('');
     //  filter date
@@ -438,6 +452,8 @@ const HistoryList = ({ navigation }) => {
                     console.log(err);
                 }
             })();
+            setSelectSort(sortOptions);
+            setSelectItem(orderStatus);
             fetchOrders(currentOptions.id);
         }, []),
     );
@@ -487,7 +503,10 @@ const HistoryList = ({ navigation }) => {
         const tokenId = await auth().currentUser.getIdToken();
         const userFromAS = await getUser();
         const filterStatus = selectItem.find(item => item.active === true);
+        const sortItem = selectSort.find(item => item.active === true);
+        const isHadSortItem = sortItem ? true : false;
         console.log('fs', filterStatus);
+        console.log('sort', sortItem);
         // console.log(userFromAS.id);
         let currentDate = format(new Date(), 'yyyy-MM-dd');
         const deliverDate = selectedDate
@@ -497,7 +516,8 @@ const HistoryList = ({ navigation }) => {
             setLoading(true);
             if (id === 0) {
                 fetch(
-                    `${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliverDate=${deliverDate}`}&status=${filterStatus?.value}&getOldOrderGroup=TRUE`,
+                    `${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliverDate=${deliverDate}`}&status=${filterStatus?.value}&getOldOrderGroup=TRUE${sortItem?.id == 1 && isHadSortItem === true ? '&deliverDateSortType=ASC' : ''
+                    }${sortItem?.id == 2 && isHadSortItem === true ? '&deliverDateSortType=DESC' : ''}`,
                     {
                         method: 'GET',
                         headers: {
@@ -508,7 +528,6 @@ const HistoryList = ({ navigation }) => {
                 )
                     .then(res => res.json())
                     .then(respond => {
-                        console.log(`${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}&status=${filterStatus?.value}&getOldOrderGroup=TRUE`);
                         console.log('1', respond);
                         if (respond.error) {
                             return;
@@ -522,7 +541,8 @@ const HistoryList = ({ navigation }) => {
                     });
             } else if (id === 1) {
                 fetch(
-                    `${API.baseURL}/api/order/staff/getOrderBatch?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}&status=${filterStatus?.value}&getOldOrderGroup=TRUE`,
+                    `${API.baseURL}/api/order/staff/getOrderBatch?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}&status=${filterStatus?.value}&getOldOrderGroup=TRUE${sortItem?.id == 1 && isHadSortItem === true ? '&deliverDateSortType=ASC' : ''
+                    }${sortItem?.id == 2 && isHadSortItem === true ? '&deliverDateSortType=DESC' : ''}`,
                     {
                         method: 'GET',
                         headers: {
@@ -548,7 +568,8 @@ const HistoryList = ({ navigation }) => {
                     });
             } else if (id === 2) {
                 fetch(
-                    `${API.baseURL}/api/order/staff/getOrders?delivererId=${userFromAS?.id}&orderStatus=${filterStatus?.value}${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}`,
+                    `${API.baseURL}/api/order/staff/getOrders?delivererId=${userFromAS?.id}&orderStatus=${filterStatus?.value}${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}${sortItem?.id == 1 && isHadSortItem === true ? '&deliveryDateSortType=ASC' : ''
+                    }${sortItem?.id == 2 && isHadSortItem === true ? '&deliveryDateSortType=DESC' : ''}`,
                     {
                         method: 'GET',
                         headers: {
@@ -577,10 +598,96 @@ const HistoryList = ({ navigation }) => {
         fetchOrders(currentOptions.id);
     };
 
-    // const handleClear = () => {
-    //     setModalVisible(!modalVisible);
-    //     fetchOrders(currentOptions.id);
-    // };
+    const handleClear = async () => {
+        setModalVisible(!modalVisible);
+        setSelectSort(sortOptions);
+        setSelectItem(orderStatus);
+        console.log('clear filter');
+        const tokenId = await auth().currentUser.getIdToken();
+        const userFromAS = await getUser();
+        const filterStatus = selectItem.find(item => item.active === true);
+        console.log('fs', filterStatus);
+        let currentDate = format(new Date(), 'yyyy-MM-dd');
+        const deliverDate = selectedDate
+            ? format(selectedDate, 'yyyy-MM-dd')
+            : currentDate;
+        if (tokenId) {
+            setLoading(true);
+            if (currentOptions.id === 0) {
+                fetch(
+                    `${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliverDate=${deliverDate}`}&status=SUCCESS&getOldOrderGroup=TRUE`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${tokenId}`,
+                        },
+                    },
+                )
+                    .then(res => res.json())
+                    .then(respond => {
+                        console.log('1', respond);
+                        if (respond.error) {
+                            return;
+                        }
+
+                        setOrderGroupList(respond.orderGroups);
+                        setLoading(false);
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+            } else if (currentOptions.id === 1) {
+                fetch(
+                    `${API.baseURL}/api/order/staff/getOrderBatch?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}&status=SUCCESS&getOldOrderGroup=TRUE`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${tokenId}`,
+                        },
+                    },
+                )
+                    .then(res => res.json())
+                    .then(respond => {
+                        console.log('1');
+                        console.log(respond);
+                        if (respond.error) {
+                            return;
+                        }
+
+                        setOrderGroupList(respond);
+                        setLoading(false);
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        setLoading(false);
+                    });
+            } else if (currentOptions.id === 2) {
+                fetch(
+                    `${API.baseURL}/api/order/staff/getOrders?delivererId=${userFromAS?.id}&orderStatus=SUCCESS${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${tokenId}`,
+                        },
+                    },
+                )
+                    .then(res => res.json())
+                    .then(respond => {
+                        console.log('2');
+                        console.log(respond);
+                        setOrders(respond);
+                        setLoading(false);
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        setLoading(false);
+                    });
+            }
+        }
+    };
     const OrderItem = ({ item }) => {
         return (
             <TouchableOpacity
@@ -808,6 +915,64 @@ const HistoryList = ({ navigation }) => {
                             }
                     }>
                     {item.display}
+                </Text>
+            </TouchableOpacity>
+        );
+    };
+
+    const ModalSortItem = ({ item }) => {
+        return (
+            <TouchableOpacity
+                onPress={() => {
+                    const newArray = selectSort.map(i => {
+                        if (i.id === item.id) {
+                            if (i.active === true) {
+                                return { ...i, active: false };
+                            } else {
+                                return { ...i, active: true };
+                            }
+                        }
+                        return { ...i, active: false };
+                    });
+                    // console.log(newArray);
+                    setSelectSort(newArray);
+                }}
+                style={
+                    item.active == true
+                        ? {
+                            borderColor: COLORS.primary,
+                            borderWidth: 1,
+                            borderRadius: 10,
+                            margin: 5,
+                        }
+                        : {
+                            borderColor: '#c8c8c8',
+                            borderWidth: 0.2,
+                            borderRadius: 10,
+                            margin: 5,
+                        }
+                }>
+                <Text
+                    style={
+                        item.active == true
+                            ? {
+                                width: 150,
+                                paddingVertical: 10,
+                                textAlign: 'center',
+                                color: COLORS.primary,
+
+                                fontSize: 12,
+                            }
+                            : {
+                                width: 150,
+                                paddingVertical: 10,
+                                textAlign: 'center',
+                                color: 'black',
+
+                                fontSize: 12,
+                            }
+                    }>
+                    {item.name}
                 </Text>
             </TouchableOpacity>
         );
@@ -1400,6 +1565,24 @@ const HistoryList = ({ navigation }) => {
                                 <Text
                                     style={{
                                         color: 'black',
+                                        fontSize: 16,
+                                        fontWeight: 700,
+                                    }}>
+                                    Sắp xếp theo
+                                </Text>
+                                <View
+                                    style={{
+                                        flexDirection: 'row',
+                                        flexWrap: 'wrap',
+                                        marginVertical: 10,
+                                    }}>
+                                    {selectSort.map((item, index) => (
+                                        <ModalSortItem item={item} key={index} />
+                                    ))}
+                                </View>
+                                <Text
+                                    style={{
+                                        color: 'black',
                                         fontFamily: FONTS.fontFamily,
                                         fontSize: 16,
                                         fontWeight: 700,
@@ -1416,28 +1599,7 @@ const HistoryList = ({ navigation }) => {
                                         <ModalItem item={item} key={index} />
                                     ))}
                                 </View>
-                                {/*     <Text
-                                    style={{
-                                        color: 'black',
-                                        fontSize: 16,
-                                        fontWeight: 700,
-                                    }}>
-                                    Chọn ngày giao hàng
-                                </Text>
-                                <View
-                                    style={{
-                                        flexDirection: 'row',
-                                        flexWrap: 'wrap',
-                                        marginVertical: 10,
-                                    }}>
-                                    <DatePicker
-                                        date={selectedDate === null ? new Date() : selectedDate}
-                                        mode="date"
-                                        androidVariant="nativeAndroid"
-                                        onDateChange={setSelectedDate}
-                                    />
-                                </View>
-*/}
+
                                 <View
                                     style={{
                                         flexDirection: 'row',
@@ -1457,6 +1619,7 @@ const HistoryList = ({ navigation }) => {
                                         }}
                                         onPress={() => {
                                             setModalVisible(!modalVisible);
+                                            handleClear();
                                         }}>
                                         <Text
                                             style={{
@@ -1464,7 +1627,7 @@ const HistoryList = ({ navigation }) => {
                                                 fontWeight: 'bold',
                                                 textAlign: 'center',
                                             }}>
-                                            Hủy
+                                            Thiết lập lại
                                         </Text>
                                     </TouchableOpacity>
 
