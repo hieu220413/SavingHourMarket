@@ -145,7 +145,7 @@ const Login = ({navigation}) => {
             setLoading(false);
             showToastSuccess('Đăng nhập thành công');
             await AsyncStorage.setItem('userInfo', JSON.stringify(respond));
-            navigation.navigate('Start');
+            navigation.navigate('Tabs');
             // **
           })
 
