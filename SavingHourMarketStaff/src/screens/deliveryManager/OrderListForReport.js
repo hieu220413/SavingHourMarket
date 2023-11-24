@@ -71,7 +71,7 @@ const OrderListForReport = ({navigation, route}) => {
         if (auth().currentUser) {
           const tokenId = await auth().currentUser.getIdToken();
           if (tokenId) {
-            // setLoading(true);
+            setLoading(true);
             if (type === 'success') {
               if (mode === 1) {
                 fetch(
@@ -285,17 +285,40 @@ const OrderListForReport = ({navigation, route}) => {
                     justifyContent: 'space-between',
                   }}>
                   <View style={{flexDirection: 'column', gap: 8}}>
-                    <Text
-                      style={{
-                        fontSize: 20,
-                        fontWeight: 'bold',
-                        fontFamily: 'Roboto',
-                        color: COLORS.primary,
-                      }}>
-                      {type === 'success' && 'Đơn giao thành công'}
-                      {type === 'delivering' && 'Đơn đang giao'}
-                      {type === 'fail' && 'Đơn trả hàng'}
-                    </Text>
+                    {type === 'success' && (
+                      <Text
+                        style={{
+                          fontSize: 20,
+                          fontWeight: 'bold',
+                          fontFamily: 'Roboto',
+                          color: COLORS.primary,
+                        }}>
+                        Đơn giao thành công
+                      </Text>
+                    )}
+                    {type === 'delivering' && (
+                      <Text
+                        style={{
+                          fontSize: 20,
+                          fontWeight: 'bold',
+                          fontFamily: 'Roboto',
+                          color: COLORS.primary,
+                        }}>
+                        Đơn đang giao
+                      </Text>
+                    )}
+                    {type === 'fail' && (
+                      <Text
+                        style={{
+                          fontSize: 20,
+                          fontWeight: 'bold',
+                          fontFamily: 'Roboto',
+                          color: 'red',
+                        }}>
+                        Đơn trả hàng
+                      </Text>
+                    )}
+
                     {item?.deliverer ? (
                       <View
                         style={{
