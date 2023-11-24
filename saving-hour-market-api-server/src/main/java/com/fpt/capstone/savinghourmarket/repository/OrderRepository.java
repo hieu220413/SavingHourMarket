@@ -69,6 +69,8 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "AND " +
             "((:status IS NULL) OR (o.status = :status)) " +
             "AND " +
+            "((o.status = 0) OR ((o.status > 0) AND ((:packager IS NULL) OR (o.packager.id = :packager)))) " +
+            "AND " +
             "((:timeFrameId IS NULL) OR (o.timeFrame.id = :timeFrameId)) " +
             "AND " +
             "((:deliveryMethod IS NULL) OR (o.deliveryMethod = :deliveryMethod)) " +
@@ -85,7 +87,8 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "OR " +
             "((:isPaid = TRUE) AND (o.paymentStatus = 1)))"
     )
-    List<Order> findOrderForPackageStaff(UUID pickupPointId,
+    List<Order> findOrderForPackageStaff(UUID packager,
+                                         UUID pickupPointId,
                                          UUID timeFrameId,
                                          Date deliveryDate,
                                          Boolean getOldOrder,

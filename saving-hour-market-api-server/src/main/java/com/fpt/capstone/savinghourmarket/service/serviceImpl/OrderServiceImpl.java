@@ -161,8 +161,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderGroup> fetchOrderGroupsForPackageStaff(String staffEmail, SortType deliverDateSortType, LocalDate deliverDate, Boolean getOldOrderGroup, UUID timeFrameId, UUID pickupPointId, UUID delivererId, Integer page, Integer size) throws ResourceNotFoundException {
-        List<PickupPoint> pickupPointListOfStaff = staffRepository.findByEmail(staffEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("Nhân viên không tìm thấy với email " + staffEmail)).getPickupPoint();
+        Staff staff = staffRepository.findByEmail(staffEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Nhân viên không tìm thấy với email " + staffEmail));
+        List<PickupPoint> pickupPointListOfStaff = staff.getPickupPoint();
         Sort sortable = null;
 
         if (deliverDateSortType != null) {
@@ -192,7 +193,7 @@ public class OrderServiceImpl implements OrderService {
                     .stream().filter(order -> ((order.getPaymentMethod() == 1 && order.getPaymentStatus() == 1)
                             || order.getPaymentMethod() == 0)
                             &&
-                            (order.getStatus() > OrderStatus.PROCESSING.ordinal()
+                            ((order.getStatus() > OrderStatus.PROCESSING.ordinal() && order.getPackager().equals(staff))
                                     || (order.getStatus() == OrderStatus.PROCESSING.ordinal() && LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS)))))
                     .toList();
             orderGroup.setOrderList(orders);
@@ -560,10 +561,12 @@ public class OrderServiceImpl implements OrderService {
                                                   DeliveryMethod deliveryMethod,
                                                   int page,
                                                   int limit) throws ResourceNotFoundException {
-        List<PickupPoint> pickupPointListOfStaff = staffRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Nhân viên không tìm thấy với email " + email)).getPickupPoint();
+        Staff staff = staffRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Nhân viên không tìm thấy với email " + email));
+        List<PickupPoint> pickupPointListOfStaff = staff.getPickupPoint();
         Configuration configuration = configurationRepository.findAll().get(0);
         return repository.findOrderForPackageStaff(
+                        staff.getId(),
                         pickupPointId,
                         timeFrameId,
                         deliveryDate,
