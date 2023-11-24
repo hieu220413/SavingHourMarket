@@ -1281,7 +1281,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   body: {
-    flex: 3,
+    flex: 3.5,
     // backgroundColor: 'pink',
     paddingHorizontal: 20,
   },

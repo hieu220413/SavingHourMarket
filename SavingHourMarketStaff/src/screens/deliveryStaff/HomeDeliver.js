@@ -542,7 +542,7 @@ const HomeDeliver = ({ navigation }) => {
           });
       } else if (id === 2) {
         fetch(
-          `${API.baseURL}/api/order/staff/getOrders?delivererId=${userFromAS?.id}&orderStatus=DELIVERING${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}`,
+          `${API.baseURL}/api/order/staff/getOrders?isGrouped=false&isBatched=false&delivererId=${userFromAS?.id}&orderStatus=DELIVERING${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}`,
           {
             method: 'GET',
             headers: {
@@ -624,7 +624,7 @@ const HomeDeliver = ({ navigation }) => {
           });
       } else if (currentOptions.id === 2) {
         fetch(
-          `${API.baseURL}/api/order/staff/getOrders?delivererId=${userFromAS?.id}&orderStatus=DELIVERING`,
+          `${API.baseURL}/api/order/staff/getOrders?isGrouped=false&isBatched=false&delivererId=${userFromAS?.id}&orderStatus=DELIVERING`,
           {
             method: 'GET',
             headers: {
@@ -1555,7 +1555,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   body: {
-    flex: 6,
+    flex: 9,
   },
   areaAndLogout: {
     paddingTop: 10,

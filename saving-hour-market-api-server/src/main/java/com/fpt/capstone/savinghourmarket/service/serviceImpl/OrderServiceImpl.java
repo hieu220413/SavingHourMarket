@@ -473,8 +473,6 @@ public class OrderServiceImpl implements OrderService {
                         FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getId().toString());
                     } else if (order.getStatus() == OrderStatus.DELIVERING.ordinal()) {
                         order.setDeliverer(staff);
-                    } else {
-                        return "Đơn hàng " + order.getId() + " chưa được đóng gói!";
                     }
                 }
                 orderGroup.setDeliverer(staff);
@@ -487,8 +485,6 @@ public class OrderServiceImpl implements OrderService {
                         FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getId().toString());
                     } else if (order.getStatus() == OrderStatus.DELIVERING.ordinal()) {
                         order.setDeliverer(staff);
-                    } else {
-                        return "Đơn hàng " + order.getId() + " chưa được đóng gói!";
                     }
                 }
                 orderBatch.setDeliverer(staff);

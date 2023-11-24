@@ -568,7 +568,7 @@ const HistoryList = ({ navigation }) => {
                     });
             } else if (id === 2) {
                 fetch(
-                    `${API.baseURL}/api/order/staff/getOrders?delivererId=${userFromAS?.id}&orderStatus=${filterStatus?.value}${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}${sortItem?.id == 1 && isHadSortItem === true ? '&deliveryDateSortType=ASC' : ''
+                    `${API.baseURL}/api/order/staff/getOrders?isGrouped=false&isBatched=false&getOldOrder=true&delivererId=${userFromAS?.id}&orderStatus=${filterStatus?.value}${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}${sortItem?.id == 1 && isHadSortItem === true ? '&deliveryDateSortType=ASC' : ''
                     }${sortItem?.id == 2 && isHadSortItem === true ? '&deliveryDateSortType=DESC' : ''}`,
                     {
                         method: 'GET',
@@ -665,7 +665,7 @@ const HistoryList = ({ navigation }) => {
                     });
             } else if (currentOptions.id === 2) {
                 fetch(
-                    `${API.baseURL}/api/order/staff/getOrders?delivererId=${userFromAS?.id}&orderStatus=SUCCESS${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}`,
+                    `${API.baseURL}/api/order/staff/getOrders?isGrouped=false&isBatched=false&getOldOrder=true&delivererId=${userFromAS?.id}&orderStatus=SUCCESS${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}`,
                     {
                         method: 'GET',
                         headers: {
@@ -1666,7 +1666,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
     },
     body: {
-        flex: 6,
+        flex: 9,
     },
     areaAndLogout: {
         paddingTop: 10,
