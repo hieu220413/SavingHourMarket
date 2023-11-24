@@ -194,6 +194,7 @@ const Configuration = () => {
     })
       .then((res) => res.json())
       .then((respond) => {
+        console.log(respond);
         if (respond?.code === 422) {
           setLoading(false);
           return;
