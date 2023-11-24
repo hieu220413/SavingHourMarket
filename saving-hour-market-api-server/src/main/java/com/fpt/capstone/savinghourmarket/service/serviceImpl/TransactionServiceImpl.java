@@ -14,6 +14,7 @@ import com.fpt.capstone.savinghourmarket.model.TransactionListResponseBody;
 import com.fpt.capstone.savinghourmarket.model.TransactionWithOrderInfo;
 import com.fpt.capstone.savinghourmarket.repository.OrderRepository;
 import com.fpt.capstone.savinghourmarket.repository.TransactionRepository;
+import com.fpt.capstone.savinghourmarket.service.SystemConfigurationService;
 import com.fpt.capstone.savinghourmarket.service.TransactionService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import lombok.Getter;
@@ -54,6 +55,8 @@ public class TransactionServiceImpl implements TransactionService {
 
     private final TransactionRepository transactionRepository;
 
+    private final SystemConfigurationService systemConfigurationService;
+
     @Override
     public String getPaymentUrl(Integer paidAmount, UUID orderId) {
 
@@ -73,7 +76,7 @@ public class TransactionServiceImpl implements TransactionService {
 
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("YYYYMMddHHmmss");
         LocalDateTime today = LocalDateTime.now();
-        LocalDateTime expiredDateTime = today.plusMinutes(30);
+        LocalDateTime expiredDateTime = today.plusMinutes(systemConfigurationService.getConfiguration().getDeleteUnpaidOrderTime()*60);
         String vpn_Version = "2.1.0";
         String vnp_Command = "pay";
         String vnp_TmnCode = vnpayTmnCode;

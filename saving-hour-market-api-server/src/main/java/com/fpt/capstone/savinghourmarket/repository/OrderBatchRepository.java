@@ -22,10 +22,16 @@ public interface OrderBatchRepository extends JpaRepository<OrderBatch, UUID> {
             "WHERE " +
             "((:deliveryDate IS NULL) OR (ob.deliverDate = :deliveryDate)) " +
             "AND " +
-            "((:delivererId IS NULL) OR (ob.deliverer.id = :delivererId)) "+
+            "(((:getOldOrderBatch IS NULL) " +
+            "OR " +
+            "((:getOldOrderBatch = FALSE) AND (ob.deliverDate >= CURRENT_DATE)) " +
+            "OR " +
+            "((:getOldOrderBatch = TRUE) AND (ob.deliverDate < CURRENT_DATE)))) " +
+            "AND " +
+            "((:delivererId IS NULL) OR (ob.deliverer.id = :delivererId)) " +
             "AND " +
             "(ob.orderList IS NOT EMPTY) ")
-    List<OrderBatch> findByDistrictOrDeliverDate(LocalDate deliveryDate, UUID delivererId, Sort sort);
+    List<OrderBatch> findByDistrictOrDeliverDate(Boolean getOldOrderBatch, LocalDate deliveryDate, UUID delivererId, Sort sort);
 
     @Query("SELECT ob FROM OrderBatch ob " +
             "JOIN ob.deliverer delv " +

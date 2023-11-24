@@ -21,14 +21,18 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProductCategory {
 
+    public ProductCategory(ProductCategory productCategory) {
+        this.id = productCategory.getId();
+        this.name = productCategory.getName();
+    }
+
     public ProductCategory(ProductCategoryCreateBody productCategoryCreateBody) {
         this.name = productCategoryCreateBody.getName();
     }
 
-    public ProductCategory(UUID id, String name, Long totalDiscountUsage) {
+    public ProductCategory(UUID id, String name) {
         this.id = id;
         this.name = name;
-        this.totalDiscountUsage = totalDiscountUsage.intValue();
     }
 
     @Id

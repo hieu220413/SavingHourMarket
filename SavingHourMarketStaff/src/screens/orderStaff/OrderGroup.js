@@ -16,18 +16,18 @@ import {
   Alert,
   FlatList,
 } from 'react-native';
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, {useEffect, useState, useCallback, useRef} from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { COLORS } from '../../constants/theme';
-import { icons } from '../../constants';
-import { useFocusEffect } from '@react-navigation/native';
-import { API } from '../../constants/api';
-import { format } from 'date-fns';
+import {COLORS} from '../../constants/theme';
+import {icons} from '../../constants';
+import {useFocusEffect} from '@react-navigation/native';
+import {API} from '../../constants/api';
+import {format} from 'date-fns';
 import CartEmpty from '../../assets/image/search-empty.png';
-import { SwipeListView } from 'react-native-swipe-list-view';
+import {SwipeListView} from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
-import { da } from 'date-fns/locale';
+import {da} from 'date-fns/locale';
 import DatePicker from 'react-native-date-picker';
 import {
   ModalButton,
@@ -36,7 +36,7 @@ import {
   ScaleAnimation,
 } from 'react-native-modals';
 
-const OrderGroupForOrderStaff = ({ navigation, route }) => {
+const OrderGroupForOrderStaff = ({navigation, route}) => {
   const [initializing, setInitializing] = useState(true);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -49,9 +49,10 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
   const [currentUser, setCurrentUser] = useState(null);
 
   const orderGroupAreaState = [
-    { display: 'Chờ đóng gói', value: 'PROCESSING' },
-    { display: 'Đang đóng gói', value: 'PACKAGING' },
-    { display: 'Đã đóng gói', value: 'PACKAGED' },
+    {display: 'Chờ đóng gói', value: 'PROCESSING'},
+    {display: 'Đang đóng gói', value: 'PACKAGING'},
+    {display: 'Đã đóng gói', value: 'PACKAGED'},
+    {display: 'Đã huỷ', value: 'FAIL'},
   ];
 
   // init fake timeframe
@@ -541,6 +542,8 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
     // },
   ]);
 
+  const [orderFailList, setOrderFailList] = useState([]);
+
   const onAuthStateChange = async userInfo => {
     // console.log(userInfo);
     if (initializing) {
@@ -699,18 +702,22 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
       // console.log('tempSelectedTimeFrame: ', tempSelectedTimeFrameId);
       // console.log('pickupPoint: ', pickupPoint);
       await fetch(
-        `${API.baseURL}/api/order/packageStaff/getOrderGroup?${pickupPoint && pickupPoint.id
-          ? 'pickupPointId=' + pickupPoint?.id
-          : ''
-        }${selectedDate === ''
-          ? ''
-          : '&deliverDate=' + format(Date.parse(selectedDate), 'yyyy-MM-dd')
-        }${selectedTimeFrameId === ''
-          ? ''
-          : '&timeFrameId=' + selectedTimeFrameId
-        }${tempSelectedSortId === ''
-          ? ''
-          : selectSort.find(item => item.id === tempSelectedSortId)?.param
+        `${API.baseURL}/api/order/packageStaff/getOrderGroup?${
+          pickupPoint && pickupPoint.id
+            ? 'pickupPointId=' + pickupPoint?.id
+            : ''
+        }${
+          selectedDate === ''
+            ? ''
+            : '&deliverDate=' + format(Date.parse(selectedDate), 'yyyy-MM-dd')
+        }${
+          selectedTimeFrameId === ''
+            ? ''
+            : '&timeFrameId=' + selectedTimeFrameId
+        }${
+          tempSelectedSortId === ''
+            ? ''
+            : selectSort.find(item => item.id === tempSelectedSortId)?.param
         }`,
         {
           method: 'GET',
@@ -745,14 +752,69 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
     }
   };
 
+  const filterOrderFail = async () => {
+    console.log('filter order fail is run');
+    const tokenId = await auth().currentUser.getIdToken();
+    if (tokenId) {
+      setLoading(true);
+      // console.log('selectedDate: ', selectedDate);
+      // console.log('selectedTimeFrame: ', selectedTimeFrameId);
+      // console.log('tempSelectedDate: ', tempSelectedDate);
+      // console.log('tempSelectedTimeFrame: ', tempSelectedTimeFrameId);
+      // console.log('pickupPoint: ', pickupPoint);
+      await fetch(
+        `${
+          API.baseURL
+        }/api/order/packageStaff/getOrders?getOldOrder=true&orderStatus=FAIL&deliveryMethod=PICKUP_POINT&${
+          pickupPoint && pickupPoint.id
+            ? 'pickupPointId=' + pickupPoint?.id
+            : ''
+        }${
+          selectedDate === ''
+            ? ''
+            : '&deliveryDate=' + format(Date.parse(selectedDate), 'yyyy-MM-dd')
+        }${
+          selectedTimeFrameId === ''
+            ? ''
+            : '&timeFrameId=' + selectedTimeFrameId
+        }${
+          tempSelectedSortId === ''
+            ? ''
+            : selectSort.find(item => item.id === tempSelectedSortId)?.param
+        }`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${tokenId}`,
+          },
+        },
+      )
+        .then(res => res.json())
+        .then(respond => {
+          // console.log('order group', respond);
+          if (respond.error) {
+            setLoading(false);
+            return;
+          }
+          setOrderFailList(respond);
+          setLoading(false);
+        })
+        .catch(err => {
+          console.log(err);
+          setLoading(false);
+        });
+    }
+  };
+
   // handle apply filter
   const handleApplyFilter = () => {
     setSelectSort(
       selectSort.map(item => {
         if (item.id === tempSelectedSortId) {
-          return { ...item, active: true };
+          return {...item, active: true};
         }
-        return { ...item, active: false };
+        return {...item, active: false};
       }),
     );
     setSelectedTimeFrameId(tempSelectedTimeFrameId);
@@ -785,14 +847,24 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
     const fetchData = async () => {
       // console.log(pickupPoint);
       if (!isMountingRef.current) {
-        await filterOrderGroup();
+        if (currentStatus.value !== 'FAIL') {
+          await filterOrderGroup();
+        } else {
+          await filterOrderFail();
+        }
       } else {
         isMountingRef.current = false;
       }
     };
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectSort, selectedDate, selectedTimeFrameId, pickupPoint]);
+  }, [
+    selectSort,
+    selectedDate,
+    selectedTimeFrameId,
+    pickupPoint,
+    currentStatus,
+  ]);
 
   // handle clear sort modal
   const handleClearSortModal = () => {
@@ -802,6 +874,7 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
     setTempSelectedDate(new Date());
     // setSelectedDate(new Date());
     console.log('thiet lap lai');
+    setSortModalVisible(!sortModalVisible);
   };
 
   // handle close sort modal
@@ -816,6 +889,8 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
 
   // handle confirm packaging model & edit consolidation area
   const [confirmPackagingModalVisible, setConfirmPackagingModalVisible] =
+    useState(false);
+  const [isConfirmPackagingHaveArea, setIsConfirmPackagingHaveArea] =
     useState(false);
   const [
     editConsolidationAreaModalVisible,
@@ -991,14 +1066,20 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
   ) => {
     setSelectedEditGroupId(groupId);
     await getConsolidationAreaForGroup(groupPickupPointId);
-    if (!groupConsolidationArea) {
-      // handle confirm packaging
-      setConfirmPackagingModalVisible(true);
-    } else {
+    if (groupConsolidationArea) {
       setSelectedConsolidationAreaId(groupConsolidationArea.id);
-      // handle update status for all order in group to packaged
-      setEditConsolidationAreaModalVisible(true);
+      setIsConfirmPackagingHaveArea(true);
     }
+    setConfirmPackagingModalVisible(true);
+
+    // if (!groupConsolidationArea) {
+    //   // handle confirm packaging
+    //   setConfirmPackagingModalVisible(true);
+    // } else {
+    //   setSelectedConsolidationAreaId(groupConsolidationArea.id);
+    //   // handle update status for all order in group to packaged
+    //   setEditConsolidationAreaModalVisible(true);
+    // }
   };
 
   const handlOpenEditStatusPackagedModal = groupId => {
@@ -1014,6 +1095,7 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
   const handleCloseEditModal = groupId => {
     setSelectedEditGroupId('');
     setConfirmPackagingModalVisible(false);
+    setIsConfirmPackagingHaveArea(false);
     setEditConsolidationAreaModalVisible(false);
 
     setSelectedConsolidationAreaId('');
@@ -1051,18 +1133,23 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
           <View style={styles.header}>
             <View style={styles.areaAndLogout}>
               <View style={styles.area}>
-                <Text style={{ fontSize: 16 }}>Khu vực:</Text>
+                <Text style={{fontSize: 16}}>Khu vực:</Text>
                 <View style={styles.pickArea}>
                   <TouchableOpacity
                     onPress={() => {
                       navigation.navigate('SelectPickupPoint', {
+                        isFromOrderGroupRoute: true,
                         setPickupPoint: setPickupPoint,
                       });
                     }}>
                     <View style={styles.pickAreaItem}>
                       <Image
                         resizeMode="contain"
-                        style={{ width: 20, height: 20, tintColor: COLORS.primary }}
+                        style={{
+                          width: 20,
+                          height: 20,
+                          tintColor: COLORS.primary,
+                        }}
                         source={icons.location}
                       />
 
@@ -1070,7 +1157,8 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                         style={{
                           fontSize: 16,
                           fontFamily: 'Roboto',
-                          color: 'black'
+                          color: 'black',
+                          maxWidth: 270,
                         }}
                         numberOfLines={1}>
                         {pickupPoint && pickupPoint.id
@@ -1108,7 +1196,7 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                   }}>
                   <Image
                     resizeMode="contain"
-                    style={{ width: 38, height: 38 }}
+                    style={{width: 38, height: 38}}
                     source={{
                       uri: currentUser?.avatarUrl,
                     }}
@@ -1136,7 +1224,7 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                         })
                         .catch(e => console.log(e));
                     }}>
-                    <Text style={{ color: 'red', fontWeight: 'bold' }}>
+                    <Text style={{color: 'red', fontWeight: 'bold'}}>
                       Đăng xuất
                     </Text>
                   </TouchableOpacity>
@@ -1147,7 +1235,7 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
               style={{
                 flexDirection: 'row',
               }}>
-              <View style={{ flex: 6 }}>
+              <View style={{flex: 6}}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   {orderGroupAreaState.map((item, index) => (
                     <TouchableOpacity
@@ -1212,64 +1300,52 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
             </View>
           </View>
           <View style={styles.body}>
-            {/* Order list */}
-            {orderGroupList.length === 0 ? (
-              <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-                <Image
-                  style={{ width: '100%', height: '50%' }}
-                  resizeMode="contain"
-                  source={CartEmpty}
-                />
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontFamily: 'Roboto',
-                    // color: 'black',
-                    fontWeight: 'bold',
-                  }}>
-                  Không có nhóm nào
-                </Text>
-              </View>
-            ) : (
-              <View style={{ marginTop: 10, marginBottom: 100 }}>
-                <FlatList
-                  showsVerticalScrollIndicator={false}
-                  showsHorizontalScrollIndicator={false}
-                  data={orderGroupList.filter(group => {
-                    if (currentStatus.value === 'PROCESSING') {
-                      return group.productConsolidationArea === null;
-                    }
-                    if (currentStatus.value === 'PACKAGING') {
-                      return (
-                        group.productConsolidationArea !== null &&
-                        group.orderList.find(order => order.status === 1) !==
-                        undefined
-                      );
-                    }
-                    if (currentStatus.value === 'PACKAGED') {
-                      return (
-                        group.productConsolidationArea !== null &&
-                        group.orderList.find(order => order.status === 2) !==
-                        undefined
-                      );
-                    }
-                  })}
-                  renderItem={data => (
-                    <View
-                      key={data.item.id}
+            {/* Order group list */}
+            {currentStatus.value === 'FAIL' ? (
+              <>
+                {!orderFailList || orderFailList.length === 0 ? (
+                  <View
+                    style={{alignItems: 'center', justifyContent: 'center'}}>
+                    <Image
+                      style={{width: '100%', height: '50%'}}
+                      resizeMode="contain"
+                      source={CartEmpty}
+                    />
+                    <Text
                       style={{
-                        marginBottom: 20,
+                        fontSize: 20,
+                        fontFamily: 'Roboto',
+                        // color: 'black',
+                        fontWeight: 'bold',
                       }}>
-                      {/* Group detail */}
-                      <View>
+                      Không có nhóm nào
+                    </Text>
+                  </View>
+                ) : (
+                  orderFailList
+                    .map((order, index) => (
+                      <TouchableOpacity
+                        style={{
+                          paddingHorizontal: 0,
+                          paddingVertical: 10,
+                        }}
+                        onPress={() => {
+                          navigation.navigate('OrderDetail', {
+                            id: order.id,
+                            orderSuccess: false,
+                          });
+                        }}
+                        key={index}>
                         <View
                           style={{
-                            backgroundColor: COLORS.secondary,
-                            marginBottom: 5,
-                            alignItems: 'center',
-                            borderRadius: 5,
                             flexDirection: 'row',
-                            columnGap: 15,
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            backgroundColor: 'rgb(240,240,240)',
+                            marginHorizontal: 5,
+                            paddingHorizontal: 10,
+                            paddingVertical: 10,
+                            borderRadius: 10,
                             shadowColor: '#000',
                             shadowOffset: {
                               width: 0,
@@ -1277,229 +1353,170 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                             },
                             shadowOpacity: 0.25,
                             shadowRadius: 4,
-                            elevation: 10,
-                            zIndex:20
+                            elevation: 5,
                           }}>
-                          <TouchableOpacity
-                            style={{
-                              height: '100%',
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                              padding: 5,
-                              borderColor: 'white',
-                              borderRadius: 1,
-                              borderRightWidth: 1,
-                              borderTopLeftRadius: 5,
-                              borderBottomLeftRadius: 5,
-                            }}
-                            onPress={() => {
-                              setOrderGroupList(
-                                orderGroupList.map(group => {
-                                  if (group.id === data.item.id) {
-                                    group.isExpand = !group.isExpand;
-                                  }
-                                  return group;
-                                }),
-                              );
-                            }}>
-                            <Image
-                              resizeMode="contain"
-                              style={{
-                                width: 25,
-                                height: 25,
-                                tintColor: 'white',
-                              }}
-                              source={
-                                data.item.isExpand ? icons.minus : icons.plus
-                              }
-                            />
-                          </TouchableOpacity>
                           <View
                             style={{
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                              flexGrow: 1,
-                              flexShrink: 1,
-                              justifyContent: 'center',
-                            }}>
-                            {data.item.isExpand ? (
-                              <Text
-                                style={{
-                                  fontSize: 18,
-                                  fontWeight: 'bold',
-                                  fontFamily: 'Roboto',
-                                  color: 'white',
-                                }}>
-                                {data.item.timeFrame.fromHour.slice(0, 5) +
-                                  '-' +
-                                  data.item.timeFrame.toHour.slice(0, 5) +
-                                  ' ' +
-                                  format(
-                                    Date.parse(data.item.deliverDate),
-                                    'dd/MM/yyyy',
-                                  )}
-                              </Text>
-                            ) : (
-                              <View
-                                style={{
-                                  flexDirection: 'column',
-                                  gap: 8,
-                                  paddingVertical: 10,
-                                }}>
-                                <Text
-                                  style={{
-                                    fontSize: 18,
-                                    fontWeight: 'bold',
-                                    fontFamily: 'Roboto',
-                                    color: 'white',
-                                  }}>
-                                  Khung giờ:{' '}
-                                  {data.item.timeFrame.fromHour.slice(0, 5) +
-                                    '-' +
-                                    data.item.timeFrame.toHour.slice(0, 5)}
-                                </Text>
-                                <Text
-                                  style={{
-                                    fontSize: 18,
-                                    fontWeight: 'bold',
-                                    fontFamily: 'Roboto',
-                                    color: 'white',
-                                  }}>
-                                  Ngày giao:{' '}
-                                  {format(
-                                    Date.parse(data.item.deliverDate),
-                                    'dd/MM/yyyy',
-                                  )}
-                                </Text>
-                                <Text
-                                  style={{
-                                    fontSize: 18,
-                                    fontWeight: 'bold',
-                                    fontFamily: 'Roboto',
-                                    color: 'white',
-                                  }}
-                                  numberOfLines={2}>
-                                  Điểm giao:
-                                  {' ' + data.item.pickupPoint.address}
-                                </Text>
-                                {data.item.productConsolidationArea && (
-                                  <Text
-                                    style={{
-                                      fontSize: 18,
-                                      fontWeight: 'bold',
-                                      fontFamily: 'Roboto',
-                                      color: 'white',
-                                    }}
-                                    numberOfLines={2}>
-                                    Điểm tập kết:
-                                    {' ' +
-                                      data.item.productConsolidationArea
-                                        .address}
-                                  </Text>
-                                )}
-                              </View>
-                            )}
-                          </View>
-                          <View
-                            style={{
-                              height: '100%',
                               flexDirection: 'column',
-                              alignItems: 'center',
+                              gap: 8,
                             }}>
-                            {data.item.orderList.filter(
-                              order => order.status === 2,
-                            ).length === 0 && (
-                                <TouchableOpacity
-                                  style={{
-                                    flexGrow: 1,
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                    borderColor: 'white',
-                                    borderLeftWidth: 1,
-                                    borderBottomWidth: 0.5,
-                                    borderTopRightRadius: 5,
-                                    padding: 5,
-                                  }}
-                                  onPress={() =>
-                                    handleOpenEditModal(
-                                      data.item.id,
-                                      data.item.productConsolidationArea,
-                                      data.item.pickupPoint.id,
-                                    )
-                                  }>
-                                  <Image
-                                    resizeMode="contain"
-                                    style={{
-                                      width: 30,
-                                      height: 30,
-                                      tintColor: 'white',
-                                    }}
-                                    source={
-                                      currentStatus.value === 'PROCESSING'
-                                        ? icons.packaging
-                                        : icons.edit
-                                    }
-                                  />
-                                </TouchableOpacity>
-                              )}
-                            {currentStatus.value === 'PACKAGING' && (
-                              <TouchableOpacity
-                                style={{
-                                  flexGrow: 1,
-                                  flexDirection: 'row',
-                                  alignItems: 'center',
-                                  borderColor: 'white',
-                                  borderLeftWidth: 1,
-                                  borderTopWidth: 0.5,
-                                  borderBottomRightRadius: 5,
-                                  padding: 5,
-                                }}
-                                onPress={() =>
-                                  handlOpenEditStatusPackagedModal(
-                                    data.item.id,
-                                  )
-                                }>
-                                <Image
-                                  resizeMode="contain"
-                                  style={{
-                                    width: 30,
-                                    height: 30,
-                                    tintColor: 'white',
-                                  }}
-                                  source={icons.packageIcon}
-                                />
-                              </TouchableOpacity>
-                            )}
-                          </View>
-                        </View>
-
-                        {/* order list in group */}
-                        {data.item.isExpand &&
-                          data.item.orderList != null &&
-                          data.item.orderList.length > 0 &&
-                          data.item.orderList.map((order, index) => (
-                            <TouchableOpacity
+                            <Text
                               style={{
-                                paddingHorizontal: 0,
-                                paddingVertical: 10,
-                              }}
-                              onPress={() => {
-                                navigation.navigate('OrderDetail', {
-                                  id: order.id,
-                                  orderSuccess: false,
-                                });
-                              }}
-                              key={index}>
+                                fontSize: 20,
+                                fontWeight: 'bold',
+                                fontFamily: 'Roboto',
+                                color: COLORS.red,
+                              }}>
+                              Thất bại
+                            </Text>
+                            <Text
+                              style={{
+                                fontSize: 17,
+                                fontWeight: 'bold',
+                                fontFamily: 'Roboto',
+                                color: 'black',
+                              }}>
+                              Ngày đặt :{' '}
+                              {format(
+                                Date.parse(order?.createdTime),
+                                'dd/MM/yyyy',
+                              )}
+                            </Text>
+                            <Text
+                              style={{
+                                fontSize: 17,
+                                fontWeight: 'bold',
+                                fontFamily: 'Roboto',
+                                color: 'black',
+                              }}>
+                              Ngày giao :{' '}
+                              {format(
+                                Date.parse(order?.deliveryDate),
+                                'dd/MM/yyyy',
+                              )}
+                            </Text>
+                            <Text
+                              style={{
+                                fontSize: 17,
+                                fontWeight: 'bold',
+                                fontFamily: 'Roboto',
+                                color: 'black',
+                              }}>
+                              Tổng tiền:{' '}
+                              {order?.totalPrice?.toLocaleString('vi-VN', {
+                                style: 'currency',
+                                currency: 'VND',
+                              })}
+                            </Text>
+                            <Text
+                              style={{
+                                fontSize: 17,
+                                fontWeight: 'bold',
+                                fontFamily: 'Roboto',
+                                color: 'black',
+                              }}>
+                              Nhân viên đóng gói:{' '}
+                              {order?.packager === null
+                                ? 'Chưa có'
+                                : order?.packager.fullName}
+                            </Text>
+                          </View>
+                          <Image
+                            resizeMode="contain"
+                            style={{
+                              width: 30,
+                              height: 30,
+                              tintColor: COLORS.primary,
+                            }}
+                            source={icons.rightArrow}
+                          />
+                        </View>
+                      </TouchableOpacity>
+                    ))
+                )}
+              </>
+            ) : (
+              <>
+                {!orderGroupList ||
+                orderGroupList.filter(group => {
+                  if (currentStatus.value === 'PROCESSING') {
+                    return group.productConsolidationArea === null;
+                  }
+                  if (currentStatus.value === 'PACKAGING') {
+                    return (
+                      group.productConsolidationArea !== null &&
+                      group.orderList.find(order => order.status === 1) !==
+                        undefined
+                    );
+                  }
+                  if (currentStatus.value === 'PACKAGED') {
+                    return (
+                      group.productConsolidationArea !== null &&
+                      group.orderList.find(order => order.status === 2) !==
+                        undefined
+                    );
+                  }
+                }).length === 0 ? (
+                  <View
+                    style={{alignItems: 'center', justifyContent: 'center'}}>
+                    <Image
+                      style={{width: '100%', height: '50%'}}
+                      resizeMode="contain"
+                      source={CartEmpty}
+                    />
+                    <Text
+                      style={{
+                        fontSize: 20,
+                        fontFamily: 'Roboto',
+                        // color: 'black',
+                        fontWeight: 'bold',
+                      }}>
+                      Không có nhóm nào
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={{marginTop: 10, marginBottom: 100}}>
+                    {
+                      <FlatList
+                        showsVerticalScrollIndicator={false}
+                        showsHorizontalScrollIndicator={false}
+                        data={orderGroupList.filter(group => {
+                          if (currentStatus.value === 'PROCESSING') {
+                            return group.productConsolidationArea === null;
+                          }
+                          if (currentStatus.value === 'PACKAGING') {
+                            return (
+                              group.productConsolidationArea !== null &&
+                              group.orderList.find(
+                                order => order.status === 1,
+                              ) !== undefined
+                            );
+                          }
+                          if (currentStatus.value === 'PACKAGED') {
+                            return (
+                              group.productConsolidationArea !== null &&
+                              group.orderList.find(
+                                order => order.status === 2,
+                              ) !== undefined
+                            );
+                          }
+                        })}
+                        renderItem={data => (
+                          <View
+                            key={data.item.id}
+                            style={{
+                              marginBottom: 20,
+                            }}>
+                            {/* Group detail */}
+                            <View>
                               <View
                                 style={{
-                                  flexDirection: 'row',
+                                  backgroundColor: COLORS.secondary,
+                                  marginBottom: 5,
                                   alignItems: 'center',
-                                  justifyContent: 'space-between',
-                                  backgroundColor: 'rgb(240,240,240)',
-                                  marginHorizontal: 5,
-                                  paddingHorizontal: 10,
-                                  paddingVertical: 10,
-                                  borderRadius: 10,
+                                  borderRadius: 5,
+                                  flexDirection: 'row',
+                                  columnGap: 15,
                                   shadowColor: '#000',
                                   shadowOffset: {
                                     width: 0,
@@ -1507,144 +1524,400 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                                   },
                                   shadowOpacity: 0.25,
                                   shadowRadius: 4,
-                                  elevation: 5,
+                                  elevation: 10,
+                                  zIndex: 20,
                                 }}>
-                                <View
-                                  style={{ flexDirection: 'column', gap: 8 }}>
-                                  <Text
-                                    style={{
-                                      fontSize: 20,
-                                      fontWeight: 'bold',
-                                      fontFamily: 'Roboto',
-                                      color: COLORS.primary,
-                                    }}>
-                                    {order?.status === 0 && 'Chờ đóng gói'}
-                                    {order?.status === 1 && 'Đang đóng gói'}
-                                    {order?.status === 2 && 'Đã đóng gói'}
-                                  </Text>
-                                  <Text
-                                    style={{
-                                      fontSize: 17,
-                                      fontWeight: 'bold',
-                                      fontFamily: 'Roboto',
-                                      color: 'black',
-                                    }}>
-                                    Ngày đặt :{' '}
-                                    {format(
-                                      Date.parse(order?.createdTime),
-                                      'dd/MM/yyyy',
-                                    )}
-                                  </Text>
-                                  <Text
-                                    style={{
-                                      fontSize: 17,
-                                      fontWeight: 'bold',
-                                      fontFamily: 'Roboto',
-                                      color: 'black',
-                                    }}>
-                                    Ngày giao :{' '}
-                                    {format(
-                                      Date.parse(order?.deliveryDate),
-                                      'dd/MM/yyyy',
-                                    )}
-                                  </Text>
-                                  <Text
-                                    style={{
-                                      fontSize: 17,
-                                      fontWeight: 'bold',
-                                      fontFamily: 'Roboto',
-                                      color: 'black',
-                                    }}>
-                                    Tổng tiền:{' '}
-                                    {order?.totalPrice?.toLocaleString(
-                                      'vi-VN',
-                                      {
-                                        style: 'currency',
-                                        currency: 'VND',
-                                      },
-                                    )}
-                                  </Text>
-                                  <Text
-                                    style={{
-                                      fontSize: 17,
-                                      fontWeight: 'bold',
-                                      fontFamily: 'Roboto',
-                                      color: 'black',
-                                    }}>
-                                    Nhân viên đóng gói:{' '}
-                                    {order?.packager === null
-                                      ? 'Chưa có'
-                                      : order?.packager.fullName}
-                                  </Text>
-                                </View>
-                                <Image
-                                  resizeMode="contain"
+                                <TouchableOpacity
                                   style={{
-                                    width: 30,
-                                    height: 30,
-                                    tintColor: COLORS.primary,
+                                    height: '100%',
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    padding: 5,
+                                    borderColor: 'white',
+                                    borderRadius: 1,
+                                    borderRightWidth: 1,
+                                    borderTopLeftRadius: 5,
+                                    borderBottomLeftRadius: 5,
                                   }}
-                                  source={icons.rightArrow}
-                                />
+                                  onPress={() => {
+                                    setOrderGroupList(
+                                      orderGroupList.map(group => {
+                                        if (group.id === data.item.id) {
+                                          group.isExpand = !group.isExpand;
+                                        }
+                                        return group;
+                                      }),
+                                    );
+                                  }}>
+                                  <Image
+                                    resizeMode="contain"
+                                    style={{
+                                      width: 25,
+                                      height: 25,
+                                      tintColor: 'white',
+                                    }}
+                                    source={
+                                      data.item.isExpand
+                                        ? icons.minus
+                                        : icons.plus
+                                    }
+                                  />
+                                </TouchableOpacity>
+                                <View
+                                  style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    flexGrow: 1,
+                                    flexShrink: 1,
+                                    justifyContent: 'center',
+                                  }}>
+                                  {data.item.isExpand ? (
+                                    <Text
+                                      style={{
+                                        fontSize: 18,
+                                        fontWeight: 'bold',
+                                        fontFamily: 'Roboto',
+                                        color: 'white',
+                                      }}>
+                                      {data.item.timeFrame.fromHour.slice(
+                                        0,
+                                        5,
+                                      ) +
+                                        '-' +
+                                        data.item.timeFrame.toHour.slice(0, 5) +
+                                        ' ' +
+                                        format(
+                                          Date.parse(data.item.deliverDate),
+                                          'dd/MM/yyyy',
+                                        )}
+                                    </Text>
+                                  ) : (
+                                    <View
+                                      style={{
+                                        flexDirection: 'column',
+                                        gap: 8,
+                                        paddingVertical: 10,
+                                      }}>
+                                      <Text
+                                        style={{
+                                          fontSize: 18,
+                                          fontWeight: 'bold',
+                                          fontFamily: 'Roboto',
+                                          color: 'white',
+                                        }}>
+                                        Khung giờ:{' '}
+                                        {data.item.timeFrame.fromHour.slice(
+                                          0,
+                                          5,
+                                        ) +
+                                          '-' +
+                                          data.item.timeFrame.toHour.slice(
+                                            0,
+                                            5,
+                                          )}
+                                      </Text>
+                                      <Text
+                                        style={{
+                                          fontSize: 18,
+                                          fontWeight: 'bold',
+                                          fontFamily: 'Roboto',
+                                          color: 'white',
+                                        }}>
+                                        Ngày giao:{' '}
+                                        {format(
+                                          Date.parse(data.item.deliverDate),
+                                          'dd/MM/yyyy',
+                                        )}
+                                      </Text>
+                                      <Text
+                                        style={{
+                                          fontSize: 18,
+                                          fontWeight: 'bold',
+                                          fontFamily: 'Roboto',
+                                          color: 'white',
+                                        }}
+                                        numberOfLines={2}>
+                                        Điểm giao:
+                                        {' ' + data.item.pickupPoint.address}
+                                      </Text>
+                                      {data.item.productConsolidationArea && (
+                                        <Text
+                                          style={{
+                                            fontSize: 18,
+                                            fontWeight: 'bold',
+                                            fontFamily: 'Roboto',
+                                            color: 'white',
+                                          }}
+                                          numberOfLines={2}>
+                                          Điểm tập kết:
+                                          {' ' +
+                                            data.item.productConsolidationArea
+                                              .address}
+                                        </Text>
+                                      )}
+                                    </View>
+                                  )}
+                                </View>
+                                <View
+                                  style={{
+                                    height: '100%',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                  }}>
+                                  {currentStatus.value === 'PROCESSING' && (
+                                    <TouchableOpacity
+                                      style={{
+                                        flexGrow: 1,
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        borderColor: 'white',
+                                        borderLeftWidth: 1,
+                                        borderBottomWidth: 0.5,
+                                        borderTopRightRadius: 5,
+                                        padding: 5,
+                                      }}
+                                      onPress={() =>
+                                        handleOpenEditModal(
+                                          data.item.id,
+                                          data.item.productConsolidationArea,
+                                          data.item.pickupPoint.id,
+                                        )
+                                      }>
+                                      <Image
+                                        resizeMode="contain"
+                                        style={{
+                                          width: 30,
+                                          height: 30,
+                                          tintColor: 'white',
+                                        }}
+                                        source={icons.packaging}
+                                      />
+                                    </TouchableOpacity>
+                                  )}
+                                  {currentStatus.value === 'PACKAGING' && (
+                                    <TouchableOpacity
+                                      style={{
+                                        flexGrow: 1,
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        borderColor: 'white',
+                                        borderLeftWidth: 1,
+                                        // borderTopWidth: 0.5,
+                                        borderBottomRightRadius: 5,
+                                        padding: 5,
+                                      }}
+                                      onPress={() =>
+                                        handlOpenEditStatusPackagedModal(
+                                          data.item.id,
+                                        )
+                                      }>
+                                      <Image
+                                        resizeMode="contain"
+                                        style={{
+                                          width: 30,
+                                          height: 30,
+                                          tintColor: 'white',
+                                        }}
+                                        source={icons.packageIcon}
+                                      />
+                                    </TouchableOpacity>
+                                  )}
+                                </View>
                               </View>
-                            </TouchableOpacity>
-                          ))}
-                      </View>
-                      {/* *********************** */}
-                    </View>
-                  )}
-                // renderHiddenItem={(data, rowMap) => (
-                //   <View
-                //     style={{
-                //       flexDirection: 'row',
-                //       justifyContent: 'flex-end',
-                //       height: '89%',
-                //       // marginVertical: '2%',
-                //     }}>
-                //     <TouchableOpacity
-                //       style={{
-                //         width: 120,
-                //         height: '100%',
-                //         backgroundColor: COLORS.primary,
-                //         borderRadius: 10,
-                //         // flex: 1,
-                //         alignItems: 'center',
-                //         justifyContent: 'center',
-                //       }}
-                //       onPress={() => {
-                //         setVisible(true);
-                //         // console.log(data.item.id);
-                //         setOrder(data.item);
-                //       }}>
-                //       <View>
-                //         {data.item?.status === 0 && (
-                //           <Image
-                //             source={icons.packaging}
-                //             resizeMode="contain"
-                //             style={{
-                //               width: 40,
-                //               height: 40,
-                //               tintColor: 'white',
-                //             }}
-                //           />
-                //         )}
-                //         {data.item?.status === 1 && (
-                //           <Image
-                //             source={icons.packaged}
-                //             resizeMode="contain"
-                //             style={{
-                //               width: 55,
-                //               height: 55,
-                //               tintColor: 'white',
-                //             }}
-                //           />
-                //         )}
-                //       </View>
-                //     </TouchableOpacity>
-                //   </View>
-                // )}
-                />
-              </View>
+
+                              {/* order list in group */}
+                              {data.item.isExpand &&
+                                data.item.orderList != null &&
+                                data.item.orderList.length > 0 &&
+                                data.item.orderList
+                                  .filter(order => {
+                                    if (currentStatus.value === 'PROCESSING') {
+                                      return order.status === 0;
+                                    }
+                                    if (currentStatus.value === 'PACKAGING') {
+                                      return order.status === 1;
+                                    }
+                                    if (currentStatus.value === 'PACKAGED') {
+                                      return order.status === 2;
+                                    }
+                                  })
+                                  .map((order, index) => (
+                                    <TouchableOpacity
+                                      style={{
+                                        paddingHorizontal: 0,
+                                        paddingVertical: 10,
+                                      }}
+                                      onPress={() => {
+                                        navigation.navigate('OrderDetail', {
+                                          id: order.id,
+                                          orderSuccess: false,
+                                        });
+                                      }}
+                                      key={index}>
+                                      <View
+                                        style={{
+                                          flexDirection: 'row',
+                                          alignItems: 'center',
+                                          justifyContent: 'space-between',
+                                          backgroundColor: 'rgb(240,240,240)',
+                                          marginHorizontal: 5,
+                                          paddingHorizontal: 10,
+                                          paddingVertical: 10,
+                                          borderRadius: 10,
+                                          shadowColor: '#000',
+                                          shadowOffset: {
+                                            width: 0,
+                                            height: 2,
+                                          },
+                                          shadowOpacity: 0.25,
+                                          shadowRadius: 4,
+                                          elevation: 5,
+                                        }}>
+                                        <View
+                                          style={{
+                                            flexDirection: 'column',
+                                            gap: 8,
+                                          }}>
+                                          <Text
+                                            style={{
+                                              fontSize: 20,
+                                              fontWeight: 'bold',
+                                              fontFamily: 'Roboto',
+                                              color: COLORS.primary,
+                                            }}>
+                                            {order?.status === 0 &&
+                                              'Chờ đóng gói'}
+                                            {order?.status === 1 &&
+                                              'Đang đóng gói'}
+                                            {order?.status === 2 &&
+                                              'Đã đóng gói'}
+                                          </Text>
+                                          <Text
+                                            style={{
+                                              fontSize: 17,
+                                              fontWeight: 'bold',
+                                              fontFamily: 'Roboto',
+                                              color: 'black',
+                                            }}>
+                                            Ngày đặt :{' '}
+                                            {format(
+                                              Date.parse(order?.createdTime),
+                                              'dd/MM/yyyy',
+                                            )}
+                                          </Text>
+                                          <Text
+                                            style={{
+                                              fontSize: 17,
+                                              fontWeight: 'bold',
+                                              fontFamily: 'Roboto',
+                                              color: 'black',
+                                            }}>
+                                            Ngày giao :{' '}
+                                            {format(
+                                              Date.parse(order?.deliveryDate),
+                                              'dd/MM/yyyy',
+                                            )}
+                                          </Text>
+                                          <Text
+                                            style={{
+                                              fontSize: 17,
+                                              fontWeight: 'bold',
+                                              fontFamily: 'Roboto',
+                                              color: 'black',
+                                            }}>
+                                            Tổng tiền:{' '}
+                                            {order?.totalPrice?.toLocaleString(
+                                              'vi-VN',
+                                              {
+                                                style: 'currency',
+                                                currency: 'VND',
+                                              },
+                                            )}
+                                          </Text>
+                                          <Text
+                                            style={{
+                                              fontSize: 17,
+                                              fontWeight: 'bold',
+                                              fontFamily: 'Roboto',
+                                              color: 'black',
+                                            }}>
+                                            Nhân viên đóng gói:{' '}
+                                            {order?.packager === null
+                                              ? 'Chưa có'
+                                              : order?.packager.fullName}
+                                          </Text>
+                                        </View>
+                                        <Image
+                                          resizeMode="contain"
+                                          style={{
+                                            width: 30,
+                                            height: 30,
+                                            tintColor: COLORS.primary,
+                                          }}
+                                          source={icons.rightArrow}
+                                        />
+                                      </View>
+                                    </TouchableOpacity>
+                                  ))}
+                            </View>
+                            {/* *********************** */}
+                          </View>
+                        )}
+                        // renderHiddenItem={(data, rowMap) => (
+                        //   <View
+                        //     style={{
+                        //       flexDirection: 'row',
+                        //       justifyContent: 'flex-end',
+                        //       height: '89%',
+                        //       // marginVertical: '2%',
+                        //     }}>
+                        //     <TouchableOpacity
+                        //       style={{
+                        //         width: 120,
+                        //         height: '100%',
+                        //         backgroundColor: COLORS.primary,
+                        //         borderRadius: 10,
+                        //         // flex: 1,
+                        //         alignItems: 'center',
+                        //         justifyContent: 'center',
+                        //       }}
+                        //       onPress={() => {
+                        //         setVisible(true);
+                        //         // console.log(data.item.id);
+                        //         setOrder(data.item);
+                        //       }}>
+                        //       <View>
+                        //         {data.item?.status === 0 && (
+                        //           <Image
+                        //             source={icons.packaging}
+                        //             resizeMode="contain"
+                        //             style={{
+                        //               width: 40,
+                        //               height: 40,
+                        //               tintColor: 'white',
+                        //             }}
+                        //           />
+                        //         )}
+                        //         {data.item?.status === 1 && (
+                        //           <Image
+                        //             source={icons.packaged}
+                        //             resizeMode="contain"
+                        //             style={{
+                        //               width: 55,
+                        //               height: 55,
+                        //               tintColor: 'white',
+                        //             }}
+                        //           />
+                        //         )}
+                        //       </View>
+                        //     </TouchableOpacity>
+                        //   </View>
+                        // )}
+                      />
+                    }
+                  </View>
+                )}
+              </>
             )}
 
             {/* Modal Sort */}
@@ -1720,37 +1993,37 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                         style={
                           tempSelectedSortId === item.id
                             ? {
-                              borderColor: COLORS.primary,
-                              borderWidth: 1,
-                              borderRadius: 10,
-                              margin: 5,
-                            }
+                                borderColor: COLORS.primary,
+                                borderWidth: 1,
+                                borderRadius: 10,
+                                margin: 5,
+                              }
                             : {
-                              borderColor: '#c8c8c8',
-                              borderWidth: 0.2,
-                              borderRadius: 10,
-                              margin: 5,
-                            }
+                                borderColor: '#c8c8c8',
+                                borderWidth: 0.2,
+                                borderRadius: 10,
+                                margin: 5,
+                              }
                         }>
                         <Text
                           style={
                             tempSelectedSortId === item.id
                               ? {
-                                width: 150,
-                                paddingVertical: 10,
-                                textAlign: 'center',
-                                color: COLORS.primary,
+                                  width: 150,
+                                  paddingVertical: 10,
+                                  textAlign: 'center',
+                                  color: COLORS.primary,
 
-                                fontSize: 12,
-                              }
+                                  fontSize: 12,
+                                }
                               : {
-                                width: 150,
-                                paddingVertical: 10,
-                                textAlign: 'center',
-                                color: 'black',
+                                  width: 150,
+                                  paddingVertical: 10,
+                                  textAlign: 'center',
+                                  color: 'black',
 
-                                fontSize: 12,
-                              }
+                                  fontSize: 12,
+                                }
                           }>
                           {item.name}
                         </Text>
@@ -1783,37 +2056,37 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                           style={
                             item.id === tempSelectedTimeFrameId
                               ? {
-                                borderColor: COLORS.primary,
-                                borderWidth: 1,
-                                borderRadius: 10,
-                                margin: 5,
-                              }
+                                  borderColor: COLORS.primary,
+                                  borderWidth: 1,
+                                  borderRadius: 10,
+                                  margin: 5,
+                                }
                               : {
-                                borderColor: '#c8c8c8',
-                                borderWidth: 0.2,
-                                borderRadius: 10,
-                                margin: 5,
-                              }
+                                  borderColor: '#c8c8c8',
+                                  borderWidth: 0.2,
+                                  borderRadius: 10,
+                                  margin: 5,
+                                }
                           }>
                           <Text
                             style={
                               item.id === tempSelectedTimeFrameId
                                 ? {
-                                  width: 150,
-                                  paddingVertical: 10,
-                                  textAlign: 'center',
-                                  color: COLORS.primary,
+                                    width: 150,
+                                    paddingVertical: 10,
+                                    textAlign: 'center',
+                                    color: COLORS.primary,
 
-                                  fontSize: 12,
-                                }
+                                    fontSize: 12,
+                                  }
                                 : {
-                                  width: 150,
-                                  paddingVertical: 10,
-                                  textAlign: 'center',
-                                  color: 'black',
+                                    width: 150,
+                                    paddingVertical: 10,
+                                    textAlign: 'center',
+                                    color: 'black',
 
-                                  fontSize: 12,
-                                }
+                                    fontSize: 12,
+                                  }
                             }>
                             {item.fromHour.slice(0, 5)} đến{' '}
                             {item.toHour.slice(0, 5)}
@@ -1837,9 +2110,7 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                     }}>
                     <DatePicker
                       date={
-                        tempSelectedDate === ''
-                          ? new Date()
-                          : tempSelectedDate
+                        tempSelectedDate === '' ? new Date() : tempSelectedDate
                       }
                       mode="date"
                       androidVariant="nativeAndroid"
@@ -2048,8 +2319,9 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
               animationType="fade"
               transparent={true}
               visible={
-                confirmPackagingModalVisible ||
-                editConsolidationAreaModalVisible
+                confirmPackagingModalVisible
+                // ||
+                // editConsolidationAreaModalVisible
               }
               onRequestClose={handleCloseEditModal}>
               <View style={styles.centeredView}>
@@ -2067,7 +2339,9 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                         textAlign: 'center',
                         paddingBottom: 20,
                       }}>
-                      Chọn điểm tập kết
+                      {isConfirmPackagingHaveArea
+                        ? 'Xác nhận đang đóng gói'
+                        : 'Chọn điểm tập kết'}
                     </Text>
                     <TouchableOpacity onPress={handleCloseEditModal}>
                       <Image
@@ -2081,82 +2355,136 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                       />
                     </TouchableOpacity>
                   </View>
-                  <FlatList
-                    style={{ maxHeight: 200 }}
-                    data={consolidationAreaList}
-                    renderItem={data => (
-                      <TouchableOpacity
-                        key={data.item.id}
-                        onPress={() => {
-                          setSelectedConsolidationAreaId(data.item.id);
-                        }}
-                        style={{
-                          paddingVertical: 15,
-                          borderTopColor: '#decbcb',
-                          borderTopWidth: 0.75,
-                        }}>
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            gap: 15,
-                            flex: 1,
-                            justifyContent: 'space-between',
-                          }}>
-                          <Image
-                            resizeMode="contain"
-                            style={{ width: 20, height: 20 }}
-                            source={icons.location}
-                            tintColor={
-                              data.item.id === selectedConsolidationAreaId
-                                ? COLORS.secondary
-                                : 'black'
-                            }
-                          />
-                          <Text
+                  {!isConfirmPackagingHaveArea ? (
+                    <>
+                      <FlatList
+                        style={{maxHeight: 200}}
+                        data={consolidationAreaList}
+                        renderItem={data => (
+                          <TouchableOpacity
+                            key={data.item.id}
+                            onPress={() => {
+                              setSelectedConsolidationAreaId(data.item.id);
+                            }}
                             style={{
-                              fontSize: 16,
-                              color:
-                                data.item.id === selectedConsolidationAreaId
-                                  ? COLORS.secondary
-                                  : 'black',
-                              fontFamily: 'Roboto',
-                              textDecorationColor: 'red',
-                              flexShrink: 1,
+                              paddingVertical: 15,
+                              borderTopColor: '#decbcb',
+                              borderTopWidth: 0.75,
                             }}>
-                            {data.item.address}
-                          </Text>
-                        </View>
-                      </TouchableOpacity>
-                    )}
-                  />
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'center',
-                      marginTop: '5%',
-                    }}>
-                    <TouchableOpacity
-                      style={{
-                        width: '100%',
-                        paddingHorizontal: 15,
-                        paddingVertical: 10,
-                        backgroundColor:
-                          selectedConsolidationAreaId === ''
-                            ? COLORS.light_green
-                            : COLORS.primary,
-                        color: 'white',
-                        borderRadius: 10,
-                      }}
-                      disabled={selectedConsolidationAreaId === ''}
-                      onPress={
-                        confirmPackagingModalVisible
-                          ? handleSubmitConfirmPackagingModal
-                          : handleEditAreaModal
-                      }>
-                      <Text style={styles.textStyle}>Xác nhận</Text>
-                    </TouchableOpacity>
-                  </View>
+                            <View
+                              style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                gap: 15,
+                                flex: 1,
+                                justifyContent: 'space-between',
+                              }}>
+                              <Image
+                                resizeMode="contain"
+                                style={{width: 20, height: 20}}
+                                source={icons.location}
+                                tintColor={
+                                  data.item.id === selectedConsolidationAreaId
+                                    ? COLORS.secondary
+                                    : 'black'
+                                }
+                              />
+                              <Text
+                                style={{
+                                  fontSize: 16,
+                                  color:
+                                    data.item.id === selectedConsolidationAreaId
+                                      ? COLORS.secondary
+                                      : 'black',
+                                  fontFamily: 'Roboto',
+                                  textDecorationColor: 'red',
+                                  flexShrink: 1,
+                                }}>
+                                {data.item.address}
+                              </Text>
+                            </View>
+                          </TouchableOpacity>
+                        )}
+                      />
+                      <View
+                        style={{
+                          flexDirection: 'column',
+                          justifyContent: 'center',
+                          marginTop: '5%',
+                          rowGap: 5,
+                        }}>
+                        <Text style={{color: COLORS.red, fontSize: 11}}>
+                          * Điểm tập kết đã chọn sẽ không thể thay đổi sau khi
+                          xác nhận
+                        </Text>
+                        <TouchableOpacity
+                          style={{
+                            width: '100%',
+                            paddingHorizontal: 15,
+                            paddingVertical: 10,
+                            backgroundColor:
+                              selectedConsolidationAreaId === ''
+                                ? COLORS.light_green
+                                : COLORS.primary,
+                            color: 'white',
+                            borderRadius: 10,
+                          }}
+                          disabled={selectedConsolidationAreaId === ''}
+                          onPress={
+                            // confirmPackagingModalVisible
+                            //   ?
+                            handleSubmitConfirmPackagingModal
+                            // : handleEditAreaModal
+                          }>
+                          <Text style={styles.textStyle}>Xác nhận</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </>
+                  ) : (
+                    <>
+                      <Text>
+                        Nhóm đơn này đã có điểm tập kết là{' '}
+                        <Text style={{fontWeight: 'bold'}}>
+                          {
+                            consolidationAreaList?.find(
+                              area => area.id === selectedConsolidationAreaId,
+                            )?.address
+                          }
+                          .
+                        </Text>{' '}
+                        Xác nhận đang đóng gói cho nhóm đơn này ?
+                      </Text>
+                      <View
+                        style={{
+                          flexDirection: 'column',
+                          justifyContent: 'center',
+                          marginTop: '5%',
+                          rowGap: 5,
+                        }}>
+                        <TouchableOpacity
+                          style={{
+                            width: '100%',
+                            paddingHorizontal: 15,
+                            paddingVertical: 10,
+                            backgroundColor:
+                              selectedConsolidationAreaId === ''
+                                ? COLORS.light_green
+                                : COLORS.primary,
+                            color: 'white',
+                            borderRadius: 10,
+                          }}
+                          disabled={selectedConsolidationAreaId === ''}
+                          onPress={
+                            // confirmPackagingModalVisible
+                            //   ?
+                            handleSubmitConfirmPackagingModal
+                            // : handleEditAreaModal
+                          }>
+                          <Text style={styles.textStyle}>Xác nhận</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </>
+                  )}
                 </View>
               </View>
             </Modal>

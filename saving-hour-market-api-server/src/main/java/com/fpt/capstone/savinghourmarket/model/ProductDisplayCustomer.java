@@ -25,6 +25,7 @@ public class ProductDisplayCustomer {
         this.description = product.getDescription();
         this.imageUrlImageList = product.getProductImageList();
         this.status = product.getStatus();
+        this.unit = product.getUnit();
         this.productSubCategory = product.getProductSubCategory();
         this.supermarket = product.getSupermarket();
         this.otherProductBatchList = new ArrayList<>();
@@ -48,6 +49,8 @@ public class ProductDisplayCustomer {
     private String name;
 
     private String description;
+
+    private String unit;
 
 
     private List<ProductImage> imageUrlImageList;

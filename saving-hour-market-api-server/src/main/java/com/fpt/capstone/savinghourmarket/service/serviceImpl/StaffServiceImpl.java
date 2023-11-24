@@ -6,12 +6,13 @@ import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.repository.*;
 import com.fpt.capstone.savinghourmarket.service.StaffService;
+import com.fpt.capstone.savinghourmarket.service.SystemConfigurationService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
 import lombok.RequiredArgsConstructor;
-import org.redisson.misc.Hash;
+import org.apache.commons.math3.util.Precision;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,8 +21,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.text.DecimalFormat;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
@@ -48,6 +52,8 @@ public class StaffServiceImpl implements StaffService {
     private final OrderGroupRepository orderGroupRepositorys;
 
     private final TimeFrameRepository timeFrameRepository;
+
+    private final SystemConfigurationService systemConfigurationService;
 
 //    @Override
 //    public Staff getInfoGoogleLogged(String email) throws FirebaseAuthException {
@@ -178,15 +184,15 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public StaffListResponseBody getStaffForAdmin(String name, StaffRole role, EnableDisableStatus status, Integer page, Integer limit) {
+    public StaffListForAdminResponseBody getStaffForAdmin(String name, StaffRole role, EnableDisableStatus status, Integer page, Integer limit) {
         Pageable pageable = PageRequest.of(page, limit);
         Page<Staff> result = staffRepository.getStaffForAdmin(name, role == null ? null : role.toString(), status == null ? null : status.ordinal(), pageable);
         int totalPage = result.getTotalPages();
         long totalCustomer = result.getTotalElements();
 
-        List<Staff> staffList = result.stream().toList();
+        List<StaffForAdmin> staffList = result.stream().map(StaffForAdmin::new).collect(Collectors.toList());
 
-        return new StaffListResponseBody(staffList, totalPage, totalCustomer);
+        return new StaffListForAdminResponseBody(staffList, totalPage, totalCustomer);
     }
 
     @Override
@@ -233,6 +239,13 @@ public class StaffServiceImpl implements StaffService {
         UserRecord userRecord = checkIsStaffInOrderProcess(staff);
 
         Map<String, Object> claims = new HashMap<>();
+        if(staff.get().getRole().equals(StaffRole.STAFF_ORD)) {
+            staff.get().getPickupPoint().clear();
+        }
+        if(staff.get().getRole().equals(StaffRole.STAFF_DLV_1)) {
+            staff.get().getDeliverStaffList().forEach(deliverStaff -> deliverStaff.setDeliverManagerStaff(null));
+            staff.get().getDeliverStaffList().clear();
+        }
         staff.get().setRole(staffRoleUpdateRequestBody.getRole().toString());
         claims.put("user_role", staffRoleUpdateRequestBody.getRole().toString());
         firebaseAuth.setCustomUserClaims(userRecord.getUid(), claims);
@@ -280,9 +293,14 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public StaffListResponseBody getStaffForDeliverManager(String name, OrderType orderType, LocalDate deliverDate, UUID timeFrameId) {
+    public StaffListResponseBody getStaffForDeliverManager(String name, OrderType orderType, LocalDate deliverDate, UUID timeFrameId, UUID orderBatchId, UUID orderGroupId, UUID deliverMangerId) {
         if(orderType == null) {
             orderType = OrderType.SINGLE;
+        }
+
+        Optional<Staff> deliverManager = staffRepository.findById(deliverMangerId);
+        if(!deliverManager.isPresent()) {
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_NOT_FOUND.getCode()), AdditionalResponseCode.STAFF_NOT_FOUND.toString());
         }
 
         Optional<TimeFrame> timeFrame = timeFrameRepository.findById(timeFrameId);
@@ -290,22 +308,40 @@ public class StaffServiceImpl implements StaffService {
              throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.TIME_FRAME_NOT_FOUND.getCode()), AdditionalResponseCode.TIME_FRAME_NOT_FOUND.toString());
          }
 
-        List<Staff> staffList = staffRepository.getAllStaffForDeliverManager(name, StaffRole.STAFF_DLV_0.toString());
+         // check if batch id exist if mode is batch
+        Optional<OrderBatch> orderBatch = null;
+        if(orderType.ordinal() == OrderType.ORDER_BATCH.ordinal()) {
+            orderBatch = orderBatchRepository.findById(orderBatchId);
+            if(!orderBatch.isPresent()){
+                throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.ORDER_BATCH_NOT_FOUND.getCode()), AdditionalResponseCode.ORDER_BATCH_NOT_FOUND.toString());
+            }
+        }
+
+        // check if group id exist if mode is group
+        Optional<OrderGroup> orderGroup = null;
+        if(orderType.ordinal() == OrderType.ORDER_GROUP.ordinal()) {
+            orderGroup = orderGroupRepositorys.findById(orderGroupId);
+            if(!orderGroup.isPresent()){
+                throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.ORDER_GROUP_NOT_FOUND.getCode()), AdditionalResponseCode.ORDER_GROUP_NOT_FOUND.toString());
+            }
+        }
+
+        List<Staff> staffList = staffRepository.getAllStaffForDeliverManager(name, StaffRole.STAFF_DLV_0.toString(), deliverMangerId);
         HashMap<UUID, Staff> staffHashMap = new HashMap();
         for (Staff staff : staffList) {
             staffHashMap.put(staff.getId(), staff);
         }
 
-         // check collide with order group
-        List<Staff> removeStaffList = staffRepository.getStaffWithDeliverDateAndTimeFrame(name, StaffRole.STAFF_DLV_0.toString(), deliverDate, timeFrame.get().getFromHour(), timeFrame.get().getToHour());
+         // check collide with order group (for all mode BATCH, GROUP, SINGLE)
+        List<Staff> removeStaffList = staffRepository.getStaffWithDeliverDateAndTimeFrame(name, StaffRole.STAFF_DLV_0.toString(), deliverDate, timeFrame.get().getId());
         HashMap<UUID, Staff> removeStaffHashMap = new HashMap<>();
         for (Staff removeStaff : removeStaffList) {
             removeStaffHashMap.put(removeStaff.getId(), removeStaff);
         }
 
         if(orderType.ordinal() == OrderType.ORDER_GROUP.ordinal()) {
-            // check collide with order batch
-            List<Staff> removeStaffByDoorToDoorOrderList = staffRepository.getStaffWithDeliverDateAndTimeFrameByDoorToDoorOrder(name, StaffRole.STAFF_DLV_0.toString(), deliverDate, timeFrame.get().getFromHour(), timeFrame.get().getToHour());
+            // check collide with order batch / single order
+            List<Staff> removeStaffByDoorToDoorOrderList = staffRepository.getStaffWithDeliverDateAndTimeFrameByDoorToDoorOrder(name, StaffRole.STAFF_DLV_0.toString(), deliverDate, timeFrame.get().getId());
             for (Staff removeStaffByDoorToDoorOrder : removeStaffByDoorToDoorOrderList) {
                 if(!removeStaffHashMap.containsKey(removeStaffByDoorToDoorOrder.getId())) {
                     removeStaffHashMap.put(removeStaffByDoorToDoorOrder.getId(), removeStaffByDoorToDoorOrder);
@@ -319,19 +355,209 @@ public class StaffServiceImpl implements StaffService {
             staffHashMap.remove(removeStaff.getId());
         }
 
-        if(orderType.ordinal() == OrderType.ORDER_BATCH.ordinal()) {
-            List<Object[]> countCollideBatchForStaffList =  staffRepository.countCollideBatchForStaff(staffList.stream().map(staff -> staff.getId()).collect(Collectors.toList()), deliverDate, timeFrame.get().getFromHour(), timeFrame.get().getToHour());
-            for(Object[] countCollideBatchForStaff : countCollideBatchForStaffList) {
-                UUID staffIdResult = (UUID) countCollideBatchForStaff[0];
-                Long collideBatchCountResult = (Long) countCollideBatchForStaff[1];
-                staffHashMap.get(staffIdResult).setCollideOrderBatchQuantity(collideBatchCountResult);
+
+        // over limit handler for group mode (no need to check with collide batch, single order because it's already been done above)
+        if(orderType.ordinal() == OrderType.ORDER_GROUP.ordinal()) {
+            List<Staff> staffWithOrderGroup = staffRepository.getStaffWithDeliverDateWithGroupWithDifferentTimeFrame(staffList.stream().map(staff -> staff.getId()).collect(Collectors.toList()), deliverDate, timeFrame.get().getId());
+            for (Staff staff : staffWithOrderGroup) {
+                if(staff.getOrderGroupList() != null &&  staff.getOrderGroupList().size() > 0){
+                    // sort time frame ascending
+                    staff.getOrderGroupList().sort(Comparator.comparing(b -> b.getTimeFrame().getFromHour()));
+
+                    // init over limit alert list
+                    staff.setOverLimitAlertList(new ArrayList<>());
+
+                    // find groups that after and before for target group
+                    OrderGroup orderGroupAfterTargetGroup = null;
+                    OrderGroup orderGroupBeforeTargetGroup = null;
+                    for (int i = 0; i < staff.getOrderGroupList().size() ; i++) {
+                        // find batch in staff batch list which is after the target batch
+                        if(orderGroup.get().getTimeFrame().getFromHour().isBefore(staff.getOrderGroupList().get(i).getTimeFrame().getFromHour())) {
+                            orderGroupAfterTargetGroup = staff.getOrderGroupList().get(i);
+                            orderGroupBeforeTargetGroup = i - 1 >= 0 ? staff.getOrderGroupList().get(i-1) :  null;
+                            break;
+                        }
+                    }
+
+                    // if orderGroupAfterTargetGroup is null after loop -> time frame of target group is the highest -> assign last group in staff batch list to orderGroupBeforeTargetGroup
+                    if (orderGroupAfterTargetGroup == null) {
+                        orderGroupBeforeTargetGroup = staff.getOrderGroupList().get(staff.getOrderGroupList().size()-1);
+                    }
+
+                    if(orderGroupAfterTargetGroup != null) {
+                        Double distance = Utils.haversineFormulaCalculate(orderGroup.get().getPickupPoint().getLatitude(), orderGroup.get().getPickupPoint().getLongitude()
+                                , orderGroupAfterTargetGroup.getPickupPoint().getLatitude(), orderGroupAfterTargetGroup.getPickupPoint().getLongitude());
+
+
+                        // Calculate duration between toHour of target group and fromHour of orderGroupAfterTargetGroup
+                        Duration duration = Duration.between(orderGroup.get().getTimeFrame().getToHour(), orderGroupAfterTargetGroup.getTimeFrame().getFromHour());
+
+                        Double limit =  Precision.round(systemConfigurationService.getConfiguration().getLimitMeterPerMinute() * Math.abs(duration.toMinutes()) * 0.001, 1);
+
+                        // over limit
+                        Double difference = Precision.round(distance, 1) - limit;
+                        if(difference > 0) {
+                            String fromHourOfOrderGroupAfterTargetGroupFormat = orderGroupAfterTargetGroup.getTimeFrame().getFromHour().toString().substring(0, 5);
+                            String toHourOfOrderGroupAfterTargetGroupFormat = orderGroupAfterTargetGroup.getTimeFrame().getToHour().toString().substring(0, 5);
+                            String alertMessage = "Vướt giới hạn so với khung giờ " + "kế tiếp " + "(" + fromHourOfOrderGroupAfterTargetGroupFormat + "-" + toHourOfOrderGroupAfterTargetGroupFormat + ")";
+                            Double limitExceedValue = Precision.round(difference, 1);
+                            String limitExceed = Precision.round(difference, 1) + "km";
+                            staff.getOverLimitAlertList().add(new OverLimitAlertBody(limitExceedValue, limitExceed, alertMessage));
+
+                        }
+
+                    }
+
+                    if(orderGroupBeforeTargetGroup != null) {
+                        Double distance = Utils.haversineFormulaCalculate(orderGroup.get().getPickupPoint().getLatitude(), orderGroup.get().getPickupPoint().getLongitude()
+                                , orderGroupBeforeTargetGroup.getPickupPoint().getLatitude(), orderGroupBeforeTargetGroup.getPickupPoint().getLongitude());
+                        Duration duration = Duration.between(orderGroupBeforeTargetGroup.getTimeFrame().getToHour(), orderGroup.get().getTimeFrame().getFromHour());
+
+                        Double limit =  Precision.round(systemConfigurationService.getConfiguration().getLimitMeterPerMinute() * Math.abs(duration.toMinutes()) * 0.001, 1);
+
+                        // over limit
+                        Double difference = Precision.round(distance, 1) - limit;
+                        if(difference > 0) {
+                            String fromHourOfOrderGroupBeforeTargetGroupFormat = orderGroupBeforeTargetGroup.getTimeFrame().getFromHour().toString().substring(0, 5);
+                            String toHourOfOrderGroupBeforeTargetGroupFormat = orderGroupBeforeTargetGroup.getTimeFrame().getToHour().toString().substring(0, 5);
+                            String alertMessage = "Vướt giới hạn so với khung giờ " + "kế trước " + "(" + fromHourOfOrderGroupBeforeTargetGroupFormat + "-" + toHourOfOrderGroupBeforeTargetGroupFormat + ")";
+                            Double limitExceedValue = Precision.round(difference, 1);
+                            String limitExceed = Precision.round(difference, 1) + "km";
+                            staff.getOverLimitAlertList().add(new OverLimitAlertBody(limitExceedValue, limitExceed, alertMessage));
+
+                        }
+                    }
+                    staff.getOverLimitAlertList().sort((o1, o2) -> o2.getLimitExceedValue().compareTo(o1.getLimitExceedValue()));
+                }
             }
-            for (Staff staff : staffList) {
-                if(staff.getCollideOrderBatchQuantity() == null) {
-                    staff.setCollideOrderBatchQuantity(Long.parseLong("0"));
+            // map calculated alert to real staff list
+            for (Staff staff : staffWithOrderGroup) {
+                if(staff.getOverLimitAlertList() != null) {
+                    staffHashMap.get(staff.getId()).setOverLimitAlertList(staff.getOverLimitAlertList());
                 }
             }
         }
+
+
+
+        // over limit handler for batch mode
+        if(orderType.ordinal() == OrderType.ORDER_BATCH.ordinal()) {
+//            List<Object[]> countCollideBatchForStaffList =  staffRepository.countCollideBatchForStaff(staffList.stream().map(staff -> staff.getId()).collect(Collectors.toList()), deliverDate, timeFrame.get().getFromHour(), timeFrame.get().getToHour());
+            // remove staff from staff list which have been already assigned batch in the same time frame and date
+            List<Staff> removeStaffListForBatch = staffRepository.getStaffWithDeliverDateWithBatchWithSameTimeFrame(staffList.stream().map(staff -> staff.getId()).collect(Collectors.toList()), deliverDate, timeFrame.get().getId());
+            for (Staff removeStaff : removeStaffListForBatch) {
+                staffList.removeIf(staff -> removeStaff.getId() == staff.getId());
+                staffHashMap.remove(removeStaff.getId());
+            }
+
+            List<Staff> staffWithOrderBatch = staffRepository.getStaffWithDeliverDateWithBatchWithDifferentTimeFrame(staffList.stream().map(staff -> staff.getId()).collect(Collectors.toList()), deliverDate, timeFrame.get().getId());
+
+            for (Staff staff : staffWithOrderBatch) {
+                if(staff.getOrderBatchList() != null &&  staff.getOrderBatchList().size() > 0) {
+                    // sort time frame ascending
+                    staff.getOrderBatchList().sort(Comparator.comparing(b -> b.getTimeFrame().getFromHour()));
+
+                    // init over limit alert list
+                    staff.setOverLimitAlertList(new ArrayList<>());
+
+                    // find batches that after and before for target batch
+                    OrderBatch orderBatchAfterTargetBatch = null;
+                    OrderBatch orderBatchBeforeTargetBatch = null;
+                    for (int i = 0; i < staff.getOrderBatchList().size() ; i++) {
+                        // find batch in staff batch list which is after the target batch
+                        if(orderBatch.get().getTimeFrame().getFromHour().isBefore(staff.getOrderBatchList().get(i).getTimeFrame().getFromHour())) {
+                            orderBatchAfterTargetBatch = staff.getOrderBatchList().get(i);
+                            orderBatchBeforeTargetBatch = i - 1 >= 0 ? staff.getOrderBatchList().get(i-1) :  null;
+                            break;
+                        }
+                    }
+
+                    // if orderBatchAfterTargetBatch is null after loop -> time frame of target batch is the highest -> assign last batch in staff batch list to orderBatchBeforeTargetBatch
+                    if (orderBatchAfterTargetBatch == null) {
+                        orderBatchBeforeTargetBatch = staff.getOrderBatchList().get(staff.getOrderBatchList().size()-1);
+                    }
+
+                    if(orderBatchAfterTargetBatch != null) {
+                        Double distance = Utils.haversineFormulaCalculate(orderBatch.get().getAverageLatitude(), orderBatch.get().getAverageLongitude()
+                                , orderBatchAfterTargetBatch.getAverageLatitude(), orderBatchAfterTargetBatch.getAverageLongitude());
+
+
+                        // Calculate duration between toHour of target batch and fromHour of orderBatchAfterTargetBatch
+                        Duration duration = Duration.between(orderBatch.get().getTimeFrame().getToHour(), orderBatchAfterTargetBatch.getTimeFrame().getFromHour());
+
+                        Double limit =  Precision.round(systemConfigurationService.getConfiguration().getLimitMeterPerMinute() * Math.abs(duration.toMinutes()) * 0.001, 1);
+
+                        // over limit
+                        Double difference = Precision.round(distance, 1) - limit;
+                        if(difference > 0) {
+                            String fromHourOfOrderBatchAfterTargetBatchFormat = orderBatchAfterTargetBatch.getTimeFrame().getFromHour().toString().substring(0, 5);
+                            String toHourOfOrderBatchAfterTargetBatchFormat = orderBatchAfterTargetBatch.getTimeFrame().getToHour().toString().substring(0, 5);
+                            String alertMessage = "Vướt giới hạn so với khung giờ " + "kế tiếp " + "(" + fromHourOfOrderBatchAfterTargetBatchFormat + "-" + toHourOfOrderBatchAfterTargetBatchFormat + ")";
+                            Double limitExceedValue = Precision.round(difference, 1);
+                            String limitExceed = Precision.round(difference, 1) + "km";
+                            staff.getOverLimitAlertList().add(new OverLimitAlertBody(limitExceedValue, limitExceed, alertMessage));
+
+                        }
+                    }
+
+                    if(orderBatchBeforeTargetBatch != null) {
+                        Double distance = Utils.haversineFormulaCalculate(orderBatch.get().getAverageLatitude(), orderBatch.get().getAverageLongitude()
+                                , orderBatchBeforeTargetBatch.getAverageLatitude(), orderBatchBeforeTargetBatch.getAverageLongitude());
+
+                        // Calculate duration between toHour of orderBatchBeforeTargetBatch and toHour of target batch
+                        Duration duration = Duration.between(orderBatchBeforeTargetBatch.getTimeFrame().getToHour(), orderBatch.get().getTimeFrame().getFromHour());
+
+                        Double limit =  Precision.round(systemConfigurationService.getConfiguration().getLimitMeterPerMinute() * Math.abs(duration.toMinutes()) * 0.001, 1);
+
+                        // over limit
+                        Double difference = Precision.round(distance, 1) - limit;
+                        if(difference > 0) {
+                            String fromHourOfOrderBatchBeforeTargetBatchFormat = orderBatchBeforeTargetBatch.getTimeFrame().getFromHour().toString().substring(0, 5);
+                            String toHourOfOrderBatchBeforeTargetBatchFormat = orderBatchBeforeTargetBatch.getTimeFrame().getToHour().toString().substring(0, 5);
+                            String alertMessage = "Vướt giới hạn so với khung giờ " + "kế trước " + "(" + fromHourOfOrderBatchBeforeTargetBatchFormat + "-" + toHourOfOrderBatchBeforeTargetBatchFormat + ")";
+                            Double limitExceedValue = Precision.round(difference, 1);
+                            String limitExceed = Precision.round(difference, 1) + "km";
+                            staff.getOverLimitAlertList().add(new OverLimitAlertBody(limitExceedValue, limitExceed, alertMessage));
+                        }
+                    }
+
+                    staff.getOverLimitAlertList().sort((o1, o2) -> o2.getLimitExceedValue().compareTo(o1.getLimitExceedValue()));
+                }
+            }
+            // map calculated alert to real staff list
+            for (Staff staff : staffWithOrderBatch) {
+                if(staff.getOverLimitAlertList() != null) {
+                    staffHashMap.get(staff.getId()).setOverLimitAlertList(staff.getOverLimitAlertList());
+                }
+            }
+//            for(Object[] countCollideBatchForStaff : countCollideBatchForStaffList) {
+//                UUID staffIdResult = (UUID) countCollideBatchForStaff[0];
+//                Long collideBatchCountResult = (Long) countCollideBatchForStaff[1];
+//                staffHashMap.get(staffIdResult).setCollideOrderBatchQuantity(collideBatchCountResult);
+//            }
+//            for (Staff staff : staffList) {
+//                if(staff.getCollideOrderBatchQuantity() == null) {
+//                    staff.setCollideOrderBatchQuantity(Long.parseLong("0"));
+//                }
+//            }
+        }
+
+        // init field for staff which have null overLimitAlertMap
+        for (Staff staff : staffList) {
+            if(staff.getOverLimitAlertList() == null) {
+                staff.setOverLimitAlertList(new ArrayList<>());
+            }
+        }
+
+        // sort staff base on the highest limit exceed of each staff
+        staffList.sort((s1, s2) -> {
+            Double highestLimitExceedS1 = s1.getOverLimitAlertList().size() > 0 ? s1.getOverLimitAlertList().get(0).getLimitExceedValue() : 0;
+            Double highestLimitExceedS2 = s2.getOverLimitAlertList().size() > 0 ? s2.getOverLimitAlertList().get(0).getLimitExceedValue() : 0;
+            if(highestLimitExceedS1 - highestLimitExceedS2 > 0) return 1;
+            if(highestLimitExceedS1 - highestLimitExceedS2 < 0) return -1;
+            return 0;
+        });
+
 
 //        Pageable pageable = PageRequest.of(page, limit);
 
@@ -344,6 +570,85 @@ public class StaffServiceImpl implements StaffService {
 //        long totalCustomer = result.getTotalElements();
 
         return new StaffListResponseBody(staffList, null, null);
+    }
+
+    @Override
+    @Transactional
+    public Staff updateDeliversForDeliverManager(DeliversAssignmentToManager deliversAssignmentToManager) {
+        HashMap errorFields = new HashMap<>();
+
+        Optional<Staff> deliverManager = staffRepository.findByIdByDeliverManagerRole(deliversAssignmentToManager.getDeliverManagerId(), StaffRole.STAFF_DLV_1.toString());
+        if(!deliverManager.isPresent()){
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_NOT_FOUND.getCode()), AdditionalResponseCode.STAFF_NOT_FOUND.toString());
+        }
+
+        List<Staff> deliverStaffList = staffRepository.findAllByIdByDeliverRole(deliversAssignmentToManager.getDeliverIdList(), StaffRole.STAFF_DLV_0.toString());
+        HashMap<UUID, Staff> deliverStaffHashMap = new HashMap();
+        deliverStaffList.forEach(staff -> deliverStaffHashMap.put(staff.getId(), staff));
+
+        HashSet<UUID> deliverStaffNotFoundIdList = new HashSet<>();
+        for (UUID deliverStaffId : deliversAssignmentToManager.getDeliverIdList()) {
+            if(!deliverStaffHashMap.containsKey(deliverStaffId)) {
+                deliverStaffNotFoundIdList.add(deliverStaffId);
+            }
+        }
+
+        if(deliverStaffNotFoundIdList.size() > 0) {
+            errorFields.put("deliverIdList", "Deliver staff id " + deliverStaffNotFoundIdList.stream().map(UUID::toString).collect(Collectors.joining(",")) + " not found");
+        }
+
+        if(errorFields.size() > 0){
+            throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
+        }
+
+//       clear deliverStaffList
+        deliverManager.get().getDeliverStaffList().forEach(deliver -> deliver.setDeliverManagerStaff(null));
+        deliverManager.get().getDeliverStaffList().clear();
+
+//       add new deliverStaffList
+        deliverManager.get().setDeliverStaffList(deliverStaffList);
+        deliverStaffList.forEach(deliver -> deliver.setDeliverManagerStaff(deliverManager.get()));
+
+        return deliverManager.get();
+    }
+
+    @Override
+    @Transactional
+    public Staff updateDeliverManagerForDeliver(UUID deliverId, UUID deliverManagerId) {
+        Optional<Staff> deliverManager = staffRepository.findByIdByDeliverManagerRole(deliverManagerId, StaffRole.STAFF_DLV_1.toString());
+        Optional<Staff> deliver = staffRepository.findByIdByDeliverRole(deliverId, StaffRole.STAFF_DLV_0.toString());
+        if(!deliverManager.isPresent() || !deliver.isPresent()){
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_NOT_FOUND.getCode()), AdditionalResponseCode.STAFF_NOT_FOUND.toString());
+        }
+
+        // remove old manager
+        if(deliver.get().getDeliverManagerStaff() != null){
+            deliver.get().getDeliverManagerStaff().getDeliverStaffList().removeIf(d -> d.getId() == deliverId);
+            deliver.get().setDeliverManagerStaff(null);
+        }
+
+        // assign new manager
+        deliver.get().setDeliverManagerStaff(deliverManager.get());
+        deliver.get().getDeliverManagerStaff().getDeliverStaffList().add(deliver.get());
+
+        return deliver.get();
+    }
+
+    @Override
+    public List<Staff> getAllDeliverForAdmin() {
+        List<Staff> deliverList = staffRepository.findAllByDeliverRole(StaffRole.STAFF_DLV_0.toString());
+        deliverList.sort((d1, d2) -> {
+            if(d1.getDeliverManagerStaff() != null && d2.getDeliverManagerStaff() == null) return 1;
+            if(d1.getDeliverManagerStaff() == null && d2.getDeliverManagerStaff() != null) return -1;
+            return 0;
+        });
+        return deliverList;
+    }
+
+    @Override
+    public List<Staff> getAllDeliverManagerForAdmin() {
+        List<Staff> deliverManagerList = staffRepository.findAllByDeliverManagerRole(StaffRole.STAFF_DLV_1.toString());
+        return deliverManagerList;
     }
 
     private UserRecord checkIsStaffInOrderProcess(Optional<Staff> staff) throws FirebaseAuthException {

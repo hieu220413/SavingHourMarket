@@ -44,6 +44,7 @@ const pickuppoint = require('../assets/icons/pickuppoint.png');
 const batching = require('../assets/icons/batching.png');
 const print = require('../assets/icons/print.png');
 const right = require('../assets/icons/rightArrow.png');
+const historyList = require('../assets/icons/historyList.png');
 
 export default {
   home,
@@ -91,4 +92,5 @@ export default {
   pickuppoint,
   batching,
   right,
+  historyList,
 };

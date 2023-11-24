@@ -46,6 +46,23 @@ const DefaultLayout = ({ children }) => {
       to: "/productselectionreport",
     },
   ];
+  const marketingMenuTabs = [
+    {
+      icon: faUser,
+      display: "Trang cá nhân",
+      to: "/",
+    },
+    {
+      icon: faBarsProgress,
+      display: "Quản lí",
+      to: "/vouchermanagement",
+    },
+    {
+      icon: faChartSimple,
+      display: "Thống kê",
+      to: "/marketingreport",
+    },
+  ];
   return (
     <div className="layout-wrapper">
       <Header />
@@ -53,6 +70,9 @@ const DefaultLayout = ({ children }) => {
         {user?.role === "ADMIN" && <SideMenu menuTabs={adminMenuTabs} />}
         {user?.role === "STAFF_SLT" && (
           <SideMenu menuTabs={productSelectionMenuTabs} />
+        )}
+        {user?.role === "STAFF_MKT" && (
+          <SideMenu menuTabs={marketingMenuTabs} />
         )}
 
         <div className="layout-children">{children}</div>

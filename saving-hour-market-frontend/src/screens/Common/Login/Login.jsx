@@ -110,6 +110,10 @@ const Login = () => {
               navigate("/usermanagement");
               return;
             }
+            if (respond.role === "STAFF_MKT") {
+              navigate("/vouchermanagement");
+              return;
+            }
           })
           .catch((err) => {
             console.log(err);

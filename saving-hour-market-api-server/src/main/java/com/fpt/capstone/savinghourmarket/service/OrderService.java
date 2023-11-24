@@ -19,6 +19,7 @@ public interface OrderService {
     List<Order> fetchOrdersForStaff(String totalPriceSortType,
                                     String createdTimeSortType,
                                     String deliveryDateSortType,
+                                    Boolean getOldOrder,
                                     Date deliveryDate,
                                     OrderStatus orderStatus,
                                     UUID packagerId,
@@ -38,12 +39,12 @@ public interface OrderService {
                                        int page,
                                        int limit) throws FirebaseAuthException;
 
-    List<OrderBatch> fetchOrderBatches(SortType deliverDateSortType, LocalDate deliveryDate, UUID delivererID) throws NoSuchOrderException;
+    List<OrderBatch> fetchOrderBatches(Integer status,Boolean getOldOrderBatch, SortType deliverDateSortType, LocalDate deliveryDate, UUID delivererID) throws NoSuchOrderException;
 
     OrderGroupPageResponse fetchOrderGroups(OrderStatus status,
                                       SortType deliverDateSortType,
                                       LocalDate deliverDate,
-                                      Boolean getOldOrderGroup,
+                                      Boolean getOldOrder,
                                       UUID timeFrameId,
                                       UUID pickupPointId,
                                       UUID delivererId,
@@ -53,7 +54,9 @@ public interface OrderService {
     List<Order> fetchOrdersForPackageStaff(String totalPriceSortType,
                                            String createdTimeSortType,
                                            String deliveryDateSortType,
+                                           Boolean getOldOrderGroup,
                                            UUID pickupPointId,
+                                           UUID timeFrameId,
                                            Date deliveryDate,
                                            OrderStatus orderStatus,
                                            String email,
@@ -84,6 +87,8 @@ public interface OrderService {
     Order createOrder(String jwtToken, OrderCreate orderCreate) throws Exception;
 
     String cancelOrder(String jwtToken, UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException, FirebaseAuthException, IOException;
+
+    String cancelPackageOrder(UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException;
 
     String confirmPackaging(UUID orderId, String staffEmail, UUID productConsolidationAreaId) throws NoSuchOrderException, IOException, ResourceNotFoundException;
 
@@ -121,4 +126,8 @@ public interface OrderService {
     List<OrderBatch> createBatches(List<OrderBatchCreateBody> orderBatchCreateBodyList);
 
     String printOrderPackaging(UUID orderId, String staffEmail) throws ResourceNotFoundException;
+
+    DeliverManagerReport getDeliverManagerDailyReport(UUID deliverManagerId, LocalDate reportDate);
+
+    DeliverManagerReport getDeliverManagerReport(UUID deliverManagerId, Integer year, Month month);
 }

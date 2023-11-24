@@ -94,7 +94,7 @@ public class OrderServiceImpl implements OrderService {
     private final SystemConfigurationService systemConfigurationService;
 
     private final ProductConsolidationAreaRepository productConsolidationAreaRepository;
-//    private final ConfigurationRepository configurationRepository;
+    private final ConfigurationRepository configurationRepository;
 
     @Value("${goong-api-key}")
     private String goongApiKey;
@@ -128,7 +128,6 @@ public class OrderServiceImpl implements OrderService {
         }
 
         Page<OrderGroup> result = orderGroupRepository.findByTimeFrameOrPickupPointOrDeliverDate(
-                status != null ? status.ordinal() : null,
                 getOldOrderGroup,
                 timeFrameId,
                 pickupPointId,
@@ -137,9 +136,24 @@ public class OrderServiceImpl implements OrderService {
                 pageableWithSort);
         int totalPage = result.getTotalPages();
         long totalGroups = result.getTotalElements();
-        List<OrderGroup> orderGroups = result.stream().toList();
         OrderGroupPageResponse response = new OrderGroupPageResponse();
-        response.setOrderGroups(orderGroups);
+        Configuration configuration = configurationRepository.findAll().get(0);
+        List<OrderGroup> orderGroups = result.stream().toList();
+        if (status != null) {
+            orderGroups.forEach(orderGroup -> {
+                List<Order> orderFilter = orderGroup.getOrderList()
+                        .stream()
+                        .filter(order -> (order.getStatus().equals(status.ordinal()) && ((order.getPaymentMethod() == 1 && order.getPaymentStatus() == 1) || order.getPaymentMethod() == 0))
+                                &&
+                                (order.getStatus() > OrderStatus.PROCESSING.ordinal() || (order.getStatus() == OrderStatus.PROCESSING.ordinal() && LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS))))
+                        )
+                        .toList();
+                orderGroup.setOrderList(orderFilter);
+            });
+            response.setOrderGroups(orderGroups.stream().filter(orderGroup -> orderGroup.getOrderList().size() > 0).toList());
+        } else {
+            response.setOrderGroups(orderGroups);
+        }
         response.setTotalPages(totalPage);
         response.setTotalGroups(totalGroups);
         return response;
@@ -164,8 +178,8 @@ public class OrderServiceImpl implements OrderService {
         } else {
             pageableWithSort = PageRequest.of(page, size);
         }
-
-        return orderGroupRepository.findByTimeFrameOrPickupPointOrDeliverDateForPackageStaff(
+        Configuration configuration = configurationRepository.findAll().get(0);
+        List<OrderGroup> orderGroups = orderGroupRepository.findByTimeFrameOrPickupPointOrDeliverDateForPackageStaff(
                 pickupPointListOfStaff,
                 getOldOrderGroup,
                 timeFrameId,
@@ -173,6 +187,17 @@ public class OrderServiceImpl implements OrderService {
                 delivererId,
                 deliverDate,
                 pageableWithSort);
+        orderGroups.forEach(orderGroup -> {
+            List<Order> orders = orderGroup.getOrderList()
+                    .stream().filter(order -> ((order.getPaymentMethod() == 1 && order.getPaymentStatus() == 1)
+                            || order.getPaymentMethod() == 0)
+                            &&
+                            (order.getStatus() > OrderStatus.PROCESSING.ordinal()
+                                    || (order.getStatus() == OrderStatus.PROCESSING.ordinal() && LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS)))))
+                    .toList();
+            orderGroup.setOrderList(orders);
+        });
+        return orderGroups;
     }
 
     @Override
@@ -234,7 +259,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderBatch> fetchOrderBatches(SortType deliverDateSortType, LocalDate deliveryDate, UUID delivererID) {
+    public List<OrderBatch> fetchOrderBatches(Integer status, Boolean getOldOrderBatch, SortType deliverDateSortType, LocalDate deliveryDate, UUID delivererID) {
         Sort sortable = null;
 
         if (deliverDateSortType != null) {
@@ -244,10 +269,19 @@ public class OrderServiceImpl implements OrderService {
                 sortable = Sort.by("deliverDate").descending();
             }
         }
-        return orderBatchRepository.findByDistrictOrDeliverDate(
+        List<OrderBatch> orderBatches = orderBatchRepository.findByDistrictOrDeliverDate(
+                getOldOrderBatch,
                 deliveryDate,
                 delivererID,
                 sortable);
+        if (status != null) {
+            orderBatches.forEach(orderBatch -> {
+                List<Order> orderFilter = orderBatch.getOrderList().stream().filter(order -> order.getStatus().equals(status)).toList();
+                orderBatch.setOrderList(orderFilter);
+            });
+            return orderBatches.stream().filter(orderBatch -> orderBatch.getOrderList().size() > 0).toList();
+        }
+        return orderBatches;
     }
 
     @Override
@@ -258,14 +292,15 @@ public class OrderServiceImpl implements OrderService {
         Staff staff = staffRepository.findByEmail(staffEmail).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với email: " + staffEmail));
         ProductConsolidationArea productConsolidationArea = productConsolidationAreaRepository.findById(productConsolidationAreaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy điểm tập kết với ID: " + productConsolidationAreaId));
-//        if (LocalDateTime.now().isAfter(order.getCreatedTime().plus(Utils.getAdminConfiguration().getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS))) {
-        order.setPackager(staff);
-        order.setProductConsolidationArea(productConsolidationArea);
-        order.setStatus(OrderStatus.PACKAGING.ordinal());
-        FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
-//        } else {
-//            return "Đơn hàng này đã chưa quá thời gian khách hàng có thể huỷ nên không thể nhận đóng gói!";
-//        }
+        Configuration configuration = configurationRepository.findAll().get(0);
+        if (LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS))) {
+            order.setPackager(staff);
+            order.setProductConsolidationArea(productConsolidationArea);
+            order.setStatus(OrderStatus.PACKAGING.ordinal());
+            FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
+        } else {
+            return "Đơn hàng này đã chưa quá thời gian khách hàng có thể huỷ nên không thể nhận đóng gói!";
+        }
         return "Đơn hàng này đã được nhận đóng gói thành công!";
     }
 
@@ -290,15 +325,45 @@ public class OrderServiceImpl implements OrderService {
         OrderGroup orderGroup = orderGroupRepository.findById(orderGroupId)
                 .orElseThrow(() -> new NoSuchOrderException("Không tìm thấy nhóm đơn hàng với ID " + orderGroupId));
         Staff staff = staffRepository.findByEmail(staffEmail).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với email: " + staffEmail));
-        ProductConsolidationArea productConsolidationArea = productConsolidationAreaRepository.findById(productConsolidationAreaId)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy điểm tập kết với ID: " + productConsolidationAreaId));
-        orderGroup.setProductConsolidationArea(productConsolidationArea);
-        for (Order order : orderGroup.getOrderList()) {
-            order.setPackager(staff);
-            order.setProductConsolidationArea(productConsolidationArea);
-            order.setStatus(OrderStatus.PACKAGING.ordinal());
-            FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
+        if (productConsolidationAreaId != null) {
+            if (orderGroup.getProductConsolidationArea() != null) {
+                for (Order order : orderGroup.getOrderList().stream().filter(order -> order.getStatus() == 0).toList()) {
+                    Configuration configuration = configurationRepository.findAll().get(0);
+                    if (LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS)) && (order.getPaymentMethod() == 0 || (order.getPaymentMethod() == 1 && order.getPaymentStatus() == 1))) {
+                        order.setPackager(staff);
+                        order.setProductConsolidationArea(orderGroup.getProductConsolidationArea());
+                        order.setStatus(OrderStatus.PACKAGING.ordinal());
+                        FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
+                    }
+                }
+            } else {
+                ProductConsolidationArea productConsolidationArea = productConsolidationAreaRepository.findById(productConsolidationAreaId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy điểm tập kết với ID: " + productConsolidationAreaId));
+                orderGroup.setProductConsolidationArea(productConsolidationArea);
+                for (Order order : orderGroup.getOrderList().stream().filter(order -> order.getStatus() == 0).toList()) {
+                    Configuration configuration = configurationRepository.findAll().get(0);
+                    if (LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS)) && (order.getPaymentMethod() == 0 || (order.getPaymentMethod() == 1 && order.getPaymentStatus() == 1))) {
+                        order.setPackager(staff);
+                        order.setProductConsolidationArea(productConsolidationArea);
+                        order.setStatus(OrderStatus.PACKAGING.ordinal());
+                        FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
+                    }
+                }
+            }
+        } else {
+            if (orderGroup.getProductConsolidationArea() != null && orderGroup.getOrderList().stream().filter(order -> order.getStatus() > 0).toList().size() > 0) {
+                for (Order order : orderGroup.getOrderList().stream().filter(order -> order.getStatus() == 0).toList()) {
+                    Configuration configuration = configurationRepository.findAll().get(0);
+                    if (LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS)) && (order.getPaymentMethod() == 0 || (order.getPaymentMethod() == 1 && order.getPaymentStatus() == 1))) {
+                        order.setPackager(staff);
+                        order.setProductConsolidationArea(orderGroup.getProductConsolidationArea());
+                        order.setStatus(OrderStatus.PACKAGING.ordinal());
+                        FirebaseService.sendPushNotification("SHM", "Đơn hàng đang tiến hành đóng gói!", order.getCustomer().getId().toString());
+                    }
+                }
+            }
         }
+
         return "Nhóm đơn hàng này đã được nhận đóng gói thành công!";
     }
 
@@ -321,10 +386,16 @@ public class OrderServiceImpl implements OrderService {
         OrderGroup orderGroup = orderGroupRepository.findById(orderGroupId)
                 .orElseThrow(() -> new NoSuchOrderException("Không tìm thấy nhóm đơn hàng với ID " + orderGroupId));
         Staff staff = staffRepository.findByEmail(staffEmail).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với email: " + staffEmail));
-        for (Order order : orderGroup.getOrderList()) {
-            order.setPackager(staff);
-            order.setStatus(OrderStatus.PACKAGED.ordinal());
-            FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được đóng gói!", order.getCustomer().getId().toString());
+        for (Order order : orderGroup.getOrderList().stream().filter(order -> order.getStatus() == 1).toList()) {
+            if (orderGroup.getDeliverer() != null) {
+                order.setPackager(orderGroup.getDeliverer());
+                order.setStatus(OrderStatus.DELIVERING.ordinal());
+                FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được đóng gói!", order.getCustomer().getId().toString());
+            } else {
+                order.setPackager(staff);
+                order.setStatus(OrderStatus.PACKAGED.ordinal());
+                FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được đóng gói!", order.getCustomer().getId().toString());
+            }
         }
         return "Nhóm đơn hàng này đã được nhận đóng gói thành công!";
     }
@@ -392,7 +463,7 @@ public class OrderServiceImpl implements OrderService {
                         order.setDeliverer(staff);
                         order.setStatus(OrderStatus.DELIVERING.ordinal());
                         FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getId().toString());
-                    } else if(order.getStatus() == OrderStatus.DELIVERING.ordinal()) {
+                    } else if (order.getStatus() == OrderStatus.DELIVERING.ordinal()) {
                         order.setDeliverer(staff);
                     } else {
                         return "Đơn hàng " + order.getId() + " chưa được đóng gói!";
@@ -406,7 +477,7 @@ public class OrderServiceImpl implements OrderService {
                     if (order.getStatus() == OrderStatus.PACKAGED.ordinal()) {
                         order.setStatus(OrderStatus.DELIVERING.ordinal());
                         FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getId().toString());
-                    } else if(order.getStatus() == OrderStatus.DELIVERING.ordinal()) {
+                    } else if (order.getStatus() == OrderStatus.DELIVERING.ordinal()) {
                         order.setDeliverer(staff);
                     } else {
                         return "Đơn hàng " + order.getId() + " chưa được đóng gói!";
@@ -430,11 +501,11 @@ public class OrderServiceImpl implements OrderService {
         Order order = repository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("No order found with this id " + orderId));
         if (order.getStatus() == OrderStatus.DELIVERING.ordinal()) {
             order.setDeliverer(staff);
-        } else if(order.getStatus() == OrderStatus.PACKAGED.ordinal()){
+        } else if (order.getStatus() == OrderStatus.PACKAGED.ordinal()) {
             order.setDeliverer(staff);
             order.setStatus(OrderStatus.DELIVERING.ordinal());
             FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getId().toString());
-        }else{
+        } else {
             return "Đơn hàng chưa được đóng gói!";
         }
         return "Staff with id" + staffId + "set successfully";
@@ -444,6 +515,7 @@ public class OrderServiceImpl implements OrderService {
     public List<Order> fetchOrdersForStaff(String totalPriceSortType,
                                            String createdTimeSortType,
                                            String deliveryDateSortType,
+                                           Boolean getOldOrder,
                                            Date deliveryDate,
                                            OrderStatus orderStatus,
                                            UUID packagerId,
@@ -453,27 +525,34 @@ public class OrderServiceImpl implements OrderService {
                                            Boolean isBatched,
                                            int page,
                                            int limit) {
+        Configuration configuration = configurationRepository.findAll().get(0);
         return repository.findOrderForStaff(
-                deliveryDate,
-                packagerId,
-                delivererId,
-                orderStatus == null ? null : orderStatus.ordinal(),
-                isGrouped,
-                isBatched,
-                isPaid,
-                getPageableWithSort(totalPriceSortType,
-                        createdTimeSortType,
-                        deliveryDateSortType,
-                        page,
-                        limit)
-        );
+                        getOldOrder,
+                        deliveryDate,
+                        packagerId,
+                        delivererId,
+                        orderStatus == null ? null : orderStatus.ordinal(),
+                        isGrouped,
+                        isBatched,
+                        isPaid,
+                        getPageableWithSort(totalPriceSortType,
+                                createdTimeSortType,
+                                deliveryDateSortType,
+                                page,
+                                limit)
+                ).stream()
+                .filter(order -> order.getStatus() > OrderStatus.PROCESSING.ordinal() ||
+                        (order.getStatus() == OrderStatus.PROCESSING.ordinal()
+                                && LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS)))).toList();
     }
 
     @Override
     public List<Order> fetchOrdersForPackageStaff(String totalPriceSortType,
                                                   String createdTimeSortType,
                                                   String deliveryDateSortType,
+                                                  Boolean getOldOrder,
                                                   UUID pickupPointId,
+                                                  UUID timeFrameId,
                                                   Date deliveryDate,
                                                   OrderStatus orderStatus,
                                                   String email,
@@ -483,19 +562,26 @@ public class OrderServiceImpl implements OrderService {
                                                   int limit) throws ResourceNotFoundException {
         List<PickupPoint> pickupPointListOfStaff = staffRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Nhân viên không tìm thấy với email " + email)).getPickupPoint();
+        Configuration configuration = configurationRepository.findAll().get(0);
         return repository.findOrderForPackageStaff(
-                pickupPointId,
-                deliveryDate,
-                pickupPointListOfStaff,
-                orderStatus == null ? null : orderStatus.ordinal(),
-                deliveryMethod.ordinal(),
-                isPaid,
-                getPageableWithSort(totalPriceSortType,
-                        createdTimeSortType,
-                        deliveryDateSortType,
-                        page,
-                        limit)
-        );
+                        pickupPointId,
+                        timeFrameId,
+                        deliveryDate,
+                        getOldOrder,
+                        pickupPointListOfStaff,
+                        orderStatus == null ? null : orderStatus.ordinal(),
+                        deliveryMethod.ordinal(),
+                        isPaid,
+                        getPageableWithSort(totalPriceSortType,
+                                createdTimeSortType,
+                                deliveryDateSortType,
+                                page,
+                                limit)
+                ).stream()
+                .filter(order -> order.getStatus() > OrderStatus.PROCESSING.ordinal() ||
+                        (order.getStatus() == OrderStatus.PROCESSING.ordinal()
+                                && LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS)))).toList();
+
     }
 
     @Override
@@ -595,6 +681,34 @@ public class OrderServiceImpl implements OrderService {
             return "Đơn hàng đã quá thời gian huỷ cho phép là " + systemConfigurationService.getConfiguration().getTimeAllowedForOrderCancellation() + " tiếng kể từ khi đặt hàng!";
         }
 
+        return "Successfully canceled order " + id;
+    }
+
+    @Override
+    public String cancelPackageOrder(UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException {
+        Order order = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
+
+        if (order.getOrderGroup() != null) {
+            order.setOrderGroup(null);
+        }
+
+        if (order.getOrderBatch() != null) {
+            order.setOrderBatch(null);
+        }
+
+        if (order.getStatus() == OrderStatus.PROCESSING.ordinal() || order.getStatus() == OrderStatus.PACKAGING.ordinal()) {
+            order.setStatus(OrderStatus.CANCEL.ordinal());
+            List<OrderDetail> orderDetails = order.getOrderDetailList();
+            increaseProductQuantity(orderDetails);
+            List<Discount> discounts = order.getDiscountList();
+            if (discounts != null && discounts.size() > 0) {
+                increaseDiscountQuantity(order.getDiscountList());
+            }
+        } else {
+            throw new OrderCancellationNotAllowedException("Order with id " + id + " is already in " + order.getStatus().toString() + " process");
+        }
+        repository.save(order);
         return "Successfully canceled order " + id;
     }
 
@@ -1047,10 +1161,15 @@ public class OrderServiceImpl implements OrderService {
                     throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
                 }
 
+                Double averageLatitude = orderTrackList.size() > 0 ? (orderTrackList.stream().mapToDouble(order -> order.getLatitude()).sum() / orderTrackList.size()) : 0;
+                Double averageLongitude = orderTrackList.size() > 0 ? (orderTrackList.stream().mapToDouble(order -> order.getLongitude()).sum() / orderTrackList.size()) : 0;
+
                 OrderBatch orderBatch = new OrderBatch();
                 orderBatch.setDeliverDate(orderBatchCreateBody.getDeliverDate());
                 orderBatch.setTimeFrame(timeFrame.get());
                 orderBatch.setProductConsolidationArea(productConsolidationArea.get());
+                orderBatch.setAverageLatitude(averageLatitude);
+                orderBatch.setAverageLongitude(averageLongitude);
                 orderBatch.setOrderList(orderTrackList);
                 for (Order order : orderTrackList) {
                     order.setOrderBatch(orderBatch);
@@ -1059,6 +1178,80 @@ public class OrderServiceImpl implements OrderService {
             }
         }
         return orderBatchList;
+    }
+
+    @Override
+    public DeliverManagerReport getDeliverManagerDailyReport(UUID deliverManagerId, LocalDate reportDate) {
+        if (reportDate == null) {
+            reportDate = LocalDate.now();
+        }
+        Optional<Staff> deliverManager = staffRepository.findById(deliverManagerId);
+        if (!deliverManager.isPresent()) {
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_NOT_FOUND.getCode()), AdditionalResponseCode.STAFF_NOT_FOUND.toString());
+        }
+
+        Long successDeliveredOrder = Long.parseLong("0");
+        Long failDeliveredOrder = Long.parseLong("0");
+        Long packagedOrder = Long.parseLong("0");
+        Long deliveringOrder = Long.parseLong("0");
+
+        List<Object[]> reportOrderForManager = repository.getDailyReportOrderForManager(reportDate);
+        for (Object[] result : reportOrderForManager) {
+            successDeliveredOrder = (Long) result[1];
+            failDeliveredOrder = (Long) result[2];
+            packagedOrder = (Long) result[3];
+            deliveringOrder = (Long) result[4];
+        }
+
+        List<DeliverReport> deliverReportList = deliverManager.get().getDeliverStaffList().stream().map(DeliverReport::new).collect(Collectors.toList());
+
+        for (DeliverReport deliverReport : deliverReportList) {
+            List<Object[]> reportOrderForDeliverStaff = repository.getDailyReportOrderDeliverStaff(deliverReport.getStaff().getId(), reportDate);
+            for (Object[] result : reportOrderForDeliverStaff) {
+                deliverReport.setSuccessDeliveredOrder((Long) result[1]);
+                deliverReport.setFailDeliveredOrder((Long) result[2]);
+                deliverReport.setDeliveringOrder((Long) result[3]);
+                deliverReport.setAssignedOrder((Long) result[4]);
+            }
+        }
+
+        return new DeliverManagerReport(successDeliveredOrder, failDeliveredOrder, packagedOrder, deliveringOrder, deliverReportList);
+    }
+
+    @Override
+    public DeliverManagerReport getDeliverManagerReport(UUID deliverManagerId, Integer year, Month month) {
+
+        Optional<Staff> deliverManager = staffRepository.findById(deliverManagerId);
+        if (!deliverManager.isPresent()) {
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_NOT_FOUND.getCode()), AdditionalResponseCode.STAFF_NOT_FOUND.toString());
+        }
+
+        Long successDeliveredOrder = Long.parseLong("0");
+        Long failDeliveredOrder = Long.parseLong("0");
+        Long packagedOrder = Long.parseLong("0");
+        Long deliveringOrder = Long.parseLong("0");
+
+        List<Object[]> reportOrderForManager = repository.getReportOrderForManager(year, month == null ? null : month.getMonthInNumber());
+        for (Object[] result : reportOrderForManager) {
+            successDeliveredOrder = result[0] == null ? 0 : (Long) result[0];
+            failDeliveredOrder = result[1] == null ? 0 : (Long) result[1];
+            packagedOrder = result[2] == null ? 0 : (Long) result[2];
+            deliveringOrder = result[3] == null ? 0 : (Long) result[3];
+        }
+
+        List<DeliverReport> deliverReportList = deliverManager.get().getDeliverStaffList().stream().map(DeliverReport::new).collect(Collectors.toList());
+
+        for (DeliverReport deliverReport : deliverReportList) {
+            List<Object[]> reportOrderForDeliverStaff = repository.getReportOrderDeliverStaff(deliverReport.getStaff().getId(), year, month == null ? null : month.getMonthInNumber());
+            for (Object[] result : reportOrderForDeliverStaff) {
+                deliverReport.setSuccessDeliveredOrder((Long) result[1]);
+                deliverReport.setFailDeliveredOrder((Long) result[2]);
+                deliverReport.setDeliveringOrder((Long) result[3]);
+                deliverReport.setAssignedOrder((Long) result[4]);
+            }
+        }
+
+        return new DeliverManagerReport(successDeliveredOrder, failDeliveredOrder, packagedOrder, deliveringOrder, deliverReportList);
     }
 
     @Override
@@ -1189,7 +1382,7 @@ public class OrderServiceImpl implements OrderService {
 
         if (orderCreated.getPaymentMethod() == PaymentMethod.VNPAY.ordinal()) {
             RMapCache<UUID, Object> map = redissonClient.getMapCache("orderCreatedMap");
-            map.put(orderCreated.getId(), 0, 31, TimeUnit.MINUTES);
+            map.put(orderCreated.getId(), 0, (systemConfigurationService.getConfiguration().getDeleteUnpaidOrderTime() * 60) + 1, TimeUnit.MINUTES);
         }
 
         return orderCreated;

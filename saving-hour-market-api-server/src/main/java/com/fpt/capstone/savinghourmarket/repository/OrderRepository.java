@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -32,17 +33,26 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "OR " +
             "((:isGrouped = TRUE) AND (o.orderGroup IS NOT NULL)))) " +
             "AND " +
+            "(((:getOldOrder IS NULL) " +
+            "OR " +
+            "((:getOldOrder = FALSE) AND (o.deliveryDate > CURRENT_DATE)) " +
+            "OR " +
+            "((:getOldOrder = TRUE) AND (o.deliveryDate < CURRENT_DATE)))) " +
+            "AND " +
             "(((:isBatched IS NULL) " +
             "OR " +
             "((:isBatched = FALSE) AND (o.orderBatch IS NULL)) " +
             "OR " +
             "((:isBatched = TRUE) AND (o.orderBatch IS NOT NULL)))) " +
             "AND " +
+            "((o.paymentMethod = 0) OR ((o.paymentMethod = 1) AND (o.paymentStatus = 1))) " +
+            "AND " +
             "(((:isPaid IS NULL) OR (:isPaid = FALSE)) " +
             "OR " +
             "((:isPaid = TRUE) AND (SIZE(o.transaction) > 0)))"
     )
-    List<Order> findOrderForStaff(Date deliveryDate,
+    List<Order> findOrderForStaff(Boolean getOldOrder,
+                                  Date deliveryDate,
                                   UUID packageId,
                                   UUID deliverId,
                                   Integer status,
@@ -59,14 +69,26 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "AND " +
             "((:status IS NULL) OR (o.status = :status)) " +
             "AND " +
+            "((:timeFrameId IS NULL) OR (o.timeFrame.id = :timeFrameId)) " +
+            "AND " +
             "((:deliveryMethod IS NULL) OR (o.deliveryMethod = :deliveryMethod)) " +
+            "AND " +
+            "(((:getOldOrder IS NULL) " +
+            "OR " +
+            "((:getOldOrder = FALSE) AND (o.deliveryDate > CURRENT_DATE)) " +
+            "OR " +
+            "((:getOldOrder = TRUE) AND (o.deliveryDate < CURRENT_DATE)))) " +
+            "AND " +
+            "((o.paymentMethod = 0) OR ((o.paymentMethod = 1) AND (o.paymentStatus = 1))) " +
             "AND " +
             "(((:isPaid IS NULL) OR (:isPaid = FALSE)) " +
             "OR " +
-            "((:isPaid = TRUE) AND (SIZE(o.transaction) > 0)))"
+            "((:isPaid = TRUE) AND (o.paymentStatus = 1)))"
     )
     List<Order> findOrderForPackageStaff(UUID pickupPointId,
+                                         UUID timeFrameId,
                                          Date deliveryDate,
+                                         Boolean getOldOrder,
                                          List<PickupPoint> pickupPointList,
                                          Integer status,
                                          Integer deliveryMethod,
@@ -215,4 +237,54 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "JOIN od.orderDetailProductBatches pb " +
             "WHERE pb.productBatch.id = :productBatchId ")
     List<Order> findOrderByProductBatchId(UUID productBatchId, Pageable pageable);
+
+
+    @Query("SELECT o.deliveryDate as deliverDate," +
+            "SUM(CASE WHEN o.status = 4 THEN 1 ELSE 0 END) AS successCount," +
+            "SUM(CASE WHEN o.status = 5 THEN 1 ELSE 0 END) AS failCount, " +
+            "SUM(CASE WHEN o.status = 2 THEN 1 ELSE 0 END) AS packagedCount, " +
+            "SUM(CASE WHEN o.status = 3 THEN 1 ELSE 0 END) AS deliveringCount " +
+            "FROM Order o " +
+            "WHERE o.deliveryDate = :reportDate " +
+            "GROUP BY o.deliveryDate")
+    List<Object[]> getDailyReportOrderForManager(LocalDate reportDate);
+
+    @Query("SELECT o.deliverer.id as delivererId," +
+            "SUM(CASE WHEN o.status = 4 THEN 1 ELSE 0 END) AS successCount," +
+            "SUM(CASE WHEN o.status = 5 THEN 1 ELSE 0 END) AS failCount, " +
+            "SUM(CASE WHEN o.status = 3 THEN 1 ELSE 0 END) AS deliveringCount," +
+            "COUNT(o.deliverer.id) AS assignedCount " +
+            "FROM Order o " +
+            "WHERE o.deliveryDate = :reportDate " +
+            "AND " +
+            "o.deliverer.id = :deliverId " +
+            "GROUP BY o.deliverer.id")
+    List<Object[]> getDailyReportOrderDeliverStaff(UUID deliverId, LocalDate reportDate);
+
+    @Query("SELECT " +
+            "SUM(CASE WHEN o.status = 4 THEN 1 ELSE 0 END) AS successCount," +
+            "SUM(CASE WHEN o.status = 5 THEN 1 ELSE 0 END) AS failCount, " +
+            "SUM(CASE WHEN o.status = 2 THEN 1 ELSE 0 END) AS packagedCount, " +
+            "SUM(CASE WHEN o.status = 3 THEN 1 ELSE 0 END) AS deliveringCount " +
+            "FROM Order o " +
+            "WHERE " +
+            "((:monthInNumber IS NULL) OR (MONTH(o.createdTime) = :monthInNumber ))" +
+            "AND " +
+            "((:year IS NULL) OR (YEAR(o.createdTime) = :year )) ")
+    List<Object[]> getReportOrderForManager(Integer year, Integer monthInNumber);
+
+    @Query("SELECT o.deliverer.id as delivererId," +
+            "SUM(CASE WHEN o.status = 4 THEN 1 ELSE 0 END) AS successCount," +
+            "SUM(CASE WHEN o.status = 5 THEN 1 ELSE 0 END) AS failCount, " +
+            "SUM(CASE WHEN o.status = 3 THEN 1 ELSE 0 END) AS deliveringCount," +
+            "COUNT(o.deliverer.id) AS assignedCount " +
+            "FROM Order o " +
+            "WHERE " +
+            "((:monthInNumber IS NULL) OR (MONTH(o.createdTime) = :monthInNumber ))" +
+            "AND " +
+            "((:year IS NULL) OR (YEAR(o.createdTime) = :year )) " +
+            "AND " +
+            "o.deliverer.id = :deliverId " +
+            "GROUP BY o.deliverer.id")
+    List<Object[]> getReportOrderDeliverStaff(UUID deliverId, Integer year, Integer monthInNumber);
 }

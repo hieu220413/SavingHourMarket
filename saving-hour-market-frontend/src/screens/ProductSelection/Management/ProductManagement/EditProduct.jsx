@@ -500,6 +500,17 @@ const EditProduct = ({
       .then((res) => res.json())
       .then((res) => {
         console.log(res);
+        if (res.code === 422) {
+          handleClose();
+          setLoading(false);
+          setOpenSnackbar({
+            ...openSnackbar,
+            open: true,
+            severity: "error",
+          });
+          setMsg("Không thể sửa khi bạn xóa lô hàng có tồn tại trong đơn hàng");
+          return;
+        }
         fetch(
           `${API.baseURL}/api/product/getProductsForStaff?page=${
             page - 1

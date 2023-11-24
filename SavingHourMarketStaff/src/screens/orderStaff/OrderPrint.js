@@ -49,7 +49,7 @@ export default function App({ navigation, route }) {
                 minScale={0.5}
                 maxScale={3.0}
                 renderActivityIndicator={() => (
-                    <ActivityIndicator color="black" size="large" />
+                    <ActivityIndicator color={COLORS.primary} size="large" />
                 )}
                 enablePaging={true}
                 onLoadProgress={(percentage) => console.log(`Loading :${percentage}`)}
