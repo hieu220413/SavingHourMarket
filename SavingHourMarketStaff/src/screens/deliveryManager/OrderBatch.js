@@ -112,49 +112,28 @@ const OrderBatch = ({navigation}) => {
           if (tokenId) {
             setLoading(true);
 
-            fetch(
-              `${API.baseURL}/api/order/staff/getOrderBatch?status=PACKAGED`,
-              {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${tokenId}`,
-                },
+            fetch(`${API.baseURL}/api/order/staff/getOrderBatch`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
               },
-            )
+            })
               .then(res => res.json())
               .then(respond => {
-                console.log('batch1', respond);
+                console.log('batch', respond[0].orderList);
                 if (respond.error) {
                   setLoading(false);
                   return;
                 }
-                setGroupListNotYetAssigned(respond);
-                setLoading(false);
-              })
-              .catch(err => {
-                console.log(err);
-                setLoading(false);
-              });
-
-            fetch(
-              `${API.baseURL}/api/order/staff/getOrderBatch?status=DELIVERING`,
-              {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${tokenId}`,
-                },
-              },
-            )
-              .then(res => res.json())
-              .then(respond => {
-                console.log('batch2', respond);
-                if (respond.error) {
-                  setLoading(false);
-                  return;
-                }
-                setGroupListAssigned(respond);
+                const notYetAssigned = respond.filter(item => {
+                  return item.deliverer === null;
+                });
+                const Assigned = respond.filter(item => {
+                  return item.deliverer !== null;
+                });
+                setGroupListNotYetAssigned(notYetAssigned);
+                setGroupListAssigned(Assigned);
                 setLoading(false);
               })
               .catch(err => {
@@ -239,7 +218,7 @@ const OrderBatch = ({navigation}) => {
             setLoading(true);
 
             fetch(
-              `${API.baseURL}/api/order/staff/getOrderBatch?status=PACKAGED${
+              `${API.baseURL}/api/order/staff/getOrderBatch?${
                 sortItem?.id == 1 ? '&deliverDateSortType=ASC' : ''
               }${sortItem?.id == 2 ? '&deliverDateSortType=DESC' : ''}`,
               {
@@ -257,34 +236,14 @@ const OrderBatch = ({navigation}) => {
                   setLoading(false);
                   return;
                 }
-                setGroupListNotYetAssigned(respond);
-                setLoading(false);
-              })
-              .catch(err => {
-                console.log(err);
-                setLoading(false);
-              });
-
-            fetch(
-              `${API.baseURL}/api/order/staff/getOrderBatch?status=DELIVERING${
-                sortItem?.id == 1 ? '&deliverDateSortType=ASC' : ''
-              }${sortItem?.id == 2 ? '&deliverDateSortType=DESC' : ''}`,
-              {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${tokenId}`,
-                },
-              },
-            )
-              .then(res => res.json())
-              .then(respond => {
-                console.log('batch2', respond);
-                if (respond.error) {
-                  setLoading(false);
-                  return;
-                }
-                setGroupListAssigned(respond);
+                const notYetAssigned = respond.filter(item => {
+                  return item.deliverer === null;
+                });
+                const Assigned = respond.filter(item => {
+                  return item.deliverer !== null;
+                });
+                setGroupListNotYetAssigned(notYetAssigned);
+                setGroupListAssigned(Assigned);
                 setLoading(false);
               })
               .catch(err => {
@@ -301,16 +260,13 @@ const OrderBatch = ({navigation}) => {
           const tokenId = await auth().currentUser.getIdToken();
           if (tokenId) {
             setLoading(true);
-            fetch(
-              `${API.baseURL}/api/order/staff/getOrderBatch?status=PACKAGED`,
-              {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${tokenId}`,
-                },
+            fetch(`${API.baseURL}/api/order/staff/getOrderBatch`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
               },
-            )
+            })
               .then(res => res.json())
               .then(respond => {
                 console.log('batch1', respond);
@@ -318,32 +274,14 @@ const OrderBatch = ({navigation}) => {
                   setLoading(false);
                   return;
                 }
-                setGroupListNotYetAssigned(respond);
-                setLoading(false);
-              })
-              .catch(err => {
-                console.log(err);
-                setLoading(false);
-              });
-
-            fetch(
-              `${API.baseURL}/api/order/staff/getOrderBatch?status=DELIVERING`,
-              {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${tokenId}`,
-                },
-              },
-            )
-              .then(res => res.json())
-              .then(respond => {
-                console.log('batch2', respond);
-                if (respond.error) {
-                  setLoading(false);
-                  return;
-                }
-                setGroupListAssigned(respond);
+                const notYetAssigned = respond.filter(item => {
+                  return item.deliverer === null;
+                });
+                const Assigned = respond.filter(item => {
+                  return item.deliverer !== null;
+                });
+                setGroupListNotYetAssigned(notYetAssigned);
+                setGroupListAssigned(Assigned);
                 setLoading(false);
               })
               .catch(err => {
@@ -373,16 +311,13 @@ const OrderBatch = ({navigation}) => {
         const tokenId = await auth().currentUser.getIdToken();
         if (tokenId) {
           setLoading(true);
-          fetch(
-            `${API.baseURL}/api/order/staff/getOrderBatch?status=PACKAGED`,
-            {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${tokenId}`,
-              },
+          fetch(`${API.baseURL}/api/order/staff/getOrderBatch`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${tokenId}`,
             },
-          )
+          })
             .then(res => res.json())
             .then(respond => {
               console.log('batch1', respond);
@@ -390,32 +325,15 @@ const OrderBatch = ({navigation}) => {
                 setLoading(false);
                 return;
               }
-              setGroupListNotYetAssigned(respond);
-              setLoading(false);
-            })
-            .catch(err => {
-              console.log(err);
-              setLoading(false);
-            });
-
-          fetch(
-            `${API.baseURL}/api/order/staff/getOrderBatch?status=DELIVERING`,
-            {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${tokenId}`,
-              },
-            },
-          )
-            .then(res => res.json())
-            .then(respond => {
-              console.log('batch2', respond);
-              if (respond.error) {
-                setLoading(false);
-                return;
-              }
-              setGroupListAssigned(respond);
+              const notYetAssigned = respond.filter(item => {
+                return item.deliverer === null;
+              });
+              const Assigned = respond.filter(item => {
+                return item.deliverer !== null;
+              });
+              setSelectSort(sortOptions);
+              setGroupListNotYetAssigned(notYetAssigned);
+              setGroupListAssigned(Assigned);
               setLoading(false);
             })
             .catch(err => {
@@ -452,9 +370,7 @@ const OrderBatch = ({navigation}) => {
                 <Image
                   resizeMode="contain"
                   style={{width: 38, height: 38}}
-                  source={{
-                    uri: currentUser?.avatarUrl,
-                  }}
+                  source={icons.userCircle}
                 />
               </TouchableOpacity>
               {showLogout && (
@@ -545,7 +461,7 @@ const OrderBatch = ({navigation}) => {
                     setLoading(true);
                     const deliverDate = format(date, 'yyyy-MM-dd');
                     fetch(
-                      `${API.baseURL}/api/order/staff/getOrderBatch?deliveryDate=${deliverDate}&status=PACKAGED`,
+                      `${API.baseURL}/api/order/staff/getOrderBatch?deliveryDate=${deliverDate}`,
                       {
                         method: 'GET',
                         headers: {
@@ -556,41 +472,21 @@ const OrderBatch = ({navigation}) => {
                     )
                       .then(res => res.json())
                       .then(respond => {
-                        console.log('batch1', respond);
+                        console.log('batch', respond[0]);
                         if (respond.code === 404) {
                           setGroupListNotYetAssigned([]);
                           setGroupListAssigned([]);
                           setLoading(false);
                           return;
                         }
-                        setGroupListNotYetAssigned(respond);
-                        setLoading(false);
-                      })
-                      .catch(err => {
-                        console.log(err);
-                        setLoading(false);
-                      });
-
-                    fetch(
-                      `${API.baseURL}/api/order/staff/getOrderBatch?deliveryDate=${deliverDate}&status=DELIVERING`,
-                      {
-                        method: 'GET',
-                        headers: {
-                          'Content-Type': 'application/json',
-                          Authorization: `Bearer ${tokenId}`,
-                        },
-                      },
-                    )
-                      .then(res => res.json())
-                      .then(respond => {
-                        console.log('batch2', respond);
-                        if (respond.code === 404) {
-                          setGroupListNotYetAssigned([]);
-                          setGroupListAssigned([]);
-                          setLoading(false);
-                          return;
-                        }
-                        setGroupListAssigned(respond);
+                        const notYetAssigned = respond.filter(item => {
+                          return item.deliverer === null;
+                        });
+                        const Assigned = respond.filter(item => {
+                          return item.deliverer !== null;
+                        });
+                        setGroupListNotYetAssigned(notYetAssigned);
+                        setGroupListAssigned(Assigned);
                         setLoading(false);
                       })
                       .catch(err => {
@@ -612,49 +508,28 @@ const OrderBatch = ({navigation}) => {
                   if (tokenId) {
                     setLoading(true);
 
-                    fetch(
-                      `${API.baseURL}/api/order/staff/getOrderBatch?status=PACKAGED`,
-                      {
-                        method: 'GET',
-                        headers: {
-                          'Content-Type': 'application/json',
-                          Authorization: `Bearer ${tokenId}`,
-                        },
+                    fetch(`${API.baseURL}/api/order/staff/getOrderBatch`, {
+                      method: 'GET',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${tokenId}`,
                       },
-                    )
+                    })
                       .then(res => res.json())
                       .then(respond => {
-                        console.log('batch1', respond);
+                        console.log('batch', respond[0].orderList);
                         if (respond.error) {
                           setLoading(false);
                           return;
                         }
-                        setGroupListNotYetAssigned(respond);
-                        setLoading(false);
-                      })
-                      .catch(err => {
-                        console.log(err);
-                        setLoading(false);
-                      });
-
-                    fetch(
-                      `${API.baseURL}/api/order/staff/getOrderBatch?status=DELIVERING`,
-                      {
-                        method: 'GET',
-                        headers: {
-                          'Content-Type': 'application/json',
-                          Authorization: `Bearer ${tokenId}`,
-                        },
-                      },
-                    )
-                      .then(res => res.json())
-                      .then(respond => {
-                        console.log('batch2', respond);
-                        if (respond.error) {
-                          setLoading(false);
-                          return;
-                        }
-                        setGroupListAssigned(respond);
+                        const notYetAssigned = respond.filter(item => {
+                          return item.deliverer === null;
+                        });
+                        const Assigned = respond.filter(item => {
+                          return item.deliverer !== null;
+                        });
+                        setGroupListNotYetAssigned(notYetAssigned);
+                        setGroupListAssigned(Assigned);
                         setLoading(false);
                       })
                       .catch(err => {

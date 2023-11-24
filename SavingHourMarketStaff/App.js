@@ -22,8 +22,6 @@ import {ModalPortal} from 'react-native-modals';
 import BatchList from './src/screens/deliveryManager/BatchList';
 import BatchingDetail from './src/screens/deliveryManager/BatchingDetail';
 import OrderListForManager from './src/screens/deliveryManager/OrderListForManager';
-import DailyReportForManager from './src/screens/deliveryManager/DailyReportForManager';
-import OrderListForReport from './src/screens/deliveryManager/OrderListForReport';
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -106,14 +104,6 @@ export default function App() {
           />
           <Stack.Screen name="BatchList" component={BatchList} />
           <Stack.Screen name="BatchingDetail" component={BatchingDetail} />
-          <Stack.Screen
-            name="DailyReportForManager"
-            component={DailyReportForManager}
-          />
-          <Stack.Screen
-            name="OrderListForReport"
-            component={OrderListForReport}
-          />
         </Stack.Navigator>
       </NavigationContainer>
       <ModalPortal />

@@ -34,6 +34,7 @@ const EditConfirmProduct = ({
   setOpenSnackbar,
   openSnackbar,
   setErrorList,
+  errorList,
 }) => {
   const [supermarkets, setSupermarkets] = useState([]);
   const [isActiveDropdown, setIsActiveDropdown] = useState(false);
@@ -101,8 +102,9 @@ const EditConfirmProduct = ({
   };
 
   const [allowableDisplayThreshold, setAllowableDisplayThreshold] = useState(
-    selectedDropdownItemSubCate.allowableDisplayThreshold
+    selectedDropdownItemSubCate?.allowableDisplayThreshold
   );
+
   const [openValidateSnackbar, setOpenValidateSnackbar] = useState({
     open: false,
     vertical: "top",
@@ -462,7 +464,12 @@ const EditConfirmProduct = ({
       })
     );
 
-    setOpenSnackbar({ ...openSnackbar, open: true, severity: "success" });
+    setOpenSnackbar({
+      ...openSnackbar,
+      open: true,
+      severity: "success",
+      text: "Chỉnh sửa thành công",
+    });
     setConfirmProductList({
       productList: newProductList,
       errorFields: newErrorList,
@@ -567,6 +574,10 @@ const EditConfirmProduct = ({
                           setSelectedDropdownItemCate(item);
                           setIsActiveDropdownCate(false);
                           setSubCategories(item.productSubCategories);
+                          setAllowableDisplayThreshold(
+                            item.productSubCategories[0]
+                              .allowableDisplayThreshold
+                          );
                           setSelectedDropdownItemSubCate(
                             item.productSubCategories[0]
                           );
@@ -645,6 +656,9 @@ const EditConfirmProduct = ({
                     {subCategories.map((item, index) => (
                       <div
                         onClick={(e) => {
+                          setAllowableDisplayThreshold(
+                            item.allowableDisplayThreshold
+                          );
                           setSelectedDropdownItemSubCate(item);
                           setIsActiveDropdownSubCate(false);
                           setError({ ...error, subCateName: "" });
