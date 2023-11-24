@@ -90,6 +90,7 @@ const PickStaff = ({navigation, route}) => {
   useFocusEffect(
     useCallback(() => {
       const fetchData = async () => {
+        const currentUser = await AsyncStorage.getItem('userInfo');
         if (auth().currentUser) {
           const tokenId = await auth().currentUser.getIdToken();
           if (tokenId) {
@@ -97,7 +98,11 @@ const PickStaff = ({navigation, route}) => {
               setLoading(true);
 
               fetch(
-                `${API.baseURL}/api/staff/getStaffForDeliverManager?orderType=ORDER_GROUP&deliverDate=${deliverDate}&timeFrameId=${timeFrame.id}`,
+                `${
+                  API.baseURL
+                }/api/staff/getStaffForDeliverManager?orderType=ORDER_GROUP&orderGroupId=${orderGroupId}&deliverDate=${deliverDate}&timeFrameId=${
+                  timeFrame.id
+                }&deliverMangerId=${JSON.parse(currentUser).id}`,
                 {
                   method: 'GET',
                   headers: {
@@ -108,7 +113,7 @@ const PickStaff = ({navigation, route}) => {
               )
                 .then(res => res.json())
                 .then(respond => {
-                  console.log('staff:', respond.staffList);
+                  console.log('staff:', respond.staffList[2]);
                   let res = [];
                   if (staff) {
                     res = respond.staffList.filter(item => {
@@ -132,7 +137,11 @@ const PickStaff = ({navigation, route}) => {
               setLoading(true);
 
               fetch(
-                `${API.baseURL}/api/staff/getStaffForDeliverManager?orderType=ORDER_BATCH&deliverDate=${deliverDate}&timeFrameId=${timeFrame.id}`,
+                `${
+                  API.baseURL
+                }/api/staff/getStaffForDeliverManager?orderType=ORDER_BATCH&orderBatchId=${orderGroupId}&deliverDate=${deliverDate}&timeFrameId=${
+                  timeFrame.id
+                }&deliverMangerId=${JSON.parse(currentUser).id}`,
                 {
                   method: 'GET',
                   headers: {
@@ -143,7 +152,7 @@ const PickStaff = ({navigation, route}) => {
               )
                 .then(res => res.json())
                 .then(respond => {
-                  console.log('staff:', respond.staffList);
+                  console.log('staff:', respond.staffList[2]);
                   let res = [];
                   if (staff) {
                     res = respond.staffList.filter(item => {
@@ -167,7 +176,11 @@ const PickStaff = ({navigation, route}) => {
               setLoading(true);
 
               fetch(
-                `${API.baseURL}/api/staff/getStaffForDeliverManager?orderType=SINGLE&deliverDate=${deliverDate}&timeFrameId=${timeFrame.id}`,
+                `${
+                  API.baseURL
+                }/api/staff/getStaffForDeliverManager?orderType=SINGLE&deliverDate=${deliverDate}&timeFrameId=${
+                  timeFrame.id
+                }&deliverMangerId=${JSON.parse(currentUser).id}`,
                 {
                   method: 'GET',
                   headers: {
@@ -534,7 +547,7 @@ const PickStaff = ({navigation, route}) => {
                     setOpenValidateDialog(true);
                     return;
                   }
-                  if (selectedStaff?.collideOrderBatchQuantity >= 1) {
+                  if (selectedStaff?.overLimitAlertList.length >= 1) {
                     setOpenConfirmModal(true);
                   } else {
                     handlePickStaffForBatch();
@@ -647,18 +660,18 @@ const PickStaff = ({navigation, route}) => {
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}>
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontFamily: 'Roboto',
-                    color: 'black',
-                    textAlign: 'center',
-                  }}>
-                  Nhân viên {selectedStaff?.fullName} đã có{' '}
-                  {selectedStaff?.collideOrderBatchQuantity} đơn hàng trong cùng
-                  khoảng thời gian này : {timeFrame?.fromHour} đến{' '}
-                  {timeFrame?.toHour}
-                </Text>
+                {selectedStaff?.overLimitAlertList.map((item, index) => (
+                  <Text
+                    key={index}
+                    style={{
+                      fontSize: 20,
+                      fontFamily: 'Roboto',
+                      color: 'black',
+                      textAlign: 'center',
+                    }}>
+                    {item.alertMessage}
+                  </Text>
+                ))}
               </View>
             </ModalContent>
           </Modal>
