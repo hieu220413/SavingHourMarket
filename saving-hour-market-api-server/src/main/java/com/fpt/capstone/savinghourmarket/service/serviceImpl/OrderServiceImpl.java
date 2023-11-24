@@ -688,7 +688,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public String cancelPackageOrder(UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException {
+    public String cancelPackageOrder(UUID id, String staffEmail) throws ResourceNotFoundException, OrderCancellationNotAllowedException {
+        Staff staff = staffRepository.findByEmail(staffEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("No staff with id " + staffEmail));
         Order order = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
 
@@ -702,6 +704,7 @@ public class OrderServiceImpl implements OrderService {
 
         if (order.getStatus() == OrderStatus.PROCESSING.ordinal() || order.getStatus() == OrderStatus.PACKAGING.ordinal()) {
             order.setStatus(OrderStatus.CANCEL.ordinal());
+            order.setPackager(staff);
             List<OrderDetail> orderDetails = order.getOrderDetailList();
             increaseProductQuantity(orderDetails);
             List<Discount> discounts = order.getDiscountList();
