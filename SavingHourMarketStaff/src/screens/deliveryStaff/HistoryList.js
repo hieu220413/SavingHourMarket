@@ -1108,7 +1108,7 @@ const HistoryList = ({ navigation }) => {
                                 marginLeft: 10,
                                 paddingBottom: 20,
                             }}>
-                            Số lượng đơn hàng đã giao: {currentOptions.id === 0 || currentOptions.id === 1 ? orderGroupList.length : orders.length} đơn
+                            Số lượng đơn hàng cần giao: {currentOptions.id === 0 || currentOptions.id === 1 ? orderGroupList.length + ' nhóm đơn' : orders.length + ' đơn'}
                         </Text>
                         <Text
                             style={{
