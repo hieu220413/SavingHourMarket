@@ -1,11 +1,19 @@
 import React, {useCallback, useState, useEffect} from 'react';
-import {View, TouchableOpacity, Image, Text, StyleSheet} from 'react-native';
-import {ScrollView} from 'react-native-gesture-handler';
+import {
+  View,
+  TouchableOpacity,
+  Image,
+  Text,
+  StyleSheet,
+  ScrollView,
+} from 'react-native';
 import {icons} from '../../constants';
 import {COLORS} from '../../constants/theme';
 import {useFocusEffect} from '@react-navigation/native';
 import {API} from '../../constants/api';
 import LoadingScreen from '../../components/LoadingScreen';
+import CartEmpty from '../../assets/image/search-empty.png';
+import {format} from 'date-fns';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -13,6 +21,7 @@ const OrderListForReport = ({navigation, route}) => {
   const {type, mode, date} = route.params;
   const [initializing, setInitializing] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [orderList, setOrderList] = useState(null);
 
   const onAuthStateChange = async userInfo => {
     // console.log(userInfo);
@@ -62,42 +71,161 @@ const OrderListForReport = ({navigation, route}) => {
         if (auth().currentUser) {
           const tokenId = await auth().currentUser.getIdToken();
           if (tokenId) {
-            setLoading(true);
-            fetch(
-              `${API.baseURL}/api/productConsolidationArea/getAllForStaff`,
-              {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${tokenId}`,
-                },
-              },
-            )
-              .then(res => res.json())
-              .then(response => {
-                setProductConsolidationAreaList(response);
-                setLoading(false);
-              })
-              .catch(err => {
-                console.log(err);
-                setLoading(false);
-              });
+            // setLoading(true);
+            if (type === 'success') {
+              if (mode === 1) {
+                fetch(
+                  `${API.baseURL}/api/order/staff/getOrders?getOldOrder=true&orderStatus=SUCCESS`,
+                  {
+                    method: 'GET',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${tokenId}`,
+                    },
+                  },
+                )
+                  .then(res => res.json())
+                  .then(response => {
+                    console.log(response[0]);
+                    setOrderList(response);
+                    setLoading(false);
+                  })
+                  .catch(err => {
+                    console.log(err);
+                    setLoading(false);
+                  });
+              }
+              if (mode === 2) {
+                fetch(
+                  `${API.baseURL}/api/order/staff/getOrders?getOldOrder=true&deliveryDate=${date}&orderStatus=SUCCESS`,
+                  {
+                    method: 'GET',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${tokenId}`,
+                    },
+                  },
+                )
+                  .then(res => res.json())
+                  .then(response => {
+                    console.log(response.length);
+                    setOrderList(response);
+                    setLoading(false);
+                  })
+                  .catch(err => {
+                    console.log(err);
+                    setLoading(false);
+                  });
+              }
+            }
+            if (type === 'delivering') {
+              if (mode === 1) {
+                fetch(
+                  `${API.baseURL}/api/order/staff/getOrders?orderStatus=DELIVERING`,
+                  {
+                    method: 'GET',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${tokenId}`,
+                    },
+                  },
+                )
+                  .then(res => res.json())
+                  .then(response => {
+                    console.log(response.length);
+                    setOrderList(response);
+                    setLoading(false);
+                  })
+                  .catch(err => {
+                    console.log(err);
+                    setLoading(false);
+                  });
+              }
+              if (mode === 2) {
+                fetch(
+                  `${API.baseURL}/api/order/staff/getOrders?deliveryDate=${date}&orderStatus=DELIVERING`,
+                  {
+                    method: 'GET',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${tokenId}`,
+                    },
+                  },
+                )
+                  .then(res => res.json())
+                  .then(response => {
+                    console.log(response.length);
+                    setOrderList(response);
+                    setLoading(false);
+                  })
+                  .catch(err => {
+                    console.log(err);
+                    setLoading(false);
+                  });
+              }
+            }
+            if (type === 'fail') {
+              if (mode === 1) {
+                fetch(
+                  `${API.baseURL}/api/order/staff/getOrders?getOldOrder=true&orderStatus=FAIL`,
+                  {
+                    method: 'GET',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${tokenId}`,
+                    },
+                  },
+                )
+                  .then(res => res.json())
+                  .then(response => {
+                    console.log(response.length);
+                    setOrderList(response);
+                    setLoading(false);
+                  })
+                  .catch(err => {
+                    console.log(err);
+                    setLoading(false);
+                  });
+              }
+              if (mode === 2) {
+                fetch(
+                  `${API.baseURL}/api/order/staff/getOrders?getOldOrder=true&deliveryDate=${date}&orderStatus=FAIL`,
+                  {
+                    method: 'GET',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${tokenId}`,
+                    },
+                  },
+                )
+                  .then(res => res.json())
+                  .then(response => {
+                    console.log(response.length);
+                    setOrderList(response);
+                    setLoading(false);
+                  })
+                  .catch(err => {
+                    console.log(err);
+                    setLoading(false);
+                  });
+              }
+            }
           }
         }
       };
-    //   fetchData();
+      fetchData();
     }, []),
   );
   return (
     <>
-      <ScrollView>
+      <View>
         <View
           style={{
-            flex: 1,
+            // flex: 1,
             alignItems: 'center',
             flexDirection: 'row',
             gap: 20,
-            marginBottom: 30,
+            marginBottom: 10,
             backgroundColor: '#ffffff',
             padding: 20,
             elevation: 4,
@@ -122,22 +250,132 @@ const OrderListForReport = ({navigation, route}) => {
             {type === 'fail' && 'Đơn trả hàng'}
           </Text>
         </View>
-        <View style={{backgroundColor: 'white', padding: 20}}>
-          <Text
-            style={{
-              fontSize: 20,
-              color: 'black',
-              fontFamily: 'Roboto',
-              fontWeight: 'bold',
-              marginBottom: 20,
-            }}>
-            {type === 'success' && 'Đơn giao thành công'}
-            {type === 'delivering' && 'Đơn đang giao'}
-            {type === 'fail' && 'Đơn trả hàng'}
-          </Text>
-          <Text>{date}</Text>
-        </View>
-      </ScrollView>
+
+        {orderList?.length === 0 ? (
+          <View style={{alignItems: 'center', justifyContent: 'center'}}>
+            <Image
+              style={{width: '100%', height: '50%'}}
+              resizeMode="contain"
+              source={CartEmpty}
+            />
+            <Text
+              style={{
+                fontSize: 20,
+                fontFamily: 'Roboto',
+                // color: 'black',
+                fontWeight: 'bold',
+              }}>
+              Chưa có đơn hàng nào
+            </Text>
+          </View>
+        ) : (
+          <ScrollView style={{marginBottom: 90, marginTop: 10}}>
+            {orderList?.map((item, index) => (
+              <View
+                key={index}
+                style={{
+                  backgroundColor: 'white',
+                  padding: 20,
+                  marginVertical: 10,
+                }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}>
+                  <View style={{flexDirection: 'column', gap: 8}}>
+                    <Text
+                      style={{
+                        fontSize: 20,
+                        fontWeight: 'bold',
+                        fontFamily: 'Roboto',
+                        color: COLORS.primary,
+                      }}>
+                      {type === 'success' && 'Đơn giao thành công'}
+                      {type === 'delivering' && 'Đơn đang giao'}
+                      {type === 'fail' && 'Đơn trả hàng'}
+                    </Text>
+                    {item?.deliverer ? (
+                      <View
+                        style={{
+                          position: 'absolute',
+                          right: -30,
+                        }}>
+                        <Image
+                          style={{
+                            width: 35,
+                            height: 35,
+                            borderRadius: 40,
+                          }}
+                          resizeMode="contain"
+                          source={{
+                            uri: `${item?.deliverer.avatarUrl}`,
+                          }}
+                        />
+                      </View>
+                    ) : (
+                      <></>
+                    )}
+                    <Text
+                      style={{
+                        fontSize: 17,
+                        fontWeight: 'bold',
+                        fontFamily: 'Roboto',
+                        color: 'black',
+                      }}>
+                      Ngày giao hàng :{' '}
+                      {format(Date.parse(item?.deliveryDate), 'dd/MM/yyyy')}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 17,
+                        fontWeight: 'bold',
+                        fontFamily: 'Roboto',
+                        color: 'black',
+                      }}>
+                      Giờ giao hàng : {item?.timeFrame?.fromHour} đến{' '}
+                      {item?.timeFrame?.toHour}
+                    </Text>
+                    <View style={{width: 320}}>
+                      <Text
+                        style={{
+                          fontSize: 17,
+                          fontWeight: 'bold',
+                          fontFamily: 'Roboto',
+                          color: 'black',
+                        }}>
+                        Điểm giao hàng : {item?.addressDeliver}
+                      </Text>
+                    </View>
+                    <Text
+                      style={{
+                        fontSize: 17,
+                        fontWeight: 'bold',
+                        fontFamily: 'Roboto',
+                        color: 'black',
+                      }}>
+                      Nhân viên giao hàng :{' '}
+                      {item?.deliverer === null
+                        ? 'Chưa có'
+                        : item?.deliverer.fullName}
+                    </Text>
+                  </View>
+                  <Image
+                    resizeMode="contain"
+                    style={{
+                      width: 30,
+                      height: 30,
+                      tintColor: COLORS.primary,
+                    }}
+                    source={icons.rightArrow}
+                  />
+                </View>
+              </View>
+            ))}
+          </ScrollView>
+        )}
+      </View>
       {loading && <LoadingScreen />}
     </>
   );
