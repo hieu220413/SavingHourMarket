@@ -423,14 +423,21 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public String confirmSucceeded(UUID orderId, String staffEmail) throws IOException, NoSuchOrderException {
+    public String confirmSucceeded(UUID orderId, String staffEmail) throws IOException, NoSuchOrderException, ResourceNotFoundException {
+        Staff staff = staffRepository.findByEmail(staffEmail).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với email: " + staffEmail));
         Order order = repository.findById(orderId)
                 .orElseThrow(() -> new NoSuchOrderException("No order found with this id " + orderId));
-        if (order.getDeliveryDate().toLocalDate().equals(LocalDate.now())) {
+        if (order.getDeliveryDate().toLocalDate().equals(LocalDate.now()) && order.getDeliverer().equals(staff) && order.getStatus() == OrderStatus.DELIVERING.ordinal()) {
             order.setStatus(OrderStatus.SUCCESS.ordinal());
             FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được giao thành công! Hãy đánh giá dịch vụ của chúng tôi để đóng góp xây dưng hệ thống tốt hơn!", order.getCustomer().getId().toString());
         } else {
-            return "Đơn hàng này chưa tới ngày giao!";
+            if (!order.getDeliveryDate().toLocalDate().equals(LocalDate.now())) {
+                return "Đơn hàng này chưa tới ngày giao!";
+            } else if (!order.getDeliverer().equals(staff)) {
+                return "Nhân viên này không trùng với nhân viên được giao cho đơn hàng này!";
+            } else if( order.getStatus() != OrderStatus.DELIVERING.ordinal()){
+                return "Đơn hàng này đã được !";
+            }
         }
         return "Đơn hàng này xác nhận giao thành công!";
     }
