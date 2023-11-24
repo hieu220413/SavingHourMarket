@@ -506,7 +506,9 @@ const OrderListForManager = ({navigation}) => {
                 <Image
                   resizeMode="contain"
                   style={{width: 38, height: 38}}
-                  source={icons.userCircle}
+                  source={{
+                    uri: currentUser?.avatarUrl,
+                  }}
                 />
               </TouchableOpacity>
               {showLogout && (
@@ -825,7 +827,7 @@ const OrderListForManager = ({navigation}) => {
                         padding: 10,
                         flexDirection: 'row',
                         justifyContent: 'center',
-                        marginBottom: 15,
+                        marginBottom: 10,
                       }}>
                       <Text
                         style={{

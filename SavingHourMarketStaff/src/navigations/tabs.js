@@ -15,9 +15,10 @@ import QrCodeScanner from '../screens/deliveryStaff/QrCodeScanner';
 import Product from '../screens/orderStaff/Product';
 import OrderGroup from '../screens/deliveryManager/OrderGroup';
 import OrderBatch from '../screens/deliveryManager/OrderBatch';
-import Batching from '../screens/deliveryManager/Batching';
+// import Batching from '../screens/deliveryManager/Batching';
 import OrderGroupForOrderStaff from '../screens/orderStaff/OrderGroup';
 import OrderListForManager from '../screens/deliveryManager/OrderListForManager';
+import ReportForManager from '../screens/deliveryManager/ReportForManager';
 import HistoryList from '../screens/deliveryStaff/HistoryList';
 
 const Tab = createBottomTabNavigator();
@@ -70,7 +71,7 @@ const Tabs = () => {
             name="Report"
             component={Report}
             options={{
-              tabBarIcon: ({ focused }) => (
+              tabBarIcon: ({focused}) => (
                 <TabIcon
                   display={'Trang chủ'}
                   focused={focused}
@@ -174,19 +175,19 @@ const Tabs = () => {
               ),
             }}
           />
-          {/* <Tab.Screen
-            name="Batching"
-            component={Batching}
+          <Tab.Screen
+            name="ReportForManager"
+            component={ReportForManager}
             options={{
               tabBarIcon: ({focused}) => (
                 <TabIcon
-                  display={'Gom đơn hàng'}
+                  display={'Báo cáo'}
                   focused={focused}
-                  icon={icons.batching}
+                  icon={icons.statistic}
                 />
               ),
             }}
-          /> */}
+          />
         </>
       )}
       {user?.role === 'STAFF_DLV_0' && (

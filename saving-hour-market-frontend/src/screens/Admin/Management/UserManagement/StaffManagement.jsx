@@ -233,8 +233,20 @@ const StaffManagement = () => {
             ></i>
           ) : (
             <>
-              <i onClick={handleOpenEditDialog} class="bi bi-pencil-square"></i>
-              <i onClick={handleOpenDeleteDialog} class="bi bi-trash-fill"></i>
+              {staff.role === "ADMIN" ? (
+                <></>
+              ) : (
+                <>
+                  <i
+                    onClick={handleOpenEditDialog}
+                    class={`bi bi-pencil-square`}
+                  ></i>
+                  <i
+                    onClick={handleOpenDeleteDialog}
+                    class="bi bi-trash-fill"
+                  ></i>
+                </>
+              )}
             </>
           )}
         </td>

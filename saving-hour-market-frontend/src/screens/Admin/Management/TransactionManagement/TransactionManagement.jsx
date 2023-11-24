@@ -31,6 +31,7 @@ const TransactionManagement = () => {
       to: "/consolidationmanagement",
     },
   ];
+
   return (
     <div>
       <ManagementMenu menuTabs={menuTabs} />

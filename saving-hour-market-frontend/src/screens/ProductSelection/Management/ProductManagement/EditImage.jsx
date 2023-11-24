@@ -75,7 +75,12 @@ const EditImage = ({
       ...confirmProductList,
       productList: newProductList,
     });
-    setOpenSnackbar({ ...openSnackbar, open: true, severity: "success" });
+    setOpenSnackbar({
+      ...openSnackbar,
+      open: true,
+      severity: "success",
+      text: "Chỉnh sửa thành công",
+    });
     handleClose();
   };
   return (

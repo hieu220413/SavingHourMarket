@@ -10,7 +10,7 @@ const ProductBatchUploadByExcel = ({ handleClose, productBatch }) => {
   const [openAddressList, setOpenAddressList] = useState(false);
   const handleOpenAddressList = () => setOpenAddressList(true);
   const handleCloseAddressList = () => setOpenAddressList(false);
-  console.log(productBatch);
+
   const ProductBatchRow = ({ item, index }) => {
     return (
       <>
@@ -37,16 +37,28 @@ const ProductBatchUploadByExcel = ({ handleClose, productBatch }) => {
             )}
           </td> */}
           <td>
-            {item?.price.toLocaleString("vi-VN", {
-              style: "currency",
-              currency: "VND",
-            })}
+            {item.price ? (
+              item?.price.toLocaleString("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              })
+            ) : (
+              <p style={{ fontWeight: 700 }} className="text-danger">
+                Lỗi giá tiền
+              </p>
+            )}
           </td>
           <td>
-            {item?.priceOriginal.toLocaleString("vi-VN", {
-              style: "currency",
-              currency: "VND",
-            })}
+            {item.priceOriginal ? (
+              item?.priceOriginal.toLocaleString("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              })
+            ) : (
+              <p style={{ fontWeight: 700 }} className="text-danger">
+                Lỗi giá tiền
+              </p>
+            )}
           </td>
           <td>
             <i
