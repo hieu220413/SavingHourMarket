@@ -33,10 +33,8 @@ const Home = ({ navigation }) => {
     { display: 'Chờ đóng gói', value: 'PROCESSING' },
     { display: 'Đang đóng gói', value: 'PACKAGING' },
     { display: 'Đã đóng gói', value: 'PACKAGED' },
-    { display: 'Đã huỷ', value: 'CANCEL' },
-    { display: 'Đang giao', value: 'DELIVERING' },
-    { display: 'Thành công', value: 'SUCCESS' },
-    { display: 'Thất bại', value: 'FAIL' },
+    { display: 'Giao hàng', value: '' },
+    { display: 'Đã huỷ', value: 'CANCEL' }
   ];
   const sortOptions = [
     {
@@ -718,7 +716,7 @@ const Home = ({ navigation }) => {
                 showsVerticalScrollIndicator={false}
                 showsHorizontalScrollIndicator={false}
                 ref={swipeListViewRef}
-                data={orderList}
+                data={currentStatus.display === 'Giao hàng' ? orderList.filter(order => (order.status > 2 && order.status < 6)) : orderList}
                 keyExtractor={(item, index) => item.id}
                 renderItem={(data, rowMap) => (
                   <View
@@ -756,7 +754,7 @@ const Home = ({ navigation }) => {
                             paddingTop: 6,
                             fontWeight: 'bold',
                             fontFamily: 'Roboto',
-                            color: (data.item?.status === 6 ||data.item?.status === 5) ? COLORS.red : COLORS.primary,
+                            color: (data.item?.status === 6 || data.item?.status === 5) ? COLORS.red : COLORS.primary,
                           }}>
                           {data.item?.status === 0 && 'Chờ đóng gói'}
                           {data.item?.status === 1 && 'Đang đóng gói'}
@@ -766,7 +764,7 @@ const Home = ({ navigation }) => {
                           {data.item?.status === 5 && 'Giao thất bại'}
                           {data.item?.status === 6 && 'Đã huỷ'}
                         </Text>
-                        {(data.item?.status >= 2 && data.item?.status < 6)  &&
+                        {(data.item?.status >= 2 && data.item?.status < 6) &&
                           data.item?.packager?.fullName != null && (
                             <>
                               <View
@@ -1131,7 +1129,7 @@ const Home = ({ navigation }) => {
                     onPress={() => {
                       setModalVisible(!modalVisible);
                       selectSort.map(sort => {
-                        if(sort.active){
+                        if (sort.active) {
                           setTempSelectedSortId(sort.id);
                         }
                       })
