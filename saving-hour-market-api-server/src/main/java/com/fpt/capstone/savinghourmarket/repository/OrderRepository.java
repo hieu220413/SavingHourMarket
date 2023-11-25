@@ -35,9 +35,9 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "AND " +
             "(((:getOldOrder IS NULL) " +
             "OR " +
-            "((:getOldOrder = FALSE) AND (o.deliveryDate > CURRENT_DATE)) " +
+            "((:getOldOrder = FALSE) AND (o.deliveryDate >= CURRENT_DATE)) " +
             "OR " +
-            "((:getOldOrder = TRUE) AND (o.deliveryDate < CURRENT_DATE)))) " +
+            "((:getOldOrder = TRUE)))) " +
             "AND " +
             "(((:isBatched IS NULL) " +
             "OR " +
@@ -69,15 +69,17 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "AND " +
             "((:status IS NULL) OR (o.status = :status)) " +
             "AND " +
+            "((o.status = 0) OR ((o.status > 0) AND ((:packager IS NULL) OR (o.packager.id = :packager)))) " +
+            "AND " +
             "((:timeFrameId IS NULL) OR (o.timeFrame.id = :timeFrameId)) " +
             "AND " +
             "((:deliveryMethod IS NULL) OR (o.deliveryMethod = :deliveryMethod)) " +
             "AND " +
             "(((:getOldOrder IS NULL) " +
             "OR " +
-            "((:getOldOrder = FALSE) AND (o.deliveryDate > CURRENT_DATE)) " +
+            "((:getOldOrder = FALSE) AND (o.deliveryDate >= CURRENT_DATE)) " +
             "OR " +
-            "((:getOldOrder = TRUE) AND (o.deliveryDate < CURRENT_DATE)))) " +
+            "((:getOldOrder = TRUE)))) " +
             "AND " +
             "((o.paymentMethod = 0) OR ((o.paymentMethod = 1) AND (o.paymentStatus = 1))) " +
             "AND " +
@@ -85,7 +87,8 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "OR " +
             "((:isPaid = TRUE) AND (o.paymentStatus = 1)))"
     )
-    List<Order> findOrderForPackageStaff(UUID pickupPointId,
+    List<Order> findOrderForPackageStaff(UUID packager,
+                                         UUID pickupPointId,
                                          UUID timeFrameId,
                                          Date deliveryDate,
                                          Boolean getOldOrder,

@@ -88,7 +88,7 @@ public interface OrderService {
 
     String cancelOrder(String jwtToken, UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException, FirebaseAuthException, IOException;
 
-    String cancelPackageOrder(UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException;
+    String cancelPackageOrder(UUID id, String staffEmail) throws ResourceNotFoundException, OrderCancellationNotAllowedException;
 
     String confirmPackaging(UUID orderId, String staffEmail, UUID productConsolidationAreaId) throws NoSuchOrderException, IOException, ResourceNotFoundException;
 

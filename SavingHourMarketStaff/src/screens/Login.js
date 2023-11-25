@@ -52,7 +52,7 @@ const Login = ({navigation}) => {
       }
       const currentUser = await AsyncStorage.getItem('userInfo');
       if (currentUser) {
-        navigation.navigate('Start');
+        navigation.navigate('Tabs');
       }
     } else {
       // no sessions found.
@@ -145,7 +145,7 @@ const Login = ({navigation}) => {
             setLoading(false);
             showToastSuccess('Đăng nhập thành công');
             await AsyncStorage.setItem('userInfo', JSON.stringify(respond));
-            navigation.navigate('Start');
+            navigation.navigate('Tabs');
             // **
           })
 

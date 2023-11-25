@@ -93,6 +93,10 @@ public class Staff {
     @Transient
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<OverLimitAlertBody> overLimitAlertList;
+
+    @Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean isAvailableForDelivering;
     
 
     public Staff(StaffCreateRequestBody staffCreateRequestBody, StaffRole role) throws UnsupportedEncodingException {
