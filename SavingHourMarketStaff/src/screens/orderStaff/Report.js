@@ -18,8 +18,17 @@ import { API } from '../../constants/api';
 import { format } from 'date-fns';
 import LoadingScreen from '../../components/LoadingScreen';
 import { BarChart } from 'react-native-gifted-charts';
+import database from '@react-native-firebase/database';
+import { checkSystemState } from '../../common/utils';
 
 const Report = ({ navigation }) => {
+  // listen to system state
+  useFocusEffect(
+    useCallback(() => {
+      checkSystemState();
+    }, []),
+  );
+
   const [currentUser, setCurrentUser] = useState(null);
   const [initializing, setInitializing] = useState(true);
   const [pickupPoint, setPickupPoint] = useState(null);
@@ -77,7 +86,13 @@ const Report = ({ navigation }) => {
           },
         },
       )
-        .then(res => res.json())
+        .then(async res => {
+          if (res.status === 403 || res.status === 401) {
+            const tokenId = await auth().currentUser.getIdToken(true);
+            // Cac loi 403 khac thi handle duoi day neu co
+          }
+          return res.json();
+        })
         .then(respond => {
           // console.log('order', respond);
           if (respond.error) {
@@ -147,7 +162,13 @@ const Report = ({ navigation }) => {
           },
         },
       )
-        .then(res => res.json())
+        .then(async res => {
+          if (res.status === 403 || res.status === 401) {
+            const tokenId = await auth().currentUser.getIdToken(true);
+            // Cac loi 403 khac thi handle duoi day neu co
+          }
+          return res.json();
+        })
         .then(respond => {
           // console.log('order', respond);
           if (respond.error) {
@@ -247,7 +268,13 @@ const Report = ({ navigation }) => {
             },
           },
         )
-          .then(res => res.json())
+          .then(async res => {
+            if (res.status === 403 || res.status === 401) {
+              const tokenId = await auth().currentUser.getIdToken(true);
+              // Cac loi 403 khac thi handle duoi day neu co
+            }
+            return res.json();
+          })
           .then(respond => {
             // console.log(respond.ordersReportByMonth);
             const year = date.slice(0, 4);
@@ -288,7 +315,13 @@ const Report = ({ navigation }) => {
             Authorization: `Bearer ${tokenId}`,
           },
         })
-          .then(res => res.json())
+          .then(async res => {
+            if (res.status === 403 || res.status === 401) {
+              const tokenId = await auth().currentUser.getIdToken(true);
+              // Cac loi 403 khac thi handle duoi day neu co
+            }
+            return res.json();
+          })
           .then(respond => {
             const respondArr = respond.ordersReportByYear;
             // console.log(respondArr);
@@ -388,7 +421,11 @@ const Report = ({ navigation }) => {
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
         await AsyncStorage.removeItem('userInfo');
-        navigation.navigate('Login');
+        // navigation.navigate('Login');
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'Login'}],
+        });
         return;
       }
       const currentUser = await AsyncStorage.getItem('userInfo');
@@ -399,7 +436,11 @@ const Report = ({ navigation }) => {
       // no sessions found.
       console.log('user is not logged in');
       await AsyncStorage.removeItem('userInfo');
-      navigation.navigate('Login');
+      // navigation.navigate('Login');
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'Login'}],
+      });
     }
   };
 

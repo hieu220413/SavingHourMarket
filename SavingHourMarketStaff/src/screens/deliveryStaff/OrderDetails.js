@@ -10,9 +10,17 @@ import { format } from 'date-fns';
 import { useFocusEffect } from '@react-navigation/native';
 import { API } from '../../constants/api';
 import LoadingScreen from '../../components/LoadingScreen';
-
+import database from '@react-native-firebase/database';
+import { checkSystemState } from '../../common/utils';
 
 const OrderDetails = ({ navigation, route }) => {
+    // listen to system state
+    useFocusEffect(
+        useCallback(() => {
+            checkSystemState();
+        }, []),
+    );
+
     const [initializing, setInitializing] = useState(true);
     const [tokenId, setTokenId] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -45,7 +53,11 @@ const OrderDetails = ({ navigation, route }) => {
                 // sessions end. (revoke refresh token like password change, disable account, ....)
                 await AsyncStorage.removeItem('userInfo');
                 setLoading(false);
-                navigation.navigate('Login');
+                // navigation.navigate('Login');
+                navigation.reset({
+                    index: 0,
+                    routes: [{name: 'Login'}],
+                  });
                 return;
             }
             const token = await auth().currentUser.getIdToken();
@@ -56,7 +68,11 @@ const OrderDetails = ({ navigation, route }) => {
             console.log('user is not logged in');
             await AsyncStorage.removeItem('userInfo');
             setLoading(false);
-            navigation.navigate('Login');
+            // navigation.navigate('Login');
+            navigation.reset({
+                index: 0,
+                routes: [{name: 'Login'}],
+              });
         }
     };
 

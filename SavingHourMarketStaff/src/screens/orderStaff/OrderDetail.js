@@ -25,8 +25,17 @@ import {format} from 'date-fns';
 import Toast from 'react-native-toast-message';
 import LoadingScreen from '../../components/LoadingScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import database from '@react-native-firebase/database';
+import {checkSystemState} from '../../common/utils';
 
 const OrderDetail = ({navigation, route}) => {
+  // listen to system state
+  useFocusEffect(
+    useCallback(() => {
+      checkSystemState();
+    }, []),
+  );
+
   const {id, orderSuccess, isFromOrderGroup} = route.params;
   const [initializing, setInitializing] = useState(true);
   const [tokenId, setTokenId] = useState(null);
@@ -63,7 +72,13 @@ const OrderDetail = ({navigation, route}) => {
           },
         },
       )
-        .then(res => res.json())
+        .then(async res => {
+          if (res.status === 403 || res.status === 401) {
+            const tokenId = await auth().currentUser.getIdToken(true);
+            // Cac loi 403 khac thi handle duoi day neu co
+          }
+          return res.json();
+        })
         .then(respond => {
           // console.log('order group', respond);
           if (respond.error) {
@@ -134,7 +149,13 @@ const OrderDetail = ({navigation, route}) => {
             Authorization: `Bearer ${tokenId}`,
           },
         })
-          .then(res => res.json())
+          .then(async res => {
+            if (res.status === 403 || res.status === 401) {
+              const tokenId = await auth().currentUser.getIdToken(true);
+              // Cac loi 403 khac thi handle duoi day neu co
+            }
+            return res.json();
+          })
           .then(respond => {
             console.log(respond);
             setItem(respond);
@@ -170,7 +191,13 @@ const OrderDetail = ({navigation, route}) => {
               },
             },
           )
-            .then(res => res.text())
+            .then(async res => {
+              if (res.status === 403 || res.status === 401) {
+                const tokenId = await auth().currentUser.getIdToken(true);
+                // Cac loi 403 khac thi handle duoi day neu co
+              }
+              return res.text();
+            })
             .then(respond => {
               console.log(respond);
               showToast(respond);
@@ -199,7 +226,13 @@ const OrderDetail = ({navigation, route}) => {
               },
             },
           )
-            .then(res => res.text())
+            .then(async res => {
+              if (res.status === 403 || res.status === 401) {
+                const tokenId = await auth().currentUser.getIdToken(true);
+                // Cac loi 403 khac thi handle duoi day neu co
+              }
+              return res.text();
+            })
             .then(respond => {
               showToast(respond);
               navigation.goBack();
@@ -240,7 +273,13 @@ const OrderDetail = ({navigation, route}) => {
               },
             },
           )
-            .then(res => res.text())
+            .then(async res => {
+              if (res.status === 403 || res.status === 401) {
+                const tokenId = await auth().currentUser.getIdToken(true);
+                // Cac loi 403 khac thi handle duoi day neu co
+              }
+              return res.text();
+            })
             .then(respond => {
               console.log(respond);
               showToast(respond);
@@ -257,7 +296,7 @@ const OrderDetail = ({navigation, route}) => {
     setVisibleCancel(false);
   };
 
-  // print 
+  // print
   const print = async orderId => {
     setLoading(true);
     console.log('print');
@@ -273,7 +312,13 @@ const OrderDetail = ({navigation, route}) => {
           },
         },
       )
-        .then(res => res.text())
+        .then(async res => {
+          if (res.status === 403 || res.status === 401) {
+            const tokenId = await auth().currentUser.getIdToken(true);
+            // Cac loi 403 khac thi handle duoi day neu co
+          }
+          return res.text();
+        })
         .then(respond => {
           // console.log('order group', respond);
           if (respond.error) {
@@ -326,15 +371,19 @@ const OrderDetail = ({navigation, route}) => {
             }}>
             Chi tiết đơn hàng
           </Text>
-          {(item?.status === 1 || item?.status === 2) && <TouchableOpacity
-            style = {{marginLeft: 'auto'}}
-            onPress={() => {print(id)}}>
-            <Image
-              source={icons.print}
-              resizeMode="contain"
-              style={{width: 35, height: 35, tintColor: COLORS.primary}}
-            />
-          </TouchableOpacity>}
+          {(item?.status === 1 || item?.status === 2) && (
+            <TouchableOpacity
+              style={{marginLeft: 'auto'}}
+              onPress={() => {
+                print(id);
+              }}>
+              <Image
+                source={icons.print}
+                resizeMode="contain"
+                style={{width: 35, height: 35, tintColor: COLORS.primary}}
+              />
+            </TouchableOpacity>
+          )}
         </View>
         {item && (
           <ScrollView

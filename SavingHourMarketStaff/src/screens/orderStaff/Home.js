@@ -12,27 +12,34 @@ import {
   Pressable,
   FlatList,
 } from 'react-native';
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, {useEffect, useState, useCallback, useRef} from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { COLORS } from '../../constants/theme';
-import { icons } from '../../constants';
-import { useFocusEffect } from '@react-navigation/native';
-import { API } from '../../constants/api';
-import { format } from 'date-fns';
+import {COLORS} from '../../constants/theme';
+import {icons} from '../../constants';
+import {useFocusEffect} from '@react-navigation/native';
+import {API} from '../../constants/api';
+import {format} from 'date-fns';
 import CartEmpty from '../../assets/image/search-empty.png';
-import { SwipeListView } from 'react-native-swipe-list-view';
+import {SwipeListView} from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
 import Toast from 'react-native-toast-message';
 import DatePicker from 'react-native-date-picker';
+import database from '@react-native-firebase/database';
+import {checkSystemState} from '../../common/utils';
+const Home = ({navigation}) => {
+  // listen to system state
+  useFocusEffect(
+    useCallback(() => {
+      const onSystemStateChange = checkSystemState();
+    }, []),
+  );
 
-
-const Home = ({ navigation }) => {
   const orderStatus = [
-    { display: 'Chờ đóng gói', value: 'PROCESSING' },
-    { display: 'Đang đóng gói', value: 'PACKAGING' },
-    { display: 'Đã đóng gói', value: 'PACKAGED' },
-    { display: 'Đã huỷ', value: 'CANCEL' },
+    {display: 'Chờ đóng gói', value: 'PROCESSING'},
+    {display: 'Đang đóng gói', value: 'PACKAGING'},
+    {display: 'Đã đóng gói', value: 'PACKAGED'},
+    {display: 'Đã huỷ', value: 'CANCEL'},
   ];
   const sortOptions = [
     {
@@ -75,7 +82,8 @@ const Home = ({ navigation }) => {
   const [selectedDate, setSelectedDate] = useState('');
   const [tempSelectedDate, setTempSelectedDate] = useState('');
   const [consolidationAreaList, setConsolidationAreaList] = useState([]);
-  const [selectedConsolidationAreaId, setSelectedConsolidationAreaId] = useState('');
+  const [selectedConsolidationAreaId, setSelectedConsolidationAreaId] =
+    useState('');
   const [selectSort, setSelectSort] = useState(sortOptions);
   const [tempSelectedSortId, setTempSelectedSortId] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
@@ -101,7 +109,13 @@ const Home = ({ navigation }) => {
           },
         },
       )
-        .then(res => res.text())
+      .then(async res => {
+        if (res.status === 403 || res.status === 401) {
+          const tokenId = await auth().currentUser.getIdToken(true);
+          // Cac loi 403 khac thi handle duoi day neu co
+        }
+        return res.text();
+      })
         .then(respond => {
           // console.log('order group', respond);
           if (respond.error) {
@@ -153,7 +167,11 @@ const Home = ({ navigation }) => {
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
         await AsyncStorage.removeItem('userInfo');
-        navigation.navigate('Login');
+        // navigation.navigate('Login');
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'Login'}],
+        });
         return;
       }
       const currentUser = await AsyncStorage.getItem('userInfo');
@@ -163,7 +181,11 @@ const Home = ({ navigation }) => {
       // no sessions found.
       console.log('user is not logged in');
       await AsyncStorage.removeItem('userInfo');
-      navigation.navigate('Login');
+      // navigation.navigate('Login');
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'Login'}],
+      });
     }
   };
 
@@ -181,7 +203,13 @@ const Home = ({ navigation }) => {
           },
         },
       )
-        .then(res => res.json())
+      .then(async res => {
+        if (res.status === 403 || res.status === 401) {
+          const tokenId = await auth().currentUser.getIdToken(true);
+          // Cac loi 403 khac thi handle duoi day neu co
+        }
+        return res.json();
+      })
         .then(respond => {
           // console.log('order group', respond);
           if (respond.error) {
@@ -228,6 +256,10 @@ const Home = ({ navigation }) => {
         return;
       }
 
+      if (consolidationAreaEditRequest.status === 403 || consolidationAreaEditRequest.status === 401) {
+        const tokenId = await auth().currentUser.getIdToken(true);
+      }
+
       if (consolidationAreaEditRequest.status === 200) {
         const result = await consolidationAreaEditRequest.text();
         fetchOrderWithFilter();
@@ -249,19 +281,23 @@ const Home = ({ navigation }) => {
     setTempSelectedSortId(sortItem ? sortItem.id : '');
     if (tokenId) {
       await fetch(
-        `${API.baseURL}/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${pickupPoint && pickupPoint.id
-          ? `pickupPointId=${pickupPoint.id}`
-          : ''
+        `${
+          API.baseURL
+        }/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${
+          pickupPoint && pickupPoint.id ? `pickupPointId=${pickupPoint.id}` : ''
         }&orderStatus=${currentStatus.value}
-        ${selectedDate === ''
-          ? ''
-          : '&deliveryDate=' + format(Date.parse(selectedDate), 'yyyy-MM-dd')
-        }${selectedTimeFrameId === ''
-          ? ''
-          : '&timeFrameId=' + selectedTimeFrameId
-        }${tempSelectedSortId === ''
-          ? ''
-          : selectSort.find(item => item.id === tempSelectedSortId)?.param
+        ${
+          selectedDate === ''
+            ? ''
+            : '&deliveryDate=' + format(Date.parse(selectedDate), 'yyyy-MM-dd')
+        }${
+          selectedTimeFrameId === ''
+            ? ''
+            : '&timeFrameId=' + selectedTimeFrameId
+        }${
+          tempSelectedSortId === ''
+            ? ''
+            : selectSort.find(item => item.id === tempSelectedSortId)?.param
         }`,
         {
           method: 'GET',
@@ -271,11 +307,16 @@ const Home = ({ navigation }) => {
           },
         },
       )
-        .then(res => res.json())
+        .then(async res => {
+          if (res.status === 403 || res.status === 401) {
+            const tokenId = await auth().currentUser.getIdToken(true);
+            // Cac loi 403 khac thi handle duoi day neu co
+          }
+          return res.json();
+        })
         .then(respond => {
           // console.log('order group', respond);
           if (respond.error) {
-            console.log(err);
             setLoading(false);
             return;
           }
@@ -293,9 +334,9 @@ const Home = ({ navigation }) => {
     setSelectSort(
       selectSort.map(item => {
         if (item.id === tempSelectedSortId) {
-          return { ...item, active: true };
+          return {...item, active: true};
         }
-        return { ...item, active: false };
+        return {...item, active: false};
       }),
     );
     setSelectedTimeFrameId(tempSelectedTimeFrameId);
@@ -339,7 +380,13 @@ const Home = ({ navigation }) => {
               },
             },
           )
-            .then(res => res.text())
+            .then(async res => {
+              if (res.status === 403 || res.status === 401) {
+                const tokenId = await auth().currentUser.getIdToken(true);
+                // Cac loi 403 khac thi handle duoi day neu co
+              }
+              return res.text();
+            })
             .then(respond => {
               fetchOrderWithFilter();
               showToast(respond);
@@ -367,7 +414,13 @@ const Home = ({ navigation }) => {
               },
             },
           )
-            .then(res => res.text())
+            .then(async res => {
+              if (res.status === 403 || res.status === 401) {
+                const tokenId = await auth().currentUser.getIdToken(true);
+                // Cac loi 403 khac thi handle duoi day neu co
+              }
+              return res.text();
+            })
             .then(respond => {
               fetchOrderWithFilter();
               showToast(respond);
@@ -446,7 +499,6 @@ const Home = ({ navigation }) => {
         .catch(err => {
           console.log(err);
         });
-
     }, [selectSort, selectedDate, selectedTimeFrameId]),
   );
 
@@ -464,9 +516,16 @@ const Home = ({ navigation }) => {
       setLoading(false);
     };
     fetchData();
-  }, [currentStatus, pickupPoint, selectSort, selectedDate, selectedTimeFrameId, pickupPoint]);
+  }, [
+    currentStatus,
+    pickupPoint,
+    selectSort,
+    selectedDate,
+    selectedTimeFrameId,
+    pickupPoint,
+  ]);
 
-  const ModalSortItem = ({ item }) => {
+  const ModalSortItem = ({item}) => {
     return (
       <TouchableOpacity
         onPress={() => {
@@ -475,37 +534,37 @@ const Home = ({ navigation }) => {
         style={
           item.id == tempSelectedSortId
             ? {
-              borderColor: COLORS.primary,
-              borderWidth: 1,
-              borderRadius: 10,
-              margin: 5,
-            }
+                borderColor: COLORS.primary,
+                borderWidth: 1,
+                borderRadius: 10,
+                margin: 5,
+              }
             : {
-              borderColor: '#c8c8c8',
-              borderWidth: 0.2,
-              borderRadius: 10,
-              margin: 5,
-            }
+                borderColor: '#c8c8c8',
+                borderWidth: 0.2,
+                borderRadius: 10,
+                margin: 5,
+              }
         }>
         <Text
           style={
             item.id == tempSelectedSortId
               ? {
-                width: 150,
-                paddingVertical: 10,
-                textAlign: 'center',
-                color: COLORS.primary,
+                  width: 150,
+                  paddingVertical: 10,
+                  textAlign: 'center',
+                  color: COLORS.primary,
 
-                fontSize: 12,
-              }
+                  fontSize: 12,
+                }
               : {
-                width: 150,
-                paddingVertical: 10,
-                textAlign: 'center',
-                color: 'black',
+                  width: 150,
+                  paddingVertical: 10,
+                  textAlign: 'center',
+                  color: 'black',
 
-                fontSize: 12,
-              }
+                  fontSize: 12,
+                }
           }>
           {item.name}
         </Text>
@@ -524,7 +583,7 @@ const Home = ({ navigation }) => {
         <View style={styles.header}>
           <View style={styles.areaAndLogout}>
             <View style={styles.area}>
-              <Text style={{ fontSize: 16 }}>Khu vực:</Text>
+              <Text style={{fontSize: 16}}>Khu vực:</Text>
               <View style={styles.pickArea}>
                 <TouchableOpacity
                   onPress={() => {
@@ -548,7 +607,7 @@ const Home = ({ navigation }) => {
                         fontSize: 16,
                         fontFamily: 'Roboto',
                         color: 'black',
-                        maxWidth: 270
+                        maxWidth: 270,
                       }}
                       numberOfLines={1}>
                       {pickupPoint && pickupPoint.id
@@ -586,7 +645,7 @@ const Home = ({ navigation }) => {
                 }}>
                 <Image
                   resizeMode="contain"
-                  style={{ width: 38, height: 38 }}
+                  style={{width: 38, height: 38}}
                   source={{
                     uri: currentUser?.avatarUrl,
                   }}
@@ -614,7 +673,7 @@ const Home = ({ navigation }) => {
                       })
                       .catch(e => console.log(e));
                   }}>
-                  <Text style={{ color: 'red', fontWeight: 'bold' }}>
+                  <Text style={{color: 'red', fontWeight: 'bold'}}>
                     Đăng xuất
                   </Text>
                 </TouchableOpacity>
@@ -627,7 +686,7 @@ const Home = ({ navigation }) => {
             style={{
               flexDirection: 'row',
             }}>
-            <View style={{ flex: 6 }}>
+            <View style={{flex: 6}}>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {orderStatus.map((item, index) => (
                   <TouchableOpacity
@@ -695,9 +754,9 @@ const Home = ({ navigation }) => {
         <View style={styles.body}>
           {/* Order list */}
           {orderList.length === 0 ? (
-            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+            <View style={{alignItems: 'center', justifyContent: 'center'}}>
               <Image
-                style={{ width: '100%', height: '50%' }}
+                style={{width: '100%', height: '50%'}}
                 resizeMode="contain"
                 source={CartEmpty}
               />
@@ -712,7 +771,7 @@ const Home = ({ navigation }) => {
               </Text>
             </View>
           ) : (
-            <View style={{ height: '87%' }}>
+            <View style={{height: '87%'}}>
               <SwipeListView
                 showsVerticalScrollIndicator={false}
                 showsHorizontalScrollIndicator={false}
@@ -747,7 +806,7 @@ const Home = ({ navigation }) => {
                           orderSuccess: false,
                         });
                       }}>
-                      <View style={{ flexDirection: 'row', paddingBottom: 9 }}>
+                      <View style={{flexDirection: 'row', paddingBottom: 9}}>
                         <Text
                           style={{
                             flex: 13,
@@ -755,7 +814,10 @@ const Home = ({ navigation }) => {
                             paddingTop: 6,
                             fontWeight: 'bold',
                             fontFamily: 'Roboto',
-                            color: data.item?.status === 6 ? COLORS.red :COLORS.primary,
+                            color:
+                              data.item?.status === 6
+                                ? COLORS.red
+                                : COLORS.primary,
                           }}>
                           {data.item?.status === 0 && 'Chờ đóng gói'}
                           {data.item?.status === 1 && 'Đang đóng gói'}
@@ -888,7 +950,7 @@ const Home = ({ navigation }) => {
                           alignItems: 'center',
                           justifyContent: 'space-between',
                         }}>
-                        <View style={{ flexDirection: 'column', gap: 8 }}>
+                        <View style={{flexDirection: 'column', gap: 8}}>
                           <Text
                             style={{
                               fontSize: 17,
@@ -925,9 +987,12 @@ const Home = ({ navigation }) => {
                             Khung giờ:{' '}
                             {data.item?.timeFrame
                               ? `${data.item?.timeFrame?.fromHour.slice(
-                                0,
-                                5,
-                              )} đến ${data.item?.timeFrame?.toHour.slice(0, 5)}`
+                                  0,
+                                  5,
+                                )} đến ${data.item?.timeFrame?.toHour.slice(
+                                  0,
+                                  5,
+                                )}`
                               : ''}
                           </Text>
                           {data.item?.productConsolidationArea?.address && (
@@ -950,7 +1015,8 @@ const Home = ({ navigation }) => {
                             width: 30,
                             height: 30,
                             marginBottom: 30,
-                            tintColor: data.item?.status === 6 ? 'grey' :COLORS.primary,
+                            tintColor:
+                              data.item?.status === 6 ? 'grey' : COLORS.primary,
                           }}
                           source={icons.rightArrow}
                         />
@@ -991,7 +1057,7 @@ const Home = ({ navigation }) => {
                           <Image
                             source={icons.print}
                             resizeMode="contain"
-                            style={{ width: 40, height: 40, tintColor: 'white' }}
+                            style={{width: 40, height: 40, tintColor: 'white'}}
                           />
                         </View>
                       </TouchableOpacity>
@@ -1084,9 +1150,15 @@ const Home = ({ navigation }) => {
                     )}
                   </View>
                 )}
-                disableLeftSwipe={(orderList[0]?.status === 2 || orderList[0]?.status === 6) ? true : false}
+                disableLeftSwipe={
+                  orderList[0]?.status === 2 || orderList[0]?.status === 6
+                    ? true
+                    : false
+                }
                 disableRightSwipe={
-                  (orderList[0]?.status === 2 || orderList[0]?.status === 6 || orderList[0]?.status === 0)
+                  orderList[0]?.status === 2 ||
+                  orderList[0]?.status === 6 ||
+                  orderList[0]?.status === 0
                     ? true
                     : false
                 }
@@ -1183,37 +1255,37 @@ const Home = ({ navigation }) => {
                         style={
                           item.id === tempSelectedTimeFrameId
                             ? {
-                              borderColor: COLORS.primary,
-                              borderWidth: 1,
-                              borderRadius: 10,
-                              margin: 5,
-                            }
+                                borderColor: COLORS.primary,
+                                borderWidth: 1,
+                                borderRadius: 10,
+                                margin: 5,
+                              }
                             : {
-                              borderColor: '#c8c8c8',
-                              borderWidth: 0.2,
-                              borderRadius: 10,
-                              margin: 5,
-                            }
+                                borderColor: '#c8c8c8',
+                                borderWidth: 0.2,
+                                borderRadius: 10,
+                                margin: 5,
+                              }
                         }>
                         <Text
                           style={
                             item.id === tempSelectedTimeFrameId
                               ? {
-                                width: 150,
-                                paddingVertical: 10,
-                                textAlign: 'center',
-                                color: COLORS.primary,
+                                  width: 150,
+                                  paddingVertical: 10,
+                                  textAlign: 'center',
+                                  color: COLORS.primary,
 
-                                fontSize: 12,
-                              }
+                                  fontSize: 12,
+                                }
                               : {
-                                width: 150,
-                                paddingVertical: 10,
-                                textAlign: 'center',
-                                color: 'black',
+                                  width: 150,
+                                  paddingVertical: 10,
+                                  textAlign: 'center',
+                                  color: 'black',
 
-                                fontSize: 12,
-                              }
+                                  fontSize: 12,
+                                }
                           }>
                           {item.fromHour.slice(0, 5)} đến{' '}
                           {item.toHour.slice(0, 5)}
@@ -1237,9 +1309,7 @@ const Home = ({ navigation }) => {
                   }}>
                   <DatePicker
                     date={
-                      tempSelectedDate === ''
-                        ? new Date()
-                        : tempSelectedDate
+                      tempSelectedDate === '' ? new Date() : tempSelectedDate
                     }
                     mode="date"
                     androidVariant="nativeAndroid"
@@ -1287,7 +1357,6 @@ const Home = ({ navigation }) => {
                     <Text style={styles.textStyle}>Áp dụng</Text>
                   </TouchableOpacity>
                 </View>
-
               </View>
             </Pressable>
           </Modal>
@@ -1340,7 +1409,7 @@ const Home = ({ navigation }) => {
                       </Text>
                     </View>
                     <FlatList
-                      style={{ maxHeight: 170 }}
+                      style={{maxHeight: 170}}
                       data={consolidationAreaList}
                       renderItem={data => (
                         <TouchableOpacity
@@ -1363,7 +1432,7 @@ const Home = ({ navigation }) => {
                             }}>
                             <Image
                               resizeMode="contain"
-                              style={{ width: 20, height: 20 }}
+                              style={{width: 20, height: 20}}
                               source={icons.location}
                               tintColor={
                                 data.item.id === selectedConsolidationAreaId
@@ -1493,7 +1562,7 @@ const Home = ({ navigation }) => {
                 <FlatList
                   showsVerticalScrollIndicator={false}
                   showsHorizontalScrollIndicator={false}
-                  style={{ maxHeight: 200, marginHorizontal: 7 }}
+                  style={{maxHeight: 200, marginHorizontal: 7}}
                   data={consolidationAreaList}
                   renderItem={data => (
                     <TouchableOpacity
@@ -1516,7 +1585,7 @@ const Home = ({ navigation }) => {
                         }}>
                         <Image
                           resizeMode="contain"
-                          style={{ width: 20, height: 20 }}
+                          style={{width: 20, height: 20}}
                           source={icons.location}
                           tintColor={
                             data.item.id === selectedConsolidationAreaId
