@@ -765,7 +765,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
       await fetch(
         `${
           API.baseURL
-        }/api/order/packageStaff/getOrders?getOldOrder=true&orderStatus=FAIL&deliveryMethod=PICKUP_POINT&${
+        }/api/order/packageStaff/getOrders?getOldOrder=true&orderStatus=CANCEL&deliveryMethod=PICKUP_POINT&${
           pickupPoint && pickupPoint.id
             ? 'pickupPointId=' + pickupPoint?.id
             : ''
@@ -1373,7 +1373,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                               fontFamily: 'Roboto',
                               color: COLORS.red,
                             }}>
-                            Thất bại
+                            Hủy đóng gói
                           </Text>
                           <Text
                             style={{
