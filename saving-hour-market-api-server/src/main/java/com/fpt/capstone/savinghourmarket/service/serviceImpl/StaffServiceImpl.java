@@ -311,6 +311,9 @@ public class StaffServiceImpl implements StaffService {
          // check if batch id exist if mode is batch
         Optional<OrderBatch> orderBatch = null;
         if(orderType.ordinal() == OrderType.ORDER_BATCH.ordinal()) {
+            if(orderBatchId == null) {
+                throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.ORDER_BATCH_NOT_FOUND.getCode()), AdditionalResponseCode.ORDER_BATCH_NOT_FOUND.toString());
+            }
             orderBatch = orderBatchRepository.findById(orderBatchId);
             if(!orderBatch.isPresent()){
                 throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.ORDER_BATCH_NOT_FOUND.getCode()), AdditionalResponseCode.ORDER_BATCH_NOT_FOUND.toString());
@@ -320,6 +323,9 @@ public class StaffServiceImpl implements StaffService {
         // check if group id exist if mode is group
         Optional<OrderGroup> orderGroup = null;
         if(orderType.ordinal() == OrderType.ORDER_GROUP.ordinal()) {
+            if(orderGroupId == null) {
+                throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.ORDER_BATCH_NOT_FOUND.getCode()), AdditionalResponseCode.ORDER_BATCH_NOT_FOUND.toString());
+            }
             orderGroup = orderGroupRepositorys.findById(orderGroupId);
             if(!orderGroup.isPresent()){
                 throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.ORDER_GROUP_NOT_FOUND.getCode()), AdditionalResponseCode.ORDER_GROUP_NOT_FOUND.toString());
