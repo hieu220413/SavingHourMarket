@@ -157,7 +157,7 @@ const OrderDetails = ({ navigation, route }) => {
                     }}>
                     <TouchableOpacity
                         onPress={() =>
-                            navigation.navigate('Start')
+                            navigation.goBack()
                         }>
                         <Image
                             source={icons.leftArrow}
@@ -638,7 +638,7 @@ const OrderDetails = ({ navigation, route }) => {
                     <View style={{ width: '95%' }}>
                         <TouchableOpacity
                             onPress={() => {
-                                setModalVisible(true);
+                                confirmOrder(true);
                             }}
                             style={{
                                 alignItems: 'center',
@@ -655,7 +655,7 @@ const OrderDetails = ({ navigation, route }) => {
                                     fontFamily: 'Roboto',
                                     fontWeight: 'bold',
                                 }}>
-                                Xác nhận đơn hàng
+                                Giao hàng thành công
                             </Text>
                         </TouchableOpacity>
                     </View>

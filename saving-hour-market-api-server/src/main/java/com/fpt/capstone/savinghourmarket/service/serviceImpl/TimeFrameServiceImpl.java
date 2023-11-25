@@ -24,11 +24,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Time;
 import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -90,6 +92,15 @@ public class TimeFrameServiceImpl implements TimeFrameService {
 
         }
 
+        if(timeFrameRepository.findByHour(timeFrameCreateUpdateBody.getFromHour()).size() > 0) {
+            errorFields.put("fromHourError", "Start hour collides with hour from other timeframe");
+        }
+
+        if(timeFrameRepository.findByHour(timeFrameCreateUpdateBody.getToHour()).size() > 0 ) {
+            errorFields.put("toHourError", "End hour collides with hour from other timeframe");
+
+        }
+
         if(timeFrameRepository.findByFromHourAndToHour(timeFrameCreateUpdateBody.getFromHour(), timeFrameCreateUpdateBody.getToHour()).isPresent()){
             errorFields.put("fromHourError", "This time frame is existed");
             errorFields.put("toHourError", "This time frame is existed");
@@ -129,6 +140,24 @@ public class TimeFrameServiceImpl implements TimeFrameService {
 
         if(timeFrameUpdateBody.getToHour().isBefore(timeFrameUpdateBody.getFromHour()) || timeFrameUpdateBody.getToHour().equals(timeFrameUpdateBody.getFromHour())) {
             errorFields.put("toHourError", "End hour can not be before or equal start hour");
+
+        }
+
+        List<TimeFrame> fromHourValidate = timeFrameRepository.findByHour(timeFrameUpdateBody.getFromHour());
+        if(fromHourValidate.size() > 0 ) {
+            List<TimeFrame> selfTimeFrame = fromHourValidate.stream().filter(frame -> frame.getId().equals(timeFrameId)).collect(Collectors.toList());
+            if(selfTimeFrame.size() == 0 ){
+                errorFields.put("fromHourError", "Start hour collides with hour from other timeframe");
+            }
+        }
+
+        List<TimeFrame> toHourValidate = timeFrameRepository.findByHour(timeFrameUpdateBody.getToHour());
+        if(toHourValidate.size() > 0 ) {
+            List<TimeFrame> selfTimeFrame = toHourValidate.stream().filter(frame -> frame.getId().equals(timeFrameId)).collect(Collectors.toList());
+            if(selfTimeFrame.size() == 0 ){
+                errorFields.put("toHourError", "End hour collides with hour from other timeframe");
+            }
+
 
         }
 

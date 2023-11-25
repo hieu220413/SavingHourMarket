@@ -311,6 +311,9 @@ public class StaffServiceImpl implements StaffService {
          // check if batch id exist if mode is batch
         Optional<OrderBatch> orderBatch = null;
         if(orderType.ordinal() == OrderType.ORDER_BATCH.ordinal()) {
+            if(orderBatchId == null) {
+                throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.ORDER_BATCH_NOT_FOUND.getCode()), AdditionalResponseCode.ORDER_BATCH_NOT_FOUND.toString());
+            }
             orderBatch = orderBatchRepository.findById(orderBatchId);
             if(!orderBatch.isPresent()){
                 throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.ORDER_BATCH_NOT_FOUND.getCode()), AdditionalResponseCode.ORDER_BATCH_NOT_FOUND.toString());
@@ -320,6 +323,9 @@ public class StaffServiceImpl implements StaffService {
         // check if group id exist if mode is group
         Optional<OrderGroup> orderGroup = null;
         if(orderType.ordinal() == OrderType.ORDER_GROUP.ordinal()) {
+            if(orderGroupId == null) {
+                throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.ORDER_BATCH_NOT_FOUND.getCode()), AdditionalResponseCode.ORDER_BATCH_NOT_FOUND.toString());
+            }
             orderGroup = orderGroupRepositorys.findById(orderGroupId);
             if(!orderGroup.isPresent()){
                 throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.ORDER_GROUP_NOT_FOUND.getCode()), AdditionalResponseCode.ORDER_GROUP_NOT_FOUND.toString());
@@ -329,6 +335,8 @@ public class StaffServiceImpl implements StaffService {
         List<Staff> staffList = staffRepository.getAllStaffForDeliverManager(name, StaffRole.STAFF_DLV_0.toString(), deliverMangerId);
         HashMap<UUID, Staff> staffHashMap = new HashMap();
         for (Staff staff : staffList) {
+            // init IsAvailableForDelivering
+            staff.setIsAvailableForDelivering(true);
             staffHashMap.put(staff.getId(), staff);
         }
 
@@ -351,14 +359,15 @@ public class StaffServiceImpl implements StaffService {
         }
 
         for (Staff removeStaff : removeStaffList) {
-            staffList.removeIf(staff -> removeStaff.getId() == staff.getId());
-            staffHashMap.remove(removeStaff.getId());
+//            staffList.removeIf(staff -> removeStaff.getId() == staff.getId());
+//            staffHashMap.remove(removeStaff.getId());
+            staffHashMap.get(removeStaff.getId()).setIsAvailableForDelivering(false);
         }
 
 
         // over limit handler for group mode (no need to check with collide batch, single order because it's already been done above)
         if(orderType.ordinal() == OrderType.ORDER_GROUP.ordinal()) {
-            List<Staff> staffWithOrderGroup = staffRepository.getStaffWithDeliverDateWithGroupWithDifferentTimeFrame(staffList.stream().map(staff -> staff.getId()).collect(Collectors.toList()), deliverDate, timeFrame.get().getId());
+            List<Staff> staffWithOrderGroup = staffRepository.getStaffWithDeliverDateWithGroupWithDifferentTimeFrame(staffList.stream().filter(staff -> staff.getIsAvailableForDelivering() == true).map(staff -> staff.getId()).collect(Collectors.toList()), deliverDate, timeFrame.get().getId());
             for (Staff staff : staffWithOrderGroup) {
                 if(staff.getOrderGroupList() != null &&  staff.getOrderGroupList().size() > 0){
                     // sort time frame ascending
@@ -444,13 +453,14 @@ public class StaffServiceImpl implements StaffService {
         if(orderType.ordinal() == OrderType.ORDER_BATCH.ordinal()) {
 //            List<Object[]> countCollideBatchForStaffList =  staffRepository.countCollideBatchForStaff(staffList.stream().map(staff -> staff.getId()).collect(Collectors.toList()), deliverDate, timeFrame.get().getFromHour(), timeFrame.get().getToHour());
             // remove staff from staff list which have been already assigned batch in the same time frame and date
-            List<Staff> removeStaffListForBatch = staffRepository.getStaffWithDeliverDateWithBatchWithSameTimeFrame(staffList.stream().map(staff -> staff.getId()).collect(Collectors.toList()), deliverDate, timeFrame.get().getId());
+            List<Staff> removeStaffListForBatch = staffRepository.getStaffWithDeliverDateWithBatchWithSameTimeFrame(staffList.stream().filter(staff -> staff.getIsAvailableForDelivering() == true).map(staff -> staff.getId()).collect(Collectors.toList()), deliverDate, timeFrame.get().getId());
             for (Staff removeStaff : removeStaffListForBatch) {
-                staffList.removeIf(staff -> removeStaff.getId() == staff.getId());
-                staffHashMap.remove(removeStaff.getId());
+//                staffList.removeIf(staff -> removeStaff.getId() == staff.getId());
+//                staffHashMap.remove(removeStaff.getId());
+                staffHashMap.get(removeStaff.getId()).setIsAvailableForDelivering(false);
             }
 
-            List<Staff> staffWithOrderBatch = staffRepository.getStaffWithDeliverDateWithBatchWithDifferentTimeFrame(staffList.stream().map(staff -> staff.getId()).collect(Collectors.toList()), deliverDate, timeFrame.get().getId());
+            List<Staff> staffWithOrderBatch = staffRepository.getStaffWithDeliverDateWithBatchWithDifferentTimeFrame(staffList.stream().filter(staff -> staff.getIsAvailableForDelivering() == true).map(staff -> staff.getId()).collect(Collectors.toList()), deliverDate, timeFrame.get().getId());
 
             for (Staff staff : staffWithOrderBatch) {
                 if(staff.getOrderBatchList() != null &&  staff.getOrderBatchList().size() > 0) {
@@ -549,8 +559,15 @@ public class StaffServiceImpl implements StaffService {
             }
         }
 
-        // sort staff base on the highest limit exceed of each staff
+        // sort staff base on disable/enable first ->  the highest limit exceed of each staff
         staffList.sort((s1, s2) -> {
+            if(s1.getIsAvailableForDelivering() == false) {
+                return 1 ;
+            }
+            if(s2.getIsAvailableForDelivering() == false) {
+                return -1 ;
+            }
+
             Double highestLimitExceedS1 = s1.getOverLimitAlertList().size() > 0 ? s1.getOverLimitAlertList().get(0).getLimitExceedValue() : 0;
             Double highestLimitExceedS2 = s2.getOverLimitAlertList().size() > 0 ? s2.getOverLimitAlertList().get(0).getLimitExceedValue() : 0;
             if(highestLimitExceedS1 - highestLimitExceedS2 > 0) return 1;

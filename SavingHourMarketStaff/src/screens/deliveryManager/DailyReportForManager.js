@@ -266,7 +266,7 @@ const DailyReportForManager = ({navigation}) => {
                   }}>
                   <Text
                     style={{fontSize: 40, color: 'black', fontWeight: 'bold'}}>
-                    {deliveringOrder + waitingForAssignOrder}
+                    {deliveringOrder}
                   </Text>
                 </View>
               </TouchableOpacity>

@@ -161,8 +161,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderGroup> fetchOrderGroupsForPackageStaff(String staffEmail, SortType deliverDateSortType, LocalDate deliverDate, Boolean getOldOrderGroup, UUID timeFrameId, UUID pickupPointId, UUID delivererId, Integer page, Integer size) throws ResourceNotFoundException {
-        List<PickupPoint> pickupPointListOfStaff = staffRepository.findByEmail(staffEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("Nhân viên không tìm thấy với email " + staffEmail)).getPickupPoint();
+        Staff staff = staffRepository.findByEmail(staffEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Nhân viên không tìm thấy với email " + staffEmail));
+        List<PickupPoint> pickupPointListOfStaff = staff.getPickupPoint();
         Sort sortable = null;
 
         if (deliverDateSortType != null) {
@@ -192,7 +193,7 @@ public class OrderServiceImpl implements OrderService {
                     .stream().filter(order -> ((order.getPaymentMethod() == 1 && order.getPaymentStatus() == 1)
                             || order.getPaymentMethod() == 0)
                             &&
-                            (order.getStatus() > OrderStatus.PROCESSING.ordinal()
+                            ((order.getStatus() > OrderStatus.PROCESSING.ordinal() && order.getPackager().equals(staff))
                                     || (order.getStatus() == OrderStatus.PROCESSING.ordinal() && LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS)))))
                     .toList();
             orderGroup.setOrderList(orders);
@@ -422,14 +423,21 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public String confirmSucceeded(UUID orderId, String staffEmail) throws IOException, NoSuchOrderException {
+    public String confirmSucceeded(UUID orderId, String staffEmail) throws IOException, NoSuchOrderException, ResourceNotFoundException {
+        Staff staff = staffRepository.findByEmail(staffEmail).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với email: " + staffEmail));
         Order order = repository.findById(orderId)
                 .orElseThrow(() -> new NoSuchOrderException("No order found with this id " + orderId));
-        if (order.getDeliveryDate().toLocalDate().equals(LocalDate.now())) {
+        if (order.getDeliveryDate().toLocalDate().equals(LocalDate.now()) && order.getDeliverer().equals(staff) && order.getStatus() == OrderStatus.DELIVERING.ordinal()) {
             order.setStatus(OrderStatus.SUCCESS.ordinal());
             FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được giao thành công! Hãy đánh giá dịch vụ của chúng tôi để đóng góp xây dưng hệ thống tốt hơn!", order.getCustomer().getId().toString());
         } else {
-            return "Đơn hàng này chưa tới ngày giao!";
+            if (!order.getDeliveryDate().toLocalDate().equals(LocalDate.now())) {
+                return "Đơn hàng này chưa tới ngày giao!";
+            } else if (!order.getDeliverer().equals(staff)) {
+                return "Nhân viên này không trùng với nhân viên được giao cho đơn hàng này!";
+            } else if( order.getStatus() != OrderStatus.DELIVERING.ordinal()){
+                return "Đơn hàng này đã được !";
+            }
         }
         return "Đơn hàng này xác nhận giao thành công!";
     }
@@ -465,8 +473,6 @@ public class OrderServiceImpl implements OrderService {
                         FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getId().toString());
                     } else if (order.getStatus() == OrderStatus.DELIVERING.ordinal()) {
                         order.setDeliverer(staff);
-                    } else {
-                        return "Đơn hàng " + order.getId() + " chưa được đóng gói!";
                     }
                 }
                 orderGroup.setDeliverer(staff);
@@ -479,8 +485,6 @@ public class OrderServiceImpl implements OrderService {
                         FirebaseService.sendPushNotification("SHM", "Đơn hàng chuẩn bị được giao!", order.getCustomer().getId().toString());
                     } else if (order.getStatus() == OrderStatus.DELIVERING.ordinal()) {
                         order.setDeliverer(staff);
-                    } else {
-                        return "Đơn hàng " + order.getId() + " chưa được đóng gói!";
                     }
                 }
                 orderBatch.setDeliverer(staff);
@@ -560,10 +564,12 @@ public class OrderServiceImpl implements OrderService {
                                                   DeliveryMethod deliveryMethod,
                                                   int page,
                                                   int limit) throws ResourceNotFoundException {
-        List<PickupPoint> pickupPointListOfStaff = staffRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Nhân viên không tìm thấy với email " + email)).getPickupPoint();
+        Staff staff = staffRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Nhân viên không tìm thấy với email " + email));
+        List<PickupPoint> pickupPointListOfStaff = staff.getPickupPoint();
         Configuration configuration = configurationRepository.findAll().get(0);
         return repository.findOrderForPackageStaff(
+                        staff.getId(),
                         pickupPointId,
                         timeFrameId,
                         deliveryDate,
@@ -685,7 +691,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public String cancelPackageOrder(UUID id) throws ResourceNotFoundException, OrderCancellationNotAllowedException {
+    public String cancelPackageOrder(UUID id, String staffEmail) throws ResourceNotFoundException, OrderCancellationNotAllowedException {
+        Staff staff = staffRepository.findByEmail(staffEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("No staff with id " + staffEmail));
         Order order = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No order with id " + id));
 
@@ -699,6 +707,7 @@ public class OrderServiceImpl implements OrderService {
 
         if (order.getStatus() == OrderStatus.PROCESSING.ordinal() || order.getStatus() == OrderStatus.PACKAGING.ordinal()) {
             order.setStatus(OrderStatus.CANCEL.ordinal());
+            order.setPackager(staff);
             List<OrderDetail> orderDetails = order.getOrderDetailList();
             increaseProductQuantity(orderDetails);
             List<Discount> discounts = order.getDiscountList();

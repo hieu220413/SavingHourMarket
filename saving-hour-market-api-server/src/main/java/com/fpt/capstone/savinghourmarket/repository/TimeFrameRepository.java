@@ -44,4 +44,9 @@ public interface TimeFrameRepository extends JpaRepository<TimeFrame, UUID> {
             "WHERE " +
             "((:status IS NULL) OR (t.status = :status))")
     Page<TimeFrame> findAllForAdmin(Integer status, Pageable pageable);
+
+    @Query("SELECT t from TimeFrame t " +
+            "WHERE " +
+            "t.fromHour = :hour OR t.toHour = :hour")
+    List<TimeFrame> findByHour(LocalTime hour);
 }

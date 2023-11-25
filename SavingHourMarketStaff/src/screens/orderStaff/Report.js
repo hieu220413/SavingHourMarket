@@ -251,7 +251,7 @@ const Report = ({ navigation }) => {
           .then(respond => {
             // console.log(respond.ordersReportByMonth);
             const year = date.slice(0, 4);
-            const keyToAccess = year; 
+            const keyToAccess = year;
             // console.log(typeof(keyToAccess));
             const arrayForKey = respond.ordersReportByMonth[keyToAccess];
             // console.log(arrayForKey);
@@ -454,276 +454,279 @@ const Report = ({ navigation }) => {
         setOpen(false);
       }}
       accessible={false}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}
-        style={{ marginBottom: 80 }}>
-        <ImageBackground
-          source={require('../../assets/image/backgroundStaff.jpeg')}
-          style={styles.container}>
-          <View style={styles.header}>
-            <View style={styles.areaAndLogout}>
-              <View>
-                <Text
-                  style={{ fontSize: 20, fontWeight: '600', color: 'black', marginTop: 10 }}>
-                  Xin chào! {currentUser?.fullName},
-                </Text>
-                <Text
-                  style={{ fontSize: 14, fontStyle: 'italic', color: 'black', marginBottom: 10 }}>
-                  Hãy đóng gói những đơn hàng thật kĩ càng nhé!
-                </Text>
-              </View>
-              <View style={styles.logout}>
-                <TouchableOpacity
-                  onPress={() => {
-                    setOpen(!open);
-                  }}>
-                  <Image
-                    resizeMode="contain"
-                    style={{ width: 50, height: 50, borderRadius: 75 }}
-                    source={{
-                      uri: currentUser?.avatarUrl,
-                    }}
-                  />
-                </TouchableOpacity>
-                {open && (
+      <>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
+          style={{ marginBottom: 80 }}>
+          <ImageBackground
+            source={require('../../assets/image/backgroundStaff.jpeg')}
+            style={styles.container}>
+            <View style={styles.header}>
+              <View style={styles.areaAndLogout}>
+                <View>
+                  <Text
+                    style={{ fontSize: 20, fontWeight: '600', color: 'black', marginTop: 10 }}>
+                    Xin chào! {currentUser?.fullName},
+                  </Text>
+                  <Text
+                    style={{ fontSize: 14, fontStyle: 'italic', color: 'black', marginBottom: 10 }}>
+                    Hãy đóng gói những đơn hàng thật kĩ càng nhé!
+                  </Text>
+                </View>
+                <View style={styles.logout}>
                   <TouchableOpacity
-                    style={{
-                      position: 'absolute',
-                      bottom: -30,
-                      left: -12,
-                      zIndex: 100,
-                      width: 75,
-                      height: 35,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      borderRadius: 10,
-                      backgroundColor: 'rgb(240,240,240)',
-                    }}
                     onPress={() => {
-                      auth()
-                        .signOut()
-                        .then(async () => {
-                          await AsyncStorage.removeItem('userInfo');
-                        })
-                        .catch(e => console.log(e));
+                      setOpen(!open);
                     }}>
-                    <Text style={{ color: 'red', fontWeight: 'bold' }}>
-                      Đăng xuất
-                    </Text>
+                    <Image
+                      resizeMode="contain"
+                      style={{ width: 50, height: 50, borderRadius: 75 }}
+                      source={{
+                        uri: currentUser?.avatarUrl,
+                      }}
+                    />
                   </TouchableOpacity>
-                )}
+                  {open && (
+                    <TouchableOpacity
+                      style={{
+                        position: 'absolute',
+                        bottom: -30,
+                        left: -12,
+                        zIndex: 100,
+                        width: 75,
+                        height: 35,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        borderRadius: 10,
+                        backgroundColor: 'rgb(240,240,240)',
+                      }}
+                      onPress={() => {
+                        auth()
+                          .signOut()
+                          .then(async () => {
+                            await AsyncStorage.removeItem('userInfo');
+                          })
+                          .catch(e => console.log(e));
+                      }}>
+                      <Text style={{ color: 'red', fontWeight: 'bold' }}>
+                        Đăng xuất
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
               </View>
             </View>
-          </View>
 
-          <View style={styles.body}>
+            <View style={styles.body}>
 
-            <View
-              style={{
-                borderTopLeftRadius: 20,
-                borderTopRightRadius: 20,
-              }}>
-              <View style={{
-                paddingTop: 10,
-                paddingBottom: 20,
-                marginTop: 10
-              }}>
-                <View style={styles.wrapTotal}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 20, color: 'black' }}>Tổng số đơn hàng: {numberTotal}</Text>
-                  </View>
-                </View>
-                <View style={styles.wrap_container}>
-
-                  <View style={styles.wrapProcessing}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.texts}>Đơn chờ xác nhận:</Text>
-                    </View>
-                    <View
-                      style={{
-                        flex: 1,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}>
-                      <Text style={styles.numbers}>
-                        {numberOfProcessing}
-                      </Text>
-                    </View>
-                  </View>
-                  <View style={styles.wrapPackaging}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.texts}>Đơn đang đóng gói:</Text>
-                    </View>
-                    <View
-                      style={{
-                        flex: 1,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}>
-                      <Text style={styles.numbers}>
-                        {numberOfPackageing}
-                      </Text>
-                    </View>
-                  </View>
-                  <View style={styles.wrapPackaged}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.texts}>Đơn đã đóng gói:</Text>
-                    </View>
-                    <View
-                      style={{
-                        flex: 1,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}>
-                      <Text style={styles.numbers}>
-                        {numberOfPackaged}
-                      </Text>
-                    </View>
-                  </View>
-                  <View style={styles.wrapDelivering}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.texts}>Đơn đang giao:</Text>
-                    </View>
-                    <View
-                      style={{
-                        flex: 1,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}>
-                      <Text style={styles.numbers}>
-                        {numberOfDelivering}
-                      </Text>
-                    </View>
-                  </View>
-                  <View style={styles.wrapSuccess}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.texts}>Đơn đã giao:</Text>
-                    </View>
-                    <View
-                      style={{
-                        flex: 1,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}>
-                      <Text style={styles.numbers}>
-                        {numberOfSuccess}
-                      </Text>
-                    </View>
-                  </View>
-                  <View style={styles.wrapCancel}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.texts}>Đơn đã huỷ:</Text>
-                    </View>
-                    <View
-                      style={{
-                        flex: 1,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}>
-                      <Text style={styles.numbers}>
-                        {numberOfCancel}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              </View>
               <View
                 style={{
                   borderTopLeftRadius: 20,
                   borderTopRightRadius: 20,
-                  backgroundColor: 'white',
-                  shadowColor: '#000',
-                  shadowOffset: {
-                    width: 2,
-                    height: 2,
-                  },
-                  shadowOpacity: 0.25,
-                  shadowRadius: 4,
-                  elevation: 5,
                 }}>
-                <View
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingBottom: 20,
-                    paddingTop: 20
-                  }}>
-                  <Text
-                    style={{ fontSize: 18, fontWeight: 'bold', color: 'black' }}>
-                    SỐ ĐƠN HÀNG ĐÃ GIAO
-                  </Text>
-                </View>
-                <View style={{
-                  paddingVertical: 30,
-                  marginHorizontal: 15,
-                  marginBottom: 20,
-                  borderRadius: 20,
-                  backgroundColor: 'white',
-                  shadowColor: '#000',
-                  shadowOffset: {
-                    width: 0,
-                    height: 2,
-                  },
-                  shadowOpacity: 0.25,
-                  shadowRadius: 4,
-                  elevation: 3,
-                }}>
-                  <BarChart
-                    disablePress={true}
-                    data={data}
-                    spacing={6.5}
-                    barWidth={20}
-                    frontColor={COLORS.tabIcon}
-                    isAnimated
-                    showYAxisIndices
-                    // hideRules
-                    showFractionalValue
-                  />
-                </View>
                 <View style={{
                   paddingTop: 10,
-                  borderRadius: 20,
-                  backgroundColor: 'white',
-                  shadowColor: '#000',
-                  shadowOffset: {
-                    width: 0,
-                    height: 2,
-                  },
-                  shadowOpacity: 0.25,
-                  shadowRadius: 4,
-                  elevation: 3,
-                  marginHorizontal: 15,
-                  marginBottom: 20
+                  paddingBottom: 20,
+                  marginTop: 10
                 }}>
+                  <View style={styles.wrapTotal}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 20, color: 'black' }}>Tổng số đơn hàng: {numberTotal}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.wrap_container}>
+
+                    <View style={styles.wrapProcessing}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.texts}>Đơn chờ xác nhận:</Text>
+                      </View>
+                      <View
+                        style={{
+                          flex: 1,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}>
+                        <Text style={styles.numbers}>
+                          {numberOfProcessing}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.wrapPackaging}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.texts}>Đơn đang đóng gói:</Text>
+                      </View>
+                      <View
+                        style={{
+                          flex: 1,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}>
+                        <Text style={styles.numbers}>
+                          {numberOfPackageing}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.wrapPackaged}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.texts}>Đơn đã đóng gói:</Text>
+                      </View>
+                      <View
+                        style={{
+                          flex: 1,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}>
+                        <Text style={styles.numbers}>
+                          {numberOfPackaged}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.wrapDelivering}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.texts}>Đơn đang giao:</Text>
+                      </View>
+                      <View
+                        style={{
+                          flex: 1,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}>
+                        <Text style={styles.numbers}>
+                          {numberOfDelivering}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.wrapSuccess}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.texts}>Đơn đã giao:</Text>
+                      </View>
+                      <View
+                        style={{
+                          flex: 1,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}>
+                        <Text style={styles.numbers}>
+                          {numberOfSuccess}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.wrapCancel}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.texts}>Đơn đã huỷ:</Text>
+                      </View>
+                      <View
+                        style={{
+                          flex: 1,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}>
+                        <Text style={styles.numbers}>
+                          {numberOfCancel}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+                <View
+                  style={{
+                    borderTopLeftRadius: 20,
+                    borderTopRightRadius: 20,
+                    backgroundColor: 'white',
+                    shadowColor: '#000',
+                    shadowOffset: {
+                      width: 2,
+                      height: 2,
+                    },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 4,
+                    elevation: 5,
+                  }}>
                   <View
                     style={{
-                      paddingBottom: 40,
-                      borderRadius: 10,
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      paddingBottom: 20,
+                      paddingTop: 20
                     }}>
-                    {renderTitle()}
+                    <Text
+                      style={{ fontSize: 18, fontWeight: 'bold', color: 'black' }}>
+                      SỐ ĐƠN HÀNG ĐÃ GIAO
+                    </Text>
+                  </View>
+                  <View style={{
+                    paddingVertical: 30,
+                    marginHorizontal: 15,
+                    marginBottom: 20,
+                    borderRadius: 20,
+                    backgroundColor: 'white',
+                    shadowColor: '#000',
+                    shadowOffset: {
+                      width: 0,
+                      height: 2,
+                    },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 4,
+                    elevation: 3,
+                  }}>
                     <BarChart
-                      data={yearReport}
-                      barWidth={8}
-                      spacing={24}
-                      roundedTop
-                      roundedBottom
-                      hideRules
                       disablePress={true}
-                      xAxisThickness={0}
-                      yAxisThickness={0}
-                      yAxisTextStyle={{ color: 'gray' }}
-                      noOfSections={3}
+                      data={data}
+                      spacing={6.5}
+                      barWidth={20}
+                      frontColor={COLORS.tabIcon}
+                      isAnimated
+                      showYAxisIndices
+                      // hideRules
+                      showFractionalValue
                     />
+                  </View>
+                  <View style={{
+                    paddingTop: 10,
+                    borderRadius: 20,
+                    backgroundColor: 'white',
+                    shadowColor: '#000',
+                    shadowOffset: {
+                      width: 0,
+                      height: 2,
+                    },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 4,
+                    elevation: 3,
+                    marginHorizontal: 15,
+                    marginBottom: 20
+                  }}>
+                    <View
+                      style={{
+                        paddingBottom: 40,
+                        borderRadius: 10,
+                      }}>
+                      {renderTitle()}
+                      <BarChart
+                        data={yearReport}
+                        barWidth={8}
+                        spacing={24}
+                        roundedTop
+                        roundedBottom
+                        hideRules
+                        disablePress={true}
+                        xAxisThickness={0}
+                        yAxisThickness={0}
+                        yAxisTextStyle={{ color: 'gray' }}
+                        noOfSections={3}
+                      />
+                    </View>
                   </View>
                 </View>
               </View>
             </View>
-          </View>
-          {loading && <LoadingScreen />}
-        </ImageBackground>
-      </ScrollView>
+          </ImageBackground>
+
+        </ScrollView>
+        {loading && <LoadingScreen />}
+      </>
     </TouchableWithoutFeedback>
   );
 };
