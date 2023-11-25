@@ -1667,6 +1667,7 @@ const styles = StyleSheet.create({
     },
     body: {
         flex: 9,
+        paddingTop: 20,
     },
     areaAndLogout: {
         paddingTop: 10,

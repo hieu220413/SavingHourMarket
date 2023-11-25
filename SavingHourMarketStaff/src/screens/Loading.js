@@ -35,7 +35,7 @@ const Loading = ({ navigation }) => {
             const currentUser = await AsyncStorage.getItem('userInfo');
             if (currentUser) {
                 navigation.navigate('Tabs');
-            } else{
+            } else {
                 navigation.navigate('Login');
             }
         } else {
@@ -81,7 +81,7 @@ const Loading = ({ navigation }) => {
             />
             {loading && <ActivityIndicator style={{
                 position: 'absolute',
-                bottom: "38%",
+                bottom: "35%",
             }} color={COLORS.primary} size="large" />}
             {systemStatus === 0 && <Text style={{
                 position: 'absolute',
