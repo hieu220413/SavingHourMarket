@@ -36,13 +36,7 @@ const CreateConsolidation = ({
   const [locationData, setLocationData] = useState([]);
   const [pickupPointList, setPickupPointList] = useState([]);
   const typingTimeoutRef = useRef(null);
-  const [selectPickupPointList, setSelectPickupPointList] = useState([
-    {
-      openDropdown: false,
-      selectedPickupPoint: "",
-      error: "",
-    },
-  ]);
+  const [selectPickupPointList, setSelectPickupPointList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openValidateSnackbar, setOpenValidateSnackbar] = useState({
     open: false,
@@ -126,7 +120,7 @@ const CreateConsolidation = ({
       longitude: address.long,
       latitude: address.lat,
       pickupPointIdList: selectPickupPointList.map(
-        (item) => item.selectedPickupPoint.id
+        (item) => item?.selectedPickupPoint?.id
       ),
     };
 
@@ -267,7 +261,7 @@ const CreateConsolidation = ({
             )}
 
             {address.isFocused && locationData.length !== 0 && (
-              <div className="suggest-location">
+              <div style={{ left: 190 }} className="suggest-location">
                 {locationData.map((data) => (
                   <div
                     onClick={() => {
@@ -298,18 +292,17 @@ const CreateConsolidation = ({
         </div>
         {selectPickupPointList.map((mainItem, mainIndex) => (
           <div className="modal__container-body-inputcontrol">
-            {selectPickupPointList.length !== 1 && (
-              <div
-                onClick={() => {
-                  setSelectPickupPointList(
-                    selectPickupPointList.filter((data) => data !== mainItem)
-                  );
-                }}
-                className="button__minus"
-              >
-                <FontAwesomeIcon icon={faMinus} />
-              </div>
-            )}
+            <div
+              onClick={() => {
+                setSelectPickupPointList(
+                  selectPickupPointList.filter((data) => data !== mainItem)
+                );
+              }}
+              className="button__minus"
+            >
+              <FontAwesomeIcon icon={faMinus} />
+            </div>
+
             <h4 className="modal__container-body-inputcontrol-label">
               Điểm giao hàng {mainIndex + 1}
             </h4>
