@@ -18,6 +18,7 @@ import Modal, {
 } from 'react-native-modals';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import LoadingScreen from '../components/LoadingScreen';
+import AccountDisable from '../components/AccountDisable';
 
 const Orders = ({navigation}) => {
   const orderStatus = [
@@ -38,6 +39,25 @@ const Orders = ({navigation}) => {
   const [openAuthModal, setOpenAuthModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const [pickupPoint, setPickupPoint] = useState(null);
+
+  // state open/close modal
+  const [openAccountDisableModal, setOpenAccountDisableModal] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      // Get pickup point from AS
+      (async () => {
+        try {
+          const value = await AsyncStorage.getItem('PickupPoint');
+          setPickupPoint(value ? JSON.parse(value) : pickupPoint);
+        } catch (err) {
+          console.log(err);
+        }
+      })();
+    }, []),
+  );
+
   //authen check
   const onAuthStateChange = async userInfo => {
     // console.log(userInfo);
@@ -56,20 +76,18 @@ const Orders = ({navigation}) => {
         });
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
-
-        await AsyncStorage.removeItem('userInfo');
-        await AsyncStorage.removeItem('CartList');
-
-        setOpenAuthModal(true);
+        await GoogleSignin.signOut().catch(e => console.log(e));
+        await AsyncStorage.clear();
+        auth()
+          .signOut()
+          .then(() => setUser(null), console.log('Signed out successfully!'))
+          .catch(e => console.log(e));
+        setOpenAccountDisableModal(true);
         return;
       }
     } else {
       // no sessions found.
       console.log('user is not logged in');
-      await AsyncStorage.removeItem('userInfo');
-      await AsyncStorage.removeItem('CartList');
-
-      setOpenAuthModal(true);
     }
   };
 
@@ -159,6 +177,10 @@ const Orders = ({navigation}) => {
                 .then(res => res.json())
                 .then(respond => {
                   console.log(respond);
+                  if (respond.code === 401 || respond.code === 403) {
+                    setLoading(false);
+                    return;
+                  }
                   if (respond.error) {
                     setLoading(false);
                     return;
@@ -186,6 +208,10 @@ const Orders = ({navigation}) => {
               )
                 .then(res => res.json())
                 .then(respond => {
+                  if (respond.code === 401 || respond.code === 403) {
+                    setLoading(false);
+                    return;
+                  }
                   if (respond.error) {
                     setLoading(false);
                     return;
@@ -204,6 +230,10 @@ const Orders = ({navigation}) => {
                   )
                     .then(res => res.json())
                     .then(respond => {
+                      if (respond.code === 401 || respond.code === 403) {
+                        setLoading(false);
+                        return;
+                      }
                       if (respond.error) {
                         setLoading(false);
                         return;
@@ -543,6 +573,13 @@ const Orders = ({navigation}) => {
           </Text>
         </View>
       </Modal>
+
+      {/* account disable modal  */}
+      <AccountDisable
+        openAccountDisableModal={openAccountDisableModal}
+        setOpenAccountDisableModal={setOpenAccountDisableModal}
+        pickupPoint={pickupPoint}
+      />
       {loading && <LoadingScreen />}
     </>
   );

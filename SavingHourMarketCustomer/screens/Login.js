@@ -124,7 +124,7 @@ const Login = ({navigation}) => {
           // );
           setLoading(false);
           showToastSuccess('Đăng nhập thành công');
-          navigation.goBack();
+          // navigation.goBack();
         }
       }
 
@@ -193,7 +193,7 @@ const Login = ({navigation}) => {
           //   'Login thanh cong, da save user. Redirect qua screen nao do di',
           // );
           showToastSuccess('Đăng nhập thành công');
-          navigation.goBack();
+          // navigation.goBack();
         }
       }
 

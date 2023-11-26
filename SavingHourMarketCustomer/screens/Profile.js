@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   Text,
   View,
@@ -10,9 +10,9 @@ import {
 } from 'react-native';
 // import {Switch} from 'react-native-switch';
 import Header from '../shared/Header';
-import { COLORS } from '../constants/theme';
-import { icons } from '../constants';
-import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
+import {COLORS} from '../constants/theme';
+import {icons} from '../constants';
+import {ScrollView, TouchableOpacity} from 'react-native-gesture-handler';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Feather from 'react-native-vector-icons/Feather';
@@ -21,7 +21,7 @@ import {
   GoogleSignin,
   GoogleSigninButton,
 } from '@react-native-google-signin/google-signin';
-import { useFocusEffect } from '@react-navigation/native';
+import {useFocusEffect} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoadingScreen from '../components/LoadingScreen';
 import messaging from '@react-native-firebase/messaging';
@@ -32,7 +32,7 @@ import Modal, {
   ScaleAnimation,
 } from 'react-native-modals';
 
-const Profile = ({ navigation }) => {
+const Profile = ({navigation}) => {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -154,7 +154,7 @@ const Profile = ({ navigation }) => {
       }}>
       {/* <Header /> */}
 
-      <View style={{ marginHorizontal: '6%', marginTop: '3%' }}>
+      <View style={{marginHorizontal: '6%', marginTop: '3%'}}>
         <Text
           style={{
             fontSize: 25,
@@ -182,7 +182,7 @@ const Profile = ({ navigation }) => {
               // alignSelf: 'center',
               borderRadius: 100,
             }}
-            source={{ uri: `${user?.avatarUrl}` }}
+            source={{uri: `${user?.avatarUrl}`}}
           />
         ) : (
           <Image
@@ -196,7 +196,7 @@ const Profile = ({ navigation }) => {
           />
         )}
 
-        <View style={{ flexDirection: 'column', paddingLeft: '7%' }}>
+        <View style={{flexDirection: 'column', paddingLeft: '7%'}}>
           {user ? (
             <>
               <Text
@@ -307,7 +307,7 @@ const Profile = ({ navigation }) => {
               setOpenAuthModal(true);
               return;
             } else {
-              navigation.navigate('Edit Profile', { user });
+              navigation.navigate('Edit Profile', {user});
             }
           }}>
           <View
@@ -403,7 +403,7 @@ const Profile = ({ navigation }) => {
           }}
           activeOpacity={0.8}>
           <View
-            style={{ flexDirection: 'row', columnGap: 15, alignItems: 'center' }}>
+            style={{flexDirection: 'row', columnGap: 15, alignItems: 'center'}}>
             <MaterialIcons
               name="notifications-none"
               size={30}
@@ -420,7 +420,7 @@ const Profile = ({ navigation }) => {
           </View>
           <Switch
             disabled={user ? false : true}
-            trackColor={{ false: 'grey', true: 'tomato' }}
+            trackColor={{false: 'grey', true: 'tomato'}}
             thumbColor={isEnable ? '#f4f3f4' : '#f4f3f4'}
             // ios_backgroundColor="#3e3e3e"
             onValueChange={value => {
@@ -473,7 +473,7 @@ const Profile = ({ navigation }) => {
           }}
           activeOpacity={0.8}>
           <View
-            style={{ flexDirection: 'row', columnGap: 15, alignItems: 'center' }}>
+            style={{flexDirection: 'row', columnGap: 15, alignItems: 'center'}}>
             <AntDesign
               name="questioncircleo"
               size={30}
@@ -531,7 +531,7 @@ const Profile = ({ navigation }) => {
               justifyContent: 'space-between',
             }}
             activeOpacity={0.8}
-            onPress={() => {
+            onPress={async () => {
               navigation.navigate('Login');
             }}>
             <View
@@ -568,7 +568,7 @@ const Profile = ({ navigation }) => {
           <ModalFooter>
             <ModalButton
               text="Ở lại trang"
-              textStyle={{ color: 'red' }}
+              textStyle={{color: 'red'}}
               onPress={() => {
                 setOpenAuthModal(false);
               }}
@@ -589,7 +589,7 @@ const Profile = ({ navigation }) => {
           </ModalFooter>
         }>
         <View
-          style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
+          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
           <Text
             style={{
               fontSize: 20,

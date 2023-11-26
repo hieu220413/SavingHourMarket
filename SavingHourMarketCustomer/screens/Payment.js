@@ -330,9 +330,8 @@ const Payment = ({navigation, route}) => {
       // no sessions found.
 
       await AsyncStorage.removeItem('userInfo');
-      await AsyncStorage.removeItem('CartList');
+      await AsyncStorage.removeItem('CartList' + pickupPoint.id);
       setLoading(false);
-      setOpenAuthModal(true);
     }
   };
 
@@ -1872,7 +1871,9 @@ const Payment = ({navigation, route}) => {
                     .signOut()
                     .then(async () => {
                       await AsyncStorage.removeItem('userInfo');
-                      await AsyncStorage.removeItem('CartList');
+                      await AsyncStorage.removeItem(
+                        'CartList' + pickupPoint.id,
+                      );
 
                       navigation.navigate('Login');
                     })
