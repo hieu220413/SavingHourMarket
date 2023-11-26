@@ -23,8 +23,17 @@ import Empty from '../../assets/image/search-empty.png';
 import LoadingScreen from '../../components/LoadingScreen';
 import { useFocusEffect } from '@react-navigation/native';
 import DatePicker from 'react-native-date-picker';
+import database from '@react-native-firebase/database';
+import { checkSystemState } from '../../common/utils';
 
 const HomeDeliver = ({ navigation }) => {
+  // listen to system state
+  useFocusEffect(
+      useCallback(() => {
+          checkSystemState();
+      }, []),
+  );
+
   const [initializing, setInitializing] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -441,6 +450,7 @@ const HomeDeliver = ({ navigation }) => {
         }
       })();
       console.log(currentOptions.id);
+      setSelectedDate(null);
       fetchOrders(currentOptions.id);
     }, []),
   );
@@ -464,7 +474,11 @@ const HomeDeliver = ({ navigation }) => {
         // sessions end. (revoke refresh token like password change, disable account, ....)
         await AsyncStorage.removeItem('userInfo');
         setLoading(false);
-        navigation.navigate('Login');
+        // navigation.navigate('Login');
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'Login'}],
+        });
         return;
       }
       setLoading(false);
@@ -473,7 +487,11 @@ const HomeDeliver = ({ navigation }) => {
       console.log('user is not logged in');
       await AsyncStorage.removeItem('userInfo');
       setLoading(false);
-      navigation.navigate('Login');
+      // navigation.navigate('Login');
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'Login'}],
+      });
     }
   };
 
@@ -508,7 +526,6 @@ const HomeDeliver = ({ navigation }) => {
         )
           .then(res => res.json())
           .then(respond => {
-            console.log(`${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}&status=DELIVERING`);
             console.log('0', respond);
             setOrderGroupList(respond.orderGroups);
             setLoading(false);
@@ -542,7 +559,7 @@ const HomeDeliver = ({ navigation }) => {
           });
       } else if (id === 2) {
         fetch(
-          `${API.baseURL}/api/order/staff/getOrders?delivererId=${userFromAS?.id}&orderStatus=DELIVERING${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}`,
+          `${API.baseURL}/api/order/staff/getOrders?isGrouped=false&isBatched=false&delivererId=${userFromAS?.id}&orderStatus=DELIVERING${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}`,
           {
             method: 'GET',
             headers: {
@@ -570,10 +587,82 @@ const HomeDeliver = ({ navigation }) => {
     fetchOrders(currentOptions.id);
   };
 
-  // const handleClear = () => {
-  //     setModalVisible(!modalVisible);
-  //     fetchOrders(currentOptions.id);
-  // };
+  const handleClear = async () => {
+    setModalVisible(!modalVisible);
+    console.log('clear filter');
+    const tokenId = await auth().currentUser.getIdToken();
+    const userFromAS = await getUser();
+    if (tokenId) {
+      setLoading(true);
+      if (currentOptions.id === 0) {
+        fetch(
+          `${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}&status=DELIVERING`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${tokenId}`,
+            },
+          },
+        )
+          .then(res => res.json())
+          .then(respond => {
+            console.log(`${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}&status=DELIVERING`);
+            console.log('0', respond);
+            setOrderGroupList(respond.orderGroups);
+            setLoading(false);
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      } else if (currentOptions.id === 1) {
+        fetch(
+          `${API.baseURL}/api/order/staff/getOrderBatch?status=DELIVERING&delivererId=${userFromAS?.id}`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${tokenId}`,
+            },
+          },
+        )
+          .then(res => res.json())
+          .then(respond => {
+            console.log('1', respond);
+            if (respond.error) {
+              return;
+            }
+            setOrderGroupList(respond);
+            setLoading(false);
+          })
+          .catch(err => {
+            console.log(err);
+            setLoading(false);
+          });
+      } else if (currentOptions.id === 2) {
+        fetch(
+          `${API.baseURL}/api/order/staff/getOrders?isGrouped=false&isBatched=false&delivererId=${userFromAS?.id}&orderStatus=DELIVERING`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${tokenId}`,
+            },
+          },
+        )
+          .then(res => res.json())
+          .then(respond => {
+            console.log('3', respond);
+            setOrders(respond);
+            setLoading(false);
+          })
+          .catch(err => {
+            console.log(err);
+            setLoading(false);
+          });
+      }
+    }
+  };
 
   const OrderItem = ({ item }) => {
     return (
@@ -930,7 +1019,7 @@ const HomeDeliver = ({ navigation }) => {
                 marginLeft: 10,
                 paddingBottom: 20,
               }}>
-              Số lượng đơn hàng cần giao: {currentOptions.id === 0 || currentOptions.id === 1 ? orderGroupList.length : orders.length} đơn
+              Số lượng đơn hàng cần giao: {currentOptions.id === 0 || currentOptions.id === 1 ? orderGroupList.length + ' nhóm đơn' : orders.length + ' đơn'}
             </Text>
             <Text
               style={{
@@ -1436,6 +1525,7 @@ const HomeDeliver = ({ navigation }) => {
                     }}
                     onPress={() => {
                       setModalVisible(!modalVisible);
+                      handleClear();
                     }}>
                     <Text
                       style={{
@@ -1443,7 +1533,7 @@ const HomeDeliver = ({ navigation }) => {
                         fontWeight: 'bold',
                         textAlign: 'center',
                       }}>
-                      Hủy
+                      Thiết lập lại
                     </Text>
                   </TouchableOpacity>
 
@@ -1482,7 +1572,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   body: {
-    flex: 6,
+    flex: 9,
+    paddingTop: 20,
   },
   areaAndLogout: {
     paddingTop: 10,

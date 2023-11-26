@@ -69,13 +69,18 @@ const CreateVoucher = ({
   }, []);
 
   const uploadVoucherToFirebase = async () => {
-    const imgRef = ref(imageDB, `voucherImage/${v4()}`);
-    await uploadBytes(imgRef, imgToFirebase);
-    try {
-      const url = await getDownloadURL(imgRef);
+    if (imgToFirebase !== "") {
+      const imgRef = ref(imageDB, `voucherImage/${v4()}`);
+      await uploadBytes(imgRef, imgToFirebase);
+      try {
+        const url = await getDownloadURL(imgRef);
+        return url;
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      const url = "";
       return url;
-    } catch (error) {
-      console.log(error);
     }
   };
 
@@ -96,9 +101,12 @@ const CreateVoucher = ({
 
     if (quantity === "") {
       setError({ ...error, quantity: "Không được để trống số lượng" });
+      return;
     }
-    if (quantity === 0) {
+
+    if (parseInt(quantity) === 0) {
       setError({ ...error, quantity: "Số lượng không thể bằng 0" });
+      return;
     }
 
     if (percentage === "") {
@@ -106,9 +114,11 @@ const CreateVoucher = ({
         ...error,
         percentage: "Không được để trống phần trăm giảm giá",
       });
+      return;
     }
-    if (percentage === 0) {
+    if (parseInt(percentage) === 0) {
       setError({ ...error, percentage: "Phần trăm giảm giá không thể bằng 0" });
+      return;
     }
 
     if (spentAmountRequired === "") {
@@ -116,17 +126,21 @@ const CreateVoucher = ({
         ...error,
         spentAmountRequired: "Không được để trống số tiền để dùng mã",
       });
+      return;
     }
-    if (spentAmountRequired === 0) {
+    if (parseInt(spentAmountRequired) === 0) {
       setError({
         ...error,
         spentAmountRequired: "Số tiền để dùng mã không thể bằng 0",
       });
+      return;
     }
 
     const newImageUrl = await uploadVoucherToFirebase();
-    if (newImageUrl === null) {
+    console.log(newImageUrl);
+    if (newImageUrl === "") {
       setError({ ...error, imageUrl: "Chưa có ảnh" });
+      return;
     }
 
     const voucherToSubmit = {
@@ -468,6 +482,14 @@ const CreateVoucher = ({
                   />
                 </span>
               </section>
+              {error.imageUrl && (
+                <p
+                  style={{ fontSize: "14px", marginBottom: "-10px" }}
+                  className="text-danger"
+                >
+                  {error.imageUrl}
+                </p>
+              )}
             </div>
           </div>
         </div>

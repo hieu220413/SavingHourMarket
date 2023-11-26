@@ -37,89 +37,78 @@ const Tabs = () => {
   );
 
   return (
-    <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarShowLabel: false,
-        tabBarStyle: {
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          elevation: 10,
-          backgroundColor: COLORS.tabBackground,
-          opacity: 0.95,
-          borderTopColor: 'transparent',
-          height: 80,
-        },
-      }}>
-      {!user && (
-        <Tab.Screen
-          name="Temp"
-          component={Test}
-          options={{
-            tabBarIcon: ({focused}) => (
-              <TabIcon display={'Order'} focused={focused} icon={icons.home} />
-            ),
-          }}
-        />
-      )}
-
-      {user?.role === 'STAFF_ORD' && (
-        <>
-          <Tab.Screen
-            name="Report"
-            component={Report}
-            options={{
-              tabBarIcon: ({focused}) => (
-                <TabIcon
-                  display={'Trang chủ'}
-                  focused={focused}
-                  icon={icons.home}
-                />
-              ),
-            }}
-          />
-          <Tab.Screen
-            name="Home"
-            component={Home}
-            options={{
-              tabBarIcon: ({focused}) => (
-                <TabIcon
-                  display={'Đơn hàng'}
-                  focused={focused}
-                  icon={icons.order}
-                />
-              ),
-            }}
-          />
-          <Tab.Screen
-            name="OrderGroupForOrderStaff"
-            component={OrderGroupForOrderStaff}
-            options={{
-              tabBarIcon: ({focused}) => (
-                <TabIcon
-                  display={'Nhóm Đơn'}
-                  focused={focused}
-                  icon={icons.order}
-                />
-              ),
-            }}
-          />
-          <Tab.Screen
-            name="Product"
-            component={Product}
-            options={{
-              tabBarIcon: ({focused}) => (
-                <TabIcon
-                  display={'Sản phẩm'}
-                  focused={focused}
-                  icon={icons.product}
-                />
-              ),
-            }}
-          />
-          {/* <Tab.Screen
+    user && (
+      <Tab.Navigator
+        screenOptions={{
+          headerShown: false,
+          tabBarShowLabel: false,
+          tabBarStyle: {
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            elevation: 10,
+            backgroundColor: COLORS.tabBackground,
+            opacity: 0.95,
+            borderTopColor: 'transparent',
+            height: 80,
+          },
+        }}>
+        {user?.role === 'STAFF_ORD' && (
+          <>
+            <Tab.Screen
+              name="Report"
+              component={Report}
+              options={{
+                tabBarIcon: ({ focused }) => (
+                  <TabIcon
+                    display={'Trang chủ'}
+                    focused={focused}
+                    icon={icons.home}
+                  />
+                ),
+              }}
+            />
+            <Tab.Screen
+              name="Home"
+              component={Home}
+              options={{
+                tabBarIcon: ({ focused }) => (
+                  <TabIcon
+                    display={'Đơn hàng'}
+                    focused={focused}
+                    icon={icons.order}
+                  />
+                ),
+              }}
+            />
+            <Tab.Screen
+              name="OrderGroupForOrderStaff"
+              component={OrderGroupForOrderStaff}
+              options={{
+                tabBarIcon: ({ focused }) => (
+                  <TabIcon
+                    display={'Nhóm Đơn'}
+                    focused={focused}
+                    icon={icons.order}
+                  />
+                ),
+              }}
+            />
+            <Tab.Screen
+              name="Product"
+              component={Product}
+              options={{
+                tabBarIcon: ({ focused }) => (
+                  <TabIcon
+                    display={'Sản phẩm'}
+                    focused={focused}
+                    icon={icons.product}
+                  />
+                ),
+              }}
+            />
+            {/* <Tab.Screen
             name="Report"
             component={Report}
             options={{
@@ -132,108 +121,110 @@ const Tabs = () => {
               ),
             }}
           /> */}
-        </>
-      )}
-      {user?.role === 'STAFF_DLV_1' && (
-        <>
-          <Tab.Screen
-            name="ReportForManager"
-            component={ReportForManager}
-            options={{
-              tabBarIcon: ({focused}) => (
-                <TabIcon
-                  display={'Trang chủ'}
-                  focused={focused}
-                  icon={icons.home}
-                />
-              ),
-            }}
-          />
-          <Tab.Screen
-            name="OrderGroup"
-            component={OrderGroup}
-            options={{
-              tabBarIcon: ({focused}) => (
-                <TabIcon
-                  display={'Nhóm điểm giao hàng'}
-                  focused={focused}
-                  icon={icons.pickuppoint}
-                />
-              ),
-            }}
-          />
-          <Tab.Screen
-            name="OrderBatch"
-            component={OrderBatch}
-            options={{
-              tabBarIcon: ({focused}) => (
-                <TabIcon
-                  display={'Nhóm giao tận nhà'}
-                  focused={focused}
-                  icon={icons.homedelivery}
-                />
-              ),
-            }}
-          />
-          <Tab.Screen
-            name="OrderListForManager"
-            component={OrderListForManager}
-            options={{
-              tabBarIcon: ({focused}) => (
-                <TabIcon
-                  display={'Đơn hàng chưa gom'}
-                  focused={focused}
-                  icon={icons.orderIcon}
-                />
-              ),
-            }}
-          />
-        </>
-      )}
-      {user?.role === 'STAFF_DLV_0' && (
-        <>
-          <Tab.Screen
-            name="HomeDeliver"
-            component={HomeDeliver}
-            options={{
-              tabBarIcon: ({focused}) => (
-                <TabIcon
-                  display={'Trang chủ'}
-                  focused={focused}
-                  icon={icons.home}
-                />
-              ),
-            }}
-          />
-          <Tab.Screen
-            name="QrCodeScanner"
-            component={QrCodeScanner}
-            options={{
-              tabBarIcon: ({focused}) => (
-                <TabIcon
-                  display={'Quét QR'}
-                  focused={focused}
-                  icon={icons.qrCodeScanner}
-                />
-              ),
-            }}
-          />
-          <Tab.Screen
-            name="HistoryList"
-            component={HistoryList}
-            options={{
-              tabBarIcon: ({focused}) => (
-                <TabIcon
-                  display={'Lịch sử'}
-                  focused={focused}
-                  icon={icons.historyList}
-                />
-              ),
-            }}
-          />
-        </>
-      )}
-    </Tab.Navigator>
+          </>
+        )}
+        {user?.role === 'STAFF_DLV_1' && (
+          <>
+            <Tab.Screen
+              name="OrderGroup"
+              component={OrderGroup}
+              options={{
+                tabBarIcon: ({ focused }) => (
+                  <TabIcon
+                    display={'Nhóm điểm giao hàng'}
+                    focused={focused}
+                    icon={icons.pickuppoint}
+                  />
+                ),
+              }}
+            />
+            <Tab.Screen
+              name="OrderBatch"
+              component={OrderBatch}
+              options={{
+                tabBarIcon: ({ focused }) => (
+                  <TabIcon
+                    display={'Nhóm giao tận nhà'}
+                    focused={focused}
+                    icon={icons.homedelivery}
+                  />
+                ),
+              }}
+            />
+            <Tab.Screen
+              name="OrderListForManager"
+              component={OrderListForManager}
+              options={{
+                tabBarIcon: ({ focused }) => (
+                  <TabIcon
+                    display={'Đơn hàng chưa gom'}
+                    focused={focused}
+                    icon={icons.orderIcon}
+                  />
+                ),
+              }}
+            />
+            <Tab.Screen
+              name="ReportForManager"
+              component={ReportForManager}
+              options={{
+                tabBarIcon: ({ focused }) => (
+                  <TabIcon
+                    display={'Báo cáo'}
+                    focused={focused}
+                    icon={icons.statistic}
+                  />
+                ),
+              }}
+            />
+          </>
+        )}
+        {user?.role === 'STAFF_DLV_0' && (
+          <>
+            <Tab.Screen
+              name="HomeDeliver"
+              component={HomeDeliver}
+              options={{
+                tabBarIcon: ({ focused }) => (
+                  <TabIcon
+                    display={'Trang chủ'}
+                    focused={focused}
+                    icon={icons.home}
+                  />
+                ),
+              }}
+            />
+            <Tab.Screen
+              name="QrCodeScanner"
+              component={QrCodeScanner}
+              options={{
+                tabBarIcon: ({ focused }) => (
+                  <TabIcon
+                    display={'Quét QR'}
+                    focused={focused}
+                    icon={icons.qrCodeScanner}
+                  />
+                ),
+              }}
+            />
+            <Tab.Screen
+              name="HistoryList"
+              component={HistoryList}
+              options={{
+                tabBarIcon: ({ focused }) => (
+                  <TabIcon
+                    display={'Lịch sử'}
+                    focused={focused}
+                    icon={icons.historyList}
+                  />
+                ),
+              }}
+            />
+          </>
+        )}
+      </Tab.Navigator>
+    )
+
   );
 };
 

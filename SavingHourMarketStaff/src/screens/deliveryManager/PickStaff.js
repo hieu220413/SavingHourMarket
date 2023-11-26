@@ -31,8 +31,17 @@ import LoadingScreen from '../../components/LoadingScreen';
 import DatePicker from 'react-native-date-picker';
 import CheckBox from 'react-native-check-box';
 import Toast from 'react-native-toast-message';
+import database from '@react-native-firebase/database';
+import { checkSystemState } from '../../common/utils';
 
 const PickStaff = ({navigation, route}) => {
+  // listen to system state
+  useFocusEffect(
+    useCallback(() => {
+        checkSystemState();
+      }, []),
+  );
+
   const {orderGroupId, deliverDate, timeFrame, staff, mode} = route.params;
   const [initializing, setInitializing] = useState(true);
   const [open, setOpen] = useState(false);
@@ -61,7 +70,11 @@ const PickStaff = ({navigation, route}) => {
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
         await AsyncStorage.removeItem('userInfo');
-        navigation.navigate('Login');
+        // navigation.navigate('Login');
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'Login'}],
+        });
         return;
       }
       const currentUser = await AsyncStorage.getItem('userInfo');
@@ -71,7 +84,11 @@ const PickStaff = ({navigation, route}) => {
       // no sessions found.
       console.log('user is not logged in');
       await AsyncStorage.removeItem('userInfo');
-      navigation.navigate('Login');
+      // navigation.navigate('Login');
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'Login'}],
+      });
     }
   };
 

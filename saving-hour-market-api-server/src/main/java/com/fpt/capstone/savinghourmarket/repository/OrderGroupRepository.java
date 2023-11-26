@@ -29,7 +29,7 @@ public interface OrderGroupRepository extends JpaRepository<OrderGroup, UUID> {
             "OR " +
             "((:getOldOrderGroup = FALSE) AND (og.deliverDate > CURRENT_DATE)) " +
             "OR " +
-            "((:getOldOrderGroup = TRUE) AND (og.deliverDate < CURRENT_DATE)))) " +
+            "((:getOldOrderGroup = TRUE)))) " +
             "AND " +
             "(((:pickupPointId IS NULL) AND (og.pickupPoint IN :pickupPointList)) OR (og.pickupPoint.id = :pickupPointId)) " +
             "AND " +
@@ -56,7 +56,7 @@ public interface OrderGroupRepository extends JpaRepository<OrderGroup, UUID> {
             "OR " +
             "((:getOldOrderGroup = FALSE) AND (og.deliverDate >= CURRENT_DATE)) " +
             "OR " +
-            "((:getOldOrderGroup = TRUE) AND (og.deliverDate < CURRENT_DATE)))) " +
+            "((:getOldOrderGroup = TRUE)))) " +
             "AND " +
             "(og.orderList IS NOT EMPTY) " +
             "AND " +
