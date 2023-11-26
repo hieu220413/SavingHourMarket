@@ -21,7 +21,7 @@ import {useFocusEffect} from '@react-navigation/native';
 import {API} from '../../constants/api';
 import {format} from 'date-fns';
 import CartEmpty from '../../assets/image/search-empty.png';
-import {SwipeListView} from 'react-native-swipe-list-view';
+import { SwipeListView, SwipeRow } from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
 import Toast from 'react-native-toast-message';
 import DatePicker from 'react-native-date-picker';
@@ -36,10 +36,12 @@ const Home = ({navigation}) => {
   );
 
   const orderStatus = [
-    {display: 'Chờ đóng gói', value: 'PROCESSING'},
-    {display: 'Đang đóng gói', value: 'PACKAGING'},
-    {display: 'Đã đóng gói', value: 'PACKAGED'},
-    {display: 'Đã huỷ', value: 'CANCEL'},
+    { display: 'Tất cả', value: '' },
+    { display: 'Chờ đóng gói', value: 'PROCESSING' },
+    { display: 'Đang đóng gói', value: 'PACKAGING' },
+    { display: 'Đã đóng gói', value: 'PACKAGED' },
+    { display: 'Giao hàng', value: '' },
+    { display: 'Đã huỷ', value: 'CANCEL' }
   ];
   const sortOptions = [
     {
@@ -58,7 +60,7 @@ const Home = ({navigation}) => {
       id: 3,
       name: 'Đơn mới nhất',
       param: '&createdTimeSortType=DESC',
-      active: false,
+      active: true,
     },
     {
       id: 4,
@@ -85,14 +87,11 @@ const Home = ({navigation}) => {
   const [selectedConsolidationAreaId, setSelectedConsolidationAreaId] =
     useState('');
   const [selectSort, setSelectSort] = useState(sortOptions);
-  const [tempSelectedSortId, setTempSelectedSortId] = useState('');
+  const [tempSelectedSortId, setTempSelectedSortId] = useState(3);
   const [modalVisible, setModalVisible] = useState(false);
   const swipeListViewRef = useRef();
   const isMountingRef = useRef(false);
-  const [currentStatus, setCurrentStatus] = useState({
-    display: 'Chờ đóng gói',
-    value: 'PROCESSING',
-  });
+  const [currentStatus, setCurrentStatus] = useState({ display: 'Tất cả', value: '' });
 
   const print = async orderId => {
     setLoading(true);
@@ -281,23 +280,19 @@ const Home = ({navigation}) => {
     setTempSelectedSortId(sortItem ? sortItem.id : '');
     if (tokenId) {
       await fetch(
-        `${
-          API.baseURL
-        }/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${
-          pickupPoint && pickupPoint.id ? `pickupPointId=${pickupPoint.id}` : ''
-        }&orderStatus=${currentStatus.value}
-        ${
-          selectedDate === ''
-            ? ''
-            : '&deliveryDate=' + format(Date.parse(selectedDate), 'yyyy-MM-dd')
-        }${
-          selectedTimeFrameId === ''
-            ? ''
-            : '&timeFrameId=' + selectedTimeFrameId
-        }${
-          tempSelectedSortId === ''
-            ? ''
-            : selectSort.find(item => item.id === tempSelectedSortId)?.param
+        `${API.baseURL}/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${pickupPoint && pickupPoint.id
+          ? `pickupPointId=${pickupPoint.id}`
+          : ''
+        } ${currentStatus.value === '' ? `&getOldOrder=true` : `&orderStatus=${currentStatus.value}&getOldOrder=true`}
+        ${selectedDate === ''
+          ? ''
+          : '&deliveryDate=' + format(Date.parse(selectedDate), 'yyyy-MM-dd')
+        }${selectedTimeFrameId === ''
+          ? ''
+          : '&timeFrameId=' + selectedTimeFrameId
+        }${tempSelectedSortId === ''
+          ? ''
+          : selectSort.find(item => item.id === tempSelectedSortId)?.param
         }`,
         {
           method: 'GET',
@@ -776,7 +771,7 @@ const Home = ({navigation}) => {
                 showsVerticalScrollIndicator={false}
                 showsHorizontalScrollIndicator={false}
                 ref={swipeListViewRef}
-                data={orderList}
+                data={currentStatus.display === 'Giao hàng' ? orderList.filter(order => (order.status > 2 && order.status < 6)) : orderList}
                 keyExtractor={(item, index) => item.id}
                 renderItem={(data, rowMap) => (
                   <View
@@ -814,17 +809,17 @@ const Home = ({navigation}) => {
                             paddingTop: 6,
                             fontWeight: 'bold',
                             fontFamily: 'Roboto',
-                            color:
-                              data.item?.status === 6
-                                ? COLORS.red
-                                : COLORS.primary,
+                            color: (data.item?.status === 6 || data.item?.status === 5) ? COLORS.red : COLORS.primary,
                           }}>
                           {data.item?.status === 0 && 'Chờ đóng gói'}
                           {data.item?.status === 1 && 'Đang đóng gói'}
                           {data.item?.status === 2 && 'Đã đóng gói'}
+                          {data.item?.status === 3 && 'Đang giao'}
+                          {data.item?.status === 4 && 'Giao thành công'}
+                          {data.item?.status === 5 && 'Giao thất bại'}
                           {data.item?.status === 6 && 'Đã huỷ'}
                         </Text>
-                        {data.item?.status === 2 &&
+                        {(data.item?.status >= 2 && data.item?.status < 6) &&
                           data.item?.packager?.fullName != null && (
                             <>
                               <View
@@ -1015,8 +1010,7 @@ const Home = ({navigation}) => {
                             width: 30,
                             height: 30,
                             marginBottom: 30,
-                            tintColor:
-                              data.item?.status === 6 ? 'grey' : COLORS.primary,
+                            tintColor: data.item?.status === 6 ? 'grey' : COLORS.primary,
                           }}
                           source={icons.rightArrow}
                         />
@@ -1150,20 +1144,14 @@ const Home = ({navigation}) => {
                     )}
                   </View>
                 )}
-                disableLeftSwipe={
-                  orderList[0]?.status === 2 || orderList[0]?.status === 6
-                    ? true
-                    : false
-                }
+                disableLeftSwipe={(currentStatus === '' || currentStatus === 'PACKAGED' || currentStatus === 'CANCEL') ? true : false}
                 disableRightSwipe={
-                  orderList[0]?.status === 2 ||
-                  orderList[0]?.status === 6 ||
-                  orderList[0]?.status === 0
+                  (currentStatus === '' || currentStatus === 'PACKAGED' || currentStatus === 'CANCEL' || currentStatus === 'PROCESSING')
                     ? true
                     : false
                 }
-                leftOpenValue={orderList[0]?.status === 1 ? 120 : 0}
-                rightOpenValue={orderList[0]?.status === 0 ? -120 : -200}
+                leftOpenValue={currentStatus === 'PACKAGING' ? 120 : 0}
+                rightOpenValue={currentStatus === 'PROCESSING' ? -120 : -200}
               />
             </View>
           )}
@@ -1198,7 +1186,12 @@ const Home = ({navigation}) => {
                   <TouchableOpacity
                     onPress={() => {
                       setModalVisible(!modalVisible);
-                      setSelectSort(sortOptions);
+                      selectSort.map(sort => {
+                        if (sort.active) {
+                          setTempSelectedSortId(sort.id);
+                        }
+                      })
+                      // setSelectSort(sortOptions);
                     }}>
                     <Image
                       resizeMode="contain"

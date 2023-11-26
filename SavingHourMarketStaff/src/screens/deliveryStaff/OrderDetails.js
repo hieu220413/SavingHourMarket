@@ -173,7 +173,7 @@ const OrderDetails = ({ navigation, route }) => {
                     }}>
                     <TouchableOpacity
                         onPress={() =>
-                            navigation.navigate('Start')
+                            navigation.goBack()
                         }>
                         <Image
                             source={icons.leftArrow}
