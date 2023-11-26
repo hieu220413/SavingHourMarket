@@ -16,8 +16,17 @@ import Modal, { ModalButton, ModalFooter, ScaleAnimation } from 'react-native-mo
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
 import { useEffect } from 'react';
+import database from '@react-native-firebase/database';
+import { checkSystemState } from '../../common/utils';
 
 const EditDeliveryDate = ({ navigation, route }) => {
+    // listen to system state
+    useFocusEffect(
+        useCallback(() => {
+            checkSystemState();
+        }, []),
+    );
+
     const [timeFrameList, setTimeFrameList] = useState([]);
     const [loading, setLoading] = useState(false);
     const [selectedTimeFrame, setSelectedTimeFrame] = useState('');
@@ -74,7 +83,11 @@ const EditDeliveryDate = ({ navigation, route }) => {
                 // sessions end. (revoke refresh token like password change, disable account, ....)
                 await AsyncStorage.removeItem('userInfo');
                 setLoading(false);
-                navigation.navigate('Login');
+                // navigation.navigate('Login');
+                navigation.reset({
+                    index: 0,
+                    routes: [{name: 'Login'}],
+                  });
                 return;
             }
             const token = await auth().currentUser.getIdToken();
@@ -85,7 +98,11 @@ const EditDeliveryDate = ({ navigation, route }) => {
             console.log('user is not logged in');
             await AsyncStorage.removeItem('userInfo');
             setLoading(false);
-            navigation.navigate('Login');
+            // navigation.navigate('Login');
+            navigation.reset({
+                index: 0,
+                routes: [{name: 'Login'}],
+              });
         }
     };
     useEffect(() => {

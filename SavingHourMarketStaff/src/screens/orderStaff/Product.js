@@ -22,8 +22,17 @@ import { format} from 'date-fns';
 import LoadingScreen from '../../components/LoadingScreen';
 import CartEmpty from '../../assets/image/search-empty.png';
 import { useRef } from 'react';
+import database from '@react-native-firebase/database';
+import { checkSystemState } from '../../common/utils';
 
 const Product = ({ navigation }) => {
+  // listen to system state
+  useFocusEffect(
+    useCallback(() => {
+      checkSystemState();
+    }, []),
+  );
+
   const [initializing, setInitializing] = useState(true);
   const [open, setOpen] = useState(false);
   const [productsPackaging, setProductsPackaging] = useState([]);
@@ -46,7 +55,11 @@ const Product = ({ navigation }) => {
       });
       if (!userTokenId) {
         await AsyncStorage.removeItem('userInfo');
-        navigation.navigate('Login');
+        // navigation.navigate('Login');
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'Login'}],
+        });
         return;
       }
       const currentUser = await AsyncStorage.getItem('userInfo');
@@ -55,7 +68,11 @@ const Product = ({ navigation }) => {
     } else {
       console.log('user is not logged in');
       await AsyncStorage.removeItem('userInfo');
-      navigation.navigate('Login');
+      // navigation.navigate('Login');
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'Login'}],
+      });
     }
   };
 
@@ -76,6 +93,11 @@ const Product = ({ navigation }) => {
               Authorization: `Bearer ${tokenId}`,
             },
           });
+
+          if(response.status === 403 || response.status === 401) {
+            const tokenId = await auth().currentUser.getIdToken(true); 
+          }
+
           const data = await response.json();
 
           const groupedBySupermarket = {};

@@ -30,8 +30,17 @@ import {SwipeListView} from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
 import DatePicker from 'react-native-date-picker';
 import NumericInput from 'react-native-numeric-input';
+import database from '@react-native-firebase/database';
+import { checkSystemState } from '../../common/utils';
 
 const Batching = ({navigation}) => {
+  // listen to system state
+  useFocusEffect(
+    useCallback(() => {
+        checkSystemState();
+      }, []),
+  );
+
   const [initializing, setInitializing] = useState(true);
   const [tokenId, setTokenId] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -64,7 +73,11 @@ const Batching = ({navigation}) => {
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
         await AsyncStorage.removeItem('userInfo');
-        navigation.navigate('Login');
+        // navigation.navigate('Login');
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'Login'}],
+        });
         return;
       }
       const currentUser = await AsyncStorage.getItem('userInfo');
@@ -74,7 +87,11 @@ const Batching = ({navigation}) => {
       // no sessions found.
       console.log('user is not logged in');
       await AsyncStorage.removeItem('userInfo');
-      navigation.navigate('Login');
+      // navigation.navigate('Login');
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'Login'}],
+      });
     }
   };
 

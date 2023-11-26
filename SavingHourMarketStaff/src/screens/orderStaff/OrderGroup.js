@@ -35,8 +35,17 @@ import {
   ModalFooter,
   ScaleAnimation,
 } from 'react-native-modals';
+import database from '@react-native-firebase/database';
+import { checkSystemState } from '../../common/utils';
 
 const OrderGroupForOrderStaff = ({navigation, route}) => {
+  // listen to system state
+  useFocusEffect(
+    useCallback(() => {
+      checkSystemState();
+    }, []),
+  );
+
   const [initializing, setInitializing] = useState(true);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -561,7 +570,11 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
         await AsyncStorage.removeItem('userInfo');
-        navigation.navigate('Login');
+        // navigation.navigate('Login');
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'Login'}],
+        });
         return;
       }
       const currentUser = await AsyncStorage.getItem('userInfo');
@@ -571,7 +584,11 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
       // no sessions found.
       console.log('user is not logged in');
       await AsyncStorage.removeItem('userInfo');
-      navigation.navigate('Login');
+      // navigation.navigate('Login');
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'Login'}],
+      });
     }
   };
 
@@ -727,7 +744,13 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
           },
         },
       )
-        .then(res => res.json())
+        .then(async res => {
+          if (res.status === 403 || res.status === 401) {
+            const tokenId = await auth().currentUser.getIdToken(true);
+            // Cac loi 403 khac thi handle duoi day neu co
+          }
+          return res.json();
+        })
         .then(respond => {
           // console.log('order group', respond);
           if (respond.error) {
@@ -790,7 +813,13 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
           },
         },
       )
-        .then(res => res.json())
+        .then(async res => {
+          if (res.status === 403 || res.status === 401) {
+            const tokenId = await auth().currentUser.getIdToken(true);
+            // Cac loi 403 khac thi handle duoi day neu co
+          }
+          return res.json();
+        })
         .then(respond => {
           // console.log('order group', respond);
           if (respond.error) {
@@ -925,7 +954,13 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
           },
         },
       )
-        .then(res => res.json())
+        .then(async res => {
+          if (res.status === 403 || res.status === 401) {
+            const tokenId = await auth().currentUser.getIdToken(true);
+            // Cac loi 403 khac thi handle duoi day neu co
+          }
+          return res.json();
+        })
         .then(respond => {
           console.log('consolidation area: ', respond);
           if (respond.error) {
@@ -966,6 +1001,10 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
 
       if (!editConsolidationAreaRequest) {
         return;
+      }
+      
+      if (editConsolidationAreaRequest.status === 403 || editConsolidationAreaRequest.status === 401) {
+        const tokenId = await auth().currentUser.getIdToken(true);
       }
 
       if (editConsolidationAreaRequest.status === 200) {
@@ -1009,6 +1048,10 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
         return;
       }
 
+      if (confirmPackagingGroupRequest.status === 403 || confirmPackagingGroupRequest.status === 401) {
+        const tokenId = await auth().currentUser.getIdToken(true);
+      }
+
       if (confirmPackagingGroupRequest.status === 200) {
         setLoading(false);
         const result = await confirmPackagingGroupRequest.text();
@@ -1048,6 +1091,10 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
 
       if (!updateStatusToPackagedRequest) {
         return;
+      }
+
+      if (updateStatusToPackagedRequest.status === 403 || updateStatusToPackagedRequest.status === 401) {
+        const tokenId = await auth().currentUser.getIdToken(true);
       }
 
       if (updateStatusToPackagedRequest.status === 200) {

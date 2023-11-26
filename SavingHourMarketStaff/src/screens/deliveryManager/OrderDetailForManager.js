@@ -10,8 +10,17 @@ import auth from '@react-native-firebase/auth';
 import {format} from 'date-fns';
 import Toast from 'react-native-toast-message';
 import LoadingScreen from '../../components/LoadingScreen';
+import database from '@react-native-firebase/database';
+import { checkSystemState } from '../../common/utils';
 
 const OrderDetailForManager = ({navigation, route}) => {
+  // listen to system state
+  useFocusEffect(
+    useCallback(() => {
+        checkSystemState();
+      }, []),
+  );
+  
   const {id, orderSuccess} = route.params;
   const [initializing, setInitializing] = useState(true);
   const [tokenId, setTokenId] = useState(null);

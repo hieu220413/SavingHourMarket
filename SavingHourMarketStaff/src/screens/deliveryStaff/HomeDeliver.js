@@ -23,8 +23,17 @@ import Empty from '../../assets/image/search-empty.png';
 import LoadingScreen from '../../components/LoadingScreen';
 import { useFocusEffect } from '@react-navigation/native';
 import DatePicker from 'react-native-date-picker';
+import database from '@react-native-firebase/database';
+import { checkSystemState } from '../../common/utils';
 
 const HomeDeliver = ({ navigation }) => {
+  // listen to system state
+  useFocusEffect(
+      useCallback(() => {
+          checkSystemState();
+      }, []),
+  );
+
   const [initializing, setInitializing] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -465,7 +474,11 @@ const HomeDeliver = ({ navigation }) => {
         // sessions end. (revoke refresh token like password change, disable account, ....)
         await AsyncStorage.removeItem('userInfo');
         setLoading(false);
-        navigation.navigate('Login');
+        // navigation.navigate('Login');
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'Login'}],
+        });
         return;
       }
       setLoading(false);
@@ -474,7 +487,11 @@ const HomeDeliver = ({ navigation }) => {
       console.log('user is not logged in');
       await AsyncStorage.removeItem('userInfo');
       setLoading(false);
-      navigation.navigate('Login');
+      // navigation.navigate('Login');
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'Login'}],
+      });
     }
   };
 
@@ -1556,6 +1573,7 @@ const styles = StyleSheet.create({
   },
   body: {
     flex: 9,
+    paddingTop: 20,
   },
   areaAndLogout: {
     paddingTop: 10,

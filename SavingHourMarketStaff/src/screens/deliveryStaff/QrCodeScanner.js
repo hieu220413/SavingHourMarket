@@ -10,8 +10,16 @@ import { COLORS, FONTS } from '../../constants/theme';
 import { useFocusEffect } from '@react-navigation/native';
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import { RNCamera } from 'react-native-camera';
+import database from '@react-native-firebase/database';
+import { checkSystemState } from '../../common/utils';
 
 const QrCodeScanner = ({ navigation }) => {
+    // listen to system state
+    useFocusEffect(
+        useCallback(() => {
+            checkSystemState();
+        }, []),
+    );
 
     const [initializing, setInitializing] = useState(true);
     const [data, setData] = useState('');
@@ -33,14 +41,22 @@ const QrCodeScanner = ({ navigation }) => {
             if (!userTokenId) {
                 // sessions end. (revoke refresh token like password change, disable account, ....)
                 await AsyncStorage.removeItem('userInfo');
-                navigation.navigate('Login');
+                // navigation.navigate('Login');
+                navigation.reset({
+                    index: 0,
+                    routes: [{name: 'Login'}],
+                  });
                 return;
             }
         } else {
             // no sessions found.
             console.log('user is not logged in');
             await AsyncStorage.removeItem('userInfo');
-            navigation.navigate('Login');
+            // navigation.navigate('Login');
+            navigation.reset({
+                index: 0,
+                routes: [{name: 'Login'}],
+              });
         }
     };
 
