@@ -20,8 +20,17 @@ import {format} from 'date-fns';
 import CartEmpty from '../../assets/image/search-empty.png';
 import {SwipeListView} from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
+import database from '@react-native-firebase/database';
+import { checkSystemState } from '../../common/utils';
 
 const SelectPickupPoint = ({navigation, route}) => {
+  // listen to system state
+  useFocusEffect(
+    useCallback(() => {
+      checkSystemState();
+    }, []),
+  );
+
   const [initializing, setInitializing] = useState(true);
   const [loading, setLoading] = useState(false);
   const [pickupPointList, setPickupPointList] = useState([]);
@@ -43,7 +52,11 @@ const SelectPickupPoint = ({navigation, route}) => {
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
         await AsyncStorage.removeItem('userInfo');
-        navigation.navigate('Login');
+        // navigation.navigate('Login');
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'Login'}],
+        });
         return;
       }
       const currentUser = await AsyncStorage.getItem('userInfo');
@@ -52,7 +65,11 @@ const SelectPickupPoint = ({navigation, route}) => {
       // no sessions found.
       console.log('user is not logged in');
       await AsyncStorage.removeItem('userInfo');
-      navigation.navigate('Login');
+      // navigation.navigate('Login');
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'Login'}],
+      });
     }
   };
 
@@ -83,7 +100,13 @@ const SelectPickupPoint = ({navigation, route}) => {
                 Authorization: `Bearer ${tokenId}`,
               },
             })
-              .then(res => res.json())
+              .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                  const tokenId = await auth().currentUser.getIdToken(true);
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.json();
+              })
               .then(respond => {
                 console.log(respond.pickupPoint);
                 if (respond.error) {
