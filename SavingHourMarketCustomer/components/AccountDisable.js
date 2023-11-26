@@ -13,7 +13,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const AccountDisable = ({
   openAccountDisableModal,
   setOpenAccountDisableModal,
-  pickupPoint,
   navigation,
 }) => {
   return (
@@ -29,7 +28,7 @@ const AccountDisable = ({
       footer={
         <ModalFooter>
           <ModalButton
-            text="Đồng ý"
+            text="Về trang chủ"
             textStyle={{color: COLORS.primary}}
             onPress={async () => {
               setOpenAccountDisableModal(false);

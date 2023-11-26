@@ -25,6 +25,7 @@ import Modal, {
   ModalButton,
   ScaleAnimation,
 } from 'react-native-modals';
+import database from '@react-native-firebase/database';
 
 const SearchResult = ({navigation, route}) => {
   const [result, setResult] = useState(route.params.result);
@@ -133,6 +134,25 @@ const SearchResult = ({navigation, route}) => {
         });
     }
   };
+
+  // system status check
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+          } else {
+            // setSystemStatus(snapshot.val());
+          }
+        });
+    }, []),
+  );
 
   const handleApplyFilter = () => {
     setModalVisible(!modalVisible);
@@ -800,8 +820,7 @@ const SearchResult = ({navigation, route}) => {
               textStyle={{color: COLORS.primary}}
               onPress={async () => {
                 try {
-                  await AsyncStorage.removeItem('userInfo');
-                  await AsyncStorage.removeItem('CartList');
+                  await AsyncStorage.clear();
                   navigation.navigate('Login');
                   setOpenAuthModal(false);
                 } catch (error) {

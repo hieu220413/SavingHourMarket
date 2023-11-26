@@ -15,6 +15,7 @@ import Modal, {
 import {format} from 'date-fns';
 import Empty from '../assets/image/search-empty.png';
 import LoadingScreen from '../components/LoadingScreen';
+import database from '@react-native-firebase/database';
 
 const SelectVoucher = ({navigation, route}) => {
   const {
@@ -32,6 +33,24 @@ const SelectVoucher = ({navigation, route}) => {
   const [validateMessage, setValidateMessage] = useState('');
 
   const [loading, setLoading] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+          } else {
+            // setSystemStatus(snapshot.val());
+          }
+        });
+    }, []),
+  );
 
   useFocusEffect(
     useCallback(() => {

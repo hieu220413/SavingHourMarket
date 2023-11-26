@@ -31,6 +31,7 @@ import {
 } from '@react-native-google-signin/google-signin';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {API} from '../constants/api';
+import database from '@react-native-firebase/database';
 
 const numStar = 5;
 
@@ -50,6 +51,25 @@ const OrderFeedback = ({navigation}) => {
   //-----------------RATING---------------------
   const [rating, setRating] = useState(5);
   const [animation, setAnimation] = useState(new Animated.Value(1));
+
+  // system status check
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+          } else {
+            // setSystemStatus(snapshot.val());
+          }
+        });
+    }, []),
+  );
 
   const rate = star => {
     setRating(star);

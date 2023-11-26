@@ -10,10 +10,30 @@ import {icons} from '../constants';
 import {COLORS} from '../constants/theme';
 import {useFocusEffect} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import database from '@react-native-firebase/database';
 
 const OrderSuccess = ({navigation, route}) => {
   const [cartList, setCartList] = useState([]);
   const {id} = route.params;
+
+  // system status check
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+          } else {
+            // setSystemStatus(snapshot.val());
+          }
+        });
+    }, []),
+  );
 
   useFocusEffect(
     useCallback(() => {

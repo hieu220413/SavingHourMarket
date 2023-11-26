@@ -28,6 +28,7 @@ import BottomSheet, {
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
 import {format} from 'date-fns';
+import database from '@react-native-firebase/database';
 
 const ProductDetails = ({navigation, route}) => {
   const product = route.params.product;
@@ -37,6 +38,7 @@ const ProductDetails = ({navigation, route}) => {
   const [openWarnModal, setOpenWarnModal] = useState(false);
   const [isAddToCart, setIsAddToCart] = useState(false);
   const [index, setIndex] = useState(-1);
+
 
   const [productBatchList, setProductBatchList] = useState([
     ...product.otherProductBatchList,
@@ -63,6 +65,27 @@ const ProductDetails = ({navigation, route}) => {
     // bottomSheetRef.current?.present();
     setIndex(0);
   }, []);
+
+  // system status check
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+            
+          } else {
+            // setSystemStatus(snapshot.val());
+         
+          }
+        });
+    }, []),
+  );
 
   const showToast = () => {
     Toast.show({

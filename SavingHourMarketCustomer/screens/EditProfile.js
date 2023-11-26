@@ -32,6 +32,7 @@ import * as Progress from 'react-native-progress';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {API} from '../constants/api';
 import LoadingScreen from '../components/LoadingScreen';
+import database from '@react-native-firebase/database';
 
 const EditProfile = ({navigation, route}) => {
   const user = route.params.user;
@@ -55,6 +56,25 @@ const EditProfile = ({navigation, route}) => {
   const [uploading, setUploading] = useState(false);
   const [transferred, setTransferred] = useState(0);
   const [loading, setLoading] = useState(false);
+
+  // system status check
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+          } else {
+            // setSystemStatus(snapshot.val());
+          }
+        });
+    }, []),
+  );
 
   const selectImage = () => {
     const options = {

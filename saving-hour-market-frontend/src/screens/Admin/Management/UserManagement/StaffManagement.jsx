@@ -8,7 +8,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { onAuthStateChanged } from "firebase/auth";
 import React, { useEffect, useState } from "react";
-import { auth } from "../../../../firebase/firebase.config";
+import { auth, database } from "../../../../firebase/firebase.config";
 import { API } from "../../../../contanst/api";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 import { Dialog } from "@mui/material";
@@ -18,6 +18,7 @@ import { Snackbar } from "@mui/material";
 import EditStaff from "./EditStaff";
 import Empty from "../../../../assets/Empty.png";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { onValue, update, ref, set, get, child } from "firebase/database";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -127,6 +128,17 @@ const StaffManagement = () => {
             setLoading(false);
             return;
           }
+          get(child(ref(database), "isDisableStaff")).then((snapshot) => {
+            const data = snapshot.val();
+            if (data !== null) {
+              if (data === 0) {
+                set(ref(database, "isDisableStaff"), 1);
+              } else {
+                set(ref(database, "isDisableStaff"), 0);
+              }
+            }
+          });
+
           fetch(
             `${API.baseURL}/api/staff/getStaffForAdmin?page=${
               page - 1

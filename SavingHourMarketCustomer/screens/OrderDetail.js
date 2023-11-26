@@ -13,13 +13,39 @@ import {format} from 'date-fns';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import Toast from 'react-native-toast-message';
 import LoadingScreen from '../components/LoadingScreen';
+import AccountDisable from '../components/AccountDisable';
+import database from '@react-native-firebase/database';
 
 const OrderDetail = ({navigation, route}) => {
   const {id, orderSuccess} = route.params;
   const [initializing, setInitializing] = useState(true);
-  const [tokenId, setTokenId] = useState(null);
+
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [openAuthModal, setOpenAuthModal] = useState(false);
+  const [isDisableAccount, setIsDisableAccount] = useState(false);
+
+  // state open/close modal
+  const [openAccountDisableModal, setOpenAccountDisableModal] = useState(false);
+
+  // system status check
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+          } else {
+            // setSystemStatus(snapshot.val());
+          }
+        });
+    }, []),
+  );
 
   const showToast = () => {
     Toast.show({
@@ -31,8 +57,8 @@ const OrderDetail = ({navigation, route}) => {
   };
 
   const onAuthStateChange = async userInfo => {
-    setLoading(true);
     // console.log(userInfo);
+    setLoading(true);
     if (initializing) {
       setInitializing(false);
     }
@@ -47,17 +73,11 @@ const OrderDetail = ({navigation, route}) => {
         });
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
-        await AsyncStorage.removeItem('userInfo');
-        setLoading(false);
+
         return;
       }
-
-      const token = await auth().currentUser.getIdToken();
-      setTokenId(token);
     } else {
       // no sessions found.
-      console.log('user is not logged in');
-      setLoading(false);
     }
   };
 
@@ -76,27 +96,38 @@ const OrderDetail = ({navigation, route}) => {
 
   useFocusEffect(
     useCallback(() => {
-      if (tokenId) {
-        setLoading(true);
-        fetch(`${API.baseURL}/api/order/getOrderDetail/${id}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${tokenId}`,
-          },
-        })
-          .then(res => res.json())
-          .then(respond => {
-            console.log(respond);
-            setItem(respond);
+      const fetchDetail = async () => {
+        if (auth().currentUser) {
+          const tokenId = await auth().currentUser.getIdToken();
+          if (tokenId) {
+            setLoading(true);
+            fetch(`${API.baseURL}/api/order/getOrderDetail/${id}`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
+              },
+            })
+              .then(res => res.json())
+              .then(respond => {
+                console.log(respond);
+                setItem(respond);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
+          }
+        } else {
+          if (!isDisableAccount) {
+            setOpenAuthModal(true);
             setLoading(false);
-          })
-          .catch(err => {
-            console.log(err);
-            setLoading(false);
-          });
-      }
-    }, [tokenId]),
+          }
+        }
+      };
+      fetchDetail();
+    }, []),
   );
 
   const cancelOrder = () => {
@@ -671,6 +702,56 @@ const OrderDetail = ({navigation, route}) => {
           </View>
         </View>
       )}
+      {/* auth modal */}
+      <Modal
+        width={0.8}
+        visible={openAuthModal}
+        onTouchOutside={() => {
+          setOpenAuthModal(false);
+        }}
+        dialogAnimation={
+          new ScaleAnimation({
+            initialValue: 0, // optional
+            useNativeDriver: true, // optional
+          })
+        }
+        footer={
+          <ModalFooter>
+            <ModalButton
+              text="Đăng nhập"
+              textStyle={{color: COLORS.primary}}
+              onPress={async () => {
+                try {
+                  await AsyncStorage.clear();
+                  navigation.navigate('Login');
+                  setOpenAuthModal(false);
+                } catch (error) {
+                  console.log(error);
+                }
+              }}
+            />
+          </ModalFooter>
+        }>
+        <View
+          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
+          <Text
+            style={{
+              fontSize: 20,
+              fontFamily: 'Roboto',
+              color: 'black',
+              textAlign: 'center',
+            }}>
+            Vui lòng đăng nhập để thực hiện chức năng này
+          </Text>
+        </View>
+      </Modal>
+
+      {/* account disable modal  */}
+      <AccountDisable
+        openAccountDisableModal={openAccountDisableModal}
+        setOpenAccountDisableModal={setOpenAccountDisableModal}
+        navigation={navigation}
+      />
       {loading && <LoadingScreen />}
     </>
   );

@@ -27,6 +27,7 @@ import Modal, {
   ScaleAnimation,
 } from 'react-native-modals';
 import Empty from '../assets/image/search-empty.png';
+import database from '@react-native-firebase/database';
 
 const Home = ({navigation}) => {
   const [categories, setCategories] = useState([]);
@@ -57,6 +58,25 @@ const Home = ({navigation}) => {
   };
 
   // console.log(cartList);
+
+  // system status check
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+          } else {
+            // setSystemStatus(snapshot.val());
+          }
+        });
+    }, []),
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -653,8 +673,7 @@ const Home = ({navigation}) => {
               textStyle={{color: COLORS.primary}}
               onPress={async () => {
                 try {
-                  await AsyncStorage.removeItem('userInfo');
-                  await AsyncStorage.removeItem('CartList');
+                  await AsyncStorage.clear();
                   navigation.navigate('Login');
                   setOpenAuthModal(false);
                 } catch (error) {

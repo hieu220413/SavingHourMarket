@@ -96,6 +96,7 @@ const ProductManagement = () => {
   };
 
   const userState = useAuthState(auth);
+  console.log(userState);
 
   useEffect(() => {
     const fetchProduct = async () => {

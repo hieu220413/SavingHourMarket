@@ -107,6 +107,7 @@ const Login = () => {
               return;
             }
             if (respond.role === "ADMIN") {
+              console.log("hello");
               navigate("/usermanagement");
               return;
             }

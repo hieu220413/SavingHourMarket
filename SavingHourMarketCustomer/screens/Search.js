@@ -9,6 +9,7 @@ import { API } from '../constants/api';
 import { useFocusEffect } from "@react-navigation/native";
 import LoadingScreen from '../components/LoadingScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import database from '@react-native-firebase/database';
 
 const Search = ({ navigation }) => {
     const [products, setProducts] = useState([]);
@@ -35,6 +36,28 @@ const Search = ({ navigation }) => {
             setProductName(value);
         }, 400);
     };
+
+     // system status check
+     useFocusEffect(
+        useCallback(() => {
+          database().ref(`systemStatus`).off('value');
+          database()
+            .ref('systemStatus')
+            .on('value', async snapshot => {
+              if (snapshot.val() === 0) {
+                navigation.reset({
+                  index: 0,
+                  routes: [{name: 'Initial'}],
+                });
+              
+              } else {
+                // setSystemStatus(snapshot.val());
+                
+               
+              }
+            });
+        }, []),
+      );
 
     // fetch search suggestion
     useFocusEffect(

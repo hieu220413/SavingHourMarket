@@ -13,11 +13,31 @@ import {COLORS} from '../constants/theme';
 import LinearGradient from 'react-native-linear-gradient';
 import * as Animatable from 'react-native-animatable';
 import OtpInput from '../components/OtpInput';
+import database from '@react-native-firebase/database';
 
 const CodeReset = ({navigation}) => {
   const [code, setCode] = useState('');
   const [pinReady, setPinReady] = useState(false);
   const MAX_CODE_LENGTH = 4;
+
+  // system status check
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+          } else {
+            // setSystemStatus(snapshot.val());
+          }
+        });
+    }, []),
+  );
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={styles.container}>
@@ -47,7 +67,7 @@ const CodeReset = ({navigation}) => {
               <TouchableOpacity
                 style={{width: '100%'}}
                 onPress={() => {
-                    navigation.navigate('Reset password');
+                  navigation.navigate('Reset password');
                 }}>
                 <LinearGradient
                   colors={['#66CC66', '#66CC99']}

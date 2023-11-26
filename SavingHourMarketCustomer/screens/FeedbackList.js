@@ -25,6 +25,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {API} from '../constants/api';
 import LoadingScreen from '../components/LoadingScreen';
+import database from '@react-native-firebase/database';
 
 // const DATA = [
 //   {
@@ -117,7 +118,6 @@ import LoadingScreen from '../components/LoadingScreen';
 // ];
 
 const Item = ({data}) => {
-  
   const [animation, setAnimation] = useState(new Animated.Value(1));
 
   let stars = [];
@@ -210,6 +210,26 @@ const FeedbackList = ({navigation}) => {
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [tokenId, setTokenId] = useState(null);
+
+  // system status check
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+          } else {
+            // setSystemStatus(snapshot.val());
+          }
+        });
+    }, []),
+  );
+
   //authen check
   const onAuthStateChange = async userInfo => {
     // console.log(userInfo);

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../../../firebase/firebase.config";
+import { auth, database } from "../../../firebase/firebase.config";
 import { API } from "../../../contanst/api";
 import "./Configuration.scss";
 import LoadingScreen from "../../../components/LoadingScreen/LoadingScreen";
@@ -8,6 +8,7 @@ import MuiAlert from "@mui/material/Alert";
 import { Snackbar } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretDown } from "@fortawesome/free-solid-svg-icons";
+import { ref, set } from "firebase/database";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -226,6 +227,8 @@ const Configuration = () => {
           setLoading(false);
           return;
         }
+
+        set(ref(database, "systemStatus"), systemStatus.value);
         setOpenSnackbar({
           ...openSnackbar,
           open: true,
