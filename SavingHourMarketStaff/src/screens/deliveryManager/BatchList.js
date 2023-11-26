@@ -23,8 +23,17 @@ import LoadingScreen from '../../components/LoadingScreen';
 import {SwipeListView} from 'react-native-swipe-list-view';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CartEmpty from '../../assets/image/search-empty.png';
+import database from '@react-native-firebase/database';
+import { checkSystemState } from '../../common/utils';
 
 const BatchList = ({navigation, route}) => {
+  // listen to system state
+  useFocusEffect(
+    useCallback(() => {
+        checkSystemState();
+      }, []),
+  );
+
   const {date, timeFrame, productConsolidationArea, quantity} = route.params;
   const [initializing, setInitializing] = useState(true);
   const [tokenId, setTokenId] = useState(null);

@@ -10,6 +10,14 @@
     color: #000;
   }
 
+  .disabled-icon {
+    color: #666666 !important;
+    :hover {
+      color: #666666;
+      opacity: 0;
+    }
+  }
+
   .user__header {
     display: flex;
     justify-content: space-between;

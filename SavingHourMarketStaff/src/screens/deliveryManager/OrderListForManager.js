@@ -26,8 +26,17 @@ import LoadingScreen from '../../components/LoadingScreen';
 import DatePicker from 'react-native-date-picker';
 import NumericInput from 'react-native-numeric-input';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import database from '@react-native-firebase/database';
+import { checkSystemState } from '../../common/utils';
 
 const OrderListForManager = ({navigation}) => {
+  // listen to system state
+  useFocusEffect(
+    useCallback(() => {
+        checkSystemState();
+      }, []),
+  );
+
   const [initializing, setInitializing] = useState(true);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -92,7 +101,11 @@ const OrderListForManager = ({navigation}) => {
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
         await AsyncStorage.removeItem('userInfo');
-        navigation.navigate('Login');
+        // navigation.navigate('Login');
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'Login'}],
+        });
         return;
       }
       const currentUser = await AsyncStorage.getItem('userInfo');
@@ -102,7 +115,11 @@ const OrderListForManager = ({navigation}) => {
       // no sessions found.
       console.log('user is not logged in');
       await AsyncStorage.removeItem('userInfo');
-      navigation.navigate('Login');
+      // navigation.navigate('Login');
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'Login'}],
+      });
     }
   };
 
@@ -1669,7 +1686,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   body: {
-    flex: 3,
+    flex: 3.5,
     // backgroundColor: 'pink',
     paddingHorizontal: 20,
   },

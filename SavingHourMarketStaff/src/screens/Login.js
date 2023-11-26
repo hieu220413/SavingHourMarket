@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   View,
   Text,
@@ -7,7 +8,7 @@ import {
   StyleSheet,
   ImageBackground,
 } from 'react-native';
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useCallback} from 'react';
 import {TextInput, TouchableOpacity} from 'react-native-gesture-handler';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -19,8 +20,37 @@ import Feather from 'react-native-vector-icons/Feather';
 import {COLORS} from '../constants/theme';
 import LoadingScreen from '../components/LoadingScreen';
 import Toast from 'react-native-toast-message';
+import database from '@react-native-firebase/database';
+import {useFocusEffect} from '@react-navigation/native';
 
 const Login = ({navigation}) => {
+  // listen to system state
+  database().ref(`systemStatus`).off('value');
+  useFocusEffect(useCallback(() => {
+    const onSystemStateChange = database()
+        .ref(`systemStatus`)
+        .on(
+          'value',
+          async snapshot => {
+            console.log('System status: ', snapshot.val());
+            if (snapshot.val() === 0) {
+              if (auth().currentUser) {
+                await auth().signOut();
+              }
+              navigation.reset({
+                index: 0,
+                routes: [{ name: "Start" }]
+              });
+              setLoading(false);
+            } 
+          },
+          error => {
+            console.error(error);
+          },
+        );
+    // return () => database().ref(`systemStatus`).off('value', onSystemStateChange); 
+  }, [navigation]));
+
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -52,7 +82,7 @@ const Login = ({navigation}) => {
       }
       const currentUser = await AsyncStorage.getItem('userInfo');
       if (currentUser) {
-        navigation.navigate('Start');
+        navigation.navigate('Tabs');
       }
     } else {
       // no sessions found.
@@ -145,7 +175,7 @@ const Login = ({navigation}) => {
             setLoading(false);
             showToastSuccess('Đăng nhập thành công');
             await AsyncStorage.setItem('userInfo', JSON.stringify(respond));
-            navigation.navigate('Start');
+            navigation.navigate('Tabs');
             // **
           })
 

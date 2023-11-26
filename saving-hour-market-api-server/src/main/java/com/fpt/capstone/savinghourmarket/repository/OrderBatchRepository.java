@@ -26,7 +26,7 @@ public interface OrderBatchRepository extends JpaRepository<OrderBatch, UUID> {
             "OR " +
             "((:getOldOrderBatch = FALSE) AND (ob.deliverDate >= CURRENT_DATE)) " +
             "OR " +
-            "((:getOldOrderBatch = TRUE) AND (ob.deliverDate < CURRENT_DATE)))) " +
+            "((:getOldOrderBatch = TRUE)))) " +
             "AND " +
             "((:delivererId IS NULL) OR (ob.deliverer.id = :delivererId)) " +
             "AND " +

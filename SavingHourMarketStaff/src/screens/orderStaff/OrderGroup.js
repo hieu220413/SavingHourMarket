@@ -35,8 +35,17 @@ import {
   ModalFooter,
   ScaleAnimation,
 } from 'react-native-modals';
+import database from '@react-native-firebase/database';
+import { checkSystemState } from '../../common/utils';
 
 const OrderGroupForOrderStaff = ({navigation, route}) => {
+  // listen to system state
+  useFocusEffect(
+    useCallback(() => {
+      checkSystemState();
+    }, []),
+  );
+
   const [initializing, setInitializing] = useState(true);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -561,7 +570,11 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
         await AsyncStorage.removeItem('userInfo');
-        navigation.navigate('Login');
+        // navigation.navigate('Login');
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'Login'}],
+        });
         return;
       }
       const currentUser = await AsyncStorage.getItem('userInfo');
@@ -571,7 +584,11 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
       // no sessions found.
       console.log('user is not logged in');
       await AsyncStorage.removeItem('userInfo');
-      navigation.navigate('Login');
+      // navigation.navigate('Login');
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'Login'}],
+      });
     }
   };
 
@@ -727,7 +744,13 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
           },
         },
       )
-        .then(res => res.json())
+        .then(async res => {
+          if (res.status === 403 || res.status === 401) {
+            const tokenId = await auth().currentUser.getIdToken(true);
+            // Cac loi 403 khac thi handle duoi day neu co
+          }
+          return res.json();
+        })
         .then(respond => {
           // console.log('order group', respond);
           if (respond.error) {
@@ -765,7 +788,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
       await fetch(
         `${
           API.baseURL
-        }/api/order/packageStaff/getOrders?getOldOrder=true&orderStatus=FAIL&deliveryMethod=PICKUP_POINT&${
+        }/api/order/packageStaff/getOrders?getOldOrder=true&orderStatus=CANCEL&deliveryMethod=PICKUP_POINT&${
           pickupPoint && pickupPoint.id
             ? 'pickupPointId=' + pickupPoint?.id
             : ''
@@ -790,7 +813,13 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
           },
         },
       )
-        .then(res => res.json())
+        .then(async res => {
+          if (res.status === 403 || res.status === 401) {
+            const tokenId = await auth().currentUser.getIdToken(true);
+            // Cac loi 403 khac thi handle duoi day neu co
+          }
+          return res.json();
+        })
         .then(respond => {
           // console.log('order group', respond);
           if (respond.error) {
@@ -873,6 +902,13 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
     setTempSelectedTimeFrameId(' ');
     setTempSelectedDate(new Date());
     // setSelectedDate(new Date());
+    setSelectSort(
+      selectSort.map(item => {
+        return {...item, active: false};
+      }),
+    );
+    setSelectedTimeFrameId('');
+    setSelectedDate('');
     console.log('thiet lap lai');
     setSortModalVisible(!sortModalVisible);
   };
@@ -918,7 +954,13 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
           },
         },
       )
-        .then(res => res.json())
+        .then(async res => {
+          if (res.status === 403 || res.status === 401) {
+            const tokenId = await auth().currentUser.getIdToken(true);
+            // Cac loi 403 khac thi handle duoi day neu co
+          }
+          return res.json();
+        })
         .then(respond => {
           console.log('consolidation area: ', respond);
           if (respond.error) {
@@ -959,6 +1001,10 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
 
       if (!editConsolidationAreaRequest) {
         return;
+      }
+      
+      if (editConsolidationAreaRequest.status === 403 || editConsolidationAreaRequest.status === 401) {
+        const tokenId = await auth().currentUser.getIdToken(true);
       }
 
       if (editConsolidationAreaRequest.status === 200) {
@@ -1002,6 +1048,10 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
         return;
       }
 
+      if (confirmPackagingGroupRequest.status === 403 || confirmPackagingGroupRequest.status === 401) {
+        const tokenId = await auth().currentUser.getIdToken(true);
+      }
+
       if (confirmPackagingGroupRequest.status === 200) {
         setLoading(false);
         const result = await confirmPackagingGroupRequest.text();
@@ -1041,6 +1091,10 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
 
       if (!updateStatusToPackagedRequest) {
         return;
+      }
+
+      if (updateStatusToPackagedRequest.status === 403 || updateStatusToPackagedRequest.status === 401) {
+        const tokenId = await auth().currentUser.getIdToken(true);
       }
 
       if (updateStatusToPackagedRequest.status === 200) {
@@ -1322,117 +1376,116 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                     </Text>
                   </View>
                 ) : (
-                  orderFailList
-                    .map((order, index) => (
-                      <TouchableOpacity
+                  orderFailList.map((order, index) => (
+                    <TouchableOpacity
+                      style={{
+                        paddingHorizontal: 0,
+                        paddingVertical: 10,
+                      }}
+                      onPress={() => {
+                        navigation.navigate('OrderDetail', {
+                          id: order.id,
+                          orderSuccess: false,
+                        });
+                      }}
+                      key={index}>
+                      <View
                         style={{
-                          paddingHorizontal: 0,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          backgroundColor: 'rgb(240,240,240)',
+                          marginHorizontal: 5,
+                          paddingHorizontal: 10,
                           paddingVertical: 10,
-                        }}
-                        onPress={() => {
-                          navigation.navigate('OrderDetail', {
-                            id: order.id,
-                            orderSuccess: false,
-                          });
-                        }}
-                        key={index}>
+                          borderRadius: 10,
+                          shadowColor: '#000',
+                          shadowOffset: {
+                            width: 0,
+                            height: 2,
+                          },
+                          shadowOpacity: 0.25,
+                          shadowRadius: 4,
+                          elevation: 5,
+                        }}>
                         <View
                           style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            backgroundColor: 'rgb(240,240,240)',
-                            marginHorizontal: 5,
-                            paddingHorizontal: 10,
-                            paddingVertical: 10,
-                            borderRadius: 10,
-                            shadowColor: '#000',
-                            shadowOffset: {
-                              width: 0,
-                              height: 2,
-                            },
-                            shadowOpacity: 0.25,
-                            shadowRadius: 4,
-                            elevation: 5,
+                            flexDirection: 'column',
+                            gap: 8,
                           }}>
-                          <View
+                          <Text
                             style={{
-                              flexDirection: 'column',
-                              gap: 8,
+                              fontSize: 20,
+                              fontWeight: 'bold',
+                              fontFamily: 'Roboto',
+                              color: COLORS.red,
                             }}>
-                            <Text
-                              style={{
-                                fontSize: 20,
-                                fontWeight: 'bold',
-                                fontFamily: 'Roboto',
-                                color: COLORS.red,
-                              }}>
-                              Thất bại
-                            </Text>
-                            <Text
-                              style={{
-                                fontSize: 17,
-                                fontWeight: 'bold',
-                                fontFamily: 'Roboto',
-                                color: 'black',
-                              }}>
-                              Ngày đặt :{' '}
-                              {format(
-                                Date.parse(order?.createdTime),
-                                'dd/MM/yyyy',
-                              )}
-                            </Text>
-                            <Text
-                              style={{
-                                fontSize: 17,
-                                fontWeight: 'bold',
-                                fontFamily: 'Roboto',
-                                color: 'black',
-                              }}>
-                              Ngày giao :{' '}
-                              {format(
-                                Date.parse(order?.deliveryDate),
-                                'dd/MM/yyyy',
-                              )}
-                            </Text>
-                            <Text
-                              style={{
-                                fontSize: 17,
-                                fontWeight: 'bold',
-                                fontFamily: 'Roboto',
-                                color: 'black',
-                              }}>
-                              Tổng tiền:{' '}
-                              {order?.totalPrice?.toLocaleString('vi-VN', {
-                                style: 'currency',
-                                currency: 'VND',
-                              })}
-                            </Text>
-                            <Text
-                              style={{
-                                fontSize: 17,
-                                fontWeight: 'bold',
-                                fontFamily: 'Roboto',
-                                color: 'black',
-                              }}>
-                              Nhân viên đóng gói:{' '}
-                              {order?.packager === null
-                                ? 'Chưa có'
-                                : order?.packager.fullName}
-                            </Text>
-                          </View>
-                          <Image
-                            resizeMode="contain"
+                            Hủy đóng gói
+                          </Text>
+                          <Text
                             style={{
-                              width: 30,
-                              height: 30,
-                              tintColor: COLORS.primary,
-                            }}
-                            source={icons.rightArrow}
-                          />
+                              fontSize: 17,
+                              fontWeight: 'bold',
+                              fontFamily: 'Roboto',
+                              color: 'black',
+                            }}>
+                            Ngày đặt :{' '}
+                            {format(
+                              Date.parse(order?.createdTime),
+                              'dd/MM/yyyy',
+                            )}
+                          </Text>
+                          <Text
+                            style={{
+                              fontSize: 17,
+                              fontWeight: 'bold',
+                              fontFamily: 'Roboto',
+                              color: 'black',
+                            }}>
+                            Ngày giao :{' '}
+                            {format(
+                              Date.parse(order?.deliveryDate),
+                              'dd/MM/yyyy',
+                            )}
+                          </Text>
+                          <Text
+                            style={{
+                              fontSize: 17,
+                              fontWeight: 'bold',
+                              fontFamily: 'Roboto',
+                              color: 'black',
+                            }}>
+                            Tổng tiền:{' '}
+                            {order?.totalPrice?.toLocaleString('vi-VN', {
+                              style: 'currency',
+                              currency: 'VND',
+                            })}
+                          </Text>
+                          <Text
+                            style={{
+                              fontSize: 17,
+                              fontWeight: 'bold',
+                              fontFamily: 'Roboto',
+                              color: 'black',
+                            }}>
+                            Nhân viên đóng gói:{' '}
+                            {order?.packager === null
+                              ? 'Chưa có'
+                              : order?.packager.fullName}
+                          </Text>
                         </View>
-                      </TouchableOpacity>
-                    ))
+                        <Image
+                          resizeMode="contain"
+                          style={{
+                            width: 30,
+                            height: 30,
+                            tintColor: COLORS.primary,
+                          }}
+                          source={icons.rightArrow}
+                        />
+                      </View>
+                    </TouchableOpacity>
+                  ))
                 )}
               </>
             ) : (
@@ -1482,7 +1535,9 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                         showsHorizontalScrollIndicator={false}
                         data={orderGroupList.filter(group => {
                           if (currentStatus.value === 'PROCESSING') {
-                            return group.productConsolidationArea === null;
+                            return group.orderList.find(
+                              order => order.status === 0,
+                            );
                           }
                           if (currentStatus.value === 'PACKAGING') {
                             return (
@@ -1751,6 +1806,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                                         navigation.navigate('OrderDetail', {
                                           id: order.id,
                                           orderSuccess: false,
+                                          isFromOrderGroup: true,
                                         });
                                       }}
                                       key={index}>

@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../../../../firebase/firebase.config";
+import { auth } from "../../../firebase/firebase.config";
+import { API } from "../../../contanst/api";
+import "./Configuration.scss";
 import LoadingScreen from "../../../components/LoadingScreen/LoadingScreen";
-import { Snackbar } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
+import { Snackbar } from "@mui/material";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
-
 const Configuration = () => {
   const [loading, setLoading] = useState(false);
   const [initialShippingFee, setInitialShippingFee] = useState(0);
@@ -193,7 +194,6 @@ const Configuration = () => {
     })
       .then((res) => res.json())
       .then((respond) => {
-        console.log(respond);
         if (respond?.code === 422) {
           setLoading(false);
           return;

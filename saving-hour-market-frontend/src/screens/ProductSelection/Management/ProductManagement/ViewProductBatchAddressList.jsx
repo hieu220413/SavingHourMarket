@@ -17,7 +17,7 @@ export const ViewProductBatchAddressList = ({
               item?.supermarketAddress?.address
             ) : (
               <p style={{ fontWeight: 700 }} className="text-danger">
-                Lỗi ngày
+                Lỗi địa chỉ
               </p>
             )}
           </td>

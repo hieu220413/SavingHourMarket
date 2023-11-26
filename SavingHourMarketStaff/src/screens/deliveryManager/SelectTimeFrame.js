@@ -11,8 +11,17 @@ import {API} from '../../constants/api';
 import LoadingScreen from '../../components/LoadingScreen';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import database from '@react-native-firebase/database';
+import { checkSystemState } from '../../common/utils';
 
 const SelectTimeFrame = ({navigation, route}) => {
+  // listen to system state
+  useFocusEffect(
+    useCallback(() => {
+        checkSystemState();
+      }, []),
+  );
+
   const [initializing, setInitializing] = useState(true);
   const [tokenId, setTokenId] = useState(null);
   const [timeFrameList, setTimeFrameList] = useState([]);

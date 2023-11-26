@@ -27,9 +27,7 @@ public class ConfigurationController {
     private final SystemConfigurationService configurationService;
 
     @RequestMapping(value = "/getConfiguration", method = RequestMethod.GET)
-    public ResponseEntity<Configuration> getConfiguration(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException, IOException {
-        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
-        Utils.validateIdToken(idToken, firebaseAuth);
+    public ResponseEntity<Configuration> getConfiguration() {
         Configuration configuration = configurationService.getConfiguration();
         return ResponseEntity.status(HttpStatus.OK).body(configuration);
     }
