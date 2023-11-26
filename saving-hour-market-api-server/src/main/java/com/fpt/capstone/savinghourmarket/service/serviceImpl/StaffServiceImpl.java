@@ -341,7 +341,7 @@ public class StaffServiceImpl implements StaffService {
         }
 
          // check collide with order group (for all mode BATCH, GROUP, SINGLE)
-        List<Staff> removeStaffList = staffRepository.getStaffWithDeliverDateAndTimeFrame(name, StaffRole.STAFF_DLV_0.toString(), deliverDate, timeFrame.get().getId());
+        List<Staff> removeStaffList = staffRepository.getStaffWithDeliverDateAndTimeFrame(staffList.stream().map(staff -> staff.getId()).collect(Collectors.toList()), name, StaffRole.STAFF_DLV_0.toString(), deliverDate, timeFrame.get().getId());
         HashMap<UUID, Staff> removeStaffHashMap = new HashMap<>();
         for (Staff removeStaff : removeStaffList) {
             removeStaffHashMap.put(removeStaff.getId(), removeStaff);
@@ -349,7 +349,7 @@ public class StaffServiceImpl implements StaffService {
 
         if(orderType.ordinal() == OrderType.ORDER_GROUP.ordinal()) {
             // check collide with order batch / single order
-            List<Staff> removeStaffByDoorToDoorOrderList = staffRepository.getStaffWithDeliverDateAndTimeFrameByDoorToDoorOrder(name, StaffRole.STAFF_DLV_0.toString(), deliverDate, timeFrame.get().getId());
+            List<Staff> removeStaffByDoorToDoorOrderList = staffRepository.getStaffWithDeliverDateAndTimeFrameByDoorToDoorOrder(staffList.stream().map(staff -> staff.getId()).collect(Collectors.toList()), name, StaffRole.STAFF_DLV_0.toString(), deliverDate, timeFrame.get().getId());
             for (Staff removeStaffByDoorToDoorOrder : removeStaffByDoorToDoorOrderList) {
                 if(!removeStaffHashMap.containsKey(removeStaffByDoorToDoorOrder.getId())) {
                     removeStaffHashMap.put(removeStaffByDoorToDoorOrder.getId(), removeStaffByDoorToDoorOrder);

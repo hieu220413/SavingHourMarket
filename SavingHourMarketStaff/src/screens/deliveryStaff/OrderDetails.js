@@ -34,54 +34,54 @@ const OrderDetails = ({ navigation, route }) => {
     const [errorModalVisible, setErrorModalVisible] = useState(false);
     const [alertText, setAlertText] = useState('');
     const [expDateList, setExpDateList] = useState([]);
-    const onAuthStateChange = async userInfo => {
-        setLoading(true);
-        if (initializing) {
-            setInitializing(false);
-        }
-        if (userInfo) {
-            // check if user sessions is still available. If yes => redirect to another screen
-            const userTokenId = await userInfo
-                .getIdToken(true)
-                .then(token => token)
-                .catch(async e => {
-                    console.log(e);
-                    setLoading(false);
-                    return null;
-                });
-            if (!userTokenId) {
-                // sessions end. (revoke refresh token like password change, disable account, ....)
-                await AsyncStorage.removeItem('userInfo');
-                setLoading(false);
-                // navigation.navigate('Login');
-                navigation.reset({
-                    index: 0,
-                    routes: [{name: 'Login'}],
-                  });
-                return;
-            }
-            const token = await auth().currentUser.getIdToken();
-            setTokenId(token);
-            setLoading(false);
-        } else {
-            // no sessions found.
-            console.log('user is not logged in');
-            await AsyncStorage.removeItem('userInfo');
-            setLoading(false);
-            // navigation.navigate('Login');
-            navigation.reset({
-                index: 0,
-                routes: [{name: 'Login'}],
-              });
-        }
-    };
+    // const onAuthStateChange = async userInfo => {
+    //     setLoading(true);
+    //     if (initializing) {
+    //         setInitializing(false);
+    //     }
+    //     if (userInfo) {
+    //         // check if user sessions is still available. If yes => redirect to another screen
+    //         const userTokenId = await userInfo
+    //             .getIdToken(true)
+    //             .then(token => token)
+    //             .catch(async e => {
+    //                 console.log(e);
+    //                 setLoading(false);
+    //                 return null;
+    //             });
+    //         if (!userTokenId) {
+    //             // sessions end. (revoke refresh token like password change, disable account, ....)
+    //             await AsyncStorage.removeItem('userInfo');
+    //             setLoading(false);
+    //             // navigation.navigate('Login');
+    //             navigation.reset({
+    //                 index: 0,
+    //                 routes: [{name: 'Login'}],
+    //               });
+    //             return;
+    //         }
+    //         const token = await auth().currentUser.getIdToken();
+    //         setTokenId(token);
+    //         setLoading(false);
+    //     } else {
+    //         // no sessions found.
+    //         console.log('user is not logged in');
+    //         await AsyncStorage.removeItem('userInfo');
+    //         setLoading(false);
+    //         // navigation.navigate('Login');
+    //         navigation.reset({
+    //             index: 0,
+    //             routes: [{name: 'Login'}],
+    //           });
+    //     }
+    // };
 
-    useEffect(() => {
-        const subscriber = auth().onAuthStateChanged(
-            async userInfo => await onAuthStateChange(userInfo),
-        );
-        return subscriber;
-    }, []);
+    // useEffect(() => {
+    //     const subscriber = auth().onAuthStateChanged(
+    //         async userInfo => await onAuthStateChange(userInfo),
+    //     );
+    //     return subscriber;
+    // }, []);
 
     const fetchOrderDetails = () => {
         if (tokenId) {
