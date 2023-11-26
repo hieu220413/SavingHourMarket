@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import React, { useEffect, useState } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer,useNavigation } from '@react-navigation/native';
 import Toast, { BaseToast } from 'react-native-toast-message';
 import { COLORS } from './src/constants/theme';
 import 'react-native-gesture-handler';
@@ -25,6 +25,7 @@ import BatchingDetail from './src/screens/deliveryManager/BatchingDetail';
 import OrderListForManager from './src/screens/deliveryManager/OrderListForManager';
 import DailyReportForManager from './src/screens/deliveryManager/DailyReportForManager';
 import OrderListForReport from './src/screens/deliveryManager/OrderListForReport';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -72,6 +73,12 @@ export default function App() {
       />
     ),
   };
+
+  useEffect(() => {
+    const setDisableAccount = async () => (await AsyncStorage.setItem('isDisableAccount', '0'));
+    setDisableAccount();
+  }, []);
+
   return (
     <>
       <NavigationContainer>
@@ -124,6 +131,7 @@ export default function App() {
       </NavigationContainer>
       <ModalPortal />
       <Toast config={toastConfig} />
+      
     </>
   );
 }

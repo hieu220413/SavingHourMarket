@@ -93,7 +93,6 @@ const Login = ({navigation}) => {
     const subscriber = auth().onAuthStateChanged(
       async userInfo => await onAuthStateChange(userInfo),
     );
-
     return subscriber;
   }, []);
 

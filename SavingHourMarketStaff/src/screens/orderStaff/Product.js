@@ -18,7 +18,7 @@ import { COLORS, FONTS } from '../../constants/theme';
 import { icons } from '../../constants';
 import { useFocusEffect } from '@react-navigation/native';
 import { API } from '../../constants/api';
-import { format} from 'date-fns';
+import { format } from 'date-fns';
 import LoadingScreen from '../../components/LoadingScreen';
 import CartEmpty from '../../assets/image/search-empty.png';
 import { useRef } from 'react';
@@ -44,37 +44,37 @@ const Product = ({ navigation }) => {
   const [tempSupermarketFilterName, setTempSupermarketFilterName] = useState('');
   const [supermarketFilterName, setSupermarketFilterName] = useState('');
 
-  const onAuthStateChange = async userInfo => {
-    if (initializing) {
-      setInitializing(false);
-    }
-    if (userInfo) {
-      const userTokenId = await userInfo.getIdToken(true).catch(e => {
-        console.log(e);
-        return null;
-      });
-      if (!userTokenId) {
-        await AsyncStorage.removeItem('userInfo');
-        // navigation.navigate('Login');
-        navigation.reset({
-          index: 0,
-          routes: [{name: 'Login'}],
-        });
-        return;
-      }
-      const currentUser = await AsyncStorage.getItem('userInfo');
-      // console.log(JSON.parse(currentUser));
-      setCurrentUser(JSON.parse(currentUser));
-    } else {
-      console.log('user is not logged in');
-      await AsyncStorage.removeItem('userInfo');
-      // navigation.navigate('Login');
-      navigation.reset({
-        index: 0,
-        routes: [{name: 'Login'}],
-      });
-    }
-  };
+  // const onAuthStateChange = async userInfo => {
+  //   if (initializing) {
+  //     setInitializing(false);
+  //   }
+  //   if (userInfo) {
+  //     const userTokenId = await userInfo.getIdToken(true).catch(e => {
+  //       console.log(e);
+  //       return null;
+  //     });
+  //     if (!userTokenId) {
+  //       await AsyncStorage.removeItem('userInfo');
+  //       // navigation.navigate('Login');
+  //       navigation.reset({
+  //         index: 0,
+  //         routes: [{name: 'Login'}],
+  //       });
+  //       return;
+  //     }
+  //     const currentUser = await AsyncStorage.getItem('userInfo');
+  //     // console.log(JSON.parse(currentUser));
+  //     setCurrentUser(JSON.parse(currentUser));
+  //   } else {
+  //     console.log('user is not logged in');
+  //     await AsyncStorage.removeItem('userInfo');
+  //     // navigation.navigate('Login');
+  //     navigation.reset({
+  //       index: 0,
+  //       routes: [{name: 'Login'}],
+  //     });
+  //   }
+  // };
 
   const fetchData = async () => {
     if (auth().currentUser) {
@@ -94,8 +94,8 @@ const Product = ({ navigation }) => {
             },
           });
 
-          if(response.status === 403 || response.status === 401) {
-            const tokenId = await auth().currentUser.getIdToken(true); 
+          if (response.status === 403 || response.status === 401) {
+            await auth().currentUser.getIdToken(true).catch(async (err) => await AsyncStorage.setItem('isDisableAccount', '1'));
           }
 
           const data = await response.json();
@@ -144,17 +144,18 @@ const Product = ({ navigation }) => {
     }
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      const subscriber = auth().onAuthStateChanged(userInfo => {
-        onAuthStateChange(userInfo);
-      });
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     const subscriber = auth().onAuthStateChanged(userInfo => {
+  //       onAuthStateChange(userInfo);
+  //     });
 
-      return subscriber;
-    }, []),
-  );
+  //     return subscriber;
+  //   }, []),
+  // );
 
   // init pickup point
+
   useFocusEffect(
     useCallback(() => {
       const initPickupPoint = async () => {
@@ -211,6 +212,18 @@ const Product = ({ navigation }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pickupPoint, setPickupPoint, supermarketFilterName]);
 
+  //get Current User Info
+  useFocusEffect(
+    useCallback(() => {
+      const getCurrentUser = async () => {
+        const currentUser = await AsyncStorage.getItem('userInfo');
+        // console.log(JSON.parse(currentUser));
+        setCurrentUser(JSON.parse(currentUser));
+      }
+      getCurrentUser();
+    }, []),
+  );
+
   const Item = ({ item, index }) => {
     return (
       <TouchableOpacity
@@ -225,7 +238,7 @@ const Product = ({ navigation }) => {
           flexDirection: 'row',
           gap: 10,
           alignItems: 'center',
-          justifyContent:'center',
+          justifyContent: 'center',
           backgroundColor: 'white',
           paddingVertical: 5,
           borderRadius: 20,
@@ -253,8 +266,8 @@ const Product = ({ navigation }) => {
               alignItems: 'center',
               backgroundColor: 'white',
               marginVertical: 10,
-              marginLeft:3,
-              maxWidth:'95%'
+              marginLeft: 3,
+              maxWidth: '95%'
             }}>
             <Image
               source={{

@@ -12,22 +12,24 @@ import {
   Pressable,
   FlatList,
 } from 'react-native';
-import React, {useEffect, useState, useCallback, useRef} from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {COLORS} from '../../constants/theme';
-import {icons} from '../../constants';
-import {useFocusEffect} from '@react-navigation/native';
-import {API} from '../../constants/api';
-import {format} from 'date-fns';
+import { COLORS } from '../../constants/theme';
+import { icons } from '../../constants';
+import { useFocusEffect } from '@react-navigation/native';
+import { API } from '../../constants/api';
+import { format } from 'date-fns';
 import CartEmpty from '../../assets/image/search-empty.png';
 import { SwipeListView, SwipeRow } from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
 import Toast from 'react-native-toast-message';
 import DatePicker from 'react-native-date-picker';
 import database from '@react-native-firebase/database';
-import {checkSystemState} from '../../common/utils';
-const Home = ({navigation}) => {
+import { checkSystemState } from '../../common/utils';
+import ModalAlertSignOut from '../../components/ModalAlertSignOut';
+import { err } from 'react-native-svg/lib/typescript/xml';
+const Home = ({ navigation }) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
@@ -92,6 +94,8 @@ const Home = ({navigation}) => {
   const swipeListViewRef = useRef();
   const isMountingRef = useRef(false);
   const [currentStatus, setCurrentStatus] = useState({ display: 'Tất cả', value: '' });
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [clickSignOut, setClickSignOut] = useState(false);
 
   const print = async orderId => {
     setLoading(true);
@@ -108,13 +112,13 @@ const Home = ({navigation}) => {
           },
         },
       )
-      .then(async res => {
-        if (res.status === 403 || res.status === 401) {
-          const tokenId = await auth().currentUser.getIdToken(true);
-          // Cac loi 403 khac thi handle duoi day neu co
-        }
-        return res.text();
-      })
+        .then(async res => {
+          if (res.status === 403 || res.status === 401) {
+            await auth().currentUser.getIdToken(true).catch(async (err) => await AsyncStorage.setItem('isDisableAccount', '1'));
+            // Cac loi 403 khac thi handle duoi day neu co
+          }
+          return res.text();
+        })
         .then(respond => {
           // console.log('order group', respond);
           if (respond.error) {
@@ -149,45 +153,6 @@ const Home = ({navigation}) => {
     }
   };
 
-  const onAuthStateChange = async userInfo => {
-    // console.log(userInfo);
-    if (initializing) {
-      setInitializing(false);
-    }
-    if (userInfo) {
-      // check if user sessions is still available. If yes => redirect to another screen
-      const userTokenId = await userInfo
-        .getIdToken(true)
-        .then(token => token)
-        .catch(async e => {
-          console.log(e);
-          return null;
-        });
-      if (!userTokenId) {
-        // sessions end. (revoke refresh token like password change, disable account, ....)
-        await AsyncStorage.removeItem('userInfo');
-        // navigation.navigate('Login');
-        navigation.reset({
-          index: 0,
-          routes: [{name: 'Login'}],
-        });
-        return;
-      }
-      const currentUser = await AsyncStorage.getItem('userInfo');
-      // console.log('currentUser', currentUser);
-      setCurrentUser(JSON.parse(currentUser));
-    } else {
-      // no sessions found.
-      console.log('user is not logged in');
-      await AsyncStorage.removeItem('userInfo');
-      // navigation.navigate('Login');
-      navigation.reset({
-        index: 0,
-        routes: [{name: 'Login'}],
-      });
-    }
-  };
-
   const getConsolidationArea = async (pickupPointId, orderStatus) => {
     const tokenId = await auth().currentUser.getIdToken();
     if (tokenId) {
@@ -202,13 +167,13 @@ const Home = ({navigation}) => {
           },
         },
       )
-      .then(async res => {
-        if (res.status === 403 || res.status === 401) {
-          const tokenId = await auth().currentUser.getIdToken(true);
-          // Cac loi 403 khac thi handle duoi day neu co
-        }
-        return res.json();
-      })
+        .then(async res => {
+          if (res.status === 403 || res.status === 401) {
+            await auth().currentUser.getIdToken(true).catch(async (err) => await AsyncStorage.setItem('isDisableAccount', '1'));
+            // Cac loi 403 khac thi handle duoi day neu co
+          }
+          return res.json();
+        })
         .then(respond => {
           // console.log('order group', respond);
           if (respond.error) {
@@ -256,7 +221,7 @@ const Home = ({navigation}) => {
       }
 
       if (consolidationAreaEditRequest.status === 403 || consolidationAreaEditRequest.status === 401) {
-        const tokenId = await auth().currentUser.getIdToken(true);
+        await auth().currentUser.getIdToken(true).catch(async (err) => await AsyncStorage.setItem('isDisableAccount', '1'));
       }
 
       if (consolidationAreaEditRequest.status === 200) {
@@ -275,7 +240,7 @@ const Home = ({navigation}) => {
   const fetchOrderWithFilter = async () => {
     setLoading(true);
     console.log('fetch order with filter');
-    const tokenId = await auth().currentUser.getIdToken();
+    const tokenId = await auth().currentUser.getIdToken().catch(err => console.log(err));
     const sortItem = selectSort.find(item => item.active === true);
     setTempSelectedSortId(sortItem ? sortItem.id : '');
     if (tokenId) {
@@ -304,7 +269,9 @@ const Home = ({navigation}) => {
       )
         .then(async res => {
           if (res.status === 403 || res.status === 401) {
-            const tokenId = await auth().currentUser.getIdToken(true);
+            if (auth().currentUser) {
+              await auth().currentUser.getIdToken(true).catch(async (err) => await AsyncStorage.setItem('isDisableAccount', '1'));
+            }
             // Cac loi 403 khac thi handle duoi day neu co
           }
           return res.json();
@@ -319,8 +286,8 @@ const Home = ({navigation}) => {
           setLoading(false);
         })
         .catch(err => {
-          console.log(err);
-          setLoading(false);
+          console.log('fetch error:', err);
+          setLoading(false)
         });
     }
   };
@@ -329,9 +296,9 @@ const Home = ({navigation}) => {
     setSelectSort(
       selectSort.map(item => {
         if (item.id === tempSelectedSortId) {
-          return {...item, active: true};
+          return { ...item, active: true };
         }
-        return {...item, active: false};
+        return { ...item, active: false };
       }),
     );
     setSelectedTimeFrameId(tempSelectedTimeFrameId);
@@ -377,7 +344,7 @@ const Home = ({navigation}) => {
           )
             .then(async res => {
               if (res.status === 403 || res.status === 401) {
-                const tokenId = await auth().currentUser.getIdToken(true);
+                await auth().currentUser.getIdToken(true).catch(async (err) => await AsyncStorage.setItem('isDisableAccount', '1'));
                 // Cac loi 403 khac thi handle duoi day neu co
               }
               return res.text();
@@ -411,7 +378,7 @@ const Home = ({navigation}) => {
           )
             .then(async res => {
               if (res.status === 403 || res.status === 401) {
-                const tokenId = await auth().currentUser.getIdToken(true);
+                await auth().currentUser.getIdToken(true).catch(async (err) => await AsyncStorage.setItem('isDisableAccount', '1'));
                 // Cac loi 403 khac thi handle duoi day neu co
               }
               return res.text();
@@ -439,17 +406,27 @@ const Home = ({navigation}) => {
     setVisible(false);
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      // auth().currentUser.reload()
-      const subscriber = auth().onAuthStateChanged(
-        async userInfo => await onAuthStateChange(userInfo),
-      );
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     // auth().currentUser.reload()
+  //     const subscriber = auth().onAuthStateChanged(
+  //       async userInfo => await onAuthStateChange(userInfo),
+  //     );
+  //     return subscriber;
+  //     // eslint-disable-next-line react-hooks/exhaustive-deps
+  //   }, []),
+  // );
 
-      return subscriber;
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []),
-  );
+  useEffect(() => {
+    if (clickSignOut) {
+      auth()
+        .signOut()
+        .then(async () => {
+          await AsyncStorage.removeItem('userInfo');
+        })
+        .catch(e => console.log(e));
+    }
+  }, [clickSignOut]);
 
   // init pickup point
   useFocusEffect(
@@ -497,6 +474,18 @@ const Home = ({navigation}) => {
     }, [selectSort, selectedDate, selectedTimeFrameId]),
   );
 
+  //get Current User Info
+  useFocusEffect(
+    useCallback(() => {
+      const getCurrentUser = async () => {
+        const currentUser = await AsyncStorage.getItem('userInfo');
+        // console.log(JSON.parse(currentUser));
+        setCurrentUser(JSON.parse(currentUser));
+      }
+      getCurrentUser();
+    }, []),
+  );
+
   useEffect(() => {
     isMountingRef.current = true;
   }, []);
@@ -520,7 +509,7 @@ const Home = ({navigation}) => {
     pickupPoint,
   ]);
 
-  const ModalSortItem = ({item}) => {
+  const ModalSortItem = ({ item }) => {
     return (
       <TouchableOpacity
         onPress={() => {
@@ -529,37 +518,37 @@ const Home = ({navigation}) => {
         style={
           item.id == tempSelectedSortId
             ? {
-                borderColor: COLORS.primary,
-                borderWidth: 1,
-                borderRadius: 10,
-                margin: 5,
-              }
+              borderColor: COLORS.primary,
+              borderWidth: 1,
+              borderRadius: 10,
+              margin: 5,
+            }
             : {
-                borderColor: '#c8c8c8',
-                borderWidth: 0.2,
-                borderRadius: 10,
-                margin: 5,
-              }
+              borderColor: '#c8c8c8',
+              borderWidth: 0.2,
+              borderRadius: 10,
+              margin: 5,
+            }
         }>
         <Text
           style={
             item.id == tempSelectedSortId
               ? {
-                  width: 150,
-                  paddingVertical: 10,
-                  textAlign: 'center',
-                  color: COLORS.primary,
+                width: 150,
+                paddingVertical: 10,
+                textAlign: 'center',
+                color: COLORS.primary,
 
-                  fontSize: 12,
-                }
+                fontSize: 12,
+              }
               : {
-                  width: 150,
-                  paddingVertical: 10,
-                  textAlign: 'center',
-                  color: 'black',
+                width: 150,
+                paddingVertical: 10,
+                textAlign: 'center',
+                color: 'black',
 
-                  fontSize: 12,
-                }
+                fontSize: 12,
+              }
           }>
           {item.name}
         </Text>
@@ -578,7 +567,7 @@ const Home = ({navigation}) => {
         <View style={styles.header}>
           <View style={styles.areaAndLogout}>
             <View style={styles.area}>
-              <Text style={{fontSize: 16}}>Khu vực:</Text>
+              <Text style={{ fontSize: 16 }}>Khu vực:</Text>
               <View style={styles.pickArea}>
                 <TouchableOpacity
                   onPress={() => {
@@ -640,7 +629,7 @@ const Home = ({navigation}) => {
                 }}>
                 <Image
                   resizeMode="contain"
-                  style={{width: 38, height: 38}}
+                  style={{ width: 38, height: 38 }}
                   source={{
                     uri: currentUser?.avatarUrl,
                   }}
@@ -661,14 +650,10 @@ const Home = ({navigation}) => {
                     backgroundColor: 'rgb(240,240,240)',
                   }}
                   onPress={() => {
-                    auth()
-                      .signOut()
-                      .then(async () => {
-                        await AsyncStorage.removeItem('userInfo');
-                      })
-                      .catch(e => console.log(e));
+                    setClickSignOut(true);
+
                   }}>
-                  <Text style={{color: 'red', fontWeight: 'bold'}}>
+                  <Text style={{ color: 'red', fontWeight: 'bold' }}>
                     Đăng xuất
                   </Text>
                 </TouchableOpacity>
@@ -681,7 +666,7 @@ const Home = ({navigation}) => {
             style={{
               flexDirection: 'row',
             }}>
-            <View style={{flex: 6}}>
+            <View style={{ flex: 6 }}>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {orderStatus.map((item, index) => (
                   <TouchableOpacity
@@ -749,9 +734,9 @@ const Home = ({navigation}) => {
         <View style={styles.body}>
           {/* Order list */}
           {orderList.length === 0 ? (
-            <View style={{alignItems: 'center', justifyContent: 'center'}}>
+            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
               <Image
-                style={{width: '100%', height: '50%'}}
+                style={{ width: '100%', height: '50%' }}
                 resizeMode="contain"
                 source={CartEmpty}
               />
@@ -766,7 +751,7 @@ const Home = ({navigation}) => {
               </Text>
             </View>
           ) : (
-            <View style={{height: '87%'}}>
+            <View style={{ height: '87%' }}>
               <SwipeListView
                 showsVerticalScrollIndicator={false}
                 showsHorizontalScrollIndicator={false}
@@ -801,7 +786,7 @@ const Home = ({navigation}) => {
                           orderSuccess: false,
                         });
                       }}>
-                      <View style={{flexDirection: 'row', paddingBottom: 9}}>
+                      <View style={{ flexDirection: 'row', paddingBottom: 9 }}>
                         <Text
                           style={{
                             flex: 13,
@@ -945,7 +930,7 @@ const Home = ({navigation}) => {
                           alignItems: 'center',
                           justifyContent: 'space-between',
                         }}>
-                        <View style={{flexDirection: 'column', gap: 8}}>
+                        <View style={{ flexDirection: 'column', gap: 8 }}>
                           <Text
                             style={{
                               fontSize: 17,
@@ -982,12 +967,12 @@ const Home = ({navigation}) => {
                             Khung giờ:{' '}
                             {data.item?.timeFrame
                               ? `${data.item?.timeFrame?.fromHour.slice(
-                                  0,
-                                  5,
-                                )} đến ${data.item?.timeFrame?.toHour.slice(
-                                  0,
-                                  5,
-                                )}`
+                                0,
+                                5,
+                              )} đến ${data.item?.timeFrame?.toHour.slice(
+                                0,
+                                5,
+                              )}`
                               : ''}
                           </Text>
                           {data.item?.productConsolidationArea?.address && (
@@ -1051,7 +1036,7 @@ const Home = ({navigation}) => {
                           <Image
                             source={icons.print}
                             resizeMode="contain"
-                            style={{width: 40, height: 40, tintColor: 'white'}}
+                            style={{ width: 40, height: 40, tintColor: 'white' }}
                           />
                         </View>
                       </TouchableOpacity>
@@ -1144,14 +1129,14 @@ const Home = ({navigation}) => {
                     )}
                   </View>
                 )}
-                disableLeftSwipe={(currentStatus === '' || currentStatus === 'PACKAGED' || currentStatus === 'CANCEL') ? true : false}
+                disableLeftSwipe={(currentStatus.value === '' || currentStatus.value === 'PACKAGED' || currentStatus.value === 'CANCEL') ? true : false}
                 disableRightSwipe={
-                  (currentStatus === '' || currentStatus === 'PACKAGED' || currentStatus === 'CANCEL' || currentStatus === 'PROCESSING')
+                  (currentStatus.value === '' || currentStatus.value === 'PACKAGED' || currentStatus.value === 'CANCEL' || currentStatus.value === 'PROCESSING')
                     ? true
                     : false
                 }
-                leftOpenValue={currentStatus === 'PACKAGING' ? 120 : 0}
-                rightOpenValue={currentStatus === 'PROCESSING' ? -120 : -200}
+                leftOpenValue={currentStatus.value === 'PACKAGING' ? 120 : 0}
+                rightOpenValue={currentStatus.value === 'PROCESSING' ? -120 : -200}
               />
             </View>
           )}
@@ -1248,37 +1233,37 @@ const Home = ({navigation}) => {
                         style={
                           item.id === tempSelectedTimeFrameId
                             ? {
-                                borderColor: COLORS.primary,
-                                borderWidth: 1,
-                                borderRadius: 10,
-                                margin: 5,
-                              }
+                              borderColor: COLORS.primary,
+                              borderWidth: 1,
+                              borderRadius: 10,
+                              margin: 5,
+                            }
                             : {
-                                borderColor: '#c8c8c8',
-                                borderWidth: 0.2,
-                                borderRadius: 10,
-                                margin: 5,
-                              }
+                              borderColor: '#c8c8c8',
+                              borderWidth: 0.2,
+                              borderRadius: 10,
+                              margin: 5,
+                            }
                         }>
                         <Text
                           style={
                             item.id === tempSelectedTimeFrameId
                               ? {
-                                  width: 150,
-                                  paddingVertical: 10,
-                                  textAlign: 'center',
-                                  color: COLORS.primary,
+                                width: 150,
+                                paddingVertical: 10,
+                                textAlign: 'center',
+                                color: COLORS.primary,
 
-                                  fontSize: 12,
-                                }
+                                fontSize: 12,
+                              }
                               : {
-                                  width: 150,
-                                  paddingVertical: 10,
-                                  textAlign: 'center',
-                                  color: 'black',
+                                width: 150,
+                                paddingVertical: 10,
+                                textAlign: 'center',
+                                color: 'black',
 
-                                  fontSize: 12,
-                                }
+                                fontSize: 12,
+                              }
                           }>
                           {item.fromHour.slice(0, 5)} đến{' '}
                           {item.toHour.slice(0, 5)}
@@ -1402,7 +1387,7 @@ const Home = ({navigation}) => {
                       </Text>
                     </View>
                     <FlatList
-                      style={{maxHeight: 170}}
+                      style={{ maxHeight: 170 }}
                       data={consolidationAreaList}
                       renderItem={data => (
                         <TouchableOpacity
@@ -1425,7 +1410,7 @@ const Home = ({navigation}) => {
                             }}>
                             <Image
                               resizeMode="contain"
-                              style={{width: 20, height: 20}}
+                              style={{ width: 20, height: 20 }}
                               source={icons.location}
                               tintColor={
                                 data.item.id === selectedConsolidationAreaId
@@ -1555,7 +1540,7 @@ const Home = ({navigation}) => {
                 <FlatList
                   showsVerticalScrollIndicator={false}
                   showsHorizontalScrollIndicator={false}
-                  style={{maxHeight: 200, marginHorizontal: 7}}
+                  style={{ maxHeight: 200, marginHorizontal: 7 }}
                   data={consolidationAreaList}
                   renderItem={data => (
                     <TouchableOpacity
@@ -1578,7 +1563,7 @@ const Home = ({navigation}) => {
                         }}>
                         <Image
                           resizeMode="contain"
-                          style={{width: 20, height: 20}}
+                          style={{ width: 20, height: 20 }}
                           source={icons.location}
                           tintColor={
                             data.item.id === selectedConsolidationAreaId
@@ -1649,6 +1634,8 @@ const Home = ({navigation}) => {
               </View>
             </Pressable>
           </Modal>
+          {/* Modal alert disable */}
+          <ModalAlertSignOut alertVisible={alertVisible} />
         </View>
         {loading && <LoadingScreen />}
       </View>
