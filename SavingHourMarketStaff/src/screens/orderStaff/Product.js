@@ -11,21 +11,21 @@ import {
   Modal,
   Pressable,
 } from 'react-native';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { COLORS, FONTS } from '../../constants/theme';
-import { icons } from '../../constants';
-import { useFocusEffect } from '@react-navigation/native';
-import { API } from '../../constants/api';
-import { format } from 'date-fns';
+import {COLORS, FONTS} from '../../constants/theme';
+import {icons} from '../../constants';
+import {useFocusEffect} from '@react-navigation/native';
+import {API} from '../../constants/api';
+import {format} from 'date-fns';
 import LoadingScreen from '../../components/LoadingScreen';
 import CartEmpty from '../../assets/image/search-empty.png';
-import { useRef } from 'react';
+import {useRef} from 'react';
 import database from '@react-native-firebase/database';
-import { checkSystemState } from '../../common/utils';
+import {checkSystemState} from '../../common/utils';
 
-const Product = ({ navigation }) => {
+const Product = ({navigation}) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
@@ -41,7 +41,8 @@ const Product = ({ navigation }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [supermarkets, setSupermarkets] = useState([]);
-  const [tempSupermarketFilterName, setTempSupermarketFilterName] = useState('');
+  const [tempSupermarketFilterName, setTempSupermarketFilterName] =
+    useState('');
   const [supermarketFilterName, setSupermarketFilterName] = useState('');
 
   // const onAuthStateChange = async userInfo => {
@@ -81,9 +82,10 @@ const Product = ({ navigation }) => {
       const tokenId = await auth().currentUser.getIdToken();
       if (tokenId) {
         setLoading(true);
-        const url = pickupPoint && pickupPoint.id
-          ? `${API.baseURL}/api/order/packageStaff/getProductsOrderAfterPackaging?pickupPointId=${pickupPoint.id}`
-          : `${API.baseURL}/api/order/packageStaff/getProductsOrderAfterPackaging`;
+        const url =
+          pickupPoint && pickupPoint.id
+            ? `${API.baseURL}/api/order/packageStaff/getProductsOrderAfterPackaging?pickupPointId=${pickupPoint.id}`
+            : `${API.baseURL}/api/order/packageStaff/getProductsOrderAfterPackaging`;
 
         try {
           const response = await fetch(url, {
@@ -95,15 +97,23 @@ const Product = ({ navigation }) => {
           });
 
           if (response.status === 403 || response.status === 401) {
-            await auth().currentUser.getIdToken(true).catch(async (err) => await AsyncStorage.setItem('isDisableAccount', '1'));
+            const tokenIdCheck = await auth()
+              .currentUser.getIdToken(true)
+              .catch(async err => {
+                await AsyncStorage.setItem('isDisableAccount', '1');
+                return null;
+              });
+            if (!tokenIdCheck) {
+              throw new Error();
+            }
           }
 
           const data = await response.json();
 
           const groupedBySupermarket = {};
-          Object.keys(data).forEach((supermarketId) => {
+          Object.keys(data).forEach(supermarketId => {
             const itemsForSupermarket = data[supermarketId];
-            itemsForSupermarket.forEach((item) => {
+            itemsForSupermarket.forEach(item => {
               const supermarketName = item.supermarket.name;
               const supermarketAddress = item.supermarketAddress.address;
 
@@ -118,14 +128,16 @@ const Product = ({ navigation }) => {
               }
 
               // Push the item into the respective supermarket's address group
-              groupedBySupermarket[supermarketName][supermarketAddress].push(item);
+              groupedBySupermarket[supermarketName][supermarketAddress].push(
+                item,
+              );
             });
           });
-          setSupermarkets(Object.keys(groupedBySupermarket))
+          setSupermarkets(Object.keys(groupedBySupermarket));
           if (!data.error) {
             if (supermarketFilterName) {
               const filteredByKeys = {};
-              Object.keys(groupedBySupermarket).forEach((key) => {
+              Object.keys(groupedBySupermarket).forEach(key => {
                 if (key === supermarketFilterName) {
                   filteredByKeys[key] = groupedBySupermarket[key];
                 }
@@ -169,7 +181,7 @@ const Product = ({ navigation }) => {
         if (pickupPointStorage) {
           setPickupPoint(pickupPointStorage);
         } else {
-          // trick useEffect to trigger 
+          // trick useEffect to trigger
           setPickupPoint({
             id: null,
           });
@@ -219,19 +231,19 @@ const Product = ({ navigation }) => {
         const currentUser = await AsyncStorage.getItem('userInfo');
         // console.log(JSON.parse(currentUser));
         setCurrentUser(JSON.parse(currentUser));
-      }
+      };
       getCurrentUser();
     }, []),
   );
 
-  const Item = ({ item, index }) => {
+  const Item = ({item, index}) => {
     return (
       <TouchableOpacity
         onPress={() => {
           navigation.navigate('OrderDetail', {
             id: item.orderPackage.id,
             orderSuccess: false,
-          })
+          });
         }}
         key={index}
         style={{
@@ -251,7 +263,7 @@ const Product = ({ navigation }) => {
           shadowRadius: 20,
           elevation: 6,
           marginHorizontal: 5,
-          marginVertical: 12
+          marginVertical: 12,
         }}>
         <View
           style={{
@@ -267,13 +279,13 @@ const Product = ({ navigation }) => {
               backgroundColor: 'white',
               marginVertical: 10,
               marginLeft: 3,
-              maxWidth: '95%'
+              maxWidth: '95%',
             }}>
             <Image
               source={{
                 uri: item.imageUrlImageList[0],
               }}
-              style={{ width: 110, height: 110 }}
+              style={{width: 110, height: 110}}
             />
             <View
               style={{
@@ -343,7 +355,7 @@ const Product = ({ navigation }) => {
         <View style={styles.header}>
           <View style={styles.areaAndLogout}>
             <View style={styles.area}>
-              <Text style={{ fontSize: 16 }}>Khu vực:</Text>
+              <Text style={{fontSize: 16}}>Khu vực:</Text>
               <View style={styles.pickArea}>
                 <TouchableOpacity
                   onPress={() => {
@@ -355,7 +367,7 @@ const Product = ({ navigation }) => {
                   <View style={styles.pickAreaItem}>
                     <Image
                       resizeMode="contain"
-                      style={{ width: 30, height: 20, tintColor: COLORS.primary }}
+                      style={{width: 30, height: 20, tintColor: COLORS.primary}}
                       source={icons.location}
                     />
 
@@ -364,7 +376,7 @@ const Product = ({ navigation }) => {
                         fontSize: 16,
                         fontFamily: 'Roboto',
                         color: 'black',
-                        maxWidth: 270
+                        maxWidth: 270,
                       }}
                       numberOfLines={1}>
                       {pickupPoint && pickupPoint.id
@@ -402,7 +414,7 @@ const Product = ({ navigation }) => {
                 }}>
                 <Image
                   resizeMode="contain"
-                  style={{ width: 38, height: 38 }}
+                  style={{width: 38, height: 38}}
                   source={{
                     uri: currentUser?.avatarUrl,
                   }}
@@ -430,7 +442,7 @@ const Product = ({ navigation }) => {
                       })
                       .catch(e => console.log(e));
                   }}>
-                  <Text style={{ color: 'red', fontWeight: 'bold' }}>
+                  <Text style={{color: 'red', fontWeight: 'bold'}}>
                     Đăng xuất
                   </Text>
                 </TouchableOpacity>
@@ -440,7 +452,7 @@ const Product = ({ navigation }) => {
           <View
             style={{
               flexDirection: 'row',
-              marginBottom: 10
+              marginBottom: 10,
             }}>
             <Text
               style={{
@@ -500,7 +512,7 @@ const Product = ({ navigation }) => {
                 marginTop: 12,
               }}>
               <Image
-                style={{ width: '100%', height: '50%' }}
+                style={{width: '100%', height: '50%'}}
                 resizeMode="contain"
                 source={CartEmpty}
               />
@@ -519,8 +531,8 @@ const Product = ({ navigation }) => {
               showsVerticalScrollIndicator={false}
               showsHorizontalScrollIndicator={false}
               data={Object.keys(productsPackaging)} // Replace 'yourData' with your actual data object
-              keyExtractor={(item) => item.toString()}
-              renderItem={({ item: supermarketName }) => (
+              keyExtractor={item => item.toString()}
+              renderItem={({item: supermarketName}) => (
                 <>
                   <Text
                     style={{
@@ -548,42 +560,45 @@ const Product = ({ navigation }) => {
                     Siêu thị: {supermarketName}
                   </Text>
 
-                  {Object.keys(productsPackaging[supermarketName]).map((address, index) => (
-                    <View key={index}>
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          marginTop: 13,
-                        }}>
-                        <Image
-                          resizeMode="contain"
-                          style={{ width: 25, height: 25, marginTop: 10 }}
-                          source={icons.location}
-                        />
-                        <Text
+                  {Object.keys(productsPackaging[supermarketName]).map(
+                    (address, index) => (
+                      <View key={index}>
+                        <View
                           style={{
-                            fontSize: 16,
-                            color: 'black',
-                            fontFamily: 'Roboto',
-                            marginLeft: 7,
-                            width: '90%',
+                            flexDirection: 'row',
+                            marginTop: 13,
                           }}>
-                          Chi nhánh: {address}
-                        </Text>
+                          <Image
+                            resizeMode="contain"
+                            style={{width: 25, height: 25, marginTop: 10}}
+                            source={icons.location}
+                          />
+                          <Text
+                            style={{
+                              fontSize: 16,
+                              color: 'black',
+                              fontFamily: 'Roboto',
+                              marginLeft: 7,
+                              width: '90%',
+                            }}>
+                            Chi nhánh: {address}
+                          </Text>
+                        </View>
+                        {productsPackaging[supermarketName][address].map(
+                          (item, idx) => (
+                            <Item key={idx} item={item} index={idx} />
+                          ),
+                        )}
                       </View>
-                      {productsPackaging[supermarketName][address].map((item, idx) => (
-                        <Item key={idx} item={item} index={idx} />
-                      ))}
-                    </View>
-                  ))}
-                  <View style={{ borderBottomWidth: 0.2, borderColor: 'grey' }} />
+                    ),
+                  )}
+                  <View style={{borderBottomWidth: 0.2, borderColor: 'grey'}} />
                 </>
               )}
               contentContainerStyle={{
                 paddingBottom: 150, // Ensure that the FlatList takes up the full height
               }}
             />
-
           )}
         </View>
         <Modal
@@ -653,37 +668,37 @@ const Product = ({ navigation }) => {
                       style={
                         item === tempSupermarketFilterName
                           ? {
-                            borderColor: COLORS.primary,
-                            borderWidth: 1,
-                            borderRadius: 10,
-                            margin: 5,
-                          }
+                              borderColor: COLORS.primary,
+                              borderWidth: 1,
+                              borderRadius: 10,
+                              margin: 5,
+                            }
                           : {
-                            borderColor: '#c8c8c8',
-                            borderWidth: 0.2,
-                            borderRadius: 10,
-                            margin: 5,
-                          }
+                              borderColor: '#c8c8c8',
+                              borderWidth: 0.2,
+                              borderRadius: 10,
+                              margin: 5,
+                            }
                       }>
                       <Text
                         style={
                           item === tempSupermarketFilterName
                             ? {
-                              width: 150,
-                              paddingVertical: 10,
-                              textAlign: 'center',
-                              color: COLORS.primary,
+                                width: 150,
+                                paddingVertical: 10,
+                                textAlign: 'center',
+                                color: COLORS.primary,
 
-                              fontSize: 12,
-                            }
+                                fontSize: 12,
+                              }
                             : {
-                              width: 150,
-                              paddingVertical: 10,
-                              textAlign: 'center',
-                              color: 'black',
+                                width: 150,
+                                paddingVertical: 10,
+                                textAlign: 'center',
+                                color: 'black',
 
-                              fontSize: 12,
-                            }
+                                fontSize: 12,
+                              }
                         }>
                         {item}
                       </Text>
@@ -731,7 +746,6 @@ const Product = ({ navigation }) => {
                   <Text style={styles.textStyle}>Áp dụng</Text>
                 </TouchableOpacity>
               </View>
-
             </View>
           </Pressable>
         </Modal>
@@ -764,7 +778,7 @@ const styles = StyleSheet.create({
   body: {
     flex: 8,
     paddingHorizontal: 20,
-    marginTop: 5
+    marginTop: 5,
   },
   areaAndLogout: {
     paddingTop: 10,
@@ -790,7 +804,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     alignItems: 'center',
-  }, centeredView: {
+  },
+  centeredView: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',

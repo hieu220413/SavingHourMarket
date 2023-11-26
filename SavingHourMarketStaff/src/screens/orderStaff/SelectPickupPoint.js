@@ -21,7 +21,7 @@ import CartEmpty from '../../assets/image/search-empty.png';
 import {SwipeListView} from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
 import database from '@react-native-firebase/database';
-import { checkSystemState } from '../../common/utils';
+import {checkSystemState} from '../../common/utils';
 
 const SelectPickupPoint = ({navigation, route}) => {
   // listen to system state
@@ -102,7 +102,15 @@ const SelectPickupPoint = ({navigation, route}) => {
             })
               .then(async res => {
                 if (res.status === 403 || res.status === 401) {
-                  await auth().currentUser.getIdToken(true).catch(async (err) => await AsyncStorage.setItem('isDisableAccount', '1'));
+                  const tokenIdCheck = await auth()
+                    .currentUser.getIdToken(true)
+                    .catch(async err => {
+                      await AsyncStorage.setItem('isDisableAccount', '1');
+                      return null;
+                    });
+                  if (!tokenIdCheck) {
+                    throw new Error();
+                  }
                   // Cac loi 403 khac thi handle duoi day neu co
                 }
                 return res.json();
@@ -131,18 +139,19 @@ const SelectPickupPoint = ({navigation, route}) => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => {
-            if (
-              route.params.isFromOrderGroupRoute &&
-              route.params.isFromOrderGroupRoute === true
-            ) {
-              navigation.navigate('OrderGroupForOrderStaff', {
-                goBackFromPickupPoint: true
-              });
-              return;
-            }
-            navigation.goBack();
-          }}>
+          <TouchableOpacity
+            onPress={() => {
+              if (
+                route.params.isFromOrderGroupRoute &&
+                route.params.isFromOrderGroupRoute === true
+              ) {
+                navigation.navigate('OrderGroupForOrderStaff', {
+                  goBackFromPickupPoint: true,
+                });
+                return;
+              }
+              navigation.goBack();
+            }}>
             <Image
               source={icons.leftArrow}
               resizeMode="contain"
@@ -170,7 +179,7 @@ const SelectPickupPoint = ({navigation, route}) => {
               paddingBottom: 20,
               borderBottomColor: '#decbcb',
               borderBottomWidth: 0.75,
-              marginHorizontal: 10
+              marginHorizontal: 10,
             }}>
             Các điểm giao hàng bạn phụ trách:
           </Text>
@@ -183,13 +192,16 @@ const SelectPickupPoint = ({navigation, route}) => {
                 key={item.id}
                 onPress={async () => {
                   //   storedPickupPoint(item);
-                  await AsyncStorage.setItem('pickupPoint', JSON.stringify(item));
+                  await AsyncStorage.setItem(
+                    'pickupPoint',
+                    JSON.stringify(item),
+                  );
                   // route.params.setPickupPoint(item);
                   if (
                     route.params.isFromOrderGroupRoute &&
                     route.params.isFromOrderGroupRoute === true
                   ) {
-                    console.log('is OrderGroupForOrderStaff')
+                    console.log('is OrderGroupForOrderStaff');
                     navigation.navigate('OrderGroupForOrderStaff');
                     return;
                   }
@@ -197,7 +209,7 @@ const SelectPickupPoint = ({navigation, route}) => {
                     route.params.isFromProductPackagingRoute &&
                     route.params.isFromProductPackagingRoute === true
                   ) {
-                    console.log('is Product')
+                    console.log('is Product');
                     navigation.navigate('Product');
                     return;
                   }
