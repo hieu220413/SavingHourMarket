@@ -17,7 +17,7 @@ const QrCodeScanner = ({ navigation }) => {
     // listen to system state
     useFocusEffect(
         useCallback(() => {
-            checkSystemState();
+            checkSystemState(navigation);
         }, []),
     );
 

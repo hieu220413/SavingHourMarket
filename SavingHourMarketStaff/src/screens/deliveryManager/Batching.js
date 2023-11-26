@@ -37,7 +37,7 @@ const Batching = ({navigation}) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
-        checkSystemState();
+        checkSystemState(navigation);
       }, []),
   );
 
