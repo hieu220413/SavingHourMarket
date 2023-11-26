@@ -130,7 +130,7 @@ const PickStaff = ({navigation, route}) => {
               )
                 .then(res => res.json())
                 .then(respond => {
-                  console.log('staff:', respond.staffList[2]);
+                  console.log('staff:', respond.staffList[0]);
                   let res = [];
                   if (staff) {
                     res = respond.staffList.filter(item => {
@@ -424,11 +424,15 @@ const PickStaff = ({navigation, route}) => {
               {staffList.map((item, index) => (
                 <View
                   key={item.id}
-                  style={{
-                    backgroundColor: 'white',
-                    marginBottom: 20,
-                    // borderRadius: 10,
-                  }}>
+                  style={
+                    item?.isAvailableForDelivering === true
+                      ? {
+                          backgroundColor: '#FFFFFF',
+                          marginBottom: 20,
+                          // borderRadius: 10,
+                        }
+                      : {backgroundColor: '#E5E5E5', marginBottom: 20}
+                  }>
                   {/* List staff */}
                   <Pressable
                     onPress={() => {
@@ -490,8 +494,24 @@ const PickStaff = ({navigation, route}) => {
                           }}>
                           Email : {item?.email}
                         </Text>
+                        {item?.isAvailableForDelivering === false ? (
+                          <Text
+                            style={{
+                              fontSize: 17,
+                              width: 320,
+                              fontWeight: 'bold',
+                              fontFamily: 'Roboto',
+                              color: 'red',
+                            }}>
+                            Nhân viên này đã đảm nhận nhóm đơn khác trong cùng
+                            khung giờ
+                          </Text>
+                        ) : null}
                       </View>
                       <CheckBox
+                        disabled={
+                          item?.isAvailableForDelivering === true ? false : true
+                        }
                         uncheckedCheckBoxColor="#000000"
                         checkedCheckBoxColor={COLORS.primary}
                         onClick={() => {
@@ -609,7 +629,7 @@ const PickStaff = ({navigation, route}) => {
             footer={
               <ModalFooter>
                 <ModalButton
-                  // textStyle={{color: 'red'}}
+                  textStyle={{color: 'grey'}}
                   text="Đóng"
                   onPress={() => {
                     setOpenValidateDialog(false);
@@ -654,14 +674,14 @@ const PickStaff = ({navigation, route}) => {
             footer={
               <ModalFooter>
                 <ModalButton
-                  textStyle={{color: 'red'}}
+                  textStyle={{color: 'grey'}}
                   text="Đóng"
                   onPress={() => {
                     setOpenConfirmModal(false);
                   }}
                 />
                 <ModalButton
-                  // textStyle={{color: 'red'}}
+                  textStyle={{color: COLORS.primary}}
                   text="Xác nhận"
                   onPress={() => {
                     setOpenConfirmModal(false);

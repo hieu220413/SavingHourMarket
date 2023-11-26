@@ -378,6 +378,24 @@ const DailyReportForManager = ({navigation}) => {
                   </View>
                   <View
                     style={{
+                      position: 'absolute',
+                      right: 10,
+                      top: 5,
+                    }}>
+                    <Image
+                      style={{
+                        width: 35,
+                        height: 35,
+                        borderRadius: 40,
+                      }}
+                      resizeMode="contain"
+                      source={{
+                        uri: `${item?.staff.avatarUrl}`,
+                      }}
+                    />
+                  </View>
+                  <View
+                    style={{
                       flexDirection: 'column',
                       paddingTop: 10,
                       gap: 7,
