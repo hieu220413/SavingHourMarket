@@ -31,6 +31,7 @@ import Modal, {
   SlideAnimation,
   ScaleAnimation,
 } from 'react-native-modals';
+import database from '@react-native-firebase/database';
 
 const Profile = ({navigation}) => {
   const [initializing, setInitializing] = useState(true);
@@ -135,6 +136,25 @@ const Profile = ({navigation}) => {
       });
       return subscriber;
       // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
+  );
+
+  // system status check
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+          } else {
+            // setSystemStatus(snapshot.val());
+          }
+        });
     }, []),
   );
 
@@ -580,7 +600,6 @@ const Profile = ({navigation}) => {
           <ModalFooter>
             <ModalButton
               text="Ở lại trang"
-              textStyle={{color: 'red'}}
               onPress={() => {
                 setOpenAuthModal(false);
               }}
@@ -589,8 +608,7 @@ const Profile = ({navigation}) => {
               text="Đăng nhập"
               onPress={async () => {
                 try {
-                  await AsyncStorage.removeItem('userInfo');
-                  await AsyncStorage.removeItem('CartList');
+                  await AsyncStorage.clear();
                   navigation.navigate('Login');
                   setOpenAuthModal(false);
                 } catch (error) {

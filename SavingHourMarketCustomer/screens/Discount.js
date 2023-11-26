@@ -26,6 +26,7 @@ import Modal, {
 } from 'react-native-modals';
 import Toast from 'react-native-toast-message';
 import {ScrollView} from 'react-native-gesture-handler';
+import database from '@react-native-firebase/database';
 
 const Discount = ({navigation}) => {
   const [discounts, setDiscounts] = useState([]);
@@ -51,6 +52,25 @@ const Discount = ({navigation}) => {
       visibilityTime: 1000,
     });
   };
+
+  // system status check
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+          } else {
+            // setSystemStatus(snapshot.val());
+          }
+        });
+    }, []),
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -276,7 +296,7 @@ const Discount = ({navigation}) => {
             />
             <Text
               style={{
-                font: FONTS.fontFamily,
+                fontFamily: FONTS.fontFamily,
                 fontSize: 20,
               }}>
               Đã hết mã giảm giá cho loại mặt hàng này
@@ -315,8 +335,7 @@ const Discount = ({navigation}) => {
                 textStyle={{color: COLORS.primary}}
                 onPress={async () => {
                   try {
-                    await AsyncStorage.removeItem('userInfo');
-                    await AsyncStorage.removeItem('CartList');
+                    await AsyncStorage.clear();
                     navigation.navigate('Login');
                     setOpenAuthModal(false);
                   } catch (error) {
@@ -366,7 +385,7 @@ const styles = StyleSheet.create({
     margin: 15,
   },
   itemText: {
-    fontFamily: FONTS.fontFamily,
+    fontFamily: 'Roboto',
     fontSize: 20,
   },
 });

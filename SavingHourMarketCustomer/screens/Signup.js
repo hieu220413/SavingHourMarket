@@ -20,6 +20,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import * as Animatable from 'react-native-animatable';
 import auth from '@react-native-firebase/auth';
 import {API} from '../constants/api';
+import database from '@react-native-firebase/database';
 
 const Signup = ({navigation}) => {
   const [password, setPassword] = useState('');
@@ -31,6 +32,24 @@ const Signup = ({navigation}) => {
   const [secureTextEntry, setSecureTextEntry] = useState(true);
   const [secureTextEntry_confirm, setSecureTextEntry_confirm] = useState(true);
   const [check_textInputChange, setCheck_textInputChange] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+          } else {
+            // setSystemStatus(snapshot.val());
+          }
+        });
+    }, []),
+  );
 
   const emailValidator = () => {
     if (email == '') {

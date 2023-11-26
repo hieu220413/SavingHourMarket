@@ -8,12 +8,14 @@ import {
   TextInput,
   TouchableOpacity,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useState, useCallback} from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {COLORS} from '../constants/theme';
 import Feather from 'react-native-vector-icons/Feather';
 import LinearGradient from 'react-native-linear-gradient';
 import * as Animatable from 'react-native-animatable';
+import {useFocusEffect} from '@react-navigation/native';
+import database from '@react-native-firebase/database';
 
 const ResetPassword = ({navigation}) => {
   const [password, setPassword] = useState('');
@@ -22,6 +24,25 @@ const ResetPassword = ({navigation}) => {
   const [password_confirmError, setPassword_confirmError] = useState('');
   const [secureTextEntry, setSecureTextEntry] = useState(true);
   const [secureTextEntry_confirm, setSecureTextEntry_confirm] = useState(true);
+
+  // system status check
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+          } else {
+            // setSystemStatus(snapshot.val());
+          }
+        });
+    }, []),
+  );
 
   const passwordValidation = () => {
     if (password.length < 8) {

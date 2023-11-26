@@ -19,6 +19,7 @@ import Modal, {
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import LoadingScreen from '../components/LoadingScreen';
 import AccountDisable from '../components/AccountDisable';
+import database from '@react-native-firebase/database';
 
 const Orders = ({navigation}) => {
   const orderStatus = [
@@ -41,6 +42,8 @@ const Orders = ({navigation}) => {
 
   const [pickupPoint, setPickupPoint] = useState(null);
 
+  const [isDisableAccount, setIsDisableAccount] = useState(false);
+
   // state open/close modal
   const [openAccountDisableModal, setOpenAccountDisableModal] = useState(false);
 
@@ -61,7 +64,7 @@ const Orders = ({navigation}) => {
   //authen check
   const onAuthStateChange = async userInfo => {
     // console.log(userInfo);
-
+    setLoading(true);
     if (initializing) {
       setInitializing(false);
     }
@@ -76,14 +79,32 @@ const Orders = ({navigation}) => {
         });
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
-        setOpenAccountDisableModal(true);
+
         return;
       }
     } else {
       // no sessions found.
-      setOpenAuthModal();
     }
   };
+
+  // system status check
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+          } else {
+            // setSystemStatus(snapshot.val());
+          }
+        });
+    }, []),
+  );
 
   // delete user unpaid vnpay order
   const deleteUserUnpaidVnpayOrders = async tokenId => {
@@ -151,124 +172,126 @@ const Orders = ({navigation}) => {
   useFocusEffect(
     useCallback(() => {
       const fetchData = async () => {
-        if (auth().currentUser) {
-          const tokenId = await auth().currentUser.getIdToken();
+        if (isDisableAccount) {
+          if (auth().currentUser) {
+            const tokenId = await auth().currentUser.getIdToken();
 
-          setLoading(true);
-          await deleteUserUnpaidVnpayOrders(tokenId);
-          if (currentStatus.display !== 'Đóng gói') {
-            // setLoading(true);
-            fetch(
-              `${API.baseURL}/api/order/getOrdersForCustomer?orderStatus=${currentStatus.value}`,
-              {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${tokenId}`,
-                },
-              },
-            )
-              .then(res => res.json())
-              .then(respond => {
-                console.log(respond);
-                if (respond.code === 403) {
-                  setOpenAccountDisableModal(true);
-                  setLoading(false);
-                  return;
-                }
-                if (respond.code === 401) {
-                  setOpenAuthModal(true);
-                  setLoading(false);
-                  return;
-                }
-                if (respond.error) {
-                  setLoading(false);
-                  return;
-                }
-
-                setOrderList(respond);
-                setLoading(false);
-              })
-              .catch(err => {
-                console.log(err);
-                setLoading(false);
-              });
-          } else {
-            // setLoading(true);
-            let list = [];
-            fetch(
-              `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGING`,
-              {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${tokenId}`,
-                },
-              },
-            )
-              .then(res => res.json())
-              .then(respond => {
-                if (respond.code === 403) {
-                  setOpenAccountDisableModal(true);
-                  setLoading(false);
-                  return;
-                }
-                if (respond.code === 401) {
-                  setOpenAuthModal(true);
-                  setLoading(false);
-                  return;
-                }
-                if (respond.error) {
-                  setLoading(false);
-                  return;
-                }
-                list.concat(respond);
-
-                fetch(
-                  `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGED`,
-                  {
-                    method: 'GET',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      Authorization: `Bearer ${tokenId}`,
-                    },
+            setLoading(true);
+            await deleteUserUnpaidVnpayOrders(tokenId);
+            if (currentStatus.display !== 'Đóng gói') {
+              // setLoading(true);
+              fetch(
+                `${API.baseURL}/api/order/getOrdersForCustomer?orderStatus=${currentStatus.value}`,
+                {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${tokenId}`,
                   },
-                )
-                  .then(res => res.json())
-                  .then(respond => {
-                    if (respond.code === 403) {
-                      setOpenAccountDisableModal(true);
-                      setLoading(false);
-                      return;
-                    }
-                    if (respond.code === 401) {
-                      setOpenAuthModal(true);
-                      setLoading(false);
-                      return;
-                    }
-                    if (respond.error) {
-                      setLoading(false);
-                      return;
-                    }
+                },
+              )
+                .then(res => res.json())
+                .then(respond => {
+                  console.log(respond);
+                  if (respond.code === 403) {
+                    setOpenAccountDisableModal(true);
+                    setLoading(false);
+                    return;
+                  }
+                  if (respond.code === 401) {
+                    setOpenAuthModal(true);
+                    setLoading(false);
+                    return;
+                  }
+                  if (respond.error) {
+                    setLoading(false);
+                    return;
+                  }
 
-                    list.concat(respond);
-                    setOrderList(list);
+                  setOrderList(respond);
+                  setLoading(false);
+                })
+                .catch(err => {
+                  console.log(err);
+                  setLoading(false);
+                });
+            } else {
+              // setLoading(true);
+              let list = [];
+              fetch(
+                `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGING`,
+                {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${tokenId}`,
+                  },
+                },
+              )
+                .then(res => res.json())
+                .then(respond => {
+                  if (respond.code === 403) {
+                    setOpenAccountDisableModal(true);
                     setLoading(false);
-                  })
-                  .catch(err => {
-                    console.log(err);
+                    return;
+                  }
+                  if (respond.code === 401) {
+                    setOpenAuthModal(true);
                     setLoading(false);
-                  });
-              })
-              .catch(err => {
-                console.log(err);
-                setLoading(false);
-              });
+                    return;
+                  }
+                  if (respond.error) {
+                    setLoading(false);
+                    return;
+                  }
+                  list.concat(respond);
+
+                  fetch(
+                    `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGED`,
+                    {
+                      method: 'GET',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${tokenId}`,
+                      },
+                    },
+                  )
+                    .then(res => res.json())
+                    .then(respond => {
+                      if (respond.code === 403) {
+                        setOpenAccountDisableModal(true);
+                        setLoading(false);
+                        return;
+                      }
+                      if (respond.code === 401) {
+                        setOpenAuthModal(true);
+                        setLoading(false);
+                        return;
+                      }
+                      if (respond.error) {
+                        setLoading(false);
+                        return;
+                      }
+
+                      list.concat(respond);
+                      setOrderList(list);
+                      setLoading(false);
+                    })
+                    .catch(err => {
+                      console.log(err);
+                      setLoading(false);
+                    });
+                })
+                .catch(err => {
+                  console.log(err);
+                  setLoading(false);
+                });
+            }
           }
         }
       };
       fetchData();
-    }, [currentStatus]),
+    }, [currentStatus, isDisableAccount]),
   );
 
   useFocusEffect(
@@ -543,25 +566,19 @@ const Orders = ({navigation}) => {
         footer={
           <ModalFooter>
             <ModalButton
+              text="Ở lại trang"
+              onPress={async () => {
+                setOpenAuthModal(false);
+              }}
+            />
+            <ModalButton
               text="Đăng nhập"
               textStyle={{color: COLORS.primary}}
               onPress={async () => {
                 try {
-                  await GoogleSignin.signOut();
-                  if (auth().currentUser) {
-                    auth()
-                      .signOut()
-                      .then(async () => {
-                        await AsyncStorage.clear();
-                        setOpenAuthModal(false);
-                        navigation.navigate('Login');
-                      })
-                      .catch(e => console.log(e));
-                  } else {
-                    await AsyncStorage.clear();
-                    setOpenAuthModal(false);
-                    navigation.navigate('Login');
-                  }
+                  await AsyncStorage.clear();
+                  navigation.navigate('Login');
+                  setOpenAuthModal(false);
                 } catch (error) {
                   console.log(error);
                 }
@@ -578,7 +595,7 @@ const Orders = ({navigation}) => {
               color: 'black',
               textAlign: 'center',
             }}>
-            Phiên bản đăng nhập của bạn đã hết hạn vui lòng đăng nhập lại
+            Vui lòng đăng nhập để thực hiện chức năng này
           </Text>
         </View>
       </Modal>
@@ -587,7 +604,6 @@ const Orders = ({navigation}) => {
       <AccountDisable
         openAccountDisableModal={openAccountDisableModal}
         setOpenAccountDisableModal={setOpenAccountDisableModal}
-        pickupPoint={pickupPoint}
         navigation={navigation}
       />
       {loading && <LoadingScreen />}

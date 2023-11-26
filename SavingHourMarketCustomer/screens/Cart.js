@@ -18,6 +18,7 @@ import Modal, {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CartEmpty from '../assets/image/search-empty.png';
 import {useFocusEffect} from '@react-navigation/native';
+import database from '@react-native-firebase/database';
 
 const Cart = ({navigation}) => {
   const [deleteDialog, setDeleteDialog] = useState({
@@ -36,6 +37,27 @@ const Cart = ({navigation}) => {
     longitude: 106.83102962168277,
     latitude: 10.845020092805793,
   });
+
+  // system status check
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+         
+          } else {
+            // setSystemStatus(snapshot.val());
+          
+          }
+        });
+    }, []),
+  );
 
   useFocusEffect(
     useCallback(() => {
