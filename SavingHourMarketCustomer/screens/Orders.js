@@ -18,6 +18,7 @@ import Modal, {
 } from 'react-native-modals';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import LoadingScreen from '../components/LoadingScreen';
+import AccountDisable from '../components/AccountDisable';
 
 const Orders = ({navigation}) => {
   const orderStatus = [
@@ -38,6 +39,25 @@ const Orders = ({navigation}) => {
   const [openAuthModal, setOpenAuthModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const [pickupPoint, setPickupPoint] = useState(null);
+
+  // state open/close modal
+  const [openAccountDisableModal, setOpenAccountDisableModal] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      // Get pickup point from AS
+      (async () => {
+        try {
+          const value = await AsyncStorage.getItem('PickupPoint');
+          setPickupPoint(value ? JSON.parse(value) : pickupPoint);
+        } catch (err) {
+          console.log(err);
+        }
+      })();
+    }, []),
+  );
+
   //authen check
   const onAuthStateChange = async userInfo => {
     // console.log(userInfo);
@@ -56,20 +76,12 @@ const Orders = ({navigation}) => {
         });
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
-
-        await AsyncStorage.removeItem('userInfo');
-        await AsyncStorage.removeItem('CartList');
-
-        setOpenAuthModal(true);
+        setOpenAccountDisableModal(true);
         return;
       }
     } else {
       // no sessions found.
-      console.log('user is not logged in');
-      await AsyncStorage.removeItem('userInfo');
-      await AsyncStorage.removeItem('CartList');
-
-      setOpenAuthModal(true);
+      setOpenAuthModal();
     }
   };
 
@@ -141,88 +153,117 @@ const Orders = ({navigation}) => {
       const fetchData = async () => {
         if (auth().currentUser) {
           const tokenId = await auth().currentUser.getIdToken();
-          if (tokenId) {
-            setLoading(true);
-            await deleteUserUnpaidVnpayOrders(tokenId);
-            if (currentStatus.display !== 'Đóng gói') {
-              // setLoading(true);
-              fetch(
-                `${API.baseURL}/api/order/getOrdersForCustomer?orderStatus=${currentStatus.value}`,
-                {
-                  method: 'GET',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${tokenId}`,
-                  },
-                },
-              )
-                .then(res => res.json())
-                .then(respond => {
-                  console.log(respond);
-                  if (respond.error) {
-                    setLoading(false);
-                    return;
-                  }
 
-                  setOrderList(respond);
-                  setLoading(false);
-                })
-                .catch(err => {
-                  console.log(err);
-                  setLoading(false);
-                });
-            } else {
-              // setLoading(true);
-              let list = [];
-              fetch(
-                `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGING`,
-                {
-                  method: 'GET',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${tokenId}`,
-                  },
+          setLoading(true);
+          await deleteUserUnpaidVnpayOrders(tokenId);
+          if (currentStatus.display !== 'Đóng gói') {
+            // setLoading(true);
+            fetch(
+              `${API.baseURL}/api/order/getOrdersForCustomer?orderStatus=${currentStatus.value}`,
+              {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${tokenId}`,
                 },
-              )
-                .then(res => res.json())
-                .then(respond => {
-                  if (respond.error) {
-                    setLoading(false);
-                    return;
-                  }
-                  list.concat(respond);
+              },
+            )
+              .then(res => res.json())
+              .then(respond => {
+                console.log(respond);
+                if (respond.code === 403) {
+                  setOpenAccountDisableModal(true);
+                  setLoading(false);
+                  return;
+                }
+                if (respond.code === 401) {
+                  setOpenAuthModal(true);
+                  setLoading(false);
+                  return;
+                }
+                if (respond.error) {
+                  setLoading(false);
+                  return;
+                }
 
-                  fetch(
-                    `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGED`,
-                    {
-                      method: 'GET',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${tokenId}`,
-                      },
+                setOrderList(respond);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
+          } else {
+            // setLoading(true);
+            let list = [];
+            fetch(
+              `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGING`,
+              {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${tokenId}`,
+                },
+              },
+            )
+              .then(res => res.json())
+              .then(respond => {
+                if (respond.code === 403) {
+                  setOpenAccountDisableModal(true);
+                  setLoading(false);
+                  return;
+                }
+                if (respond.code === 401) {
+                  setOpenAuthModal(true);
+                  setLoading(false);
+                  return;
+                }
+                if (respond.error) {
+                  setLoading(false);
+                  return;
+                }
+                list.concat(respond);
+
+                fetch(
+                  `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGED`,
+                  {
+                    method: 'GET',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${tokenId}`,
                     },
-                  )
-                    .then(res => res.json())
-                    .then(respond => {
-                      if (respond.error) {
-                        setLoading(false);
-                        return;
-                      }
+                  },
+                )
+                  .then(res => res.json())
+                  .then(respond => {
+                    if (respond.code === 403) {
+                      setOpenAccountDisableModal(true);
+                      setLoading(false);
+                      return;
+                    }
+                    if (respond.code === 401) {
+                      setOpenAuthModal(true);
+                      setLoading(false);
+                      return;
+                    }
+                    if (respond.error) {
+                      setLoading(false);
+                      return;
+                    }
 
-                      list.concat(respond);
-                      setOrderList(list);
-                      setLoading(false);
-                    })
-                    .catch(err => {
-                      console.log(err);
-                      setLoading(false);
-                    });
-                })
-                .catch(err => {
-                  console.log(err);
-                  setLoading(false);
-                });
-            }
+                    list.concat(respond);
+                    setOrderList(list);
+                    setLoading(false);
+                  })
+                  .catch(err => {
+                    console.log(err);
+                    setLoading(false);
+                  });
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
           }
         }
       };
@@ -511,15 +552,13 @@ const Orders = ({navigation}) => {
                     auth()
                       .signOut()
                       .then(async () => {
-                        await AsyncStorage.removeItem('userInfo');
-                        await AsyncStorage.removeItem('CartList');
+                        await AsyncStorage.clear();
                         setOpenAuthModal(false);
                         navigation.navigate('Login');
                       })
                       .catch(e => console.log(e));
                   } else {
-                    await AsyncStorage.removeItem('userInfo');
-                    await AsyncStorage.removeItem('CartList');
+                    await AsyncStorage.clear();
                     setOpenAuthModal(false);
                     navigation.navigate('Login');
                   }
@@ -543,6 +582,14 @@ const Orders = ({navigation}) => {
           </Text>
         </View>
       </Modal>
+
+      {/* account disable modal  */}
+      <AccountDisable
+        openAccountDisableModal={openAccountDisableModal}
+        setOpenAccountDisableModal={setOpenAccountDisableModal}
+        pickupPoint={pickupPoint}
+        navigation={navigation}
+      />
       {loading && <LoadingScreen />}
     </>
   );

@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 // eslint-disable-next-line prettier/prettier
-import React, { useState, useEffect, useCallback } from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   Text,
   View,
@@ -9,12 +9,12 @@ import {
   StyleSheet,
   FlatList,
 } from 'react-native';
-import { icons } from '../constants';
-import { COLORS, FONTS } from '../constants/theme';
+import {icons} from '../constants';
+import {COLORS, FONTS} from '../constants/theme';
 import Categories from '../components/Categories';
 import dayjs from 'dayjs';
-import { API } from '../constants/api';
-import { useFocusEffect } from '@react-navigation/native';
+import {API} from '../constants/api';
+import {useFocusEffect} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Empty from '../assets/image/search-empty.png';
 import LoadingScreen from '../components/LoadingScreen';
@@ -25,9 +25,9 @@ import Modal, {
   ScaleAnimation,
 } from 'react-native-modals';
 import Toast from 'react-native-toast-message';
-import { ScrollView } from 'react-native-gesture-handler';
+import {ScrollView} from 'react-native-gesture-handler';
 
-const Discount = ({ navigation }) => {
+const Discount = ({navigation}) => {
   const [discounts, setDiscounts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [currentCate, setCurrentCate] = useState('');
@@ -36,8 +36,8 @@ const Discount = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [openAuthModal, setOpenAuthModal] = useState(false);
   const [pickupPoint, setPickupPoint] = useState({
-    id: "accf0ac0-5541-11ee-8a50-a85e45c41921",
-    address: "Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh",
+    id: 'accf0ac0-5541-11ee-8a50-a85e45c41921',
+    address: 'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh',
     status: 1,
     longitude: 106.83102962168277,
     latitude: 10.845020092805793,
@@ -69,7 +69,7 @@ const Discount = ({ navigation }) => {
       (async () => {
         try {
           const value = await AsyncStorage.getItem('PickupPoint');
-          setPickupPoint(JSON.parse(value));
+          setPickupPoint(value ? JSON.parse(value) : pickupPoint);
         } catch (err) {
           console.log(err);
         }
@@ -79,7 +79,9 @@ const Discount = ({ navigation }) => {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`${API.baseURL}/api/product/getAllCategory?pickupPointId=${pickupPoint.id}`)
+    fetch(
+      `${API.baseURL}/api/product/getAllCategory?pickupPointId=${pickupPoint.id}`,
+    )
       .then(res => res.json())
       .then(data => {
         setCategories(data);
@@ -123,7 +125,7 @@ const Discount = ({ navigation }) => {
     }
   }, [currentCate, pickupPoint.id]);
 
-  const Item = ({ data }) => (
+  const Item = ({data}) => (
     <View style={styles.itemContainer}>
       {/* Image Product */}
       <Image
@@ -134,7 +136,7 @@ const Discount = ({ navigation }) => {
         style={styles.itemImage}
       />
 
-      <View style={{ justifyContent: 'center', flex: 1, marginRight: 10 }}>
+      <View style={{justifyContent: 'center', flex: 1, marginRight: 10}}>
         <Text
           numberOfLines={1}
           style={{
@@ -185,8 +187,7 @@ const Discount = ({ navigation }) => {
         style={{
           paddingHorizontal: 15,
           paddingTop: 15,
-        }}
-      >
+        }}>
         <View
           style={{
             flexDirection: 'row',
@@ -198,7 +199,7 @@ const Discount = ({ navigation }) => {
             <Image
               source={icons.leftArrow}
               resizeMode="contain"
-              style={{ width: 35, height: 35, tintColor: COLORS.primary }}
+              style={{width: 35, height: 35, tintColor: COLORS.primary}}
             />
           </TouchableOpacity>
           <Text
@@ -247,7 +248,7 @@ const Discount = ({ navigation }) => {
                   justifyContent: 'center',
                 }}>
                 <Text
-                  style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
+                  style={{fontSize: 12, color: 'white', fontFamily: 'Roboto'}}>
                   {cartList.length}
                 </Text>
               </View>
@@ -258,8 +259,7 @@ const Discount = ({ navigation }) => {
         <View
           style={{
             marginBottom: 20,
-          }}
-        >
+          }}>
           <Categories
             categories={categories}
             currentCate={currentCate}
@@ -268,9 +268,9 @@ const Discount = ({ navigation }) => {
         </View>
         {/* List voucher */}
         {discounts.length === 0 ? (
-          <View style={{ alignItems: 'center' }}>
+          <View style={{alignItems: 'center'}}>
             <Image
-              style={{ width: '100%', height: '65%' }}
+              style={{width: '100%', height: '65%'}}
               resizeMode="contain"
               source={Empty}
             />
@@ -286,12 +286,9 @@ const Discount = ({ navigation }) => {
           <ScrollView
             contentContainerStyle={{
               paddingBottom: 240,
-            }}
-          >
+            }}>
             {discounts.map((item, index) => {
-              return (
-                <Item data={item} key={index} />
-              );
+              return <Item data={item} key={index} />;
             })}
           </ScrollView>
         )}
@@ -315,7 +312,7 @@ const Discount = ({ navigation }) => {
               />
               <ModalButton
                 text="Đăng nhập"
-                textStyle={{ color: COLORS.primary }}
+                textStyle={{color: COLORS.primary}}
                 onPress={async () => {
                   try {
                     await AsyncStorage.removeItem('userInfo');
@@ -330,7 +327,11 @@ const Discount = ({ navigation }) => {
             </ModalFooter>
           }>
           <View
-            style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
+            style={{
+              padding: 20,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
             <Text
               style={{
                 fontSize: 20,
@@ -343,7 +344,8 @@ const Discount = ({ navigation }) => {
           </View>
         </Modal>
       </View>
-      {loading && <LoadingScreen />}</>
+      {loading && <LoadingScreen />}
+    </>
   );
 };
 
