@@ -29,12 +29,36 @@ const Cart = ({navigation}) => {
   const [openValidateDialog, setOpenValidateDialog] = useState(false);
   const [cartItems, setcartItems] = useState([]);
 
+  const [pickupPoint, setPickupPoint] = useState({
+    id: 'accf0ac0-5541-11ee-8a50-a85e45c41921',
+    address: 'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh',
+    status: 1,
+    longitude: 106.83102962168277,
+    latitude: 10.845020092805793,
+  });
+
+  useFocusEffect(
+    useCallback(() => {
+      // Get pickup point from AS
+      (async () => {
+        try {
+          const value = await AsyncStorage.getItem('PickupPoint');
+          setPickupPoint(value ? JSON.parse(value) : pickupPoint);
+        } catch (err) {
+          console.log(err);
+        }
+      })();
+    }, []),
+  );
+
   useFocusEffect(
     useCallback(() => {
       (async () => {
         try {
           const value = await AsyncStorage.getItem('PickupPoint');
-          const cartList = await AsyncStorage.getItem('CartList'+JSON.parse(value).id);
+          const cartList = await AsyncStorage.getItem(
+            'CartList' + JSON.parse(value).id,
+          );
           setcartItems(cartList ? JSON.parse(cartList) : []);
         } catch (err) {
           console.log(err);
@@ -60,7 +84,10 @@ const Cart = ({navigation}) => {
     const newCart = cartItems.filter(item => item.idList[0] !== rowKey);
     setcartItems(newCart);
     try {
-      await AsyncStorage.setItem('CartList', JSON.stringify(newCart));
+      await AsyncStorage.setItem(
+        'CartList' + pickupPoint.id,
+        JSON.stringify(newCart),
+      );
     } catch (error) {
       console.log(error);
     }
@@ -162,6 +189,7 @@ const Cart = ({navigation}) => {
                   item={data.item}
                   navigation={navigation}
                   index={rowMap}
+                  pickupPoint={pickupPoint}
                 />
               )}
               renderHiddenItem={(data, rowMap) => (

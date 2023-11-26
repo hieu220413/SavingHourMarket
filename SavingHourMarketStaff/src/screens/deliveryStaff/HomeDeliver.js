@@ -455,54 +455,54 @@ const HomeDeliver = ({ navigation }) => {
     }, []),
   );
 
-  const onAuthStateChange = async userInfo => {
-    setLoading(true);
-    if (initializing) {
-      setInitializing(false);
-    }
-    if (userInfo) {
-      // check if user sessions is still available. If yes => redirect to another screen
-      const userTokenId = await userInfo
-        .getIdToken(true)
-        .then(token => token)
-        .catch(async e => {
-          // console.log(e);
-          setLoading(false);
-          return null;
-        });
-      if (!userTokenId) {
-        // sessions end. (revoke refresh token like password change, disable account, ....)
-        await AsyncStorage.removeItem('userInfo');
-        setLoading(false);
-        // navigation.navigate('Login');
-        navigation.reset({
-          index: 0,
-          routes: [{name: 'Login'}],
-        });
-        return;
-      }
-      setLoading(false);
-    } else {
-      // no sessions found.
-      console.log('user is not logged in');
-      await AsyncStorage.removeItem('userInfo');
-      setLoading(false);
-      // navigation.navigate('Login');
-      navigation.reset({
-        index: 0,
-        routes: [{name: 'Login'}],
-      });
-    }
-  };
+  // const onAuthStateChange = async userInfo => {
+  //   setLoading(true);
+  //   if (initializing) {
+  //     setInitializing(false);
+  //   }
+  //   if (userInfo) {
+  //     // check if user sessions is still available. If yes => redirect to another screen
+  //     const userTokenId = await userInfo
+  //       .getIdToken(true)
+  //       .then(token => token)
+  //       .catch(async e => {
+  //         // console.log(e);
+  //         setLoading(false);
+  //         return null;
+  //       });
+  //     if (!userTokenId) {
+  //       // sessions end. (revoke refresh token like password change, disable account, ....)
+  //       await AsyncStorage.removeItem('userInfo');
+  //       setLoading(false);
+  //       // navigation.navigate('Login');
+  //       navigation.reset({
+  //         index: 0,
+  //         routes: [{name: 'Login'}],
+  //       });
+  //       return;
+  //     }
+  //     setLoading(false);
+  //   } else {
+  //     // no sessions found.
+  //     console.log('user is not logged in');
+  //     await AsyncStorage.removeItem('userInfo');
+  //     setLoading(false);
+  //     // navigation.navigate('Login');
+  //     navigation.reset({
+  //       index: 0,
+  //       routes: [{name: 'Login'}],
+  //     });
+  //   }
+  // };
 
-  useEffect(() => {
-    fetchOrders(currentOptions.id);
-    const subscriber = auth().onAuthStateChanged(
-      async userInfo => await onAuthStateChange(userInfo),
-    );
+  // useEffect(() => {
+  //   fetchOrders(currentOptions.id);
+  //   const subscriber = auth().onAuthStateChanged(
+  //     async userInfo => await onAuthStateChange(userInfo),
+  //   );
 
-    return subscriber;
-  }, []);
+  //   return subscriber;
+  // }, []);
 
   const fetchOrders = async id => {
     const tokenId = await auth().currentUser.getIdToken();
@@ -524,7 +524,21 @@ const HomeDeliver = ({ navigation }) => {
             },
           },
         )
-          .then(res => res.json())
+          .then(async res => {
+            if (res.status === 403 || res.status === 401) {
+              const tokenIdCheck = await auth()
+                .currentUser.getIdToken(true)
+                .catch(async err => {
+                  await AsyncStorage.setItem('isDisableAccount', '1');
+                  return null;
+                });
+              if (!tokenIdCheck) {
+                throw new Error();
+              }
+              // Cac loi 403 khac thi handle duoi day neu co
+            }
+            return res.json();
+          })
           .then(respond => {
             console.log('0', respond);
             setOrderGroupList(respond.orderGroups);
@@ -544,7 +558,21 @@ const HomeDeliver = ({ navigation }) => {
             },
           },
         )
-          .then(res => res.json())
+          .then(async res => {
+            if (res.status === 403 || res.status === 401) {
+              const tokenIdCheck = await auth()
+              .currentUser.getIdToken(true)
+              .catch(async err => {
+                await AsyncStorage.setItem('isDisableAccount', '1');
+                return null;
+              });
+            if (!tokenIdCheck) {
+              throw new Error();
+            }
+              // Cac loi 403 khac thi handle duoi day neu co
+            }
+            return res.json();
+          })
           .then(respond => {
             console.log('1', respond);
             if (respond.error) {
@@ -568,7 +596,21 @@ const HomeDeliver = ({ navigation }) => {
             },
           },
         )
-          .then(res => res.json())
+          .then(async res => {
+            if (res.status === 403 || res.status === 401) {
+              const tokenIdCheck = await auth()
+                .currentUser.getIdToken(true)
+                .catch(async err => {
+                  await AsyncStorage.setItem('isDisableAccount', '1');
+                  return null;
+                });
+              if (!tokenIdCheck) {
+                throw new Error();
+              }
+              // Cac loi 403 khac thi handle duoi day neu co
+            }
+            return res.json();
+          })
           .then(respond => {
             console.log('3', respond);
             setOrders(respond);
@@ -605,7 +647,21 @@ const HomeDeliver = ({ navigation }) => {
             },
           },
         )
-          .then(res => res.json())
+          .then(async res => {
+            if (res.status === 403 || res.status === 401) {
+              const tokenIdCheck = await auth()
+                .currentUser.getIdToken(true)
+                .catch(async err => {
+                  await AsyncStorage.setItem('isDisableAccount', '1');
+                  return null;
+                });
+              if (!tokenIdCheck) {
+                throw new Error();
+              }
+              // Cac loi 403 khac thi handle duoi day neu co
+            }
+            return res.json();
+          })
           .then(respond => {
             console.log(`${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}&status=DELIVERING`);
             console.log('0', respond);
@@ -626,7 +682,22 @@ const HomeDeliver = ({ navigation }) => {
             },
           },
         )
-          .then(res => res.json())
+          .then(async res => {
+            console.log(res);
+            if (res.status === 403 || res.status === 401) {
+              const tokenIdCheck = await auth()
+                .currentUser.getIdToken(true)
+                .catch(async err => {
+                  await AsyncStorage.setItem('isDisableAccount', '1');
+                  return null;
+                });
+              if (!tokenIdCheck) {
+                throw new Error();
+              }
+              // Cac loi 403 khac thi handle duoi day neu co
+            }
+            return res.json();
+          })
           .then(respond => {
             console.log('1', respond);
             if (respond.error) {
@@ -650,7 +721,21 @@ const HomeDeliver = ({ navigation }) => {
             },
           },
         )
-          .then(res => res.json())
+          .then(async res => {
+            if (res.status === 403 || res.status === 401) {
+              const tokenIdCheck = await auth()
+                .currentUser.getIdToken(true)
+                .catch(async err => {
+                  await AsyncStorage.setItem('isDisableAccount', '1');
+                  return null;
+                });
+              if (!tokenIdCheck) {
+                throw new Error();
+              }
+              // Cac loi 403 khac thi handle duoi day neu co
+            }
+            return res.json();
+          })
           .then(respond => {
             console.log('3', respond);
             setOrders(respond);

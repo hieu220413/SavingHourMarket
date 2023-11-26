@@ -115,19 +115,7 @@ const SuccessTransactionManagement = () => {
     <div className="user__container">
       <h3 className="user__title">Giao dịch thành công</h3>
       <div className="user__header">
-        <div className="search">
-          <form onSubmit={(e) => onSubmitSearch(e)}>
-            <div onClick={(e) => onSubmitSearch(e)} className="search-icon">
-              <FontAwesomeIcon icon={faMagnifyingGlass} />
-            </div>
-            <input
-              value={textSearch}
-              onChange={(e) => setTextSearch(e.target.value)}
-              type="text"
-              placeholder="Từ khóa tìm kiếm"
-            />
-          </form>
-        </div>
+        <div className="search"></div>
         {/* ****************** */}
       </div>
       {/* data table + pagination*/}

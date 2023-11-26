@@ -84,56 +84,56 @@ const OrderListForManager = ({navigation}) => {
     {display: 'Đã có nhân viên giao hàng', value: 2},
   ];
 
-  const onAuthStateChange = async userInfo => {
-    // console.log(userInfo);
-    if (initializing) {
-      setInitializing(false);
-    }
-    if (userInfo) {
-      // check if user sessions is still available. If yes => redirect to another screen
-      const userTokenId = await userInfo
-        .getIdToken(true)
-        .then(token => token)
-        .catch(async e => {
-          console.log(e);
-          return null;
-        });
-      if (!userTokenId) {
-        // sessions end. (revoke refresh token like password change, disable account, ....)
-        await AsyncStorage.removeItem('userInfo');
-        // navigation.navigate('Login');
-        navigation.reset({
-          index: 0,
-          routes: [{name: 'Login'}],
-        });
-        return;
-      }
-      const currentUser = await AsyncStorage.getItem('userInfo');
-      // console.log('currentUser', currentUser);
-      setCurrentUser(JSON.parse(currentUser));
-    } else {
-      // no sessions found.
-      console.log('user is not logged in');
-      await AsyncStorage.removeItem('userInfo');
-      // navigation.navigate('Login');
-      navigation.reset({
-        index: 0,
-        routes: [{name: 'Login'}],
-      });
-    }
-  };
+  // const onAuthStateChange = async userInfo => {
+  //   // console.log(userInfo);
+  //   if (initializing) {
+  //     setInitializing(false);
+  //   }
+  //   if (userInfo) {
+  //     // check if user sessions is still available. If yes => redirect to another screen
+  //     const userTokenId = await userInfo
+  //       .getIdToken(true)
+  //       .then(token => token)
+  //       .catch(async e => {
+  //         console.log(e);
+  //         return null;
+  //       });
+  //     if (!userTokenId) {
+  //       // sessions end. (revoke refresh token like password change, disable account, ....)
+  //       await AsyncStorage.removeItem('userInfo');
+  //       // navigation.navigate('Login');
+  //       navigation.reset({
+  //         index: 0,
+  //         routes: [{name: 'Login'}],
+  //       });
+  //       return;
+  //     }
+  //     const currentUser = await AsyncStorage.getItem('userInfo');
+  //     // console.log('currentUser', currentUser);
+  //     setCurrentUser(JSON.parse(currentUser));
+  //   } else {
+  //     // no sessions found.
+  //     console.log('user is not logged in');
+  //     await AsyncStorage.removeItem('userInfo');
+  //     // navigation.navigate('Login');
+  //     navigation.reset({
+  //       index: 0,
+  //       routes: [{name: 'Login'}],
+  //     });
+  //   }
+  // };
 
-  useFocusEffect(
-    useCallback(() => {
-      // auth().currentUser.reload()
-      const subscriber = auth().onAuthStateChanged(
-        async userInfo => await onAuthStateChange(userInfo),
-      );
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     // auth().currentUser.reload()
+  //     const subscriber = auth().onAuthStateChanged(
+  //       async userInfo => await onAuthStateChange(userInfo),
+  //     );
 
-      return subscriber;
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []),
-  );
+  //     return subscriber;
+  //     // eslint-disable-next-line react-hooks/exhaustive-deps
+  //   }, []),
+  // );
 
   const sortOptions = [
     {
@@ -148,6 +148,18 @@ const OrderListForManager = ({navigation}) => {
     },
   ];
   const [selectSort, setSelectSort] = useState(sortOptions);
+
+  //get Current User Info
+  useFocusEffect(
+    useCallback(() => {
+      const getCurrentUser = async () => {
+        const currentUser = await AsyncStorage.getItem('userInfo');
+        // console.log(JSON.parse(currentUser));
+        setCurrentUser(JSON.parse(currentUser));
+      }
+      getCurrentUser();
+    }, []),
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -416,6 +428,7 @@ const OrderListForManager = ({navigation}) => {
   const handleClear = () => {
     setDate(null);
     setModalVisible(!modalVisible);
+    setSelectSort(sortOptions);
     setLoading(true);
     const fetchData = async () => {
       if (auth().currentUser) {
@@ -1713,11 +1726,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(50,50,50,0.5)',
   },
   modalView: {
-    width: '80%',
     margin: 20,
-    backgroundColor: 'white',
+    backgroundColor: 'rgb(240,240,240)',
     borderRadius: 20,
-    // paddingVertical: 20,
+    padding: 20,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
