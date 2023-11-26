@@ -38,46 +38,46 @@ const BatchingDetail = ({navigation, route}) => {
   const [tokenId, setTokenId] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const onAuthStateChange = async userInfo => {
-    setLoading(true);
-    // console.log(userInfo);
-    if (initializing) {
-      setInitializing(false);
-    }
-    if (userInfo) {
-      // check if user sessions is still available. If yes => redirect to another screen
-      const userTokenId = await userInfo
-        .getIdToken(true)
-        .then(token => token)
-        .catch(async e => {
-          console.log(e);
-          return null;
-        });
-      if (!userTokenId) {
-        // sessions end. (revoke refresh token like password change, disable account, ....)
-        await AsyncStorage.removeItem('userInfo');
-        setLoading(false);
-        return;
-      }
+  // const onAuthStateChange = async userInfo => {
+  //   setLoading(true);
+  //   // console.log(userInfo);
+  //   if (initializing) {
+  //     setInitializing(false);
+  //   }
+  //   if (userInfo) {
+  //     // check if user sessions is still available. If yes => redirect to another screen
+  //     const userTokenId = await userInfo
+  //       .getIdToken(true)
+  //       .then(token => token)
+  //       .catch(async e => {
+  //         console.log(e);
+  //         return null;
+  //       });
+  //     if (!userTokenId) {
+  //       // sessions end. (revoke refresh token like password change, disable account, ....)
+  //       await AsyncStorage.removeItem('userInfo');
+  //       setLoading(false);
+  //       return;
+  //     }
 
-      const token = await auth().currentUser.getIdToken();
-      setTokenId(token);
-      setLoading(false);
-    } else {
-      // no sessions found.
-      console.log('user is not logged in');
-      setLoading(false);
-    }
-  };
+  //     const token = await auth().currentUser.getIdToken();
+  //     setTokenId(token);
+  //     setLoading(false);
+  //   } else {
+  //     // no sessions found.
+  //     console.log('user is not logged in');
+  //     setLoading(false);
+  //   }
+  // };
 
-  useEffect(() => {
-    // auth().currentUser.reload()
-    const subscriber = auth().onAuthStateChanged(
-      async userInfo => await onAuthStateChange(userInfo),
-    );
-    return subscriber;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // useEffect(() => {
+  //   // auth().currentUser.reload()
+  //   const subscriber = auth().onAuthStateChanged(
+  //     async userInfo => await onAuthStateChange(userInfo),
+  //   );
+  //   return subscriber;
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
 
   return (
     <TouchableWithoutFeedback

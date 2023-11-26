@@ -40,10 +40,12 @@ public interface StaffRepository extends JpaRepository<Staff, UUID> {
 //            "((og.deliverDate = :deliverDate) AND ((:fromTime BETWEEN og.timeFrame.fromHour AND og.timeFrame.toHour) OR (:toTime BETWEEN og.timeFrame.fromHour AND og.timeFrame.toHour)))" +
             "((og.deliverDate = :deliverDate) AND (og.timeFrame.id = :timeFrameId))" +
             "AND " +
+            "s.id IN :deliverIdList " +
+            "AND " +
             "s.status = 1 " +
             "AND " +
             "s.role = :role")
-    List<Staff> getStaffWithDeliverDateAndTimeFrame(String name, String role, LocalDate deliverDate, UUID timeFrameId);
+    List<Staff> getStaffWithDeliverDateAndTimeFrame(List<UUID> deliverIdList, String name, String role, LocalDate deliverDate, UUID timeFrameId);
 
     @Query("SELECT DISTINCT s FROM Staff s " +
             "JOIN s.deliverManagerStaff dlvm " +
@@ -70,10 +72,12 @@ public interface StaffRepository extends JpaRepository<Staff, UUID> {
             "AND " +
             "(o.orderGroup IS NULL) " +
             "AND " +
+            "s.id IN :deliverIdList " +
+            "AND " +
             "s.status = 1 " +
             "AND " +
             "s.role = :role")
-    List<Staff> getStaffWithDeliverDateAndTimeFrameByDoorToDoorOrder(String name, String role, LocalDate deliverDate, UUID timeFrameId);
+    List<Staff> getStaffWithDeliverDateAndTimeFrameByDoorToDoorOrder(List<UUID> deliverIdList, String name, String role, LocalDate deliverDate, UUID timeFrameId);
 
     @Query("SELECT s.id, COUNT(s.id) FROM Staff s " +
             "JOIN s.orderBatchList obl " +

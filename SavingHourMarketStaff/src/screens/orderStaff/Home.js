@@ -21,12 +21,14 @@ import {useFocusEffect} from '@react-navigation/native';
 import {API} from '../../constants/api';
 import {format} from 'date-fns';
 import CartEmpty from '../../assets/image/search-empty.png';
-import { SwipeListView, SwipeRow } from 'react-native-swipe-list-view';
+import {SwipeListView, SwipeRow} from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
 import Toast from 'react-native-toast-message';
 import DatePicker from 'react-native-date-picker';
 import database from '@react-native-firebase/database';
 import {checkSystemState} from '../../common/utils';
+import ModalAlertSignOut from '../../components/ModalAlertSignOut';
+import {err} from 'react-native-svg/lib/typescript/xml';
 const Home = ({navigation}) => {
   // listen to system state
   useFocusEffect(
@@ -36,12 +38,12 @@ const Home = ({navigation}) => {
   );
 
   const orderStatus = [
-    { display: 'Tất cả', value: '' },
-    { display: 'Chờ đóng gói', value: 'PROCESSING' },
-    { display: 'Đang đóng gói', value: 'PACKAGING' },
-    { display: 'Đã đóng gói', value: 'PACKAGED' },
-    { display: 'Giao hàng', value: '' },
-    { display: 'Đã huỷ', value: 'CANCEL' }
+    {display: 'Tất cả', value: ''},
+    {display: 'Chờ đóng gói', value: 'PROCESSING'},
+    {display: 'Đang đóng gói', value: 'PACKAGING'},
+    {display: 'Đã đóng gói', value: 'PACKAGED'},
+    {display: 'Giao hàng', value: ''},
+    {display: 'Đã huỷ', value: 'CANCEL'},
   ];
   const sortOptions = [
     {
@@ -91,7 +93,12 @@ const Home = ({navigation}) => {
   const [modalVisible, setModalVisible] = useState(false);
   const swipeListViewRef = useRef();
   const isMountingRef = useRef(false);
-  const [currentStatus, setCurrentStatus] = useState({ display: 'Tất cả', value: '' });
+  const [currentStatus, setCurrentStatus] = useState({
+    display: 'Tất cả',
+    value: '',
+  });
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [clickSignOut, setClickSignOut] = useState(false);
 
   const print = async orderId => {
     setLoading(true);
@@ -108,13 +115,21 @@ const Home = ({navigation}) => {
           },
         },
       )
-      .then(async res => {
-        if (res.status === 403 || res.status === 401) {
-          const tokenId = await auth().currentUser.getIdToken(true);
-          // Cac loi 403 khac thi handle duoi day neu co
-        }
-        return res.text();
-      })
+        .then(async res => {
+          if (res.status === 403 || res.status === 401) {
+            const tokenIdCheck = await auth()
+              .currentUser.getIdToken(true)
+              .catch(async err => {
+                await AsyncStorage.setItem('isDisableAccount', '1');
+                return null;
+              });
+            if (!tokenIdCheck) {
+              throw new Error();
+            }
+            // Cac loi 403 khac thi handle duoi day neu co
+          }
+          return res.text();
+        })
         .then(respond => {
           // console.log('order group', respond);
           if (respond.error) {
@@ -149,45 +164,6 @@ const Home = ({navigation}) => {
     }
   };
 
-  const onAuthStateChange = async userInfo => {
-    // console.log(userInfo);
-    if (initializing) {
-      setInitializing(false);
-    }
-    if (userInfo) {
-      // check if user sessions is still available. If yes => redirect to another screen
-      const userTokenId = await userInfo
-        .getIdToken(true)
-        .then(token => token)
-        .catch(async e => {
-          console.log(e);
-          return null;
-        });
-      if (!userTokenId) {
-        // sessions end. (revoke refresh token like password change, disable account, ....)
-        await AsyncStorage.removeItem('userInfo');
-        // navigation.navigate('Login');
-        navigation.reset({
-          index: 0,
-          routes: [{name: 'Login'}],
-        });
-        return;
-      }
-      const currentUser = await AsyncStorage.getItem('userInfo');
-      // console.log('currentUser', currentUser);
-      setCurrentUser(JSON.parse(currentUser));
-    } else {
-      // no sessions found.
-      console.log('user is not logged in');
-      await AsyncStorage.removeItem('userInfo');
-      // navigation.navigate('Login');
-      navigation.reset({
-        index: 0,
-        routes: [{name: 'Login'}],
-      });
-    }
-  };
-
   const getConsolidationArea = async (pickupPointId, orderStatus) => {
     const tokenId = await auth().currentUser.getIdToken();
     if (tokenId) {
@@ -202,13 +178,21 @@ const Home = ({navigation}) => {
           },
         },
       )
-      .then(async res => {
-        if (res.status === 403 || res.status === 401) {
-          const tokenId = await auth().currentUser.getIdToken(true);
-          // Cac loi 403 khac thi handle duoi day neu co
-        }
-        return res.json();
-      })
+        .then(async res => {
+          if (res.status === 403 || res.status === 401) {
+            const tokenIdCheck = await auth()
+              .currentUser.getIdToken(true)
+              .catch(async err => {
+                await AsyncStorage.setItem('isDisableAccount', '1');
+                return null;
+              });
+            if (!tokenIdCheck) {
+              throw new Error();
+            }
+            // Cac loi 403 khac thi handle duoi day neu co
+          }
+          return res.json();
+        })
         .then(respond => {
           // console.log('order group', respond);
           if (respond.error) {
@@ -255,8 +239,16 @@ const Home = ({navigation}) => {
         return;
       }
 
-      if (consolidationAreaEditRequest.status === 403 || consolidationAreaEditRequest.status === 401) {
-        const tokenId = await auth().currentUser.getIdToken(true);
+      if (
+        consolidationAreaEditRequest.status === 403 ||
+        consolidationAreaEditRequest.status === 401
+      ) {
+        await auth()
+          .currentUser.getIdToken(true)
+          .catch(async err => {
+            await AsyncStorage.setItem('isDisableAccount', '1');
+            return null;
+          });
       }
 
       if (consolidationAreaEditRequest.status === 200) {
@@ -275,24 +267,34 @@ const Home = ({navigation}) => {
   const fetchOrderWithFilter = async () => {
     setLoading(true);
     console.log('fetch order with filter');
-    const tokenId = await auth().currentUser.getIdToken();
+    const tokenId = await auth()
+      .currentUser.getIdToken()
+      .catch(err => console.log(err));
     const sortItem = selectSort.find(item => item.active === true);
     setTempSelectedSortId(sortItem ? sortItem.id : '');
     if (tokenId) {
       await fetch(
-        `${API.baseURL}/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${pickupPoint && pickupPoint.id
-          ? `pickupPointId=${pickupPoint.id}`
-          : ''
-        } ${currentStatus.value === '' ? `&getOldOrder=true` : `&orderStatus=${currentStatus.value}&getOldOrder=true`}
-        ${selectedDate === ''
-          ? ''
-          : '&deliveryDate=' + format(Date.parse(selectedDate), 'yyyy-MM-dd')
-        }${selectedTimeFrameId === ''
-          ? ''
-          : '&timeFrameId=' + selectedTimeFrameId
-        }${tempSelectedSortId === ''
-          ? ''
-          : selectSort.find(item => item.id === tempSelectedSortId)?.param
+        `${
+          API.baseURL
+        }/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${
+          pickupPoint && pickupPoint.id ? `pickupPointId=${pickupPoint.id}` : ''
+        } ${
+          currentStatus.value === ''
+            ? `&getOldOrder=true`
+            : `&orderStatus=${currentStatus.value}&getOldOrder=true`
+        }
+        ${
+          selectedDate === ''
+            ? ''
+            : '&deliveryDate=' + format(Date.parse(selectedDate), 'yyyy-MM-dd')
+        }${
+          selectedTimeFrameId === ''
+            ? ''
+            : '&timeFrameId=' + selectedTimeFrameId
+        }${
+          tempSelectedSortId === ''
+            ? ''
+            : selectSort.find(item => item.id === tempSelectedSortId)?.param
         }`,
         {
           method: 'GET',
@@ -304,7 +306,17 @@ const Home = ({navigation}) => {
       )
         .then(async res => {
           if (res.status === 403 || res.status === 401) {
-            const tokenId = await auth().currentUser.getIdToken(true);
+            if (auth().currentUser) {
+              const tokenIdCheck = await auth()
+                .currentUser.getIdToken(true)
+                .catch(async err => {
+                  await AsyncStorage.setItem('isDisableAccount', '1');
+                  return null;
+                });
+              if (!tokenIdCheck) {
+                throw new Error();
+              }
+            }
             // Cac loi 403 khac thi handle duoi day neu co
           }
           return res.json();
@@ -319,7 +331,7 @@ const Home = ({navigation}) => {
           setLoading(false);
         })
         .catch(err => {
-          console.log(err);
+          console.log('fetch error:', err);
           setLoading(false);
         });
     }
@@ -377,7 +389,15 @@ const Home = ({navigation}) => {
           )
             .then(async res => {
               if (res.status === 403 || res.status === 401) {
-                const tokenId = await auth().currentUser.getIdToken(true);
+                const tokenIdCheck = await auth()
+                  .currentUser.getIdToken(true)
+                  .catch(async err => {
+                    await AsyncStorage.setItem('isDisableAccount', '1');
+                    return null;
+                  });
+                if (!tokenIdCheck) {
+                  throw new Error();
+                }
                 // Cac loi 403 khac thi handle duoi day neu co
               }
               return res.text();
@@ -411,7 +431,15 @@ const Home = ({navigation}) => {
           )
             .then(async res => {
               if (res.status === 403 || res.status === 401) {
-                const tokenId = await auth().currentUser.getIdToken(true);
+                const tokenIdCheck = await auth()
+                  .currentUser.getIdToken(true)
+                  .catch(async err => {
+                    await AsyncStorage.setItem('isDisableAccount', '1');
+                    return null;
+                  });
+                if (!tokenIdCheck) {
+                  throw new Error();
+                }
                 // Cac loi 403 khac thi handle duoi day neu co
               }
               return res.text();
@@ -439,17 +467,27 @@ const Home = ({navigation}) => {
     setVisible(false);
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      // auth().currentUser.reload()
-      const subscriber = auth().onAuthStateChanged(
-        async userInfo => await onAuthStateChange(userInfo),
-      );
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     // auth().currentUser.reload()
+  //     const subscriber = auth().onAuthStateChanged(
+  //       async userInfo => await onAuthStateChange(userInfo),
+  //     );
+  //     return subscriber;
+  //     // eslint-disable-next-line react-hooks/exhaustive-deps
+  //   }, []),
+  // );
 
-      return subscriber;
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []),
-  );
+  useEffect(() => {
+    if (clickSignOut) {
+      auth()
+        .signOut()
+        .then(async () => {
+          await AsyncStorage.removeItem('userInfo');
+        })
+        .catch(e => console.log(e));
+    }
+  }, [clickSignOut]);
 
   // init pickup point
   useFocusEffect(
@@ -495,6 +533,18 @@ const Home = ({navigation}) => {
           console.log(err);
         });
     }, [selectSort, selectedDate, selectedTimeFrameId]),
+  );
+
+  //get Current User Info
+  useFocusEffect(
+    useCallback(() => {
+      const getCurrentUser = async () => {
+        const currentUser = await AsyncStorage.getItem('userInfo');
+        // console.log(JSON.parse(currentUser));
+        setCurrentUser(JSON.parse(currentUser));
+      };
+      getCurrentUser();
+    }, []),
   );
 
   useEffect(() => {
@@ -661,12 +711,7 @@ const Home = ({navigation}) => {
                     backgroundColor: 'rgb(240,240,240)',
                   }}
                   onPress={() => {
-                    auth()
-                      .signOut()
-                      .then(async () => {
-                        await AsyncStorage.removeItem('userInfo');
-                      })
-                      .catch(e => console.log(e));
+                    setClickSignOut(true);
                   }}>
                   <Text style={{color: 'red', fontWeight: 'bold'}}>
                     Đăng xuất
@@ -771,7 +816,13 @@ const Home = ({navigation}) => {
                 showsVerticalScrollIndicator={false}
                 showsHorizontalScrollIndicator={false}
                 ref={swipeListViewRef}
-                data={currentStatus.display === 'Giao hàng' ? orderList.filter(order => (order.status > 2 && order.status < 6)) : orderList}
+                data={
+                  currentStatus.display === 'Giao hàng'
+                    ? orderList.filter(
+                        order => order.status > 2 && order.status < 6,
+                      )
+                    : orderList
+                }
                 keyExtractor={(item, index) => item.id}
                 renderItem={(data, rowMap) => (
                   <View
@@ -809,7 +860,10 @@ const Home = ({navigation}) => {
                             paddingTop: 6,
                             fontWeight: 'bold',
                             fontFamily: 'Roboto',
-                            color: (data.item?.status === 6 || data.item?.status === 5) ? COLORS.red : COLORS.primary,
+                            color:
+                              data.item?.status === 6 || data.item?.status === 5
+                                ? COLORS.red
+                                : COLORS.primary,
                           }}>
                           {data.item?.status === 0 && 'Chờ đóng gói'}
                           {data.item?.status === 1 && 'Đang đóng gói'}
@@ -819,7 +873,8 @@ const Home = ({navigation}) => {
                           {data.item?.status === 5 && 'Giao thất bại'}
                           {data.item?.status === 6 && 'Đã huỷ'}
                         </Text>
-                        {(data.item?.status >= 2 && data.item?.status < 6) &&
+                        {data.item?.status >= 2 &&
+                          data.item?.status < 6 &&
                           data.item?.packager?.fullName != null && (
                             <>
                               <View
@@ -1010,7 +1065,8 @@ const Home = ({navigation}) => {
                             width: 30,
                             height: 30,
                             marginBottom: 30,
-                            tintColor: data.item?.status === 6 ? 'grey' : COLORS.primary,
+                            tintColor:
+                              data.item?.status === 6 ? 'grey' : COLORS.primary,
                           }}
                           source={icons.rightArrow}
                         />
@@ -1144,14 +1200,25 @@ const Home = ({navigation}) => {
                     )}
                   </View>
                 )}
-                disableLeftSwipe={(currentStatus === '' || currentStatus === 'PACKAGED' || currentStatus === 'CANCEL') ? true : false}
-                disableRightSwipe={
-                  (currentStatus === '' || currentStatus === 'PACKAGED' || currentStatus === 'CANCEL' || currentStatus === 'PROCESSING')
+                disableLeftSwipe={
+                  currentStatus.value === '' ||
+                  currentStatus.value === 'PACKAGED' ||
+                  currentStatus.value === 'CANCEL'
                     ? true
                     : false
                 }
-                leftOpenValue={currentStatus === 'PACKAGING' ? 120 : 0}
-                rightOpenValue={currentStatus === 'PROCESSING' ? -120 : -200}
+                disableRightSwipe={
+                  currentStatus.value === '' ||
+                  currentStatus.value === 'PACKAGED' ||
+                  currentStatus.value === 'CANCEL' ||
+                  currentStatus.value === 'PROCESSING'
+                    ? true
+                    : false
+                }
+                leftOpenValue={currentStatus.value === 'PACKAGING' ? 120 : 0}
+                rightOpenValue={
+                  currentStatus.value === 'PROCESSING' ? -120 : -200
+                }
               />
             </View>
           )}
@@ -1190,7 +1257,7 @@ const Home = ({navigation}) => {
                         if (sort.active) {
                           setTempSelectedSortId(sort.id);
                         }
-                      })
+                      });
                       // setSelectSort(sortOptions);
                     }}>
                     <Image
@@ -1649,6 +1716,8 @@ const Home = ({navigation}) => {
               </View>
             </Pressable>
           </Modal>
+          {/* Modal alert disable */}
+          <ModalAlertSignOut alertVisible={alertVisible} />
         </View>
         {loading && <LoadingScreen />}
       </View>
