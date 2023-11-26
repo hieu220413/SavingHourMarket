@@ -379,6 +379,7 @@ const OrderGroup = ({navigation}) => {
   const handleClear = () => {
     setDate(null);
     setModalVisible(!modalVisible);
+    setSelectSort(sortOptions);
     setLoading(true);
     const fetchData = async () => {
       if (auth().currentUser) {

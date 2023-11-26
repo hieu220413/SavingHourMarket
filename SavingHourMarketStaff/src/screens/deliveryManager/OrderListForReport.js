@@ -86,7 +86,7 @@ const OrderListForReport = ({navigation, route}) => {
                 )
                   .then(res => res.json())
                   .then(response => {
-                    console.log(response[0]);
+                    console.log(response[3].deliveryMethod);
                     setOrderList(response);
                     setLoading(false);
                   })
@@ -278,89 +278,75 @@ const OrderListForReport = ({navigation, route}) => {
                   padding: 20,
                   marginVertical: 10,
                 }}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.navigate('OrderDetailForManager', {
+                      id: item?.id,
+                      orderSuccess: false,
+                    });
                   }}>
-                  <View style={{flexDirection: 'column', gap: 8}}>
-                    {type === 'success' && (
-                      <Text
-                        style={{
-                          fontSize: 20,
-                          fontWeight: 'bold',
-                          fontFamily: 'Roboto',
-                          color: COLORS.primary,
-                        }}>
-                        Đơn giao thành công
-                      </Text>
-                    )}
-                    {type === 'delivering' && (
-                      <Text
-                        style={{
-                          fontSize: 20,
-                          fontWeight: 'bold',
-                          fontFamily: 'Roboto',
-                          color: COLORS.primary,
-                        }}>
-                        Đơn đang giao
-                      </Text>
-                    )}
-                    {type === 'fail' && (
-                      <Text
-                        style={{
-                          fontSize: 20,
-                          fontWeight: 'bold',
-                          fontFamily: 'Roboto',
-                          color: 'red',
-                        }}>
-                        Đơn trả hàng
-                      </Text>
-                    )}
-
-                    {item?.deliverer ? (
-                      <View
-                        style={{
-                          position: 'absolute',
-                          right: -30,
-                        }}>
-                        <Image
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}>
+                    <View style={{flexDirection: 'column', gap: 8}}>
+                      {type === 'success' && (
+                        <Text
                           style={{
-                            width: 35,
-                            height: 35,
-                            borderRadius: 40,
-                          }}
-                          resizeMode="contain"
-                          source={{
-                            uri: `${item?.deliverer.avatarUrl}`,
-                          }}
-                        />
-                      </View>
-                    ) : (
-                      <></>
-                    )}
-                    <Text
-                      style={{
-                        fontSize: 17,
-                        fontWeight: 'bold',
-                        fontFamily: 'Roboto',
-                        color: 'black',
-                      }}>
-                      Ngày giao hàng :{' '}
-                      {format(Date.parse(item?.deliveryDate), 'dd/MM/yyyy')}
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 17,
-                        fontWeight: 'bold',
-                        fontFamily: 'Roboto',
-                        color: 'black',
-                      }}>
-                      Giờ giao hàng : {item?.timeFrame?.fromHour} đến{' '}
-                      {item?.timeFrame?.toHour}
-                    </Text>
-                    <View style={{width: 320}}>
+                            fontSize: 20,
+                            fontWeight: 'bold',
+                            fontFamily: 'Roboto',
+                            color: COLORS.primary,
+                          }}>
+                          Đơn giao thành công
+                        </Text>
+                      )}
+                      {type === 'delivering' && (
+                        <Text
+                          style={{
+                            fontSize: 20,
+                            fontWeight: 'bold',
+                            fontFamily: 'Roboto',
+                            color: COLORS.primary,
+                          }}>
+                          Đơn đang giao
+                        </Text>
+                      )}
+                      {type === 'fail' && (
+                        <Text
+                          style={{
+                            fontSize: 20,
+                            fontWeight: 'bold',
+                            fontFamily: 'Roboto',
+                            color: 'red',
+                          }}>
+                          Đơn trả hàng
+                        </Text>
+                      )}
+
+                      {item?.deliverer ? (
+                        <View
+                          style={{
+                            position: 'absolute',
+                            right: -30,
+                          }}>
+                          <Image
+                            style={{
+                              width: 35,
+                              height: 35,
+                              borderRadius: 40,
+                            }}
+                            resizeMode="contain"
+                            source={{
+                              uri: `${item?.deliverer.avatarUrl}`,
+                            }}
+                          />
+                        </View>
+                      ) : (
+                        <></>
+                      )}
                       <Text
                         style={{
                           fontSize: 17,
@@ -368,32 +354,68 @@ const OrderListForReport = ({navigation, route}) => {
                           fontFamily: 'Roboto',
                           color: 'black',
                         }}>
-                        Điểm giao hàng : {item?.addressDeliver}
+                        Ngày giao hàng :{' '}
+                        {format(Date.parse(item?.deliveryDate), 'dd/MM/yyyy')}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 17,
+                          fontWeight: 'bold',
+                          fontFamily: 'Roboto',
+                          color: 'black',
+                        }}>
+                        Giờ giao hàng : {item?.timeFrame?.fromHour} đến{' '}
+                        {item?.timeFrame?.toHour}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 17,
+                          fontWeight: 'bold',
+                          fontFamily: 'Roboto',
+                          color: 'black',
+                        }}>
+                        Loại đơn :{' '}
+                        {item?.deliveryMethod === 1
+                          ? 'Giao tận nhà'
+                          : 'Giao đến điểm giao hàng'}
+                      </Text>
+                      <View style={{width: 320}}>
+                        <Text
+                          style={{
+                            fontSize: 17,
+                            fontWeight: 'bold',
+                            fontFamily: 'Roboto',
+                            color: 'black',
+                          }}>
+                          {item.deliveryMethod === 1
+                            ? `Địa chỉ : ${item?.addressDeliver}`
+                            : `Điểm giao hàng : ${item?.addressDeliver}`}
+                        </Text>
+                      </View>
+                      <Text
+                        style={{
+                          fontSize: 17,
+                          fontWeight: 'bold',
+                          fontFamily: 'Roboto',
+                          color: 'black',
+                        }}>
+                        Nhân viên giao hàng :{' '}
+                        {item?.deliverer === null
+                          ? 'Chưa có'
+                          : item?.deliverer.fullName}
                       </Text>
                     </View>
-                    <Text
+                    <Image
+                      resizeMode="contain"
                       style={{
-                        fontSize: 17,
-                        fontWeight: 'bold',
-                        fontFamily: 'Roboto',
-                        color: 'black',
-                      }}>
-                      Nhân viên giao hàng :{' '}
-                      {item?.deliverer === null
-                        ? 'Chưa có'
-                        : item?.deliverer.fullName}
-                    </Text>
+                        width: 30,
+                        height: 30,
+                        tintColor: COLORS.primary,
+                      }}
+                      source={icons.rightArrow}
+                    />
                   </View>
-                  <Image
-                    resizeMode="contain"
-                    style={{
-                      width: 30,
-                      height: 30,
-                      tintColor: COLORS.primary,
-                    }}
-                    source={icons.rightArrow}
-                  />
-                </View>
+                </TouchableOpacity>
               </View>
             ))}
           </ScrollView>

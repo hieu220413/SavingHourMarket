@@ -399,6 +399,7 @@ const OrderListForManager = ({navigation}) => {
   const handleClear = () => {
     setDate(null);
     setModalVisible(!modalVisible);
+    setSelectSort(sortOptions);
     setLoading(true);
     const fetchData = async () => {
       if (auth().currentUser) {
@@ -1696,11 +1697,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(50,50,50,0.5)',
   },
   modalView: {
-    width: '80%',
     margin: 20,
-    backgroundColor: 'white',
+    backgroundColor: 'rgb(240,240,240)',
     borderRadius: 20,
-    // paddingVertical: 20,
+    padding: 20,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,

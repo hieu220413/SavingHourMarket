@@ -103,7 +103,7 @@ const ReportForManager = ({navigation}) => {
             )
               .then(res => res.json())
               .then(respond => {
-                console.log('report', respond);
+                console.log('report', respond.deliverReportList[0].staff);
                 setDeliverReportList(respond.deliverReportList);
                 setSuccessDeliveredOrder(respond.successDeliveredOrder);
                 setDeliveringOrder(respond.deliveringOrder);
@@ -364,6 +364,24 @@ const ReportForManager = ({navigation}) => {
                       style={{fontSize: 18, fontWeight: '500', color: 'black'}}>
                       Nhân viên: {item.staff.fullName}
                     </Text>
+                  </View>
+                  <View
+                    style={{
+                      position: 'absolute',
+                      right: 10,
+                      top: 5,
+                    }}>
+                    <Image
+                      style={{
+                        width: 35,
+                        height: 35,
+                        borderRadius: 40,
+                      }}
+                      resizeMode="contain"
+                      source={{
+                        uri: `${item?.staff.avatarUrl}`,
+                      }}
+                    />
                   </View>
                   <View
                     style={{
