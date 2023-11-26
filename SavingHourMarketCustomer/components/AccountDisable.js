@@ -6,11 +6,15 @@ import Modal, {
   ScaleAnimation,
 } from 'react-native-modals';
 import {COLORS} from '../constants/theme';
+import {GoogleSignin} from '@react-native-google-signin/google-signin';
+import auth from '@react-native-firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AccountDisable = ({
   openAccountDisableModal,
   setOpenAccountDisableModal,
   pickupPoint,
+  navigation,
 }) => {
   return (
     <Modal
@@ -26,8 +30,22 @@ const AccountDisable = ({
         <ModalFooter>
           <ModalButton
             text="Đồng ý"
+            textStyle={{color: COLORS.primary}}
             onPress={async () => {
               setOpenAccountDisableModal(false);
+              await GoogleSignin.signOut();
+              if (auth().currentUser) {
+                auth()
+                  .signOut()
+                  .then(async () => {
+                    await AsyncStorage.clear();
+                    navigation.navigate('Home');
+                  })
+                  .catch(e => console.log(e));
+              } else {
+                await AsyncStorage.clear();
+                navigation.navigate('Home');
+              }
             }}
           />
         </ModalFooter>
@@ -41,7 +59,8 @@ const AccountDisable = ({
             color: 'black',
             textAlign: 'center',
           }}>
-          Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng đăng nhập tài khoản khác
+          Tài khoản của bạn đã bị vô hiệu hóa. Hệ thống sẽ tự động đăng xuất .
+          Vui lòng đăng nhập tài khoản khác !
         </Text>
       </View>
     </Modal>

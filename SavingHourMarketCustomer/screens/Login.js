@@ -66,7 +66,7 @@ const Login = ({navigation}) => {
         if (userTokenId) {
           // session van con. redirect qua trang khac
           console.log('User session van con. Redirect qua screen nao do di');
-          navigation.navigate('Start');
+
           setLoading(false);
           return;
         }

@@ -10,7 +10,7 @@ import {icons} from '../constants';
 import {format} from 'date-fns';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const CartItem = ({item, cartItems, setcartItems, navigation}) => {
+const CartItem = ({item, cartItems, setcartItems, navigation, pickupPoint}) => {
   const handleAddQuantity = async () => {
     const newCart = cartItems.map(data => {
       if (data.idList[0] === item.idList[0]) {
@@ -20,7 +20,10 @@ const CartItem = ({item, cartItems, setcartItems, navigation}) => {
     });
     setcartItems(newCart);
     try {
-      await AsyncStorage.setItem('CartList', JSON.stringify(newCart));
+      await AsyncStorage.setItem(
+        'CartList' + pickupPoint.id,
+        JSON.stringify(newCart),
+      );
     } catch (error) {
       console.log(error);
     }
@@ -40,7 +43,10 @@ const CartItem = ({item, cartItems, setcartItems, navigation}) => {
     });
     setcartItems(newCart);
     try {
-      await AsyncStorage.setItem('CartList', JSON.stringify(newCart));
+      await AsyncStorage.setItem(
+        'CartList' + pickupPoint.id,
+        JSON.stringify(newCart),
+      );
     } catch (error) {
       console.log(error);
     }

@@ -118,6 +118,7 @@ const Payment = ({navigation, route}) => {
       const value = await AsyncStorage.getItem('PickupPoint');
       setPickupPoint(value ? JSON.parse(value) : pickupPoint);
     };
+    getPickupPoint();
   }, []);
 
   useEffect(() => {

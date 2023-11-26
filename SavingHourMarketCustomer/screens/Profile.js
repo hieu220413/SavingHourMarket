@@ -53,6 +53,22 @@ const Profile = ({navigation}) => {
       })();
     }, []),
   );
+
+  useFocusEffect(
+    useCallback(() => {
+      (async () => {
+        try {
+          setLoading(true);
+          const info = await AsyncStorage.getItem('userInfo');
+          setUser(JSON.parse(info));
+          setLoading(false);
+        } catch (err) {
+          console.log(err);
+          setLoading(false);
+        }
+      })();
+    }, []),
+  );
   const toggleSwitch = async value => {
     if (value) {
       console.log('hello');
@@ -87,8 +103,7 @@ const Profile = ({navigation}) => {
         });
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
-        await AsyncStorage.removeItem('userInfo');
-        await AsyncStorage.removeItem('CartList');
+
         setLoading(false);
         return;
       }
@@ -129,9 +144,6 @@ const Profile = ({navigation}) => {
       .then(() => console.log('Unsubscribed fom the topic!'));
 
     await GoogleSignin.signOut().catch(e => console.log(e));
-
-    await AsyncStorage.removeItem('CartList');
-    await AsyncStorage.removeItem('userInfo');
     await AsyncStorage.clear();
     auth()
       .signOut()
