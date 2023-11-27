@@ -32,14 +32,14 @@ import DatePicker from 'react-native-date-picker';
 import CheckBox from 'react-native-check-box';
 import Toast from 'react-native-toast-message';
 import database from '@react-native-firebase/database';
-import { checkSystemState } from '../../common/utils';
+import {checkSystemState} from '../../common/utils';
 
 const PickStaff = ({navigation, route}) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
-        checkSystemState(navigation);
-      }, []),
+      checkSystemState(navigation);
+    }, []),
   );
 
   const {orderGroupId, deliverDate, timeFrame, staff, mode} = route.params;
@@ -110,7 +110,7 @@ const PickStaff = ({navigation, route}) => {
         const currentUser = await AsyncStorage.getItem('userInfo');
         // console.log(JSON.parse(currentUser));
         setCurrentUser(JSON.parse(currentUser));
-      }
+      };
       getCurrentUser();
     }, []),
   );
@@ -139,7 +139,21 @@ const PickStaff = ({navigation, route}) => {
                   },
                 },
               )
-                .then(res => res.json())
+                .then(async res => {
+                  if (res.status === 403 || res.status === 401) {
+                    const tokenIdCheck = await auth()
+                      .currentUser.getIdToken(true)
+                      .catch(async err => {
+                        await AsyncStorage.setItem('isDisableAccount', '1');
+                        return null;
+                      });
+                    if (!tokenIdCheck) {
+                      throw new Error();
+                    }
+                    // Cac loi 403 khac thi handle duoi day neu co
+                  }
+                  return res.json();
+                })
                 .then(respond => {
                   console.log('staff:', respond.staffList[0]);
                   let res = [];
@@ -178,7 +192,21 @@ const PickStaff = ({navigation, route}) => {
                   },
                 },
               )
-                .then(res => res.json())
+                .then(async res => {
+                  if (res.status === 403 || res.status === 401) {
+                    const tokenIdCheck = await auth()
+                      .currentUser.getIdToken(true)
+                      .catch(async err => {
+                        await AsyncStorage.setItem('isDisableAccount', '1');
+                        return null;
+                      });
+                    if (!tokenIdCheck) {
+                      throw new Error();
+                    }
+                    // Cac loi 403 khac thi handle duoi day neu co
+                  }
+                  return res.json();
+                })
                 .then(respond => {
                   console.log('staff:', respond.staffList[2]);
                   let res = [];
@@ -217,7 +245,21 @@ const PickStaff = ({navigation, route}) => {
                   },
                 },
               )
-                .then(res => res.json())
+                .then(async res => {
+                  if (res.status === 403 || res.status === 401) {
+                    const tokenIdCheck = await auth()
+                      .currentUser.getIdToken(true)
+                      .catch(async err => {
+                        await AsyncStorage.setItem('isDisableAccount', '1');
+                        return null;
+                      });
+                    if (!tokenIdCheck) {
+                      throw new Error();
+                    }
+                    // Cac loi 403 khac thi handle duoi day neu co
+                  }
+                  return res.json();
+                })
                 .then(respond => {
                   console.log('staff:', respond.staffList);
                   let res = [];
@@ -276,7 +318,21 @@ const PickStaff = ({navigation, route}) => {
                 },
               },
             )
-              .then(res => res.text())
+              .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                  const tokenIdCheck = await auth()
+                    .currentUser.getIdToken(true)
+                    .catch(async err => {
+                      await AsyncStorage.setItem('isDisableAccount', '1');
+                      return null;
+                    });
+                  if (!tokenIdCheck) {
+                    throw new Error();
+                  }
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.text();
+              })
               .then(respond => {
                 console.log('res:', respond);
                 showToast(respond);
@@ -324,7 +380,21 @@ const PickStaff = ({navigation, route}) => {
                 },
               },
             )
-              .then(res => res.text())
+              .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                  const tokenIdCheck = await auth()
+                    .currentUser.getIdToken(true)
+                    .catch(async err => {
+                      await AsyncStorage.setItem('isDisableAccount', '1');
+                      return null;
+                    });
+                  if (!tokenIdCheck) {
+                    throw new Error();
+                  }
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.text();
+              })
               .then(respond => {
                 console.log('res:', respond);
                 showToast(respond);
@@ -359,7 +429,21 @@ const PickStaff = ({navigation, route}) => {
               },
             },
           )
-            .then(res => res.text())
+            .then(async res => {
+              if (res.status === 403 || res.status === 401) {
+                const tokenIdCheck = await auth()
+                  .currentUser.getIdToken(true)
+                  .catch(async err => {
+                    await AsyncStorage.setItem('isDisableAccount', '1');
+                    return null;
+                  });
+                if (!tokenIdCheck) {
+                  throw new Error();
+                }
+                // Cac loi 403 khac thi handle duoi day neu co
+              }
+              return res.text();
+            })
             .then(respond => {
               console.log('res:', respond);
               showToast(respond);

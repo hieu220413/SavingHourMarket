@@ -27,14 +27,14 @@ import DatePicker from 'react-native-date-picker';
 import NumericInput from 'react-native-numeric-input';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import database from '@react-native-firebase/database';
-import { checkSystemState } from '../../common/utils';
+import {checkSystemState} from '../../common/utils';
 
 const OrderListForManager = ({navigation}) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
-        checkSystemState(navigation);
-      }, []),
+      checkSystemState(navigation);
+    }, []),
   );
 
   const [initializing, setInitializing] = useState(true);
@@ -156,7 +156,7 @@ const OrderListForManager = ({navigation}) => {
         const currentUser = await AsyncStorage.getItem('userInfo');
         // console.log(JSON.parse(currentUser));
         setCurrentUser(JSON.parse(currentUser));
-      }
+      };
       getCurrentUser();
     }, []),
   );
@@ -179,7 +179,21 @@ const OrderListForManager = ({navigation}) => {
                 },
               },
             )
-              .then(res => res.json())
+              .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                  const tokenIdCheck = await auth()
+                    .currentUser.getIdToken(true)
+                    .catch(async err => {
+                      await AsyncStorage.setItem('isDisableAccount', '1');
+                      return null;
+                    });
+                  if (!tokenIdCheck) {
+                    throw new Error();
+                  }
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.json();
+              })
               .then(respond => {
                 console.log('order', respond[0]);
                 if (respond.error) {
@@ -204,7 +218,21 @@ const OrderListForManager = ({navigation}) => {
                 },
               },
             )
-              .then(res => res.json())
+              .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                  const tokenIdCheck = await auth()
+                    .currentUser.getIdToken(true)
+                    .catch(async err => {
+                      await AsyncStorage.setItem('isDisableAccount', '1');
+                      return null;
+                    });
+                  if (!tokenIdCheck) {
+                    throw new Error();
+                  }
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.json();
+              })
               .then(respond => {
                 console.log('order', respond[0]);
                 if (respond.error) {
@@ -309,7 +337,21 @@ const OrderListForManager = ({navigation}) => {
                 },
               },
             )
-              .then(res => res.json())
+              .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                  const tokenIdCheck = await auth()
+                    .currentUser.getIdToken(true)
+                    .catch(async err => {
+                      await AsyncStorage.setItem('isDisableAccount', '1');
+                      return null;
+                    });
+                  if (!tokenIdCheck) {
+                    throw new Error();
+                  }
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.json();
+              })
               .then(respond => {
                 console.log('order1', respond[0]);
                 if (respond.error) {
@@ -338,7 +380,21 @@ const OrderListForManager = ({navigation}) => {
                 },
               },
             )
-              .then(res => res.json())
+              .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                  const tokenIdCheck = await auth()
+                    .currentUser.getIdToken(true)
+                    .catch(async err => {
+                      await AsyncStorage.setItem('isDisableAccount', '1');
+                      return null;
+                    });
+                  if (!tokenIdCheck) {
+                    throw new Error();
+                  }
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.json();
+              })
               .then(respond => {
                 console.log('order1', respond[0]);
                 if (respond.error) {
@@ -372,7 +428,21 @@ const OrderListForManager = ({navigation}) => {
                 },
               },
             )
-              .then(res => res.json())
+              .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                  const tokenIdCheck = await auth()
+                    .currentUser.getIdToken(true)
+                    .catch(async err => {
+                      await AsyncStorage.setItem('isDisableAccount', '1');
+                      return null;
+                    });
+                  if (!tokenIdCheck) {
+                    throw new Error();
+                  }
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.json();
+              })
               .then(respond => {
                 console.log('order', respond[0]);
                 if (respond.error) {
@@ -397,7 +467,21 @@ const OrderListForManager = ({navigation}) => {
                 },
               },
             )
-              .then(res => res.json())
+              .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                  const tokenIdCheck = await auth()
+                    .currentUser.getIdToken(true)
+                    .catch(async err => {
+                      await AsyncStorage.setItem('isDisableAccount', '1');
+                      return null;
+                    });
+                  if (!tokenIdCheck) {
+                    throw new Error();
+                  }
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.json();
+              })
               .then(respond => {
                 console.log('order', respond[0]);
                 if (respond.error) {
@@ -445,7 +529,21 @@ const OrderListForManager = ({navigation}) => {
               },
             },
           )
-            .then(res => res.json())
+            .then(async res => {
+              if (res.status === 403 || res.status === 401) {
+                const tokenIdCheck = await auth()
+                  .currentUser.getIdToken(true)
+                  .catch(async err => {
+                    await AsyncStorage.setItem('isDisableAccount', '1');
+                    return null;
+                  });
+                if (!tokenIdCheck) {
+                  throw new Error();
+                }
+                // Cac loi 403 khac thi handle duoi day neu co
+              }
+              return res.json();
+            })
             .then(respond => {
               console.log('order', respond[0]);
               if (respond.error) {
@@ -470,7 +568,21 @@ const OrderListForManager = ({navigation}) => {
               },
             },
           )
-            .then(res => res.json())
+            .then(async res => {
+              if (res.status === 403 || res.status === 401) {
+                const tokenIdCheck = await auth()
+                  .currentUser.getIdToken(true)
+                  .catch(async err => {
+                    await AsyncStorage.setItem('isDisableAccount', '1');
+                    return null;
+                  });
+                if (!tokenIdCheck) {
+                  throw new Error();
+                }
+                // Cac loi 403 khac thi handle duoi day neu co
+              }
+              return res.json();
+            })
             .then(respond => {
               console.log('order', respond[0]);
               if (respond.error) {
@@ -640,7 +752,24 @@ const OrderListForManager = ({navigation}) => {
                         },
                       },
                     )
-                      .then(res => res.json())
+                      .then(async res => {
+                        if (res.status === 403 || res.status === 401) {
+                          const tokenIdCheck = await auth()
+                            .currentUser.getIdToken(true)
+                            .catch(async err => {
+                              await AsyncStorage.setItem(
+                                'isDisableAccount',
+                                '1',
+                              );
+                              return null;
+                            });
+                          if (!tokenIdCheck) {
+                            throw new Error();
+                          }
+                          // Cac loi 403 khac thi handle duoi day neu co
+                        }
+                        return res.json();
+                      })
                       .then(respond => {
                         console.log('order', respond);
                         if (respond.code === 404) {
@@ -666,7 +795,24 @@ const OrderListForManager = ({navigation}) => {
                         },
                       },
                     )
-                      .then(res => res.json())
+                      .then(async res => {
+                        if (res.status === 403 || res.status === 401) {
+                          const tokenIdCheck = await auth()
+                            .currentUser.getIdToken(true)
+                            .catch(async err => {
+                              await AsyncStorage.setItem(
+                                'isDisableAccount',
+                                '1',
+                              );
+                              return null;
+                            });
+                          if (!tokenIdCheck) {
+                            throw new Error();
+                          }
+                          // Cac loi 403 khac thi handle duoi day neu co
+                        }
+                        return res.json();
+                      })
                       .then(respond => {
                         console.log('order', respond);
                         if (respond.code === 404) {
@@ -708,7 +854,24 @@ const OrderListForManager = ({navigation}) => {
                         },
                       },
                     )
-                      .then(res => res.json())
+                      .then(async res => {
+                        if (res.status === 403 || res.status === 401) {
+                          const tokenIdCheck = await auth()
+                            .currentUser.getIdToken(true)
+                            .catch(async err => {
+                              await AsyncStorage.setItem(
+                                'isDisableAccount',
+                                '1',
+                              );
+                              return null;
+                            });
+                          if (!tokenIdCheck) {
+                            throw new Error();
+                          }
+                          // Cac loi 403 khac thi handle duoi day neu co
+                        }
+                        return res.json();
+                      })
                       .then(respond => {
                         console.log('order', respond[0]);
                         if (respond.error) {
@@ -733,7 +896,24 @@ const OrderListForManager = ({navigation}) => {
                         },
                       },
                     )
-                      .then(res => res.json())
+                      .then(async res => {
+                        if (res.status === 403 || res.status === 401) {
+                          const tokenIdCheck = await auth()
+                            .currentUser.getIdToken(true)
+                            .catch(async err => {
+                              await AsyncStorage.setItem(
+                                'isDisableAccount',
+                                '1',
+                              );
+                              return null;
+                            });
+                          if (!tokenIdCheck) {
+                            throw new Error();
+                          }
+                          // Cac loi 403 khac thi handle duoi day neu co
+                        }
+                        return res.json();
+                      })
                       .then(respond => {
                         console.log('order', respond[0]);
                         if (respond.error) {
