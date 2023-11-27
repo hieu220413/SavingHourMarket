@@ -23,7 +23,7 @@ export default function App({navigation, route}) {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
-      checkSystemState();
+      checkSystemState(navigation);
     }, []),
   );
   console.log(route.params.uri);

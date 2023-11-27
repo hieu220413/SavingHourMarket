@@ -18,9 +18,9 @@ const Loading = ({ navigation }) => {
                     console.log('System status: ', snapshot.val());
                     if (snapshot.val() === 0) {
                         setSystemStatus(snapshot.val());
-                        if (auth().currentUser) {
-                            await auth().signOut();
-                        }
+                        // if (auth().currentUser) {
+                        //     await auth().signOut();
+                        // }
                         setLoading(false);
                     } else {
                         const currentUser = await AsyncStorage.getItem('userInfo');

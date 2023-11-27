@@ -207,7 +207,7 @@ const CreateStaff = ({
       setError({ ...error, password: "Vui lòng không để trống" });
       return;
     }
-    if (!/^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,20}$/.test(password)) {
+    if (!/^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(password)) {
       setError({
         ...error,
         password:

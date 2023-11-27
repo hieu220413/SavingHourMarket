@@ -25,9 +25,10 @@ import {useFocusEffect} from '@react-navigation/native';
 
 const Login = ({navigation}) => {
   // listen to system state
-  database().ref(`systemStatus`).off('value');
-  useFocusEffect(useCallback(() => {
-    const onSystemStateChange = database()
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
         .ref(`systemStatus`)
         .on(
           'value',
@@ -39,17 +40,18 @@ const Login = ({navigation}) => {
               }
               navigation.reset({
                 index: 0,
-                routes: [{ name: "Start" }]
+                routes: [{name: 'Start'}],
               });
               setLoading(false);
-            } 
+            }
           },
           error => {
             console.error(error);
           },
         );
-    // return () => database().ref(`systemStatus`).off('value', onSystemStateChange); 
-  }, [navigation]));
+      // return () => database().ref(`systemStatus`).off('value', onSystemStateChange);
+    }, [navigation]),
+  );
 
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');

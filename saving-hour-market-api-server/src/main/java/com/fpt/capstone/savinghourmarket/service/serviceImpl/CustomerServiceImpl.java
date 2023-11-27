@@ -56,13 +56,14 @@ public class CustomerServiceImpl implements CustomerService {
 
         // email format validate
         pattern = Pattern.compile("^[\\w!#$%&amp;'*+/=?`{|}~^-]+(?:\\.[\\w!#$%&amp;'*+/=?`{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$");
+
         matcher = pattern.matcher(customerRegisterRequestBody.getEmail());
         if(!matcher.matches()){
             errorFields.put("emailError", "Invalid email format");
         }
 
         // password validate
-        pattern = Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,20}$");
+        pattern = Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}$");
         matcher = pattern.matcher(customerRegisterRequestBody.getPassword());
 
         if(!matcher.matches()){
@@ -243,7 +244,7 @@ public class CustomerServiceImpl implements CustomerService {
         HashMap errorFields = new HashMap<>();
 
         // password validate
-        pattern = Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,20}$");
+        pattern = Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}$");
         matcher = pattern.matcher(passwordRequestBody.getPassword());
 
         if(!matcher.matches()){

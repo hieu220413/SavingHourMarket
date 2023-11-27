@@ -23,7 +23,7 @@ const OrderListForReport = ({navigation, route}) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
-        checkSystemState();
+        checkSystemState(navigation);
       }, []),
   );
 

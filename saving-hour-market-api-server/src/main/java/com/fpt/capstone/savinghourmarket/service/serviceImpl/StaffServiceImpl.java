@@ -133,7 +133,7 @@ public class StaffServiceImpl implements StaffService {
         }
 
         // password validate
-        pattern = Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,20}$");
+        pattern = Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}$");
         matcher = pattern.matcher(staffCreateRequestBody.getPassword());
 
         if(!matcher.matches()){

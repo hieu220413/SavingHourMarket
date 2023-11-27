@@ -33,7 +33,7 @@ const Home = ({navigation}) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
-      const onSystemStateChange = checkSystemState();
+      const onSystemStateChange = checkSystemState(navigation);
     }, []),
   );
 
