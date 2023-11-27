@@ -290,4 +290,11 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "o.deliverer.id = :deliverId " +
             "GROUP BY o.deliverer.id")
     List<Object[]> getReportOrderDeliverStaff(UUID deliverId, Integer year, Integer monthInNumber);
+
+    @Query("SELECT ord FROM Order ord " +
+            "WHERE " +
+            "ord.deliveryDate < CURRENT_DATE " +
+            "AND ord.status IN :statusList")
+    List<Order> findOrderExceedDeliverDateList(List<Integer> statusList);
+
 }
