@@ -36,13 +36,13 @@ import {
   ScaleAnimation,
 } from 'react-native-modals';
 import database from '@react-native-firebase/database';
-import { checkSystemState } from '../../common/utils';
+import {checkSystemState} from '../../common/utils';
 
 const OrderGroupForOrderStaff = ({navigation, route}) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
-      checkSystemState();
+      checkSystemState(navigation);
     }, []),
   );
 
@@ -553,56 +553,56 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
 
   const [orderFailList, setOrderFailList] = useState([]);
 
-  const onAuthStateChange = async userInfo => {
-    // console.log(userInfo);
-    if (initializing) {
-      setInitializing(false);
-    }
-    if (userInfo) {
-      // check if user sessions is still available. If yes => redirect to another screen
-      const userTokenId = await userInfo
-        .getIdToken(true)
-        .then(token => token)
-        .catch(async e => {
-          console.log(e);
-          return null;
-        });
-      if (!userTokenId) {
-        // sessions end. (revoke refresh token like password change, disable account, ....)
-        await AsyncStorage.removeItem('userInfo');
-        // navigation.navigate('Login');
-        navigation.reset({
-          index: 0,
-          routes: [{name: 'Login'}],
-        });
-        return;
-      }
-      const currentUser = await AsyncStorage.getItem('userInfo');
-      // console.log('currentUser', currentUser);
-      setCurrentUser(JSON.parse(currentUser));
-    } else {
-      // no sessions found.
-      console.log('user is not logged in');
-      await AsyncStorage.removeItem('userInfo');
-      // navigation.navigate('Login');
-      navigation.reset({
-        index: 0,
-        routes: [{name: 'Login'}],
-      });
-    }
-  };
+  // const onAuthStateChange = async userInfo => {
+  //   // console.log(userInfo);
+  //   if (initializing) {
+  //     setInitializing(false);
+  //   }
+  //   if (userInfo) {
+  //     // check if user sessions is still available. If yes => redirect to another screen
+  //     const userTokenId = await userInfo
+  //       .getIdToken(true)
+  //       .then(token => token)
+  //       .catch(async e => {
+  //         console.log(e);
+  //         return null;
+  //       });
+  //     if (!userTokenId) {
+  //       // sessions end. (revoke refresh token like password change, disable account, ....)
+  //       await AsyncStorage.removeItem('userInfo');
+  //       // navigation.navigate('Login');
+  //       navigation.reset({
+  //         index: 0,
+  //         routes: [{name: 'Login'}],
+  //       });
+  //       return;
+  //     }
+  //     const currentUser = await AsyncStorage.getItem('userInfo');
+  //     // console.log('currentUser', currentUser);
+  //     setCurrentUser(JSON.parse(currentUser));
+  //   } else {
+  //     // no sessions found.
+  //     console.log('user is not logged in');
+  //     await AsyncStorage.removeItem('userInfo');
+  //     // navigation.navigate('Login');
+  //     navigation.reset({
+  //       index: 0,
+  //       routes: [{name: 'Login'}],
+  //     });
+  //   }
+  // };
 
-  useFocusEffect(
-    useCallback(() => {
-      // auth().currentUser.reload()
-      const subscriber = auth().onAuthStateChanged(
-        async userInfo => await onAuthStateChange(userInfo),
-      );
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     // auth().currentUser.reload()
+  //     const subscriber = auth().onAuthStateChanged(
+  //       async userInfo => await onAuthStateChange(userInfo),
+  //     );
 
-      return subscriber;
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []),
-  );
+  //     return subscriber;
+  //     // eslint-disable-next-line react-hooks/exhaustive-deps
+  //   }, []),
+  // );
 
   // useFocusEffect(
   //   useCallback(() => {
@@ -618,6 +618,18 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
 
   // value to make sure that data not fetch second time when init pickup point
   // init pickup point
+
+  //get Current User Info
+  useFocusEffect(
+    useCallback(() => {
+      const getCurrentUser = async () => {
+        const currentUser = await AsyncStorage.getItem('userInfo');
+        // console.log(JSON.parse(currentUser));
+        setCurrentUser(JSON.parse(currentUser));
+      };
+      getCurrentUser();
+    }, []),
+  );
   useFocusEffect(
     useCallback(() => {
       const initPickupPoint = async () => {
@@ -746,7 +758,15 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
       )
         .then(async res => {
           if (res.status === 403 || res.status === 401) {
-            const tokenId = await auth().currentUser.getIdToken(true);
+            const tokenIdCheck = await auth()
+              .currentUser.getIdToken(true)
+              .catch(async err => {
+                await AsyncStorage.setItem('isDisableAccount', '1');
+                return null;
+              });
+            if (!tokenIdCheck) {
+              throw new Error();
+            }
             // Cac loi 403 khac thi handle duoi day neu co
           }
           return res.json();
@@ -815,7 +835,15 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
       )
         .then(async res => {
           if (res.status === 403 || res.status === 401) {
-            const tokenId = await auth().currentUser.getIdToken(true);
+            const tokenIdCheck = await auth()
+              .currentUser.getIdToken(true)
+              .catch(async err => {
+                await AsyncStorage.setItem('isDisableAccount', '1');
+                return null;
+              });
+            if (!tokenIdCheck) {
+              throw new Error();
+            }
             // Cac loi 403 khac thi handle duoi day neu co
           }
           return res.json();
@@ -956,7 +984,15 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
       )
         .then(async res => {
           if (res.status === 403 || res.status === 401) {
-            const tokenId = await auth().currentUser.getIdToken(true);
+            const tokenIdCheck = await auth()
+              .currentUser.getIdToken(true)
+              .catch(async err => {
+                await AsyncStorage.setItem('isDisableAccount', '1');
+                return null;
+              });
+            if (!tokenIdCheck) {
+              throw new Error();
+            }
             // Cac loi 403 khac thi handle duoi day neu co
           }
           return res.json();
@@ -1002,9 +1038,17 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
       if (!editConsolidationAreaRequest) {
         return;
       }
-      
-      if (editConsolidationAreaRequest.status === 403 || editConsolidationAreaRequest.status === 401) {
-        const tokenId = await auth().currentUser.getIdToken(true);
+
+      if (
+        editConsolidationAreaRequest.status === 403 ||
+        editConsolidationAreaRequest.status === 401
+      ) {
+        await auth()
+          .currentUser.getIdToken(true)
+          .catch(async err => {
+            await AsyncStorage.setItem('isDisableAccount', '1');
+            return null;
+          });
       }
 
       if (editConsolidationAreaRequest.status === 200) {
@@ -1048,8 +1092,16 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
         return;
       }
 
-      if (confirmPackagingGroupRequest.status === 403 || confirmPackagingGroupRequest.status === 401) {
-        const tokenId = await auth().currentUser.getIdToken(true);
+      if (
+        confirmPackagingGroupRequest.status === 403 ||
+        confirmPackagingGroupRequest.status === 401
+      ) {
+        await auth()
+          .currentUser.getIdToken(true)
+          .catch(async err => {
+            await AsyncStorage.setItem('isDisableAccount', '1');
+            return null;
+          });
       }
 
       if (confirmPackagingGroupRequest.status === 200) {
@@ -1093,8 +1145,16 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
         return;
       }
 
-      if (updateStatusToPackagedRequest.status === 403 || updateStatusToPackagedRequest.status === 401) {
-        const tokenId = await auth().currentUser.getIdToken(true);
+      if (
+        updateStatusToPackagedRequest.status === 403 ||
+        updateStatusToPackagedRequest.status === 401
+      ) {
+        await auth()
+          .currentUser.getIdToken(true)
+          .catch(async err => {
+            await AsyncStorage.setItem('isDisableAccount', '1');
+            return null;
+          });
       }
 
       if (updateStatusToPackagedRequest.status === 200) {

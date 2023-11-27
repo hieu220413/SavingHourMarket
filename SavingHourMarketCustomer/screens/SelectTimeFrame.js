@@ -9,10 +9,29 @@ import {COLORS} from '../constants/theme';
 import {useFocusEffect} from '@react-navigation/native';
 import {API} from '../constants/api';
 import LoadingScreen from '../components/LoadingScreen';
+import database from '@react-native-firebase/database';
 
 const SelectTimeFrame = ({navigation, route}) => {
   const [timeFrameList, setTimeFrameList] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+          } else {
+            // setSystemStatus(snapshot.val());
+          }
+        });
+    }, []),
+  );
 
   useFocusEffect(
     useCallback(() => {

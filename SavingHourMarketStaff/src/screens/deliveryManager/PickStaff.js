@@ -38,7 +38,7 @@ const PickStaff = ({navigation, route}) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
-        checkSystemState();
+        checkSystemState(navigation);
       }, []),
   );
 
@@ -53,54 +53,65 @@ const PickStaff = ({navigation, route}) => {
   const [openValidateDialog, setOpenValidateDialog] = useState(false);
   const [openConfirmModal, setOpenConfirmModal] = useState(false);
 
-  const onAuthStateChange = async userInfo => {
-    // console.log(userInfo);
-    if (initializing) {
-      setInitializing(false);
-    }
-    if (userInfo) {
-      // check if user sessions is still available. If yes => redirect to another screen
-      const userTokenId = await userInfo
-        .getIdToken(true)
-        .then(token => token)
-        .catch(async e => {
-          console.log(e);
-          return null;
-        });
-      if (!userTokenId) {
-        // sessions end. (revoke refresh token like password change, disable account, ....)
-        await AsyncStorage.removeItem('userInfo');
-        // navigation.navigate('Login');
-        navigation.reset({
-          index: 0,
-          routes: [{name: 'Login'}],
-        });
-        return;
-      }
-      const currentUser = await AsyncStorage.getItem('userInfo');
-      // console.log('currentUser', currentUser);
-      setCurrentUser(JSON.parse(currentUser));
-    } else {
-      // no sessions found.
-      console.log('user is not logged in');
-      await AsyncStorage.removeItem('userInfo');
-      // navigation.navigate('Login');
-      navigation.reset({
-        index: 0,
-        routes: [{name: 'Login'}],
-      });
-    }
-  };
+  // const onAuthStateChange = async userInfo => {
+  //   // console.log(userInfo);
+  //   if (initializing) {
+  //     setInitializing(false);
+  //   }
+  //   if (userInfo) {
+  //     // check if user sessions is still available. If yes => redirect to another screen
+  //     const userTokenId = await userInfo
+  //       .getIdToken(true)
+  //       .then(token => token)
+  //       .catch(async e => {
+  //         console.log(e);
+  //         return null;
+  //       });
+  //     if (!userTokenId) {
+  //       // sessions end. (revoke refresh token like password change, disable account, ....)
+  //       await AsyncStorage.removeItem('userInfo');
+  //       // navigation.navigate('Login');
+  //       navigation.reset({
+  //         index: 0,
+  //         routes: [{name: 'Login'}],
+  //       });
+  //       return;
+  //     }
+  //     const currentUser = await AsyncStorage.getItem('userInfo');
+  //     // console.log('currentUser', currentUser);
+  //     setCurrentUser(JSON.parse(currentUser));
+  //   } else {
+  //     // no sessions found.
+  //     console.log('user is not logged in');
+  //     await AsyncStorage.removeItem('userInfo');
+  //     // navigation.navigate('Login');
+  //     navigation.reset({
+  //       index: 0,
+  //       routes: [{name: 'Login'}],
+  //     });
+  //   }
+  // };
 
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     // auth().currentUser.reload()
+  //     const subscriber = auth().onAuthStateChanged(
+  //       async userInfo => await onAuthStateChange(userInfo),
+  //     );
+
+  //     return subscriber;
+  //     // eslint-disable-next-line react-hooks/exhaustive-deps
+  //   }, []),
+  // );
+  //get Current User Info
   useFocusEffect(
     useCallback(() => {
-      // auth().currentUser.reload()
-      const subscriber = auth().onAuthStateChanged(
-        async userInfo => await onAuthStateChange(userInfo),
-      );
-
-      return subscriber;
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+      const getCurrentUser = async () => {
+        const currentUser = await AsyncStorage.getItem('userInfo');
+        // console.log(JSON.parse(currentUser));
+        setCurrentUser(JSON.parse(currentUser));
+      }
+      getCurrentUser();
     }, []),
   );
 
@@ -130,7 +141,7 @@ const PickStaff = ({navigation, route}) => {
               )
                 .then(res => res.json())
                 .then(respond => {
-                  console.log('staff:', respond.staffList[2]);
+                  console.log('staff:', respond.staffList[0]);
                   let res = [];
                   if (staff) {
                     res = respond.staffList.filter(item => {
@@ -424,11 +435,15 @@ const PickStaff = ({navigation, route}) => {
               {staffList.map((item, index) => (
                 <View
                   key={item.id}
-                  style={{
-                    backgroundColor: 'white',
-                    marginBottom: 20,
-                    // borderRadius: 10,
-                  }}>
+                  style={
+                    item?.isAvailableForDelivering === true
+                      ? {
+                          backgroundColor: '#FFFFFF',
+                          marginBottom: 20,
+                          // borderRadius: 10,
+                        }
+                      : {backgroundColor: '#E5E5E5', marginBottom: 20}
+                  }>
                   {/* List staff */}
                   <Pressable
                     onPress={() => {
@@ -490,8 +505,24 @@ const PickStaff = ({navigation, route}) => {
                           }}>
                           Email : {item?.email}
                         </Text>
+                        {item?.isAvailableForDelivering === false ? (
+                          <Text
+                            style={{
+                              fontSize: 17,
+                              width: 320,
+                              fontWeight: 'bold',
+                              fontFamily: 'Roboto',
+                              color: 'red',
+                            }}>
+                            Nhân viên này đã đảm nhận nhóm đơn khác trong cùng
+                            khung giờ
+                          </Text>
+                        ) : null}
                       </View>
                       <CheckBox
+                        disabled={
+                          item?.isAvailableForDelivering === true ? false : true
+                        }
                         uncheckedCheckBoxColor="#000000"
                         checkedCheckBoxColor={COLORS.primary}
                         onClick={() => {
@@ -609,7 +640,7 @@ const PickStaff = ({navigation, route}) => {
             footer={
               <ModalFooter>
                 <ModalButton
-                  // textStyle={{color: 'red'}}
+                  textStyle={{color: 'grey'}}
                   text="Đóng"
                   onPress={() => {
                     setOpenValidateDialog(false);
@@ -654,14 +685,14 @@ const PickStaff = ({navigation, route}) => {
             footer={
               <ModalFooter>
                 <ModalButton
-                  textStyle={{color: 'red'}}
+                  textStyle={{color: 'grey'}}
                   text="Đóng"
                   onPress={() => {
                     setOpenConfirmModal(false);
                   }}
                 />
                 <ModalButton
-                  // textStyle={{color: 'red'}}
+                  textStyle={{color: COLORS.primary}}
                   text="Xác nhận"
                   onPress={() => {
                     setOpenConfirmModal(false);

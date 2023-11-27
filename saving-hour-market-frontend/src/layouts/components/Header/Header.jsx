@@ -20,7 +20,7 @@ const Header = () => {
         localStorage.clear();
         const action = setUser(null);
         dispatch(action);
-        navigate("/login");
+        // navigate("/login");
       })
       .catch((error) => {
         // An error happened.

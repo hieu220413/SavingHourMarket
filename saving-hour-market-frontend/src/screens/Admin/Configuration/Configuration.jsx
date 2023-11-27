@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../../../firebase/firebase.config";
+import { auth, database } from "../../../firebase/firebase.config";
 import { API } from "../../../contanst/api";
 import "./Configuration.scss";
 import LoadingScreen from "../../../components/LoadingScreen/LoadingScreen";
 import MuiAlert from "@mui/material/Alert";
 import { Snackbar } from "@mui/material";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCaretDown } from "@fortawesome/free-solid-svg-icons";
+import { ref, set } from "firebase/database";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -25,6 +28,17 @@ const Configuration = () => {
   const [timeAllowedForOrderCancellation, setTimeAllowedForOrderCancellation] =
     useState(0);
   const [deleteUnpaidOrderTime, setDeleteUnpaidOrderTime] = useState(0);
+  const [limitMeterPerMiniute, setLimitMeterPerMiniute] = useState(0);
+  const [systemStatus, setSystemStatus] = useState({
+    display: "Có thể sử dụng",
+    value: 1,
+  });
+  const [openSystemStatus, setOpenSystemStatus] = useState(false);
+
+  const selectSystemStatus = [
+    { display: "Có thể sử dụng", value: 1 },
+    { display: "Vô hiệu hóa", value: 0 },
+  ];
 
   const [openSnackbar, setOpenSnackbar] = useState({
     open: false,
@@ -74,6 +88,11 @@ const Configuration = () => {
               respond.timeAllowedForOrderCancellation
             );
             setDeleteUnpaidOrderTime(respond.deleteUnpaidOrderTime);
+            setLimitMeterPerMiniute(respond.limitMeterPerMinute);
+            const currentStatus = selectSystemStatus.find(
+              (item) => item.value === respond.systemStatus
+            );
+            setSystemStatus(currentStatus);
             setLoading(false);
           })
           .catch((err) => console.log(err));
@@ -165,7 +184,15 @@ const Configuration = () => {
       setOpenSnackbar({
         ...openSnackbar,
         open: true,
-        text: "TThời gian tự động xóa đơn hàng lỗi thanh toán không được bỏ trống hoặc bằng 0",
+        text: "Thời gian tự động xóa đơn hàng lỗi thanh toán không được bỏ trống hoặc bằng 0",
+      });
+      return;
+    }
+    if (limitMeterPerMiniute == 0) {
+      setOpenSnackbar({
+        ...openSnackbar,
+        open: true,
+        text: "Giới hạn khoảng cách mỗi phút không được bỏ trống hoặc bằng 0",
       });
       return;
     }
@@ -178,7 +205,7 @@ const Configuration = () => {
         Authorization: `Bearer ${tokenId}`,
       },
       body: JSON.stringify({
-        systemStatus: 1,
+        systemStatus: systemStatus.value,
         limitOfOrders: parseInt(limitOfOrders),
         numberOfSuggestedPickupPoint: parseInt(numberOfSuggestedPickupPoint),
         deleteUnpaidOrderTime: parseInt(deleteUnpaidOrderTime),
@@ -190,14 +217,18 @@ const Configuration = () => {
         timeAllowedForOrderCancellation: parseInt(
           timeAllowedForOrderCancellation
         ),
+        limitMeterPerMinute: parseInt(limitMeterPerMiniute),
       }),
     })
       .then((res) => res.json())
       .then((respond) => {
+        console.log(respond);
         if (respond?.code === 422) {
           setLoading(false);
           return;
         }
+
+        set(ref(database, "systemStatus"), systemStatus.value);
         setOpenSnackbar({
           ...openSnackbar,
           open: true,
@@ -318,6 +349,51 @@ const Configuration = () => {
               type="number"
               className="configuration__content-line-item-input"
             />
+          </div>
+          <div className="configuration__content-line-item">
+            <div className="configuration__content-line-item-title">
+              Giới hạn khoảng cách mỗi phút ( m )
+            </div>
+            <input
+              onKeyDown={(e) => handleKeypress(e)}
+              onChange={(e) => {
+                setLimitMeterPerMiniute(e.target.value);
+              }}
+              value={limitMeterPerMiniute}
+              type="number"
+              className="configuration__content-line-item-input"
+            />
+          </div>
+          <div className="configuration__content-line-item">
+            <h3 className="configuration__content-line-item-title">
+              Trạng thái hệ thống :
+            </h3>
+            <div
+              onClick={() => {
+                setOpenSystemStatus(!openSystemStatus);
+              }}
+              className="feedback__select-button"
+            >
+              <h3 className="feedback__select-button-label">
+                {systemStatus.display}
+              </h3>
+              <FontAwesomeIcon icon={faCaretDown} />
+              {openSystemStatus && (
+                <div className="feedback__select-dropdown">
+                  {selectSystemStatus.map((item, i) => (
+                    <p
+                      onClick={() => {
+                        setSystemStatus(item);
+                        setOpenSystemStatus(!openSystemStatus);
+                      }}
+                      key={i}
+                    >
+                      {item.display}
+                    </p>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
         <button onClick={handleSave} className="configuration__content-button">

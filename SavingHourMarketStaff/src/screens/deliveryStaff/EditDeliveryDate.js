@@ -23,7 +23,7 @@ const EditDeliveryDate = ({ navigation, route }) => {
     // listen to system state
     useFocusEffect(
         useCallback(() => {
-            checkSystemState();
+            checkSystemState(navigation);
         }, []),
     );
 
@@ -64,53 +64,53 @@ const EditDeliveryDate = ({ navigation, route }) => {
         return maxDate;
     };
 
-    const onAuthStateChange = async userInfo => {
-        setLoading(true);
-        if (initializing) {
-            setInitializing(false);
-        }
-        if (userInfo) {
-            // check if user sessions is still available. If yes => redirect to another screen
-            const userTokenId = await userInfo
-                .getIdToken(true)
-                .then(token => token)
-                .catch(async e => {
-                    console.log(e);
-                    setLoading(false);
-                    return null;
-                });
-            if (!userTokenId) {
-                // sessions end. (revoke refresh token like password change, disable account, ....)
-                await AsyncStorage.removeItem('userInfo');
-                setLoading(false);
-                // navigation.navigate('Login');
-                navigation.reset({
-                    index: 0,
-                    routes: [{name: 'Login'}],
-                  });
-                return;
-            }
-            const token = await auth().currentUser.getIdToken();
-            setTokenId(token);
-            setLoading(false);
-        } else {
-            // no sessions found.
-            console.log('user is not logged in');
-            await AsyncStorage.removeItem('userInfo');
-            setLoading(false);
-            // navigation.navigate('Login');
-            navigation.reset({
-                index: 0,
-                routes: [{name: 'Login'}],
-              });
-        }
-    };
-    useEffect(() => {
-        const subscriber = auth().onAuthStateChanged(
-            async userInfo => await onAuthStateChange(userInfo),
-        );
-        return subscriber;
-    }, []);
+    // const onAuthStateChange = async userInfo => {
+    //     setLoading(true);
+    //     if (initializing) {
+    //         setInitializing(false);
+    //     }
+    //     if (userInfo) {
+    //         // check if user sessions is still available. If yes => redirect to another screen
+    //         const userTokenId = await userInfo
+    //             .getIdToken(true)
+    //             .then(token => token)
+    //             .catch(async e => {
+    //                 console.log(e);
+    //                 setLoading(false);
+    //                 return null;
+    //             });
+    //         if (!userTokenId) {
+    //             // sessions end. (revoke refresh token like password change, disable account, ....)
+    //             await AsyncStorage.removeItem('userInfo');
+    //             setLoading(false);
+    //             // navigation.navigate('Login');
+    //             navigation.reset({
+    //                 index: 0,
+    //                 routes: [{name: 'Login'}],
+    //               });
+    //             return;
+    //         }
+    //         const token = await auth().currentUser.getIdToken();
+    //         setTokenId(token);
+    //         setLoading(false);
+    //     } else {
+    //         // no sessions found.
+    //         console.log('user is not logged in');
+    //         await AsyncStorage.removeItem('userInfo');
+    //         setLoading(false);
+    //         // navigation.navigate('Login');
+    //         navigation.reset({
+    //             index: 0,
+    //             routes: [{name: 'Login'}],
+    //           });
+    //     }
+    // };
+    // useEffect(() => {
+    //     const subscriber = auth().onAuthStateChanged(
+    //         async userInfo => await onAuthStateChange(userInfo),
+    //     );
+    //     return subscriber;
+    // }, []);
 
     useFocusEffect(
         useCallback(() => {
@@ -188,7 +188,21 @@ const EditDeliveryDate = ({ navigation, route }) => {
                 Authorization: `Bearer ${tokenId}`,
             },
         })
-            .then((res) => res.json())
+            .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                    const tokenIdCheck = await auth()
+                        .currentUser.getIdToken(true)
+                        .catch(async err => {
+                        await AsyncStorage.setItem('isDisableAccount', '1');
+                        return null;
+                        });
+                    if (!tokenIdCheck) {
+                        throw new Error();
+                    }
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.json();
+            })
             .then((data) => {
                 console.log('data', data);
                 setLoading(false);

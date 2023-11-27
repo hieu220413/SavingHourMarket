@@ -15,6 +15,8 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../../../../firebase/firebase.config";
 import { format } from "date-fns";
 import TransactionDetail from "./TransactionDetail";
+import { th } from "date-fns/locale";
+import RefundTransactionDetail from "./RefundTransactionDetail";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -84,6 +86,13 @@ const RefundTransactionManagement = () => {
     const [openTransactionDetail, setOpenTransactionDetail] = useState(false);
     const handleOpenTransactionDetail = () => setOpenTransactionDetail(true);
     const handleCloseTransactionDetail = () => setOpenTransactionDetail(false);
+
+    const [openRefundTransactionDetail, setOpenRefundTransactionDetail] =
+      useState(false);
+    const handleOpenRefundTransactionDetail = () =>
+      setOpenRefundTransactionDetail(true);
+    const handleCloseRefundTransactionDetail = () =>
+      setOpenRefundTransactionDetail(false);
 
     const [openRefundDialog, setOpenRefundDialog] = useState(false);
     const handleOpenRefundDialog = () => setOpenRefundDialog(true);
@@ -166,6 +175,15 @@ const RefundTransactionManagement = () => {
             currency: "VND",
           })}
         </td>
+        {item.refundTransaction && (
+          <td>
+            <i
+              onClick={handleOpenRefundTransactionDetail}
+              class="bi bi-receipt"
+            ></i>
+          </td>
+        )}
+
         <td>
           <i onClick={handleOpenTransactionDetail} class="bi bi-eye"></i>
           {!isRefund && (
@@ -184,6 +202,16 @@ const RefundTransactionManagement = () => {
             refund={true}
             handleClose={handleCloseTransactionDetail}
             item={item}
+          />
+        </Dialog>
+        <Dialog
+          onClose={handleCloseRefundTransactionDetail}
+          aria-labelledby="customized-dialog-title"
+          open={openRefundTransactionDetail}
+        >
+          <RefundTransactionDetail
+            handleClose={handleCloseRefundTransactionDetail}
+            transaction={item.refundTransaction}
           />
         </Dialog>
         <Dialog
@@ -235,19 +263,7 @@ const RefundTransactionManagement = () => {
     <div style={{ marginBottom: 50 }} className="user__container">
       <h3 className="user__title">Giao dịch cần hoàn trả</h3>
       <div className="user__header">
-        <div className="search">
-          <form onSubmit={(e) => onSubmitSearch(e)}>
-            <div onClick={(e) => onSubmitSearch(e)} className="search-icon">
-              <FontAwesomeIcon icon={faMagnifyingGlass} />
-            </div>
-            <input
-              value={textSearch}
-              onChange={(e) => setTextSearch(e.target.value)}
-              type="text"
-              placeholder="Từ khóa tìm kiếm"
-            />
-          </form>
-        </div>
+        <div className="search"></div>
         {/* ****************** */}
       </div>
       {/* data table + pagination*/}
@@ -263,6 +279,8 @@ const RefundTransactionManagement = () => {
                   <th>Thời điểm thanh toán</th>
                   <th>Phương thức</th>
                   <th>Tổng cộng</th>
+
+                  {isRefund && !loading && <th>Giao dịch hoàn trả</th>}
                   <th>Thao tác</th>
                 </tr>
               </thead>

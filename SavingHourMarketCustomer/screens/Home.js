@@ -27,6 +27,7 @@ import Modal, {
   ScaleAnimation,
 } from 'react-native-modals';
 import Empty from '../assets/image/search-empty.png';
+import database from '@react-native-firebase/database';
 
 const Home = ({navigation}) => {
   const [categories, setCategories] = useState([]);
@@ -58,6 +59,25 @@ const Home = ({navigation}) => {
 
   // console.log(cartList);
 
+  // system status check
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+          } else {
+            // setSystemStatus(snapshot.val());
+          }
+        });
+    }, []),
+  );
+
   useFocusEffect(
     useCallback(() => {
       // Get pickup point from AS
@@ -80,7 +100,9 @@ const Home = ({navigation}) => {
             }
           } else {
             setPickupPoint(value ? JSON.parse(value) : pickupPoint);
-            const cartListNew = await AsyncStorage.getItem('CartList' + JSON.parse(value).id);
+            const cartListNew = await AsyncStorage.getItem(
+              'CartList' + JSON.parse(value).id,
+            );
             setCartList(cartListNew ? JSON.parse(cartListNew) : []);
             setLoading(false);
           }
@@ -187,7 +209,7 @@ const Home = ({navigation}) => {
         onPress={() => {
           navigation.navigate('ProductDetails', {
             product: data,
-            pickupPointId: pickupPoint.id
+            pickupPointId: pickupPoint.id,
           });
         }}>
         <View style={styles.itemContainer}>
@@ -200,7 +222,13 @@ const Home = ({navigation}) => {
             style={styles.itemImage}
           />
 
-          <View style={{ justifyContent: 'center', flex: 1, marginRight: 10, marginTop: 5 }}>
+          <View
+            style={{
+              justifyContent: 'center',
+              flex: 1,
+              marginRight: 10,
+              marginTop: 5,
+            }}>
             <Text
               numberOfLines={1}
               style={{
@@ -250,7 +278,6 @@ const Home = ({navigation}) => {
                 ₫
               </Text>
             </View>
-
 
             {/* Button buy */}
             {/* <TouchableOpacity onPress={() => handleAddToCart(data)}>
@@ -363,11 +390,14 @@ const Home = ({navigation}) => {
 
   const SelectPickupPointBar = () => {
     return (
-      <View style={{
-        paddingHorizontal: 20,
-        paddingTop: 10,
-      }}>
-        <Text style={{ fontSize: 16, fontFamily: FONTS.fontFamily }}>Điểm nhận hàng hiện tại:</Text>
+      <View
+        style={{
+          paddingHorizontal: 20,
+          paddingTop: 10,
+        }}>
+        <Text style={{fontSize: 16, fontFamily: FONTS.fontFamily}}>
+          Điểm nhận hàng hiện tại:
+        </Text>
         <TouchableOpacity
           onPress={() => {
             navigation.navigate('ChangePickupPoint', {
@@ -397,7 +427,7 @@ const Home = ({navigation}) => {
                 }}>
                 <Image
                   resizeMode="contain"
-                  style={{ width: 20, height: 20, tintColor: COLORS.primary }}
+                  style={{width: 20, height: 20, tintColor: COLORS.primary}}
                   source={icons.location}
                 />
                 <Text
@@ -634,7 +664,6 @@ const Home = ({navigation}) => {
           <ModalFooter>
             <ModalButton
               text="Ở lại trang"
-              textStyle={{color: 'red'}}
               onPress={() => {
                 setOpenAuthModal(false);
               }}
@@ -644,8 +673,7 @@ const Home = ({navigation}) => {
               textStyle={{color: COLORS.primary}}
               onPress={async () => {
                 try {
-                  await AsyncStorage.removeItem('userInfo');
-                  await AsyncStorage.removeItem('CartList');
+                  await AsyncStorage.clear();
                   navigation.navigate('Login');
                   setOpenAuthModal(false);
                 } catch (error) {

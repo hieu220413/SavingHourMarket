@@ -3,7 +3,7 @@ import database from '@react-native-firebase/database';
 import auth from '@react-native-firebase/auth';
 
 
-export function checkSystemState() {
+export function checkSystemState(navigation) {
   database().ref(`systemStatus`).off('value');
   database()
     .ref(`systemStatus`)
@@ -13,7 +13,10 @@ export function checkSystemState() {
         console.log('System status: ', snapshot.val());
         if (snapshot.val() === 0) {
           if (auth().currentUser) {
-            await auth().signOut();
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'Start' }],
+          });
           }
         }
       },

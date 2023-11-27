@@ -14,6 +14,7 @@ import Modal, {
 import {TextInput} from 'react-native-gesture-handler';
 import LoadingScreen from '../components/LoadingScreen';
 import auth from '@react-native-firebase/auth';
+import database from '@react-native-firebase/database';
 
 const EditCustomerLocation = ({navigation, route}) => {
   const {setCustomerLocation, customerLocation, pickupPoint} = route.params;
@@ -32,6 +33,25 @@ const EditCustomerLocation = ({navigation, route}) => {
     minKmDistanceForExtraShippingFee: 2,
     extraShippingFeePerKilometer: 1000,
   });
+
+  // system status check
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+          } else {
+            // setSystemStatus(snapshot.val());
+          }
+        });
+    }, []),
+  );
 
   useEffect(() => {
     const fetchShipDetail = async () => {

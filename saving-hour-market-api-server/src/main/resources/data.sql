@@ -20,14 +20,14 @@ SET @fail = 5;
 SET @cancel = 6;
 
 -- Order date
-SET @orderDateBatchingForGroup = '2023-11-25';
-SET @orderDateForBatchGroup = '2023-11-25';
-SET @orderDateForOrderGroup = '2023-11-27';
-SET @orderDateForFirstOrderGroupForAssignDeliver = '2023-11-22';
-SET @orderDateForSecondOrderGroupForAssignDeliver = '2023-11-22';
-SET @orderDateForThirdOrderGroupForAssignDeliver = '2023-11-23';
-SET @orderDateForOrderSingleForProcessingStatus = '2023-11-27';
-SET @orderDateForOrderSingleForDeliveringStatus = '2023-11-25';
+SET @orderDateBatchingForGroup = DATE_FORMAT((CURDATE()),'%Y-%m-%d');
+SET @orderDateForBatchGroup = DATE_FORMAT((CURDATE()),'%Y-%m-%d');
+SET @orderDateForOrderGroup = DATE_FORMAT((CURDATE() + INTERVAL 2 DAY),'%Y-%m-%d');
+SET @orderDateForFirstOrderGroupForAssignDeliver = DATE_FORMAT((CURDATE()),'%Y-%m-%d');
+SET @orderDateForSecondOrderGroupForAssignDeliver = DATE_FORMAT((CURDATE()),'%Y-%m-%d');
+SET @orderDateForThirdOrderGroupForAssignDeliver = DATE_FORMAT((CURDATE() + INTERVAL 1 DAY),'%Y-%m-%d');
+SET @orderDateForOrderSingleForProcessingStatus = DATE_FORMAT((CURDATE() + INTERVAL 4 DAY),'%Y-%m-%d');
+SET @orderDateForOrderSingleForDeliveringStatus = DATE_FORMAT((CURDATE() + INTERVAL 3 DAY),'%Y-%m-%d');
 
 -- Payment method: COD(0), VNPay(1)
 SET @cod = 0;
@@ -41,12 +41,6 @@ SET @All = 2;
 -- Payment status: unpaid(0), paid(1)
 SET @unpaid = 0;
 SET @paid = 1;
-
--- Clone order date
-SET @Today = '2023-10-06';
-SET @Tomorrow = '2023-10-07';
-SET @TwoNextDay = '2023-10-08';
-SET @ThreeNextDay = '2023-10-09';
 
 -- Product description
 SET @OmoDescription = 'Nước Giặt Omo Matic với công nghệ Màn chắn Kháng bẩn Polyshield Xanh, giúp bao bọc và phủ một lớp màn chắn vô hình lên bề mặt sợi vải, loại bỏ nhanh chóng vết bẩn cứng đầu và mùi hôi trên áo quần.
@@ -447,64 +441,145 @@ INSERT INTO `saving_hour_market`.`product_image` (`id`, `image_url`, `product_id
 
 
 
+-- Product batch
+--  Nước giặt Omo 2,9L
+SET @NuocGiatOmoFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 45 DAY),'%Y-%m-%d');
+SET @NuocGiatOmoSecondBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 45 DAY),'%Y-%m-%d');
+SET @NuocGiatOmoThirdBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 40 DAY),'%Y-%m-%d');
+SET @NuocGiatOmoFourthBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 45 DAY),'%Y-%m-%d');
+
+--  Nước xả vải Comfort hương nước hoa 3,8L batch
+SET @NuocXaVaiComfortFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 40 DAY),'%Y-%m-%d');
+
+--  Chả Giò Tôm Cua 500g (2023-11-20)
+SET @ChaGioTomCuaFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 15 DAY),'%Y-%m-%d');
+
+--  Giò Heo Xông Khói 500g
+SET @GioHeoXongKhoiFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 20 DAY),'%Y-%m-%d');
+
+--  Kem Wall’s Oreo hộp 750ml
+SET @KemWallOreoFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 20 DAY),'%Y-%m-%d');
+SET @KemWallOreoSecondBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 25 DAY),'%Y-%m-%d');
+SET @KemWallOreoThirdBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 20 DAY),'%Y-%m-%d');
+
+--  Kem Yukimi Daifuku Matcha 270ml
+SET @KemYukimiFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 25 DAY),'%Y-%m-%d');
+
+--  Bột Milo Protomalt hũ 400g
+SET @BotMiloFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 15 DAY),'%Y-%m-%d');
+
+--  Nho mẫu đơn nội địa Trung 500g
+SET @NhoMauDonFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 23 DAY),'%Y-%m-%d');
+
+--  2 lốc sữa chua Vinamilk nha đam (8 hộp)
+SET @SuaChuaVinamilkFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 25 DAY),'%Y-%m-%d');
+
+-- 1 lốc hộp sữa tươi Vinamilk có đường (4 hộp)
+SET @SuaTuoiVinamilkFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 24 DAY),'%Y-%m-%d');
+
+-- Sữa tắm Lifebuoy Vitamin 800g
+SET @SuaTamLifeBuoyVitaminFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 45 DAY),'%Y-%m-%d');
+
+-- Sữa tắm Xmen sạch khuẩn detox 630g
+SET @SuaTamXmenDetoxFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 40 DAY),'%Y-%m-%d');
+
+-- Nem Lụi 300g
+SET @NemLuiFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 25 DAY),'%Y-%m-%d');
+
+-- Nem bò tiêu xanh 400g
+SET @NemBoTieuXanhFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 21 DAY),'%Y-%m-%d');
+
+-- Phô mai viên Hoa Doanh 300g
+SET @PhoMaiVienHoaDanhFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 20 DAY),'%Y-%m-%d');
+
+-- Táo Pink Lady nhập khẩu New Zealand 1kg
+SET @TaoPinkLadyFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 22 DAY),'%Y-%m-%d');
+
+-- Thùng 30 gói mì Omachi lẩu tôm
+SET @ThungMiOmachiLauTomFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 20 DAY),'%Y-%m-%d');
+
+-- Thùng 30 gói mì Hảo Hảo hương vị lẩu kim chi
+SET @ThungMiHaoHaoKimChiFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 24 DAY),'%Y-%m-%d');
+
+-- 1 lốc Strongbow Appple Ciders Gold (6 lon)
+SET @LocStrongbowAppleGoldFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 20 DAY),'%Y-%m-%d');
+
+-- Thùng 24 lon bia Heineken Silver
+SET @ThungBiaLonHeinekenFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 25 DAY),'%Y-%m-%d');
+
+-- Há Cảo Mini Cầu Tre Gói 500G
+SET @HaCaoMiniCauTreFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 20 DAY),'%Y-%m-%d');
+
+-- Bông trang điểm Silcot hộp 82 miếng
+SET @BongTrangDiemSilcotFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 53 DAY),'%Y-%m-%d');
+
+-- Sáp dưỡng ẩm Vaseline 50ml
+SET @SapDuongAmVaslineFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 51 DAY),'%Y-%m-%d');
+
+-- Xà lách lolo 1kg
+SET @XaLachLoloFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 15 DAY),'%Y-%m-%d');
+
+-- Cải thảo 1kg
+SET @CaiThaoFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 16 DAY),'%Y-%m-%d');
+
 
 INSERT INTO `saving_hour_market`.`product_batch` (`id`, `price`, `price_original`, `quantity`, `selling_date`, `expired_date`, `product_id`,`supermarket_address_id`)
 --     VALUES (`id`, `price`, `price_original`, `quantity`, `expired_date`, `product_id`,`supermarket_address_id`)
 --  Nước giặt Omo 2,9L
-    VALUES  (UUID_TO_BIN('ec5ea50d-56dc-11ee-8a50-a85e45c41921'), 159000, 130000, 50, '2023-11-04 00:00:00', '2023-12-25 00:00:00', UUID_TO_BIN('accf2b04-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8c78-56dc-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('ec5eb3ce-56dc-11ee-8a50-a85e45c41921'), 159000, 130000, 25, '2023-11-04 00:00:00', '2023-12-25 00:00:00', UUID_TO_BIN('accf2b04-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e2090-56dc-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('ec5eb531-56dc-11ee-8a50-a85e45c41921'), 149000, 120000, 25, '2023-11-04 00:00:00', '2023-12-20 00:00:00', UUID_TO_BIN('accf2b04-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e2090-56dc-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('ec5eb87e-56dc-11ee-8a50-a85e45c41921'), 159000, 130000, 20, '2023-11-04 00:00:00', '2023-12-25 00:00:00', UUID_TO_BIN('accf2b04-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5ea1b4-56dc-11ee-8a50-a85e45c41921')),
+    VALUES  (UUID_TO_BIN('ec5ea50d-56dc-11ee-8a50-a85e45c41921'), 159000, 130000, 50, '2023-11-04 00:00:00', @NuocGiatOmoFirstBatchDate, UUID_TO_BIN('accf2b04-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8c78-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5eb3ce-56dc-11ee-8a50-a85e45c41921'), 159000, 130000, 25, '2023-11-04 00:00:00', @NuocGiatOmoSecondBatchDate, UUID_TO_BIN('accf2b04-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e2090-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5eb531-56dc-11ee-8a50-a85e45c41921'), 149000, 120000, 25, '2023-11-04 00:00:00', @NuocGiatOmoThirdBatchDate, UUID_TO_BIN('accf2b04-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e2090-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5eb87e-56dc-11ee-8a50-a85e45c41921'), 159000, 130000, 20, '2023-11-04 00:00:00', @NuocGiatOmoFourthBatchDate, UUID_TO_BIN('accf2b04-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5ea1b4-56dc-11ee-8a50-a85e45c41921')),
 --  Nước xả vải Comfort hương nước hoa 3,8L batch
-            (UUID_TO_BIN('ec5ea6b7-56dc-11ee-8a50-a85e45c41921'), 210000, 180000, 25, '2023-10-25 00:00:00', '2023-12-20 00:00:00', UUID_TO_BIN('ec5e38e3-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5ea1b4-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5ea6b7-56dc-11ee-8a50-a85e45c41921'), 210000, 180000, 25, '2023-10-25 00:00:00', @NuocXaVaiComfortFirstBatchDate, UUID_TO_BIN('ec5e38e3-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5ea1b4-56dc-11ee-8a50-a85e45c41921')),
 --  Chả Giò Tôm Cua 500g
-            (UUID_TO_BIN('ec5ea831-56dc-11ee-8a50-a85e45c41921'), 55000, 48000, 15, '2023-10-15 00:00:00', '2023-11-30 00:00:00', UUID_TO_BIN('accf2c1d-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e9414-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5ea831-56dc-11ee-8a50-a85e45c41921'), 55000, 48000, 15, '2023-10-15 00:00:00', @ChaGioTomCuaFirstBatchDate, UUID_TO_BIN('accf2c1d-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e9414-56dc-11ee-8a50-a85e45c41921')),
 --  Giò Heo Xông Khói 500g
-            (UUID_TO_BIN('ec5ea9a5-56dc-11ee-8a50-a85e45c41921'), 90000, 75000, 10, '2023-10-10 00:00:00', '2023-11-25 00:00:00', UUID_TO_BIN('accf2d37-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e9414-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5ea9a5-56dc-11ee-8a50-a85e45c41921'), 90000, 75000, 10, '2023-10-10 00:00:00', @GioHeoXongKhoiFirstBatchDate, UUID_TO_BIN('accf2d37-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e9414-56dc-11ee-8a50-a85e45c41921')),
 --  Kem Wall’s Oreo hộp 750ml
-            (UUID_TO_BIN('ec5eab5f-56dc-11ee-8a50-a85e45c41921'), 75000, 62000, 25, '2023-10-20 00:00:00', '2023-11-25 00:00:00', UUID_TO_BIN('accf2f65-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8dca-56dc-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('ec5ebcb3-56dc-11ee-8a50-a85e45c41921'), 80000, 68000, 25, '2023-11-01 00:00:00', '2023-11-30 00:00:00', UUID_TO_BIN('accf2f65-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8dca-56dc-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('ec5ec37a-56dc-11ee-8a50-a85e45c41921'), 75000, 62000, 25, '2023-10-24 00:00:00', '2023-11-25 00:00:00', UUID_TO_BIN('accf2f65-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e1f3a-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5eab5f-56dc-11ee-8a50-a85e45c41921'), 75000, 62000, 25, '2023-10-20 00:00:00', @KemWallOreoFirstBatchDate, UUID_TO_BIN('accf2f65-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8dca-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5ebcb3-56dc-11ee-8a50-a85e45c41921'), 80000, 68000, 25, '2023-11-01 00:00:00', @KemWallOreoSecondBatchDate, UUID_TO_BIN('accf2f65-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8dca-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5ec37a-56dc-11ee-8a50-a85e45c41921'), 75000, 62000, 25, '2023-10-24 00:00:00', @KemWallOreoThirdBatchDate, UUID_TO_BIN('accf2f65-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e1f3a-56dc-11ee-8a50-a85e45c41921')),
 --  Kem Yukimi Daifuku Matcha 270ml
-            (UUID_TO_BIN('ec5eacbb-56dc-11ee-8a50-a85e45c41921'), 60000, 50000, 30, '2023-10-10 00:00:00', '2023-11-30 00:00:00', UUID_TO_BIN('ec5e3b8f-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8dca-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5eacbb-56dc-11ee-8a50-a85e45c41921'), 60000, 50000, 30, '2023-10-10 00:00:00', @KemYukimiFirstBatchDate, UUID_TO_BIN('ec5e3b8f-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8dca-56dc-11ee-8a50-a85e45c41921')),
 --  Bột Milo Protomalt hũ 400g
-            (UUID_TO_BIN('ec5eae10-56dc-11ee-8a50-a85e45c41921'), 60000, 49000, 30, '2023-10-10 00:00:00', '2023-12-15 00:00:00', UUID_TO_BIN('accf3079-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8dca-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5eae10-56dc-11ee-8a50-a85e45c41921'), 60000, 49000, 30, '2023-10-10 00:00:00', @BotMiloFirstBatchDate, UUID_TO_BIN('accf3079-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8dca-56dc-11ee-8a50-a85e45c41921')),
 --  Nho mẫu đơn nội địa Trung 500g
-            (UUID_TO_BIN('ec5e869e-56dc-11ee-8a50-a85e45c41921'), 51000, 40000, 10, '2023-10-01 00:00:00', '2023-11-28 00:00:00', UUID_TO_BIN('accf32f7-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5ea361-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e869e-56dc-11ee-8a50-a85e45c41921'), 51000, 40000, 10, '2023-10-01 00:00:00', @NhoMauDonFirstBatchDate, UUID_TO_BIN('accf32f7-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5ea361-56dc-11ee-8a50-a85e45c41921')),
 --  2 lốc sữa chua Vinamilk nha đam (8 hộp)
-            (UUID_TO_BIN('ec5eaf69-56dc-11ee-8a50-a85e45c41921'), 42000, 35000, 10, '2023-10-05 00:00:00', '2023-11-30 00:00:00', UUID_TO_BIN('accf343c-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e9073-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5eaf69-56dc-11ee-8a50-a85e45c41921'), 42000, 35000, 10, '2023-10-05 00:00:00', @SuaChuaVinamilkFirstBatchDate, UUID_TO_BIN('accf343c-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e9073-56dc-11ee-8a50-a85e45c41921')),
 -- 1 lốc hộp sữa tươi Vinamilk có đường (4 hộp)
-            (UUID_TO_BIN('ec5eb268-56dc-11ee-8a50-a85e45c41921'), 25000, 21000, 15, '2023-10-01 00:00:00', '2023-11-29 00:00:00', UUID_TO_BIN('accf3552-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5ea1b4-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5eb268-56dc-11ee-8a50-a85e45c41921'), 25000, 21000, 15, '2023-10-01 00:00:00', @SuaTuoiVinamilkFirstBatchDate, UUID_TO_BIN('accf3552-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5ea1b4-56dc-11ee-8a50-a85e45c41921')),
 -- Sữa tắm Lifebuoy Vitamin 800g
-            (UUID_TO_BIN('ec5e44d1-56dc-11ee-8a50-a85e45c41921'), 145000, 120000, 10, '2023-11-05 00:00:00', '2023-12-20 00:00:00', UUID_TO_BIN('accf3664-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8dca-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e44d1-56dc-11ee-8a50-a85e45c41921'), 145000, 120000, 10, '2023-11-05 00:00:00', @SuaTamLifeBuoyVitaminFirstBatchDate, UUID_TO_BIN('accf3664-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8dca-56dc-11ee-8a50-a85e45c41921')),
 -- Sữa tắm Xmen sạch khuẩn detox 630g
-            (UUID_TO_BIN('ec5e4627-56dc-11ee-8a50-a85e45c41921'), 155000, 130000, 25, '2023-11-10 00:00:00', '2023-12-20 00:00:00', UUID_TO_BIN('ec5e3ced-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8c78-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e4627-56dc-11ee-8a50-a85e45c41921'), 155000, 130000, 25, '2023-11-10 00:00:00', @SuaTamXmenDetoxFirstBatchDate, UUID_TO_BIN('ec5e3ced-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8c78-56dc-11ee-8a50-a85e45c41921')),
 -- Nem Lụi 300g
-            (UUID_TO_BIN('ec5e4897-56dc-11ee-8a50-a85e45c41921'), 42000, 35000, 15, '2023-10-10 00:00:00', '2023-11-30 00:00:00', UUID_TO_BIN('accf377f-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e9414-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e4897-56dc-11ee-8a50-a85e45c41921'), 42000, 35000, 15, '2023-10-10 00:00:00', @NemLuiFirstBatchDate, UUID_TO_BIN('accf377f-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e9414-56dc-11ee-8a50-a85e45c41921')),
 -- Nem bò tiêu xanh 400g
-            (UUID_TO_BIN('ec5e49f8-56dc-11ee-8a50-a85e45c41921'), 65000, 55000, 15, '2023-10-25 00:00:00', '2023-11-26 00:00:00', UUID_TO_BIN('ec5e432f-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e9414-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e49f8-56dc-11ee-8a50-a85e45c41921'), 65000, 55000, 15, '2023-10-25 00:00:00', @NemBoTieuXanhFirstBatchDate, UUID_TO_BIN('ec5e432f-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e9414-56dc-11ee-8a50-a85e45c41921')),
 -- Phô mai viên Hoa Doanh 300g
-            (UUID_TO_BIN('ec5e4b66-56dc-11ee-8a50-a85e45c41921'), 42000, 34000, 20, '2023-10-05 00:00:00', '2023-11-25 00:00:00', UUID_TO_BIN('ec5e3a42-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e9414-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e4b66-56dc-11ee-8a50-a85e45c41921'), 42000, 34000, 20, '2023-10-05 00:00:00', @PhoMaiVienHoaDanhFirstBatchDate, UUID_TO_BIN('ec5e3a42-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e9414-56dc-11ee-8a50-a85e45c41921')),
 -- Táo Pink Lady nhập khẩu New Zealand 1kg
-            (UUID_TO_BIN('ec5e4cbe-56dc-11ee-8a50-a85e45c41921'), 51000, 42000, 15, '2023-10-01 00:00:00', '2023-11-27 00:00:00', UUID_TO_BIN('accf3897-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e9073-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e4cbe-56dc-11ee-8a50-a85e45c41921'), 51000, 42000, 15, '2023-10-01 00:00:00', @TaoPinkLadyFirstBatchDate, UUID_TO_BIN('accf3897-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e9073-56dc-11ee-8a50-a85e45c41921')),
 -- Thùng 30 gói mì Omachi lẩu tôm
             (UUID_TO_BIN('ec5e4e60-56dc-11ee-8a50-a85e45c41921'), 185000, 155000, 10, '2023-10-19 00:00:00', '2023-11-25 00:00:00', UUID_TO_BIN('accf39b0-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8f16-56dc-11ee-8a50-a85e45c41921')),
 -- Thùng 30 gói mì Hảo Hảo hương vị lẩu kim chi
-            (UUID_TO_BIN('ec5e4fce-56dc-11ee-8a50-a85e45c41921'), 95000, 80000, 25, '2023-11-01 00:00:00', '2023-11-29 00:00:00', UUID_TO_BIN('ec5e3e40-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5ea361-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e4fce-56dc-11ee-8a50-a85e45c41921'), 95000, 80000, 25, '2023-11-01 00:00:00', @ThungMiHaoHaoKimChiFirstBatchDate, UUID_TO_BIN('ec5e3e40-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5ea361-56dc-11ee-8a50-a85e45c41921')),
 -- 1 lốc Strongbow Appple Ciders Gold (6 lon)
-            (UUID_TO_BIN('ec5e744a-56dc-11ee-8a50-a85e45c41921'), 88000, 75000, 20, '2023-10-20 00:00:00', '2023-11-25 00:00:00', UUID_TO_BIN('accf3ac4-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8f16-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e744a-56dc-11ee-8a50-a85e45c41921'), 88000, 75000, 20, '2023-10-20 00:00:00', @LocStrongbowAppleGoldFirstBatchDate, UUID_TO_BIN('accf3ac4-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8f16-56dc-11ee-8a50-a85e45c41921')),
 -- Thùng 24 lon bia Heineken Silver
-            (UUID_TO_BIN('ec5e77a5-56dc-11ee-8a50-a85e45c41921'), 340000, 300000, 10, '2023-11-01 00:00:00', '2023-11-30 00:00:00', UUID_TO_BIN('ec5e4012-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e9073-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e77a5-56dc-11ee-8a50-a85e45c41921'), 340000, 300000, 10, '2023-11-01 00:00:00', @ThungBiaLonHeinekenFirstBatchDate, UUID_TO_BIN('ec5e4012-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e9073-56dc-11ee-8a50-a85e45c41921')),
 -- Há Cảo Mini Cầu Tre Gói 500G
-            (UUID_TO_BIN('ec5e7bef-56dc-11ee-8a50-a85e45c41921'), 58000, 49000, 15, '2023-10-01 00:00:00', '2023-11-25 00:00:00', UUID_TO_BIN('accf3be3-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8f16-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e7bef-56dc-11ee-8a50-a85e45c41921'), 58000, 49000, 15, '2023-10-01 00:00:00', @HaCaoMiniCauTreFirstBatchDate, UUID_TO_BIN('accf3be3-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8f16-56dc-11ee-8a50-a85e45c41921')),
 -- Bông trang điểm Silcot hộp 82 miếng
-            (UUID_TO_BIN('ec5e7e0c-56dc-11ee-8a50-a85e45c41921'), 31000, 27000, 10, '2023-11-25 00:00:00', '2023-12-28 00:00:00', UUID_TO_BIN('accf3cf4-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8c78-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e7e0c-56dc-11ee-8a50-a85e45c41921'), 31000, 27000, 10, '2023-11-25 00:00:00', @BongTrangDiemSilcotFirstBatchDate, UUID_TO_BIN('accf3cf4-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8c78-56dc-11ee-8a50-a85e45c41921')),
 -- Sáp dưỡng ẩm Vaseline 50ml
-            (UUID_TO_BIN('ec5e8083-56dc-11ee-8a50-a85e45c41921'), 50000, 42000, 25, '2023-11-26 00:00:00', '2023-12-26 00:00:00', UUID_TO_BIN('ec5e41d8-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8dca-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e8083-56dc-11ee-8a50-a85e45c41921'), 50000, 42000, 25, '2023-11-26 00:00:00', @SapDuongAmVaslineFirstBatchDate, UUID_TO_BIN('ec5e41d8-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8dca-56dc-11ee-8a50-a85e45c41921')),
 -- Xà lách lolo 1kg
-            (UUID_TO_BIN('ec5e8385-56dc-11ee-8a50-a85e45c41921'), 40000, 34000, 15, '2023-10-20 00:00:00', '2023-11-25 00:00:00', UUID_TO_BIN('ec5e3596-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8c78-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e8385-56dc-11ee-8a50-a85e45c41921'), 40000, 34000, 15, '2023-10-20 00:00:00', @XaLachLoloFirstBatchDate, UUID_TO_BIN('ec5e3596-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8c78-56dc-11ee-8a50-a85e45c41921')),
 -- Cải thảo 1kg
-            (UUID_TO_BIN('ec5e84dd-56dc-11ee-8a50-a85e45c41921'), 18000, 16000, 10, '2023-10-25 00:00:00', '2023-11-26 00:00:00', UUID_TO_BIN('ec5e3778-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5ea1b4-56dc-11ee-8a50-a85e45c41921'));
+            (UUID_TO_BIN('ec5e84dd-56dc-11ee-8a50-a85e45c41921'), 18000, 16000, 10, '2023-10-25 00:00:00', @CaiThaoFirstBatchDate, UUID_TO_BIN('ec5e3778-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5ea1b4-56dc-11ee-8a50-a85e45c41921'));
 
 
 
@@ -522,9 +597,9 @@ INSERT INTO `saving_hour_market`.`product_batch` (`id`, `price`, `price_original
 -- Discount
 INSERT INTO `saving_hour_market`.`discount` (`id`, `name`, `percentage`, `quantity`, `spent_amount_required`, `expired_date`, `status`, `image_url`, `product_category_id`, `product_sub_category_id`)
 --     VALUES (`id`, `name`, `percentage`, `quantity`, `spent_amount_required`, `expired_date`, `status`);
-    VALUES  (UUID_TO_BIN('accf51d6-5541-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi 20%', 20, 50, 150000, '2023-10-15 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), null),
-            (UUID_TO_BIN('ec5e5994-56dc-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi 20%', 20, 50, 150000, '2023-11-15 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), null),
-            (UUID_TO_BIN('ec5e5e8d-56dc-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi 20%', 20, 50, 150000, '2023-12-15 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921'), null),
+    VALUES  (UUID_TO_BIN('accf51d6-5541-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi 20%', 20, 50, 150000, DATE_FORMAT((CURDATE() + INTERVAL 20 DAY),'%Y-%m-%d'), @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), null),
+            (UUID_TO_BIN('ec5e5994-56dc-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi 20%', 20, 50, 150000, DATE_FORMAT((CURDATE() + INTERVAL 30 DAY),'%Y-%m-%d'), @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), null),
+            (UUID_TO_BIN('ec5e5e8d-56dc-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi 20%', 20, 50, 150000, DATE_FORMAT((CURDATE() + INTERVAL 35 DAY),'%Y-%m-%d'), @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921'), null),
 --             (UUID_TO_BIN('accf52f8-5541-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi 10%', 10, 40, 90000, '2023-11-20 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', null, UUID_TO_BIN('accf4875-5541-11ee-8a50-a85e45c41921')),
 --             (UUID_TO_BIN('ec5e6233-56dc-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi 10%', 10, 40, 90000, '2023-11-20 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', null, UUID_TO_BIN('accf4766-5541-11ee-8a50-a85e45c41921')),
 --             (UUID_TO_BIN('ec5e65cb-56dc-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi 10%', 10, 40, 90000, '2023-11-20 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', null, UUID_TO_BIN('accf4656-5541-11ee-8a50-a85e45c41921')),
@@ -532,15 +607,15 @@ INSERT INTO `saving_hour_market`.`discount` (`id`, `name`, `percentage`, `quanti
 --             (UUID_TO_BIN('ec5e6c43-56dc-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi 10%', 10, 40, 90000, '2023-11-20 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', null, UUID_TO_BIN('accf4320-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('ec5e574e-56dc-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi 10%', 10, 40, 90000, '2023-09-20 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), null),
 --             (UUID_TO_BIN('accf5414-5541-11ee-8a50-a85e45c41921'), 'Siêu Ưu Đãi Khuyến mãi 35%', 35, 25, 300000, '2023-10-20 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fbig-sale.png?alt=media', null, UUID_TO_BIN('accf442f-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf6fdd-5541-11ee-8a50-a85e45c41921'), 'Tuần lễ vàng - Ưu Đãi lớn 25%', 25, 35, 250000, '2023-12-10 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fbig-sale.png?alt=media', UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921'), null),
-            (UUID_TO_BIN('accf7135-5541-11ee-8a50-a85e45c41921'), 'Ưu Đãi 5%', 5, 100, 60000, '2023-12-25 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), null),
+            (UUID_TO_BIN('accf6fdd-5541-11ee-8a50-a85e45c41921'), 'Tuần lễ vàng - Ưu Đãi lớn 25%', 25, 35, 250000, DATE_FORMAT((CURDATE() + INTERVAL 15 DAY),'%Y-%m-%d'), @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fbig-sale.png?alt=media', UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921'), null),
+            (UUID_TO_BIN('accf7135-5541-11ee-8a50-a85e45c41921'), 'Ưu Đãi 5%', 5, 100, 60000, DATE_FORMAT((CURDATE() + INTERVAL 25 DAY),'%Y-%m-%d'), @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), null),
 --             (UUID_TO_BIN('ec5e6db5-56dc-11ee-8a50-a85e45c41921'), 'Ưu Đãi 5%', 5, 100, 60000, '2023-11-20 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', null, UUID_TO_BIN('accf3fdf-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('ec5e6f17-56dc-11ee-8a50-a85e45c41921'), 'Ưu Đãi 5%', 5, 100, 60000, '2023-12-25 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921'), null),
+            (UUID_TO_BIN('ec5e6f17-56dc-11ee-8a50-a85e45c41921'), 'Ưu Đãi 5%', 5, 100, 60000, DATE_FORMAT((CURDATE() + INTERVAL 30 DAY) ,'%Y-%m-%d'), @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921'), null),
 --             (UUID_TO_BIN('ec5e713f-56dc-11ee-8a50-a85e45c41921'), 'Ưu Đãi 5%', 5, 100, 60000, '2023-11-20 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', null, UUID_TO_BIN('accf4656-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('accf7525-5541-11ee-8a50-a85e45c41921'), 'Giảm giá bất ngờ - Ưu đãi 15%', 15, 25, 15000, '2023-09-20 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', UUID_TO_BIN('accf0055-5541-11ee-8a50-a85e45c41921'), null),
 --             (UUID_TO_BIN('accf7392-5541-11ee-8a50-a85e45c41921'), 'Ưu Đãi Tháng 10 - Giảm giá 20%', 20, 80, 200000, '2023-11-01 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', null, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921')),
 --             (UUID_TO_BIN('accf765b-5541-11ee-8a50-a85e45c41921'), 'Ưu Đãi Tháng 8 - Giảm giá 20%', 20, 80, 200000, '2023-09-01 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', null, UUID_TO_BIN('accf3fdf-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf77a1-5541-11ee-8a50-a85e45c41921'), 'Ưu Đãi Tháng 12 - Giảm giá 20%', 20, 0, 200000, '2023-12-31 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), null);
+            (UUID_TO_BIN('accf77a1-5541-11ee-8a50-a85e45c41921'), 'Ưu Đãi lớn - Giảm giá 20%', 20, 0, 200000, DATE_FORMAT((CURDATE() + INTERVAL 20 DAY),'%Y-%m-%d'), @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), null);
 
 
 

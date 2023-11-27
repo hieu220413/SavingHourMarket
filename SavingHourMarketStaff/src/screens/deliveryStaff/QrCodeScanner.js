@@ -17,56 +17,56 @@ const QrCodeScanner = ({ navigation }) => {
     // listen to system state
     useFocusEffect(
         useCallback(() => {
-            checkSystemState();
+            checkSystemState(navigation);
         }, []),
     );
 
     const [initializing, setInitializing] = useState(true);
     const [data, setData] = useState('');
     const isScaned = true;
-    const onAuthStateChange = async userInfo => {
-        // console.log(userInfo);
-        if (initializing) {
-            setInitializing(false);
-        }
-        if (userInfo) {
-            // check if user sessions is still available. If yes => redirect to another screen
-            const userTokenId = await userInfo
-                .getIdToken(true)
-                .then(token => token)
-                .catch(async e => {
-                    console.log(e);
-                    return null;
-                });
-            if (!userTokenId) {
-                // sessions end. (revoke refresh token like password change, disable account, ....)
-                await AsyncStorage.removeItem('userInfo');
-                // navigation.navigate('Login');
-                navigation.reset({
-                    index: 0,
-                    routes: [{name: 'Login'}],
-                  });
-                return;
-            }
-        } else {
-            // no sessions found.
-            console.log('user is not logged in');
-            await AsyncStorage.removeItem('userInfo');
-            // navigation.navigate('Login');
-            navigation.reset({
-                index: 0,
-                routes: [{name: 'Login'}],
-              });
-        }
-    };
+    // const onAuthStateChange = async userInfo => {
+    //     // console.log(userInfo);
+    //     if (initializing) {
+    //         setInitializing(false);
+    //     }
+    //     if (userInfo) {
+    //         // check if user sessions is still available. If yes => redirect to another screen
+    //         const userTokenId = await userInfo
+    //             .getIdToken(true)
+    //             .then(token => token)
+    //             .catch(async e => {
+    //                 console.log(e);
+    //                 return null;
+    //             });
+    //         if (!userTokenId) {
+    //             // sessions end. (revoke refresh token like password change, disable account, ....)
+    //             await AsyncStorage.removeItem('userInfo');
+    //             // navigation.navigate('Login');
+    //             navigation.reset({
+    //                 index: 0,
+    //                 routes: [{name: 'Login'}],
+    //               });
+    //             return;
+    //         }
+    //     } else {
+    //         // no sessions found.
+    //         console.log('user is not logged in');
+    //         await AsyncStorage.removeItem('userInfo');
+    //         // navigation.navigate('Login');
+    //         navigation.reset({
+    //             index: 0,
+    //             routes: [{name: 'Login'}],
+    //           });
+    //     }
+    // };
 
-    useEffect(() => {
-        const subscriber = auth().onAuthStateChanged(
-            async userInfo => await onAuthStateChange(userInfo),
-        );
+    // useEffect(() => {
+    //     const subscriber = auth().onAuthStateChanged(
+    //         async userInfo => await onAuthStateChange(userInfo),
+    //     );
 
-        return subscriber;
-    }, []);
+    //     return subscriber;
+    // }, []);
 
 
     return (

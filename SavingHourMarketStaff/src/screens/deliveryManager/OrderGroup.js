@@ -31,7 +31,7 @@ const OrderGroup = ({navigation}) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
-        checkSystemState();
+        checkSystemState(navigation);
       }, []),
   );
 
@@ -56,56 +56,56 @@ const OrderGroup = ({navigation}) => {
     {display: 'Đã có nhân viên giao hàng', value: 2},
   ];
 
-  const onAuthStateChange = async userInfo => {
-    // console.log(userInfo);
-    if (initializing) {
-      setInitializing(false);
-    }
-    if (userInfo) {
-      // check if user sessions is still available. If yes => redirect to another screen
-      const userTokenId = await userInfo
-        .getIdToken(true)
-        .then(token => token)
-        .catch(async e => {
-          console.log(e);
-          return null;
-        });
-      if (!userTokenId) {
-        // sessions end. (revoke refresh token like password change, disable account, ....)
-        await AsyncStorage.removeItem('userInfo');
-        // navigation.navigate('Login');
-        navigation.reset({
-          index: 0,
-          routes: [{name: 'Login'}],
-        });
-        return;
-      }
-      const currentUser = await AsyncStorage.getItem('userInfo');
-      // console.log('currentUser', currentUser);
-      setCurrentUser(JSON.parse(currentUser));
-    } else {
-      // no sessions found.
-      console.log('user is not logged in');
-      await AsyncStorage.removeItem('userInfo');
-      // navigation.navigate('Login');
-      navigation.reset({
-        index: 0,
-        routes: [{name: 'Login'}],
-      });
-    }
-  };
+  // const onAuthStateChange = async userInfo => {
+  //   // console.log(userInfo);
+  //   if (initializing) {
+  //     setInitializing(false);
+  //   }
+  //   if (userInfo) {
+  //     // check if user sessions is still available. If yes => redirect to another screen
+  //     const userTokenId = await userInfo
+  //       .getIdToken(true)
+  //       .then(token => token)
+  //       .catch(async e => {
+  //         console.log(e);
+  //         return null;
+  //       });
+  //     if (!userTokenId) {
+  //       // sessions end. (revoke refresh token like password change, disable account, ....)
+  //       await AsyncStorage.removeItem('userInfo');
+  //       // navigation.navigate('Login');
+  //       navigation.reset({
+  //         index: 0,
+  //         routes: [{name: 'Login'}],
+  //       });
+  //       return;
+  //     }
+  //     const currentUser = await AsyncStorage.getItem('userInfo');
+  //     // console.log('currentUser', currentUser);
+  //     setCurrentUser(JSON.parse(currentUser));
+  //   } else {
+  //     // no sessions found.
+  //     console.log('user is not logged in');
+  //     await AsyncStorage.removeItem('userInfo');
+  //     // navigation.navigate('Login');
+  //     navigation.reset({
+  //       index: 0,
+  //       routes: [{name: 'Login'}],
+  //     });
+  //   }
+  // };
 
-  useFocusEffect(
-    useCallback(() => {
-      // auth().currentUser.reload()
-      const subscriber = auth().onAuthStateChanged(
-        async userInfo => await onAuthStateChange(userInfo),
-      );
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     // auth().currentUser.reload()
+  //     const subscriber = auth().onAuthStateChanged(
+  //       async userInfo => await onAuthStateChange(userInfo),
+  //     );
 
-      return subscriber;
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []),
-  );
+  //     return subscriber;
+  //     // eslint-disable-next-line react-hooks/exhaustive-deps
+  //   }, []),
+  // );
 
   const sortOptions = [
     {
@@ -121,6 +121,18 @@ const OrderGroup = ({navigation}) => {
   ];
   const [selectSort, setSelectSort] = useState(sortOptions);
 
+  //get Current User Info
+  useFocusEffect(
+    useCallback(() => {
+      const getCurrentUser = async () => {
+        const currentUser = await AsyncStorage.getItem('userInfo');
+        // console.log(JSON.parse(currentUser));
+        setCurrentUser(JSON.parse(currentUser));
+      }
+      getCurrentUser();
+    }, []),
+  );
+  
   useFocusEffect(
     useCallback(() => {
       const fetchData = async () => {
@@ -396,6 +408,7 @@ const OrderGroup = ({navigation}) => {
   const handleClear = () => {
     setDate(null);
     setModalVisible(!modalVisible);
+    setSelectSort(sortOptions);
     setLoading(true);
     const fetchData = async () => {
       if (auth().currentUser) {

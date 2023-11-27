@@ -37,6 +37,8 @@ import VnpayMerchant, {
   VnpayMerchantModule,
 } from '../react-native-vnpay-merchant';
 import LoadingScreen from '../components/LoadingScreen';
+import AccountDisable from '../components/AccountDisable';
+import database from '@react-native-firebase/database';
 
 LogBox.ignoreLogs(['new NativeEventEmitter']);
 const eventEmitter = new NativeEventEmitter(VnpayMerchantModule);
@@ -99,6 +101,29 @@ const Payment = ({navigation, route}) => {
 
   const [keyboard, setKeyboard] = useState(Boolean);
 
+  const [openAccountDisableModal, setOpenAccountDisableModal] = useState(false);
+
+  // system status check
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+            
+          } else {
+            // setSystemStatus(snapshot.val());
+          
+          }
+        });
+    }, []),
+  );
+
   useFocusEffect(
     useCallback(() => {
       // Get pickup point from AS
@@ -114,10 +139,18 @@ const Payment = ({navigation, route}) => {
   );
 
   useEffect(() => {
+    const getPickupPoint = async () => {
+      const value = await AsyncStorage.getItem('PickupPoint');
+      setPickupPoint(value ? JSON.parse(value) : pickupPoint);
+    };
+    getPickupPoint();
+  }, []);
+
+  useEffect(() => {
     const getShippingFee = async () => {
       const idToken = await auth().currentUser.getIdToken();
       fetch(
-        `${API.baseURL}/api/order/getShippingFeeDetail?latitude=${customerLocation.lat}&longitude=${customerLocation.long}`,
+        `${API.baseURL}/api/order/getShippingFeeDetail?latitude=${customerLocation.lat}&longitude=${customerLocation.long}&pickupPointId=${pickupPoint.id}`,
         {
           method: 'GET',
           // truyen idToken vao
@@ -129,6 +162,7 @@ const Payment = ({navigation, route}) => {
       )
         .then(res => res.json())
         .then(respond => {
+          console.log(respond);
           if (respond.error) {
             return;
           }
@@ -137,7 +171,7 @@ const Payment = ({navigation, route}) => {
         .catch(err => console.log(err));
     };
     getShippingFee();
-  }, [customerLocation]);
+  }, [customerLocation, pickupPoint]);
 
   //VNPAY function/param
   const orderIdDummy = useRef('ec5dcac6-56dc-11ee-8a50-a85e45c41921');
@@ -310,10 +344,8 @@ const Payment = ({navigation, route}) => {
         });
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
-        await AsyncStorage.removeItem('userInfo');
-        await AsyncStorage.removeItem('CartList');
+        setOpenAccountDisableModal(true);
         setLoading(false);
-        setOpenAuthModal(true);
 
         return;
       }
@@ -328,11 +360,8 @@ const Payment = ({navigation, route}) => {
       setLoading(false);
     } else {
       // no sessions found.
-
-      await AsyncStorage.removeItem('userInfo');
-      await AsyncStorage.removeItem('CartList');
+      setOpenAccountDisableModal(true);
       setLoading(false);
-      setOpenAuthModal(true);
     }
   };
 
@@ -663,7 +692,10 @@ const Payment = ({navigation, route}) => {
       },
       body: JSON.stringify(submitOrder),
     })
-      .then(res => {
+      .then(async res => {
+        if (res.status === 403) {
+          await auth().currentUser.getIdToken(true);
+        }
         return res.json();
       })
       .then(async respond => {
@@ -1866,19 +1898,18 @@ const Payment = ({navigation, route}) => {
               textStyle={{color: COLORS.primary}}
               onPress={async () => {
                 setOpenAuthModal(false);
-                try {
-                  await GoogleSignin.signOut();
+                await GoogleSignin.signOut();
+                if (auth().currentUser) {
                   auth()
                     .signOut()
                     .then(async () => {
-                      await AsyncStorage.removeItem('userInfo');
-                      await AsyncStorage.removeItem('CartList');
-
+                      await AsyncStorage.clear();
                       navigation.navigate('Login');
                     })
                     .catch(e => console.log(e));
-                } catch (error) {
-                  console.log(error);
+                } else {
+                  await AsyncStorage.clear();
+                  navigation.navigate('Login');
                 }
               }}
             />
@@ -1999,6 +2030,11 @@ const Payment = ({navigation, route}) => {
           </View>
         </View>
       </Modal>
+      <AccountDisable
+        openAccountDisableModal={openAccountDisableModal}
+        setOpenAccountDisableModal={setOpenAccountDisableModal}
+        navigation={navigation}
+      />
       {loading && <LoadingScreen />}
     </>
   );

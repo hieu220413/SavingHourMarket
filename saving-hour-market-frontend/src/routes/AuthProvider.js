@@ -5,7 +5,8 @@ import { routes } from "./routes";
 import { useDispatch, useSelector } from "react-redux";
 import { Navigate } from "react-router";
 import { setUser } from "../feature/userSlice";
-import { auth } from "../firebase/firebase.config";
+import { auth, database } from "../firebase/firebase.config";
+import { onValue, ref } from "firebase/database";
 
 const AuthProvider = ({ children }) => {
   // const auth = getAuth();
@@ -15,10 +16,12 @@ const AuthProvider = ({ children }) => {
   const user = useSelector((state) => state.user.user);
   const [timeoutId, setTimeoutId] = useState(null);
   const dispatch = useDispatch();
+  const [triggerAuthChange, setTriggerAuthChange] = useState(false);
 
   useEffect(() => {
-    onAuthStateChanged(auth, async (userAuth) => {
+    const unsubscribe = onAuthStateChanged(auth, async (userAuth) => {
       if (!userAuth) {
+        console.log("a");
         localStorage.clear();
         const action = setUser(null);
         dispatch(action);
@@ -40,6 +43,35 @@ const AuthProvider = ({ children }) => {
           navigate("/login");
 
           return;
+        }
+      }
+    });
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    onValue(ref(database, "isDisableStaff"), async (snapshot) => {
+      const data = snapshot.val();
+      if (data !== null) {
+        console.log(data);
+        try {
+          await auth.currentUser.getIdToken(true);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    });
+    onValue(ref(database, "systemStatus"), async (snapshot) => {
+      const data = snapshot.val();
+      console.log(data);
+      if (data !== null) {
+        if (data === 0) {
+          if (user?.role !== "ADMIN") {
+            localStorage.clear();
+            const action = setUser(null);
+            dispatch(action);
+            navigate("/login");
+          }
         }
       }
     });
