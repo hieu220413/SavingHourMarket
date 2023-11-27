@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState, useCallback} from 'react';
 import {View, Image, Text, TouchableOpacity, Keyboard} from 'react-native';
 import {icons} from '../constants';
 import {COLORS, FONTS} from '../constants/theme';
@@ -15,6 +15,7 @@ import {TextInput} from 'react-native-gesture-handler';
 import LoadingScreen from '../components/LoadingScreen';
 import auth from '@react-native-firebase/auth';
 import database from '@react-native-firebase/database';
+import {useFocusEffect} from '@react-navigation/native';
 
 const EditCustomerLocation = ({navigation, route}) => {
   const {setCustomerLocation, customerLocation, pickupPoint} = route.params;
@@ -77,6 +78,29 @@ const EditCustomerLocation = ({navigation, route}) => {
         .catch(err => {
           console.log(err);
         });
+      fetch(`${API.baseURL}/api/configuration/getConfiguration`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${tokenId}`,
+        },
+      })
+        .then(res => res.json())
+        .then(respond => {
+          console.log(respond);
+          if (respond?.code === 404 || respond.status === 500) {
+            setLoading(false);
+            return;
+          }
+          setShippingCostPolicy({
+            initialShippingFee: respond.initialShippingFee,
+            minKmDistanceForExtraShippingFee:
+              respond.minKmDistanceForExtraShippingFee,
+            extraShippingFeePerKilometer: respond.extraShippingFeePerKilometer,
+          });
+          setLoading(false);
+        })
+        .catch(err => console.log(err));
     };
     fetchShipDetail();
   }, [locationPicked]);

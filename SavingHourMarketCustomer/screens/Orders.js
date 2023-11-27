@@ -79,11 +79,13 @@ const Orders = ({navigation}) => {
         });
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
-
+        setLoading(false);
         return;
       }
     } else {
       // no sessions found.
+      setOpenAuthModal(true);
+      setLoading(false);
     }
   };
 
@@ -172,121 +174,120 @@ const Orders = ({navigation}) => {
   useFocusEffect(
     useCallback(() => {
       const fetchData = async () => {
-        if (isDisableAccount) {
-          if (auth().currentUser) {
-            const tokenId = await auth().currentUser.getIdToken();
+        setOrderList([]);
+        if (auth().currentUser) {
+          const tokenId = await auth().currentUser.getIdToken();
 
-            setLoading(true);
-            await deleteUserUnpaidVnpayOrders(tokenId);
-            if (currentStatus.display !== 'Đóng gói') {
-              // setLoading(true);
-              fetch(
-                `${API.baseURL}/api/order/getOrdersForCustomer?orderStatus=${currentStatus.value}`,
-                {
-                  method: 'GET',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${tokenId}`,
-                  },
+          setLoading(true);
+          await deleteUserUnpaidVnpayOrders(tokenId);
+          if (currentStatus.display !== 'Đóng gói') {
+            // setLoading(true);
+            fetch(
+              `${API.baseURL}/api/order/getOrdersForCustomer?orderStatus=${currentStatus.value}`,
+              {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${tokenId}`,
                 },
-              )
-                .then(res => res.json())
-                .then(respond => {
-                  console.log(respond);
-                  if (respond.code === 403) {
-                    setOpenAccountDisableModal(true);
-                    setLoading(false);
-                    return;
-                  }
-                  if (respond.code === 401) {
-                    setOpenAuthModal(true);
-                    setLoading(false);
-                    return;
-                  }
-                  if (respond.error) {
-                    setLoading(false);
-                    return;
-                  }
+              },
+            )
+              .then(res => res.json())
+              .then(respond => {
+                console.log(respond);
+                if (respond.code === 403) {
+                  setOpenAccountDisableModal(true);
+                  setLoading(false);
+                  return;
+                }
+                if (respond.code === 401) {
+                  setOpenAuthModal(true);
+                  setLoading(false);
+                  return;
+                }
+                if (respond.error) {
+                  setLoading(false);
+                  return;
+                }
 
-                  setOrderList(respond);
-                  setLoading(false);
-                })
-                .catch(err => {
-                  console.log(err);
-                  setLoading(false);
-                });
-            } else {
-              // setLoading(true);
-              let list = [];
-              fetch(
-                `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGING`,
-                {
-                  method: 'GET',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${tokenId}`,
-                  },
+                setOrderList(respond);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
+          } else {
+            // setLoading(true);
+            let list = [];
+            fetch(
+              `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGING`,
+              {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${tokenId}`,
                 },
-              )
-                .then(res => res.json())
-                .then(respond => {
-                  if (respond.code === 403) {
-                    setOpenAccountDisableModal(true);
-                    setLoading(false);
-                    return;
-                  }
-                  if (respond.code === 401) {
-                    setOpenAuthModal(true);
-                    setLoading(false);
-                    return;
-                  }
-                  if (respond.error) {
-                    setLoading(false);
-                    return;
-                  }
-                  list.concat(respond);
+              },
+            )
+              .then(res => res.json())
+              .then(respond => {
+                if (respond.code === 403) {
+                  setOpenAccountDisableModal(true);
+                  setLoading(false);
+                  return;
+                }
+                if (respond.code === 401) {
+                  setOpenAuthModal(true);
+                  setLoading(false);
+                  return;
+                }
+                if (respond.error) {
+                  setLoading(false);
+                  return;
+                }
+                list.concat(respond);
 
-                  fetch(
-                    `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGED`,
-                    {
-                      method: 'GET',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${tokenId}`,
-                      },
+                fetch(
+                  `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGED`,
+                  {
+                    method: 'GET',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${tokenId}`,
                     },
-                  )
-                    .then(res => res.json())
-                    .then(respond => {
-                      if (respond.code === 403) {
-                        setOpenAccountDisableModal(true);
-                        setLoading(false);
-                        return;
-                      }
-                      if (respond.code === 401) {
-                        setOpenAuthModal(true);
-                        setLoading(false);
-                        return;
-                      }
-                      if (respond.error) {
-                        setLoading(false);
-                        return;
-                      }
+                  },
+                )
+                  .then(res => res.json())
+                  .then(respond => {
+                    if (respond.code === 403) {
+                      setOpenAccountDisableModal(true);
+                      setLoading(false);
+                      return;
+                    }
+                    if (respond.code === 401) {
+                      setOpenAuthModal(true);
+                      setLoading(false);
+                      return;
+                    }
+                    if (respond.error) {
+                      setLoading(false);
+                      return;
+                    }
 
-                      list.concat(respond);
-                      setOrderList(list);
-                      setLoading(false);
-                    })
-                    .catch(err => {
-                      console.log(err);
-                      setLoading(false);
-                    });
-                })
-                .catch(err => {
-                  console.log(err);
-                  setLoading(false);
-                });
-            }
+                    list.concat(respond);
+                    setOrderList(list);
+                    setLoading(false);
+                  })
+                  .catch(err => {
+                    console.log(err);
+                    setLoading(false);
+                  });
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
           }
         }
       };
@@ -298,7 +299,9 @@ const Orders = ({navigation}) => {
     useCallback(() => {
       (async () => {
         try {
-          const cartList = await AsyncStorage.getItem('CartList');
+          const cartList = await AsyncStorage.getItem(
+            'CartList' + pickupPoint.id,
+          );
           setCartList(cartList ? JSON.parse(cartList) : []);
         } catch (err) {
           console.log(err);

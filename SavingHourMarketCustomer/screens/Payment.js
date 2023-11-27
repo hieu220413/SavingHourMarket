@@ -115,10 +115,8 @@ const Payment = ({navigation, route}) => {
               index: 0,
               routes: [{name: 'Initial'}],
             });
-            
           } else {
             // setSystemStatus(snapshot.val());
-          
           }
         });
     }, []),
@@ -176,7 +174,7 @@ const Payment = ({navigation, route}) => {
   //VNPAY function/param
   const orderIdDummy = useRef('ec5dcac6-56dc-11ee-8a50-a85e45c41921');
   const totalPriceDummy = useRef(111111);
-  const processVNPay = async (totalPrice, orderId, idToken) => {
+  const processVNPay = async (totalPrice, orderId, idToken, isAddToCart) => {
     console.log('is in process');
     // lay payment url
     const getPaymentResponse = await fetch(
@@ -268,6 +266,19 @@ const Payment = ({navigation, route}) => {
               break;
             case 97:
               // Giao dich thanh cong.
+              if (isAddToCart) {
+                const cartList = await AsyncStorage.getItem(
+                  'CartList' + pickupPoint.id,
+                );
+                let newCartList = cartList ? JSON.parse(cartList) : [];
+                newCartList = newCartList.filter(
+                  o => !orderItems.some(i => i.id === o.id),
+                );
+                await AsyncStorage.setItem(
+                  'CartList' + pickupPoint.id,
+                  JSON.stringify(newCartList),
+                );
+              }
               navigation.navigate('Order success', {id: orderId});
               break;
             case 98:
@@ -640,6 +651,7 @@ const Payment = ({navigation, route}) => {
       };
     });
     console.log(orderDetailList);
+    const isAddToCart = orderItems.some(item => item.addToCart === true);
 
     if (pickUpPointIsChecked) {
       submitOrder = {
@@ -718,6 +730,7 @@ const Payment = ({navigation, route}) => {
           setOpenAuthModal(true);
           return;
         }
+
         // handle vnpay payment method
         if (paymentMethod.id === 1) {
           const createdOrderBody = respond;
@@ -725,7 +738,12 @@ const Payment = ({navigation, route}) => {
           const createdOrderTotalPrice = createdOrderBody.totalPrice;
           const idToken = await auth().currentUser.getIdToken();
           console.log('processing vnpay');
-          await processVNPay(createdOrderTotalPrice, createdOrderId, idToken);
+          await processVNPay(
+            createdOrderTotalPrice,
+            createdOrderId,
+            idToken,
+            isAddToCart,
+          );
           setLoading(false);
           return;
         }
@@ -733,6 +751,20 @@ const Payment = ({navigation, route}) => {
         if (paymentMethod.id === 0) {
           const createdOrderBody = respond;
           setLoading(false);
+          if (isAddToCart) {
+            const cartList = await AsyncStorage.getItem(
+              'CartList' + pickupPoint.id,
+            );
+            let newCartList = cartList ? JSON.parse(cartList) : [];
+            newCartList = newCartList.filter(
+              o => !orderItems.some(i => i.id === o.id),
+            );
+            await AsyncStorage.setItem(
+              'CartList' + pickupPoint.id,
+              JSON.stringify(newCartList),
+            );
+          }
+
           navigation.navigate('Order success', {id: createdOrderBody.id});
           return;
         }
