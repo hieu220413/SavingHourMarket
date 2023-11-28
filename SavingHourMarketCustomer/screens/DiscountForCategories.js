@@ -28,6 +28,13 @@ const DiscountForCategories = ({navigation, route}) => {
   const products = route.params.products.productList;
   const [cartList, setCartList] = useState([]);
   const [openAuthModal, setOpenAuthModal] = useState(false);
+  const [pickupPoint, setPickupPoint] = useState({
+    id: 'accf0ac0-5541-11ee-8a50-a85e45c41921',
+    address: 'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh',
+    status: 1,
+    longitude: 106.83102962168277,
+    latitude: 10.845020092805793,
+  });
 
   // system status check
   useFocusEffect(
@@ -61,7 +68,10 @@ const DiscountForCategories = ({navigation, route}) => {
     useCallback(() => {
       (async () => {
         try {
-          const cartList = await AsyncStorage.getItem('CartList');
+          const value = await AsyncStorage.getItem('PickupPoint');
+          setPickupPoint(value ? JSON.parse(value) : pickupPoint);
+          const id = value ? JSON.parse(value).id : pickupPoint.id;
+          const cartList = await AsyncStorage.getItem('CartList' + id);
           setCartList(cartList ? JSON.parse(cartList) : []);
         } catch (err) {
           console.log(err);

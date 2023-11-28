@@ -15,6 +15,11 @@ import Toast from 'react-native-toast-message';
 import LoadingScreen from '../components/LoadingScreen';
 import AccountDisable from '../components/AccountDisable';
 import database from '@react-native-firebase/database';
+import Modal, {
+  ModalFooter,
+  ModalButton,
+  ScaleAnimation,
+} from 'react-native-modals';
 
 const OrderDetail = ({navigation, route}) => {
   const {id, orderSuccess} = route.params;

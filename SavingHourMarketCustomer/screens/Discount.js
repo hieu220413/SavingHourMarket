@@ -74,22 +74,16 @@ const Discount = ({navigation}) => {
 
   useFocusEffect(
     useCallback(() => {
-      (async () => {
-        try {
-          setLoading(true);
-          const cartList = await AsyncStorage.getItem('CartList');
-          setCartList(cartList ? JSON.parse(cartList) : []);
-          setLoading(false);
-        } catch (err) {
-          console.log(err);
-          setLoading(false);
-        }
-      })();
       // Get pickup point from AS
       (async () => {
         try {
           const value = await AsyncStorage.getItem('PickupPoint');
           setPickupPoint(value ? JSON.parse(value) : pickupPoint);
+          setLoading(true);
+          const id = value ? JSON.parse(value).id : pickupPoint.id;
+          const cartList = await AsyncStorage.getItem('CartList' + id);
+          setCartList(cartList ? JSON.parse(cartList) : []);
+          setLoading(false);
         } catch (err) {
           console.log(err);
         }
