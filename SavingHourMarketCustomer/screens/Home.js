@@ -144,7 +144,7 @@ const Home = ({ navigation }) => {
         .then(res => res.json())
         .then(data => {
           // console.log("san pham", data.productList[0].supermarket);
-          console.log(data);
+          // console.log(data);
           setProductsByCategory(data.productList);
           setPage(1);
           setTotalPage(data.totalPage);
@@ -730,7 +730,7 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.27,
     shadowRadius: 4.65,
-    elevation: 2
+    elevation: 2,
 
   },
   itemImage: {

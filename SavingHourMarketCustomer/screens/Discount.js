@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 // eslint-disable-next-line prettier/prettier
-import React, {useState, useEffect, useCallback} from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Text,
   View,
@@ -9,12 +9,12 @@ import {
   StyleSheet,
   FlatList,
 } from 'react-native';
-import {icons} from '../constants';
-import {COLORS, FONTS} from '../constants/theme';
+import { icons } from '../constants';
+import { COLORS, FONTS } from '../constants/theme';
 import Categories from '../components/Categories';
 import dayjs from 'dayjs';
-import {API} from '../constants/api';
-import {useFocusEffect} from '@react-navigation/native';
+import { API } from '../constants/api';
+import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Empty from '../assets/image/search-empty.png';
 import LoadingScreen from '../components/LoadingScreen';
@@ -25,10 +25,10 @@ import Modal, {
   ScaleAnimation,
 } from 'react-native-modals';
 import Toast from 'react-native-toast-message';
-import {ScrollView} from 'react-native-gesture-handler';
+import { ScrollView } from 'react-native-gesture-handler';
 import database from '@react-native-firebase/database';
 
-const Discount = ({navigation}) => {
+const Discount = ({ navigation }) => {
   const [discounts, setDiscounts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [currentCate, setCurrentCate] = useState('');
@@ -63,7 +63,7 @@ const Discount = ({navigation}) => {
           if (snapshot.val() === 0) {
             navigation.reset({
               index: 0,
-              routes: [{name: 'Initial'}],
+              routes: [{ name: 'Initial' }],
             });
           } else {
             // setSystemStatus(snapshot.val());
@@ -145,7 +145,7 @@ const Discount = ({navigation}) => {
     }
   }, [currentCate, pickupPoint.id]);
 
-  const Item = ({data}) => (
+  const Item = ({ data }) => (
     <View style={styles.itemContainer}>
       {/* Image Product */}
       <Image
@@ -156,7 +156,7 @@ const Discount = ({navigation}) => {
         style={styles.itemImage}
       />
 
-      <View style={{justifyContent: 'center', flex: 1, marginRight: 10}}>
+      <View style={{ justifyContent: 'center', flex: 1, marginRight: 10 }}>
         <Text
           numberOfLines={1}
           style={{
@@ -219,7 +219,7 @@ const Discount = ({navigation}) => {
             <Image
               source={icons.leftArrow}
               resizeMode="contain"
-              style={{width: 35, height: 35, tintColor: COLORS.primary}}
+              style={{ width: 35, height: 35, tintColor: COLORS.primary }}
             />
           </TouchableOpacity>
           <Text
@@ -268,7 +268,7 @@ const Discount = ({navigation}) => {
                   justifyContent: 'center',
                 }}>
                 <Text
-                  style={{fontSize: 12, color: 'white', fontFamily: 'Roboto'}}>
+                  style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
                   {cartList.length}
                 </Text>
               </View>
@@ -288,9 +288,9 @@ const Discount = ({navigation}) => {
         </View>
         {/* List voucher */}
         {discounts.length === 0 ? (
-          <View style={{alignItems: 'center'}}>
+          <View style={{ alignItems: 'center' }}>
             <Image
-              style={{width: '100%', height: '65%'}}
+              style={{ width: '100%', height: '65%' }}
               resizeMode="contain"
               source={Empty}
             />
@@ -332,7 +332,7 @@ const Discount = ({navigation}) => {
               />
               <ModalButton
                 text="Đăng nhập"
-                textStyle={{color: COLORS.primary}}
+                textStyle={{ color: COLORS.primary }}
                 onPress={async () => {
                   try {
                     await AsyncStorage.clear();
@@ -376,6 +376,15 @@ const styles = StyleSheet.create({
     marginHorizontal: '5%',
     marginBottom: 20,
     flexDirection: 'row',
+
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.27,
+    shadowRadius: 4.65,
+    elevation: 2,
   },
   itemImage: {
     width: 130,

@@ -8,12 +8,12 @@ import {
   ScrollView,
   StyleSheet,
 } from 'react-native';
-import React, {useCallback, useState, useRef, useMemo} from 'react';
-import {icons} from '../constants';
-import {COLORS, FONTS} from '../constants/theme';
+import React, { useCallback, useState, useRef, useMemo } from 'react';
+import { icons } from '../constants';
+import { COLORS, FONTS } from '../constants/theme';
 import dayjs from 'dayjs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useFocusEffect} from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import Modal, {
   ModalFooter,
   ModalButton,
@@ -27,10 +27,10 @@ import BottomSheet, {
   BottomSheetModalProvider,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import {format} from 'date-fns';
+import { format } from 'date-fns';
 import database from '@react-native-firebase/database';
 
-const ProductDetails = ({navigation, route}) => {
+const ProductDetails = ({ navigation, route }) => {
   const product = route.params.product;
   const pickupPointId = route.params.pickupPointId;
   const [cartList, setCartList] = useState([]);
@@ -76,12 +76,12 @@ const ProductDetails = ({navigation, route}) => {
           if (snapshot.val() === 0) {
             navigation.reset({
               index: 0,
-              routes: [{name: 'Initial'}],
+              routes: [{ name: 'Initial' }],
             });
-            
+
           } else {
             // setSystemStatus(snapshot.val());
-         
+
           }
         });
     }, []),
@@ -220,7 +220,7 @@ const ProductDetails = ({navigation, route}) => {
           <Image
             source={icons.leftArrow}
             resizeMode="contain"
-            style={{width: 35, height: 35, tintColor: COLORS.primary}}
+            style={{ width: 35, height: 35, tintColor: COLORS.primary }}
           />
         </TouchableOpacity>
         <Text
@@ -265,7 +265,7 @@ const ProductDetails = ({navigation, route}) => {
                 justifyContent: 'center',
               }}>
               <Text
-                style={{fontSize: 12, color: 'white', fontFamily: 'Roboto'}}>
+                style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
                 {cartList.length}
               </Text>
             </View>
@@ -273,7 +273,11 @@ const ProductDetails = ({navigation, route}) => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView>
+      <ScrollView
+        contentContainerStyle={{
+          paddingBottom: 150,
+        }}
+      >
         <Swiper
           style={{
             height: 250,
@@ -368,90 +372,99 @@ const ProductDetails = ({navigation, route}) => {
             {product.description}
           </Text>
         </View>
-
-        <View
-          style={{
-            flex: 1,
-            flexDirection: 'row',
-            backgroundColor: '#F5F5F5',
-            marginHorizontal: 20,
-            paddingHorizontal: 10,
-            paddingTop: '8%',
-            paddingBottom: '22%',
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}>
-          <View style={{flexDirection: 'row'}}>
-            <Text
-              style={{
-                fontSize: 24,
-                lineHeight: 30,
-                color: COLORS.secondary,
-                fontWeight: 700,
-                fontFamily: FONTS.fontFamily,
-              }}>
-              {product.nearestExpiredBatch.price.toLocaleString('vi-VN', {
-                currency: 'VND',
-              })}
-            </Text>
-            <Text
-              style={{
-                fontSize: 16,
-                lineHeight: 18,
-                color: COLORS.secondary,
-                fontWeight: 700,
-                fontFamily: FONTS.fontFamily,
-                paddingRight: '10%',
-              }}>
-              ₫
-            </Text>
-          </View>
-          <TouchableOpacity
-            onPress={() => {
-              setIsAddToCart(true);
-              handlePresentBottomSheet();
-            }}>
-            <Text
-              style={{
-                paddingVertical: 8,
-                paddingHorizontal: '8%',
-                backgroundColor: '#ffffff',
-                borderRadius: 20,
-                fontWeight: 700,
-                textAlign: 'center',
-                color: COLORS.primary,
-                fontSize: 18,
-                fontFamily: FONTS.fontFamily,
-                borderColor: COLORS.primary,
-                borderWidth: 1,
-              }}>
-              Thêm
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setIsAddToCart(false);
-              handlePresentBottomSheet();
-            }}>
-            <Text
-              style={{
-                paddingVertical: 10,
-                paddingHorizontal: '10%',
-                backgroundColor: COLORS.primary,
-                borderRadius: 20,
-                fontWeight: 700,
-                textAlign: 'center',
-                color: '#ffffff',
-                fontSize: 18,
-                fontFamily: FONTS.fontFamily,
-              }}>
-              Mua
-            </Text>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          flexDirection: 'row',
+          backgroundColor: '#F5F5F5',
+          marginHorizontal: 20,
+          paddingHorizontal: 20,
+          paddingTop: '8%',
+          paddingBottom: '22%',
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          shadowColor: '#000',
+          shadowOffset: {
+            width: 0,
+            height: 3,
+          },
+          shadowOpacity: 0.27,
+          shadowRadius: 4.65,
+          elevation: 2,
+        }}>
+        <View style={{ flexDirection: 'row' }}>
+          <Text
+            style={{
+              fontSize: 24,
+              lineHeight: 30,
+              color: COLORS.secondary,
+              fontWeight: 700,
+              fontFamily: FONTS.fontFamily,
+            }}>
+            {product.nearestExpiredBatch.price.toLocaleString('vi-VN', {
+              currency: 'VND',
+            })}
+          </Text>
+          <Text
+            style={{
+              fontSize: 16,
+              lineHeight: 18,
+              color: COLORS.secondary,
+              fontWeight: 700,
+              fontFamily: FONTS.fontFamily,
+              paddingRight: '10%',
+            }}>
+            ₫
+          </Text>
+        </View>
+        <TouchableOpacity
+          onPress={() => {
+            setIsAddToCart(true);
+            handlePresentBottomSheet();
+          }}>
+          <Text
+            style={{
+              paddingVertical: 8,
+              paddingHorizontal: '8%',
+              backgroundColor: '#ffffff',
+              borderRadius: 20,
+              fontWeight: 700,
+              textAlign: 'center',
+              color: COLORS.primary,
+              fontSize: 18,
+              fontFamily: FONTS.fontFamily,
+              borderColor: COLORS.primary,
+              borderWidth: 1,
+            }}>
+            Thêm
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            setIsAddToCart(false);
+            handlePresentBottomSheet();
+          }}>
+          <Text
+            style={{
+              paddingVertical: 10,
+              paddingHorizontal: '10%',
+              backgroundColor: COLORS.primary,
+              borderRadius: 20,
+              fontWeight: 700,
+              textAlign: 'center',
+              color: '#ffffff',
+              fontSize: 18,
+              fontFamily: FONTS.fontFamily,
+              marginLeft: 5,
+            }}>
+            Mua
+          </Text>
+        </TouchableOpacity>
+      </View>
       {/* auth modal */}
       <Modal
         width={0.8}
@@ -472,7 +485,7 @@ const ProductDetails = ({navigation, route}) => {
             />
             <ModalButton
               text="Đăng nhập"
-              textStyle={{color: COLORS.primary}}
+              textStyle={{ color: COLORS.primary }}
               onPress={async () => {
                 try {
                   await AsyncStorage.removeItem('userInfo');
@@ -487,7 +500,7 @@ const ProductDetails = ({navigation, route}) => {
           </ModalFooter>
         }>
         <View
-          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
+          style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
           <Text
             style={{
               fontSize: 20,
@@ -520,7 +533,7 @@ const ProductDetails = ({navigation, route}) => {
           </ModalFooter>
         }>
         <View
-          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
+          style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
           <Text
             style={{
               fontSize: 20,
@@ -538,7 +551,7 @@ const ProductDetails = ({navigation, route}) => {
           enableOverDrag={false}
           index={index}
           snapPoints={snapPoints}>
-          <View style={{padding: 3}}>
+          <View style={{ padding: 3 }}>
             <View
               style={{
                 flexDirection: 'row',
@@ -556,9 +569,9 @@ const ProductDetails = ({navigation, route}) => {
                   borderRadius: 20,
                 }}
                 resizeMode="contain"
-                source={{uri: product.imageUrlImageList[0].imageUrl}}
+                source={{ uri: product.imageUrlImageList[0].imageUrl }}
               />
-              <View style={{flex: 6, justifyContent: 'space-between'}}>
+              <View style={{ flex: 6, justifyContent: 'space-between' }}>
                 <View></View>
                 <View>
                   <Text
@@ -569,16 +582,16 @@ const ProductDetails = ({navigation, route}) => {
                     }}>
                     {minPrice === maxPrice
                       ? `${minPrice.toLocaleString('vi-VN', {
-                          style: 'currency',
-                          currency: 'VND',
-                        })}`
+                        style: 'currency',
+                        currency: 'VND',
+                      })}`
                       : `${minPrice.toLocaleString('vi-VN', {
-                          style: 'currency',
-                          currency: 'VND',
-                        })} - ${maxPrice.toLocaleString('vi-VN', {
-                          style: 'currency',
-                          currency: 'VND',
-                        })}`}
+                        style: 'currency',
+                        currency: 'VND',
+                      })} - ${maxPrice.toLocaleString('vi-VN', {
+                        style: 'currency',
+                        currency: 'VND',
+                      })}`}
                   </Text>
                 </View>
               </View>
@@ -587,9 +600,9 @@ const ProductDetails = ({navigation, route}) => {
                   bottomSheetRef.current?.close();
                   setIndex(-1);
                 }}
-                style={{flex: 1}}>
+                style={{ flex: 1 }}>
                 <Image
-                  style={{width: 25, height: 25}}
+                  style={{ width: 25, height: 25 }}
                   resizeMode="contain"
                   source={icons.cross}
                 />
@@ -602,7 +615,7 @@ const ProductDetails = ({navigation, route}) => {
                 paddingBottom: 15,
                 marginBottom: 140,
               }}>
-              <View style={{paddingHorizontal: 15}}>
+              <View style={{ paddingHorizontal: 15 }}>
                 <Text
                   style={{
                     fontSize: 18,
@@ -713,7 +726,7 @@ const ProductDetails = ({navigation, route}) => {
                     }}>
                     <Image
                       resizeMode="contain"
-                      style={{height: 20, width: 20}}
+                      style={{ height: 20, width: 20 }}
                       source={icons.minus}
                     />
                   </TouchableOpacity>
@@ -736,7 +749,7 @@ const ProductDetails = ({navigation, route}) => {
                     }}>
                     <Image
                       resizeMode="contain"
-                      style={{height: 20, width: 20}}
+                      style={{ height: 20, width: 20 }}
                       source={icons.plus}
                     />
                   </TouchableOpacity>
@@ -762,7 +775,7 @@ const ProductDetails = ({navigation, route}) => {
               marginTop: 20,
               elevation: 10,
             }}>
-            <View style={{width: '95%'}}>
+            <View style={{ width: '95%' }}>
               <TouchableOpacity
                 onPress={() => {
                   isAddToCart ? handleAddToCart(product) : handleBuy();
