@@ -2,6 +2,7 @@ package com.fpt.capstone.savinghourmarket.repository;
 
 import com.fpt.capstone.savinghourmarket.entity.Order;
 import com.fpt.capstone.savinghourmarket.entity.PickupPoint;
+import com.fpt.capstone.savinghourmarket.entity.Staff;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,7 +24,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "AND " +
             "((:deliveryDate IS NULL) OR (o.deliveryDate = :deliveryDate)) " +
             "AND " +
-            "((:deliverId IS NULL) OR (o.deliverer.id = :deliverId)) " +
+            "(((:deliverId IS NULL) AND ((o.status < 3) OR (o.deliverer IN :staffManaged))) OR (o.deliverer.id = :deliverId)) " +
             "AND " +
             "((:status IS NULL) OR (o.status = :status)) " +
             "AND " +
@@ -51,7 +52,8 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "OR " +
             "((:isPaid = TRUE) AND (SIZE(o.transaction) > 0)))"
     )
-    List<Order> findOrderForStaff(Boolean getOldOrder,
+    List<Order> findOrderForStaff(List<Staff> staffManaged,
+                                  Boolean getOldOrder,
                                   Date deliveryDate,
                                   UUID packageId,
                                   UUID deliverId,

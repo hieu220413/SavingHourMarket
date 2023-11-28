@@ -11,7 +11,7 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {COLORS} from '../constants/theme';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -21,6 +21,7 @@ import * as Animatable from 'react-native-animatable';
 import auth from '@react-native-firebase/auth';
 import {API} from '../constants/api';
 import database from '@react-native-firebase/database';
+import { useFocusEffect } from '@react-navigation/native';
 
 const Signup = ({navigation}) => {
   const [password, setPassword] = useState('');
@@ -53,10 +54,10 @@ const Signup = ({navigation}) => {
 
   const emailValidator = () => {
     if (email == '') {
-      setEmailError('Email field cannot be empty');
+      setEmailError('Email không thể rỗng');
       setCheck_textInputChange(false);
     } else if (!isValidEmail(email)) {
-      setEmailError('Invalid email !');
+      setEmailError('Email không hợp lệ !');
       setCheck_textInputChange(false);
     } else {
       setEmailError('');
@@ -67,7 +68,7 @@ const Signup = ({navigation}) => {
   const passwordValidation = () => {
     if (!isValidPassword(password)) {
       setPasswordError(
-        'At least 8 characters, 1 digit, 1 uppercase and lowercase letter',
+        'Ít nhất 8 ký tự, 1 chữ số, 1 ký tự hoa và thường',
       );
     } else {
       setPasswordError('');
@@ -84,7 +85,7 @@ const Signup = ({navigation}) => {
   // };
 
   const isValidPassword = password => {
-    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d].{8,}$/;
     return regex.test(password);
   };
 
@@ -99,7 +100,7 @@ const Signup = ({navigation}) => {
       return;
     }
     if (password_confirm !== password) {
-      setPassword_confirmError('Confirm password does not match!');
+      setPassword_confirmError('Mất khẩu không khớp!');
       return;
     } else {
       setPassword_confirmError('');
@@ -143,17 +144,17 @@ const Signup = ({navigation}) => {
 
     // Handle register internal error
     if (!registerWithEmailPasswordRequest) {
-      Alert.alert('Internal error happened');
+      Alert.alert('Lỗi hệ thống');
       return;
     }
     if (registerWithEmailPasswordRequest.status === 422) {
-      Alert.alert('This email has already been registered');
+      Alert.alert('Email này đã được đăng kí');
       return null;
     }
     if (registerWithEmailPasswordRequest.status === 403) {
       const response = await registerWithEmailPasswordRequest.json();
       if (response.message && response.message === 'EMAIL_ALREADY_EXISTS') {
-        Alert.alert('This email has already been registered');
+        Alert.alert('Email này đã được đăng kí');
       }
     }
     // Handle register success
@@ -167,7 +168,7 @@ const Signup = ({navigation}) => {
         });
       console.log(user);
       if (!user) {
-        Alert.alert('Email address does not exitst!!!');
+        Alert.alert('Địa chỉ email không tồn tại!');
         navigation.navigate('Login');
       }
       if (user) {
@@ -181,14 +182,14 @@ const Signup = ({navigation}) => {
               .signOut()
               .catch(e => console.log(e));
             Alert.alert(
-              'Sign up successfull. Email verfication has been sent to your account',
+              'Đăng kí thành công. Email xác nhận đã được gửi đến tài khoản của bạn',
             );
             navigation.navigate('Login');
           })
           .catch(async e => {
             console.log(e);
             Alert.alert(
-              'Sign up successfully but email verification was sent fail',
+              'Đăng kí thành công nhưng gửi email xác nhận thất bại',
             );
             await auth()
               .signOut()
@@ -364,17 +365,21 @@ const Signup = ({navigation}) => {
                 )}
                 <View style={styles.textPrivate}>
                   <Text style={styles.color_textPrivate}>
-                    By signing up you agree to our
+                    Bằng cách đăng ký, bạn đồng ý với 
                   </Text>
                   <Text
                     style={[styles.color_textPrivate, {fontWeight: 'bold'}]}>
                     {' '}
-                    Term of Service
+                    Điều khoản Dịch vụ
                   </Text>
-                  <Text style={styles.color_textPrivate}> and</Text>
+                  <Text style={styles.color_textPrivate}> và </Text>
                   <Text
                     style={[styles.color_textPrivate, {fontWeight: 'bold'}]}>
-                    Privacy Policy
+                    Chính sách Riêng tư 
+                  </Text>
+                  <Text style={styles.color_textPrivate}> </Text>
+                  <Text style={styles.color_textPrivate}>
+                    của chúng tôi
                   </Text>
                 </View>
                 <View style={styles.button}>
@@ -387,7 +392,7 @@ const Signup = ({navigation}) => {
                       colors={['#66CC66', '#66CC99']}
                       style={styles.login}>
                       <Text style={[styles.textSign, {color: 'white'}]}>
-                        Sign Up
+                        Đăng ký
                       </Text>
                     </LinearGradient>
                   </TouchableOpacity>
