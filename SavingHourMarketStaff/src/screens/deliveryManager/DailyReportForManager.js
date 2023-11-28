@@ -386,7 +386,10 @@ const DailyReportForManager = ({navigation}) => {
               </Text>
             </View>
           ) : (
-            <ScrollView contentContainerStyle={{paddingBottom: 0}}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{paddingBottom: 0}}>
               {deliverReportList?.map((item, index) => (
                 <View
                   key={index}
@@ -395,6 +398,15 @@ const DailyReportForManager = ({navigation}) => {
                     backgroundColor: 'rgb(240,240,240)',
                     padding: 10,
                     borderRadius: 10,
+                    shadowColor: '#000',
+                    shadowOffset: {
+                      width: 0,
+                      height: 3,
+                    },
+                    shadowOpacity: 0.27,
+                    shadowRadius: 4.65,
+                    elevation: 6,
+                    margin: 4,
                   }}>
                   <View style={{borderBottomWidth: 0.4, paddingBottom: 10}}>
                     <Text

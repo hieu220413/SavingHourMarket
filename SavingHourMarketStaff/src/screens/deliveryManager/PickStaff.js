@@ -589,6 +589,21 @@ const PickStaff = ({navigation, route}) => {
                           }}>
                           Email : {item?.email}
                         </Text>
+                        {item?.overLimitAlertList.length >= 1
+                          ? item.overLimitAlertList.map((item, index) => (
+                              <Text
+                                key={index}
+                                style={{
+                                  fontSize: 14,
+                                  fontWeight: 'bold',
+                                  fontFamily: 'Roboto',
+                                  color: 'red',
+                                  width: 260,
+                                }}>
+                                * {item.alertMessage}
+                              </Text>
+                            ))
+                          : null}
                         {item?.isAvailableForDelivering === false ? (
                           <Text
                             style={{
@@ -792,7 +807,7 @@ const PickStaff = ({navigation, route}) => {
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}>
-                {selectedStaff?.overLimitAlertList.map((item, index) => (
+                {/* {selectedStaff?.overLimitAlertList.map((item, index) => (
                   <Text
                     key={index}
                     style={{
@@ -803,7 +818,16 @@ const PickStaff = ({navigation, route}) => {
                     }}>
                     {item.alertMessage}
                   </Text>
-                ))}
+                ))} */}
+                <Text
+                  style={{
+                    fontSize: 20,
+                    fontFamily: 'Roboto',
+                    color: 'black',
+                    textAlign: 'center',
+                  }}>
+                  Xác nhận giao việc cho nhân viên {selectedStaff?.fullName}
+                </Text>
               </View>
             </ModalContent>
           </Modal>

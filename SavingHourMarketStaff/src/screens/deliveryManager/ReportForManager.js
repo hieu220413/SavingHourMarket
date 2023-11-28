@@ -25,14 +25,14 @@ import {SwipeListView} from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
 import DatePicker from 'react-native-date-picker';
 import database from '@react-native-firebase/database';
-import { checkSystemState } from '../../common/utils';
+import {checkSystemState} from '../../common/utils';
 
 const ReportForManager = ({navigation}) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
-        checkSystemState(navigation);
-      }, []),
+      checkSystemState(navigation);
+    }, []),
   );
 
   const [initializing, setInitializing] = useState(true);
@@ -103,7 +103,7 @@ const ReportForManager = ({navigation}) => {
         const currentUser = await AsyncStorage.getItem('userInfo');
         // console.log(JSON.parse(currentUser));
         setCurrentUser(JSON.parse(currentUser));
-      }
+      };
       getCurrentUser();
     }, []),
   );
@@ -392,7 +392,10 @@ const ReportForManager = ({navigation}) => {
               </Text>
             </View>
           ) : (
-            <ScrollView contentContainerStyle={{paddingBottom: 80}}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{paddingBottom: 80}}>
               {deliverReportList?.map((item, index) => (
                 <View
                   key={index}
@@ -401,6 +404,15 @@ const ReportForManager = ({navigation}) => {
                     backgroundColor: 'rgb(240,240,240)',
                     padding: 10,
                     borderRadius: 10,
+                    shadowColor: '#000',
+                    shadowOffset: {
+                      width: 0,
+                      height: 3,
+                    },
+                    shadowOpacity: 0.27,
+                    shadowRadius: 4.65,
+                    elevation: 6,
+                    margin: 4,
                   }}>
                   <View style={{borderBottomWidth: 0.4, paddingBottom: 10}}>
                     <Text

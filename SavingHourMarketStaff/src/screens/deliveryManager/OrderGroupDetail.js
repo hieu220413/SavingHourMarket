@@ -23,14 +23,14 @@ import {SwipeListView} from 'react-native-swipe-list-view';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CartEmpty from '../../assets/image/search-empty.png';
 import database from '@react-native-firebase/database';
-import { checkSystemState } from '../../common/utils';
+import {checkSystemState} from '../../common/utils';
 
 const OrderGroupDetail = ({navigation, route}) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
-        checkSystemState(navigation);
-      }, []),
+      checkSystemState(navigation);
+    }, []),
   );
 
   const {orderList, deliverer, orderGroupId, deliverDate, timeFrame, mode} =
@@ -174,6 +174,15 @@ const OrderGroupDetail = ({navigation, route}) => {
                 marginBottom: 10,
                 borderRadius: 10,
                 marginTop: 10,
+                shadowColor: '#000',
+                shadowOffset: {
+                  width: 0,
+                  height: 3,
+                },
+                shadowOpacity: 0.27,
+                shadowRadius: 4.65,
+                elevation: 6,
+                margin: 4,
               }}>
               {deliverer === null ? (
                 <View
@@ -337,6 +346,15 @@ const OrderGroupDetail = ({navigation, route}) => {
                       backgroundColor: 'rgb(240,240,240)',
                       marginBottom: 20,
                       borderRadius: 10,
+                      shadowColor: '#000',
+                      shadowOffset: {
+                        width: 0,
+                        height: 3,
+                      },
+                      shadowOpacity: 0.27,
+                      shadowRadius: 4.65,
+                      elevation: 6,
+                      margin: 4,
                     }}>
                     {/* Order detail */}
                     <TouchableOpacity

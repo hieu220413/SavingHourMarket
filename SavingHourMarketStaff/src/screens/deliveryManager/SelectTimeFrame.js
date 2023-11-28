@@ -113,7 +113,9 @@ const SelectTimeFrame = ({navigation, route}) => {
   );
   return (
     <>
-      <ScrollView>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}>
         <View
           style={{
             flex: 1,

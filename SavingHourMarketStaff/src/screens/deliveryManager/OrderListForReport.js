@@ -17,14 +17,14 @@ import {format} from 'date-fns';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import database from '@react-native-firebase/database';
-import { checkSystemState } from '../../common/utils';
+import {checkSystemState} from '../../common/utils';
 
 const OrderListForReport = ({navigation, route}) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
-        checkSystemState(navigation);
-      }, []),
+      checkSystemState(navigation);
+    }, []),
   );
 
   const {type, mode, date} = route.params;
@@ -102,20 +102,20 @@ const OrderListForReport = ({navigation, route}) => {
                   },
                 )
                   .then(async res => {
-                if (res.status === 403 || res.status === 401) {
-                  const tokenIdCheck = await auth()
-                    .currentUser.getIdToken(true)
-                    .catch(async err => {
-                      await AsyncStorage.setItem('isDisableAccount', '1');
-                      return null;
-                    });
-                  if (!tokenIdCheck) {
-                    throw new Error();
-                  }
-                  // Cac loi 403 khac thi handle duoi day neu co
-                }
-                return res.json();
-              })
+                    if (res.status === 403 || res.status === 401) {
+                      const tokenIdCheck = await auth()
+                        .currentUser.getIdToken(true)
+                        .catch(async err => {
+                          await AsyncStorage.setItem('isDisableAccount', '1');
+                          return null;
+                        });
+                      if (!tokenIdCheck) {
+                        throw new Error();
+                      }
+                      // Cac loi 403 khac thi handle duoi day neu co
+                    }
+                    return res.json();
+                  })
                   .then(response => {
                     console.log(response[3].deliveryMethod);
                     setOrderList(response);
@@ -138,20 +138,20 @@ const OrderListForReport = ({navigation, route}) => {
                   },
                 )
                   .then(async res => {
-                if (res.status === 403 || res.status === 401) {
-                  const tokenIdCheck = await auth()
-                    .currentUser.getIdToken(true)
-                    .catch(async err => {
-                      await AsyncStorage.setItem('isDisableAccount', '1');
-                      return null;
-                    });
-                  if (!tokenIdCheck) {
-                    throw new Error();
-                  }
-                  // Cac loi 403 khac thi handle duoi day neu co
-                }
-                return res.json();
-              })
+                    if (res.status === 403 || res.status === 401) {
+                      const tokenIdCheck = await auth()
+                        .currentUser.getIdToken(true)
+                        .catch(async err => {
+                          await AsyncStorage.setItem('isDisableAccount', '1');
+                          return null;
+                        });
+                      if (!tokenIdCheck) {
+                        throw new Error();
+                      }
+                      // Cac loi 403 khac thi handle duoi day neu co
+                    }
+                    return res.json();
+                  })
                   .then(response => {
                     console.log(response.length);
                     setOrderList(response);
@@ -176,20 +176,20 @@ const OrderListForReport = ({navigation, route}) => {
                   },
                 )
                   .then(async res => {
-                if (res.status === 403 || res.status === 401) {
-                  const tokenIdCheck = await auth()
-                    .currentUser.getIdToken(true)
-                    .catch(async err => {
-                      await AsyncStorage.setItem('isDisableAccount', '1');
-                      return null;
-                    });
-                  if (!tokenIdCheck) {
-                    throw new Error();
-                  }
-                  // Cac loi 403 khac thi handle duoi day neu co
-                }
-                return res.json();
-              })
+                    if (res.status === 403 || res.status === 401) {
+                      const tokenIdCheck = await auth()
+                        .currentUser.getIdToken(true)
+                        .catch(async err => {
+                          await AsyncStorage.setItem('isDisableAccount', '1');
+                          return null;
+                        });
+                      if (!tokenIdCheck) {
+                        throw new Error();
+                      }
+                      // Cac loi 403 khac thi handle duoi day neu co
+                    }
+                    return res.json();
+                  })
                   .then(response => {
                     console.log(response.length);
                     setOrderList(response);
@@ -212,20 +212,20 @@ const OrderListForReport = ({navigation, route}) => {
                   },
                 )
                   .then(async res => {
-                if (res.status === 403 || res.status === 401) {
-                  const tokenIdCheck = await auth()
-                    .currentUser.getIdToken(true)
-                    .catch(async err => {
-                      await AsyncStorage.setItem('isDisableAccount', '1');
-                      return null;
-                    });
-                  if (!tokenIdCheck) {
-                    throw new Error();
-                  }
-                  // Cac loi 403 khac thi handle duoi day neu co
-                }
-                return res.json();
-              })
+                    if (res.status === 403 || res.status === 401) {
+                      const tokenIdCheck = await auth()
+                        .currentUser.getIdToken(true)
+                        .catch(async err => {
+                          await AsyncStorage.setItem('isDisableAccount', '1');
+                          return null;
+                        });
+                      if (!tokenIdCheck) {
+                        throw new Error();
+                      }
+                      // Cac loi 403 khac thi handle duoi day neu co
+                    }
+                    return res.json();
+                  })
                   .then(response => {
                     console.log(response.length);
                     setOrderList(response);
@@ -250,20 +250,20 @@ const OrderListForReport = ({navigation, route}) => {
                   },
                 )
                   .then(async res => {
-                if (res.status === 403 || res.status === 401) {
-                  const tokenIdCheck = await auth()
-                    .currentUser.getIdToken(true)
-                    .catch(async err => {
-                      await AsyncStorage.setItem('isDisableAccount', '1');
-                      return null;
-                    });
-                  if (!tokenIdCheck) {
-                    throw new Error();
-                  }
-                  // Cac loi 403 khac thi handle duoi day neu co
-                }
-                return res.json();
-              })
+                    if (res.status === 403 || res.status === 401) {
+                      const tokenIdCheck = await auth()
+                        .currentUser.getIdToken(true)
+                        .catch(async err => {
+                          await AsyncStorage.setItem('isDisableAccount', '1');
+                          return null;
+                        });
+                      if (!tokenIdCheck) {
+                        throw new Error();
+                      }
+                      // Cac loi 403 khac thi handle duoi day neu co
+                    }
+                    return res.json();
+                  })
                   .then(response => {
                     console.log(response.length);
                     setOrderList(response);
@@ -286,20 +286,20 @@ const OrderListForReport = ({navigation, route}) => {
                   },
                 )
                   .then(async res => {
-                if (res.status === 403 || res.status === 401) {
-                  const tokenIdCheck = await auth()
-                    .currentUser.getIdToken(true)
-                    .catch(async err => {
-                      await AsyncStorage.setItem('isDisableAccount', '1');
-                      return null;
-                    });
-                  if (!tokenIdCheck) {
-                    throw new Error();
-                  }
-                  // Cac loi 403 khac thi handle duoi day neu co
-                }
-                return res.json();
-              })
+                    if (res.status === 403 || res.status === 401) {
+                      const tokenIdCheck = await auth()
+                        .currentUser.getIdToken(true)
+                        .catch(async err => {
+                          await AsyncStorage.setItem('isDisableAccount', '1');
+                          return null;
+                        });
+                      if (!tokenIdCheck) {
+                        throw new Error();
+                      }
+                      // Cac loi 403 khac thi handle duoi day neu co
+                    }
+                    return res.json();
+                  })
                   .then(response => {
                     console.log(response.length);
                     setOrderList(response);
@@ -370,7 +370,10 @@ const OrderListForReport = ({navigation, route}) => {
             </Text>
           </View>
         ) : (
-          <ScrollView style={{marginBottom: 90, marginTop: 10}}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
+            style={{marginBottom: 90, marginTop: 10}}>
             {orderList?.map((item, index) => (
               <View
                 key={index}

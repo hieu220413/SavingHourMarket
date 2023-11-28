@@ -146,6 +146,16 @@ const OrderListForManager = ({navigation}) => {
       name: 'Ngày giao xa nhất',
       active: false,
     },
+    {
+      id: 3,
+      name: 'Đơn mới nhất',
+      active: false,
+    },
+    {
+      id: 4,
+      name: 'Đơn cũ nhất',
+      active: false,
+    },
   ];
   const [selectSort, setSelectSort] = useState(sortOptions);
 
@@ -328,7 +338,9 @@ const OrderListForManager = ({navigation}) => {
                 API.baseURL
               }/api/order/staff/getOrders?orderStatus=PACKAGED&isGrouped=false&isBatched=false${
                 sortItem?.id == 1 ? '&deliveryDateSortType=ASC' : ''
-              }${sortItem?.id == 2 ? '&deliveryDateSortType=DESC' : ''}`,
+              }${sortItem?.id == 2 ? '&deliveryDateSortType=DESC' : ''}${
+                sortItem?.id == 3 ? '&createdTimeSortType=ASC' : ''
+              }${sortItem?.id == 4 ? '&createdTimeSortType=DESC' : ''}`,
               {
                 method: 'GET',
                 headers: {
@@ -371,7 +383,9 @@ const OrderListForManager = ({navigation}) => {
                 API.baseURL
               }/api/order/staff/getOrders?orderStatus=DELIVERING&isGrouped=false&isBatched=false${
                 sortItem?.id == 1 ? '&deliveryDateSortType=ASC' : ''
-              }${sortItem?.id == 2 ? '&deliveryDateSortType=DESC' : ''}`,
+              }${sortItem?.id == 2 ? '&deliveryDateSortType=DESC' : ''}${
+                sortItem?.id == 3 ? '&createdTimeSortType=ASC' : ''
+              }${sortItem?.id == 4 ? '&createdTimeSortType=DESC' : ''}`,
               {
                 method: 'GET',
                 headers: {
@@ -1051,6 +1065,8 @@ const OrderListForManager = ({navigation}) => {
                     </View>
                   </TouchableOpacity>
                   <SwipeListView
+                    showsVerticalScrollIndicator={false}
+                    showsHorizontalScrollIndicator={false}
                     data={orderNotYetAssigned}
                     ListHeaderComponent={
                       modalCreate === true ? (
@@ -1364,6 +1380,15 @@ const OrderListForManager = ({navigation}) => {
                             backgroundColor: 'rgb(240,240,240)',
                             padding: 10,
                             borderRadius: 10,
+                            shadowColor: '#000',
+                            shadowOffset: {
+                              width: 0,
+                              height: 3,
+                            },
+                            shadowOpacity: 0.27,
+                            shadowRadius: 4.65,
+                            elevation: 6,
+                            margin: 4,
                           }}>
                           {/* Order detail */}
                           <TouchableOpacity
@@ -1478,8 +1503,9 @@ const OrderListForManager = ({navigation}) => {
                         style={{
                           flexDirection: 'row',
                           justifyContent: 'flex-end',
-                          height: '90%',
-                          // marginVertical: '2%',
+                          height: '89%',
+                          marginTop: '1%',
+                          marginRight: '2%',
                         }}>
                         <TouchableOpacity
                           style={{
@@ -1543,6 +1569,8 @@ const OrderListForManager = ({navigation}) => {
               ) : (
                 <View style={{marginTop: 10, marginBottom: 100}}>
                   <SwipeListView
+                    showsVerticalScrollIndicator={false}
+                    showsHorizontalScrollIndicator={false}
                     data={orderAssigned}
                     renderItem={(data, rowMap) => (
                       <View
@@ -1552,6 +1580,15 @@ const OrderListForManager = ({navigation}) => {
                           backgroundColor: 'rgb(240,240,240)',
                           padding: 10,
                           borderRadius: 10,
+                          shadowColor: '#000',
+                          shadowOffset: {
+                            width: 0,
+                            height: 3,
+                          },
+                          shadowOpacity: 0.27,
+                          shadowRadius: 4.65,
+                          elevation: 6,
+                          margin: 4,
                         }}>
                         {/* Order detail */}
                         <TouchableOpacity
@@ -1664,8 +1701,9 @@ const OrderListForManager = ({navigation}) => {
                         style={{
                           flexDirection: 'row',
                           justifyContent: 'flex-end',
-                          height: '90%',
-                          // marginVertical: '2%',
+                          height: '89%',
+                          marginTop: '1%',
+                          marginRight: '2%',
                         }}>
                         <TouchableOpacity
                           style={{

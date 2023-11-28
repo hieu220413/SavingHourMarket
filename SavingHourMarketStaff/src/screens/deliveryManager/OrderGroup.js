@@ -25,14 +25,14 @@ import {SwipeListView} from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
 import DatePicker from 'react-native-date-picker';
 import database from '@react-native-firebase/database';
-import { checkSystemState } from '../../common/utils';
+import {checkSystemState} from '../../common/utils';
 
 const OrderGroup = ({navigation}) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
-        checkSystemState(navigation);
-      }, []),
+      checkSystemState(navigation);
+    }, []),
   );
 
   const [initializing, setInitializing] = useState(true);
@@ -45,6 +45,9 @@ const OrderGroup = ({navigation}) => {
   const [showLogout, setShowLogout] = useState(false);
   const [date, setDate] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [timeFrameList, setTimeFrameList] = useState([]);
+  // const [tempSelectedTimeFrameId, setTempSelectedTimeFrameId] = useState(null);
+  const [selectedTimeFrameId, setSelectedTimeFrameId] = useState(null);
 
   const [currentStatus, setCurrentStatus] = useState({
     display: 'Chưa có nhân viên giao hàng',
@@ -121,6 +124,49 @@ const OrderGroup = ({navigation}) => {
   ];
   const [selectSort, setSelectSort] = useState(sortOptions);
 
+  useFocusEffect(
+    useCallback(() => {
+      const fetchData = async () => {
+        if (auth().currentUser) {
+          const tokenId = await auth().currentUser.getIdToken();
+          if (tokenId) {
+            setLoading(true);
+            fetch(`${API.baseURL}/api/timeframe/getAllForStaff`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
+              },
+            })
+              .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                  const tokenIdCheck = await auth()
+                    .currentUser.getIdToken(true)
+                    .catch(async err => {
+                      await AsyncStorage.setItem('isDisableAccount', '1');
+                      return null;
+                    });
+                  if (!tokenIdCheck) {
+                    throw new Error();
+                  }
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.json();
+              })
+              .then(response => {
+                setTimeFrameList(response);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
+          }
+        }
+      };
+      fetchData();
+    }, []),
+  );
   //get Current User Info
   useFocusEffect(
     useCallback(() => {
@@ -128,11 +174,11 @@ const OrderGroup = ({navigation}) => {
         const currentUser = await AsyncStorage.getItem('userInfo');
         // console.log(JSON.parse(currentUser));
         setCurrentUser(JSON.parse(currentUser));
-      }
+      };
       getCurrentUser();
     }, []),
   );
-  
+
   useFocusEffect(
     useCallback(() => {
       const fetchData = async () => {
@@ -227,6 +273,56 @@ const OrderGroup = ({navigation}) => {
     }, []),
   );
 
+  const TimeFrameItem = ({item}) => {
+    return (
+      <TouchableOpacity
+        key={item.id}
+        onPress={() =>
+          item.id === selectedTimeFrameId
+            ? setSelectedTimeFrameId('')
+            : setSelectedTimeFrameId(item.id)
+        }
+        style={
+          item.id === selectedTimeFrameId
+            ? {
+                borderColor: COLORS.primary,
+                borderWidth: 1,
+                borderRadius: 10,
+                margin: 5,
+              }
+            : {
+                borderColor: '#c8c8c8',
+                borderWidth: 0.2,
+                borderRadius: 10,
+                margin: 5,
+              }
+        }>
+        <Text
+          style={
+            item.id === selectedTimeFrameId
+              ? {
+                  width: 150,
+                  paddingVertical: 10,
+                  textAlign: 'center',
+                  color: COLORS.primary,
+
+                  fontSize: 12,
+                }
+              : {
+                  width: 150,
+                  paddingVertical: 10,
+                  textAlign: 'center',
+                  color: 'black',
+
+                  fontSize: 12,
+                }
+          }>
+          {item.fromHour.slice(0, 5)} đến {item.toHour.slice(0, 5)}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
   const ModalSortItem = ({item}) => {
     return (
       <TouchableOpacity
@@ -298,7 +394,9 @@ const OrderGroup = ({navigation}) => {
             fetch(
               `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED${
                 sortItem?.id == 1 ? '&deliverDateSortType=ASC' : ''
-              }${sortItem?.id == 2 ? '&deliverDateSortType=DESC' : ''}`,
+              }${sortItem?.id == 2 ? '&deliverDateSortType=DESC' : ''}${
+                selectedTimeFrameId ? '&timeFrameId=' + selectedTimeFrameId : ''
+              }`,
               {
                 method: 'GET',
                 headers: {
@@ -345,7 +443,9 @@ const OrderGroup = ({navigation}) => {
             fetch(
               `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING${
                 sortItem?.id == 1 ? '&deliverDateSortType=ASC' : ''
-              }${sortItem?.id == 2 ? '&deliverDateSortType=DESC' : ''}`,
+              }${sortItem?.id == 2 ? '&deliverDateSortType=DESC' : ''}${
+                selectedTimeFrameId ? '&timeFrameId=' + selectedTimeFrameId : ''
+              }`,
               {
                 method: 'GET',
                 headers: {
@@ -399,7 +499,9 @@ const OrderGroup = ({navigation}) => {
           if (tokenId) {
             setLoading(true);
             fetch(
-              `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED`,
+              `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED${
+                selectedTimeFrameId ? '&timeFrameId=' + selectedTimeFrameId : ''
+              }`,
               {
                 method: 'GET',
                 headers: {
@@ -438,7 +540,9 @@ const OrderGroup = ({navigation}) => {
               });
 
             fetch(
-              `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING`,
+              `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING${
+                selectedTimeFrameId ? '&timeFrameId=' + selectedTimeFrameId : ''
+              }`,
               {
                 method: 'GET',
                 headers: {
@@ -494,6 +598,8 @@ const OrderGroup = ({navigation}) => {
     setModalVisible(!modalVisible);
     setSelectSort(sortOptions);
     setLoading(true);
+    setSelectedTimeFrameId('');
+    // setSelectedTimeFrameId('');
     const fetchData = async () => {
       if (auth().currentUser) {
         const tokenId = await auth().currentUser.getIdToken();
@@ -510,20 +616,20 @@ const OrderGroup = ({navigation}) => {
             },
           )
             .then(async res => {
-                if (res.status === 403 || res.status === 401) {
-                  const tokenIdCheck = await auth()
-                    .currentUser.getIdToken(true)
-                    .catch(async err => {
-                      await AsyncStorage.setItem('isDisableAccount', '1');
-                      return null;
-                    });
-                  if (!tokenIdCheck) {
-                    throw new Error();
-                  }
-                  // Cac loi 403 khac thi handle duoi day neu co
+              if (res.status === 403 || res.status === 401) {
+                const tokenIdCheck = await auth()
+                  .currentUser.getIdToken(true)
+                  .catch(async err => {
+                    await AsyncStorage.setItem('isDisableAccount', '1');
+                    return null;
+                  });
+                if (!tokenIdCheck) {
+                  throw new Error();
                 }
-                return res.json();
-              })
+                // Cac loi 403 khac thi handle duoi day neu co
+              }
+              return res.json();
+            })
             .then(respond => {
               console.log('group1', respond.orderGroups);
               if (respond.error) {
@@ -549,20 +655,20 @@ const OrderGroup = ({navigation}) => {
             },
           )
             .then(async res => {
-                if (res.status === 403 || res.status === 401) {
-                  const tokenIdCheck = await auth()
-                    .currentUser.getIdToken(true)
-                    .catch(async err => {
-                      await AsyncStorage.setItem('isDisableAccount', '1');
-                      return null;
-                    });
-                  if (!tokenIdCheck) {
-                    throw new Error();
-                  }
-                  // Cac loi 403 khac thi handle duoi day neu co
+              if (res.status === 403 || res.status === 401) {
+                const tokenIdCheck = await auth()
+                  .currentUser.getIdToken(true)
+                  .catch(async err => {
+                    await AsyncStorage.setItem('isDisableAccount', '1');
+                    return null;
+                  });
+                if (!tokenIdCheck) {
+                  throw new Error();
                 }
-                return res.json();
-              })
+                // Cac loi 403 khac thi handle duoi day neu co
+              }
+              return res.json();
+            })
             .then(respond => {
               console.log('group2', respond.orderGroups);
               if (respond.error) {
@@ -595,7 +701,8 @@ const OrderGroup = ({navigation}) => {
           <View style={styles.pagenameAndLogout}>
             <View style={styles.pageName}>
               <Text style={{fontSize: 25, color: 'black', fontWeight: 'bold'}}>
-                Nhóm đơn điểm giao hàng
+                Nhóm đơn điểm giao hàng{' '}
+                {/* {selectedTimeFrameId ? selectedTimeFrameId : ''} */}
               </Text>
             </View>
             <View style={styles.logout}>
@@ -709,20 +816,23 @@ const OrderGroup = ({navigation}) => {
                       },
                     )
                       .then(async res => {
-                if (res.status === 403 || res.status === 401) {
-                  const tokenIdCheck = await auth()
-                    .currentUser.getIdToken(true)
-                    .catch(async err => {
-                      await AsyncStorage.setItem('isDisableAccount', '1');
-                      return null;
-                    });
-                  if (!tokenIdCheck) {
-                    throw new Error();
-                  }
-                  // Cac loi 403 khac thi handle duoi day neu co
-                }
-                return res.json();
-              })
+                        if (res.status === 403 || res.status === 401) {
+                          const tokenIdCheck = await auth()
+                            .currentUser.getIdToken(true)
+                            .catch(async err => {
+                              await AsyncStorage.setItem(
+                                'isDisableAccount',
+                                '1',
+                              );
+                              return null;
+                            });
+                          if (!tokenIdCheck) {
+                            throw new Error();
+                          }
+                          // Cac loi 403 khac thi handle duoi day neu co
+                        }
+                        return res.json();
+                      })
                       .then(respond => {
                         console.log('group1', respond);
                         if (respond.code === 404) {
@@ -759,20 +869,23 @@ const OrderGroup = ({navigation}) => {
                       },
                     )
                       .then(async res => {
-                if (res.status === 403 || res.status === 401) {
-                  const tokenIdCheck = await auth()
-                    .currentUser.getIdToken(true)
-                    .catch(async err => {
-                      await AsyncStorage.setItem('isDisableAccount', '1');
-                      return null;
-                    });
-                  if (!tokenIdCheck) {
-                    throw new Error();
-                  }
-                  // Cac loi 403 khac thi handle duoi day neu co
-                }
-                return res.json();
-              })
+                        if (res.status === 403 || res.status === 401) {
+                          const tokenIdCheck = await auth()
+                            .currentUser.getIdToken(true)
+                            .catch(async err => {
+                              await AsyncStorage.setItem(
+                                'isDisableAccount',
+                                '1',
+                              );
+                              return null;
+                            });
+                          if (!tokenIdCheck) {
+                            throw new Error();
+                          }
+                          // Cac loi 403 khac thi handle duoi day neu co
+                        }
+                        return res.json();
+                      })
                       .then(respond => {
                         console.log('group2', respond);
                         if (respond.code === 404) {
@@ -822,20 +935,23 @@ const OrderGroup = ({navigation}) => {
                       },
                     )
                       .then(async res => {
-                if (res.status === 403 || res.status === 401) {
-                  const tokenIdCheck = await auth()
-                    .currentUser.getIdToken(true)
-                    .catch(async err => {
-                      await AsyncStorage.setItem('isDisableAccount', '1');
-                      return null;
-                    });
-                  if (!tokenIdCheck) {
-                    throw new Error();
-                  }
-                  // Cac loi 403 khac thi handle duoi day neu co
-                }
-                return res.json();
-              })
+                        if (res.status === 403 || res.status === 401) {
+                          const tokenIdCheck = await auth()
+                            .currentUser.getIdToken(true)
+                            .catch(async err => {
+                              await AsyncStorage.setItem(
+                                'isDisableAccount',
+                                '1',
+                              );
+                              return null;
+                            });
+                          if (!tokenIdCheck) {
+                            throw new Error();
+                          }
+                          // Cac loi 403 khac thi handle duoi day neu co
+                        }
+                        return res.json();
+                      })
                       .then(respond => {
                         console.log('group1', respond.orderGroups);
                         if (respond.error) {
@@ -861,20 +977,23 @@ const OrderGroup = ({navigation}) => {
                       },
                     )
                       .then(async res => {
-                if (res.status === 403 || res.status === 401) {
-                  const tokenIdCheck = await auth()
-                    .currentUser.getIdToken(true)
-                    .catch(async err => {
-                      await AsyncStorage.setItem('isDisableAccount', '1');
-                      return null;
-                    });
-                  if (!tokenIdCheck) {
-                    throw new Error();
-                  }
-                  // Cac loi 403 khac thi handle duoi day neu co
-                }
-                return res.json();
-              })
+                        if (res.status === 403 || res.status === 401) {
+                          const tokenIdCheck = await auth()
+                            .currentUser.getIdToken(true)
+                            .catch(async err => {
+                              await AsyncStorage.setItem(
+                                'isDisableAccount',
+                                '1',
+                              );
+                              return null;
+                            });
+                          if (!tokenIdCheck) {
+                            throw new Error();
+                          }
+                          // Cac loi 403 khac thi handle duoi day neu co
+                        }
+                        return res.json();
+                      })
                       .then(respond => {
                         console.log('group2', respond.orderGroups);
                         if (respond.error) {
@@ -986,6 +1105,8 @@ const OrderGroup = ({navigation}) => {
               ) : (
                 <View style={{marginTop: 10, marginBottom: 100}}>
                   <SwipeListView
+                    showsVerticalScrollIndicator={false}
+                    showsHorizontalScrollIndicator={false}
                     data={groupListNotYetAssigned}
                     renderItem={(data, rowMap) => (
                       <View
@@ -995,6 +1116,15 @@ const OrderGroup = ({navigation}) => {
                           backgroundColor: 'rgb(240,240,240)',
                           padding: 10,
                           borderRadius: 10,
+                          shadowColor: '#000',
+                          shadowOffset: {
+                            width: 0,
+                            height: 3,
+                          },
+                          shadowOpacity: 0.27,
+                          shadowRadius: 4.65,
+                          elevation: 6,
+                          margin: 4,
                         }}>
                         {/* Group detail */}
                         <TouchableOpacity
@@ -1112,8 +1242,9 @@ const OrderGroup = ({navigation}) => {
                         style={{
                           flexDirection: 'row',
                           justifyContent: 'flex-end',
-                          height: '90%',
-                          // marginVertical: '2%',
+                          height: '89%',
+                          marginTop: '1%',
+                          marginRight: '2%',
                         }}>
                         <TouchableOpacity
                           style={{
@@ -1181,6 +1312,8 @@ const OrderGroup = ({navigation}) => {
               ) : (
                 <View style={{marginTop: 10, marginBottom: 100}}>
                   <SwipeListView
+                    showsVerticalScrollIndicator={false}
+                    showsHorizontalScrollIndicator={false}
                     data={groupListAssigned}
                     renderItem={(data, rowMap) => (
                       <View
@@ -1190,6 +1323,15 @@ const OrderGroup = ({navigation}) => {
                           backgroundColor: 'rgb(240,240,240)',
                           padding: 10,
                           borderRadius: 10,
+                          shadowColor: '#000',
+                          shadowOffset: {
+                            width: 0,
+                            height: 3,
+                          },
+                          shadowOpacity: 0.27,
+                          shadowRadius: 4.65,
+                          elevation: 6,
+                          margin: 4,
                         }}>
                         {/* Group detail */}
                         <TouchableOpacity
@@ -1307,8 +1449,9 @@ const OrderGroup = ({navigation}) => {
                         style={{
                           flexDirection: 'row',
                           justifyContent: 'flex-end',
-                          height: '90%',
-                          // marginVertical: '2%',
+                          height: '89%',
+                          marginTop: '1%',
+                          marginRight: '2%',
                         }}>
                         <TouchableOpacity
                           style={{
@@ -1385,6 +1528,99 @@ const OrderGroup = ({navigation}) => {
                     onPress={() => {
                       setModalVisible(!modalVisible);
                       setSelectSort(sortOptions);
+                      setSelectedTimeFrameId('');
+                      const fetchData = async () => {
+                        if (auth().currentUser) {
+                          const tokenId = await auth().currentUser.getIdToken();
+                          if (tokenId) {
+                            setLoading(true);
+                            fetch(
+                              `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED`,
+                              {
+                                method: 'GET',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  Authorization: `Bearer ${tokenId}`,
+                                },
+                              },
+                            )
+                              .then(async res => {
+                                if (res.status === 403 || res.status === 401) {
+                                  const tokenIdCheck = await auth()
+                                    .currentUser.getIdToken(true)
+                                    .catch(async err => {
+                                      await AsyncStorage.setItem(
+                                        'isDisableAccount',
+                                        '1',
+                                      );
+                                      return null;
+                                    });
+                                  if (!tokenIdCheck) {
+                                    throw new Error();
+                                  }
+                                  // Cac loi 403 khac thi handle duoi day neu co
+                                }
+                                return res.json();
+                              })
+                              .then(respond => {
+                                console.log('group1', respond.orderGroups);
+                                if (respond.error) {
+                                  setLoading(false);
+                                  return;
+                                }
+                                setGroupListNotYetAssigned(respond.orderGroups);
+                                setLoading(false);
+                              })
+                              .catch(err => {
+                                console.log(err);
+                                setLoading(false);
+                              });
+
+                            fetch(
+                              `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING`,
+                              {
+                                method: 'GET',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  Authorization: `Bearer ${tokenId}`,
+                                },
+                              },
+                            )
+                              .then(async res => {
+                                if (res.status === 403 || res.status === 401) {
+                                  const tokenIdCheck = await auth()
+                                    .currentUser.getIdToken(true)
+                                    .catch(async err => {
+                                      await AsyncStorage.setItem(
+                                        'isDisableAccount',
+                                        '1',
+                                      );
+                                      return null;
+                                    });
+                                  if (!tokenIdCheck) {
+                                    throw new Error();
+                                  }
+                                  // Cac loi 403 khac thi handle duoi day neu co
+                                }
+                                return res.json();
+                              })
+                              .then(respond => {
+                                console.log('group2', respond.orderGroups);
+                                if (respond.error) {
+                                  setLoading(false);
+                                  return;
+                                }
+                                setGroupListAssigned(respond.orderGroups);
+                                setLoading(false);
+                              })
+                              .catch(err => {
+                                console.log(err);
+                                setLoading(false);
+                              });
+                          }
+                        }
+                      };
+                      fetchData();
                     }}>
                     <Image
                       resizeMode="contain"
@@ -1413,6 +1649,24 @@ const OrderGroup = ({navigation}) => {
                   }}>
                   {selectSort.map((item, index) => (
                     <ModalSortItem item={item} key={index} />
+                  ))}
+                </View>
+                <Text
+                  style={{
+                    color: 'black',
+                    fontSize: 16,
+                    fontWeight: 700,
+                  }}>
+                  Chọn khung giờ
+                </Text>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                    marginVertical: 10,
+                  }}>
+                  {timeFrameList.map((item, index) => (
+                    <TimeFrameItem item={item} key={index} />
                   ))}
                 </View>
                 <View

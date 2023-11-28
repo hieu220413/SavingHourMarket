@@ -116,7 +116,7 @@ const BatchList = ({navigation, route}) => {
                 return res.json();
               })
               .then(response => {
-                console.log(response[1]);
+                console.log(response[0]);
                 setBatchList(response);
                 setLoading(false);
               })
@@ -228,7 +228,10 @@ const BatchList = ({navigation, route}) => {
             </View>
           ) : (
             <>
-              <ScrollView contentContainerStyle={{marginTop: 10}}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{marginTop: 10}}>
                 <View style={{marginBottom: 80}}>
                   <View style={{marginBottom: 10}}>
                     <Text
@@ -243,6 +246,15 @@ const BatchList = ({navigation, route}) => {
                         backgroundColor: 'rgb(240,240,240)',
                         marginBottom: 20,
                         borderRadius: 10,
+                        shadowColor: '#000',
+                        shadowOffset: {
+                          width: 0,
+                          height: 3,
+                        },
+                        shadowOpacity: 0.27,
+                        shadowRadius: 4.65,
+                        elevation: 6,
+                        margin: 4,
                       }}>
                       {/* Order detail */}
                       <Pressable
