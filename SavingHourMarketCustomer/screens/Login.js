@@ -265,8 +265,12 @@ const Login = ({navigation}) => {
       })
       .catch(error => {
         // handle wrong password or email
+        console.log(error.message);
+        if (error.message.includes('[auth/user-disabled')) {
+          showToast('Tài khoản bị khóa. Vui lòng liên hệ nhân viên');
+          return;
+        }
         showToast('Sai địa chỉ email hoặc mật khẩu');
-        console.log(error);
       });
   };
 
@@ -329,11 +333,11 @@ const Login = ({navigation}) => {
 
   const emailValidator = () => {
     if (email == '') {
-      setEmailError('Email field cannot be empty');
+      setEmailError('Email không thể rỗng');
       setCheck_textInputChange(false);
       return false;
     } else if (!isValidEmail(email)) {
-      setEmailError('Invalid email !');
+      setEmailError('Email không hợp lệ!');
       setCheck_textInputChange(false);
       return false;
     } else {
@@ -344,13 +348,14 @@ const Login = ({navigation}) => {
   };
   const passwordValidation = () => {
     if (password === '') {
-      setPasswordError('Enter your password!');
+      setPasswordError('Vui lòng điền mật khẩu!');
       return false;
     } else {
       setPasswordError('');
       return true;
     }
   };
+
   const isValidEmail = email => {
     const regex = /^([A-Za-z0-9_\-\.])+@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
     return regex.test(email);
@@ -449,7 +454,7 @@ const Login = ({navigation}) => {
                 navigation.navigate('Forgot password');
               }}
               style={{color: COLORS.secondary, marginTop: 15}}>
-              Forgot password?
+              Quên mật khẩu?
             </Text>
             <View style={styles.button}>
               <GoogleSigninButton
@@ -476,7 +481,7 @@ const Login = ({navigation}) => {
                   colors={['#66CC66', '#66CC99']}
                   style={styles.login}>
                   <Text style={[styles.textSign, {color: 'white'}]}>
-                    Sign In
+                    Đăng nhập
                   </Text>
                 </LinearGradient>
               </TouchableOpacity>
@@ -490,7 +495,7 @@ const Login = ({navigation}) => {
                   // logout();
                 }}>
                 <Text style={[styles.textSign, {color: '#66CC66'}]}>
-                  Sign Up
+                  Đăng ký
                 </Text>
               </TouchableOpacity>
             </View>

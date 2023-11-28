@@ -38,7 +38,7 @@ const OrderDetail = ({navigation, route}) => {
 
   const {id, orderSuccess, isFromOrderGroup} = route.params;
   const [initializing, setInitializing] = useState(true);
-  const [tokenId, setTokenId] = useState(null);
+  // const [tokenId, setTokenId] = useState(null);
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -148,41 +148,45 @@ const OrderDetail = ({navigation, route}) => {
 
   useFocusEffect(
     useCallback(() => {
-      if (tokenId) {
-        setLoading(true);
-        fetch(`${API.baseURL}/api/order/getOrderDetail/${id}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${tokenId}`,
-          },
-        })
-          .then(async res => {
-            if (res.status === 403 || res.status === 401) {
-              const tokenIdCheck = await auth()
-                .currentUser.getIdToken(true)
-                .catch(async err => {
-                  await AsyncStorage.setItem('isDisableAccount', '1');
-                  return null;
-                });
-              if (!tokenIdCheck) {
-                throw new Error();
+      const fetchOrderDetail = async () => {
+        const tokenId = await auth().currentUser.getIdToken();
+        if (tokenId) {
+          setLoading(true);
+          fetch(`${API.baseURL}/api/order/getOrderDetail/${id}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${tokenId}`,
+            },
+          })
+            .then(async res => {
+              if (res.status === 403 || res.status === 401) {
+                const tokenIdCheck = await auth()
+                  .currentUser.getIdToken(true)
+                  .catch(async err => {
+                    await AsyncStorage.setItem('isDisableAccount', '1');
+                    return null;
+                  });
+                if (!tokenIdCheck) {
+                  throw new Error();
+                }
+                // Cac loi 403 khac thi handle duoi day neu co
               }
-              // Cac loi 403 khac thi handle duoi day neu co
-            }
-            return res.json();
-          })
-          .then(respond => {
-            console.log(respond);
-            setItem(respond);
-            setLoading(false);
-          })
-          .catch(err => {
-            console.log(err);
-            setLoading(false);
-          });
+              return res.json();
+            })
+            .then(respond => {
+              console.log(respond);
+              setItem(respond);
+              setLoading(false);
+            })
+            .catch(err => {
+              console.log(err);
+              setLoading(false);
+            });
+        }
       }
-    }, [tokenId]),
+      fetchOrderDetail();
+    }, []),
   );
 
   const handleCancel = () => {
