@@ -1,27 +1,31 @@
 /* eslint-disable prettier/prettier */
-import React, {useEffect, useState} from 'react';
-import {createStackNavigator} from '@react-navigation/stack';
-import {NavigationContainer} from '@react-navigation/native';
-import Toast, {BaseToast} from 'react-native-toast-message';
-import {COLORS} from './src/constants/theme';
+import React, { useEffect, useState } from 'react';
+import { createStackNavigator } from '@react-navigation/stack';
+import { NavigationContainer,useNavigation } from '@react-navigation/native';
+import Toast, { BaseToast } from 'react-native-toast-message';
+import { COLORS } from './src/constants/theme';
 import 'react-native-gesture-handler';
 import Tabs from './src/navigations/tabs';
 import Login from './src/screens/Login';
+import Loading from './src/screens/Loading';
 import OrderDetails from './src/screens/deliveryStaff/OrderDetails';
 import OrderDetail from './src/screens/orderStaff/OrderDetail';
 import OrderPrint from './src/screens/orderStaff/OrderPrint';
 import EditDeliveryDate from './src/screens/deliveryStaff/EditDeliveryDate';
-import {LogBox} from 'react-native';
+import { LogBox } from 'react-native';
 import SelectPickupPoint from './src/screens/orderStaff/SelectPickupPoint';
 import OrderGroupDetail from './src/screens/deliveryManager/OrderGroupDetail';
 import OrderDetailForManager from './src/screens/deliveryManager/OrderDetailForManager';
 import PickStaff from './src/screens/deliveryManager/PickStaff';
 import SelectTimeFrame from './src/screens/deliveryManager/SelectTimeFrame';
 import SelectProductConsolidationArea from './src/screens/deliveryManager/SelectProductConsolidationArea';
-import {ModalPortal} from 'react-native-modals';
+import { ModalPortal } from 'react-native-modals';
 import BatchList from './src/screens/deliveryManager/BatchList';
 import BatchingDetail from './src/screens/deliveryManager/BatchingDetail';
 import OrderListForManager from './src/screens/deliveryManager/OrderListForManager';
+import DailyReportForManager from './src/screens/deliveryManager/DailyReportForManager';
+import OrderListForReport from './src/screens/deliveryManager/OrderListForReport';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -37,8 +41,8 @@ export default function App() {
     success: props => (
       <BaseToast
         {...props}
-        style={{backgroundColor: COLORS.primary, borderLeftWidth: 0}}
-        contentContainerStyle={{paddingHorizontal: 15}}
+        style={{ backgroundColor: COLORS.primary, borderLeftWidth: 0 }}
+        contentContainerStyle={{ paddingHorizontal: 15 }}
         text1Style={{
           fontSize: 16,
           fontWeight: '700',
@@ -54,8 +58,8 @@ export default function App() {
     unsuccess: props => (
       <BaseToast
         {...props}
-        style={{backgroundColor: 'red', borderLeftWidth: 0}}
-        contentContainerStyle={{paddingHorizontal: 15}}
+        style={{ backgroundColor: 'red', borderLeftWidth: 0 }}
+        contentContainerStyle={{ paddingHorizontal: 15 }}
         text1Style={{
           fontSize: 16,
           fontWeight: '700',
@@ -69,6 +73,12 @@ export default function App() {
       />
     ),
   };
+
+  useEffect(() => {
+    const setDisableAccount = async () => (await AsyncStorage.setItem('isDisableAccount', '0'));
+    setDisableAccount();
+  }, []);
+
   return (
     <>
       <NavigationContainer>
@@ -76,12 +86,17 @@ export default function App() {
           screenOptions={{
             headerShown: false,
           }}
-          initialRouteName={'Login'}>
-          <Stack.Screen name="Start" component={Tabs} />
+          initialRouteName={'Start'}>
+          <Stack.Screen name="Start" component={Loading} />
           <Stack.Screen
             name="Login"
             component={Login}
-            options={{swipeEnabled: false}}
+            options={{ swipeEnabled: false }}
+          />
+          <Stack.Screen
+            name="Tabs"
+            component={Tabs}
+            options={{ swipeEnabled: false }}
           />
           <Stack.Screen name="OrderDetail" component={OrderDetail} />
           <Stack.Screen name="OrderPrint" component={OrderPrint} />
@@ -104,10 +119,19 @@ export default function App() {
           />
           <Stack.Screen name="BatchList" component={BatchList} />
           <Stack.Screen name="BatchingDetail" component={BatchingDetail} />
+          <Stack.Screen
+            name="DailyReportForManager"
+            component={DailyReportForManager}
+          />
+          <Stack.Screen
+            name="OrderListForReport"
+            component={OrderListForReport}
+          />
         </Stack.Navigator>
       </NavigationContainer>
       <ModalPortal />
       <Toast config={toastConfig} />
+      
     </>
   );
 }

@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react/no-unstable-nested-components */
-import React, {useCallback, useEffect, useState} from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Text,
   View,
@@ -13,12 +13,12 @@ import {
 } from 'react-native';
 import Categories from '../components/Categories';
 import DiscountRow from '../components/DiscountRow';
-import {COLORS, FONTS} from '../constants/theme';
-import {icons} from '../constants';
+import { COLORS, FONTS } from '../constants/theme';
+import { icons } from '../constants';
 import dayjs from 'dayjs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {API} from '../constants/api';
-import {useFocusEffect} from '@react-navigation/native';
+import { API } from '../constants/api';
+import { useFocusEffect } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import LoadingScreen from '../components/LoadingScreen';
 import Modal, {
@@ -27,8 +27,9 @@ import Modal, {
   ScaleAnimation,
 } from 'react-native-modals';
 import Empty from '../assets/image/search-empty.png';
+import database from '@react-native-firebase/database';
 
-const Home = ({navigation}) => {
+const Home = ({ navigation }) => {
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [currentCate, setCurrentCate] = useState('');
@@ -58,6 +59,25 @@ const Home = ({navigation}) => {
 
   // console.log(cartList);
 
+  // system status check
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'Initial' }],
+            });
+          } else {
+            // setSystemStatus(snapshot.val());
+          }
+        });
+    }, []),
+  );
+
   useFocusEffect(
     useCallback(() => {
       // Get pickup point from AS
@@ -80,7 +100,9 @@ const Home = ({navigation}) => {
             }
           } else {
             setPickupPoint(value ? JSON.parse(value) : pickupPoint);
-            const cartListNew = await AsyncStorage.getItem('CartList' + JSON.parse(value).id);
+            const cartListNew = await AsyncStorage.getItem(
+              'CartList' + JSON.parse(value).id,
+            );
             setCartList(cartListNew ? JSON.parse(cartListNew) : []);
             setLoading(false);
           }
@@ -170,7 +192,7 @@ const Home = ({navigation}) => {
         return;
       }
 
-      const cartData = {...data, isChecked: false, cartQuantity: 1};
+      const cartData = { ...data, isChecked: false, cartQuantity: 1 };
       newCartList = [...newCartList, cartData];
       setCartList(newCartList);
       await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
@@ -180,17 +202,20 @@ const Home = ({navigation}) => {
     }
   };
 
-  const Item = ({data}) => {
+  const Item = ({ data }) => {
     return (
-      <TouchableOpacity
-        key={data.id}
-        onPress={() => {
-          navigation.navigate('ProductDetails', {
-            product: data,
-            pickupPointId: pickupPoint.id
-          });
-        }}>
-        <View style={styles.itemContainer}>
+      <View style={styles.itemContainer}>
+        <TouchableOpacity
+          key={data.id}
+          onPress={() => {
+            navigation.navigate('ProductDetails', {
+              product: data,
+              pickupPointId: pickupPoint.id,
+            });
+          }}
+          style={{
+            flexDirection: 'row',
+          }}>
           {/* Image Product */}
           <Image
             resizeMode="contain"
@@ -200,7 +225,13 @@ const Home = ({navigation}) => {
             style={styles.itemImage}
           />
 
-          <View style={{ justifyContent: 'center', flex: 1, marginRight: 10, marginTop: 5 }}>
+          <View
+            style={{
+              justifyContent: 'center',
+              flex: 1,
+              marginRight: 10,
+              marginTop: 5,
+            }}>
             <Text
               numberOfLines={1}
               style={{
@@ -225,7 +256,7 @@ const Home = ({navigation}) => {
               )}
             </Text>
 
-            <View style={{flexDirection: 'row'}}>
+            <View style={{ flexDirection: 'row' }}>
               <Text
                 style={{
                   maxWidth: '70%',
@@ -251,7 +282,6 @@ const Home = ({navigation}) => {
               </Text>
             </View>
 
-
             {/* Button buy */}
             {/* <TouchableOpacity onPress={() => handleAddToCart(data)}>
               <Text
@@ -269,12 +299,13 @@ const Home = ({navigation}) => {
               </Text>
             </TouchableOpacity> */}
           </View>
-        </View>
-      </TouchableOpacity>
+
+        </TouchableOpacity>
+      </View>
     );
   };
 
-  const SubCategory = ({data}) => {
+  const SubCategory = ({ data }) => {
     return (
       <TouchableOpacity
         onPress={() => {
@@ -288,6 +319,14 @@ const Home = ({navigation}) => {
           // marginRight: 20,
           alignItems: 'center',
           maxWidth: '20%',
+          shadowColor: '#000',
+          shadowOffset: {
+            width: 0,
+            height: 3,
+          },
+          shadowOpacity: 0.27,
+          shadowRadius: 4.65,
+          elevation: 10,
         }}>
         <Image
           resizeMode="contain"
@@ -363,11 +402,14 @@ const Home = ({navigation}) => {
 
   const SelectPickupPointBar = () => {
     return (
-      <View style={{
-        paddingHorizontal: 20,
-        paddingTop: 10,
-      }}>
-        <Text style={{ fontSize: 16, fontFamily: FONTS.fontFamily }}>Điểm nhận hàng hiện tại:</Text>
+      <View
+        style={{
+          paddingHorizontal: 20,
+          paddingTop: 10,
+        }}>
+        <Text style={{ fontSize: 16, fontFamily: FONTS.fontFamily }}>
+          Điểm nhận hàng hiện tại:
+        </Text>
         <TouchableOpacity
           onPress={() => {
             navigation.navigate('ChangePickupPoint', {
@@ -423,7 +465,7 @@ const Home = ({navigation}) => {
       <SelectPickupPointBar />
 
       {/* Search */}
-      <View style={{flexDirection: 'row', gap: 10, alignItems: 'center'}}>
+      <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
         <SearchBar />
         <TouchableOpacity
           onPress={async () => {
@@ -434,7 +476,7 @@ const Home = ({navigation}) => {
                 return;
               }
               navigation.navigate('Cart');
-            } catch (error) {}
+            } catch (error) { }
           }}>
           <Image
             resizeMode="contain"
@@ -459,7 +501,7 @@ const Home = ({navigation}) => {
                 justifyContent: 'center',
               }}>
               <Text
-                style={{fontSize: 12, color: 'white', fontFamily: 'Roboto'}}>
+                style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
                 {cartList.length}
               </Text>
             </View>
@@ -560,9 +602,9 @@ const Home = ({navigation}) => {
         ))}
 
         {productsByCategory.length === 0 && (
-          <View style={{alignItems: 'center'}}>
+          <View style={{ alignItems: 'center' }}>
             <Image
-              style={{width: 200, height: 200}}
+              style={{ width: 200, height: 200 }}
               resizeMode="contain"
               source={Empty}
             />
@@ -583,10 +625,8 @@ const Home = ({navigation}) => {
               setPage(page + 1);
               setLoading(true);
               fetch(
-                `${
-                  API.baseURL
-                }/api/product/getProductsForCustomer?productCategoryId=${currentCate}&page=${
-                  page + 1
+                `${API.baseURL
+                }/api/product/getProductsForCustomer?productCategoryId=${currentCate}&page=${page + 1
                 }&limit=5`,
               )
                 .then(res => res.json())
@@ -634,18 +674,16 @@ const Home = ({navigation}) => {
           <ModalFooter>
             <ModalButton
               text="Ở lại trang"
-              textStyle={{color: 'red'}}
               onPress={() => {
                 setOpenAuthModal(false);
               }}
             />
             <ModalButton
               text="Đăng nhập"
-              textStyle={{color: COLORS.primary}}
+              textStyle={{ color: COLORS.primary }}
               onPress={async () => {
                 try {
-                  await AsyncStorage.removeItem('userInfo');
-                  await AsyncStorage.removeItem('CartList');
+                  await AsyncStorage.clear();
                   navigation.navigate('Login');
                   setOpenAuthModal(false);
                 } catch (error) {
@@ -656,7 +694,7 @@ const Home = ({navigation}) => {
           </ModalFooter>
         }>
         <View
-          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
+          style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
           <Text
             style={{
               fontSize: 20,
@@ -684,7 +722,16 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginHorizontal: '6%',
     marginBottom: 20,
-    flexDirection: 'row',
+
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.27,
+    shadowRadius: 4.65,
+    elevation: 2
+
   },
   itemImage: {
     width: 130,
@@ -692,6 +739,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 10,
     margin: 15,
+
   },
   itemText: {
     fontFamily: FONTS.fontFamily,

@@ -31,8 +31,17 @@ import LoadingScreen from '../../components/LoadingScreen';
 import DatePicker from 'react-native-date-picker';
 import CheckBox from 'react-native-check-box';
 import Toast from 'react-native-toast-message';
+import database from '@react-native-firebase/database';
+import { checkSystemState } from '../../common/utils';
 
 const PickStaff = ({navigation, route}) => {
+  // listen to system state
+  useFocusEffect(
+    useCallback(() => {
+        checkSystemState(navigation);
+      }, []),
+  );
+
   const {orderGroupId, deliverDate, timeFrame, staff, mode} = route.params;
   const [initializing, setInitializing] = useState(true);
   const [open, setOpen] = useState(false);
@@ -44,52 +53,72 @@ const PickStaff = ({navigation, route}) => {
   const [openValidateDialog, setOpenValidateDialog] = useState(false);
   const [openConfirmModal, setOpenConfirmModal] = useState(false);
 
-  const onAuthStateChange = async userInfo => {
-    // console.log(userInfo);
-    if (initializing) {
-      setInitializing(false);
-    }
-    if (userInfo) {
-      // check if user sessions is still available. If yes => redirect to another screen
-      const userTokenId = await userInfo
-        .getIdToken(true)
-        .then(token => token)
-        .catch(async e => {
-          console.log(e);
-          return null;
-        });
-      if (!userTokenId) {
-        // sessions end. (revoke refresh token like password change, disable account, ....)
-        await AsyncStorage.removeItem('userInfo');
-        navigation.navigate('Login');
-        return;
-      }
-      const currentUser = await AsyncStorage.getItem('userInfo');
-      // console.log('currentUser', currentUser);
-      setCurrentUser(JSON.parse(currentUser));
-    } else {
-      // no sessions found.
-      console.log('user is not logged in');
-      await AsyncStorage.removeItem('userInfo');
-      navigation.navigate('Login');
-    }
-  };
+  // const onAuthStateChange = async userInfo => {
+  //   // console.log(userInfo);
+  //   if (initializing) {
+  //     setInitializing(false);
+  //   }
+  //   if (userInfo) {
+  //     // check if user sessions is still available. If yes => redirect to another screen
+  //     const userTokenId = await userInfo
+  //       .getIdToken(true)
+  //       .then(token => token)
+  //       .catch(async e => {
+  //         console.log(e);
+  //         return null;
+  //       });
+  //     if (!userTokenId) {
+  //       // sessions end. (revoke refresh token like password change, disable account, ....)
+  //       await AsyncStorage.removeItem('userInfo');
+  //       // navigation.navigate('Login');
+  //       navigation.reset({
+  //         index: 0,
+  //         routes: [{name: 'Login'}],
+  //       });
+  //       return;
+  //     }
+  //     const currentUser = await AsyncStorage.getItem('userInfo');
+  //     // console.log('currentUser', currentUser);
+  //     setCurrentUser(JSON.parse(currentUser));
+  //   } else {
+  //     // no sessions found.
+  //     console.log('user is not logged in');
+  //     await AsyncStorage.removeItem('userInfo');
+  //     // navigation.navigate('Login');
+  //     navigation.reset({
+  //       index: 0,
+  //       routes: [{name: 'Login'}],
+  //     });
+  //   }
+  // };
 
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     // auth().currentUser.reload()
+  //     const subscriber = auth().onAuthStateChanged(
+  //       async userInfo => await onAuthStateChange(userInfo),
+  //     );
+
+  //     return subscriber;
+  //     // eslint-disable-next-line react-hooks/exhaustive-deps
+  //   }, []),
+  // );
+  //get Current User Info
   useFocusEffect(
     useCallback(() => {
-      // auth().currentUser.reload()
-      const subscriber = auth().onAuthStateChanged(
-        async userInfo => await onAuthStateChange(userInfo),
-      );
-
-      return subscriber;
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+      const getCurrentUser = async () => {
+        const currentUser = await AsyncStorage.getItem('userInfo');
+        // console.log(JSON.parse(currentUser));
+        setCurrentUser(JSON.parse(currentUser));
+      }
+      getCurrentUser();
     }, []),
   );
 
   useFocusEffect(
     useCallback(() => {
       const fetchData = async () => {
+        const currentUser = await AsyncStorage.getItem('userInfo');
         if (auth().currentUser) {
           const tokenId = await auth().currentUser.getIdToken();
           if (tokenId) {
@@ -97,7 +126,11 @@ const PickStaff = ({navigation, route}) => {
               setLoading(true);
 
               fetch(
-                `${API.baseURL}/api/staff/getStaffForDeliverManager?orderType=ORDER_GROUP&deliverDate=${deliverDate}&timeFrameId=${timeFrame.id}`,
+                `${
+                  API.baseURL
+                }/api/staff/getStaffForDeliverManager?orderType=ORDER_GROUP&orderGroupId=${orderGroupId}&deliverDate=${deliverDate}&timeFrameId=${
+                  timeFrame.id
+                }&deliverMangerId=${JSON.parse(currentUser).id}`,
                 {
                   method: 'GET',
                   headers: {
@@ -108,7 +141,7 @@ const PickStaff = ({navigation, route}) => {
               )
                 .then(res => res.json())
                 .then(respond => {
-                  console.log('staff:', respond.staffList);
+                  console.log('staff:', respond.staffList[0]);
                   let res = [];
                   if (staff) {
                     res = respond.staffList.filter(item => {
@@ -132,7 +165,11 @@ const PickStaff = ({navigation, route}) => {
               setLoading(true);
 
               fetch(
-                `${API.baseURL}/api/staff/getStaffForDeliverManager?orderType=ORDER_BATCH&deliverDate=${deliverDate}&timeFrameId=${timeFrame.id}`,
+                `${
+                  API.baseURL
+                }/api/staff/getStaffForDeliverManager?orderType=ORDER_BATCH&orderBatchId=${orderGroupId}&deliverDate=${deliverDate}&timeFrameId=${
+                  timeFrame.id
+                }&deliverMangerId=${JSON.parse(currentUser).id}`,
                 {
                   method: 'GET',
                   headers: {
@@ -143,7 +180,7 @@ const PickStaff = ({navigation, route}) => {
               )
                 .then(res => res.json())
                 .then(respond => {
-                  console.log('staff:', respond.staffList);
+                  console.log('staff:', respond.staffList[2]);
                   let res = [];
                   if (staff) {
                     res = respond.staffList.filter(item => {
@@ -167,7 +204,11 @@ const PickStaff = ({navigation, route}) => {
               setLoading(true);
 
               fetch(
-                `${API.baseURL}/api/staff/getStaffForDeliverManager?orderType=SINGLE&deliverDate=${deliverDate}&timeFrameId=${timeFrame.id}`,
+                `${
+                  API.baseURL
+                }/api/staff/getStaffForDeliverManager?orderType=SINGLE&deliverDate=${deliverDate}&timeFrameId=${
+                  timeFrame.id
+                }&deliverMangerId=${JSON.parse(currentUser).id}`,
                 {
                   method: 'GET',
                   headers: {
@@ -394,11 +435,15 @@ const PickStaff = ({navigation, route}) => {
               {staffList.map((item, index) => (
                 <View
                   key={item.id}
-                  style={{
-                    backgroundColor: 'white',
-                    marginBottom: 20,
-                    // borderRadius: 10,
-                  }}>
+                  style={
+                    item?.isAvailableForDelivering === true
+                      ? {
+                          backgroundColor: '#FFFFFF',
+                          marginBottom: 20,
+                          // borderRadius: 10,
+                        }
+                      : {backgroundColor: '#E5E5E5', marginBottom: 20}
+                  }>
                   {/* List staff */}
                   <Pressable
                     onPress={() => {
@@ -460,8 +505,24 @@ const PickStaff = ({navigation, route}) => {
                           }}>
                           Email : {item?.email}
                         </Text>
+                        {item?.isAvailableForDelivering === false ? (
+                          <Text
+                            style={{
+                              fontSize: 17,
+                              width: 320,
+                              fontWeight: 'bold',
+                              fontFamily: 'Roboto',
+                              color: 'red',
+                            }}>
+                            Nhân viên này đã đảm nhận nhóm đơn khác trong cùng
+                            khung giờ
+                          </Text>
+                        ) : null}
                       </View>
                       <CheckBox
+                        disabled={
+                          item?.isAvailableForDelivering === true ? false : true
+                        }
                         uncheckedCheckBoxColor="#000000"
                         checkedCheckBoxColor={COLORS.primary}
                         onClick={() => {
@@ -534,7 +595,7 @@ const PickStaff = ({navigation, route}) => {
                     setOpenValidateDialog(true);
                     return;
                   }
-                  if (selectedStaff?.collideOrderBatchQuantity >= 1) {
+                  if (selectedStaff?.overLimitAlertList.length >= 1) {
                     setOpenConfirmModal(true);
                   } else {
                     handlePickStaffForBatch();
@@ -579,7 +640,7 @@ const PickStaff = ({navigation, route}) => {
             footer={
               <ModalFooter>
                 <ModalButton
-                  // textStyle={{color: 'red'}}
+                  textStyle={{color: 'grey'}}
                   text="Đóng"
                   onPress={() => {
                     setOpenValidateDialog(false);
@@ -624,14 +685,14 @@ const PickStaff = ({navigation, route}) => {
             footer={
               <ModalFooter>
                 <ModalButton
-                  textStyle={{color: 'red'}}
+                  textStyle={{color: 'grey'}}
                   text="Đóng"
                   onPress={() => {
                     setOpenConfirmModal(false);
                   }}
                 />
                 <ModalButton
-                  // textStyle={{color: 'red'}}
+                  textStyle={{color: COLORS.primary}}
                   text="Xác nhận"
                   onPress={() => {
                     setOpenConfirmModal(false);
@@ -647,18 +708,18 @@ const PickStaff = ({navigation, route}) => {
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}>
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontFamily: 'Roboto',
-                    color: 'black',
-                    textAlign: 'center',
-                  }}>
-                  Nhân viên {selectedStaff?.fullName} đã có{' '}
-                  {selectedStaff?.collideOrderBatchQuantity} đơn hàng trong cùng
-                  khoảng thời gian này : {timeFrame?.fromHour} đến{' '}
-                  {timeFrame?.toHour}
-                </Text>
+                {selectedStaff?.overLimitAlertList.map((item, index) => (
+                  <Text
+                    key={index}
+                    style={{
+                      fontSize: 20,
+                      fontFamily: 'Roboto',
+                      color: 'black',
+                      textAlign: 'center',
+                    }}>
+                    {item.alertMessage}
+                  </Text>
+                ))}
               </View>
             </ModalContent>
           </Modal>

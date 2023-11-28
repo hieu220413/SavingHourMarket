@@ -32,6 +32,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {API} from '../constants/api';
 import LoadingScreen from '../components/LoadingScreen';
+import database from '@react-native-firebase/database';
 
 const numStar = 5;
 
@@ -55,6 +56,27 @@ const Feedback = ({navigation}) => {
   const rate = star => {
     setRating(star);
   };
+
+  // system status check
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+         
+          } else {
+            // setSystemStatus(snapshot.val());
+          
+          }
+        });
+    }, []),
+  );
 
   const animate = () => {
     Animated.timing(animation, {

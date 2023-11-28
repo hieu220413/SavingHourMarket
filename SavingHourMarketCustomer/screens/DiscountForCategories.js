@@ -8,11 +8,11 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import React, { useState, useCallback } from 'react';
-import { icons } from '../constants';
-import { COLORS, FONTS } from '../constants/theme';
+import React, {useState, useCallback} from 'react';
+import {icons} from '../constants';
+import {COLORS, FONTS} from '../constants/theme';
 import dayjs from 'dayjs';
-import { useFocusEffect } from '@react-navigation/native';
+import {useFocusEffect} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Modal, {
   ModalFooter,
@@ -21,12 +21,32 @@ import Modal, {
   ScaleAnimation,
 } from 'react-native-modals';
 import Toast from 'react-native-toast-message';
+import database from '@react-native-firebase/database';
 
-const DiscountForCategories = ({ navigation, route }) => {
+const DiscountForCategories = ({navigation, route}) => {
   const discount = route.params.discount;
   const products = route.params.products.productList;
   const [cartList, setCartList] = useState([]);
   const [openAuthModal, setOpenAuthModal] = useState(false);
+
+  // system status check
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+          } else {
+            // setSystemStatus(snapshot.val());
+          }
+        });
+    }, []),
+  );
 
   const showToast = () => {
     Toast.show({
@@ -69,7 +89,7 @@ const DiscountForCategories = ({ navigation, route }) => {
         return;
       }
 
-      const cartData = { ...data, isChecked: false, cartQuantity: 1 };
+      const cartData = {...data, isChecked: false, cartQuantity: 1};
       newCartList = [...newCartList, cartData];
       setCartList(newCartList);
       await AsyncStorage.setItem('CartList', JSON.stringify(newCartList));
@@ -79,7 +99,7 @@ const DiscountForCategories = ({ navigation, route }) => {
     }
   };
 
-  const Item = ({ data }) => (
+  const Item = ({data}) => (
     <TouchableOpacity
       key={data.id}
       onPress={() => {
@@ -97,7 +117,7 @@ const DiscountForCategories = ({ navigation, route }) => {
           style={styles.itemImage}
         />
 
-        <View style={{ justifyContent: 'center', flex: 1, marginRight: 10 }}>
+        <View style={{justifyContent: 'center', flex: 1, marginRight: 10}}>
           <Text
             numberOfLines={1}
             style={{
@@ -110,7 +130,7 @@ const DiscountForCategories = ({ navigation, route }) => {
             {data.name}
           </Text>
 
-          <View style={{ flexDirection: 'row' }}>
+          <View style={{flexDirection: 'row'}}>
             <Text
               style={{
                 maxWidth: '70%',
@@ -142,7 +162,8 @@ const DiscountForCategories = ({ navigation, route }) => {
               fontSize: 18,
               marginBottom: 10,
             }}>
-            HSD: {dayjs(data?.nearestExpiredBatch.expiredDate).format('DD/MM/YYYY')}
+            HSD:{' '}
+            {dayjs(data?.nearestExpiredBatch.expiredDate).format('DD/MM/YYYY')}
           </Text>
           {/* Button buy */}
           <TouchableOpacity onPress={() => handleAddToCart(data)}>
@@ -184,7 +205,7 @@ const DiscountForCategories = ({ navigation, route }) => {
           <Image
             source={icons.leftArrow}
             resizeMode="contain"
-            style={{ width: 35, height: 35, tintColor: COLORS.primary }}
+            style={{width: 35, height: 35, tintColor: COLORS.primary}}
           />
         </TouchableOpacity>
         <Text
@@ -228,7 +249,7 @@ const DiscountForCategories = ({ navigation, route }) => {
                 justifyContent: 'center',
               }}>
               <Text
-                style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
+                style={{fontSize: 12, color: 'white', fontFamily: 'Roboto'}}>
                 {cartList.length}
               </Text>
             </View>
@@ -267,11 +288,10 @@ const DiscountForCategories = ({ navigation, route }) => {
             />
             <ModalButton
               text="Đăng nhập"
-              textStyle={{ color: COLORS.primary }}
+              textStyle={{color: COLORS.primary}}
               onPress={async () => {
                 try {
-                  await AsyncStorage.removeItem('userInfo');
-                  await AsyncStorage.removeItem('CartList');
+                  await AsyncStorage.clear();
                   navigation.navigate('Login');
                   setOpenAuthModal(false);
                 } catch (error) {
@@ -282,7 +302,7 @@ const DiscountForCategories = ({ navigation, route }) => {
           </ModalFooter>
         }>
         <View
-          style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
+          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
           <Text
             style={{
               fontSize: 20,

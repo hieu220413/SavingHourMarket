@@ -108,6 +108,12 @@ const ReportVoucherUsage = () => {
       value: "Q4",
     },
   ];
+  const years = [
+    {
+      id: 0,
+      value: "2023",
+    },
+  ];
 
   const [selectMonth, setSelectMonth] = useState("--");
   const [selectQuarter, setSelectQuarter] = useState("--");
@@ -214,6 +220,10 @@ const ReportVoucherUsage = () => {
     );
   };
 
+  const options = [];
+  years.map((year) => {
+    options.push(<option value={year.value}>{year.value}</option>);
+  });
   const totalVoucherUsage = monthData.reduce(
     (total, currentValue) => (total = total + currentValue.totalDiscountUsage),
     0
@@ -238,19 +248,19 @@ const ReportVoucherUsage = () => {
     <div>
       <div>
         <div className="year_picker">
-          <text style={{ fontSize: "16px" }}>Năm: {selectedYear} </text>
-          {/* <select
-          style={{
-            width: "60px",
-            height: "25px",
-            position: "relative",
-            top: "-3px",
-          }}
-          value={selectedYear}
-          onChange={onHandleChange}
-        >
-          {options}
-        </select> */}
+          <text style={{ fontSize: "16px" }}>Năm: </text>
+          <select
+            style={{
+              width: "60px",
+              height: "25px",
+              position: "relative",
+              top: "-3px",
+            }}
+            value={selectedYear}
+            onChange={onHandleChange}
+          >
+            {options}
+          </select>
         </div>
 
         <div className="chart_container">

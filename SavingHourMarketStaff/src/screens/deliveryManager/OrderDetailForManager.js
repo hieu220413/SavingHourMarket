@@ -10,11 +10,20 @@ import auth from '@react-native-firebase/auth';
 import {format} from 'date-fns';
 import Toast from 'react-native-toast-message';
 import LoadingScreen from '../../components/LoadingScreen';
+import database from '@react-native-firebase/database';
+import {checkSystemState} from '../../common/utils';
 
 const OrderDetailForManager = ({navigation, route}) => {
+  // listen to system state
+  useFocusEffect(
+    useCallback(() => {
+      checkSystemState(navigation);
+    }, []),
+  );
+
   const {id, orderSuccess} = route.params;
   const [initializing, setInitializing] = useState(true);
-  const [tokenId, setTokenId] = useState(null);
+  // const [tokenId, setTokenId] = useState(null);
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -28,70 +37,74 @@ const OrderDetailForManager = ({navigation, route}) => {
     });
   };
 
-  const onAuthStateChange = async userInfo => {
-    setLoading(true);
-    // console.log(userInfo);
-    if (initializing) {
-      setInitializing(false);
-    }
-    if (userInfo) {
-      // check if user sessions is still available. If yes => redirect to another screen
-      const userTokenId = await userInfo
-        .getIdToken(true)
-        .then(token => token)
-        .catch(async e => {
-          console.log(e);
-          return null;
-        });
-      if (!userTokenId) {
-        // sessions end. (revoke refresh token like password change, disable account, ....)
-        await AsyncStorage.removeItem('userInfo');
-        setLoading(false);
-        return;
-      }
+  // const onAuthStateChange = async userInfo => {
+  //   setLoading(true);
+  //   // console.log(userInfo);
+  //   if (initializing) {
+  //     setInitializing(false);
+  //   }
+  //   if (userInfo) {
+  //     // check if user sessions is still available. If yes => redirect to another screen
+  //     const userTokenId = await userInfo
+  //       .getIdToken(true)
+  //       .then(token => token)
+  //       .catch(async e => {
+  //         console.log(e);
+  //         return null;
+  //       });
+  //     if (!userTokenId) {
+  //       // sessions end. (revoke refresh token like password change, disable account, ....)
+  //       await AsyncStorage.removeItem('userInfo');
+  //       setLoading(false);
+  //       return;
+  //     }
 
-      const token = await auth().currentUser.getIdToken();
-      setTokenId(token);
-      setLoading(false);
-    } else {
-      // no sessions found.
-      console.log('user is not logged in');
-      setLoading(false);
-    }
-  };
+  //     const token = await auth().currentUser.getIdToken();
+  //     setTokenId(token);
+  //     setLoading(false);
+  //   } else {
+  //     // no sessions found.
+  //     console.log('user is not logged in');
+  //     setLoading(false);
+  //   }
+  // };
 
-  useEffect(() => {
-    // auth().currentUser.reload()
-    const subscriber = auth().onAuthStateChanged(
-      async userInfo => await onAuthStateChange(userInfo),
-    );
-    return subscriber;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // useEffect(() => {
+  //   // auth().currentUser.reload()
+  //   const subscriber = auth().onAuthStateChanged(
+  //     async userInfo => await onAuthStateChange(userInfo),
+  //   );
+  //   return subscriber;
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
 
   useFocusEffect(
     useCallback(() => {
-      if (tokenId) {
-        setLoading(true);
-        fetch(`${API.baseURL}/api/order/getOrderDetail/${id}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${tokenId}`,
-          },
-        })
-          .then(res => res.json())
-          .then(respond => {
-            console.log('asd', respond);
-            setItem(respond);
-            setLoading(false);
+      const fetchData = async () => {
+        const tokenId = await auth().currentUser.getIdToken();
+        if (tokenId) {
+          setLoading(true);
+          fetch(`${API.baseURL}/api/order/getOrderDetail/${id}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${tokenId}`,
+            },
           })
-          .catch(err => {
-            console.log(err);
-            setLoading(false);
-          });
-      }
-    }, [tokenId]),
+            .then(res => res.json())
+            .then(respond => {
+              console.log('asd', respond);
+              setItem(respond);
+              setLoading(false);
+            })
+            .catch(err => {
+              console.log(err);
+              setLoading(false);
+            });
+        }
+      };
+      fetchData();
+    }, []),
   );
 
   const handleCancel = () => {
@@ -574,7 +587,7 @@ const OrderDetailForManager = ({navigation, route}) => {
             {/* ******************** */}
 
             {/* QR code */}
-            <View
+            {/* <View
               style={{
                 backgroundColor: 'white',
                 padding: 20,
@@ -588,7 +601,7 @@ const OrderDetailForManager = ({navigation, route}) => {
                 style={{width: '100%', height: 300}}
                 source={QrCode}
               />
-            </View>
+            </View> */}
           </ScrollView>
         )}
         {/* Modal Package */}

@@ -12,27 +12,38 @@ import {
   Pressable,
   FlatList,
 } from 'react-native';
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, {useEffect, useState, useCallback, useRef} from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { COLORS } from '../../constants/theme';
-import { icons } from '../../constants';
-import { useFocusEffect } from '@react-navigation/native';
-import { API } from '../../constants/api';
-import { format } from 'date-fns';
+import {COLORS} from '../../constants/theme';
+import {icons} from '../../constants';
+import {useFocusEffect} from '@react-navigation/native';
+import {API} from '../../constants/api';
+import {format} from 'date-fns';
 import CartEmpty from '../../assets/image/search-empty.png';
-import { SwipeListView } from 'react-native-swipe-list-view';
+import {SwipeListView, SwipeRow} from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
 import Toast from 'react-native-toast-message';
 import DatePicker from 'react-native-date-picker';
+import database from '@react-native-firebase/database';
+import {checkSystemState} from '../../common/utils';
+import ModalAlertSignOut from '../../components/ModalAlertSignOut';
+import {err} from 'react-native-svg/lib/typescript/xml';
+const Home = ({navigation}) => {
+  // listen to system state
+  useFocusEffect(
+    useCallback(() => {
+      const onSystemStateChange = checkSystemState(navigation);
+    }, []),
+  );
 
-
-const Home = ({ navigation }) => {
   const orderStatus = [
-    { display: 'Chờ đóng gói', value: 'PROCESSING' },
-    { display: 'Đang đóng gói', value: 'PACKAGING' },
-    { display: 'Đã đóng gói', value: 'PACKAGED' },
-    { display: 'Đã huỷ', value: 'CANCEL' },
+    {display: 'Tất cả', value: ''},
+    {display: 'Chờ đóng gói', value: 'PROCESSING'},
+    {display: 'Đang đóng gói', value: 'PACKAGING'},
+    {display: 'Đã đóng gói', value: 'PACKAGED'},
+    {display: 'Giao hàng', value: ''},
+    {display: 'Đã huỷ', value: 'CANCEL'},
   ];
   const sortOptions = [
     {
@@ -51,7 +62,7 @@ const Home = ({ navigation }) => {
       id: 3,
       name: 'Đơn mới nhất',
       param: '&createdTimeSortType=DESC',
-      active: false,
+      active: true,
     },
     {
       id: 4,
@@ -75,16 +86,19 @@ const Home = ({ navigation }) => {
   const [selectedDate, setSelectedDate] = useState('');
   const [tempSelectedDate, setTempSelectedDate] = useState('');
   const [consolidationAreaList, setConsolidationAreaList] = useState([]);
-  const [selectedConsolidationAreaId, setSelectedConsolidationAreaId] = useState('');
+  const [selectedConsolidationAreaId, setSelectedConsolidationAreaId] =
+    useState('');
   const [selectSort, setSelectSort] = useState(sortOptions);
-  const [tempSelectedSortId, setTempSelectedSortId] = useState('');
+  const [tempSelectedSortId, setTempSelectedSortId] = useState(3);
   const [modalVisible, setModalVisible] = useState(false);
   const swipeListViewRef = useRef();
   const isMountingRef = useRef(false);
   const [currentStatus, setCurrentStatus] = useState({
-    display: 'Chờ đóng gói',
-    value: 'PROCESSING',
+    display: 'Tất cả',
+    value: '',
   });
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [clickSignOut, setClickSignOut] = useState(false);
 
   const print = async orderId => {
     setLoading(true);
@@ -101,7 +115,21 @@ const Home = ({ navigation }) => {
           },
         },
       )
-        .then(res => res.text())
+        .then(async res => {
+          if (res.status === 403 || res.status === 401) {
+            const tokenIdCheck = await auth()
+              .currentUser.getIdToken(true)
+              .catch(async err => {
+                await AsyncStorage.setItem('isDisableAccount', '1');
+                return null;
+              });
+            if (!tokenIdCheck) {
+              throw new Error();
+            }
+            // Cac loi 403 khac thi handle duoi day neu co
+          }
+          return res.text();
+        })
         .then(respond => {
           // console.log('order group', respond);
           if (respond.error) {
@@ -136,37 +164,6 @@ const Home = ({ navigation }) => {
     }
   };
 
-  const onAuthStateChange = async userInfo => {
-    // console.log(userInfo);
-    if (initializing) {
-      setInitializing(false);
-    }
-    if (userInfo) {
-      // check if user sessions is still available. If yes => redirect to another screen
-      const userTokenId = await userInfo
-        .getIdToken(true)
-        .then(token => token)
-        .catch(async e => {
-          console.log(e);
-          return null;
-        });
-      if (!userTokenId) {
-        // sessions end. (revoke refresh token like password change, disable account, ....)
-        await AsyncStorage.removeItem('userInfo');
-        navigation.navigate('Login');
-        return;
-      }
-      const currentUser = await AsyncStorage.getItem('userInfo');
-      // console.log('currentUser', currentUser);
-      setCurrentUser(JSON.parse(currentUser));
-    } else {
-      // no sessions found.
-      console.log('user is not logged in');
-      await AsyncStorage.removeItem('userInfo');
-      navigation.navigate('Login');
-    }
-  };
-
   const getConsolidationArea = async (pickupPointId, orderStatus) => {
     const tokenId = await auth().currentUser.getIdToken();
     if (tokenId) {
@@ -181,7 +178,21 @@ const Home = ({ navigation }) => {
           },
         },
       )
-        .then(res => res.json())
+        .then(async res => {
+          if (res.status === 403 || res.status === 401) {
+            const tokenIdCheck = await auth()
+              .currentUser.getIdToken(true)
+              .catch(async err => {
+                await AsyncStorage.setItem('isDisableAccount', '1');
+                return null;
+              });
+            if (!tokenIdCheck) {
+              throw new Error();
+            }
+            // Cac loi 403 khac thi handle duoi day neu co
+          }
+          return res.json();
+        })
         .then(respond => {
           // console.log('order group', respond);
           if (respond.error) {
@@ -228,6 +239,18 @@ const Home = ({ navigation }) => {
         return;
       }
 
+      if (
+        consolidationAreaEditRequest.status === 403 ||
+        consolidationAreaEditRequest.status === 401
+      ) {
+        await auth()
+          .currentUser.getIdToken(true)
+          .catch(async err => {
+            await AsyncStorage.setItem('isDisableAccount', '1');
+            return null;
+          });
+      }
+
       if (consolidationAreaEditRequest.status === 200) {
         const result = await consolidationAreaEditRequest.text();
         fetchOrderWithFilter();
@@ -244,24 +267,34 @@ const Home = ({ navigation }) => {
   const fetchOrderWithFilter = async () => {
     setLoading(true);
     console.log('fetch order with filter');
-    const tokenId = await auth().currentUser.getIdToken();
+    const tokenId = await auth()
+      .currentUser.getIdToken()
+      .catch(err => console.log(err));
     const sortItem = selectSort.find(item => item.active === true);
     setTempSelectedSortId(sortItem ? sortItem.id : '');
     if (tokenId) {
       await fetch(
-        `${API.baseURL}/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${pickupPoint && pickupPoint.id
-          ? `pickupPointId=${pickupPoint.id}`
-          : ''
-        }&orderStatus=${currentStatus.value}
-        ${selectedDate === ''
-          ? ''
-          : '&deliveryDate=' + format(Date.parse(selectedDate), 'yyyy-MM-dd')
-        }${selectedTimeFrameId === ''
-          ? ''
-          : '&timeFrameId=' + selectedTimeFrameId
-        }${tempSelectedSortId === ''
-          ? ''
-          : selectSort.find(item => item.id === tempSelectedSortId)?.param
+        `${
+          API.baseURL
+        }/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${
+          pickupPoint && pickupPoint.id ? `pickupPointId=${pickupPoint.id}` : ''
+        } ${
+          currentStatus.value === ''
+            ? `&getOldOrder=true`
+            : `&orderStatus=${currentStatus.value}&getOldOrder=true`
+        }
+        ${
+          selectedDate === ''
+            ? ''
+            : '&deliveryDate=' + format(Date.parse(selectedDate), 'yyyy-MM-dd')
+        }${
+          selectedTimeFrameId === ''
+            ? ''
+            : '&timeFrameId=' + selectedTimeFrameId
+        }${
+          tempSelectedSortId === ''
+            ? ''
+            : selectSort.find(item => item.id === tempSelectedSortId)?.param
         }`,
         {
           method: 'GET',
@@ -271,11 +304,26 @@ const Home = ({ navigation }) => {
           },
         },
       )
-        .then(res => res.json())
+        .then(async res => {
+          if (res.status === 403 || res.status === 401) {
+            if (auth().currentUser) {
+              const tokenIdCheck = await auth()
+                .currentUser.getIdToken(true)
+                .catch(async err => {
+                  await AsyncStorage.setItem('isDisableAccount', '1');
+                  return null;
+                });
+              if (!tokenIdCheck) {
+                throw new Error();
+              }
+            }
+            // Cac loi 403 khac thi handle duoi day neu co
+          }
+          return res.json();
+        })
         .then(respond => {
           // console.log('order group', respond);
           if (respond.error) {
-            console.log(err);
             setLoading(false);
             return;
           }
@@ -283,7 +331,7 @@ const Home = ({ navigation }) => {
           setLoading(false);
         })
         .catch(err => {
-          console.log(err);
+          console.log('fetch error:', err);
           setLoading(false);
         });
     }
@@ -293,9 +341,9 @@ const Home = ({ navigation }) => {
     setSelectSort(
       selectSort.map(item => {
         if (item.id === tempSelectedSortId) {
-          return { ...item, active: true };
+          return {...item, active: true};
         }
-        return { ...item, active: false };
+        return {...item, active: false};
       }),
     );
     setSelectedTimeFrameId(tempSelectedTimeFrameId);
@@ -339,7 +387,21 @@ const Home = ({ navigation }) => {
               },
             },
           )
-            .then(res => res.text())
+            .then(async res => {
+              if (res.status === 403 || res.status === 401) {
+                const tokenIdCheck = await auth()
+                  .currentUser.getIdToken(true)
+                  .catch(async err => {
+                    await AsyncStorage.setItem('isDisableAccount', '1');
+                    return null;
+                  });
+                if (!tokenIdCheck) {
+                  throw new Error();
+                }
+                // Cac loi 403 khac thi handle duoi day neu co
+              }
+              return res.text();
+            })
             .then(respond => {
               fetchOrderWithFilter();
               showToast(respond);
@@ -367,7 +429,21 @@ const Home = ({ navigation }) => {
               },
             },
           )
-            .then(res => res.text())
+            .then(async res => {
+              if (res.status === 403 || res.status === 401) {
+                const tokenIdCheck = await auth()
+                  .currentUser.getIdToken(true)
+                  .catch(async err => {
+                    await AsyncStorage.setItem('isDisableAccount', '1');
+                    return null;
+                  });
+                if (!tokenIdCheck) {
+                  throw new Error();
+                }
+                // Cac loi 403 khac thi handle duoi day neu co
+              }
+              return res.text();
+            })
             .then(respond => {
               fetchOrderWithFilter();
               showToast(respond);
@@ -391,17 +467,27 @@ const Home = ({ navigation }) => {
     setVisible(false);
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      // auth().currentUser.reload()
-      const subscriber = auth().onAuthStateChanged(
-        async userInfo => await onAuthStateChange(userInfo),
-      );
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     // auth().currentUser.reload()
+  //     const subscriber = auth().onAuthStateChanged(
+  //       async userInfo => await onAuthStateChange(userInfo),
+  //     );
+  //     return subscriber;
+  //     // eslint-disable-next-line react-hooks/exhaustive-deps
+  //   }, []),
+  // );
 
-      return subscriber;
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []),
-  );
+  useEffect(() => {
+    if (clickSignOut) {
+      auth()
+        .signOut()
+        .then(async () => {
+          await AsyncStorage.removeItem('userInfo');
+        })
+        .catch(e => console.log(e));
+    }
+  }, [clickSignOut]);
 
   // init pickup point
   useFocusEffect(
@@ -446,8 +532,19 @@ const Home = ({ navigation }) => {
         .catch(err => {
           console.log(err);
         });
-
     }, [selectSort, selectedDate, selectedTimeFrameId]),
+  );
+
+  //get Current User Info
+  useFocusEffect(
+    useCallback(() => {
+      const getCurrentUser = async () => {
+        const currentUser = await AsyncStorage.getItem('userInfo');
+        // console.log(JSON.parse(currentUser));
+        setCurrentUser(JSON.parse(currentUser));
+      };
+      getCurrentUser();
+    }, []),
   );
 
   useEffect(() => {
@@ -464,9 +561,16 @@ const Home = ({ navigation }) => {
       setLoading(false);
     };
     fetchData();
-  }, [currentStatus, pickupPoint, selectSort, selectedDate, selectedTimeFrameId, pickupPoint]);
+  }, [
+    currentStatus,
+    pickupPoint,
+    selectSort,
+    selectedDate,
+    selectedTimeFrameId,
+    pickupPoint,
+  ]);
 
-  const ModalSortItem = ({ item }) => {
+  const ModalSortItem = ({item}) => {
     return (
       <TouchableOpacity
         onPress={() => {
@@ -475,37 +579,37 @@ const Home = ({ navigation }) => {
         style={
           item.id == tempSelectedSortId
             ? {
-              borderColor: COLORS.primary,
-              borderWidth: 1,
-              borderRadius: 10,
-              margin: 5,
-            }
+                borderColor: COLORS.primary,
+                borderWidth: 1,
+                borderRadius: 10,
+                margin: 5,
+              }
             : {
-              borderColor: '#c8c8c8',
-              borderWidth: 0.2,
-              borderRadius: 10,
-              margin: 5,
-            }
+                borderColor: '#c8c8c8',
+                borderWidth: 0.2,
+                borderRadius: 10,
+                margin: 5,
+              }
         }>
         <Text
           style={
             item.id == tempSelectedSortId
               ? {
-                width: 150,
-                paddingVertical: 10,
-                textAlign: 'center',
-                color: COLORS.primary,
+                  width: 150,
+                  paddingVertical: 10,
+                  textAlign: 'center',
+                  color: COLORS.primary,
 
-                fontSize: 12,
-              }
+                  fontSize: 12,
+                }
               : {
-                width: 150,
-                paddingVertical: 10,
-                textAlign: 'center',
-                color: 'black',
+                  width: 150,
+                  paddingVertical: 10,
+                  textAlign: 'center',
+                  color: 'black',
 
-                fontSize: 12,
-              }
+                  fontSize: 12,
+                }
           }>
           {item.name}
         </Text>
@@ -524,7 +628,7 @@ const Home = ({ navigation }) => {
         <View style={styles.header}>
           <View style={styles.areaAndLogout}>
             <View style={styles.area}>
-              <Text style={{ fontSize: 16 }}>Khu vực:</Text>
+              <Text style={{fontSize: 16}}>Khu vực:</Text>
               <View style={styles.pickArea}>
                 <TouchableOpacity
                   onPress={() => {
@@ -548,7 +652,7 @@ const Home = ({ navigation }) => {
                         fontSize: 16,
                         fontFamily: 'Roboto',
                         color: 'black',
-                        maxWidth: 270
+                        maxWidth: 270,
                       }}
                       numberOfLines={1}>
                       {pickupPoint && pickupPoint.id
@@ -586,7 +690,7 @@ const Home = ({ navigation }) => {
                 }}>
                 <Image
                   resizeMode="contain"
-                  style={{ width: 38, height: 38 }}
+                  style={{width: 38, height: 38}}
                   source={{
                     uri: currentUser?.avatarUrl,
                   }}
@@ -607,14 +711,9 @@ const Home = ({ navigation }) => {
                     backgroundColor: 'rgb(240,240,240)',
                   }}
                   onPress={() => {
-                    auth()
-                      .signOut()
-                      .then(async () => {
-                        await AsyncStorage.removeItem('userInfo');
-                      })
-                      .catch(e => console.log(e));
+                    setClickSignOut(true);
                   }}>
-                  <Text style={{ color: 'red', fontWeight: 'bold' }}>
+                  <Text style={{color: 'red', fontWeight: 'bold'}}>
                     Đăng xuất
                   </Text>
                 </TouchableOpacity>
@@ -627,7 +726,7 @@ const Home = ({ navigation }) => {
             style={{
               flexDirection: 'row',
             }}>
-            <View style={{ flex: 6 }}>
+            <View style={{flex: 6}}>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {orderStatus.map((item, index) => (
                   <TouchableOpacity
@@ -695,9 +794,9 @@ const Home = ({ navigation }) => {
         <View style={styles.body}>
           {/* Order list */}
           {orderList.length === 0 ? (
-            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+            <View style={{alignItems: 'center', justifyContent: 'center'}}>
               <Image
-                style={{ width: '100%', height: '50%' }}
+                style={{width: '100%', height: '50%'}}
                 resizeMode="contain"
                 source={CartEmpty}
               />
@@ -712,12 +811,18 @@ const Home = ({ navigation }) => {
               </Text>
             </View>
           ) : (
-            <View style={{ height: '87%' }}>
+            <View style={{height: '87%'}}>
               <SwipeListView
                 showsVerticalScrollIndicator={false}
                 showsHorizontalScrollIndicator={false}
                 ref={swipeListViewRef}
-                data={orderList}
+                data={
+                  currentStatus.display === 'Giao hàng'
+                    ? orderList.filter(
+                        order => order.status > 2 && order.status < 6,
+                      )
+                    : orderList
+                }
                 keyExtractor={(item, index) => item.id}
                 renderItem={(data, rowMap) => (
                   <View
@@ -747,7 +852,7 @@ const Home = ({ navigation }) => {
                           orderSuccess: false,
                         });
                       }}>
-                      <View style={{ flexDirection: 'row', paddingBottom: 9 }}>
+                      <View style={{flexDirection: 'row', paddingBottom: 9}}>
                         <Text
                           style={{
                             flex: 13,
@@ -755,14 +860,21 @@ const Home = ({ navigation }) => {
                             paddingTop: 6,
                             fontWeight: 'bold',
                             fontFamily: 'Roboto',
-                            color: data.item?.status === 6 ? COLORS.red :COLORS.primary,
+                            color:
+                              data.item?.status === 6 || data.item?.status === 5
+                                ? COLORS.red
+                                : COLORS.primary,
                           }}>
                           {data.item?.status === 0 && 'Chờ đóng gói'}
                           {data.item?.status === 1 && 'Đang đóng gói'}
                           {data.item?.status === 2 && 'Đã đóng gói'}
+                          {data.item?.status === 3 && 'Đang giao'}
+                          {data.item?.status === 4 && 'Giao thành công'}
+                          {data.item?.status === 5 && 'Giao thất bại'}
                           {data.item?.status === 6 && 'Đã huỷ'}
                         </Text>
-                        {data.item?.status === 2 &&
+                        {data.item?.status >= 2 &&
+                          data.item?.status < 6 &&
                           data.item?.packager?.fullName != null && (
                             <>
                               <View
@@ -888,7 +1000,7 @@ const Home = ({ navigation }) => {
                           alignItems: 'center',
                           justifyContent: 'space-between',
                         }}>
-                        <View style={{ flexDirection: 'column', gap: 8 }}>
+                        <View style={{flexDirection: 'column', gap: 8}}>
                           <Text
                             style={{
                               fontSize: 17,
@@ -925,9 +1037,12 @@ const Home = ({ navigation }) => {
                             Khung giờ:{' '}
                             {data.item?.timeFrame
                               ? `${data.item?.timeFrame?.fromHour.slice(
-                                0,
-                                5,
-                              )} đến ${data.item?.timeFrame?.toHour.slice(0, 5)}`
+                                  0,
+                                  5,
+                                )} đến ${data.item?.timeFrame?.toHour.slice(
+                                  0,
+                                  5,
+                                )}`
                               : ''}
                           </Text>
                           {data.item?.productConsolidationArea?.address && (
@@ -950,7 +1065,8 @@ const Home = ({ navigation }) => {
                             width: 30,
                             height: 30,
                             marginBottom: 30,
-                            tintColor: data.item?.status === 6 ? 'grey' :COLORS.primary,
+                            tintColor:
+                              data.item?.status === 6 ? 'grey' : COLORS.primary,
                           }}
                           source={icons.rightArrow}
                         />
@@ -991,7 +1107,7 @@ const Home = ({ navigation }) => {
                           <Image
                             source={icons.print}
                             resizeMode="contain"
-                            style={{ width: 40, height: 40, tintColor: 'white' }}
+                            style={{width: 40, height: 40, tintColor: 'white'}}
                           />
                         </View>
                       </TouchableOpacity>
@@ -1084,14 +1200,25 @@ const Home = ({ navigation }) => {
                     )}
                   </View>
                 )}
-                disableLeftSwipe={(orderList[0]?.status === 2 || orderList[0]?.status === 6) ? true : false}
-                disableRightSwipe={
-                  (orderList[0]?.status === 2 || orderList[0]?.status === 6 || orderList[0]?.status === 0)
+                disableLeftSwipe={
+                  currentStatus.value === '' ||
+                  currentStatus.value === 'PACKAGED' ||
+                  currentStatus.value === 'CANCEL'
                     ? true
                     : false
                 }
-                leftOpenValue={orderList[0]?.status === 1 ? 120 : 0}
-                rightOpenValue={orderList[0]?.status === 0 ? -120 : -200}
+                disableRightSwipe={
+                  currentStatus.value === '' ||
+                  currentStatus.value === 'PACKAGED' ||
+                  currentStatus.value === 'CANCEL' ||
+                  currentStatus.value === 'PROCESSING'
+                    ? true
+                    : false
+                }
+                leftOpenValue={currentStatus.value === 'PACKAGING' ? 120 : 0}
+                rightOpenValue={
+                  currentStatus.value === 'PROCESSING' ? -120 : -200
+                }
               />
             </View>
           )}
@@ -1126,7 +1253,12 @@ const Home = ({ navigation }) => {
                   <TouchableOpacity
                     onPress={() => {
                       setModalVisible(!modalVisible);
-                      setSelectSort(sortOptions);
+                      selectSort.map(sort => {
+                        if (sort.active) {
+                          setTempSelectedSortId(sort.id);
+                        }
+                      });
+                      // setSelectSort(sortOptions);
                     }}>
                     <Image
                       resizeMode="contain"
@@ -1183,37 +1315,37 @@ const Home = ({ navigation }) => {
                         style={
                           item.id === tempSelectedTimeFrameId
                             ? {
-                              borderColor: COLORS.primary,
-                              borderWidth: 1,
-                              borderRadius: 10,
-                              margin: 5,
-                            }
+                                borderColor: COLORS.primary,
+                                borderWidth: 1,
+                                borderRadius: 10,
+                                margin: 5,
+                              }
                             : {
-                              borderColor: '#c8c8c8',
-                              borderWidth: 0.2,
-                              borderRadius: 10,
-                              margin: 5,
-                            }
+                                borderColor: '#c8c8c8',
+                                borderWidth: 0.2,
+                                borderRadius: 10,
+                                margin: 5,
+                              }
                         }>
                         <Text
                           style={
                             item.id === tempSelectedTimeFrameId
                               ? {
-                                width: 150,
-                                paddingVertical: 10,
-                                textAlign: 'center',
-                                color: COLORS.primary,
+                                  width: 150,
+                                  paddingVertical: 10,
+                                  textAlign: 'center',
+                                  color: COLORS.primary,
 
-                                fontSize: 12,
-                              }
+                                  fontSize: 12,
+                                }
                               : {
-                                width: 150,
-                                paddingVertical: 10,
-                                textAlign: 'center',
-                                color: 'black',
+                                  width: 150,
+                                  paddingVertical: 10,
+                                  textAlign: 'center',
+                                  color: 'black',
 
-                                fontSize: 12,
-                              }
+                                  fontSize: 12,
+                                }
                           }>
                           {item.fromHour.slice(0, 5)} đến{' '}
                           {item.toHour.slice(0, 5)}
@@ -1237,9 +1369,7 @@ const Home = ({ navigation }) => {
                   }}>
                   <DatePicker
                     date={
-                      tempSelectedDate === ''
-                        ? new Date()
-                        : tempSelectedDate
+                      tempSelectedDate === '' ? new Date() : tempSelectedDate
                     }
                     mode="date"
                     androidVariant="nativeAndroid"
@@ -1287,7 +1417,6 @@ const Home = ({ navigation }) => {
                     <Text style={styles.textStyle}>Áp dụng</Text>
                   </TouchableOpacity>
                 </View>
-
               </View>
             </Pressable>
           </Modal>
@@ -1340,7 +1469,7 @@ const Home = ({ navigation }) => {
                       </Text>
                     </View>
                     <FlatList
-                      style={{ maxHeight: 170 }}
+                      style={{maxHeight: 170}}
                       data={consolidationAreaList}
                       renderItem={data => (
                         <TouchableOpacity
@@ -1363,7 +1492,7 @@ const Home = ({ navigation }) => {
                             }}>
                             <Image
                               resizeMode="contain"
-                              style={{ width: 20, height: 20 }}
+                              style={{width: 20, height: 20}}
                               source={icons.location}
                               tintColor={
                                 data.item.id === selectedConsolidationAreaId
@@ -1493,7 +1622,7 @@ const Home = ({ navigation }) => {
                 <FlatList
                   showsVerticalScrollIndicator={false}
                   showsHorizontalScrollIndicator={false}
-                  style={{ maxHeight: 200, marginHorizontal: 7 }}
+                  style={{maxHeight: 200, marginHorizontal: 7}}
                   data={consolidationAreaList}
                   renderItem={data => (
                     <TouchableOpacity
@@ -1516,7 +1645,7 @@ const Home = ({ navigation }) => {
                         }}>
                         <Image
                           resizeMode="contain"
-                          style={{ width: 20, height: 20 }}
+                          style={{width: 20, height: 20}}
                           source={icons.location}
                           tintColor={
                             data.item.id === selectedConsolidationAreaId
@@ -1587,6 +1716,8 @@ const Home = ({ navigation }) => {
               </View>
             </Pressable>
           </Modal>
+          {/* Modal alert disable */}
+          <ModalAlertSignOut alertVisible={alertVisible} />
         </View>
         {loading && <LoadingScreen />}
       </View>

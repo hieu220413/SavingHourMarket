@@ -16,6 +16,7 @@ import {COLORS} from '../constants/theme';
 import LinearGradient from 'react-native-linear-gradient';
 import * as Animatable from 'react-native-animatable';
 import auth from '@react-native-firebase/auth';
+import database from '@react-native-firebase/database';
 
 const ForgetPassword = ({navigation}) => {
   const [email, setEmail] = useState('');
@@ -37,6 +38,25 @@ const ForgetPassword = ({navigation}) => {
       return true;
     }
   };
+
+  // system status check
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+          } else {
+            // setSystemStatus(snapshot.val());
+          }
+        });
+    }, []),
+  );
 
   const isValidEmail = email => {
     const regex = /^([A-Za-z0-9_\-\.])+@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;

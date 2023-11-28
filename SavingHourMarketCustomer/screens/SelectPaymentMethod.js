@@ -1,13 +1,33 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {View, TouchableOpacity, Image, Text} from 'react-native';
 import {icons} from '../constants';
 import {COLORS} from '../constants/theme';
 import {ScrollView} from 'react-native-gesture-handler';
+import {useFocusEffect} from '@react-navigation/native';
+import database from '@react-native-firebase/database';
 
 const SelectPaymentMethod = ({navigation, route}) => {
+  // system status check
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+          } else {
+            // setSystemStatus(snapshot.val());
+          }
+        });
+    }, []),
+  );
   return (
     <ScrollView>
       <View

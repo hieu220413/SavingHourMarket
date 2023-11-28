@@ -24,8 +24,17 @@ import CartEmpty from '../../assets/image/search-empty.png';
 import {SwipeListView} from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
 import DatePicker from 'react-native-date-picker';
+import database from '@react-native-firebase/database';
+import { checkSystemState } from '../../common/utils';
 
 const OrderGroup = ({navigation}) => {
+  // listen to system state
+  useFocusEffect(
+    useCallback(() => {
+        checkSystemState(navigation);
+      }, []),
+  );
+
   const [initializing, setInitializing] = useState(true);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -47,48 +56,56 @@ const OrderGroup = ({navigation}) => {
     {display: 'Đã có nhân viên giao hàng', value: 2},
   ];
 
-  const onAuthStateChange = async userInfo => {
-    // console.log(userInfo);
-    if (initializing) {
-      setInitializing(false);
-    }
-    if (userInfo) {
-      // check if user sessions is still available. If yes => redirect to another screen
-      const userTokenId = await userInfo
-        .getIdToken(true)
-        .then(token => token)
-        .catch(async e => {
-          console.log(e);
-          return null;
-        });
-      if (!userTokenId) {
-        // sessions end. (revoke refresh token like password change, disable account, ....)
-        await AsyncStorage.removeItem('userInfo');
-        navigation.navigate('Login');
-        return;
-      }
-      const currentUser = await AsyncStorage.getItem('userInfo');
-      // console.log('currentUser', currentUser);
-      setCurrentUser(JSON.parse(currentUser));
-    } else {
-      // no sessions found.
-      console.log('user is not logged in');
-      await AsyncStorage.removeItem('userInfo');
-      navigation.navigate('Login');
-    }
-  };
+  // const onAuthStateChange = async userInfo => {
+  //   // console.log(userInfo);
+  //   if (initializing) {
+  //     setInitializing(false);
+  //   }
+  //   if (userInfo) {
+  //     // check if user sessions is still available. If yes => redirect to another screen
+  //     const userTokenId = await userInfo
+  //       .getIdToken(true)
+  //       .then(token => token)
+  //       .catch(async e => {
+  //         console.log(e);
+  //         return null;
+  //       });
+  //     if (!userTokenId) {
+  //       // sessions end. (revoke refresh token like password change, disable account, ....)
+  //       await AsyncStorage.removeItem('userInfo');
+  //       // navigation.navigate('Login');
+  //       navigation.reset({
+  //         index: 0,
+  //         routes: [{name: 'Login'}],
+  //       });
+  //       return;
+  //     }
+  //     const currentUser = await AsyncStorage.getItem('userInfo');
+  //     // console.log('currentUser', currentUser);
+  //     setCurrentUser(JSON.parse(currentUser));
+  //   } else {
+  //     // no sessions found.
+  //     console.log('user is not logged in');
+  //     await AsyncStorage.removeItem('userInfo');
+  //     // navigation.navigate('Login');
+  //     navigation.reset({
+  //       index: 0,
+  //       routes: [{name: 'Login'}],
+  //     });
+  //   }
+  // };
 
-  useFocusEffect(
-    useCallback(() => {
-      // auth().currentUser.reload()
-      const subscriber = auth().onAuthStateChanged(
-        async userInfo => await onAuthStateChange(userInfo),
-      );
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     // auth().currentUser.reload()
+  //     const subscriber = auth().onAuthStateChanged(
+  //       async userInfo => await onAuthStateChange(userInfo),
+  //     );
 
-      return subscriber;
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []),
-  );
+  //     return subscriber;
+  //     // eslint-disable-next-line react-hooks/exhaustive-deps
+  //   }, []),
+  // );
 
   const sortOptions = [
     {
@@ -104,6 +121,18 @@ const OrderGroup = ({navigation}) => {
   ];
   const [selectSort, setSelectSort] = useState(sortOptions);
 
+  //get Current User Info
+  useFocusEffect(
+    useCallback(() => {
+      const getCurrentUser = async () => {
+        const currentUser = await AsyncStorage.getItem('userInfo');
+        // console.log(JSON.parse(currentUser));
+        setCurrentUser(JSON.parse(currentUser));
+      }
+      getCurrentUser();
+    }, []),
+  );
+  
   useFocusEffect(
     useCallback(() => {
       const fetchData = async () => {
@@ -112,28 +141,49 @@ const OrderGroup = ({navigation}) => {
           if (tokenId) {
             setLoading(true);
 
-            fetch(`${API.baseURL}/api/order/staff/getOrderGroup`, {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${tokenId}`,
+            fetch(
+              `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED`,
+              {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${tokenId}`,
+                },
               },
-            })
+            )
               .then(res => res.json())
               .then(respond => {
-                console.log('group', respond.orderGroups);
+                console.log('group1', respond.orderGroups);
                 if (respond.error) {
                   setLoading(false);
                   return;
                 }
-                const notYetAssigned = respond.orderGroups.filter(item => {
-                  return item.deliverer === null;
-                });
-                const Assigned = respond.orderGroups.filter(item => {
-                  return item.deliverer !== null;
-                });
-                setGroupListNotYetAssigned(notYetAssigned);
-                setGroupListAssigned(Assigned);
+                setGroupListNotYetAssigned(respond.orderGroups);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
+
+            fetch(
+              `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING`,
+              {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${tokenId}`,
+                },
+              },
+            )
+              .then(res => res.json())
+              .then(respond => {
+                console.log('group2', respond.orderGroups);
+                if (respond.error) {
+                  setLoading(false);
+                  return;
+                }
+                setGroupListAssigned(respond.orderGroups);
                 setLoading(false);
               })
               .catch(err => {
@@ -218,7 +268,7 @@ const OrderGroup = ({navigation}) => {
             setLoading(true);
 
             fetch(
-              `${API.baseURL}/api/order/staff/getOrderGroup?${
+              `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED${
                 sortItem?.id == 1 ? '&deliverDateSortType=ASC' : ''
               }${sortItem?.id == 2 ? '&deliverDateSortType=DESC' : ''}`,
               {
@@ -236,14 +286,46 @@ const OrderGroup = ({navigation}) => {
                   setLoading(false);
                   return;
                 }
-                const notYetAssigned = respond.orderGroups.filter(item => {
-                  return item.deliverer === null;
-                });
-                const Assigned = respond.orderGroups.filter(item => {
-                  return item.deliverer !== null;
-                });
-                setGroupListNotYetAssigned(notYetAssigned);
-                setGroupListAssigned(Assigned);
+                // const notYetAssigned = respond.orderGroups.filter(item => {
+                //   return item.deliverer === null;
+                // });
+                // const Assigned = respond.orderGroups.filter(item => {
+                //   return item.deliverer !== null;
+                // });
+                setGroupListNotYetAssigned(respond.orderGroups);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
+
+            fetch(
+              `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING${
+                sortItem?.id == 1 ? '&deliverDateSortType=ASC' : ''
+              }${sortItem?.id == 2 ? '&deliverDateSortType=DESC' : ''}`,
+              {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${tokenId}`,
+                },
+              },
+            )
+              .then(res => res.json())
+              .then(respond => {
+                console.log('group2', respond);
+                if (respond.error) {
+                  setLoading(false);
+                  return;
+                }
+                // const notYetAssigned = respond.orderGroups.filter(item => {
+                //   return item.deliverer === null;
+                // });
+                // const Assigned = respond.orderGroups.filter(item => {
+                //   return item.deliverer !== null;
+                // });
+                setGroupListAssigned(respond.orderGroups);
                 setLoading(false);
               })
               .catch(err => {
@@ -260,28 +342,49 @@ const OrderGroup = ({navigation}) => {
           const tokenId = await auth().currentUser.getIdToken();
           if (tokenId) {
             setLoading(true);
-            fetch(`${API.baseURL}/api/order/staff/getOrderGroup`, {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${tokenId}`,
+            fetch(
+              `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED`,
+              {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${tokenId}`,
+                },
               },
-            })
+            )
               .then(res => res.json())
               .then(respond => {
-                console.log('group1', respond);
+                console.log('group1', respond.orderGroups);
                 if (respond.error) {
                   setLoading(false);
                   return;
                 }
-                const notYetAssigned = respond.orderGroups.filter(item => {
-                  return item.deliverer === null;
-                });
-                const Assigned = respond.orderGroups.filter(item => {
-                  return item.deliverer !== null;
-                });
-                setGroupListNotYetAssigned(notYetAssigned);
-                setGroupListAssigned(Assigned);
+                setGroupListNotYetAssigned(respond.orderGroups);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
+
+            fetch(
+              `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING`,
+              {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${tokenId}`,
+                },
+              },
+            )
+              .then(res => res.json())
+              .then(respond => {
+                console.log('group2', respond.orderGroups);
+                if (respond.error) {
+                  setLoading(false);
+                  return;
+                }
+                setGroupListAssigned(respond.orderGroups);
                 setLoading(false);
               })
               .catch(err => {
@@ -305,35 +408,56 @@ const OrderGroup = ({navigation}) => {
   const handleClear = () => {
     setDate(null);
     setModalVisible(!modalVisible);
+    setSelectSort(sortOptions);
     setLoading(true);
     const fetchData = async () => {
       if (auth().currentUser) {
         const tokenId = await auth().currentUser.getIdToken();
         if (tokenId) {
           setLoading(true);
-          fetch(`${API.baseURL}/api/order/staff/getOrderGroup`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${tokenId}`,
+          fetch(
+            `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED`,
+            {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
+              },
             },
-          })
+          )
             .then(res => res.json())
             .then(respond => {
-              console.log('group1', respond);
+              console.log('group1', respond.orderGroups);
               if (respond.error) {
                 setLoading(false);
                 return;
               }
-              const notYetAssigned = respond.orderGroups.filter(item => {
-                return item.deliverer === null;
-              });
-              const Assigned = respond.orderGroups.filter(item => {
-                return item.deliverer !== null;
-              });
-              setSelectSort(sortOptions);
-              setGroupListNotYetAssigned(notYetAssigned);
-              setGroupListAssigned(Assigned);
+              setGroupListNotYetAssigned(respond.orderGroups);
+              setLoading(false);
+            })
+            .catch(err => {
+              console.log(err);
+              setLoading(false);
+            });
+
+          fetch(
+            `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING`,
+            {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
+              },
+            },
+          )
+            .then(res => res.json())
+            .then(respond => {
+              console.log('group2', respond.orderGroups);
+              if (respond.error) {
+                setLoading(false);
+                return;
+              }
+              setGroupListAssigned(respond.orderGroups);
               setLoading(false);
             })
             .catch(err => {
@@ -370,7 +494,9 @@ const OrderGroup = ({navigation}) => {
                 <Image
                   resizeMode="contain"
                   style={{width: 38, height: 38}}
-                  source={icons.userCircle}
+                  source={{
+                    uri: currentUser?.avatarUrl,
+                  }}
                 />
               </TouchableOpacity>
               {showLogout && (
@@ -461,7 +587,7 @@ const OrderGroup = ({navigation}) => {
                     setLoading(true);
                     const deliverDate = format(date, 'yyyy-MM-dd');
                     fetch(
-                      `${API.baseURL}/api/order/staff/getOrderGroup?deliverDate=${deliverDate}`,
+                      `${API.baseURL}/api/order/staff/getOrderGroup?deliverDate=${deliverDate}&status=PACKAGED`,
                       {
                         method: 'GET',
                         headers: {
@@ -472,24 +598,59 @@ const OrderGroup = ({navigation}) => {
                     )
                       .then(res => res.json())
                       .then(respond => {
-                        console.log('group', respond);
+                        console.log('group1', respond);
                         if (respond.code === 404) {
                           setGroupListNotYetAssigned([]);
                           setGroupListAssigned([]);
                           setLoading(false);
                           return;
                         }
-                        const notYetAssigned = respond.orderGroups.filter(
-                          item => {
-                            return item.deliverer === null;
-                          },
-                        );
-                        const Assigned = respond.orderGroups.filter(item => {
-                          return item.deliverer !== null;
-                        });
+                        // const notYetAssigned = respond.orderGroups.filter(
+                        //   item => {
+                        //     return item.deliverer === null;
+                        //   },
+                        // );
+                        // const Assigned = respond.orderGroups.filter(item => {
+                        //   return item.deliverer !== null;
+                        // });
 
-                        setGroupListNotYetAssigned(notYetAssigned);
-                        setGroupListAssigned(Assigned);
+                        setGroupListNotYetAssigned(respond.orderGroups);
+                        setLoading(false);
+                      })
+                      .catch(err => {
+                        console.log(err);
+                        setLoading(false);
+                      });
+
+                    fetch(
+                      `${API.baseURL}/api/order/staff/getOrderGroup?deliverDate=${deliverDate}&status=DELIVERING`,
+                      {
+                        method: 'GET',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          Authorization: `Bearer ${tokenId}`,
+                        },
+                      },
+                    )
+                      .then(res => res.json())
+                      .then(respond => {
+                        console.log('group2', respond);
+                        if (respond.code === 404) {
+                          setGroupListNotYetAssigned([]);
+                          setGroupListAssigned([]);
+                          setLoading(false);
+                          return;
+                        }
+                        // const notYetAssigned = respond.orderGroups.filter(
+                        //   item => {
+                        //     return item.deliverer === null;
+                        //   },
+                        // );
+                        // const Assigned = respond.orderGroups.filter(item => {
+                        //   return item.deliverer !== null;
+                        // });
+
+                        setGroupListAssigned(respond.orderGroups);
                         setLoading(false);
                       })
                       .catch(err => {
@@ -510,33 +671,49 @@ const OrderGroup = ({navigation}) => {
                   const tokenId = await auth().currentUser.getIdToken();
                   if (tokenId) {
                     setLoading(true);
-                    fetch(`${API.baseURL}/api/order/staff/getOrderGroup`, {
-                      method: 'GET',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${tokenId}`,
+                    fetch(
+                      `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED`,
+                      {
+                        method: 'GET',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          Authorization: `Bearer ${tokenId}`,
+                        },
                       },
-                    })
+                    )
                       .then(res => res.json())
                       .then(respond => {
-                        console.log('group', respond);
-                        if (respond.code === 404) {
-                          setGroupListNotYetAssigned([]);
-                          setGroupListAssigned([]);
+                        console.log('group1', respond.orderGroups);
+                        if (respond.error) {
                           setLoading(false);
                           return;
                         }
-                        const notYetAssigned = respond.orderGroups.filter(
-                          item => {
-                            return item.deliverer === null;
-                          },
-                        );
-                        const Assigned = respond.orderGroups.filter(item => {
-                          return item.deliverer !== null;
-                        });
+                        setGroupListNotYetAssigned(respond.orderGroups);
+                        setLoading(false);
+                      })
+                      .catch(err => {
+                        console.log(err);
+                        setLoading(false);
+                      });
 
-                        setGroupListNotYetAssigned(notYetAssigned);
-                        setGroupListAssigned(Assigned);
+                    fetch(
+                      `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING`,
+                      {
+                        method: 'GET',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          Authorization: `Bearer ${tokenId}`,
+                        },
+                      },
+                    )
+                      .then(res => res.json())
+                      .then(respond => {
+                        console.log('group2', respond.orderGroups);
+                        if (respond.error) {
+                          setLoading(false);
+                          return;
+                        }
+                        setGroupListAssigned(respond.orderGroups);
                         setLoading(false);
                       })
                       .catch(err => {
@@ -1134,7 +1311,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   body: {
-    flex: 3,
+    flex: 3.5,
     // backgroundColor: 'pink',
     paddingHorizontal: 20,
   },

@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
-import React, { useState, useCallback, useEffect } from 'react';
+import React, {useState, useCallback, useEffect} from 'react';
 import {
   View,
   Image,
@@ -15,18 +15,28 @@ import {
   ScrollView,
   TouchableWithoutFeedback,
 } from 'react-native-gesture-handler';
-import { icons } from '../../constants';
-import { COLORS } from '../../constants/theme';
+import {icons} from '../../constants';
+import {COLORS} from '../../constants/theme';
 import QrCode from '../../assets/image/test-qrcode.png';
-import { API } from '../../constants/api';
-import { useFocusEffect } from '@react-navigation/native';
+import {API} from '../../constants/api';
+import {useFocusEffect} from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
-import { format } from 'date-fns';
+import {format} from 'date-fns';
 import Toast from 'react-native-toast-message';
 import LoadingScreen from '../../components/LoadingScreen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import database from '@react-native-firebase/database';
+import {checkSystemState} from '../../common/utils';
 
-const OrderDetail = ({ navigation, route }) => {
-  const { id, orderSuccess } = route.params;
+const OrderDetail = ({navigation, route}) => {
+  // listen to system state
+  useFocusEffect(
+    useCallback(() => {
+      checkSystemState(navigation);
+    }, []),
+  );
+
+  const {id, orderSuccess, isFromOrderGroup} = route.params;
   const [initializing, setInitializing] = useState(true);
   const [tokenId, setTokenId] = useState(null);
   const [item, setItem] = useState(null);
@@ -62,7 +72,21 @@ const OrderDetail = ({ navigation, route }) => {
           },
         },
       )
-        .then(res => res.json())
+        .then(async res => {
+          if (res.status === 403 || res.status === 401) {
+            const tokenIdCheck = await auth()
+              .currentUser.getIdToken(true)
+              .catch(async err => {
+                await AsyncStorage.setItem('isDisableAccount', '1');
+                return null;
+              });
+            if (!tokenIdCheck) {
+              throw new Error();
+            }
+            // Cac loi 403 khac thi handle duoi day neu co
+          }
+          return res.json();
+        })
         .then(respond => {
           // console.log('order group', respond);
           if (respond.error) {
@@ -81,46 +105,46 @@ const OrderDetail = ({ navigation, route }) => {
     }
   };
 
-  const onAuthStateChange = async userInfo => {
-    setLoading(true);
-    // console.log(userInfo);
-    if (initializing) {
-      setInitializing(false);
-    }
-    if (userInfo) {
-      // check if user sessions is still available. If yes => redirect to another screen
-      const userTokenId = await userInfo
-        .getIdToken(true)
-        .then(token => token)
-        .catch(async e => {
-          console.log(e);
-          return null;
-        });
-      if (!userTokenId) {
-        // sessions end. (revoke refresh token like password change, disable account, ....)
-        await AsyncStorage.removeItem('userInfo');
-        setLoading(false);
-        return;
-      }
+  // const onAuthStateChange = async userInfo => {
+  //   setLoading(true);
+  //   // console.log(userInfo);
+  //   if (initializing) {
+  //     setInitializing(false);
+  //   }
+  //   if (userInfo) {
+  //     // check if user sessions is still available. If yes => redirect to another screen
+  //     const userTokenId = await userInfo
+  //       .getIdToken(true)
+  //       .then(token => token)
+  //       .catch(async e => {
+  //         console.log(e);
+  //         return null;
+  //       });
+  //     if (!userTokenId) {
+  //       // sessions end. (revoke refresh token like password change, disable account, ....)
+  //       await AsyncStorage.removeItem('userInfo');
+  //       setLoading(false);
+  //       return;
+  //     }
 
-      const token = await auth().currentUser.getIdToken();
-      setTokenId(token);
-      setLoading(false);
-    } else {
-      // no sessions found.
-      console.log('user is not logged in');
-      setLoading(false);
-    }
-  };
+  //     const token = await auth().currentUser.getIdToken();
+  //     setTokenId(token);
+  //     setLoading(false);
+  //   } else {
+  //     // no sessions found.
+  //     console.log('user is not logged in');
+  //     setLoading(false);
+  //   }
+  // };
 
-  useEffect(() => {
-    // auth().currentUser.reload()
-    const subscriber = auth().onAuthStateChanged(
-      async userInfo => await onAuthStateChange(userInfo),
-    );
-    return subscriber;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // useEffect(() => {
+  //   // auth().currentUser.reload()
+  //   const subscriber = auth().onAuthStateChanged(
+  //     async userInfo => await onAuthStateChange(userInfo),
+  //   );
+  //   return subscriber;
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -133,7 +157,21 @@ const OrderDetail = ({ navigation, route }) => {
             Authorization: `Bearer ${tokenId}`,
           },
         })
-          .then(res => res.json())
+          .then(async res => {
+            if (res.status === 403 || res.status === 401) {
+              const tokenIdCheck = await auth()
+                .currentUser.getIdToken(true)
+                .catch(async err => {
+                  await AsyncStorage.setItem('isDisableAccount', '1');
+                  return null;
+                });
+              if (!tokenIdCheck) {
+                throw new Error();
+              }
+              // Cac loi 403 khac thi handle duoi day neu co
+            }
+            return res.json();
+          })
           .then(respond => {
             console.log(respond);
             setItem(respond);
@@ -154,7 +192,7 @@ const OrderDetail = ({ navigation, route }) => {
 
   const handleConfirm = () => {
     const confirmPackaging = async () => {
-      console.log("confirm");
+      console.log('confirm');
       if (auth().currentUser) {
         const tokenId = await auth().currentUser.getIdToken();
         if (tokenId) {
@@ -169,7 +207,21 @@ const OrderDetail = ({ navigation, route }) => {
               },
             },
           )
-            .then(res => res.text())
+            .then(async res => {
+              if (res.status === 403 || res.status === 401) {
+                const tokenIdCheck = await auth()
+                  .currentUser.getIdToken(true)
+                  .catch(async err => {
+                    await AsyncStorage.setItem('isDisableAccount', '1');
+                    return null;
+                  });
+                if (!tokenIdCheck) {
+                  throw new Error();
+                }
+                // Cac loi 403 khac thi handle duoi day neu co
+              }
+              return res.text();
+            })
             .then(respond => {
               console.log(respond);
               showToast(respond);
@@ -198,7 +250,21 @@ const OrderDetail = ({ navigation, route }) => {
               },
             },
           )
-            .then(res => res.text())
+            .then(async res => {
+              if (res.status === 403 || res.status === 401) {
+                const tokenIdCheck = await auth()
+                  .currentUser.getIdToken(true)
+                  .catch(async err => {
+                    await AsyncStorage.setItem('isDisableAccount', '1');
+                    return null;
+                  });
+                if (!tokenIdCheck) {
+                  throw new Error();
+                }
+                // Cac loi 403 khac thi handle duoi day neu co
+              }
+              return res.text();
+            })
             .then(respond => {
               showToast(respond);
               navigation.goBack();
@@ -224,7 +290,7 @@ const OrderDetail = ({ navigation, route }) => {
 
   const handleCancelPackage = () => {
     const confirmCancel = async () => {
-      console.log("confirm");
+      console.log('confirm');
       if (auth().currentUser) {
         const tokenId = await auth().currentUser.getIdToken();
         if (tokenId) {
@@ -239,7 +305,21 @@ const OrderDetail = ({ navigation, route }) => {
               },
             },
           )
-            .then(res => res.text())
+            .then(async res => {
+              if (res.status === 403 || res.status === 401) {
+                const tokenIdCheck = await auth()
+                  .currentUser.getIdToken(true)
+                  .catch(async err => {
+                    await AsyncStorage.setItem('isDisableAccount', '1');
+                    return null;
+                  });
+                if (!tokenIdCheck) {
+                  throw new Error();
+                }
+                // Cac loi 403 khac thi handle duoi day neu co
+              }
+              return res.text();
+            })
             .then(respond => {
               console.log(respond);
               showToast(respond);
@@ -254,6 +334,56 @@ const OrderDetail = ({ navigation, route }) => {
     };
     confirmCancel();
     setVisibleCancel(false);
+  };
+
+  // print
+  const print = async orderId => {
+    setLoading(true);
+    console.log('print');
+    const tokenId = await auth().currentUser.getIdToken();
+    if (tokenId) {
+      await fetch(
+        `${API.baseURL}/api/order/packageStaff/printOrderPackaging?orderId=${orderId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${tokenId}`,
+          },
+        },
+      )
+        .then(async res => {
+          if (res.status === 403 || res.status === 401) {
+            const tokenIdCheck = await auth()
+              .currentUser.getIdToken(true)
+              .catch(async err => {
+                await AsyncStorage.setItem('isDisableAccount', '1');
+                return null;
+              });
+            if (!tokenIdCheck) {
+              throw new Error();
+            }
+            // Cac loi 403 khac thi handle duoi day neu co
+          }
+          return res.text();
+        })
+        .then(respond => {
+          // console.log('order group', respond);
+          if (respond.error) {
+            setLoading(false);
+            return;
+          }
+          console.log(respond);
+          navigation.navigate('OrderPrint', {
+            uri: respond,
+          });
+          setLoading(false);
+        })
+        .catch(err => {
+          console.log(err);
+          setLoading(false);
+        });
+    }
   };
 
   return (
@@ -276,7 +406,7 @@ const OrderDetail = ({ navigation, route }) => {
             <Image
               source={icons.leftArrow}
               resizeMode="contain"
-              style={{ width: 35, height: 35, tintColor: COLORS.primary }}
+              style={{width: 35, height: 35, tintColor: COLORS.primary}}
             />
           </TouchableOpacity>
           <Text
@@ -289,6 +419,19 @@ const OrderDetail = ({ navigation, route }) => {
             }}>
             Chi tiết đơn hàng
           </Text>
+          {(item?.status === 1 || item?.status === 2) && (
+            <TouchableOpacity
+              style={{marginLeft: 'auto'}}
+              onPress={() => {
+                print(id);
+              }}>
+              <Image
+                source={icons.print}
+                resizeMode="contain"
+                style={{width: 35, height: 35, tintColor: COLORS.primary}}
+              />
+            </TouchableOpacity>
+          )}
         </View>
         {item && (
           <ScrollView
@@ -297,17 +440,27 @@ const OrderDetail = ({ navigation, route }) => {
             style={{
               height: item?.status === 0 || item?.status === 1 ? '84%' : '90%',
             }}>
-            <View style={{ padding: 20, backgroundColor: COLORS.primary }}>
+            <View
+              style={{
+                padding: 20,
+                backgroundColor:
+                  item?.status === 6 || item?.status === 5
+                    ? COLORS.red
+                    : COLORS.primary,
+              }}>
               <Text
-                style={{ color: 'white', fontSize: 18, fontFamily: 'Roboto' }}>
+                style={{color: 'white', fontSize: 18, fontFamily: 'Roboto'}}>
                 {item?.status === 0 && 'Đơn hàng đang chờ đóng gói'}
                 {item?.status === 1 && 'Đơn hàng đang đóng gói'}
                 {item?.status === 2 && 'Đơn hàng đã đóng gói'}
+                {item?.status === 3 && 'Đơn hàng đang được giao'}
+                {item?.status === 4 && 'Đơn hàng đã giao thành công'}
+                {item?.status === 5 && 'Đơn hàng giao thất bại'}
                 {item?.status === 6 && 'Đơn hàng đã huỷ'}
               </Text>
             </View>
             <View
-              style={{ padding: 20, backgroundColor: 'white', marginBottom: 20 }}>
+              style={{padding: 20, backgroundColor: 'white', marginBottom: 20}}>
               {/* pickup location */}
               <View
                 style={{
@@ -318,42 +471,42 @@ const OrderDetail = ({ navigation, route }) => {
                   borderBottomWidth: 0.75,
                 }}>
                 <View
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
                   <Image
-                    style={{ width: 20, height: 20 }}
+                    style={{width: 20, height: 20}}
                     resizeMode="contain"
                     source={icons.location}
                   />
                   <Text
-                    style={{ fontSize: 20, color: 'black', fontWeight: 'bold' }}>
+                    style={{fontSize: 20, color: 'black', fontWeight: 'bold'}}>
                     Thông tin giao hàng
                   </Text>
                 </View>
                 <View
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                  <View style={{ width: 20 }} />
-                  <View style={{ gap: 8 }}>
-                    <View style={{ gap: 3, paddingRight: 20 }}>
+                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+                  <View style={{width: 20}} />
+                  <View style={{gap: 8}}>
+                    <View style={{gap: 3, paddingRight: 20}}>
                       {/* <Text style={{fontSize: 18, fontWeight: 'bold'}}>
                   Điểm giao hàng:
                 </Text> */}
-                      <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                      <Text style={{fontSize: 18, fontWeight: 'bold'}}>
                         {item?.addressDeliver
                           ? item?.addressDeliver
                           : item?.pickupPoint.address}
                       </Text>
                     </View>
                     {item.timeFrame && (
-                      <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                      <Text style={{fontSize: 18, fontWeight: 'bold'}}>
                         {item?.timeFrame
                           ? `${item?.timeFrame?.fromHour.slice(
-                            0,
-                            5,
-                          )} đến ${item?.timeFrame?.toHour.slice(0, 5)}`
+                              0,
+                              5,
+                            )} đến ${item?.timeFrame?.toHour.slice(0, 5)}`
                           : ''}
                       </Text>
                     )}
-                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                    <Text style={{fontSize: 18, fontWeight: 'bold'}}>
                       Ngày giao hàng:{' '}
                       {format(new Date(item?.deliveryDate), 'dd/MM/yyyy')}
                     </Text>
@@ -369,25 +522,25 @@ const OrderDetail = ({ navigation, route }) => {
                   gap: 10,
                 }}>
                 <View
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
                   <Image
-                    style={{ width: 20, height: 20 }}
+                    style={{width: 20, height: 20}}
                     resizeMode="contain"
                     source={icons.phone}
                   />
                   <Text
-                    style={{ fontSize: 20, color: 'black', fontWeight: 'bold' }}>
+                    style={{fontSize: 20, color: 'black', fontWeight: 'bold'}}>
                     Thông tin liên lạc
                   </Text>
                 </View>
                 <View
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                  <View style={{ width: 20 }} />
-                  <View style={{ gap: 5 }}>
-                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+                  <View style={{width: 20}} />
+                  <View style={{gap: 5}}>
+                    <Text style={{fontSize: 18, fontWeight: 'bold'}}>
                       {item.receiverName}
                     </Text>
-                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                    <Text style={{fontSize: 18, fontWeight: 'bold'}}>
                       {item.receiverPhone}
                     </Text>
                   </View>
@@ -436,7 +589,7 @@ const OrderDetail = ({ navigation, route }) => {
                         source={{
                           uri: product.images[0].imageUrl,
                         }}
-                        style={{ width: 100, height: 100 }}
+                        style={{width: 100, height: 100}}
                       />
                       <View
                         style={{
@@ -609,7 +762,7 @@ const OrderDetail = ({ navigation, route }) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{ fontSize: 20, fontFamily: 'Roboto', color: 'black' }}>
+                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
                   Mã đơn hàng:
                 </Text>
                 <Text
@@ -634,10 +787,10 @@ const OrderDetail = ({ navigation, route }) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{ fontSize: 20, fontFamily: 'Roboto', color: 'black' }}>
+                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
                   Trạng thái
                 </Text>
-                <Text style={{ fontSize: 20, fontFamily: 'Roboto' }}>
+                <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
                   {item.paymentStatus === 0
                     ? 'Chưa thanh toán'
                     : 'Đã thanh toán'}
@@ -654,10 +807,10 @@ const OrderDetail = ({ navigation, route }) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{ fontSize: 20, fontFamily: 'Roboto', color: 'black' }}>
+                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
                   Phương thức
                 </Text>
-                <Text style={{ fontSize: 20, fontFamily: 'Roboto' }}>
+                <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
                   {item.paymentMethod === 0 ? 'COD' : 'VN Pay'}
                 </Text>
               </View>
@@ -713,7 +866,7 @@ const OrderDetail = ({ navigation, route }) => {
                     </Text>
                   </View>
                   <FlatList
-                    style={{ maxHeight: 170 }}
+                    style={{maxHeight: 170}}
                     data={consolidationAreaList}
                     renderItem={data => (
                       <TouchableOpacity
@@ -736,7 +889,7 @@ const OrderDetail = ({ navigation, route }) => {
                           }}>
                           <Image
                             resizeMode="contain"
-                            style={{ width: 20, height: 20 }}
+                            style={{width: 20, height: 20}}
                             source={icons.location}
                             tintColor={
                               data.item.id === selectedConsolidationAreaId
@@ -923,31 +1076,39 @@ const OrderDetail = ({ navigation, route }) => {
             marginTop: 20,
             elevation: 10,
           }}>
-          <View style={{width: '100%', flexDirection: 'row', gap: 10, justifyContent: 'center'}}>
-            <TouchableOpacity
-              onPress={() => {
-                setLoading(true);
-                setConsolidationAreaList([]);
-                getConsolidationArea(item.pickupPoint.id);
-              }}
-              style={{
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: COLORS.primary,
-                paddingVertical: 10,
-                width: '45%',
-                borderRadius: 30,
-              }}>
-              <Text
+          <View
+            style={{
+              width: '100%',
+              flexDirection: 'row',
+              gap: 10,
+              justifyContent: 'center',
+            }}>
+            {!isFromOrderGroup && (
+              <TouchableOpacity
+                onPress={() => {
+                  setLoading(true);
+                  setConsolidationAreaList([]);
+                  getConsolidationArea(item.pickupPoint.id);
+                }}
                 style={{
-                  fontSize: 18,
-                  color: 'white',
-                  fontFamily: 'Roboto',
-                  fontWeight: 'bold',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: COLORS.primary,
+                  paddingVertical: 10,
+                  width: '45%',
+                  borderRadius: 30,
                 }}>
-                Nhận đóng gói
-              </Text>
-            </TouchableOpacity>
+                <Text
+                  style={{
+                    fontSize: 18,
+                    color: 'white',
+                    fontFamily: 'Roboto',
+                    fontWeight: 'bold',
+                  }}>
+                  Nhận đóng gói {isFromOrderGroup}
+                </Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               onPress={() => {
                 setVisibleCancel(true);
@@ -957,7 +1118,7 @@ const OrderDetail = ({ navigation, route }) => {
                 justifyContent: 'center',
                 backgroundColor: 'grey',
                 paddingVertical: 10,
-                width: '45%',
+                width: !isFromOrderGroup ? '45%' : '95%',
                 borderRadius: 30,
               }}>
               <Text
@@ -991,29 +1152,37 @@ const OrderDetail = ({ navigation, route }) => {
             marginTop: 20,
             elevation: 10,
           }}>
-          <View style={{ width: '100%', flexDirection: 'row', gap: 10, justifyContent: 'center' }}>
-            <TouchableOpacity
-              onPress={() => {
-                setVisible(true);
-              }}
-              style={{
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: COLORS.primary,
-                paddingVertical: 10,
-                width: '47%',
-                borderRadius: 30,
-              }}>
-              <Text
+          <View
+            style={{
+              width: '100%',
+              flexDirection: 'row',
+              gap: 10,
+              justifyContent: 'center',
+            }}>
+            {!isFromOrderGroup && (
+              <TouchableOpacity
+                onPress={() => {
+                  setVisible(true);
+                }}
                 style={{
-                  fontSize: 18,
-                  color: 'white',
-                  fontFamily: 'Roboto',
-                  fontWeight: 'bold',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: COLORS.primary,
+                  paddingVertical: 10,
+                  width: '47%',
+                  borderRadius: 30,
                 }}>
-                Hoàn thành đóng gói
-              </Text>
-            </TouchableOpacity>
+                <Text
+                  style={{
+                    fontSize: 18,
+                    color: 'white',
+                    fontFamily: 'Roboto',
+                    fontWeight: 'bold',
+                  }}>
+                  Hoàn thành đóng gói
+                </Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               onPress={() => {
                 setVisibleCancel(true);
@@ -1023,7 +1192,7 @@ const OrderDetail = ({ navigation, route }) => {
                 justifyContent: 'center',
                 backgroundColor: 'grey',
                 paddingVertical: 10,
-                width: '45%',
+                width: !isFromOrderGroup ? '45%' : '95%',
                 borderRadius: 30,
               }}>
               <Text

@@ -26,6 +26,7 @@ import {API} from '../constants/api';
 import {useFocusEffect} from '@react-navigation/native';
 import LoadingScreen from '../components/LoadingScreen';
 import Toast from 'react-native-toast-message';
+import database from '@react-native-firebase/database';
 
 const Login = ({navigation}) => {
   const [password, setPassword] = useState('');
@@ -40,6 +41,25 @@ const Login = ({navigation}) => {
   // const [user, setUser] = useState();
   // const [tokenId, setTokenId] = useState('');
   // const [idTokenResultPayload, setIdTokenResultPayload] = useState('');
+
+  // system status check
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+          } else {
+            // setSystemStatus(snapshot.val());
+          }
+        });
+    }, []),
+  );
 
   const onAuthStateChange = async userInfo => {
     setLoading(true);
@@ -119,12 +139,16 @@ const Login = ({navigation}) => {
             'userInfo',
             JSON.stringify(userInfoResult),
           );
+          console.log('success');
           // Alert.alert(
           //   'Login thanh cong, da save user. Redirect qua screen nao do di',
           // );
           setLoading(false);
           showToastSuccess('Đăng nhập thành công');
-          navigation.goBack();
+          navigation.reset({
+            index: 0,
+            routes: [{name: 'Start'}],
+          });
         }
       }
 
@@ -193,7 +217,10 @@ const Login = ({navigation}) => {
           //   'Login thanh cong, da save user. Redirect qua screen nao do di',
           // );
           showToastSuccess('Đăng nhập thành công');
-          navigation.goBack();
+          navigation.reset({
+            index: 0,
+            routes: [{name: 'Start'}],
+          });
         }
       }
 

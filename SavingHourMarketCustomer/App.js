@@ -59,6 +59,7 @@ import {COLORS} from './constants/theme';
 import OrderFeedback from './screens/OrderFeedback';
 import FeedbackList from './screens/FeedbackList';
 import RemotePushController from './src/services/RemotePushController';
+import StartScreen from './screens/StartScreen';
 
 const Stack = createStackNavigator();
 export default function App() {
@@ -153,7 +154,8 @@ export default function App() {
           screenOptions={{
             headerShown: false,
           }}
-          initialRouteName={'Start'}>
+          initialRouteName={'Initial'}>
+          <Stack.Screen name="Initial" component={StartScreen} />
           <Stack.Screen name="Start" component={Tabs} />
           <Stack.Screen name="VNPayTest" component={VNPayTest} />
           <Stack.Screen name="Login" component={Login} />

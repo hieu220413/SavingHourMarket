@@ -11,6 +11,7 @@ import Geolocation from '@react-native-community/geolocation';
 import GetLocation from 'react-native-get-location';
 import {API} from '../constants/api';
 import LoadingScreen from '../components/LoadingScreen';
+import database from '@react-native-firebase/database';
 
 const SelectPickupPoint = ({navigation, route}) => {
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -32,6 +33,24 @@ const SelectPickupPoint = ({navigation, route}) => {
     long: 106.80963049400003,
     lat: 10.841264169000063,
   });
+
+  useFocusEffect(
+    useCallback(() => {
+      database().ref(`systemStatus`).off('value');
+      database()
+        .ref('systemStatus')
+        .on('value', async snapshot => {
+          if (snapshot.val() === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Initial'}],
+            });
+          } else {
+            // setSystemStatus(snapshot.val());
+          }
+        });
+    }, []),
+  );
 
   useFocusEffect(
     useCallback(() => {

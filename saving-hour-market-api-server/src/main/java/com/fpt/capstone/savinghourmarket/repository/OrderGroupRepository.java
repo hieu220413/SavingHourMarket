@@ -29,7 +29,7 @@ public interface OrderGroupRepository extends JpaRepository<OrderGroup, UUID> {
             "OR " +
             "((:getOldOrderGroup = FALSE) AND (og.deliverDate > CURRENT_DATE)) " +
             "OR " +
-            "((:getOldOrderGroup = TRUE) AND (og.deliverDate < CURRENT_DATE)))) " +
+            "((:getOldOrderGroup = TRUE)))) " +
             "AND " +
             "(((:pickupPointId IS NULL) AND (og.pickupPoint IN :pickupPointList)) OR (og.pickupPoint.id = :pickupPointId)) " +
             "AND " +
@@ -56,18 +56,16 @@ public interface OrderGroupRepository extends JpaRepository<OrderGroup, UUID> {
             "OR " +
             "((:getOldOrderGroup = FALSE) AND (og.deliverDate >= CURRENT_DATE)) " +
             "OR " +
-            "((:getOldOrderGroup = TRUE) AND (og.deliverDate < CURRENT_DATE)))) " +
+            "((:getOldOrderGroup = TRUE)))) " +
             "AND " +
             "(og.orderList IS NOT EMPTY) " +
-            "AND " +
-            "((:status IS NULL) OR (EXISTS (SELECT 1 FROM Order o WHERE o IN elements(og.orderList) AND o.status = :status))) " +
             "AND " +
             "((:pickupPointId IS NULL) OR (og.pickupPoint.id = :pickupPointId)) " +
             "AND " +
             "((:delivererId IS NULL) OR (og.deliverer.id = :delivererId)) " +
             "AND " +
             "((:deliveryDate IS NULL) OR (og.deliverDate = :deliveryDate))")
-    Page<OrderGroup> findByTimeFrameOrPickupPointOrDeliverDate(Integer status,
+    Page<OrderGroup> findByTimeFrameOrPickupPointOrDeliverDate(
                                                                Boolean getOldOrderGroup,
                                                                UUID timeFrameId,
                                                                UUID pickupPointId,
