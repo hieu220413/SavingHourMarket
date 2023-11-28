@@ -15,6 +15,7 @@ import {
   NativeEventEmitter,
   Alert,
   AppState,
+  Linking,
 } from 'react-native';
 import {ScrollView, TextInput} from 'react-native-gesture-handler';
 import {icons} from '../constants';
@@ -1795,7 +1796,19 @@ const Payment = ({navigation, route}) => {
                   color: 'black',
                 }}>
                 Nhấn "Đặt hàng" đồng nghĩa với việc bạn đồng ý tuân theo{' '}
-                <Text style={{color: 'blue'}}>Điều khoản của chúng tôi</Text>
+                <Text
+                  onPress={() =>
+                    Linking.openURL(
+                      'https://main--saving-hour-market-chinhsach.netlify.app/',
+                    )
+                  }
+                  style={{
+                    color: 'blue',
+                    fontSize: 17,
+                    fontFamily: FONTS.fontFamily,
+                  }}>
+                  Điều khoản của chúng tôi
+                </Text>
               </Text>
             </View>
           </View>

@@ -5,11 +5,9 @@ import {NavigationContainer} from '@react-navigation/native';
 import 'react-native-gesture-handler';
 import {Alert} from 'react-native';
 import Tabs from './navigation/tabs';
-import Discount from './screens/Discount';
-import Orders from './screens/Orders';
+
 import Cart from './screens/Cart';
-import Profile from './screens/Profile';
-import VNPayTest from './screens/VNPayTest';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EditProfile from './screens/EditProfile';
 import Login from './screens/Login';
