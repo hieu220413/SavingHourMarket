@@ -103,7 +103,8 @@ public class OrderServiceImpl implements OrderService {
     private String goongDistanceMatrixUrl;
 
     @Override
-    public OrderGroupPageResponse fetchOrderGroups(OrderStatus status,
+    public OrderGroupPageResponse fetchOrderGroups(String staffEmail,
+                                                   OrderStatus status,
                                                    SortType deliverDateSortType,
                                                    LocalDate deliverDate,
                                                    Boolean getOldOrderGroup,
@@ -111,7 +112,7 @@ public class OrderServiceImpl implements OrderService {
                                                    UUID pickupPointId,
                                                    UUID delivererId,
                                                    Integer page,
-                                                   Integer size) {
+                                                   Integer size) throws ResourceNotFoundException {
         Sort sortable = null;
 
         if (deliverDateSortType != null) {
@@ -127,6 +128,9 @@ public class OrderServiceImpl implements OrderService {
         } else {
             pageableWithSort = PageRequest.of(page, size);
         }
+        Staff staff = staffRepository.findByEmail(staffEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Nhân viên không tìm thấy với email " + staffEmail));
+        List<Staff> staffManaged = staff.getDeliverStaffList();
 
         Page<OrderGroup> result = orderGroupRepository.findByTimeFrameOrPickupPointOrDeliverDate(
                 getOldOrderGroup,
@@ -146,7 +150,10 @@ public class OrderServiceImpl implements OrderService {
                         .stream()
                         .filter(order -> (order.getStatus().equals(status.ordinal()) && ((order.getPaymentMethod() == 1 && order.getPaymentStatus() == 1) || order.getPaymentMethod() == 0))
                                 &&
-                                (order.getStatus() > OrderStatus.PROCESSING.ordinal() || (order.getStatus() == OrderStatus.PROCESSING.ordinal() && LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS))))
+                                ((order.getStatus() > OrderStatus.PROCESSING.ordinal() && order.getStatus() <= OrderStatus.PACKAGED.ordinal())
+                                        || (order.getStatus() > OrderStatus.PACKAGED.ordinal() && staff.getRole().equals(StaffRole.STAFF_DLV_0.toString()))
+                                        || ((order.getStatus() > OrderStatus.PACKAGED.ordinal() && staff.getRole().equals(StaffRole.STAFF_DLV_1.toString())) && staffManaged.stream().anyMatch(staff1 -> staff1.equals(order.getDeliverer())))
+                                        || (order.getStatus() == OrderStatus.PROCESSING.ordinal() && LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS))))
                         )
                         .toList();
                 orderGroup.setOrderList(orderFilter);
@@ -261,7 +268,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderBatch> fetchOrderBatches(Integer status, Boolean getOldOrderBatch, SortType deliverDateSortType, LocalDate deliveryDate, UUID delivererID) {
+    public List<OrderBatch> fetchOrderBatches(String staffEmail, Integer status, Boolean getOldOrderBatch, SortType deliverDateSortType, LocalDate deliveryDate, UUID delivererID) throws ResourceNotFoundException {
         Sort sortable = null;
 
         if (deliverDateSortType != null) {
@@ -271,6 +278,9 @@ public class OrderServiceImpl implements OrderService {
                 sortable = Sort.by("deliverDate").descending();
             }
         }
+        Staff staff = staffRepository.findByEmail(staffEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Nhân viên không tìm thấy với email " + staffEmail));
+        List<Staff> staffManaged = staff.getDeliverStaffList();
         List<OrderBatch> orderBatches = orderBatchRepository.findByDistrictOrDeliverDate(
                 getOldOrderBatch,
                 deliveryDate,
@@ -278,7 +288,14 @@ public class OrderServiceImpl implements OrderService {
                 sortable);
         if (status != null) {
             orderBatches.forEach(orderBatch -> {
-                List<Order> orderFilter = orderBatch.getOrderList().stream().filter(order -> order.getStatus().equals(status)).toList();
+                List<Order> orderFilter = orderBatch.getOrderList()
+                        .stream()
+                        .filter(order -> order.getStatus().equals(status)
+                                &&
+                                ((order.getStatus() < OrderStatus.DELIVERING.ordinal()) || (order.getStatus() > OrderStatus.PACKAGED.ordinal() && staff.getRole().equals(StaffRole.STAFF_DLV_0.toString()))
+                                        || ((order.getStatus() > OrderStatus.PACKAGED.ordinal() && staff.getRole().equals(StaffRole.STAFF_DLV_1.toString())) && staffManaged.stream().anyMatch(staff1 -> staff1.equals(order.getDeliverer())))
+                                )
+                        ).toList();
                 orderBatch.setOrderList(orderFilter);
             });
             return orderBatches.stream().filter(orderBatch -> orderBatch.getOrderList().size() > 0).toList();
@@ -390,7 +407,8 @@ public class OrderServiceImpl implements OrderService {
         Staff staff = staffRepository.findByEmail(staffEmail).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với email: " + staffEmail));
         for (Order order : orderGroup.getOrderList().stream().filter(order -> order.getStatus() == 1).toList()) {
             if (orderGroup.getDeliverer() != null) {
-                order.setPackager(orderGroup.getDeliverer());
+                order.setDeliverer(orderGroup.getDeliverer());
+//                order.setPackager(staff);
                 order.setStatus(OrderStatus.DELIVERING.ordinal());
                 FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được đóng gói!", order.getCustomer().getId().toString());
             } else {
@@ -436,7 +454,7 @@ public class OrderServiceImpl implements OrderService {
                 return "Đơn hàng này chưa tới ngày giao!";
             } else if (!order.getDeliverer().equals(staff)) {
                 return "Nhân viên này không trùng với nhân viên được giao cho đơn hàng này!";
-            } else if( order.getStatus() != OrderStatus.DELIVERING.ordinal()){
+            } else if (order.getStatus() != OrderStatus.DELIVERING.ordinal()) {
                 return "Đơn hàng này đã được !";
             }
         }
@@ -517,7 +535,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<Order> fetchOrdersForStaff(String totalPriceSortType,
+    public List<Order> fetchOrdersForStaff(String staffEmail,
+                                           String totalPriceSortType,
                                            String createdTimeSortType,
                                            String deliveryDateSortType,
                                            Boolean getOldOrder,
@@ -529,9 +548,13 @@ public class OrderServiceImpl implements OrderService {
                                            Boolean isGrouped,
                                            Boolean isBatched,
                                            int page,
-                                           int limit) {
+                                           int limit) throws ResourceNotFoundException {
         Configuration configuration = configurationRepository.findAll().get(0);
+        Staff staff = staffRepository.findByEmail(staffEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Nhân viên không tìm thấy với email " + staffEmail));
+        List<Staff> staffManaged = staff.getDeliverStaffList();
         return repository.findOrderForStaff(
+                        staffManaged,
                         getOldOrder,
                         deliveryDate,
                         packagerId,

@@ -1,4 +1,11 @@
 {
   "name": "SavingHourMarketStaff",
-  "displayName": "SavingHourMarketStaff"
+  "displayName": "SavingHourMarketStaff",
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "945da955-06b4-4d30-9e68-804e67a67ff1"
+      }
+    }
+  }
 }

@@ -72,10 +72,11 @@ public class OrderController {
                                                          @RequestParam(required = false) Boolean isGrouped,
                                                          @RequestParam(required = false) Boolean isBatched,
                                                          @RequestParam(defaultValue = "0") Integer page,
-                                                         @RequestParam(defaultValue = "9999") Integer size) throws FirebaseAuthException {
+                                                         @RequestParam(defaultValue = "9999") Integer size) throws FirebaseAuthException, ResourceNotFoundException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
-        Utils.validateIdToken(idToken, firebaseAuth);
+        String staffEmail = Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrdersForStaff(
+                staffEmail,
                 totalPriceSortType == null ? null : totalPriceSortType.name(),
                 createdTimeSortType == null ? null : createdTimeSortType.name(),
                 deliveryDateSortType == null ? null : deliveryDateSortType.name(),
@@ -150,10 +151,10 @@ public class OrderController {
                                                                         @RequestParam(required = false) UUID pickupPointId,
                                                                         @RequestParam(required = false) UUID delivererId,
                                                                         @RequestParam(defaultValue = "0") Integer page,
-                                                                        @RequestParam(defaultValue = "9999") Integer size) throws FirebaseAuthException {
+                                                                        @RequestParam(defaultValue = "9999") Integer size) throws FirebaseAuthException, ResourceNotFoundException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
-        Utils.validateIdToken(idToken, firebaseAuth);
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderGroups(status, deliverDateSortType, deliverDate, getOldOrderGroup, timeFrameId, pickupPointId, delivererId, page, size));
+        String staffEmail = Utils.validateIdToken(idToken, firebaseAuth);
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderGroups(staffEmail, status, deliverDateSortType, deliverDate, getOldOrderGroup, timeFrameId, pickupPointId, delivererId, page, size));
     }
 
     @GetMapping("/staff/getOrderBatch")
@@ -163,10 +164,11 @@ public class OrderController {
                                                                   @RequestParam(required = false) OrderStatus status,
                                                                   @RequestParam(required = false) SortType deliverDateSortType,
                                                                   @RequestParam(required = false) LocalDate deliveryDate,
-                                                                  @RequestParam(required = false) UUID delivererId) throws NoSuchOrderException, FirebaseAuthException {
+                                                                  @RequestParam(required = false) UUID delivererId) throws NoSuchOrderException, FirebaseAuthException, ResourceNotFoundException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderBatches(status != null ? status.ordinal(): null,getOldOrderBatch, deliverDateSortType, deliveryDate, delivererId));
+        String staffEmail = Utils.validateIdToken(idToken, firebaseAuth);
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderBatches(staffEmail, status != null ? status.ordinal() : null, getOldOrderBatch, deliverDateSortType, deliveryDate, delivererId));
     }
 
     @GetMapping("/getOrderDetail/{id}")
