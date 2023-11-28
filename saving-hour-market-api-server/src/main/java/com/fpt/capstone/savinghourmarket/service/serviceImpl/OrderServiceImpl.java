@@ -406,7 +406,8 @@ public class OrderServiceImpl implements OrderService {
         Staff staff = staffRepository.findByEmail(staffEmail).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với email: " + staffEmail));
         for (Order order : orderGroup.getOrderList().stream().filter(order -> order.getStatus() == 1).toList()) {
             if (orderGroup.getDeliverer() != null) {
-                order.setPackager(orderGroup.getDeliverer());
+                order.setDeliverer(orderGroup.getDeliverer());
+//                order.setPackager(staff);
                 order.setStatus(OrderStatus.DELIVERING.ordinal());
                 FirebaseService.sendPushNotification("SHM", "Đơn hàng đã được đóng gói!", order.getCustomer().getId().toString());
             } else {
