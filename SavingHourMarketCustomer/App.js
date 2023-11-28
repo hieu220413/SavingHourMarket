@@ -157,7 +157,6 @@ export default function App() {
           initialRouteName={'Initial'}>
           <Stack.Screen name="Initial" component={StartScreen} />
           <Stack.Screen name="Start" component={Tabs} />
-          <Stack.Screen name="VNPayTest" component={VNPayTest} />
           <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="Cart" component={Cart} />
           <Stack.Screen name="OrderDetail" component={OrderDetail} />
