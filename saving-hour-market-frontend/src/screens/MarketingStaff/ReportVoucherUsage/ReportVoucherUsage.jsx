@@ -25,14 +25,6 @@ import { auth } from "../../../firebase/firebase.config";
 import { useAuthState } from "react-firebase-hooks/auth";
 import LoadingScreen from "../../../components/LoadingScreen/LoadingScreen";
 const ReportVoucherUsage = () => {
-  const [initial, setInitial] = useState({
-    startIndex: 0,
-    endIndex: 2,
-    timerId: 0,
-    left: 0,
-    right: 0,
-    data: [],
-  });
   const [monthData, setMonthData] = useState([]);
   const thisYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(thisYear);

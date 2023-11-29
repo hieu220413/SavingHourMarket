@@ -58,7 +58,7 @@ const ProductDetails = ({navigation, route}) => {
   const bottomSheetRef = useRef(null);
 
   // variables
-  const snapPoints = useMemo(() => ['70%'], []);
+  const snapPoints = useMemo(() => ['65%'], []);
 
   const handlePresentBottomSheet = useCallback(() => {
     // bottomSheetRef.current?.present();
@@ -82,6 +82,23 @@ const ProductDetails = ({navigation, route}) => {
           }
         });
     }, []),
+  );
+
+  const sheetStyle = useMemo(
+    () => ({
+      shadowColor: '#000000',
+      borderTopStartRadius: 24,
+      borderTopEndRadius: 24,
+      shadowOffset: {
+        width: 0,
+        height: 12,
+      },
+      shadowOpacity: 0.75,
+      shadowRadius: 16.0,
+
+      elevation: 24,
+    }),
+    [],
   );
 
   const showToast = () => {
@@ -271,7 +288,10 @@ const ProductDetails = ({navigation, route}) => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView>
+      <ScrollView
+        contentContainerStyle={{
+          paddingBottom: 150,
+        }}>
         <Swiper
           style={{
             height: 250,
@@ -286,7 +306,6 @@ const ProductDetails = ({navigation, route}) => {
                   height: '100%',
                   marginHorizontal: 30,
                   borderRadius: 20,
-                  backgroundColor: 'green',
                 }}
                 resizeMode="stretch"
                 source={{
@@ -366,90 +385,99 @@ const ProductDetails = ({navigation, route}) => {
             {product.description}
           </Text>
         </View>
-
-        <View
-          style={{
-            flex: 1,
-            flexDirection: 'row',
-            backgroundColor: '#F5F5F5',
-            marginHorizontal: 20,
-            paddingHorizontal: 10,
-            paddingTop: '8%',
-            paddingBottom: '22%',
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}>
-          <View style={{flexDirection: 'row'}}>
-            <Text
-              style={{
-                fontSize: 24,
-                lineHeight: 30,
-                color: COLORS.secondary,
-                fontWeight: 700,
-                fontFamily: FONTS.fontFamily,
-              }}>
-              {product.nearestExpiredBatch.price.toLocaleString('vi-VN', {
-                currency: 'VND',
-              })}
-            </Text>
-            <Text
-              style={{
-                fontSize: 16,
-                lineHeight: 18,
-                color: COLORS.secondary,
-                fontWeight: 700,
-                fontFamily: FONTS.fontFamily,
-                paddingRight: '10%',
-              }}>
-              ₫
-            </Text>
-          </View>
-          <TouchableOpacity
-            onPress={() => {
-              setIsAddToCart(true);
-              handlePresentBottomSheet();
-            }}>
-            <Text
-              style={{
-                paddingVertical: 8,
-                paddingHorizontal: '8%',
-                backgroundColor: '#ffffff',
-                borderRadius: 20,
-                fontWeight: 700,
-                textAlign: 'center',
-                color: COLORS.primary,
-                fontSize: 18,
-                fontFamily: FONTS.fontFamily,
-                borderColor: COLORS.primary,
-                borderWidth: 1,
-              }}>
-              Thêm
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setIsAddToCart(false);
-              handlePresentBottomSheet();
-            }}>
-            <Text
-              style={{
-                paddingVertical: 10,
-                paddingHorizontal: '10%',
-                backgroundColor: COLORS.primary,
-                borderRadius: 20,
-                fontWeight: 700,
-                textAlign: 'center',
-                color: '#ffffff',
-                fontSize: 18,
-                fontFamily: FONTS.fontFamily,
-              }}>
-              Mua
-            </Text>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          paddingBottom: 60,
+          flexDirection: 'row',
+          backgroundColor: '#F5F5F5',
+          marginHorizontal: 20,
+          paddingHorizontal: 20,
+          height: 180,
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          shadowColor: '#000',
+          shadowOffset: {
+            width: 0,
+            height: 3,
+          },
+          shadowOpacity: 0.27,
+          shadowRadius: 4.65,
+          elevation: 2,
+        }}>
+        <View style={{flexDirection: 'row'}}>
+          <Text
+            style={{
+              fontSize: 24,
+              lineHeight: 30,
+              color: COLORS.secondary,
+              fontWeight: 700,
+              fontFamily: FONTS.fontFamily,
+            }}>
+            {product.nearestExpiredBatch.price.toLocaleString('vi-VN', {
+              currency: 'VND',
+            })}
+          </Text>
+          <Text
+            style={{
+              fontSize: 16,
+              lineHeight: 18,
+              color: COLORS.secondary,
+              fontWeight: 700,
+              fontFamily: FONTS.fontFamily,
+              paddingRight: '10%',
+            }}>
+            ₫
+          </Text>
+        </View>
+        <TouchableOpacity
+          onPress={() => {
+            setIsAddToCart(true);
+            handlePresentBottomSheet();
+          }}>
+          <Text
+            style={{
+              paddingVertical: 8,
+              paddingHorizontal: '8%',
+              backgroundColor: '#ffffff',
+              borderRadius: 20,
+              fontWeight: 700,
+              textAlign: 'center',
+              color: COLORS.primary,
+              fontSize: 18,
+              fontFamily: FONTS.fontFamily,
+              borderColor: COLORS.primary,
+              borderWidth: 1,
+            }}>
+            Thêm
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            setIsAddToCart(false);
+            handlePresentBottomSheet();
+          }}>
+          <Text
+            style={{
+              paddingVertical: 10,
+              paddingHorizontal: '10%',
+              backgroundColor: COLORS.primary,
+              borderRadius: 20,
+              fontWeight: 700,
+              textAlign: 'center',
+              color: '#ffffff',
+              fontSize: 18,
+              fontFamily: FONTS.fontFamily,
+              marginLeft: 5,
+            }}>
+            Mua
+          </Text>
+        </TouchableOpacity>
+      </View>
       {/* auth modal */}
       <Modal
         width={0.8}
@@ -535,8 +563,12 @@ const ProductDetails = ({navigation, route}) => {
           ref={bottomSheetRef}
           enableOverDrag={false}
           index={index}
+          style={sheetStyle}
           snapPoints={snapPoints}>
-          <View style={{padding: 3}}>
+          <View
+            style={{
+              padding: 3,
+            }}>
             <View
               style={{
                 flexDirection: 'row',
@@ -559,6 +591,15 @@ const ProductDetails = ({navigation, route}) => {
               <View style={{flex: 6, justifyContent: 'space-between'}}>
                 <View></View>
                 <View>
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      color: 'black',
+                      fontWeight: 'bold',
+                      fontFamily: FONTS.fontFamily,
+                    }}>
+                    {product.name}
+                  </Text>
                   <Text
                     style={{
                       fontSize: 16,

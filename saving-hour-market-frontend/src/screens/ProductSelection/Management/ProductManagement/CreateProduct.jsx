@@ -107,6 +107,7 @@ const CreateProduct = ({
         {
           quantity: 0,
           supermarketAddress: null,
+          supermarketAddressId: null,
           isActiveDropdownSupermarketStore: false,
           errorQuantity: "",
           errorStore: "",
@@ -508,7 +509,7 @@ const CreateProduct = ({
         (address) => {
           return {
             quantity: address.quantity,
-            supermarketAddress: address.supermarketAddressId,
+            supermarketAddressId: address.supermarketAddressId,
           };
         }
       );
@@ -1241,6 +1242,9 @@ const CreateProduct = ({
             </h4>
             <div>
               <textarea
+                style={{
+                  height: "200px",
+                }}
                 className="modal__container-body-inputcontrol-input textareaFocus"
                 placeholder="Nhập thông tin sản phẩm"
                 value={description}
@@ -1371,7 +1375,7 @@ const CreateProduct = ({
                           expiredDate: e.target.value,
                           error: {
                             ...productBatchs[index].error,
-                            expiredDate: `Ngày hết hạn bạn nhập đã bé hơn giới hạn số ngày trước HSD`,
+                            expiredDate: `Ngày hết hạn bạn nhập đã bé hơn giới hạn số ngày trước HSD.\n Số ngày tổi thiểu của ${subCateName} là ${allowableThresholdDate}`,
                           },
                         };
                       } else {
@@ -1389,7 +1393,11 @@ const CreateProduct = ({
                   />
                   {item.error.expiredDate && (
                     <p
-                      style={{ fontSize: "14px", marginBottom: "-10px" }}
+                      style={{
+                        fontSize: "14px",
+                        marginBottom: "-10px",
+                        maxWidth: "400px",
+                      }}
                       className="text-danger"
                     >
                       {item.error.expiredDate}
@@ -1500,6 +1508,8 @@ const CreateProduct = ({
                                                 ...newAddress,
                                                 supermarketAddress:
                                                   supermarketItem,
+                                                supermarketAddressId:
+                                                  supermarketItem.id,
                                                 isActiveDropdownSupermarketStore:
                                                   !newAddress.isActiveDropdownSupermarketStore,
                                                 errorStore: "",
@@ -1548,6 +1558,7 @@ const CreateProduct = ({
                                   ...productBatchs[index].productBatchAddresses,
                                   {
                                     quantity: 0,
+                                    supermarketAddressId: null,
                                     supermarketAddress: null,
                                     errorQuantity: "",
                                     errorStore: "",

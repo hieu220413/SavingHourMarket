@@ -28,6 +28,7 @@ import Modal, {
 } from 'react-native-modals';
 import Empty from '../assets/image/search-empty.png';
 import database from '@react-native-firebase/database';
+import Swiper from 'react-native-swiper';
 
 const Home = ({ navigation }) => {
   const [categories, setCategories] = useState([]);
@@ -47,6 +48,7 @@ const Home = ({ navigation }) => {
     longitude: 106.83102962168277,
     latitude: 10.845020092805793,
   });
+  const [imageDiscountForSlider, setImageDiscountForSlider] = useState([]);
 
   const showToast = () => {
     Toast.show({
@@ -144,7 +146,7 @@ const Home = ({ navigation }) => {
         .then(res => res.json())
         .then(data => {
           // console.log("san pham", data.productList[0].supermarket);
-          console.log(data);
+          // console.log(data);
           setProductsByCategory(data.productList);
           setPage(1);
           setTotalPage(data.totalPage);
@@ -161,6 +163,11 @@ const Home = ({ navigation }) => {
         .then(res => res.json())
         .then(data => {
           setDiscountsByCategory(data);
+          const imagesList = [];
+          data.map((item) => {
+            imagesList.push(item.imageUrl);
+          });
+          setImageDiscountForSlider(imagesList);
           setLoading(false);
         })
         .catch(err => {
@@ -578,7 +585,32 @@ const Home = ({ navigation }) => {
                 </Text>
               </TouchableOpacity>
             </View>
-            <DiscountRow discounts={discountsByCategory} />
+            {/* <DiscountRow discounts={discountsByCategory} /> */}
+            <Swiper
+              style={{
+                height: 200,
+              }}
+              activeDotColor="#37A65B"
+              showsButtons={false}
+              autoplay={true}
+              autoplayTimeout={5}
+            >
+              {imageDiscountForSlider.map((item, index) => (
+                <Image
+                  style={{
+                    width: '85%',
+                    height: '100%',
+                    marginHorizontal: 30,
+                    borderRadius: 20,
+                  }}
+                  key={index}
+                  resizeMode="stretch"
+                  source={{
+                    uri: item,
+                  }}
+                />
+              ))}
+            </Swiper>
           </>
         ) : (
           <></>
@@ -730,7 +762,7 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.27,
     shadowRadius: 4.65,
-    elevation: 2
+    elevation: 2,
 
   },
   itemImage: {

@@ -9,19 +9,19 @@ import {
   StyleSheet,
   Modal,
 } from 'react-native';
-import React, {useCallback, useState} from 'react';
-import {icons} from '../constants';
-import {COLORS, FONTS} from '../constants/theme';
+import React, { useCallback, useState } from 'react';
+import { icons } from '../constants';
+import { COLORS, FONTS } from '../constants/theme';
 import dayjs from 'dayjs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useFocusEffect} from '@react-navigation/native';
-import {API} from '../constants/api';
+import { useFocusEffect } from '@react-navigation/native';
+import { API } from '../constants/api';
 import LoadingScreen from '../components/LoadingScreen';
 import Toast from 'react-native-toast-message';
 import Empty from '../assets/image/search-empty.png';
 import database from '@react-native-firebase/database';
 
-const ProductsBySubCategories = ({navigation, route}) => {
+const ProductsBySubCategories = ({ navigation, route }) => {
   const subCategoryId = route.params.subCategory.id;
   const [products, setProducts] = useState([]);
   const [cartList, setCartList] = useState([]);
@@ -69,7 +69,7 @@ const ProductsBySubCategories = ({navigation, route}) => {
           if (snapshot.val() === 0) {
             navigation.reset({
               index: 0,
-              routes: [{name: 'Initial'}],
+              routes: [{ name: 'Initial' }],
             });
           } else {
             // setSystemStatus(snapshot.val());
@@ -96,10 +96,8 @@ const ProductsBySubCategories = ({navigation, route}) => {
           const value = await AsyncStorage.getItem('PickupPoint');
           setPickupPoint(JSON.parse(value));
           fetch(
-            `${
-              API.baseURL
-            }/api/product/getProductsForCustomer?productSubCategoryId=${subCategoryId}&pickupPointId=${
-              JSON.parse(value).id
+            `${API.baseURL
+            }/api/product/getProductsForCustomer?productSubCategoryId=${subCategoryId}&pickupPointId=${JSON.parse(value).id
             }&page=0&limit=9999`,
           )
             .then(res => res.json())
@@ -153,7 +151,7 @@ const ProductsBySubCategories = ({navigation, route}) => {
         return;
       }
 
-      const cartData = {...data, isChecked: false, cartQuantity: 1};
+      const cartData = { ...data, isChecked: false, cartQuantity: 1 };
       newCartList = [...newCartList, cartData];
       setCartList(newCartList);
       await AsyncStorage.setItem(
@@ -171,14 +169,10 @@ const ProductsBySubCategories = ({navigation, route}) => {
     setLoading(true);
     if (sortItem) {
       fetch(
-        `${
-          API.baseURL
-        }/api/product/getProductsForCustomer?productSubCategoryId=${subCategoryId}&pickupPointId=${
-          pickupPoint.id
-        }&page=0&limit=10${sortItem?.id == 1 ? '&expiredSortType=ASC' : ''}${
-          sortItem?.id == 2 ? '&expiredSortType=DESC' : ''
-        }${sortItem?.id == 3 ? '&priceSort=ASC' : ''}${
-          sortItem?.id == 4 ? '&priceSort=DESC' : ''
+        `${API.baseURL
+        }/api/product/getProductsForCustomer?productSubCategoryId=${subCategoryId}&pickupPointId=${pickupPoint.id
+        }&page=0&limit=10${sortItem?.id == 1 ? '&expiredSortType=ASC' : ''}${sortItem?.id == 2 ? '&expiredSortType=DESC' : ''
+        }${sortItem?.id == 3 ? '&priceSort=ASC' : ''}${sortItem?.id == 4 ? '&priceSort=DESC' : ''
         }`,
       )
         .then(res => res.json())
@@ -230,7 +224,7 @@ const ProductsBySubCategories = ({navigation, route}) => {
       });
   };
 
-  const Item = ({data}) => {
+  const Item = ({ data }) => {
     return (
       <TouchableOpacity
         key={data.id}
@@ -281,7 +275,7 @@ const ProductsBySubCategories = ({navigation, route}) => {
               )}
             </Text>
 
-            <View style={{flexDirection: 'row'}}>
+            <View style={{ flexDirection: 'row' }}>
               <Text
                 style={{
                   maxWidth: '70%',
@@ -329,56 +323,56 @@ const ProductsBySubCategories = ({navigation, route}) => {
     );
   };
 
-  const ModalSortItem = ({item}) => {
+  const ModalSortItem = ({ item }) => {
     return (
       <TouchableOpacity
         onPress={() => {
           const newArray = selectSort.map(i => {
             if (i.id === item.id) {
               if (i.active === true) {
-                return {...i, active: false};
+                return { ...i, active: false };
               } else {
-                return {...i, active: true};
+                return { ...i, active: true };
               }
             }
-            return {...i, active: false};
+            return { ...i, active: false };
           });
           setSelectSort(newArray);
         }}
         style={
           item.active == true
             ? {
-                borderColor: COLORS.primary,
-                borderWidth: 1,
-                borderRadius: 10,
-                margin: 5,
-              }
+              borderColor: COLORS.primary,
+              borderWidth: 1,
+              borderRadius: 10,
+              margin: 5,
+            }
             : {
-                borderColor: '#c8c8c8',
-                borderWidth: 0.2,
-                borderRadius: 10,
-                margin: 5,
-              }
+              borderColor: '#c8c8c8',
+              borderWidth: 0.2,
+              borderRadius: 10,
+              margin: 5,
+            }
         }>
         <Text
           style={
             item.active == true
               ? {
-                  width: 150,
-                  paddingVertical: 10,
-                  textAlign: 'center',
-                  color: COLORS.primary,
-                  fontFamily: FONTS.fontFamily,
-                  fontSize: 12,
-                }
+                width: 150,
+                paddingVertical: 10,
+                textAlign: 'center',
+                color: COLORS.primary,
+                fontFamily: FONTS.fontFamily,
+                fontSize: 12,
+              }
               : {
-                  width: 150,
-                  paddingVertical: 10,
-                  textAlign: 'center',
-                  color: 'black',
-                  fontFamily: FONTS.fontFamily,
-                  fontSize: 12,
-                }
+                width: 150,
+                paddingVertical: 10,
+                textAlign: 'center',
+                color: 'black',
+                fontFamily: FONTS.fontFamily,
+                fontSize: 12,
+              }
           }>
           {item.name}
         </Text>
@@ -400,7 +394,7 @@ const ProductsBySubCategories = ({navigation, route}) => {
             <Image
               source={icons.leftArrow}
               resizeMode="contain"
-              style={{width: 35, height: 35, tintColor: COLORS.primary}}
+              style={{ width: 35, height: 35, tintColor: COLORS.primary }}
             />
           </TouchableOpacity>
           <Text
@@ -483,9 +477,9 @@ const ProductsBySubCategories = ({navigation, route}) => {
           ))}
         </ScrollView>
         {products.length === 0 && (
-          <View style={{alignItems: 'center'}}>
+          <View style={{ alignItems: 'center' }}>
             <Image
-              style={{width: 200, height: 200}}
+              style={{ width: 200, height: 200 }}
               resizeMode="contain"
               source={Empty}
             />
@@ -621,6 +615,14 @@ const styles = StyleSheet.create({
     marginHorizontal: '5%',
     marginBottom: 20,
     flexDirection: 'row',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.27,
+    shadowRadius: 4.65,
+    elevation: 2,
   },
   itemImage: {
     width: 130,

@@ -64,6 +64,15 @@ const SupermarketItem = ({
     )
       .then((res) => res.json())
       .then((respond) => {
+        console.log(respond);
+        if (respond.code === 403) {
+          setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
+          setError(
+            "Có sản phẩm thuộc siêu thị đang được trưng bày trong hệ thống !"
+          );
+          setLoading(false);
+          return;
+        }
         if (respond?.error) {
           setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
           setError(respond.error);
@@ -86,7 +95,6 @@ const SupermarketItem = ({
         )
           .then((res) => res.json())
           .then((data) => {
-            console.log(data);
             setSuperMarketList(data.supermarketList);
             setTotalPage(data.totalPage);
             handleCloseDelete();

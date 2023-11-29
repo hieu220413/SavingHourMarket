@@ -1,7 +1,6 @@
 package com.fpt.capstone.savinghourmarket.repository;
 
 import com.fpt.capstone.savinghourmarket.entity.Product;
-import com.fpt.capstone.savinghourmarket.entity.ProductBatch;
 import com.fpt.capstone.savinghourmarket.model.CateOderQuantityResponseBody;
 import com.fpt.capstone.savinghourmarket.model.ProductSubCateOnly;
 import com.fpt.capstone.savinghourmarket.model.SupermarketSaleReportResponseBody;
@@ -12,7 +11,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,12 +32,14 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "((:productCategoryId IS NULL) OR (p.productSubCategory.productCategory.id = :productCategoryId)) " +
             "AND " +
             "((:productSubCategoryId IS NULL) OR (p.productSubCategory.id = :productSubCategoryId)) " +
+            "AND " +
+            "((:isHiddenBatchShown = true AND pb.expiredDate < CURRENT_DATE + p.productSubCategory.allowableDisplayThreshold DAY ) OR (:isHiddenBatchShown = false AND pb.expiredDate >= CURRENT_DATE + p.productSubCategory.allowableDisplayThreshold DAY)) " +
 //            "AND " +
 //            "((:isExpiredShown IS NULL) OR (:isExpiredShown = TRUE AND pb.expiredDate < CURRENT_TIMESTAMP) OR (:isExpiredShown = FALSE AND pb.expiredDate > CURRENT_TIMESTAMP)) " +
             "AND p.status = :status")
 
 //    Page<Product> getProductsForStaff(UUID supermarketId, String name, UUID productCategoryId, UUID productSubCategoryId, Integer status, Boolean isExpiredShown, Pageable pageable);
-    Page<Product> getProductsForStaff(UUID supermarketId, String name, UUID productCategoryId, UUID productSubCategoryId, Integer status,  Pageable pageable);
+    Page<Product> getProductsForStaff(UUID supermarketId, String name, UUID productCategoryId, UUID productSubCategoryId, Integer status, boolean isHiddenBatchShown, Pageable pageable);
 
 
 //    @Query("SELECT DISTINCT p FROM Product p " +
@@ -84,7 +84,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "AND " +
             "((:productSubCategoryId IS NULL) OR (p.productSubCategory.id = :productSubCategoryId)) " +
             "AND " +
-            "pb.expiredDate > CURRENT_TIMESTAMP + p.productSubCategory.allowableDisplayThreshold DAY " +
+            "pb.expiredDate >= CURRENT_DATE + p.productSubCategory.allowableDisplayThreshold DAY " +
             "AND pb.quantity > 0" +
             "AND p.status = 1 ")
 
@@ -114,7 +114,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
               "JOIN pbsub.product psub " +
               "JOIN pbsub.supermarketAddress spa " +
               "JOIN spa.pickupPoint pp " +
-              "WHERE pbsub.expiredDate > CURRENT_TIMESTAMP + psub.productSubCategory.allowableDisplayThreshold DAY  " +
+              "WHERE pbsub.expiredDate >= CURRENT_DATE + psub.productSubCategory.allowableDisplayThreshold DAY  " +
               "AND psub.id = p.id AND pp.id = :pickupPointId" +
             ") " +
             "AND pb.quantity > 0 " +
@@ -135,7 +135,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "AND " +
             "pb.quantity > 0" +
             "AND " +
-            "pb.expiredDate > CURRENT_TIMESTAMP + p.productSubCategory.allowableDisplayThreshold DAY ")
+            "pb.expiredDate >= CURRENT_DATE + p.productSubCategory.allowableDisplayThreshold DAY ")
     List<Product> findProductWithAvailableBatch(List<UUID> productIdTargetList, UUID pickupPointId);
 
 

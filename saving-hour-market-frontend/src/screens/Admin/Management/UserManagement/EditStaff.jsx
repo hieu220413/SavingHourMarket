@@ -229,6 +229,16 @@ const EditStaff = ({
       })
         .then((respond) => respond.json())
         .then((res) => {
+          if (res.code === 403) {
+            setOpenAssignSnackbar({
+              ...openAssignSnackbar,
+              open: true,
+              severity: "error",
+              text: "Tài khoản hiện vẫn còn công việc chưa hoàn thành !",
+            });
+            setLoading(false);
+            return;
+          }
           fetch(`${API.baseURL}/api/staff/assignPickupPoint`, {
             method: "PUT",
             headers: {
@@ -294,6 +304,16 @@ const EditStaff = ({
       })
         .then((respond) => respond.json())
         .then((res) => {
+          if (res.code === 403) {
+            setOpenAssignSnackbar({
+              ...openAssignSnackbar,
+              open: true,
+              severity: "error",
+              text: "Tài khoản hiện vẫn còn công việc chưa hoàn thành !",
+            });
+            setLoading(false);
+            return;
+          }
           fetch(
             `${API.baseURL}/api/staff/getStaffForAdmin?page=${
               page - 1
@@ -364,6 +384,16 @@ const EditStaff = ({
       })
         .then((respond) => respond.json())
         .then((res) => {
+          if (res.code === 403) {
+            setOpenAssignSnackbar({
+              ...openAssignSnackbar,
+              open: true,
+              severity: "error",
+              text: "Tài khoản hiện vẫn còn công việc chưa hoàn thành !",
+            });
+            setLoading(false);
+            return;
+          }
           fetch(`${API.baseURL}/api/staff/updateDeliversForDeliverManager`, {
             method: "PUT",
             headers: {
@@ -427,6 +457,16 @@ const EditStaff = ({
       })
         .then((respond) => respond.json())
         .then((res) => {
+          if (res.code === 403) {
+            setOpenAssignSnackbar({
+              ...openAssignSnackbar,
+              open: true,
+              severity: "error",
+              text: "Tài khoản hiện vẫn còn công việc chưa hoàn thành !",
+            });
+            setLoading(false);
+            return;
+          }
           fetch(
             `${API.baseURL}/api/staff/updateDeliverManagerForDeliver?deliverId=${staff.id}&deliverManagerId=${selectedDeliverManager.id}`,
             {
@@ -986,7 +1026,7 @@ const EditStaff = ({
             <h3 className="modal__container-header-title">
               Xóa điểm giao hàng cho nhân viên
             </h3>
-            <FontAwesomeIcon onClick={handleClose} icon={faXmark} />
+            <FontAwesomeIcon onClick={handleCloseDeleteDialog} icon={faXmark} />
           </div>
           {/* ****************** */}
           {/* modal body */}

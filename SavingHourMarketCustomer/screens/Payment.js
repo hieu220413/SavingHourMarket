@@ -663,6 +663,7 @@ const Payment = ({navigation, route}) => {
         receiverName: name,
         receiverPhone: phone,
         pickupPointId: pickupPoint.id,
+        addressDeliver: pickupPoint.address,
         deliveryMethod: 'PICKUP_POINT',
         timeFrameId: timeFrame.id,
         paymentStatus: 'UNPAID',
@@ -1295,7 +1296,10 @@ const Payment = ({navigation, route}) => {
                     if (date.getTime() < minDate.getTime()) {
                       setOpen(false);
                       setValidateMessage(
-                        'Đơn hàng luôn được giao sau 2 ngày kể từ ngày đặt hàng',
+                        `Đơn hàng luôn được giao sau 2 ngày kể từ ngày đặt hàng ( ${format(
+                          minDate,
+                          'dd/MM/yyyy',
+                        )} )`,
                       );
                       setOpenValidateDialog(true);
                       return;
@@ -1303,7 +1307,10 @@ const Payment = ({navigation, route}) => {
                     if (date.getTime() > maxDate.getTime()) {
                       setOpen(false);
                       setValidateMessage(
-                        'Đơn hàng phải giao trước HSD của sản phẩm có HSD gần nhất 1 ngày',
+                        `Đơn hàng phải giao trước HSD của sản phẩm có HSD gần nhất 1 ngày ( ${format(
+                          maxDate,
+                          'dd/MM/yyyy',
+                        )} )`,
                       );
                       setOpenValidateDialog(true);
                       return;

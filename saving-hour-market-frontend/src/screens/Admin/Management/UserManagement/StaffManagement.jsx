@@ -116,7 +116,17 @@ const StaffManagement = () => {
       })
         .then((res) => res.json())
         .then((respond) => {
-          console.log(respond);
+          if (respond.code === 403) {
+            console.log("a");
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "error",
+              text: "Tài khoản hiện vẫn còn công việc chưa hoàn thành !",
+            });
+            setLoading(false);
+            return;
+          }
           if (respond?.error) {
             setOpenSnackbar({
               ...openSnackbar,
@@ -155,7 +165,6 @@ const StaffManagement = () => {
           )
             .then((res) => res.json())
             .then((respond) => {
-              console.log(respond.staffList);
               setStaffList(respond.staffList);
               setTotalPage(respond.totalPage);
               handleCloseDeleteDialog();
