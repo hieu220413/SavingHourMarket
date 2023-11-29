@@ -239,6 +239,9 @@ const SearchResult = ({ navigation, route }) => {
       (async () => {
         try {
           const value = await AsyncStorage.getItem('PickupPoint');
+          const id = value ? JSON.parse(value).id : pickupPoint.id;
+          const cartList = await AsyncStorage.getItem('CartList' + id);
+          setCartList(cartList ? JSON.parse(cartList) : []);
           setPickupPoint(JSON.parse(value));
           fetch(
             `${API.baseURL
@@ -254,17 +257,6 @@ const SearchResult = ({ navigation, route }) => {
               console.log(err);
               setLoading(false);
             });
-        } catch (err) {
-          console.log(err);
-          setLoading(false);
-        }
-      })();
-
-      (async () => {
-        try {
-          const cartList = await AsyncStorage.getItem('CartList');
-          setCartList(cartList ? JSON.parse(cartList) : []);
-          setLoading(false);
         } catch (err) {
           console.log(err);
           setLoading(false);

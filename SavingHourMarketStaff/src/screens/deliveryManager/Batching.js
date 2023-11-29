@@ -31,14 +31,14 @@ import LoadingScreen from '../../components/LoadingScreen';
 import DatePicker from 'react-native-date-picker';
 import NumericInput from 'react-native-numeric-input';
 import database from '@react-native-firebase/database';
-import { checkSystemState } from '../../common/utils';
+import {checkSystemState} from '../../common/utils';
 
 const Batching = ({navigation}) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
-        checkSystemState(navigation);
-      }, []),
+      checkSystemState(navigation);
+    }, []),
   );
 
   const [initializing, setInitializing] = useState(true);
@@ -114,7 +114,7 @@ const Batching = ({navigation}) => {
         const currentUser = await AsyncStorage.getItem('userInfo');
         // console.log(JSON.parse(currentUser));
         setCurrentUser(JSON.parse(currentUser));
-      }
+      };
       getCurrentUser();
     }, []),
   );
@@ -136,7 +136,21 @@ const Batching = ({navigation}) => {
                 },
               },
             )
-              .then(res => res.json())
+              .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                  const tokenIdCheck = await auth()
+                    .currentUser.getIdToken(true)
+                    .catch(async err => {
+                      await AsyncStorage.setItem('isDisableAccount', '1');
+                      return null;
+                    });
+                  if (!tokenIdCheck) {
+                    throw new Error();
+                  }
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.json();
+              })
               .then(response => {
                 console.log(response);
                 setOrderList(response);

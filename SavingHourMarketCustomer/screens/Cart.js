@@ -50,10 +50,8 @@ const Cart = ({navigation}) => {
               index: 0,
               routes: [{name: 'Initial'}],
             });
-         
           } else {
             // setSystemStatus(snapshot.val());
-          
           }
         });
     }, []),
@@ -135,6 +133,7 @@ const Cart = ({navigation}) => {
           productCategoryId: item.productSubCategory.productCategory.id,
           quantity: item.cartQuantity,
           idList: item.idList,
+          addToCart: true,
         };
         orderItems = [...orderItems, orderItem];
       }

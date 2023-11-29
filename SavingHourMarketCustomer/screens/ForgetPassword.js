@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useState, useCallback} from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
 import {COLORS} from '../constants/theme';
@@ -17,6 +17,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import * as Animatable from 'react-native-animatable';
 import auth from '@react-native-firebase/auth';
 import database from '@react-native-firebase/database';
+import { useFocusEffect } from '@react-navigation/native';
 
 const ForgetPassword = ({navigation}) => {
   const [email, setEmail] = useState('');
@@ -88,9 +89,9 @@ const ForgetPassword = ({navigation}) => {
             style={{flex: 1, justifyContent: 'center'}}></ImageBackground>
         </Animatable.View>
         <Animatable.View animation="fadeInRightBig" style={styles.footer}>
-          <Text style={styles.text_footer}>Forgot Password?</Text>
+          <Text style={styles.text_footer}>Quên mật khẩu?</Text>
           <Text style={[styles.text_footer, {fontSize: 18, fontWeight: '700'}]}>
-            Please enter your email address below
+            Vui lòng nhập Email bên dưới
           </Text>
           <Text style={styles.email_text}>E-MAIL</Text>
           <View style={styles.action}>
@@ -136,7 +137,7 @@ const ForgetPassword = ({navigation}) => {
               <LinearGradient
                 colors={['#66CC66', '#66CC99']}
                 style={styles.send}>
-                <Text style={[styles.textSign, {color: 'white'}]}>Send</Text>
+                <Text style={[styles.textSign, {color: 'white'}]}>Xác nhận</Text>
               </LinearGradient>
             </TouchableOpacity>
           </View>
@@ -150,7 +151,7 @@ const ForgetPassword = ({navigation}) => {
               paddingTop: '2%',
               alignSelf: 'center',
             }}>
-            Back to login
+            Quay về đăng nhập
           </Text>
         </Animatable.View>
       </View>

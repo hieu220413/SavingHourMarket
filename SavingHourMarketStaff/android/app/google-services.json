@@ -47,7 +47,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:857253936194:android:819500e83c7beb497501db",
         "android_client_info": {
-          "package_name": "com.savinghourmarketstaff"
+          "package_name": "com.savinghourmarketcustomer"
         }
       },
       "oauth_client": [
@@ -55,16 +55,77 @@
           "client_id": "857253936194-baphh53tna6lh99o402km30v74k8pvoj.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.savinghourmarketstaff",
+            "package_name": "com.savinghourmarketcustomer",
             "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "857253936194-krqnd5gtupcil9c8i5scultm4i0blpe1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.savinghourmarketcustomer",
+            "certificate_hash": "54a99debdd1defeecc3e965fff995d202205497c"
           }
         },
         {
           "client_id": "857253936194-ltit9q7c7hg2ejnti8k7uif1rmrsfm0q.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
+            "package_name": "com.savinghourmarketcustomer",
+            "certificate_hash": "2d24b110734207bacec9c61d671f103b894aa5ea"
+          }
+        },
+        {
+          "client_id": "857253936194-dmrh0nls647fpqbuou6mte9c7e4o6e6h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALrNLtSSf2gQFYkQtvQoyx4VqqMAQEgJU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "857253936194-dmrh0nls647fpqbuou6mte9c7e4o6e6h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:857253936194:android:f67656fdfae8d0dc7501db",
+        "android_client_info": {
+          "package_name": "com.savinghourmarketstaff"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "857253936194-30qd8vfkqscuf44bc7avbq6l2hsqngm4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
             "package_name": "com.savinghourmarketstaff",
             "certificate_hash": "2d24b110734207bacec9c61d671f103b894aa5ea"
+          }
+        },
+        {
+          "client_id": "857253936194-3su01nk5vet5apfm2mtmhvbkj89vbu0i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.savinghourmarketstaff",
+            "certificate_hash": "cf75d517d137b53c374c13f1dd564ba32d2ff15d"
+          }
+        },
+        {
+          "client_id": "857253936194-6fcbckgdutrv6ec9o57fci93qmfrvag6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.savinghourmarketstaff",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
           }
         },
         {

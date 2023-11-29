@@ -25,14 +25,14 @@ import {SwipeListView} from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
 import DatePicker from 'react-native-date-picker';
 import database from '@react-native-firebase/database';
-import { checkSystemState } from '../../common/utils';
+import {checkSystemState} from '../../common/utils';
 
 const OrderBatch = ({navigation}) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
-        checkSystemState(navigation);
-      }, []),
+      checkSystemState(navigation);
+    }, []),
   );
 
   const [initializing, setInitializing] = useState(true);
@@ -128,7 +128,7 @@ const OrderBatch = ({navigation}) => {
         const currentUser = await AsyncStorage.getItem('userInfo');
         // console.log(JSON.parse(currentUser));
         setCurrentUser(JSON.parse(currentUser));
-      }
+      };
       getCurrentUser();
     }, []),
   );
@@ -142,7 +142,7 @@ const OrderBatch = ({navigation}) => {
             setLoading(true);
 
             fetch(
-              `${API.baseURL}/api/order/staff/getOrderBatch?status=PACKAGED`,
+              `${API.baseURL}/api/order/staff/getOrderBatch?status=PACKAGED&getOldOrderBatch=false`,
               {
                 method: 'GET',
                 headers: {
@@ -151,7 +151,21 @@ const OrderBatch = ({navigation}) => {
                 },
               },
             )
-              .then(res => res.json())
+              .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                  const tokenIdCheck = await auth()
+                    .currentUser.getIdToken(true)
+                    .catch(async err => {
+                      await AsyncStorage.setItem('isDisableAccount', '1');
+                      return null;
+                    });
+                  if (!tokenIdCheck) {
+                    throw new Error();
+                  }
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.json();
+              })
               .then(respond => {
                 console.log('batch1', respond);
                 if (respond.error) {
@@ -167,7 +181,7 @@ const OrderBatch = ({navigation}) => {
               });
 
             fetch(
-              `${API.baseURL}/api/order/staff/getOrderBatch?status=DELIVERING`,
+              `${API.baseURL}/api/order/staff/getOrderBatch?status=DELIVERING&getOldOrderBatch=false`,
               {
                 method: 'GET',
                 headers: {
@@ -176,7 +190,21 @@ const OrderBatch = ({navigation}) => {
                 },
               },
             )
-              .then(res => res.json())
+              .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                  const tokenIdCheck = await auth()
+                    .currentUser.getIdToken(true)
+                    .catch(async err => {
+                      await AsyncStorage.setItem('isDisableAccount', '1');
+                      return null;
+                    });
+                  if (!tokenIdCheck) {
+                    throw new Error();
+                  }
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.json();
+              })
               .then(respond => {
                 console.log('batch2', respond);
                 if (respond.error) {
@@ -279,7 +307,21 @@ const OrderBatch = ({navigation}) => {
                 },
               },
             )
-              .then(res => res.json())
+              .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                  const tokenIdCheck = await auth()
+                    .currentUser.getIdToken(true)
+                    .catch(async err => {
+                      await AsyncStorage.setItem('isDisableAccount', '1');
+                      return null;
+                    });
+                  if (!tokenIdCheck) {
+                    throw new Error();
+                  }
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.json();
+              })
               .then(respond => {
                 console.log('batch1', respond);
                 if (respond.error) {
@@ -306,7 +348,21 @@ const OrderBatch = ({navigation}) => {
                 },
               },
             )
-              .then(res => res.json())
+              .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                  const tokenIdCheck = await auth()
+                    .currentUser.getIdToken(true)
+                    .catch(async err => {
+                      await AsyncStorage.setItem('isDisableAccount', '1');
+                      return null;
+                    });
+                  if (!tokenIdCheck) {
+                    throw new Error();
+                  }
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.json();
+              })
               .then(respond => {
                 console.log('batch2', respond);
                 if (respond.error) {
@@ -340,7 +396,21 @@ const OrderBatch = ({navigation}) => {
                 },
               },
             )
-              .then(res => res.json())
+              .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                  const tokenIdCheck = await auth()
+                    .currentUser.getIdToken(true)
+                    .catch(async err => {
+                      await AsyncStorage.setItem('isDisableAccount', '1');
+                      return null;
+                    });
+                  if (!tokenIdCheck) {
+                    throw new Error();
+                  }
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.json();
+              })
               .then(respond => {
                 console.log('batch1', respond);
                 if (respond.error) {
@@ -365,7 +435,21 @@ const OrderBatch = ({navigation}) => {
                 },
               },
             )
-              .then(res => res.json())
+              .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                  const tokenIdCheck = await auth()
+                    .currentUser.getIdToken(true)
+                    .catch(async err => {
+                      await AsyncStorage.setItem('isDisableAccount', '1');
+                      return null;
+                    });
+                  if (!tokenIdCheck) {
+                    throw new Error();
+                  }
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.json();
+              })
               .then(respond => {
                 console.log('batch2', respond);
                 if (respond.error) {
@@ -413,7 +497,21 @@ const OrderBatch = ({navigation}) => {
               },
             },
           )
-            .then(res => res.json())
+            .then(async res => {
+              if (res.status === 403 || res.status === 401) {
+                const tokenIdCheck = await auth()
+                  .currentUser.getIdToken(true)
+                  .catch(async err => {
+                    await AsyncStorage.setItem('isDisableAccount', '1');
+                    return null;
+                  });
+                if (!tokenIdCheck) {
+                  throw new Error();
+                }
+                // Cac loi 403 khac thi handle duoi day neu co
+              }
+              return res.json();
+            })
             .then(respond => {
               console.log('batch1', respond);
               if (respond.error) {
@@ -438,7 +536,21 @@ const OrderBatch = ({navigation}) => {
               },
             },
           )
-            .then(res => res.json())
+            .then(async res => {
+              if (res.status === 403 || res.status === 401) {
+                const tokenIdCheck = await auth()
+                  .currentUser.getIdToken(true)
+                  .catch(async err => {
+                    await AsyncStorage.setItem('isDisableAccount', '1');
+                    return null;
+                  });
+                if (!tokenIdCheck) {
+                  throw new Error();
+                }
+                // Cac loi 403 khac thi handle duoi day neu co
+              }
+              return res.json();
+            })
             .then(respond => {
               console.log('batch2', respond);
               if (respond.error) {
@@ -584,7 +696,24 @@ const OrderBatch = ({navigation}) => {
                         },
                       },
                     )
-                      .then(res => res.json())
+                      .then(async res => {
+                        if (res.status === 403 || res.status === 401) {
+                          const tokenIdCheck = await auth()
+                            .currentUser.getIdToken(true)
+                            .catch(async err => {
+                              await AsyncStorage.setItem(
+                                'isDisableAccount',
+                                '1',
+                              );
+                              return null;
+                            });
+                          if (!tokenIdCheck) {
+                            throw new Error();
+                          }
+                          // Cac loi 403 khac thi handle duoi day neu co
+                        }
+                        return res.json();
+                      })
                       .then(respond => {
                         console.log('batch1', respond);
                         if (respond.code === 404) {
@@ -611,7 +740,24 @@ const OrderBatch = ({navigation}) => {
                         },
                       },
                     )
-                      .then(res => res.json())
+                      .then(async res => {
+                        if (res.status === 403 || res.status === 401) {
+                          const tokenIdCheck = await auth()
+                            .currentUser.getIdToken(true)
+                            .catch(async err => {
+                              await AsyncStorage.setItem(
+                                'isDisableAccount',
+                                '1',
+                              );
+                              return null;
+                            });
+                          if (!tokenIdCheck) {
+                            throw new Error();
+                          }
+                          // Cac loi 403 khac thi handle duoi day neu co
+                        }
+                        return res.json();
+                      })
                       .then(respond => {
                         console.log('batch2', respond);
                         if (respond.code === 404) {
@@ -652,7 +798,24 @@ const OrderBatch = ({navigation}) => {
                         },
                       },
                     )
-                      .then(res => res.json())
+                      .then(async res => {
+                        if (res.status === 403 || res.status === 401) {
+                          const tokenIdCheck = await auth()
+                            .currentUser.getIdToken(true)
+                            .catch(async err => {
+                              await AsyncStorage.setItem(
+                                'isDisableAccount',
+                                '1',
+                              );
+                              return null;
+                            });
+                          if (!tokenIdCheck) {
+                            throw new Error();
+                          }
+                          // Cac loi 403 khac thi handle duoi day neu co
+                        }
+                        return res.json();
+                      })
                       .then(respond => {
                         console.log('batch1', respond);
                         if (respond.error) {
@@ -677,7 +840,24 @@ const OrderBatch = ({navigation}) => {
                         },
                       },
                     )
-                      .then(res => res.json())
+                      .then(async res => {
+                        if (res.status === 403 || res.status === 401) {
+                          const tokenIdCheck = await auth()
+                            .currentUser.getIdToken(true)
+                            .catch(async err => {
+                              await AsyncStorage.setItem(
+                                'isDisableAccount',
+                                '1',
+                              );
+                              return null;
+                            });
+                          if (!tokenIdCheck) {
+                            throw new Error();
+                          }
+                          // Cac loi 403 khac thi handle duoi day neu co
+                        }
+                        return res.json();
+                      })
                       .then(respond => {
                         console.log('batch2', respond);
                         if (respond.error) {
@@ -789,6 +969,8 @@ const OrderBatch = ({navigation}) => {
               ) : (
                 <View style={{marginTop: 10, marginBottom: 100}}>
                   <SwipeListView
+                    showsVerticalScrollIndicator={false}
+                    showsHorizontalScrollIndicator={false}
                     data={groupListNotYetAssigned}
                     renderItem={(data, rowMap) => (
                       <View
@@ -798,6 +980,15 @@ const OrderBatch = ({navigation}) => {
                           backgroundColor: 'rgb(240,240,240)',
                           padding: 10,
                           borderRadius: 10,
+                          shadowColor: '#000',
+                          shadowOffset: {
+                            width: 0,
+                            height: 3,
+                          },
+                          shadowOpacity: 0.27,
+                          shadowRadius: 4.65,
+                          elevation: 6,
+                          margin: 4,
                         }}>
                         {/* Group detail */}
                         <TouchableOpacity
@@ -903,8 +1094,9 @@ const OrderBatch = ({navigation}) => {
                         style={{
                           flexDirection: 'row',
                           justifyContent: 'flex-end',
-                          height: '87%',
-                          // marginVertical: '2%',
+                          height: '84%',
+                          marginTop: '1.3%',
+                          marginRight: '2%',
                         }}>
                         <TouchableOpacity
                           style={{
@@ -968,6 +1160,8 @@ const OrderBatch = ({navigation}) => {
               ) : (
                 <View style={{marginTop: 10, marginBottom: 100}}>
                   <SwipeListView
+                    showsVerticalScrollIndicator={false}
+                    showsHorizontalScrollIndicator={false}
                     data={groupListAssigned}
                     renderItem={(data, rowMap) => (
                       <View
@@ -977,6 +1171,15 @@ const OrderBatch = ({navigation}) => {
                           backgroundColor: 'rgb(240,240,240)',
                           padding: 10,
                           borderRadius: 10,
+                          shadowColor: '#000',
+                          shadowOffset: {
+                            width: 0,
+                            height: 3,
+                          },
+                          shadowOpacity: 0.27,
+                          shadowRadius: 4.65,
+                          elevation: 6,
+                          margin: 4,
                         }}>
                         {/* Group detail */}
                         <TouchableOpacity
@@ -1082,8 +1285,9 @@ const OrderBatch = ({navigation}) => {
                         style={{
                           flexDirection: 'row',
                           justifyContent: 'flex-end',
-                          height: '87%',
-                          // marginVertical: '2%',
+                          height: '84%',
+                          marginTop: '1.3%',
+                          marginRight: '2%',
                         }}>
                         <TouchableOpacity
                           style={{

@@ -154,6 +154,14 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(subCategoryListResponseBody);
     }
 
+    @RequestMapping(value = "/getAllSubCategoryForStaff", method = RequestMethod.GET)
+    public ResponseEntity<List<ProductSubCateOnly>> getAllSubCategoryForStaff(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION ) String jwtToken) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        List<ProductSubCateOnly> productSubCateOnlyList = productService.getAllSubCategoryForStaff();
+        return ResponseEntity.status(HttpStatus.OK).body(productSubCateOnlyList);
+    }
+
     @RequestMapping(value = "/createCategory", method = RequestMethod.POST)
     public ResponseEntity<ProductCategory> createCategory(@RequestBody @Valid ProductCategoryCreateBody productCategoryCreateBody,
                                                           @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {

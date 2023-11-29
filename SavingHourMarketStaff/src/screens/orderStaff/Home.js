@@ -11,6 +11,7 @@ import {
   Modal,
   Pressable,
   FlatList,
+  Switch,
 } from 'react-native';
 import React, {useEffect, useState, useCallback, useRef} from 'react';
 import auth from '@react-native-firebase/auth';
@@ -85,6 +86,8 @@ const Home = ({navigation}) => {
   const [tempSelectedTimeFrameId, setTempSelectedTimeFrameId] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [tempSelectedDate, setTempSelectedDate] = useState('');
+  // isEnable date filter
+  const [isEnableDateFilter, setIsEnableDateFilter] = useState(false);
   const [consolidationAreaList, setConsolidationAreaList] = useState([]);
   const [selectedConsolidationAreaId, setSelectedConsolidationAreaId] =
     useState('');
@@ -347,13 +350,24 @@ const Home = ({navigation}) => {
       }),
     );
     setSelectedTimeFrameId(tempSelectedTimeFrameId);
-    tempSelectedDate != '' && setSelectedDate(tempSelectedDate);
+    // tempSelectedDate != '' && setSelectedDate(tempSelectedDate);
+    setSelectedDate(tempSelectedDate);
   };
 
   const handleApplySort = () => {
     setModalVisible(!modalVisible);
     setLoading(true);
     handleApplyFilter();
+  };
+
+  // handle toggle date filter
+  const toggleSwitchFilterDate = value => {
+    if (value) {
+      setTempSelectedDate(new Date());
+    } else {
+      setTempSelectedDate('');
+    }
+    setIsEnableDateFilter(value);
   };
 
   const handleClear = () => {
@@ -364,6 +378,7 @@ const Home = ({navigation}) => {
     setTempSelectedDate('');
     setSelectedTimeFrameId('');
     setSelectedDate('');
+    setIsEnableDateFilter(false);
   };
 
   const handleCancel = () => {
@@ -522,7 +537,21 @@ const Home = ({navigation}) => {
           'Content-Type': 'application/json',
         },
       })
-        .then(res => res.json())
+        .then(async res => {
+          if (res.status === 403 || res.status === 401) {
+            const tokenIdCheck = await auth()
+              .currentUser.getIdToken(true)
+              .catch(async err => {
+                await AsyncStorage.setItem('isDisableAccount', '1');
+                return null;
+              });
+            if (!tokenIdCheck) {
+              throw new Error();
+            }
+            // Cac loi 403 khac thi handle duoi day neu co
+          }
+          return res.json();
+        })
         .then(respond => {
           if (respond.error) {
             return;
@@ -1353,29 +1382,51 @@ const Home = ({navigation}) => {
                       </TouchableOpacity>
                     ))}
                 </View>
-                <Text
-                  style={{
-                    color: 'black',
-                    fontSize: 16,
-                    fontWeight: 700,
-                  }}>
-                  Chọn ngày giao hàng
-                </Text>
                 <View
-                  style={{
-                    flexDirection: 'row',
-                    flexWrap: 'wrap',
-                    marginVertical: 10,
-                  }}>
-                  <DatePicker
-                    date={
-                      tempSelectedDate === '' ? new Date() : tempSelectedDate
-                    }
-                    mode="date"
-                    androidVariant="nativeAndroid"
-                    onDateChange={setTempSelectedDate}
-                  />
-                </View>
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                    }}>
+                    <Text
+                      style={{
+                        color: 'black',
+                        fontSize: 16,
+                        fontWeight: 700,
+                      }}>
+                      Chọn ngày giao hàng
+                    </Text>
+                    <Switch
+                      trackColor={{false: 'grey', true: COLORS.primary}}
+                      thumbColor={isEnableDateFilter ? '#f4f3f4' : '#f4f3f4'}
+                      // ios_backgroundColor="#3e3e3e"
+                      onValueChange={value => {
+                        toggleSwitchFilterDate(value);
+                      }}
+                      value={isEnableDateFilter}
+                    />
+                  </View>
+                  {isEnableDateFilter ? (
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        flexWrap: 'wrap',
+                        marginVertical: 5,
+                      }}>
+                      <DatePicker
+                        date={
+                          tempSelectedDate === ''
+                            ? new Date()
+                            : tempSelectedDate
+                        }
+                        mode="date"
+                        androidVariant="nativeAndroid"
+                        onDateChange={setTempSelectedDate}
+                      />
+                    </View>
+                  ) : (
+                    <></>
+                  )}
+
                 <View
                   style={{
                     flexDirection: 'row',

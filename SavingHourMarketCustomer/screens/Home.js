@@ -408,7 +408,7 @@ const Home = ({ navigation }) => {
           paddingTop: 10,
         }}>
         <Text style={{ fontSize: 16, fontFamily: FONTS.fontFamily }}>
-          Điểm nhận hàng hiện tại:
+          Vị trí mua hàng hiện tại:
         </Text>
         <TouchableOpacity
           onPress={() => {

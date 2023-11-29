@@ -39,7 +39,6 @@ const ProductDetails = ({ navigation, route }) => {
   const [isAddToCart, setIsAddToCart] = useState(false);
   const [index, setIndex] = useState(-1);
 
-
   const [productBatchList, setProductBatchList] = useState([
     ...product.otherProductBatchList,
     product.nearestExpiredBatch,
@@ -78,10 +77,8 @@ const ProductDetails = ({ navigation, route }) => {
               index: 0,
               routes: [{ name: 'Initial' }],
             });
-
           } else {
             // setSystemStatus(snapshot.val());
-
           }
         });
     }, []),
@@ -129,8 +126,9 @@ const ProductDetails = ({ navigation, route }) => {
           imageUrl: item.imageUrlImageList[0].imageUrl,
           productCategoryName: item.productSubCategory.productCategory.name,
           productCategoryId: item.productSubCategory.productCategory.id,
-          quantity: 1,
+          quantity: cartQuantity,
           idList: selectedProductBatch.idList,
+          addToCart: false,
         },
       ];
 

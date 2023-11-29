@@ -129,7 +129,21 @@ const Login = ({navigation}) => {
             Authorization: `Bearer ${tokenId}`,
           },
         })
-          .then(res => res.json())
+          .then(async res => {
+            if (res.status === 403 || res.status === 401) {
+              const tokenIdCheck = await auth()
+                .currentUser.getIdToken(true)
+                .catch(async err => {
+                  await AsyncStorage.setItem('isDisableAccount', '1');
+                  return null;
+                });
+              if (!tokenIdCheck) {
+                throw new Error();
+              }
+              // Cac loi 403 khac thi handle duoi day neu co
+            }
+            return res.json();
+          })
           .then(async respond => {
             // handle customer account
             if (respond.code === 403) {
@@ -187,18 +201,23 @@ const Login = ({navigation}) => {
       .catch(error => {
         // handle wrong password or email
         setLoading(false);
-        showToast('Sai địa chỉ email hoặc mật khẩu');
         console.log(error);
+        if (error.message.includes('[auth/user-disabled')) {
+          showToast('Tài khoản bị khóa. Vui lòng liên hệ nhân viên');
+          return;
+        }
+        showToast('Sai địa chỉ email hoặc mật khẩu');
+        
       });
   };
 
   const emailValidator = () => {
     if (email == '') {
-      setEmailError('Email field cannot be empty');
+      setEmailError('Email không thể rỗng');
       setCheck_textInputChange(false);
       return false;
     } else if (!isValidEmail(email)) {
-      setEmailError('Invalid email !');
+      setEmailError('Email không hợp lệ!');
       setCheck_textInputChange(false);
       return false;
     } else {
@@ -209,7 +228,7 @@ const Login = ({navigation}) => {
   };
   const passwordValidation = () => {
     if (password === '') {
-      setPasswordError('Enter your password!');
+      setPasswordError('Vui lòng điền mật khẩu!');
       return false;
     } else {
       setPasswordError('');
