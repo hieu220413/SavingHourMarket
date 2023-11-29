@@ -548,13 +548,13 @@ const HistoryList = ({ navigation }) => {
                             const tokenIdCheck = await auth()
                                 .currentUser.getIdToken(true)
                                 .catch(async err => {
-                                await AsyncStorage.setItem('isDisableAccount', '1');
-                                return null;
+                                    await AsyncStorage.setItem('isDisableAccount', '1');
+                                    return null;
                                 });
                             if (!tokenIdCheck) {
                                 throw new Error();
                             }
-                          // Cac loi 403 khac thi handle duoi day neu co
+                            // Cac loi 403 khac thi handle duoi day neu co
                         }
                         return res.json();
                     })
@@ -587,13 +587,13 @@ const HistoryList = ({ navigation }) => {
                             const tokenIdCheck = await auth()
                                 .currentUser.getIdToken(true)
                                 .catch(async err => {
-                                await AsyncStorage.setItem('isDisableAccount', '1');
-                                return null;
+                                    await AsyncStorage.setItem('isDisableAccount', '1');
+                                    return null;
                                 });
                             if (!tokenIdCheck) {
                                 throw new Error();
                             }
-                          // Cac loi 403 khac thi handle duoi day neu co
+                            // Cac loi 403 khac thi handle duoi day neu co
                         }
                         return res.json();
                     })
@@ -628,13 +628,13 @@ const HistoryList = ({ navigation }) => {
                             const tokenIdCheck = await auth()
                                 .currentUser.getIdToken(true)
                                 .catch(async err => {
-                                await AsyncStorage.setItem('isDisableAccount', '1');
-                                return null;
+                                    await AsyncStorage.setItem('isDisableAccount', '1');
+                                    return null;
                                 });
                             if (!tokenIdCheck) {
                                 throw new Error();
                             }
-                          // Cac loi 403 khac thi handle duoi day neu co
+                            // Cac loi 403 khac thi handle duoi day neu co
                         }
                         return res.json();
                     })
@@ -666,15 +666,11 @@ const HistoryList = ({ navigation }) => {
         const userFromAS = await getUser();
         const filterStatus = selectItem.find(item => item.active === true);
         console.log('fs', filterStatus);
-        let currentDate = format(new Date(), 'yyyy-MM-dd');
-        const deliverDate = selectedDate
-            ? format(selectedDate, 'yyyy-MM-dd')
-            : currentDate;
         if (tokenId) {
             setLoading(true);
             if (currentOptions.id === 0) {
                 fetch(
-                    `${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliverDate=${deliverDate}`}&status=SUCCESS&getOldOrderGroup=TRUE`,
+                    `${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}&status=SUCCESS&getOldOrderGroup=TRUE`,
                     {
                         method: 'GET',
                         headers: {
@@ -688,13 +684,13 @@ const HistoryList = ({ navigation }) => {
                             const tokenIdCheck = await auth()
                                 .currentUser.getIdToken(true)
                                 .catch(async err => {
-                                await AsyncStorage.setItem('isDisableAccount', '1');
-                                return null;
+                                    await AsyncStorage.setItem('isDisableAccount', '1');
+                                    return null;
                                 });
                             if (!tokenIdCheck) {
                                 throw new Error();
                             }
-                          // Cac loi 403 khac thi handle duoi day neu co
+                            // Cac loi 403 khac thi handle duoi day neu co
                         }
                         return res.json();
                     })
@@ -712,7 +708,7 @@ const HistoryList = ({ navigation }) => {
                     });
             } else if (currentOptions.id === 1) {
                 fetch(
-                    `${API.baseURL}/api/order/staff/getOrderBatch?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}&status=SUCCESS&getOldOrderGroup=TRUE`,
+                    `${API.baseURL}/api/order/staff/getOrderBatch?delivererId=${userFromAS?.id}&status=SUCCESS&getOldOrderGroup=TRUE`,
                     {
                         method: 'GET',
                         headers: {
@@ -726,13 +722,13 @@ const HistoryList = ({ navigation }) => {
                             const tokenIdCheck = await auth()
                                 .currentUser.getIdToken(true)
                                 .catch(async err => {
-                                await AsyncStorage.setItem('isDisableAccount', '1');
-                                return null;
+                                    await AsyncStorage.setItem('isDisableAccount', '1');
+                                    return null;
                                 });
                             if (!tokenIdCheck) {
                                 throw new Error();
                             }
-                          // Cac loi 403 khac thi handle duoi day neu co
+                            // Cac loi 403 khac thi handle duoi day neu co
                         }
                         return res.json();
                     })
@@ -752,7 +748,7 @@ const HistoryList = ({ navigation }) => {
                     });
             } else if (currentOptions.id === 2) {
                 fetch(
-                    `${API.baseURL}/api/order/staff/getOrders?isGrouped=false&isBatched=false&getOldOrder=true&delivererId=${userFromAS?.id}&orderStatus=SUCCESS${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}`,
+                    `${API.baseURL}/api/order/staff/getOrders?isGrouped=false&isBatched=false&getOldOrder=true&delivererId=${userFromAS?.id}&orderStatus=SUCCESS`,
                     {
                         method: 'GET',
                         headers: {
@@ -766,13 +762,13 @@ const HistoryList = ({ navigation }) => {
                             const tokenIdCheck = await auth()
                                 .currentUser.getIdToken(true)
                                 .catch(async err => {
-                                await AsyncStorage.setItem('isDisableAccount', '1');
-                                return null;
+                                    await AsyncStorage.setItem('isDisableAccount', '1');
+                                    return null;
                                 });
                             if (!tokenIdCheck) {
                                 throw new Error();
                             }
-                          // Cac loi 403 khac thi handle duoi day neu co
+                            // Cac loi 403 khac thi handle duoi day neu co
                         }
                         return res.json();
                     })
@@ -968,13 +964,10 @@ const HistoryList = ({ navigation }) => {
                 onPress={() => {
                     const newArray = selectItem.map(i => {
                         if (i.id === item.id) {
-                            if (i.active === true) {
-                                return { ...i, active: false };
-                            } else {
-                                return { ...i, active: true };
-                            }
+                            return { ...i, active: true };
+                        } else {
+                            return { ...i, active: false };
                         }
-                        return { ...i, active: false };
                     });
                     setSelectItem(newArray);
                 }}
@@ -1663,7 +1656,7 @@ const HistoryList = ({ navigation }) => {
                                         />
                                     </TouchableOpacity>
                                 </View>
-                                <Text
+                                {/* <Text
                                     style={{
                                         color: 'black',
                                         fontSize: 16,
@@ -1680,7 +1673,7 @@ const HistoryList = ({ navigation }) => {
                                     {selectSort.map((item, index) => (
                                         <ModalSortItem item={item} key={index} />
                                     ))}
-                                </View>
+                                </View> */}
                                 <Text
                                     style={{
                                         color: 'black',
@@ -1699,6 +1692,28 @@ const HistoryList = ({ navigation }) => {
                                     {selectItem.map((item, index) => (
                                         <ModalItem item={item} key={index} />
                                     ))}
+                                </View>
+
+                                <Text
+                                    style={{
+                                        color: 'black',
+                                        fontSize: 16,
+                                        fontWeight: 700,
+                                    }}>
+                                    Chọn ngày giao hàng
+                                </Text>
+                                <View
+                                    style={{
+                                        flexDirection: 'row',
+                                        flexWrap: 'wrap',
+                                        marginVertical: 10,
+                                    }}>
+                                    <DatePicker
+                                        date={selectedDate === null ? new Date() : selectedDate}
+                                        mode="date"
+                                        androidVariant="nativeAndroid"
+                                        onDateChange={setSelectedDate}
+                                    />
                                 </View>
 
                                 <View
