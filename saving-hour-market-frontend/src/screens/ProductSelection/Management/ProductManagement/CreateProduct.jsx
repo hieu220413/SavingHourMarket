@@ -1371,7 +1371,7 @@ const CreateProduct = ({
                           expiredDate: e.target.value,
                           error: {
                             ...productBatchs[index].error,
-                            expiredDate: `Ngày hết hạn bạn nhập đã bé hơn giới hạn số ngày trước HSD`,
+                            expiredDate: `Ngày hết hạn bạn nhập đã bé hơn giới hạn số ngày trước HSD.\n Số ngày tổi thiểu của ${subCateName} là ${allowableThresholdDate}`,
                           },
                         };
                       } else {
@@ -1389,7 +1389,11 @@ const CreateProduct = ({
                   />
                   {item.error.expiredDate && (
                     <p
-                      style={{ fontSize: "14px", marginBottom: "-10px" }}
+                      style={{
+                        fontSize: "14px",
+                        marginBottom: "-10px",
+                        maxWidth: "400px",
+                      }}
                       className="text-danger"
                     >
                       {item.error.expiredDate}
