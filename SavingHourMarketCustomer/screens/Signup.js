@@ -23,7 +23,6 @@ import {useFocusEffect} from '@react-navigation/native';
 import {API} from '../constants/api';
 import database from '@react-native-firebase/database';
 import Toast from 'react-native-toast-message';
-import { useFocusEffect } from '@react-navigation/native';
 
 const Signup = ({navigation}) => {
   const [password, setPassword] = useState('');
