@@ -600,7 +600,7 @@ const PickStaff = ({navigation, route}) => {
                                   color: 'red',
                                   width: 260,
                                 }}>
-                                * {item.alertMessage}
+                                * {item.alertMessage} ({item.limitExceed})
                               </Text>
                             ))
                           : null}
