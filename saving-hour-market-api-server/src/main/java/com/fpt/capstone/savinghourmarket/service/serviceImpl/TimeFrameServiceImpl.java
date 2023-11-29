@@ -212,10 +212,10 @@ public class TimeFrameServiceImpl implements TimeFrameService {
         if(enableDisableStatusChangeBody.getEnableDisableStatus().ordinal() == EnableDisableStatus.ENABLE.ordinal()){
             timeFrame.get().setStatus(enableDisableStatusChangeBody.getEnableDisableStatus().ordinal());
         } else {
-            List<Order> processingOrderList = orderRepository.findTimeFrameInProcessingOrderById(timeFrame.get().getId(), PageRequest.of(0,1), List.of(OrderStatus.PROCESSING.ordinal(), OrderStatus.DELIVERING.ordinal(), OrderStatus.PACKAGING.ordinal(), OrderStatus.PACKAGED.ordinal()));
-            if(processingOrderList.size() > 0) {
-                throw new ModifyTimeFrameForbiddenException(HttpStatus.valueOf(AdditionalResponseCode.TIME_FRAME_IS_IN_PROCESSING_ORDER.getCode()), AdditionalResponseCode.TIME_FRAME_IS_IN_PROCESSING_ORDER.toString());
-            }
+//            List<Order> processingOrderList = orderRepository.findTimeFrameInProcessingOrderById(timeFrame.get().getId(), PageRequest.of(0,1), List.of(OrderStatus.PROCESSING.ordinal(), OrderStatus.DELIVERING.ordinal(), OrderStatus.PACKAGING.ordinal(), OrderStatus.PACKAGED.ordinal()));
+//            if(processingOrderList.size() > 0) {
+//                throw new ModifyTimeFrameForbiddenException(HttpStatus.valueOf(AdditionalResponseCode.TIME_FRAME_IS_IN_PROCESSING_ORDER.getCode()), AdditionalResponseCode.TIME_FRAME_IS_IN_PROCESSING_ORDER.toString());
+//            }
             timeFrame.get().setStatus(enableDisableStatusChangeBody.getEnableDisableStatus().ordinal());
         }
 
