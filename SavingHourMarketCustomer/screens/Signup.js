@@ -23,6 +23,7 @@ import {useFocusEffect} from '@react-navigation/native';
 import {API} from '../constants/api';
 import database from '@react-native-firebase/database';
 import Toast from 'react-native-toast-message';
+import { useFocusEffect } from '@react-navigation/native';
 
 const Signup = ({navigation}) => {
   const [password, setPassword] = useState('');
@@ -73,10 +74,10 @@ const Signup = ({navigation}) => {
 
   const emailValidator = () => {
     if (email == '') {
-      setEmailError('Email field cannot be empty');
+      setEmailError('Email không thể rỗng');
       setCheck_textInputChange(false);
     } else if (!isValidEmail(email)) {
-      setEmailError('Invalid email !');
+      setEmailError('Email không hợp lệ !');
       setCheck_textInputChange(false);
     } else {
       setEmailError('');
@@ -102,7 +103,7 @@ const Signup = ({navigation}) => {
   // };
 
   const isValidPassword = password => {
-    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d].{8,}$/;
     return regex.test(password);
   };
 
@@ -380,17 +381,21 @@ const Signup = ({navigation}) => {
                 )}
                 <View style={styles.textPrivate}>
                   <Text style={styles.color_textPrivate}>
-                    By signing up you agree to our
+                    Bằng cách đăng ký, bạn đồng ý với 
                   </Text>
                   <Text
                     style={[styles.color_textPrivate, {fontWeight: 'bold'}]}>
                     {' '}
-                    Term of Service
+                    Điều khoản Dịch vụ
                   </Text>
-                  <Text style={styles.color_textPrivate}> and</Text>
+                  <Text style={styles.color_textPrivate}> và </Text>
                   <Text
                     style={[styles.color_textPrivate, {fontWeight: 'bold'}]}>
-                    Privacy Policy
+                    Chính sách Riêng tư 
+                  </Text>
+                  <Text style={styles.color_textPrivate}> </Text>
+                  <Text style={styles.color_textPrivate}>
+                    của chúng tôi
                   </Text>
                 </View>
                 <View style={styles.button}>
@@ -403,7 +408,7 @@ const Signup = ({navigation}) => {
                       colors={['#66CC66', '#66CC99']}
                       style={styles.login}>
                       <Text style={[styles.textSign, {color: 'white'}]}>
-                        Sign Up
+                        Đăng ký
                       </Text>
                     </LinearGradient>
                   </TouchableOpacity>

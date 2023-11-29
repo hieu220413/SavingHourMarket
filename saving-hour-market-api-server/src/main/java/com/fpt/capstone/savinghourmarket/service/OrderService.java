@@ -16,7 +16,8 @@ import java.util.Map;
 import java.util.UUID;
 
 public interface OrderService {
-    List<Order> fetchOrdersForStaff(String totalPriceSortType,
+    List<Order> fetchOrdersForStaff(String staffEmail,
+                                    String totalPriceSortType,
                                     String createdTimeSortType,
                                     String deliveryDateSortType,
                                     Boolean getOldOrder,
@@ -28,7 +29,7 @@ public interface OrderService {
                                     Boolean isGrouped,
                                     Boolean isBatched,
                                     int page,
-                                    int limit);
+                                    int limit) throws ResourceNotFoundException;
 
     List<Order> fetchOrdersForCustomer(String jwtToken,
                                        String totalPriceSortType,
@@ -39,17 +40,23 @@ public interface OrderService {
                                        int page,
                                        int limit) throws FirebaseAuthException;
 
-    List<OrderBatch> fetchOrderBatches(Integer status,Boolean getOldOrderBatch, SortType deliverDateSortType, LocalDate deliveryDate, UUID delivererID) throws NoSuchOrderException;
+    List<OrderBatch> fetchOrderBatches(String staffEmail,
+                                       Integer status,
+                                       Boolean getOldOrderBatch,
+                                       SortType deliverDateSortType,
+                                       LocalDate deliveryDate,
+                                       UUID delivererID) throws NoSuchOrderException, ResourceNotFoundException;
 
-    OrderGroupPageResponse fetchOrderGroups(OrderStatus status,
-                                      SortType deliverDateSortType,
-                                      LocalDate deliverDate,
-                                      Boolean getOldOrder,
-                                      UUID timeFrameId,
-                                      UUID pickupPointId,
-                                      UUID delivererId,
-                                      Integer page,
-                                      Integer size) throws FirebaseAuthException;
+    OrderGroupPageResponse fetchOrderGroups(String staffEmail,
+                                            OrderStatus status,
+                                            SortType deliverDateSortType,
+                                            LocalDate deliverDate,
+                                            Boolean getOldOrder,
+                                            UUID timeFrameId,
+                                            UUID pickupPointId,
+                                            UUID delivererId,
+                                            Integer page,
+                                            Integer size) throws FirebaseAuthException, ResourceNotFoundException;
 
     List<Order> fetchOrdersForPackageStaff(String totalPriceSortType,
                                            String createdTimeSortType,

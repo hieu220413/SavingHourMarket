@@ -68,4 +68,6 @@ public interface ProductService {
     List<ProductSaleReport> getRevenueReportForEachProductForSupermarket(Month month, Integer year, UUID supermarketId);
 
     Product enableProduct(UUID productId) throws ResourceNotFoundException;
+
+    List<ProductSubCateOnly> getAllSubCategoryForStaff();
 }
