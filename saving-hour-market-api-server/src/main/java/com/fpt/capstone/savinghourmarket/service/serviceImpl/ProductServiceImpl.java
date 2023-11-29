@@ -845,6 +845,12 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public List<ProductSubCateOnly> getAllSubCategoryForStaff() {
+        List<ProductSubCateOnly> productSubCateOnlyList = productRepository.getAllSubCategoryForStaff();
+        return productSubCateOnlyList;
+    }
+
+    @Override
     @Transactional
     public Product createProduct(ProductCreate productCreate) throws ResourceNotFoundException {
         HashMap<String, String> errorFields = new HashMap<>();

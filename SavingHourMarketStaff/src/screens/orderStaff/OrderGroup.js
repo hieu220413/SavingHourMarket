@@ -15,6 +15,7 @@ import {
   Pressable,
   Alert,
   FlatList,
+  Switch,
 } from 'react-native';
 import React, {useEffect, useState, useCallback, useRef} from 'react';
 import auth from '@react-native-firebase/auth';
@@ -61,6 +62,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
     {display: 'Chờ đóng gói', value: 'PROCESSING'},
     {display: 'Đang đóng gói', value: 'PACKAGING'},
     {display: 'Đã đóng gói', value: 'PACKAGED'},
+    {display: 'Giao hàng', value: 'DELIVERING_SUCCESS'},
     {display: 'Đã huỷ', value: 'FAIL'},
   ];
 
@@ -255,6 +257,8 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
   //  filter date
   const [selectedDate, setSelectedDate] = useState('');
   const [tempSelectedDate, setTempSelectedDate] = useState('');
+  // isEnable date filter
+  const [isEnableDateFilter, setIsEnableDateFilter] = useState(false);
 
   // filter function
   const filterOrderGroup = async () => {
@@ -268,7 +272,9 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
       // console.log('tempSelectedTimeFrame: ', tempSelectedTimeFrameId);
       // console.log('pickupPoint: ', pickupPoint);
       await fetch(
-        `${API.baseURL}/api/order/packageStaff/getOrderGroup?getOldOrderGroup=true&${
+        `${
+          API.baseURL
+        }/api/order/packageStaff/getOrderGroup?getOldOrderGroup=true&${
           pickupPoint && pickupPoint.id
             ? 'pickupPointId=' + pickupPoint?.id
             : ''
@@ -412,7 +418,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
       }),
     );
     setSelectedTimeFrameId(tempSelectedTimeFrameId);
-    setSelectedDate(tempSelectedDate === '' ? new Date() : tempSelectedDate);
+    setSelectedDate(tempSelectedDate);
     setSortModalVisible(!sortModalVisible);
   };
 
@@ -460,12 +466,23 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
     currentStatus,
   ]);
 
+  // handle toggle date filter
+  const toggleSwitchFilterDate = value => {
+    if (value) {
+      setTempSelectedDate(new Date());
+    } else {
+      setTempSelectedDate('');
+    }
+    setIsEnableDateFilter(value);
+  };
+
   // handle clear sort modal
   const handleClearSortModal = () => {
     // setSelectSort(sortOptions);
     setTempSelectedSortId('');
     setTempSelectedTimeFrameId(' ');
-    setTempSelectedDate(new Date());
+    setTempSelectedDate('');
+    setIsEnableDateFilter(false);
     // setSelectedDate(new Date());
     setSelectSort(
       selectSort.map(item => {
@@ -1090,8 +1107,10 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                 {!orderGroupList ||
                 orderGroupList.filter(group => {
                   if (currentStatus.value === 'PROCESSING') {
-                    return group.orderList.find(order => order.status === 0) !==
-                    undefined;
+                    return (
+                      group.orderList.find(order => order.status === 0) !==
+                      undefined
+                    );
                   }
                   if (currentStatus.value === 'PACKAGING') {
                     return (
@@ -1103,8 +1122,16 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                   if (currentStatus.value === 'PACKAGED') {
                     return (
                       group.productConsolidationArea !== null &&
-                      group.orderList.find(order => order.status === 2 || order.status === 3 || order.status === 4) !==
+                      group.orderList.find(order => order.status === 2) !==
                         undefined
+                    );
+                  }
+                  if (currentStatus.value === 'DELIVERING_SUCCESS') {
+                    return (
+                      group.productConsolidationArea !== null &&
+                      group.orderList.find(
+                        order => order.status === 3 || order.status === 4,
+                      ) !== undefined
                     );
                   }
                 }).length === 0 ? (
@@ -1149,7 +1176,16 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                             return (
                               group.productConsolidationArea !== null &&
                               group.orderList.find(
-                                order => order.status === 2 || order.status === 3 || order.status === 4,
+                                order => order.status === 2,
+                              ) !== undefined
+                            );
+                          }
+                          if (currentStatus.value === 'DELIVERING_SUCCESS') {
+                            return (
+                              group.productConsolidationArea !== null &&
+                              group.orderList.find(
+                                order =>
+                                  order.status === 3 || order.status === 4,
                               ) !== undefined
                             );
                           }
@@ -1391,7 +1427,15 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                                       return order.status === 1;
                                     }
                                     if (currentStatus.value === 'PACKAGED') {
-                                      return order.status === 2 || order.status === 3 || order.status === 4;
+                                      return order.status === 2;
+                                    }
+                                    if (
+                                      currentStatus.value ===
+                                      'DELIVERING_SUCCESS'
+                                    ) {
+                                      return (
+                                        order.status === 3 || order.status === 4
+                                      );
                                     }
                                   })
                                   .map((order, index) => (
@@ -1445,8 +1489,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                                               'Đang đóng gói'}
                                             {order?.status === 2 &&
                                               'Đã đóng gói'}
-                                            {order?.status === 3 &&
-                                              'Đang giao'}
+                                            {order?.status === 3 && 'Đang giao'}
                                             {order?.status === 4 &&
                                               'Giao thành công'}
                                           </Text>
@@ -1752,29 +1795,50 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                         </TouchableOpacity>
                       ))}
                   </View>
-                  <Text
-                    style={{
-                      color: 'black',
-                      fontSize: 16,
-                      fontWeight: 700,
-                    }}>
-                    Chọn ngày giao hàng
-                  </Text>
                   <View
                     style={{
                       flexDirection: 'row',
-                      flexWrap: 'wrap',
-                      marginVertical: 10,
+                      justifyContent: 'space-between',
                     }}>
-                    <DatePicker
-                      date={
-                        tempSelectedDate === '' ? new Date() : tempSelectedDate
-                      }
-                      mode="date"
-                      androidVariant="nativeAndroid"
-                      onDateChange={setTempSelectedDate}
+                    <Text
+                      style={{
+                        color: 'black',
+                        fontSize: 16,
+                        fontWeight: 700,
+                      }}>
+                      Chọn ngày giao hàng
+                    </Text>
+                    <Switch
+                      trackColor={{false: 'grey', true: COLORS.primary}}
+                      thumbColor={isEnableDateFilter ? '#f4f3f4' : '#f4f3f4'}
+                      // ios_backgroundColor="#3e3e3e"
+                      onValueChange={value => {
+                        toggleSwitchFilterDate(value);
+                      }}
+                      value={isEnableDateFilter}
                     />
                   </View>
+                  {isEnableDateFilter ? (
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        flexWrap: 'wrap',
+                        marginVertical: 5,
+                      }}>
+                      <DatePicker
+                        date={
+                          tempSelectedDate === ''
+                            ? new Date()
+                            : tempSelectedDate
+                        }
+                        mode="date"
+                        androidVariant="nativeAndroid"
+                        onDateChange={setTempSelectedDate}
+                      />
+                    </View>
+                  ) : (
+                    <></>
+                  )}
 
                   <View
                     style={{
