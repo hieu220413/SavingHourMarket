@@ -290,7 +290,6 @@ const ProductDetails = ({ navigation, route }) => {
                   height: '100%',
                   marginHorizontal: 30,
                   borderRadius: 20,
-                  backgroundColor: 'green',
                 }}
                 resizeMode="stretch"
                 source={{
