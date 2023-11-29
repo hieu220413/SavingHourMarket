@@ -106,9 +106,11 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "AND " +
             "((:status IS NULL) OR (o.status = :status)) " +
             "AND " +
-            "(((:isPaid IS NULL) OR (:isPaid = FALSE)) " +
+            "(((:isPaid IS NULL) " +
             "OR " +
-            "((:isPaid = TRUE) AND (SIZE(o.transaction) > 0)))"
+            "((:isPaid = FALSE) AND (o.paymentMethod = 1) AND (o.paymentStatus = 0))) " +
+            "OR " +
+            "((:isPaid = TRUE) AND (o.paymentMethod = 1) AND (o.paymentStatus = 1)))"
     )
     List<Order> findOrderForCustomer(String customerEmail,
                                      Integer status,
