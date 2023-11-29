@@ -374,12 +374,13 @@ const ProductDetails = ({ navigation, route }) => {
       <View
         style={{
           position: 'absolute',
-          bottom: 60,
+          bottom: 0,
+          paddingBottom: 60,
           flexDirection: 'row',
           backgroundColor: '#F5F5F5',
           marginHorizontal: 20,
           paddingHorizontal: 20,
-          height: 120,
+          height: 180,
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
           alignItems: 'center',
