@@ -37,12 +37,14 @@ public class ProductController {
     private final FirebaseAuth firebaseAuth;
 
     @RequestMapping(value = "/getProductsForStaff", method = RequestMethod.GET)
-    public ResponseEntity<ProductListResponseBody> getProductsForStaff(@RequestParam(required = false) Boolean isExpiredShown
-            , @RequestParam(defaultValue = "") String name
+    public ResponseEntity<ProductListResponseBody> getProductsForStaff(
+//            @RequestParam(required = false) Boolean isExpiredShown
+            @RequestParam(defaultValue = "") String name
             , @RequestParam(required = false) String supermarketId
             , @RequestParam(required = false) String productCategoryId
             , @RequestParam(required = false) String productSubCategoryId
             , @RequestParam(required = false) EnableDisableStatus status
+            , @RequestParam(defaultValue = "false") boolean isHiddenBatchShown
             , @RequestParam(defaultValue = "0") Integer page
             , @RequestParam(defaultValue = "5") Integer limit
 //            , @RequestParam(required = false) SortType quantitySortType
@@ -51,8 +53,10 @@ public class ProductController {
             , @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        ProductListResponseBody productList = productService.getProductsForStaff(isExpiredShown
-                , name
+        ProductListResponseBody productList = productService.getProductsForStaff(
+//                isExpiredShown
+//                ,
+                name
                 , supermarketId
                 , productCategoryId
                 , productSubCategoryId
@@ -64,7 +68,8 @@ public class ProductController {
 //                , quantitySortType
 //                , expiredSortType
 //                , priceSort
-                , null);
+                , null
+                , isHiddenBatchShown);
         return ResponseEntity.status(HttpStatus.OK).body(productList);
     }
 
