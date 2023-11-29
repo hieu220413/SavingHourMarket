@@ -232,6 +232,7 @@ const Orders = ({navigation}) => {
             )
               .then(res => res.json())
               .then(respond => {
+                console.log(respond);
                 if (respond.code === 403) {
                   setOpenAccountDisableModal(true);
                   setLoading(false);
@@ -246,7 +247,7 @@ const Orders = ({navigation}) => {
                   setLoading(false);
                   return;
                 }
-                list.concat(respond);
+                list = list.concat(respond);
 
                 fetch(
                   `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGED`,
@@ -260,6 +261,7 @@ const Orders = ({navigation}) => {
                 )
                   .then(res => res.json())
                   .then(respond => {
+                    console.log(respond);
                     if (respond.code === 403) {
                       setOpenAccountDisableModal(true);
                       setLoading(false);
@@ -275,7 +277,7 @@ const Orders = ({navigation}) => {
                       return;
                     }
 
-                    list.concat(respond);
+                    list = list.concat(respond);
                     setOrderList(list);
                     setLoading(false);
                   })

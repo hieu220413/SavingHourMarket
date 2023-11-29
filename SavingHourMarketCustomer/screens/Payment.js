@@ -663,6 +663,7 @@ const Payment = ({navigation, route}) => {
         receiverName: name,
         receiverPhone: phone,
         pickupPointId: pickupPoint.id,
+        addressDeliver: pickupPoint.address,
         deliveryMethod: 'PICKUP_POINT',
         timeFrameId: timeFrame.id,
         paymentStatus: 'UNPAID',

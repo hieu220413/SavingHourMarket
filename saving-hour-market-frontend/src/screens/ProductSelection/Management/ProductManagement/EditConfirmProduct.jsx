@@ -191,6 +191,20 @@ const EditConfirmProduct = ({
     }
   };
 
+  const handleKeypress = (e) => {
+    const characterCode = e.key;
+    if (characterCode === "Backspace") return;
+
+    const characterNumber = Number(characterCode);
+    if (characterNumber >= 0 && characterNumber <= 9) {
+      if (e.currentTarget.value && e.currentTarget.value.length) {
+        return;
+      }
+    } else {
+      e.preventDefault();
+    }
+  };
+
   const uploadProductImagesToFireBase = async (images) => {
     const imageList = Array.from(images, (image) =>
       uploadProductImgToFirebase(image)
@@ -797,6 +811,7 @@ const EditConfirmProduct = ({
                   placeholder="Nhập số giá tiền"
                   type="number"
                   className="modal__container-body-inputcontrol-input"
+                  onKeyDown={(e) => handleKeypress(e)}
                   onChange={(e) => {
                     const newProductBatchs = [...productBatchs];
                     newProductBatchs[index] = {
@@ -829,6 +844,7 @@ const EditConfirmProduct = ({
                   min={0}
                   placeholder="Nhập giá gốc"
                   type="number"
+                  onKeyDown={(e) => handleKeypress(e)}
                   className="modal__container-body-inputcontrol-input"
                   onChange={(e) => {
                     const newProductBatchs = [...productBatchs];
@@ -1101,6 +1117,7 @@ const EditConfirmProduct = ({
                       placeholder="Nhập số lượng"
                       type="number"
                       className="modal__container-body-inputcontrol-input"
+                      onKeyDown={(e) => handleKeypress(e)}
                       value={address?.quantity}
                       onChange={(e) => {
                         const newProductBatchs = [...productBatchs];
