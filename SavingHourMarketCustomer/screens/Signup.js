@@ -11,7 +11,7 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useEffect, useRef, useState, useCallback} from 'react';
 import {COLORS} from '../constants/theme';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -19,9 +19,10 @@ import Feather from 'react-native-vector-icons/Feather';
 import LinearGradient from 'react-native-linear-gradient';
 import * as Animatable from 'react-native-animatable';
 import auth from '@react-native-firebase/auth';
+import {useFocusEffect} from '@react-navigation/native';
 import {API} from '../constants/api';
 import database from '@react-native-firebase/database';
-import { useFocusEffect } from '@react-navigation/native';
+import Toast from 'react-native-toast-message';
 
 const Signup = ({navigation}) => {
   const [password, setPassword] = useState('');
@@ -33,6 +34,24 @@ const Signup = ({navigation}) => {
   const [secureTextEntry, setSecureTextEntry] = useState(true);
   const [secureTextEntry_confirm, setSecureTextEntry_confirm] = useState(true);
   const [check_textInputChange, setCheck_textInputChange] = useState(false);
+
+  const showToast = message => {
+    Toast.show({
+      type: 'unsuccess',
+      text1: 'Thất bại',
+      text2: message,
+      visibilityTime: 2000,
+    });
+  };
+
+  const showToastSuccess = message => {
+    Toast.show({
+      type: 'success',
+      text1: 'Thành công',
+      text2: message,
+      visibilityTime: 2000,
+    });
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -67,9 +86,7 @@ const Signup = ({navigation}) => {
 
   const passwordValidation = () => {
     if (!isValidPassword(password)) {
-      setPasswordError(
-        'Ít nhất 8 ký tự, 1 chữ số, 1 ký tự hoa và thường',
-      );
+      setPasswordError('Ít nhất 8 ký tự, 1 chữ số, 1 chữ hoa và chữ thường');
     } else {
       setPasswordError('');
     }
@@ -100,7 +117,7 @@ const Signup = ({navigation}) => {
       return;
     }
     if (password_confirm !== password) {
-      setPassword_confirmError('Mất khẩu không khớp!');
+      setPassword_confirmError('Mật khẩu không khớp!');
       return;
     } else {
       setPassword_confirmError('');
@@ -141,20 +158,20 @@ const Signup = ({navigation}) => {
       console.log(err);
       return null;
     });
-
+    console.log(registerWithEmailPasswordRequest.status);
     // Handle register internal error
     if (!registerWithEmailPasswordRequest) {
-      Alert.alert('Lỗi hệ thống');
+      showToast('Lỗi mạng');
       return;
     }
     if (registerWithEmailPasswordRequest.status === 422) {
-      Alert.alert('Email này đã được đăng kí');
+      showToast('Sai định dạng');
       return null;
     }
     if (registerWithEmailPasswordRequest.status === 403) {
       const response = await registerWithEmailPasswordRequest.json();
       if (response.message && response.message === 'EMAIL_ALREADY_EXISTS') {
-        Alert.alert('Email này đã được đăng kí');
+        showToast('Tài khoản đã được đăng ký');
       }
     }
     // Handle register success
@@ -168,7 +185,7 @@ const Signup = ({navigation}) => {
         });
       console.log(user);
       if (!user) {
-        Alert.alert('Địa chỉ email không tồn tại!');
+        showToast('Email không tồn tại');
         navigation.navigate('Login');
       }
       if (user) {
@@ -181,16 +198,14 @@ const Signup = ({navigation}) => {
             await auth()
               .signOut()
               .catch(e => console.log(e));
-            Alert.alert(
-              'Đăng kí thành công. Email xác nhận đã được gửi đến tài khoản của bạn',
+            showToastSuccess(
+              'Đăng ký thành công. Mã xác nhận đã được gửi vào email của bạn',
             );
             navigation.navigate('Login');
           })
           .catch(async e => {
             console.log(e);
-            Alert.alert(
-              'Đăng kí thành công nhưng gửi email xác nhận thất bại',
-            );
+            showToast('Không thể gửi mã xác nhận đến email của bạn');
             await auth()
               .signOut()
               .catch(e => console.log(e));

@@ -24,14 +24,14 @@ import {SwipeListView} from 'react-native-swipe-list-view';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CartEmpty from '../../assets/image/search-empty.png';
 import database from '@react-native-firebase/database';
-import { checkSystemState } from '../../common/utils';
+import {checkSystemState} from '../../common/utils';
 
 const BatchList = ({navigation, route}) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
-        checkSystemState(navigation);
-      }, []),
+      checkSystemState(navigation);
+    }, []),
   );
 
   const {date, timeFrame, productConsolidationArea, quantity} = route.params;
@@ -100,9 +100,23 @@ const BatchList = ({navigation, route}) => {
                 },
               },
             )
-              .then(res => res.json())
+              .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                  const tokenIdCheck = await auth()
+                    .currentUser.getIdToken(true)
+                    .catch(async err => {
+                      await AsyncStorage.setItem('isDisableAccount', '1');
+                      return null;
+                    });
+                  if (!tokenIdCheck) {
+                    throw new Error();
+                  }
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.json();
+              })
               .then(response => {
-                console.log(response[1]);
+                console.log(response[0]);
                 setBatchList(response);
                 setLoading(false);
               })
@@ -214,7 +228,10 @@ const BatchList = ({navigation, route}) => {
             </View>
           ) : (
             <>
-              <ScrollView contentContainerStyle={{marginTop: 10}}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{marginTop: 10}}>
                 <View style={{marginBottom: 80}}>
                   <View style={{marginBottom: 10}}>
                     <Text
@@ -229,6 +246,15 @@ const BatchList = ({navigation, route}) => {
                         backgroundColor: 'rgb(240,240,240)',
                         marginBottom: 20,
                         borderRadius: 10,
+                        shadowColor: '#000',
+                        shadowOffset: {
+                          width: 0,
+                          height: 3,
+                        },
+                        shadowOpacity: 0.27,
+                        shadowRadius: 4.65,
+                        elevation: 6,
+                        margin: 4,
                       }}>
                       {/* Order detail */}
                       <Pressable
