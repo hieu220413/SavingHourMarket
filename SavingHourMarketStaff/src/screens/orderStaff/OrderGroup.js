@@ -17,18 +17,18 @@ import {
   FlatList,
   Switch,
 } from 'react-native';
-import React, {useEffect, useState, useCallback, useRef} from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {COLORS} from '../../constants/theme';
-import {icons} from '../../constants';
-import {useFocusEffect} from '@react-navigation/native';
-import {API} from '../../constants/api';
-import {format} from 'date-fns';
+import { COLORS } from '../../constants/theme';
+import { icons } from '../../constants';
+import { useFocusEffect } from '@react-navigation/native';
+import { API } from '../../constants/api';
+import { format } from 'date-fns';
 import CartEmpty from '../../assets/image/search-empty.png';
-import {SwipeListView} from 'react-native-swipe-list-view';
+import { SwipeListView } from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
-import {da} from 'date-fns/locale';
+import { da } from 'date-fns/locale';
 import DatePicker from 'react-native-date-picker';
 import {
   ModalButton,
@@ -37,9 +37,9 @@ import {
   ScaleAnimation,
 } from 'react-native-modals';
 import database from '@react-native-firebase/database';
-import {checkSystemState} from '../../common/utils';
+import { checkSystemState } from '../../common/utils';
 
-const OrderGroupForOrderStaff = ({navigation, route}) => {
+const OrderGroupForOrderStaff = ({ navigation, route }) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
@@ -59,11 +59,11 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
   const [currentUser, setCurrentUser] = useState(null);
 
   const orderGroupAreaState = [
-    {display: 'Chờ đóng gói', value: 'PROCESSING'},
-    {display: 'Đang đóng gói', value: 'PACKAGING'},
-    {display: 'Đã đóng gói', value: 'PACKAGED'},
-    {display: 'Giao hàng', value: 'DELIVERING_SUCCESS'},
-    {display: 'Đã huỷ', value: 'FAIL'},
+    { display: 'Chờ đóng gói', value: 'PROCESSING' },
+    { display: 'Đang đóng gói', value: 'PACKAGING' },
+    { display: 'Đã đóng gói', value: 'PACKAGED' },
+    { display: 'Giao hàng', value: 'DELIVERING_SUCCESS' },
+    { display: 'Đã huỷ', value: 'FAIL' },
   ];
 
   // init fake timeframe
@@ -286,24 +286,19 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
       // console.log('tempSelectedTimeFrame: ', tempSelectedTimeFrameId);
       // console.log('pickupPoint: ', pickupPoint);
       await fetch(
-        `${
-          API.baseURL
-        }/api/order/packageStaff/getOrderGroup?getOldOrderGroup=true&${
-          pickupPoint && pickupPoint.id
-            ? 'pickupPointId=' + pickupPoint?.id
-            : ''
-        }${
-          selectedDate === ''
-            ? ''
-            : '&deliverDate=' + format(Date.parse(selectedDate), 'yyyy-MM-dd')
-        }${
-          selectedTimeFrameId === ''
-            ? ''
-            : '&timeFrameId=' + selectedTimeFrameId
-        }${
-          tempSelectedSortId === ''
-            ? ''
-            : selectSort.find(item => item.id === tempSelectedSortId)?.param
+        `${API.baseURL
+        }/api/order/packageStaff/getOrderGroup?getOldOrderGroup=true&${pickupPoint && pickupPoint.id
+          ? 'pickupPointId=' + pickupPoint?.id
+          : ''
+        }${selectedDate === ''
+          ? ''
+          : '&deliverDate=' + format(Date.parse(selectedDate), 'yyyy-MM-dd')
+        }${selectedTimeFrameId === ''
+          ? ''
+          : '&timeFrameId=' + selectedTimeFrameId
+        }${tempSelectedSortId === ''
+          ? ''
+          : selectSort.find(item => item.id === tempSelectedSortId)?.param
         }`,
         {
           method: 'GET',
@@ -363,24 +358,19 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
       // console.log('tempSelectedTimeFrame: ', tempSelectedTimeFrameId);
       // console.log('pickupPoint: ', pickupPoint);
       await fetch(
-        `${
-          API.baseURL
-        }/api/order/packageStaff/getOrders?getOldOrder=true&orderStatus=CANCEL&deliveryMethod=PICKUP_POINT&${
-          pickupPoint && pickupPoint.id
-            ? 'pickupPointId=' + pickupPoint?.id
-            : ''
-        }${
-          selectedDate === ''
-            ? ''
-            : '&deliveryDate=' + format(Date.parse(selectedDate), 'yyyy-MM-dd')
-        }${
-          selectedTimeFrameId === ''
-            ? ''
-            : '&timeFrameId=' + selectedTimeFrameId
-        }${
-          tempSelectedSortId === ''
-            ? ''
-            : selectSort.find(item => item.id === tempSelectedSortId)?.param
+        `${API.baseURL
+        }/api/order/packageStaff/getOrders?getOldOrder=true&orderStatus=CANCEL&deliveryMethod=PICKUP_POINT&${pickupPoint && pickupPoint.id
+          ? 'pickupPointId=' + pickupPoint?.id
+          : ''
+        }${selectedDate === ''
+          ? ''
+          : '&deliveryDate=' + format(Date.parse(selectedDate), 'yyyy-MM-dd')
+        }${selectedTimeFrameId === ''
+          ? ''
+          : '&timeFrameId=' + selectedTimeFrameId
+        }${tempSelectedSortId === ''
+          ? ''
+          : selectSort.find(item => item.id === tempSelectedSortId)?.param
         }`,
         {
           method: 'GET',
@@ -426,9 +416,9 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
     setSelectSort(
       selectSort.map(item => {
         if (item.id === tempSelectedSortId) {
-          return {...item, active: true};
+          return { ...item, active: true };
         }
-        return {...item, active: false};
+        return { ...item, active: false };
       }),
     );
     setSelectedTimeFrameId(tempSelectedTimeFrameId);
@@ -500,7 +490,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
     // setSelectedDate(new Date());
     setSelectSort(
       selectSort.map(item => {
-        return {...item, active: false};
+        return { ...item, active: false };
       }),
     );
     setSelectedTimeFrameId('');
@@ -815,7 +805,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
           <View style={styles.header}>
             <View style={styles.areaAndLogout}>
               <View style={styles.area}>
-                <Text style={{fontSize: 16}}>Khu vực:</Text>
+                <Text style={{ fontSize: 16 }}>Khu vực:</Text>
                 <View style={styles.pickArea}>
                   <TouchableOpacity
                     onPress={() => {
@@ -878,7 +868,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                   }}>
                   <Image
                     resizeMode="contain"
-                    style={{width: 38, height: 38}}
+                    style={{ width: 38, height: 38 }}
                     source={{
                       uri: currentUser?.avatarUrl,
                     }}
@@ -906,7 +896,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                         })
                         .catch(e => console.log(e));
                     }}>
-                    <Text style={{color: 'red', fontWeight: 'bold'}}>
+                    <Text style={{ color: 'red', fontWeight: 'bold' }}>
                       Đăng xuất
                     </Text>
                   </TouchableOpacity>
@@ -917,7 +907,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
               style={{
                 flexDirection: 'row',
               }}>
-              <View style={{flex: 6}}>
+              <View style={{ flex: 6, paddingTop: '3%' }}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   {orderGroupAreaState.map((item, index) => (
                     <TouchableOpacity
@@ -928,9 +918,8 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                       <View
                         style={[
                           {
-                            paddingTop: 15,
                             paddingHorizontal: 15,
-                            paddingBottom: 15,
+                            paddingBottom: 10,
                           },
                           currentStatus.display === item.display && {
                             borderBottomColor: COLORS.primary,
@@ -987,9 +976,9 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
               <>
                 {!orderFailList || orderFailList.length === 0 ? (
                   <View
-                    style={{alignItems: 'center', justifyContent: 'center'}}>
+                    style={{ alignItems: 'center', justifyContent: 'center' }}>
                     <Image
-                      style={{width: '100%', height: '50%'}}
+                      style={{ width: '100%', height: '50%' }}
                       resizeMode="contain"
                       source={CartEmpty}
                     />
@@ -1119,40 +1108,40 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
             ) : (
               <>
                 {!orderGroupList ||
-                orderGroupList.filter(group => {
-                  if (currentStatus.value === 'PROCESSING') {
-                    return (
-                      group.orderList.find(order => order.status === 0) !==
-                      undefined
-                    );
-                  }
-                  if (currentStatus.value === 'PACKAGING') {
-                    return (
-                      group.productConsolidationArea !== null &&
-                      group.orderList.find(order => order.status === 1) !==
+                  orderGroupList.filter(group => {
+                    if (currentStatus.value === 'PROCESSING') {
+                      return (
+                        group.orderList.find(order => order.status === 0) !==
                         undefined
-                    );
-                  }
-                  if (currentStatus.value === 'PACKAGED') {
-                    return (
-                      group.productConsolidationArea !== null &&
-                      group.orderList.find(order => order.status === 2) !==
+                      );
+                    }
+                    if (currentStatus.value === 'PACKAGING') {
+                      return (
+                        group.productConsolidationArea !== null &&
+                        group.orderList.find(order => order.status === 1) !==
                         undefined
-                    );
-                  }
-                  if (currentStatus.value === 'DELIVERING_SUCCESS') {
-                    return (
-                      group.productConsolidationArea !== null &&
-                      group.orderList.find(
-                        order => order.status === 3 || order.status === 4,
-                      ) !== undefined
-                    );
-                  }
-                }).length === 0 ? (
+                      );
+                    }
+                    if (currentStatus.value === 'PACKAGED') {
+                      return (
+                        group.productConsolidationArea !== null &&
+                        group.orderList.find(order => order.status === 2) !==
+                        undefined
+                      );
+                    }
+                    if (currentStatus.value === 'DELIVERING_SUCCESS') {
+                      return (
+                        group.productConsolidationArea !== null &&
+                        group.orderList.find(
+                          order => order.status === 3 || order.status === 4,
+                        ) !== undefined
+                      );
+                    }
+                  }).length === 0 ? (
                   <View
-                    style={{alignItems: 'center', justifyContent: 'center'}}>
+                    style={{ alignItems: 'center', justifyContent: 'center' }}>
                     <Image
-                      style={{width: '100%', height: '50%'}}
+                      style={{ width: '100%', height: '50%' }}
                       resizeMode="contain"
                       source={CartEmpty}
                     />
@@ -1167,7 +1156,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                     </Text>
                   </View>
                 ) : (
-                  <View style={{marginTop: 10, marginBottom: 100}}>
+                  <View style={{ marginTop: 10, marginBottom: 100 }}>
                     {
                       <FlatList
                         showsVerticalScrollIndicator={false}
@@ -1578,56 +1567,56 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                             {/* *********************** */}
                           </View>
                         )}
-                        // renderHiddenItem={(data, rowMap) => (
-                        //   <View
-                        //     style={{
-                        //       flexDirection: 'row',
-                        //       justifyContent: 'flex-end',
-                        //       height: '89%',
-                        //       // marginVertical: '2%',
-                        //     }}>
-                        //     <TouchableOpacity
-                        //       style={{
-                        //         width: 120,
-                        //         height: '100%',
-                        //         backgroundColor: COLORS.primary,
-                        //         borderRadius: 10,
-                        //         // flex: 1,
-                        //         alignItems: 'center',
-                        //         justifyContent: 'center',
-                        //       }}
-                        //       onPress={() => {
-                        //         setVisible(true);
-                        //         // console.log(data.item.id);
-                        //         setOrder(data.item);
-                        //       }}>
-                        //       <View>
-                        //         {data.item?.status === 0 && (
-                        //           <Image
-                        //             source={icons.packaging}
-                        //             resizeMode="contain"
-                        //             style={{
-                        //               width: 40,
-                        //               height: 40,
-                        //               tintColor: 'white',
-                        //             }}
-                        //           />
-                        //         )}
-                        //         {data.item?.status === 1 && (
-                        //           <Image
-                        //             source={icons.packaged}
-                        //             resizeMode="contain"
-                        //             style={{
-                        //               width: 55,
-                        //               height: 55,
-                        //               tintColor: 'white',
-                        //             }}
-                        //           />
-                        //         )}
-                        //       </View>
-                        //     </TouchableOpacity>
-                        //   </View>
-                        // )}
+                      // renderHiddenItem={(data, rowMap) => (
+                      //   <View
+                      //     style={{
+                      //       flexDirection: 'row',
+                      //       justifyContent: 'flex-end',
+                      //       height: '89%',
+                      //       // marginVertical: '2%',
+                      //     }}>
+                      //     <TouchableOpacity
+                      //       style={{
+                      //         width: 120,
+                      //         height: '100%',
+                      //         backgroundColor: COLORS.primary,
+                      //         borderRadius: 10,
+                      //         // flex: 1,
+                      //         alignItems: 'center',
+                      //         justifyContent: 'center',
+                      //       }}
+                      //       onPress={() => {
+                      //         setVisible(true);
+                      //         // console.log(data.item.id);
+                      //         setOrder(data.item);
+                      //       }}>
+                      //       <View>
+                      //         {data.item?.status === 0 && (
+                      //           <Image
+                      //             source={icons.packaging}
+                      //             resizeMode="contain"
+                      //             style={{
+                      //               width: 40,
+                      //               height: 40,
+                      //               tintColor: 'white',
+                      //             }}
+                      //           />
+                      //         )}
+                      //         {data.item?.status === 1 && (
+                      //           <Image
+                      //             source={icons.packaged}
+                      //             resizeMode="contain"
+                      //             style={{
+                      //               width: 55,
+                      //               height: 55,
+                      //               tintColor: 'white',
+                      //             }}
+                      //           />
+                      //         )}
+                      //       </View>
+                      //     </TouchableOpacity>
+                      //   </View>
+                      // )}
                       />
                     }
                   </View>
@@ -1708,37 +1697,39 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                         style={
                           tempSelectedSortId === item.id
                             ? {
-                                borderColor: COLORS.primary,
-                                borderWidth: 1,
-                                borderRadius: 10,
-                                margin: 5,
-                              }
+                              borderColor: COLORS.primary,
+                              borderWidth: 1,
+                              borderRadius: 10,
+                              margin: 5,
+                              width: '45%',
+                            }
                             : {
-                                borderColor: '#c8c8c8',
-                                borderWidth: 0.2,
-                                borderRadius: 10,
-                                margin: 5,
-                              }
+                              borderColor: '#c8c8c8',
+                              borderWidth: 0.2,
+                              borderRadius: 10,
+                              margin: 5,
+                              width: '45%'
+                            }
                         }>
                         <Text
                           style={
                             tempSelectedSortId === item.id
                               ? {
-                                  width: 150,
-                                  paddingVertical: 10,
-                                  textAlign: 'center',
-                                  color: COLORS.primary,
+                                width: '100%',
+                                paddingVertical: 10,
+                                textAlign: 'center',
+                                color: COLORS.primary,
 
-                                  fontSize: 12,
-                                }
+                                fontSize: 12,
+                              }
                               : {
-                                  width: 150,
-                                  paddingVertical: 10,
-                                  textAlign: 'center',
-                                  color: 'black',
+                                width: '100%',
+                                paddingVertical: 10,
+                                textAlign: 'center',
+                                color: 'black',
 
-                                  fontSize: 12,
-                                }
+                                fontSize: 12,
+                              }
                           }>
                           {item.name}
                         </Text>
@@ -1771,37 +1762,39 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                           style={
                             item.id === tempSelectedTimeFrameId
                               ? {
-                                  borderColor: COLORS.primary,
-                                  borderWidth: 1,
-                                  borderRadius: 10,
-                                  margin: 5,
-                                }
+                                borderColor: COLORS.primary,
+                                borderWidth: 1,
+                                borderRadius: 10,
+                                margin: 5,
+                                width:'45%'
+                              }
                               : {
-                                  borderColor: '#c8c8c8',
-                                  borderWidth: 0.2,
-                                  borderRadius: 10,
-                                  margin: 5,
-                                }
+                                borderColor: '#c8c8c8',
+                                borderWidth: 0.2,
+                                borderRadius: 10,
+                                margin: 5,
+                                width:'45%'
+                              }
                           }>
                           <Text
                             style={
                               item.id === tempSelectedTimeFrameId
                                 ? {
-                                    width: 150,
-                                    paddingVertical: 10,
-                                    textAlign: 'center',
-                                    color: COLORS.primary,
+                                  width: '100%',
+                                  paddingVertical: 10,
+                                  textAlign: 'center',
+                                  color: COLORS.primary,
 
-                                    fontSize: 12,
-                                  }
+                                  fontSize: 12,
+                                }
                                 : {
-                                    width: 150,
-                                    paddingVertical: 10,
-                                    textAlign: 'center',
-                                    color: 'black',
+                                  width: '100%',
+                                  paddingVertical: 10,
+                                  textAlign: 'center',
+                                  color: 'black',
 
-                                    fontSize: 12,
-                                  }
+                                  fontSize: 12,
+                                }
                             }>
                             {item.fromHour.slice(0, 5)} đến{' '}
                             {item.toHour.slice(0, 5)}
@@ -1823,7 +1816,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                       Chọn ngày giao hàng
                     </Text>
                     <Switch
-                      trackColor={{false: 'grey', true: COLORS.primary}}
+                      trackColor={{ false: 'grey', true: COLORS.primary }}
                       thumbColor={isEnableDateFilter ? '#f4f3f4' : '#f4f3f4'}
                       // ios_backgroundColor="#3e3e3e"
                       onValueChange={value => {
@@ -1835,9 +1828,9 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                   {isEnableDateFilter ? (
                     <View
                       style={{
-                        flexDirection: 'row',
                         flexWrap: 'wrap',
                         marginVertical: 5,
+                        alignItems:'center'
                       }}>
                       <DatePicker
                         date={
@@ -2094,7 +2087,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                   {!isConfirmPackagingHaveArea ? (
                     <>
                       <FlatList
-                        style={{maxHeight: 200}}
+                        style={{ maxHeight: 200 }}
                         data={consolidationAreaList}
                         renderItem={data => (
                           <TouchableOpacity
@@ -2117,7 +2110,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                               }}>
                               <Image
                                 resizeMode="contain"
-                                style={{width: 20, height: 20}}
+                                style={{ width: 20, height: 20 }}
                                 source={icons.location}
                                 tintColor={
                                   data.item.id === selectedConsolidationAreaId
@@ -2149,7 +2142,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                           marginTop: '5%',
                           rowGap: 5,
                         }}>
-                        <Text style={{color: COLORS.red, fontSize: 11}}>
+                        <Text style={{ color: COLORS.red, fontSize: 11 }}>
                           * Điểm tập kết đã chọn sẽ không thể thay đổi sau khi
                           xác nhận
                         </Text>
@@ -2180,7 +2173,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                     <>
                       <Text>
                         Nhóm đơn này đã có điểm tập kết là{' '}
-                        <Text style={{fontWeight: 'bold'}}>
+                        <Text style={{ fontWeight: 'bold' }}>
                           {
                             consolidationAreaList?.find(
                               area => area.id === selectedConsolidationAreaId,
@@ -2240,7 +2233,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   header: {
-    flex: 2,
     // backgroundColor: 'orange',
     paddingHorizontal: 20,
     zIndex: 100,
@@ -2253,6 +2245,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+    flexWrap: 'wrap', // This property makes items wrap inside the container
+    justifyContent: 'flex-start', // Adjust as per your requirements
+    alignItems: 'flex-start', // A
   },
   body: {
     flex: 11,

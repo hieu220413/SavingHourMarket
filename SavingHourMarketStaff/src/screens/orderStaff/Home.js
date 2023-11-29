@@ -12,25 +12,26 @@ import {
   Pressable,
   FlatList,
   Switch,
+  Dimensions
 } from 'react-native';
-import React, {useEffect, useState, useCallback, useRef} from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {COLORS} from '../../constants/theme';
-import {icons} from '../../constants';
-import {useFocusEffect} from '@react-navigation/native';
-import {API} from '../../constants/api';
-import {format} from 'date-fns';
+import { COLORS } from '../../constants/theme';
+import { icons } from '../../constants';
+import { useFocusEffect } from '@react-navigation/native';
+import { API } from '../../constants/api';
+import { format } from 'date-fns';
 import CartEmpty from '../../assets/image/search-empty.png';
-import {SwipeListView, SwipeRow} from 'react-native-swipe-list-view';
+import { SwipeListView, SwipeRow } from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
 import Toast from 'react-native-toast-message';
 import DatePicker from 'react-native-date-picker';
 import database from '@react-native-firebase/database';
-import {checkSystemState} from '../../common/utils';
+import { checkSystemState } from '../../common/utils';
 import ModalAlertSignOut from '../../components/ModalAlertSignOut';
-import {err} from 'react-native-svg/lib/typescript/xml';
-const Home = ({navigation}) => {
+import { err } from 'react-native-svg/lib/typescript/xml';
+const Home = ({ navigation }) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
@@ -39,12 +40,12 @@ const Home = ({navigation}) => {
   );
 
   const orderStatus = [
-    {display: 'Tất cả', value: ''},
-    {display: 'Chờ đóng gói', value: 'PROCESSING'},
-    {display: 'Đang đóng gói', value: 'PACKAGING'},
-    {display: 'Đã đóng gói', value: 'PACKAGED'},
-    {display: 'Giao hàng', value: ''},
-    {display: 'Đã huỷ', value: 'CANCEL'},
+    { display: 'Tất cả', value: '' },
+    { display: 'Chờ đóng gói', value: 'PROCESSING' },
+    { display: 'Đang đóng gói', value: 'PACKAGING' },
+    { display: 'Đã đóng gói', value: 'PACKAGED' },
+    { display: 'Giao hàng', value: '' },
+    { display: 'Đã huỷ', value: 'CANCEL' },
   ];
   const sortOptions = [
     {
@@ -102,7 +103,8 @@ const Home = ({navigation}) => {
   });
   const [alertVisible, setAlertVisible] = useState(false);
   const [clickSignOut, setClickSignOut] = useState(false);
-
+  const leftOpenValue = currentStatus.value === 'PACKAGING' ? Dimensions.get('window').width * 0.25 : 0;
+  const rightOpenValue = currentStatus.value === 'PROCESSING' ? Dimensions.get('window').width * -0.25 : Dimensions.get('window').width * -0.5;
   const print = async orderId => {
     setLoading(true);
     console.log('print');
@@ -277,27 +279,21 @@ const Home = ({navigation}) => {
     setTempSelectedSortId(sortItem ? sortItem.id : '');
     if (tokenId) {
       await fetch(
-        `${
-          API.baseURL
-        }/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${
-          pickupPoint && pickupPoint.id ? `pickupPointId=${pickupPoint.id}` : ''
-        } ${
-          currentStatus.value === ''
-            ? `&getOldOrder=true`
-            : `&orderStatus=${currentStatus.value}&getOldOrder=true`
+        `${API.baseURL
+        }/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${pickupPoint && pickupPoint.id ? `pickupPointId=${pickupPoint.id}` : ''
+        } ${currentStatus.value === ''
+          ? `&getOldOrder=true`
+          : `&orderStatus=${currentStatus.value}&getOldOrder=true`
         }
-        ${
-          selectedDate === ''
-            ? ''
-            : '&deliveryDate=' + format(Date.parse(selectedDate), 'yyyy-MM-dd')
-        }${
-          selectedTimeFrameId === ''
-            ? ''
-            : '&timeFrameId=' + selectedTimeFrameId
-        }${
-          tempSelectedSortId === ''
-            ? ''
-            : selectSort.find(item => item.id === tempSelectedSortId)?.param
+        ${selectedDate === ''
+          ? ''
+          : '&deliveryDate=' + format(Date.parse(selectedDate), 'yyyy-MM-dd')
+        }${selectedTimeFrameId === ''
+          ? ''
+          : '&timeFrameId=' + selectedTimeFrameId
+        }${tempSelectedSortId === ''
+          ? ''
+          : selectSort.find(item => item.id === tempSelectedSortId)?.param
         }`,
         {
           method: 'GET',
@@ -344,9 +340,9 @@ const Home = ({navigation}) => {
     setSelectSort(
       selectSort.map(item => {
         if (item.id === tempSelectedSortId) {
-          return {...item, active: true};
+          return { ...item, active: true };
         }
-        return {...item, active: false};
+        return { ...item, active: false };
       }),
     );
     setSelectedTimeFrameId(tempSelectedTimeFrameId);
@@ -599,7 +595,7 @@ const Home = ({navigation}) => {
     pickupPoint,
   ]);
 
-  const ModalSortItem = ({item}) => {
+  const ModalSortItem = ({ item }) => {
     return (
       <TouchableOpacity
         onPress={() => {
@@ -608,37 +604,37 @@ const Home = ({navigation}) => {
         style={
           item.id == tempSelectedSortId
             ? {
-                borderColor: COLORS.primary,
-                borderWidth: 1,
-                borderRadius: 10,
-                margin: 5,
-              }
+              borderColor: COLORS.primary,
+              borderWidth: 1,
+              borderRadius: 10,
+              margin: 5,
+              width: '45%'
+            }
             : {
-                borderColor: '#c8c8c8',
-                borderWidth: 0.2,
-                borderRadius: 10,
-                margin: 5,
-              }
+              borderColor: '#c8c8c8',
+              borderWidth: 0.2,
+              borderRadius: 10,
+              margin: 5,
+              width: '45%'
+            }
         }>
         <Text
           style={
             item.id == tempSelectedSortId
               ? {
-                  width: 150,
-                  paddingVertical: 10,
-                  textAlign: 'center',
-                  color: COLORS.primary,
-
-                  fontSize: 12,
-                }
+                width: "100%",
+                paddingVertical: 10,
+                textAlign: 'center',
+                color: COLORS.primary,
+                fontSize: 12,
+              }
               : {
-                  width: 150,
-                  paddingVertical: 10,
-                  textAlign: 'center',
-                  color: 'black',
-
-                  fontSize: 12,
-                }
+                width: "100%",
+                paddingVertical: 10,
+                textAlign: 'center',
+                color: 'black',
+                fontSize: 12,
+              }
           }>
           {item.name}
         </Text>
@@ -657,7 +653,7 @@ const Home = ({navigation}) => {
         <View style={styles.header}>
           <View style={styles.areaAndLogout}>
             <View style={styles.area}>
-              <Text style={{fontSize: 16}}>Khu vực:</Text>
+              <Text style={{ fontSize: 16 }}>Khu vực:</Text>
               <View style={styles.pickArea}>
                 <TouchableOpacity
                   onPress={() => {
@@ -719,7 +715,7 @@ const Home = ({navigation}) => {
                 }}>
                 <Image
                   resizeMode="contain"
-                  style={{width: 38, height: 38}}
+                  style={{ width: 38, height: 38 }}
                   source={{
                     uri: currentUser?.avatarUrl,
                   }}
@@ -742,20 +738,18 @@ const Home = ({navigation}) => {
                   onPress={() => {
                     setClickSignOut(true);
                   }}>
-                  <Text style={{color: 'red', fontWeight: 'bold'}}>
+                  <Text style={{ color: 'red', fontWeight: 'bold' }}>
                     Đăng xuất
                   </Text>
                 </TouchableOpacity>
               )}
             </View>
           </View>
-          {/* Search */}
-          {/* <SearchBar /> */}
           <View
             style={{
-              flexDirection: 'row',
+              flexDirection: 'row'
             }}>
-            <View style={{flex: 6}}>
+            <View style={{ flex: 6, paddingTop: '3%', }}>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {orderStatus.map((item, index) => (
                   <TouchableOpacity
@@ -767,9 +761,8 @@ const Home = ({navigation}) => {
                     <View
                       style={[
                         {
-                          paddingTop: 15,
                           paddingHorizontal: 15,
-                          paddingBottom: 15,
+                          paddingBottom: 10,
                         },
                         currentStatus.display === item.display && {
                           borderBottomColor: COLORS.primary,
@@ -823,9 +816,9 @@ const Home = ({navigation}) => {
         <View style={styles.body}>
           {/* Order list */}
           {orderList.length === 0 ? (
-            <View style={{alignItems: 'center', justifyContent: 'center'}}>
+            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
               <Image
-                style={{width: '100%', height: '50%'}}
+                style={{ width: '100%', height: '50%' }}
                 resizeMode="contain"
                 source={CartEmpty}
               />
@@ -840,7 +833,7 @@ const Home = ({navigation}) => {
               </Text>
             </View>
           ) : (
-            <View style={{height: '87%'}}>
+            <View style={{ height: '87%' }}>
               <SwipeListView
                 showsVerticalScrollIndicator={false}
                 showsHorizontalScrollIndicator={false}
@@ -848,8 +841,8 @@ const Home = ({navigation}) => {
                 data={
                   currentStatus.display === 'Giao hàng'
                     ? orderList.filter(
-                        order => order.status > 2 && order.status < 6,
-                      )
+                      order => order.status > 2 && order.status < 6,
+                    )
                     : orderList
                 }
                 keyExtractor={(item, index) => item.id}
@@ -881,7 +874,7 @@ const Home = ({navigation}) => {
                           orderSuccess: false,
                         });
                       }}>
-                      <View style={{flexDirection: 'row', paddingBottom: 9}}>
+                      <View style={{ flexDirection: 'row', paddingBottom: 9 }}>
                         <Text
                           style={{
                             flex: 13,
@@ -933,7 +926,7 @@ const Home = ({navigation}) => {
                                 style={{
                                   flex: 7,
                                   alignItems: 'flex-end',
-                                  fontSize: 16,
+                                  fontSize: 13,
                                   paddingLeft: 5,
                                   paddingTop: 7,
                                   fontWeight: 'bold',
@@ -972,7 +965,7 @@ const Home = ({navigation}) => {
                                 style={{
                                   flex: 7,
                                   alignItems: 'flex-end',
-                                  fontSize: 16,
+                                  fontSize: 12,
                                   paddingLeft: 5,
                                   paddingTop: 7,
                                   fontWeight: 'bold',
@@ -1029,7 +1022,7 @@ const Home = ({navigation}) => {
                           alignItems: 'center',
                           justifyContent: 'space-between',
                         }}>
-                        <View style={{flexDirection: 'column', gap: 8}}>
+                        <View style={{ flexDirection: 'column', gap: 8 }}>
                           <Text
                             style={{
                               fontSize: 17,
@@ -1066,12 +1059,12 @@ const Home = ({navigation}) => {
                             Khung giờ:{' '}
                             {data.item?.timeFrame
                               ? `${data.item?.timeFrame?.fromHour.slice(
-                                  0,
-                                  5,
-                                )} đến ${data.item?.timeFrame?.toHour.slice(
-                                  0,
-                                  5,
-                                )}`
+                                0,
+                                5,
+                              )} đến ${data.item?.timeFrame?.toHour.slice(
+                                0,
+                                5,
+                              )}`
                               : ''}
                           </Text>
                           {data.item?.productConsolidationArea?.address && (
@@ -1111,18 +1104,17 @@ const Home = ({navigation}) => {
                       flexDirection: 'row',
                       justifyContent:
                         data.item?.status === 1 ? 'space-between' : 'flex-end',
-                      height: data.item?.status === 0 ? '86%' : '90.5%',
+                      height: data.item?.status === 0 ? '86%' : '89%',
                       paddingHorizontal: 10,
                       margin: 4,
                     }}>
                     {data.item?.status === 1 && (
                       <TouchableOpacity
                         style={{
-                          width: 120,
+                          flex: 5,
                           height: '100%',
                           backgroundColor: 'grey',
                           borderBottomLeftRadius: 10,
-
                           borderTopLeftRadius: 10,
                           // flex: 1,
                           alignItems: 'center',
@@ -1136,7 +1128,7 @@ const Home = ({navigation}) => {
                           <Image
                             source={icons.print}
                             resizeMode="contain"
-                            style={{width: 40, height: 40, tintColor: 'white'}}
+                            style={{ width: 40, height: 40, tintColor: 'white' }}
                           />
                         </View>
                       </TouchableOpacity>
@@ -1144,110 +1136,147 @@ const Home = ({navigation}) => {
                     {(data.item?.status === 1 || data.item?.status === 0) && (
                       <>
                         {data.item?.status === 1 && (
+                          <>
+                            <TouchableOpacity
+                              style={{
+                                flex: 5,
+                                height: '100%',
+                                backgroundColor: COLORS.secondary,
+                                // flex: 1,
+                                marginLeft: 20,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                              onPress={() => {
+                                setLoading(true);
+                                setConsolidationAreaList([]);
+                                getConsolidationArea(
+                                  data.item.pickupPoint.id,
+                                  data.item.status,
+                                );
+                                setSelectedConsolidationAreaId(
+                                  data.item?.productConsolidationArea.id,
+                                );
+                                setOrder(data.item);
+                                closeRow(rowMap, data.item.id);
+                              }}>
+                              <View>
+                                <Image
+                                  source={icons.edit}
+                                  resizeMode="contain"
+                                  style={{
+                                    width: 30,
+                                    height: 30,
+                                    tintColor: 'white',
+                                  }}
+                                />
+                              </View>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              style={
+                                {
+                                  flex: 5,
+                                  height: '100%',
+                                  backgroundColor: COLORS.primary,
+                                  borderBottomRightRadius: 10,
+                                  borderTopRightRadius: 10,
+                                  // flex: 1,
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                }}
+                              onPress={() => {
+                                setLoading(true);
+                                setConsolidationAreaList([]);
+                                getConsolidationArea(data.item.pickupPoint.id);
+                                // console.log(data.item.id);
+                                setOrder(data.item);
+                                closeRow(rowMap, data.item.id);
+                              }}>
+                              <View>
+                                {data.item?.status === 1 && (
+                                  <Image
+                                    source={icons.packaged}
+                                    resizeMode="contain"
+                                    style={{
+                                      width: 55,
+                                      height: 55,
+                                      tintColor: 'white',
+                                    }}
+                                  />
+                                )}
+                              </View>
+                            </TouchableOpacity>
+                          </>
+                        )}
+                        {data.item?.status === 0 && (
                           <TouchableOpacity
-                            style={{
-                              width: 100,
-                              height: '100%',
-                              backgroundColor: COLORS.secondary,
-                              // flex: 1,
-                              marginLeft: 20,
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}
+                            style={
+                              {
+                                width: '33%',
+                                height: '100%',
+                                backgroundColor: COLORS.primary,
+                                borderBottomRightRadius: 10,
+                                borderTopRightRadius: 10,
+                                // flex: 1,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
                             onPress={() => {
                               setLoading(true);
                               setConsolidationAreaList([]);
-                              getConsolidationArea(
-                                data.item.pickupPoint.id,
-                                data.item.status,
-                              );
-                              setSelectedConsolidationAreaId(
-                                data.item?.productConsolidationArea.id,
-                              );
+                              getConsolidationArea(data.item.pickupPoint.id);
+                              // console.log(data.item.id);
                               setOrder(data.item);
                               closeRow(rowMap, data.item.id);
                             }}>
                             <View>
-                              <Image
-                                source={icons.edit}
-                                resizeMode="contain"
-                                style={{
-                                  width: 30,
-                                  height: 30,
-                                  tintColor: 'white',
-                                }}
-                              />
+                              {data.item?.status === 0 && (
+                                <Image
+                                  source={icons.packaging}
+                                  resizeMode="contain"
+                                  style={{
+                                    width: 40,
+                                    height: 40,
+                                    tintColor: 'white',
+                                  }}
+                                />
+                              )}
+                              {data.item?.status === 1 && (
+                                <Image
+                                  source={icons.packaged}
+                                  resizeMode="contain"
+                                  style={{
+                                    width: 55,
+                                    height: 55,
+                                    tintColor: 'white',
+                                  }}
+                                />
+                              )}
                             </View>
                           </TouchableOpacity>
                         )}
 
-                        <TouchableOpacity
-                          style={{
-                            width: 110,
-                            height: '100%',
-                            backgroundColor: COLORS.primary,
-                            borderBottomRightRadius: 10,
-                            borderTopRightRadius: 10,
-                            // flex: 1,
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                          onPress={() => {
-                            setLoading(true);
-                            setConsolidationAreaList([]);
-                            getConsolidationArea(data.item.pickupPoint.id);
-                            // console.log(data.item.id);
-                            setOrder(data.item);
-                            closeRow(rowMap, data.item.id);
-                          }}>
-                          <View>
-                            {data.item?.status === 0 && (
-                              <Image
-                                source={icons.packaging}
-                                resizeMode="contain"
-                                style={{
-                                  width: 40,
-                                  height: 40,
-                                  tintColor: 'white',
-                                }}
-                              />
-                            )}
-                            {data.item?.status === 1 && (
-                              <Image
-                                source={icons.packaged}
-                                resizeMode="contain"
-                                style={{
-                                  width: 55,
-                                  height: 55,
-                                  tintColor: 'white',
-                                }}
-                              />
-                            )}
-                          </View>
-                        </TouchableOpacity>
                       </>
                     )}
                   </View>
                 )}
                 disableLeftSwipe={
                   currentStatus.value === '' ||
-                  currentStatus.value === 'PACKAGED' ||
-                  currentStatus.value === 'CANCEL'
+                    currentStatus.value === 'PACKAGED' ||
+                    currentStatus.value === 'CANCEL'
                     ? true
                     : false
                 }
                 disableRightSwipe={
                   currentStatus.value === '' ||
-                  currentStatus.value === 'PACKAGED' ||
-                  currentStatus.value === 'CANCEL' ||
-                  currentStatus.value === 'PROCESSING'
+                    currentStatus.value === 'PACKAGED' ||
+                    currentStatus.value === 'CANCEL' ||
+                    currentStatus.value === 'PROCESSING'
                     ? true
                     : false
                 }
-                leftOpenValue={currentStatus.value === 'PACKAGING' ? 120 : 0}
-                rightOpenValue={
-                  currentStatus.value === 'PROCESSING' ? -120 : -200
-                }
+                leftOpenValue={leftOpenValue}
+                rightOpenValue={rightOpenValue}
               />
             </View>
           )}
@@ -1263,126 +1292,132 @@ const Home = ({navigation}) => {
             <Pressable
               onPress={() => setModalVisible(false)}
               style={styles.centeredView}>
+
               <View style={styles.modalView}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                  }}>
+                <ScrollView>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                    }}>
+                    <Text
+                      style={{
+                        color: 'black',
+                        fontSize: 20,
+                        fontWeight: 700,
+                        textAlign: 'center',
+                        paddingBottom: 20,
+                      }}>
+                      Bộ lọc tìm kiếm
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setModalVisible(!modalVisible);
+                        selectSort.map(sort => {
+                          if (sort.active) {
+                            setTempSelectedSortId(sort.id);
+                          }
+                        });
+                        // setSelectSort(sortOptions);
+                      }}>
+                      <Image
+                        resizeMode="contain"
+                        style={{
+                          width: 20,
+                          height: 20,
+                          tintColor: 'grey',
+                        }}
+                        source={icons.close}
+                      />
+                    </TouchableOpacity>
+                  </View>
                   <Text
                     style={{
                       color: 'black',
-                      fontSize: 20,
+                      fontSize: 16,
                       fontWeight: 700,
-                      textAlign: 'center',
-                      paddingBottom: 20,
                     }}>
-                    Bộ lọc tìm kiếm
+                    Sắp xếp theo
                   </Text>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setModalVisible(!modalVisible);
-                      selectSort.map(sort => {
-                        if (sort.active) {
-                          setTempSelectedSortId(sort.id);
-                        }
-                      });
-                      // setSelectSort(sortOptions);
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      flexWrap: 'wrap',
+                      marginVertical: 10,
+                      gap: 2,
+                      alignItems: 'center'
                     }}>
-                    <Image
-                      resizeMode="contain"
-                      style={{
-                        width: 20,
-                        height: 20,
-                        tintColor: 'grey',
-                      }}
-                      source={icons.close}
-                    />
-                  </TouchableOpacity>
-                </View>
-                <Text
-                  style={{
-                    color: 'black',
-                    fontSize: 16,
-                    fontWeight: 700,
-                  }}>
-                  Sắp xếp theo
-                </Text>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    flexWrap: 'wrap',
-                    marginVertical: 10,
-                  }}>
-                  {selectSort.map((item, index) => (
-                    <ModalSortItem item={item} key={index} />
-                  ))}
-                </View>
-                <Text
-                  style={{
-                    color: 'black',
-                    fontSize: 16,
-                    fontWeight: 700,
-                  }}>
-                  Chọn khung giờ
-                </Text>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    flexWrap: 'wrap',
-                    marginVertical: 10,
-                  }}>
-                  {timeFrameList &&
-                    timeFrameList.map(item => (
-                      <TouchableOpacity
-                        key={item.id}
-                        onPress={() =>
-                          item.id === tempSelectedTimeFrameId
-                            ? setTempSelectedTimeFrameId('')
-                            : setTempSelectedTimeFrameId(item.id)
-                        }
-                        style={
-                          item.id === tempSelectedTimeFrameId
-                            ? {
+                    {selectSort.map((item, index) => (
+                      <ModalSortItem item={item} key={index} />
+                    ))}
+                  </View>
+                  <Text
+                    style={{
+                      color: 'black',
+                      fontSize: 16,
+                      fontWeight: 700,
+                    }}>
+                    Chọn khung giờ
+                  </Text>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      flexWrap: 'wrap',
+                      marginVertical: 10,
+                      gap: 2,
+                      alignItems: 'center'
+                    }}>
+                    {timeFrameList &&
+                      timeFrameList.map(item => (
+                        <TouchableOpacity
+                          key={item.id}
+                          onPress={() =>
+                            item.id === tempSelectedTimeFrameId
+                              ? setTempSelectedTimeFrameId('')
+                              : setTempSelectedTimeFrameId(item.id)
+                          }
+                          style={
+                            item.id === tempSelectedTimeFrameId
+                              ? {
                                 borderColor: COLORS.primary,
                                 borderWidth: 1,
                                 borderRadius: 10,
                                 margin: 5,
+                                width: '45%'
                               }
-                            : {
+                              : {
                                 borderColor: '#c8c8c8',
                                 borderWidth: 0.2,
                                 borderRadius: 10,
                                 margin: 5,
+                                width: '45%'
                               }
-                        }>
-                        <Text
-                          style={
-                            item.id === tempSelectedTimeFrameId
-                              ? {
-                                  width: 150,
+                          }>
+                          <Text
+                            style={
+                              item.id === tempSelectedTimeFrameId
+                                ? {
+                                  width: '100%',
                                   paddingVertical: 10,
                                   textAlign: 'center',
                                   color: COLORS.primary,
-
                                   fontSize: 12,
                                 }
-                              : {
-                                  width: 150,
+                                : {
+                                  width: '100%',
                                   paddingVertical: 10,
                                   textAlign: 'center',
                                   color: 'black',
-
                                   fontSize: 12,
                                 }
-                          }>
-                          {item.fromHour.slice(0, 5)} đến{' '}
-                          {item.toHour.slice(0, 5)}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                </View>
-                <View
+                            }>
+                            {item.fromHour.slice(0, 5)} đến{' '}
+                            {item.toHour.slice(0, 5)}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                  </View>
+                  <View
                     style={{
                       flexDirection: 'row',
                       justifyContent: 'space-between',
@@ -1396,7 +1431,7 @@ const Home = ({navigation}) => {
                       Chọn ngày giao hàng
                     </Text>
                     <Switch
-                      trackColor={{false: 'grey', true: COLORS.primary}}
+                      trackColor={{ false: 'grey', true: COLORS.primary }}
                       thumbColor={isEnableDateFilter ? '#f4f3f4' : '#f4f3f4'}
                       // ios_backgroundColor="#3e3e3e"
                       onValueChange={value => {
@@ -1408,9 +1443,9 @@ const Home = ({navigation}) => {
                   {isEnableDateFilter ? (
                     <View
                       style={{
-                        flexDirection: 'row',
-                        flexWrap: 'wrap',
                         marginVertical: 5,
+                        alignItems: 'center',
+                        alignSelf: 'center'
                       }}>
                       <DatePicker
                         date={
@@ -1426,7 +1461,7 @@ const Home = ({navigation}) => {
                   ) : (
                     <></>
                   )}
-
+                </ScrollView>
                 <View
                   style={{
                     flexDirection: 'row',
@@ -1469,6 +1504,8 @@ const Home = ({navigation}) => {
                   </TouchableOpacity>
                 </View>
               </View>
+
+
             </Pressable>
           </Modal>
 
@@ -1520,7 +1557,7 @@ const Home = ({navigation}) => {
                       </Text>
                     </View>
                     <FlatList
-                      style={{maxHeight: 170}}
+                      style={{ maxHeight: 170 }}
                       data={consolidationAreaList}
                       renderItem={data => (
                         <TouchableOpacity
@@ -1543,7 +1580,7 @@ const Home = ({navigation}) => {
                             }}>
                             <Image
                               resizeMode="contain"
-                              style={{width: 20, height: 20}}
+                              style={{ width: 20, height: 20 }}
                               source={icons.location}
                               tintColor={
                                 data.item.id === selectedConsolidationAreaId
@@ -1627,6 +1664,7 @@ const Home = ({navigation}) => {
               </View>
             </Pressable>
           </Modal>
+
           {/* Modal Edit */}
           <Modal
             animationType="fade"
@@ -1673,7 +1711,7 @@ const Home = ({navigation}) => {
                 <FlatList
                   showsVerticalScrollIndicator={false}
                   showsHorizontalScrollIndicator={false}
-                  style={{maxHeight: 200, marginHorizontal: 7}}
+                  style={{ maxHeight: 200, marginHorizontal: 7 }}
                   data={consolidationAreaList}
                   renderItem={data => (
                     <TouchableOpacity
@@ -1696,7 +1734,7 @@ const Home = ({navigation}) => {
                         }}>
                         <Image
                           resizeMode="contain"
-                          style={{width: 20, height: 20}}
+                          style={{ width: 20, height: 20 }}
                           source={icons.location}
                           tintColor={
                             data.item.id === selectedConsolidationAreaId
@@ -1767,6 +1805,7 @@ const Home = ({navigation}) => {
               </View>
             </Pressable>
           </Modal>
+
           {/* Modal alert disable */}
           <ModalAlertSignOut alertVisible={alertVisible} />
         </View>
@@ -1783,9 +1822,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   header: {
-    flex: 2,
     // backgroundColor: 'orange',
-    paddingHorizontal: 20,
+    paddingHorizontal: "5%",
     zIndex: 100,
     backgroundColor: 'white',
     shadowColor: '#000',
@@ -1796,6 +1834,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+    flexWrap: 'wrap', // This property makes items wrap inside the container
+    justifyContent: 'flex-start', // Adjust as per your requirements
+    alignItems: 'flex-start', // A
   },
   body: {
     flex: 11,
@@ -1838,6 +1879,7 @@ const styles = StyleSheet.create({
   },
   modalView: {
     margin: 20,
+    height:'65%',
     backgroundColor: 'white',
     borderRadius: 20,
     padding: 20,
