@@ -3,6 +3,7 @@ package com.fpt.capstone.savinghourmarket.repository;
 import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.ProductBatch;
 import com.fpt.capstone.savinghourmarket.model.CateOderQuantityResponseBody;
+import com.fpt.capstone.savinghourmarket.model.ProductSubCateOnly;
 import com.fpt.capstone.savinghourmarket.model.SupermarketSaleReportResponseBody;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -325,6 +326,9 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
     @Query("SELECT p FROM Product p JOIN FETCH p.supermarket sp JOIN FETCH p.productBatchList JOIN FETCH p.productSubCategory psc JOIN FETCH psc.productCategory " +
             "WHERE p.supermarket.id = :supermarketId")
     List<Product> findAllWithSubFieldWithSupermarket(UUID supermarketId);
+
+    @Query("SELECT sbct FROM ProductSubCategory sbct")
+    List<ProductSubCateOnly> getAllSubCategoryForStaff();
 
 
 //    @Query(value = "SELECT * FROM product p " +
