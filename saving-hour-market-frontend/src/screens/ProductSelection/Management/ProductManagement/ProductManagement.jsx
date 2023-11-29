@@ -10,8 +10,8 @@ import {
   faXmark,
   faTrashCanArrowUp,
   faClipboard,
+  faFilter,
 } from "@fortawesome/free-solid-svg-icons";
-import dayjs from "dayjs";
 import { auth } from "../../../../firebase/firebase.config";
 import { API } from "../../../../contanst/api";
 import { Dialog, Menu, MenuItem } from "@mui/material";
@@ -25,6 +25,7 @@ import Empty from "../../../../assets/Empty.png";
 import { useAuthState } from "react-firebase-hooks/auth";
 import ViewProductBatch from "./ViewProductBatch";
 import ProductImageSlider from "./ProductImageSlider";
+import FilterModal from "./FilterModal";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -75,6 +76,29 @@ const ProductManagement = () => {
   const handleOpenImageUrlList = () => setOpenImageUrlList(true);
   const handleCloseImageUrlList = () => setOpenImageUrlList(false);
 
+  const [openFilter, setOpenFilter] = useState(false);
+  const handleOpenFilter = () => setOpenFilter(true);
+  const handleCloseFilter = () => setOpenFilter(false);
+
+  const expiredShownOptions = [
+    {
+      display: "Hiện",
+      value: "&isExpiredShown=true",
+    },
+    {
+      display: "Ẩn",
+      value: "&isExpiredShown=false",
+    },
+  ];
+  const [supermarkets, setSupermarkets] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
+
+  const [isExpiredShown, setIsExpiredShown] = useState("");
+  const [supermarketId, setSupermarketId] = useState("");
+  const [productCategoryId, setProductCategoryId] = useState("");
+  const [productSubCategoryId, setProductSubCategoryId] = useState("");
+
   const [openSnackbar, setOpenSnackbar] = useState({
     open: false,
     vertical: "top",
@@ -96,7 +120,6 @@ const ProductManagement = () => {
   };
 
   const userState = useAuthState(auth);
-  console.log(userState);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -108,6 +131,16 @@ const ProductManagement = () => {
             page - 1
           }&limit=5&name=${searchValue}${
             isSwitchRecovery ? "&status=DISABLE" : "&status=ENABLE"
+          }${isExpiredShown === "" ? "" : isExpiredShown.value}${
+            supermarketId === "" ? "" : `&supermarketId=${supermarketId}`
+          }${
+            productCategoryId === ""
+              ? ""
+              : `&productCategoryId=${productCategoryId}`
+          }${
+            productSubCategoryId === ""
+              ? ""
+              : `&productSubCategoryId=${productSubCategoryId}`
           }`,
           {
             method: "GET",
@@ -129,6 +162,62 @@ const ProductManagement = () => {
           });
       }
     };
+    const fetchDataForFilter = async () => {
+      setLoading(true);
+      if (!userState[1]) {
+        const tokenId = await auth.currentUser.getIdToken();
+        fetch(`${API.baseURL}/api/supermarket/getSupermarketForStaff`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${tokenId}`,
+          },
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            setSupermarkets(data.supermarketList);
+            setLoading(false);
+          })
+          .catch((err) => {
+            console.log(err);
+            setLoading(false);
+          });
+
+        fetch(`${API.baseURL}/api/product/getCategoryForStaff`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${tokenId}`,
+          },
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            setCategories(data.productCategoryList);
+            setLoading(false);
+          })
+          .catch((err) => {
+            console.log(err);
+            setLoading(false);
+          });
+        fetch(`${API.baseURL}/api/product/getAllSubCategoryForStaff`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${tokenId}`,
+          },
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            setSubCategories(data);
+            setLoading(false);
+          })
+          .catch((err) => {
+            console.log(err);
+            setLoading(false);
+          });
+      }
+    };
+    fetchDataForFilter();
     fetchProduct();
   }, [isSwitchRecovery, page, searchValue, userState[1]]);
 
@@ -190,6 +279,10 @@ const ProductManagement = () => {
   const handleSwitchRecoveryTable = (check) => {
     onAuthStateChanged(auth, async (userAuth) => {
       setLoading(true);
+      setIsExpiredShown("");
+      setSupermarketId("");
+      setProductCategoryId("");
+      setProductSubCategoryId("");
       if (userAuth) {
         const tokenId = await auth.currentUser.getIdToken();
         fetch(
@@ -197,6 +290,16 @@ const ProductManagement = () => {
             page - 1
           }&limit=5&name=${searchValue}${
             check ? "&status=DISABLE" : "&status=ENABLE"
+          }${isExpiredShown === "" ? "" : isExpiredShown.value}${
+            supermarketId === "" ? "" : `&supermarketId=${supermarketId}`
+          }${
+            productCategoryId === ""
+              ? ""
+              : `&productCategoryId=${productCategoryId}`
+          }${
+            productSubCategoryId === ""
+              ? ""
+              : `&productSubCategoryId=${productSubCategoryId}`
           }`,
           {
             method: "GET",
@@ -402,19 +505,33 @@ const ProductManagement = () => {
       {/* Table */}
       <div className="supermarket__container">
         <div className="supermarket__header">
-          {/* search bar */}
-          <div className="search">
-            <form onSubmit={(e) => onSubmitSearch(e)}>
-              <div onClick={(e) => onSubmitSearch(e)} className="search-icon">
-                <FontAwesomeIcon icon={faMagnifyingGlass} />
-              </div>
-              <input
-                value={textSearch}
-                onChange={(e) => setTextSearch(e.target.value)}
-                type="text"
-                placeholder="Từ khóa tìm kiếm"
-              />
-            </form>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            {/* search bar */}
+            <div className="search">
+              <form onSubmit={(e) => onSubmitSearch(e)}>
+                <div onClick={(e) => onSubmitSearch(e)} className="search-icon">
+                  <FontAwesomeIcon icon={faMagnifyingGlass} />
+                </div>
+                <input
+                  value={textSearch}
+                  onChange={(e) => setTextSearch(e.target.value)}
+                  type="text"
+                  placeholder="Từ khóa tìm kiếm"
+                />
+              </form>
+            </div>
+            {/* Filter */}
+            <div>
+              <button className="filter_button" onClick={handleOpenFilter}>
+                <FontAwesomeIcon icon={faFilter} />
+                Bộ lọc
+              </button>
+            </div>
           </div>
           {/* ****************** */}
           {!isSwitchRecovery && (
@@ -918,6 +1035,36 @@ const ProductManagement = () => {
         <ProductImageSlider
           handleClose={handleCloseImageUrlList}
           imageUrlList={imageUrlList}
+        />
+      </Dialog>
+
+      <Dialog
+        onClose={handleCloseFilter}
+        aria-labelledby="customized-dialog-title"
+        open={openFilter}
+      >
+        <FilterModal
+          handleClose={handleCloseFilter}
+          setProducts={setProducts}
+          isSwitchRecovery={isSwitchRecovery}
+          page={page}
+          setTotalPage={setTotalPage}
+          searchValue={searchValue}
+          openSnackbar={openSnackbar}
+          setOpenSnackbar={setOpenSnackbar}
+          setMsg={setMsg}
+          expiredShownOptions={expiredShownOptions}
+          supermarkets={supermarkets}
+          categories={categories}
+          subCategories={subCategories}
+          isExpiredShown={isExpiredShown}
+          setIsExpiredShown={setIsExpiredShown}
+          supermarketId={supermarketId}
+          setSupermarketId={setSupermarketId}
+          productCategoryId={productCategoryId}
+          setProductCategoryId={setProductCategoryId}
+          productSubCategoryId={productSubCategoryId}
+          setProductSubCategoryId={setProductSubCategoryId}
         />
       </Dialog>
 

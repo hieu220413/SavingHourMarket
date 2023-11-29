@@ -27,3 +27,26 @@
   background: var(--primary-light);
   color: white;
 }
+
+.filter_button {
+  width: 100px;
+  height: 36px;
+  padding: 8px;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 18px;
+  background: white;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin-left: 20px;
+  border: 1px solid #c4cdd5;
+  cursor: pointer;
+  transition: 0.3s linear all;
+}
+.filter_button:hover {
+  border: 1px solid var(--primary-light);
+  color: var(--primary-light);
+}
