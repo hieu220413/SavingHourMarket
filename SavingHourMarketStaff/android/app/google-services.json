@@ -60,6 +60,14 @@
           }
         },
         {
+          "client_id": "857253936194-krqnd5gtupcil9c8i5scultm4i0blpe1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.savinghourmarketcustomer",
+            "certificate_hash": "54a99debdd1defeecc3e965fff995d202205497c"
+          }
+        },
+        {
           "client_id": "857253936194-ltit9q7c7hg2ejnti8k7uif1rmrsfm0q.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
