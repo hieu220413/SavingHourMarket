@@ -63,7 +63,7 @@ const Loading = ({ navigation }) => {
                     height: '30%',
                     backgroundColor: 'white',
                     position: 'absolute',
-                    top: '30%',
+                    top: '25%',
                 }}
                 source={require('../assets/image/logo.png')}
             />

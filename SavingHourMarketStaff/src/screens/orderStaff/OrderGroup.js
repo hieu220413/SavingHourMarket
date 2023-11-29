@@ -879,7 +879,6 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                     style={{
                       position: 'absolute',
                       bottom: -30,
-                      left: -12,
                       zIndex: 100,
                       width: 75,
                       height: 35,

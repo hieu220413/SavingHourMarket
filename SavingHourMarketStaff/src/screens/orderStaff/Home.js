@@ -726,7 +726,6 @@ const Home = ({ navigation }) => {
                   style={{
                     position: 'absolute',
                     bottom: -30,
-                    left: -12,
                     zIndex: 100,
                     width: 75,
                     height: 35,
@@ -873,7 +872,9 @@ const Home = ({ navigation }) => {
                           id: data.item.id,
                           orderSuccess: false,
                         });
-                      }}>
+
+                      }}
+                    >
                       <View style={{ flexDirection: 'row', paddingBottom: 9 }}>
                         <Text
                           style={{
@@ -1104,7 +1105,7 @@ const Home = ({ navigation }) => {
                       flexDirection: 'row',
                       justifyContent:
                         data.item?.status === 1 ? 'space-between' : 'flex-end',
-                      height: data.item?.status === 0 ? '86%' : '89%',
+                      height: data.item?.status === 0 ? '85%' : '89%',
                       paddingHorizontal: 10,
                       margin: 4,
                     }}>
@@ -1290,47 +1291,45 @@ const Home = ({ navigation }) => {
               setModalVisible(!modalVisible);
             }}>
             <Pressable
-              onPress={() => setModalVisible(false)}
               style={styles.centeredView}>
-
               <View style={styles.modalView}>
-                <ScrollView>
-                  <View
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                  }}>
+                  <Text
                     style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
+                      color: 'black',
+                      fontSize: 20,
+                      fontWeight: 700,
+                      textAlign: 'center',
+                      paddingBottom: 20,
                     }}>
-                    <Text
+                    Bộ lọc tìm kiếm
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setModalVisible(!modalVisible);
+                      selectSort.map(sort => {
+                        if (sort.active) {
+                          setTempSelectedSortId(sort.id);
+                        }
+                      });
+                      // setSelectSort(sortOptions);
+                    }}>
+                    <Image
+                      resizeMode="contain"
                       style={{
-                        color: 'black',
-                        fontSize: 20,
-                        fontWeight: 700,
-                        textAlign: 'center',
-                        paddingBottom: 20,
-                      }}>
-                      Bộ lọc tìm kiếm
-                    </Text>
-                    <TouchableOpacity
-                      onPress={() => {
-                        setModalVisible(!modalVisible);
-                        selectSort.map(sort => {
-                          if (sort.active) {
-                            setTempSelectedSortId(sort.id);
-                          }
-                        });
-                        // setSelectSort(sortOptions);
-                      }}>
-                      <Image
-                        resizeMode="contain"
-                        style={{
-                          width: 20,
-                          height: 20,
-                          tintColor: 'grey',
-                        }}
-                        source={icons.close}
-                      />
-                    </TouchableOpacity>
-                  </View>
+                        width: 20,
+                        height: 20,
+                        tintColor: 'grey',
+                      }}
+                      source={icons.close}
+                    />
+                  </TouchableOpacity>
+                </View>
+                <ScrollView>
                   <Text
                     style={{
                       color: 'black',
@@ -1879,7 +1878,7 @@ const styles = StyleSheet.create({
   },
   modalView: {
     margin: 20,
-    height:'65%',
+    height: '65%',
     backgroundColor: 'white',
     borderRadius: 20,
     padding: 20,
@@ -1891,6 +1890,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+    zIndex: 10
   },
   textStyle: {
     color: 'white',
