@@ -27,6 +27,8 @@ const FilterModal = ({
   setProductCategoryId,
   productSubCategoryId,
   setProductSubCategoryId,
+  setSubCategories,
+  initialSubCategories,
 }) => {
   const supermarket = supermarkets.find((item) => item.id === supermarketId);
   const [isActiveDropdown, setIsActiveDropdown] = useState(false);
@@ -90,6 +92,7 @@ const FilterModal = ({
         setSelectedDropdownItem(null);
         setSelectedDropdownItemCate("Chọn loại sản phẩm");
         setSelectedDropdownItemSubCate("Chọn loại sản phẩm phụ");
+        setSubCategories(initialSubCategories);
         handleClose();
         setLoading(false);
         setOpenSnackbar({
@@ -156,7 +159,16 @@ const FilterModal = ({
       <div className="modal__container" style={{ width: "650px" }}>
         <div className="modal__container-header">
           <h3 className="modal__container-header-title">Bộ lọc tìm kiếm</h3>
-          <FontAwesomeIcon icon={faXmark} onClick={handleClose} />
+          <FontAwesomeIcon
+            icon={faXmark}
+            onClick={() => {
+              setIsExpiredShown("");
+              setSupermarketId("");
+              setProductCategoryId("");
+              setProductSubCategoryId("");
+              handleClose();
+            }}
+          />
         </div>
         <div
           className="modal__container-body"
@@ -286,6 +298,7 @@ const FilterModal = ({
                             setSelectedDropdownItemCate(item.name);
                             setIsActiveDropdownCate(false);
                             setProductCategoryId(item.id);
+                            setSubCategories(item.productSubCategories);
                           }}
                           className="dropdown-item"
                           key={index}
@@ -350,7 +363,7 @@ const FilterModal = ({
               className="modal__container-footer-buttons-close"
               onClick={handleClear}
             >
-              Đặt lại
+              Thiết lập lại
             </button>
             <button
               onClick={handleFilter}

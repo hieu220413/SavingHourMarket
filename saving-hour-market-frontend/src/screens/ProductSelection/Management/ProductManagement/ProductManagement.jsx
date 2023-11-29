@@ -93,6 +93,7 @@ const ProductManagement = () => {
   const [supermarkets, setSupermarkets] = useState([]);
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
+  const [initialSubCategories, setInitialSubCategories] = useState([]);
 
   const [isExpiredShown, setIsExpiredShown] = useState("");
   const [supermarketId, setSupermarketId] = useState("");
@@ -209,6 +210,7 @@ const ProductManagement = () => {
           .then((res) => res.json())
           .then((data) => {
             setSubCategories(data);
+            setInitialSubCategories(data);
             setLoading(false);
           })
           .catch((err) => {
@@ -1065,6 +1067,8 @@ const ProductManagement = () => {
           setProductCategoryId={setProductCategoryId}
           productSubCategoryId={productSubCategoryId}
           setProductSubCategoryId={setProductSubCategoryId}
+          setSubCategories={setSubCategories}
+          initialSubCategories={initialSubCategories}
         />
       </Dialog>
 
