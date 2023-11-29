@@ -107,6 +107,7 @@ const CreateProduct = ({
         {
           quantity: 0,
           supermarketAddress: null,
+          supermarketAddressId: null,
           isActiveDropdownSupermarketStore: false,
           errorQuantity: "",
           errorStore: "",
@@ -508,7 +509,7 @@ const CreateProduct = ({
         (address) => {
           return {
             quantity: address.quantity,
-            supermarketAddress: address.supermarketAddressId,
+            supermarketAddressId: address.supermarketAddressId,
           };
         }
       );
@@ -1241,6 +1242,9 @@ const CreateProduct = ({
             </h4>
             <div>
               <textarea
+                style={{
+                  height: "200px",
+                }}
                 className="modal__container-body-inputcontrol-input textareaFocus"
                 placeholder="Nhập thông tin sản phẩm"
                 value={description}
@@ -1504,6 +1508,8 @@ const CreateProduct = ({
                                                 ...newAddress,
                                                 supermarketAddress:
                                                   supermarketItem,
+                                                supermarketAddressId:
+                                                  supermarketItem.id,
                                                 isActiveDropdownSupermarketStore:
                                                   !newAddress.isActiveDropdownSupermarketStore,
                                                 errorStore: "",
@@ -1552,6 +1558,7 @@ const CreateProduct = ({
                                   ...productBatchs[index].productBatchAddresses,
                                   {
                                     quantity: 0,
+                                    supermarketAddressId: null,
                                     supermarketAddress: null,
                                     errorQuantity: "",
                                     errorStore: "",
