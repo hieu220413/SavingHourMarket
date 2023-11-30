@@ -58,7 +58,7 @@ const FilterModal = ({
     selectedExpiredShownDropdownItem,
     setSelectedExpiredShownDropdownItem,
   ] = useState(
-    expiredShown ? expiredShown.display : "Chọn sản phẩm hiện hoặc ẩn"
+    expiredShown ? expiredShown.display : "Hiển thị lô hàng đã bị ẩn"
   );
 
   const [loading, setLoading] = useState(false);
@@ -177,7 +177,7 @@ const FilterModal = ({
           {/* isExpiredShown */}
           <div className="modal__container-body-inputcontrol">
             <h4 className="modal__container-body-inputcontrol-label">
-              Sản phẩm đã hết hạn
+              Hiện thị lô hàng đã bị ẩn
             </h4>
             <div>
               <div

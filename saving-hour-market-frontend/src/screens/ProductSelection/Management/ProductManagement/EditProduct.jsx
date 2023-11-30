@@ -791,6 +791,9 @@ const EditProduct = ({
             </h4>
             <div>
               <textarea
+                style={{
+                  height: "200px",
+                }}
                 className="modal__container-body-inputcontrol-input textareaFocus"
                 placeholder="Nhập thông tin sản phẩm"
                 value={description}

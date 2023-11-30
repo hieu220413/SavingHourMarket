@@ -8,20 +8,21 @@ import {
   Image,
   ScrollView,
   ImageBackground,
+  Dimensions
 } from 'react-native';
-import React, {useState, useCallback} from 'react';
+import React, { useState, useCallback } from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {COLORS} from '../../constants/theme';
-import {useFocusEffect} from '@react-navigation/native';
-import {API} from '../../constants/api';
-import {format} from 'date-fns';
+import { COLORS } from '../../constants/theme';
+import { useFocusEffect } from '@react-navigation/native';
+import { API } from '../../constants/api';
+import { format } from 'date-fns';
 import LoadingScreen from '../../components/LoadingScreen';
-import {BarChart} from 'react-native-gifted-charts';
+import { BarChart } from 'react-native-gifted-charts';
 import database from '@react-native-firebase/database';
-import {checkSystemState} from '../../common/utils';
+import { checkSystemState } from '../../common/utils';
 
-const Report = ({navigation}) => {
+const Report = ({ navigation }) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
@@ -46,21 +47,21 @@ const Report = ({navigation}) => {
   );
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([
-    {value: 0, label: 'Jan', month: 1},
-    {value: 0, label: 'Feb', month: 2},
-    {value: 0, label: 'Mar', month: 3},
-    {value: 0, label: 'Apr', month: 4},
-    {value: 0, label: 'May', month: 5},
-    {value: 0, label: 'Jun', month: 6},
-    {value: 0, label: 'Jul', month: 7},
-    {value: 0, label: 'Aug', month: 8},
-    {value: 0, label: 'Sep', month: 9},
-    {value: 0, label: 'Oct', month: 10},
-    {value: 0, label: 'Nov', month: 11},
-    {value: 0, label: 'Dec', month: 12},
+    { value: 0, label: 'Jan', month: 1 },
+    { value: 0, label: 'Feb', month: 2 },
+    { value: 0, label: 'Mar', month: 3 },
+    { value: 0, label: 'Apr', month: 4 },
+    { value: 0, label: 'May', month: 5 },
+    { value: 0, label: 'Jun', month: 6 },
+    { value: 0, label: 'Jul', month: 7 },
+    { value: 0, label: 'Aug', month: 8 },
+    { value: 0, label: 'Sep', month: 9 },
+    { value: 0, label: 'Oct', month: 10 },
+    { value: 0, label: 'Nov', month: 11 },
+    { value: 0, label: 'Dec', month: 12 },
   ]);
   const [yearReport, setYearReport] = useState(null);
-
+  const ChartWith = Dimensions.get('window').width * 0.25 ;
   const countTotalOrder = async () => {
     setLoading(true);
     const tokenId = await auth().currentUser.getIdToken();
@@ -74,10 +75,8 @@ const Report = ({navigation}) => {
       let numberOfFail = 0;
       let numberTotal = 0;
       await fetch(
-        `${
-          API.baseURL
-        }/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${
-          pickupPoint && pickupPoint.id ? `pickupPointId=${pickupPoint.id}` : ''
+        `${API.baseURL
+        }/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${pickupPoint && pickupPoint.id ? `pickupPointId=${pickupPoint.id}` : ''
         }`,
         {
           method: 'GET',
@@ -160,10 +159,8 @@ const Report = ({navigation}) => {
         });
 
       await fetch(
-        `${
-          API.baseURL
-        }/api/order/packageStaff/getOrders?deliveryMethod=PICKUP_POINT&${
-          pickupPoint && pickupPoint.id ? `pickupPointId=${pickupPoint.id}` : ''
+        `${API.baseURL
+        }/api/order/packageStaff/getOrders?deliveryMethod=PICKUP_POINT&${pickupPoint && pickupPoint.id ? `pickupPointId=${pickupPoint.id}` : ''
         }`,
         {
           method: 'GET',
@@ -262,22 +259,21 @@ const Report = ({navigation}) => {
       if (tokenId) {
         setLoading(true);
         const resetData = [
-          {value: 0, label: 'Jan', month: 1},
-          {value: 0, label: 'Feb', month: 2},
-          {value: 0, label: 'Mar', month: 3},
-          {value: 0, label: 'Apr', month: 4},
-          {value: 0, label: 'May', month: 5},
-          {value: 0, label: 'Jun', month: 6},
-          {value: 0, label: 'Jul', month: 7},
-          {value: 0, label: 'Aug', month: 8},
-          {value: 0, label: 'Sep', month: 9},
-          {value: 0, label: 'Oct', month: 10},
-          {value: 0, label: 'Nov', month: 11},
-          {value: 0, label: 'Dec', month: 12},
+          { value: 0, label: 'Jan', month: 1 },
+          { value: 0, label: 'Feb', month: 2 },
+          { value: 0, label: 'Mar', month: 3 },
+          { value: 0, label: 'Apr', month: 4 },
+          { value: 0, label: 'May', month: 5 },
+          { value: 0, label: 'Jun', month: 6 },
+          { value: 0, label: 'Jul', month: 7 },
+          { value: 0, label: 'Aug', month: 8 },
+          { value: 0, label: 'Sep', month: 9 },
+          { value: 0, label: 'Oct', month: 10 },
+          { value: 0, label: 'Nov', month: 11 },
+          { value: 0, label: 'Dec', month: 12 },
         ];
         fetch(
-          `${
-            API.baseURL
+          `${API.baseURL
           }/api/order/packageStaff/getReportOrders?mode=MONTH&year=${date.slice(
             0,
             4,
@@ -373,7 +369,7 @@ const Report = ({navigation}) => {
                 label: item.year,
                 spacing: 2,
                 labelWidth: 30,
-                labelTextStyle: {color: 'gray'},
+                labelTextStyle: { color: 'gray' },
                 frontColor: '#177AD5',
               };
               const obj2 = {
@@ -396,7 +392,7 @@ const Report = ({navigation}) => {
 
   const renderTitle = () => {
     return (
-      <View style={{marginVertical: 10}}>
+      <View style={{ marginVertical: 10 }}>
         <View
           style={{
             flex: 1,
@@ -404,7 +400,7 @@ const Report = ({navigation}) => {
             justifyContent: 'space-around',
             marginTop: 15,
           }}>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <View
               style={{
                 height: 12,
@@ -422,7 +418,7 @@ const Report = ({navigation}) => {
               Đơn thành công
             </Text>
           </View>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <View
               style={{
                 height: 12,
@@ -548,7 +544,7 @@ const Report = ({navigation}) => {
         <ScrollView
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}
-          style={{marginBottom: 80}}>
+          style={{ marginBottom: 80 }}>
           <ImageBackground
             source={require('../../assets/image/backgroundStaff.jpeg')}
             style={styles.container}>
@@ -570,6 +566,7 @@ const Report = ({navigation}) => {
                       fontStyle: 'italic',
                       color: 'black',
                       marginBottom: 10,
+                      maxWidth: '93%'
                     }}>
                     Hãy đóng gói những đơn hàng thật kĩ càng nhé!
                   </Text>
@@ -581,7 +578,7 @@ const Report = ({navigation}) => {
                     }}>
                     <Image
                       resizeMode="contain"
-                      style={{width: 50, height: 50, borderRadius: 75}}
+                      style={{ width: 50, height: 50, borderRadius: 75 }}
                       source={{
                         uri: currentUser?.avatarUrl,
                       }}
@@ -591,8 +588,7 @@ const Report = ({navigation}) => {
                     <TouchableOpacity
                       style={{
                         position: 'absolute',
-                        bottom: -30,
-                        left: -12,
+                        bottom: '-17%',
                         zIndex: 100,
                         width: 75,
                         height: 35,
@@ -609,7 +605,7 @@ const Report = ({navigation}) => {
                           })
                           .catch(e => console.log(e));
                       }}>
-                      <Text style={{color: 'red', fontWeight: 'bold'}}>
+                      <Text style={{ color: 'red', fontWeight: 'bold' }}>
                         Đăng xuất
                       </Text>
                     </TouchableOpacity>
@@ -631,15 +627,15 @@ const Report = ({navigation}) => {
                     marginTop: 10,
                   }}>
                   <View style={styles.wrapTotal}>
-                    <View style={{flex: 1}}>
-                      <Text style={{fontSize: 20, color: 'black'}}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 20, color: 'black' }}>
                         Tổng số đơn hàng: {numberTotal}
                       </Text>
                     </View>
                   </View>
                   <View style={styles.wrap_container}>
                     <View style={styles.wrapProcessing}>
-                      <View style={{flex: 1}}>
+                      <View style={{ flex: 1 }}>
                         <Text style={styles.texts}>Đơn chờ xác nhận:</Text>
                       </View>
                       <View
@@ -652,7 +648,7 @@ const Report = ({navigation}) => {
                       </View>
                     </View>
                     <View style={styles.wrapPackaging}>
-                      <View style={{flex: 1}}>
+                      <View style={{ flex: 1 }}>
                         <Text style={styles.texts}>Đơn đang đóng gói:</Text>
                       </View>
                       <View
@@ -665,7 +661,7 @@ const Report = ({navigation}) => {
                       </View>
                     </View>
                     <View style={styles.wrapPackaged}>
-                      <View style={{flex: 1}}>
+                      <View style={{ flex: 1 }}>
                         <Text style={styles.texts}>Đơn đã đóng gói:</Text>
                       </View>
                       <View
@@ -678,7 +674,7 @@ const Report = ({navigation}) => {
                       </View>
                     </View>
                     <View style={styles.wrapDelivering}>
-                      <View style={{flex: 1}}>
+                      <View style={{ flex: 1 }}>
                         <Text style={styles.texts}>Đơn đang giao:</Text>
                       </View>
                       <View
@@ -691,7 +687,7 @@ const Report = ({navigation}) => {
                       </View>
                     </View>
                     <View style={styles.wrapSuccess}>
-                      <View style={{flex: 1}}>
+                      <View style={{ flex: 1 }}>
                         <Text style={styles.texts}>Đơn đã giao:</Text>
                       </View>
                       <View
@@ -704,7 +700,7 @@ const Report = ({navigation}) => {
                       </View>
                     </View>
                     <View style={styles.wrapCancel}>
-                      <View style={{flex: 1}}>
+                      <View style={{ flex: 1 }}>
                         <Text style={styles.texts}>Đơn đã huỷ:</Text>
                       </View>
                       <View
@@ -764,16 +760,20 @@ const Report = ({navigation}) => {
                       shadowOpacity: 0.25,
                       shadowRadius: 4,
                       elevation: 3,
+
                     }}>
                     <BarChart
+                      width={Dimensions.get('window').width * 0.8}
+                      height={200}
                       disablePress={true}
                       data={data}
-                      spacing={6.5}
-                      barWidth={20}
+                      spacing={5}
+                      barWidth={Dimensions.get('window').width * 0.0545}
                       frontColor={COLORS.tabIcon}
                       isAnimated
                       showYAxisIndices
-                      // hideRules
+                      hideRules
+                      hideOrigin
                       showFractionalValue
                     />
                   </View>
@@ -809,7 +809,7 @@ const Report = ({navigation}) => {
                         disablePress={true}
                         xAxisThickness={0}
                         yAxisThickness={0}
-                        yAxisTextStyle={{color: 'gray'}}
+                        yAxisTextStyle={{ color: 'gray' }}
                         noOfSections={3}
                       />
                     </View>
@@ -833,9 +833,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
   },
   header: {
-    flex: 1,
-    paddingHorizontal: 20,
-    marginTop: 30,
+    flex: 0.5,
+    paddingHorizontal: '4%',
+    marginTop: "5%",
   },
   body: {
     flex: 10,
@@ -876,8 +876,7 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     gap: 10,
     justifyContent: 'center',
-    marginTop: 10,
-
+    marginTop: 10
     // backgroundColor: 'pink',
   },
   wrapTotal: {
@@ -899,8 +898,8 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   wrapProcessing: {
-    width: 100,
-    height: 108,
+    width: '24%',
+    height: '47%',
     backgroundColor: COLORS.light_green,
     borderRadius: 10,
     padding: 10,
@@ -915,8 +914,8 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   wrapPackaging: {
-    width: 100,
-    height: 108,
+    width: '24%',
+    height: '47%',
     backgroundColor: '#b6d8eb',
     borderRadius: 10,
     padding: 10,
@@ -931,8 +930,8 @@ const styles = StyleSheet.create({
     elevation: 7,
   },
   wrapPackaged: {
-    width: 100,
-    height: 108,
+    width: '24%',
+    height: '47%',
     backgroundColor: '#8ec0ef',
     borderRadius: 10,
     padding: 10,
@@ -947,8 +946,8 @@ const styles = StyleSheet.create({
     elevation: 7,
   },
   wrapCancel: {
-    width: 100,
-    height: 108,
+    width: '24%',
+    height: '47%',
     backgroundColor: '#e8bfbe',
     borderRadius: 10,
     padding: 10,
@@ -963,8 +962,8 @@ const styles = StyleSheet.create({
     elevation: 7,
   },
   wrapDelivering: {
-    width: 100,
-    height: 108,
+    width: '24%',
+    height: '47%',
     backgroundColor: 'white',
     borderRadius: 10,
     padding: 10,
@@ -979,8 +978,8 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   wrapSuccess: {
-    width: 100,
-    height: 108,
+    width: '24%',
+    height: '47%',
     backgroundColor: '#bee8c8',
     borderRadius: 10,
     padding: 10,

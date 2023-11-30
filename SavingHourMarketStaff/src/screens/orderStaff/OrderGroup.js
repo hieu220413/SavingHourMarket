@@ -16,6 +16,7 @@ import {
   Alert,
   FlatList,
   Switch,
+  Dimensions,
 } from 'react-native';
 import React, {useEffect, useState, useCallback, useRef} from 'react';
 import auth from '@react-native-firebase/auth';
@@ -889,7 +890,6 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                     style={{
                       position: 'absolute',
                       bottom: -30,
-                      left: -12,
                       zIndex: 100,
                       width: 75,
                       height: 35,
@@ -917,7 +917,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
               style={{
                 flexDirection: 'row',
               }}>
-              <View style={{flex: 6}}>
+              <View style={{flex: 6, paddingTop: '3%'}}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   {orderGroupAreaState.map((item, index) => (
                     <TouchableOpacity
@@ -928,9 +928,8 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                       <View
                         style={[
                           {
-                            paddingTop: 15,
                             paddingHorizontal: 15,
-                            paddingBottom: 15,
+                            paddingBottom: 10,
                           },
                           currentStatus.display === item.display && {
                             borderBottomColor: COLORS.primary,
@@ -1712,19 +1711,21 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                                 borderWidth: 1,
                                 borderRadius: 10,
                                 margin: 5,
+                                width: '45%',
                               }
                             : {
                                 borderColor: '#c8c8c8',
                                 borderWidth: 0.2,
                                 borderRadius: 10,
                                 margin: 5,
+                                width: '45%',
                               }
                         }>
                         <Text
                           style={
                             tempSelectedSortId === item.id
                               ? {
-                                  width: 150,
+                                  width: '100%',
                                   paddingVertical: 10,
                                   textAlign: 'center',
                                   color: COLORS.primary,
@@ -1732,7 +1733,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                                   fontSize: 12,
                                 }
                               : {
-                                  width: 150,
+                                  width: '100%',
                                   paddingVertical: 10,
                                   textAlign: 'center',
                                   color: 'black',
@@ -1775,19 +1776,21 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                                   borderWidth: 1,
                                   borderRadius: 10,
                                   margin: 5,
+                                  width: '45%',
                                 }
                               : {
                                   borderColor: '#c8c8c8',
                                   borderWidth: 0.2,
                                   borderRadius: 10,
                                   margin: 5,
+                                  width: '45%',
                                 }
                           }>
                           <Text
                             style={
                               item.id === tempSelectedTimeFrameId
                                 ? {
-                                    width: 150,
+                                    width: '100%',
                                     paddingVertical: 10,
                                     textAlign: 'center',
                                     color: COLORS.primary,
@@ -1795,7 +1798,7 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                                     fontSize: 12,
                                   }
                                 : {
-                                    width: 150,
+                                    width: '100%',
                                     paddingVertical: 10,
                                     textAlign: 'center',
                                     color: 'black',
@@ -1835,9 +1838,9 @@ const OrderGroupForOrderStaff = ({navigation, route}) => {
                   {isEnableDateFilter ? (
                     <View
                       style={{
-                        flexDirection: 'row',
                         flexWrap: 'wrap',
                         marginVertical: 5,
+                        alignItems: 'center',
                       }}>
                       <DatePicker
                         date={
@@ -2240,7 +2243,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   header: {
-    flex: 2,
     // backgroundColor: 'orange',
     paddingHorizontal: 20,
     zIndex: 100,
@@ -2253,6 +2255,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+    flexWrap: 'wrap', // This property makes items wrap inside the container
+    justifyContent: 'flex-start', // Adjust as per your requirements
+    alignItems: 'flex-start', // A
   },
   body: {
     flex: 11,

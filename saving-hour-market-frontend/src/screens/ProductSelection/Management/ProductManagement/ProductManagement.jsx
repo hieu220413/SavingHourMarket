@@ -82,12 +82,12 @@ const ProductManagement = () => {
 
   const expiredShownOptions = [
     {
-      display: "Hiện",
-      value: "&isExpiredShown=true",
+      display: "Có",
+      value: "&isHiddenBatchShown=true",
     },
     {
-      display: "Ẩn",
-      value: "&isExpiredShown=false",
+      display: "Không",
+      value: "&isHiddenBatchShown=false",
     },
   ];
   const [supermarkets, setSupermarkets] = useState([]);

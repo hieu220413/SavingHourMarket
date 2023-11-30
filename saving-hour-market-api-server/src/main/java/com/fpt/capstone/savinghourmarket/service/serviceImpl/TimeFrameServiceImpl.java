@@ -92,13 +92,17 @@ public class TimeFrameServiceImpl implements TimeFrameService {
 
         }
 
-        if(timeFrameRepository.findByHour(timeFrameCreateUpdateBody.getFromHour()).size() > 0) {
-            errorFields.put("fromHourError", "Start hour collides with hour from other timeframe");
-        }
+//        if(timeFrameRepository.findByHour(timeFrameCreateUpdateBody.getFromHour()).size() > 0) {
+//            errorFields.put("fromHourError", "Start hour collides with hour from other timeframe");
+//        }
 
-        if(timeFrameRepository.findByHour(timeFrameCreateUpdateBody.getToHour()).size() > 0 ) {
-            errorFields.put("toHourError", "End hour collides with hour from other timeframe");
-
+//        if(timeFrameRepository.findByHour(timeFrameCreateUpdateBody.getToHour()).size() > 0 ) {
+//            errorFields.put("toHourError", "End hour collides with hour from other timeframe");
+//        }
+        List<TimeFrame> collideHourValidation = timeFrameRepository.findByCollideHour(timeFrameCreateUpdateBody.getFromHour(), timeFrameCreateUpdateBody.getToHour());
+        if(collideHourValidation.size() > 0) {
+            errorFields.put("fromHourError", "This timeframe is collided with other timeframe");
+            errorFields.put("toHourError", "This timeframe is collided with other timeframe");
         }
 
         if(timeFrameRepository.findByFromHourAndToHour(timeFrameCreateUpdateBody.getFromHour(), timeFrameCreateUpdateBody.getToHour()).isPresent()){
@@ -143,22 +147,38 @@ public class TimeFrameServiceImpl implements TimeFrameService {
 
         }
 
-        List<TimeFrame> fromHourValidate = timeFrameRepository.findByHour(timeFrameUpdateBody.getFromHour());
-        if(fromHourValidate.size() > 0 ) {
-            List<TimeFrame> selfTimeFrame = fromHourValidate.stream().filter(frame -> frame.getId().equals(timeFrameId)).collect(Collectors.toList());
-            if(selfTimeFrame.size() == 0 ){
-                errorFields.put("fromHourError", "Start hour collides with hour from other timeframe");
+
+
+
+//        List<TimeFrame> fromHourValidate = timeFrameRepository.findByHour(timeFrameUpdateBody.getFromHour());
+//        if(fromHourValidate.size() > 0 ) {
+//            List<TimeFrame> selfTimeFrame = fromHourValidate.stream().filter(frame -> frame.getId().equals(timeFrameId)).collect(Collectors.toList());
+//            if(selfTimeFrame.size() == 0 ){
+//                errorFields.put("fromHourError", "Start hour collides with hour from other timeframe");
+//            }
+//        }
+
+//        List<TimeFrame> toHourValidate = timeFrameRepository.findByHour(timeFrameUpdateBody.getToHour());
+//        if(toHourValidate.size() > 0 ) {
+//            List<TimeFrame> selfTimeFrame = toHourValidate.stream().filter(frame -> frame.getId().equals(timeFrameId)).collect(Collectors.toList());
+//            if(selfTimeFrame.size() == 0 ){
+//                errorFields.put("toHourError", "End hour collides with hour from other timeframe");
+//            }
+//
+//
+//        }
+
+        List<TimeFrame> collideHourValidation = timeFrameRepository.findByCollideHour(timeFrameUpdateBody.getFromHour(), timeFrameUpdateBody.getToHour());
+        if(collideHourValidation.size() > 0) {
+            if(collideHourValidation.size() == 1) {
+                if(!collideHourValidation.get(0).getId().equals(timeFrameId)){
+                    errorFields.put("fromHourError", "This timeframe is collided with other timeframe");
+                    errorFields.put("toHourError", "This timeframe is collided with other timeframe");
+                }
+            } else {
+                errorFields.put("fromHourError", "This timeframe is collided with other timeframe");
+                errorFields.put("toHourError", "This timeframe is collided with other timeframe");
             }
-        }
-
-        List<TimeFrame> toHourValidate = timeFrameRepository.findByHour(timeFrameUpdateBody.getToHour());
-        if(toHourValidate.size() > 0 ) {
-            List<TimeFrame> selfTimeFrame = toHourValidate.stream().filter(frame -> frame.getId().equals(timeFrameId)).collect(Collectors.toList());
-            if(selfTimeFrame.size() == 0 ){
-                errorFields.put("toHourError", "End hour collides with hour from other timeframe");
-            }
-
-
         }
 
         Optional<TimeFrame> duplicateTimeFrame = timeFrameRepository.findByFromHourAndToHour(timeFrameUpdateBody.getFromHour(), timeFrameUpdateBody.getToHour());
@@ -192,10 +212,10 @@ public class TimeFrameServiceImpl implements TimeFrameService {
         if(enableDisableStatusChangeBody.getEnableDisableStatus().ordinal() == EnableDisableStatus.ENABLE.ordinal()){
             timeFrame.get().setStatus(enableDisableStatusChangeBody.getEnableDisableStatus().ordinal());
         } else {
-            List<Order> processingOrderList = orderRepository.findTimeFrameInProcessingOrderById(timeFrame.get().getId(), PageRequest.of(0,1), List.of(OrderStatus.PROCESSING.ordinal(), OrderStatus.DELIVERING.ordinal(), OrderStatus.PACKAGING.ordinal(), OrderStatus.PACKAGED.ordinal()));
-            if(processingOrderList.size() > 0) {
-                throw new ModifyTimeFrameForbiddenException(HttpStatus.valueOf(AdditionalResponseCode.TIME_FRAME_IS_IN_PROCESSING_ORDER.getCode()), AdditionalResponseCode.TIME_FRAME_IS_IN_PROCESSING_ORDER.toString());
-            }
+//            List<Order> processingOrderList = orderRepository.findTimeFrameInProcessingOrderById(timeFrame.get().getId(), PageRequest.of(0,1), List.of(OrderStatus.PROCESSING.ordinal(), OrderStatus.DELIVERING.ordinal(), OrderStatus.PACKAGING.ordinal(), OrderStatus.PACKAGED.ordinal()));
+//            if(processingOrderList.size() > 0) {
+//                throw new ModifyTimeFrameForbiddenException(HttpStatus.valueOf(AdditionalResponseCode.TIME_FRAME_IS_IN_PROCESSING_ORDER.getCode()), AdditionalResponseCode.TIME_FRAME_IS_IN_PROCESSING_ORDER.toString());
+//            }
             timeFrame.get().setStatus(enableDisableStatusChangeBody.getEnableDisableStatus().ordinal());
         }
 

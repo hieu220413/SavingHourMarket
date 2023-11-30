@@ -49,4 +49,15 @@ public interface TimeFrameRepository extends JpaRepository<TimeFrame, UUID> {
             "WHERE " +
             "t.fromHour = :hour OR t.toHour = :hour")
     List<TimeFrame> findByHour(LocalTime hour);
+
+    @Query("SELECT t from TimeFrame t " +
+            "WHERE " +
+            ":fromHour BETWEEN t.fromHour AND t.toHour " +
+            "OR " +
+            ":toHour BETWEEN  t.fromHour AND t.toHour " +
+            "OR " +
+            "t.fromHour BETWEEN :fromHour AND :toHour " +
+            "OR " +
+            "t.toHour BETWEEN :fromHour AND :toHour")
+    List<TimeFrame> findByCollideHour(LocalTime fromHour, LocalTime toHour);
 }

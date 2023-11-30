@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 // eslint-disable-next-line prettier/prettier
-import {View, Text, Image} from 'react-native';
+import {View, Text, Image, Dimensions} from 'react-native';
 
 import React, {useCallback, useState} from 'react';
 import {ScrollView, TouchableOpacity} from 'react-native-gesture-handler';

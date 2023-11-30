@@ -52,7 +52,7 @@ public class ProductServiceImpl implements ProductService {
     private final OrderRepository orderRepository;
 
     @Override
-    public ProductListResponseBody getProductsForStaff(Boolean isExpiredShown, String name, String supermarketId, String productCategoryId, String productSubCategoryId, EnableDisableStatus status, Integer page, Integer limit, SortType quantitySortType, SortType expiredSortType, SortType priceSort) {
+    public ProductListResponseBody getProductsForStaff(String name, String supermarketId, String productCategoryId, String productSubCategoryId, EnableDisableStatus status, Integer page, Integer limit, SortType quantitySortType, SortType expiredSortType, SortType priceSort, boolean isHiddenBatchShown) {
 //        Sort sortable = Sort.by("expiredDate").ascending();
 //        if(quantitySortType.equals("ASC") ){
 //            sortable = Sort.by("expiredDate").ascending();
@@ -82,6 +82,7 @@ public class ProductServiceImpl implements ProductService {
                 , productCategoryId == null ? null : UUID.fromString(productCategoryId)
                 , productSubCategoryId == null ? null : UUID.fromString(productSubCategoryId)
                 , status == null ? EnableDisableStatus.ENABLE.ordinal() : status.ordinal()
+                , isHiddenBatchShown
 //                , isExpiredShown
                 , pageableWithSort);
 

@@ -10,6 +10,7 @@ import {
   FlatList,
   Modal,
   Pressable,
+  Dimensions,
 } from 'react-native';
 import React, {useEffect, useState, useCallback} from 'react';
 import auth from '@react-native-firebase/auth';
@@ -425,7 +426,6 @@ const Product = ({navigation}) => {
                   style={{
                     position: 'absolute',
                     bottom: -30,
-                    left: -12,
                     zIndex: 100,
                     width: 75,
                     height: 35,
@@ -456,11 +456,12 @@ const Product = ({navigation}) => {
             }}>
             <Text
               style={{
-                fontSize: 18,
+                flex: 5,
+                fontSize: 16,
                 fontFamily: 'Roboto',
                 backgroundColor: 'white',
                 alignSelf: 'flex-start',
-                marginTop: 15,
+                marginTop: '2%',
                 paddingVertical: 5,
                 borderRadius: 15,
                 paddingHorizontal: 15,
@@ -474,7 +475,8 @@ const Product = ({navigation}) => {
                 shadowOpacity: 0.25,
                 shadowRadius: 4,
                 elevation: 5,
-              }}>
+              }}
+              numberOfLines={1}>
               Danh sách các sản phẩm cần lấy
             </Text>
             <View
@@ -672,19 +674,21 @@ const Product = ({navigation}) => {
                               borderWidth: 1,
                               borderRadius: 10,
                               margin: 5,
+                              width: '45%',
                             }
                           : {
                               borderColor: '#c8c8c8',
                               borderWidth: 0.2,
                               borderRadius: 10,
                               margin: 5,
+                              width: '45%',
                             }
                       }>
                       <Text
                         style={
                           item === tempSupermarketFilterName
                             ? {
-                                width: 150,
+                                width: '100%',
                                 paddingVertical: 10,
                                 textAlign: 'center',
                                 color: COLORS.primary,
@@ -692,11 +696,10 @@ const Product = ({navigation}) => {
                                 fontSize: 12,
                               }
                             : {
-                                width: 150,
+                                width: '100%',
                                 paddingVertical: 10,
                                 textAlign: 'center',
                                 color: 'black',
-
                                 fontSize: 12,
                               }
                         }>
@@ -763,7 +766,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   header: {
-    flex: 1.5,
+    flexWrap: 'wrap', // This property makes items wrap inside the container
+    justifyContent: 'flex-start', // Adjust as per your requirements
+    alignItems: 'flex-start', // A
     backgroundColor: 'white',
     shadowColor: '#000',
     shadowOffset: {

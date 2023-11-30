@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import {StyleSheet, Text, View, Image} from 'react-native';
+import {StyleSheet, Text, View, Image, Dimensions} from 'react-native';
 import React from 'react';
 import {COLORS, FONTS} from '../constants/theme';
 
@@ -17,15 +17,15 @@ const TabIcon = ({focused, icon, display}) => {
         source={icon}
         resizeMode="contain"
         style={{
-          width: 30,
-          height: 30,
+          width: 25,
+          height: 25,
           tintColor: focused ? COLORS.secondary : COLORS.tabIcon,
         }}
       />
       <Text
         style={{
           textAlign: 'center',
-          fontSize: 15,
+          fontSize: 12,
           color: focused ? COLORS.secondary : COLORS.tabIcon,
           fontWeight: 400,
           fontFamily: FONTS.fontFamily,
