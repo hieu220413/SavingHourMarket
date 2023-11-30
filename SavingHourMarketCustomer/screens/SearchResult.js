@@ -549,7 +549,6 @@ const SearchResult = ({ navigation, route }) => {
               handleTypingSearch(data);
             }}
             onSubmitEditing={() => {
-              setLoading(true);
               setSelectSort(sortOptions);
               setSelectFilter(selectFilterInit);
               if (productName != '') {
