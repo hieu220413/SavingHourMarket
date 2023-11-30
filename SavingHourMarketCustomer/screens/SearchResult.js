@@ -8,6 +8,7 @@ import {
   StyleSheet,
   TextInput,
   FlatList,
+  Dimensions,
   Modal as FilterModal,
 } from 'react-native';
 import React, { useState, useRef, useCallback } from 'react';
@@ -338,7 +339,7 @@ const SearchResult = ({ navigation, route }) => {
               numberOfLines={1}
               style={{
                 fontFamily: FONTS.fontFamily,
-                fontSize: 18,
+                fontSize: Dimensions.get('window').width * 0.04,
                 fontWeight: 700,
                 maxWidth: '95%',
                 color: 'black',
@@ -350,7 +351,7 @@ const SearchResult = ({ navigation, route }) => {
               <Text
                 style={{
                   maxWidth: '70%',
-                  fontSize: 18,
+                  fontSize: Dimensions.get('window').width * 0.04,
                   lineHeight: 30,
                   color: COLORS.secondary,
                   fontWeight: 600,
@@ -362,7 +363,7 @@ const SearchResult = ({ navigation, route }) => {
               </Text>
               <Text
                 style={{
-                  fontSize: 12,
+                  fontSize: Dimensions.get('window').width * 0.03,
                   lineHeight: 18,
                   color: COLORS.secondary,
                   fontWeight: 600,
@@ -375,7 +376,7 @@ const SearchResult = ({ navigation, route }) => {
             <Text
               style={{
                 fontFamily: FONTS.fontFamily,
-                fontSize: 18,
+                fontSize: Dimensions.get('window').width * 0.04,
                 marginBottom: 10,
               }}>
               HSD:{' '}
@@ -424,22 +425,22 @@ const SearchResult = ({ navigation, route }) => {
           style={
             item.active == true
               ? {
-                width: 150,
-                paddingHorizontal: 20,
+                width: Dimensions.get('window').width * 0.35,
+                paddingHorizontal: '5%',
                 paddingVertical: 10,
                 textAlign: 'center',
                 color: COLORS.primary,
                 fontFamily: FONTS.fontFamily,
-                fontSize: 12,
+                fontSize: Dimensions.get('window').width * 0.03,
               }
               : {
-                width: 150,
-                paddingHorizontal: 20,
+                width: Dimensions.get('window').width * 0.35,
+                paddingHorizontal: '5%',
                 paddingVertical: 10,
                 textAlign: 'center',
                 color: 'black',
                 fontFamily: FONTS.fontFamily,
-                fontSize: 12,
+                fontSize: Dimensions.get('window').width * 0.03,
               }
           }>
           {item.name}
@@ -485,22 +486,22 @@ const SearchResult = ({ navigation, route }) => {
           style={
             item.active == true
               ? {
-                width: 150,
-                paddingHorizontal: 20,
+                width: Dimensions.get('window').width * 0.35,
+                paddingHorizontal: '4%',
                 paddingVertical: 10,
                 textAlign: 'center',
                 color: COLORS.primary,
                 fontFamily: FONTS.fontFamily,
-                fontSize: 12,
+                fontSize: Dimensions.get('window').width * 0.03,
               }
               : {
-                width: 150,
-                paddingHorizontal: 20,
+                width: Dimensions.get('window').width * 0.35,
+                paddingHorizontal: '4%',
                 paddingVertical: 10,
                 textAlign: 'center',
                 color: 'black',
                 fontFamily: FONTS.fontFamily,
-                fontSize: 12,
+                fontSize: Dimensions.get('window').width * 0.03,
               }
           }>
           {item.name}
@@ -520,7 +521,7 @@ const SearchResult = ({ navigation, route }) => {
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          paddingLeft: 15,
+          paddingLeft: '2%',
           marginBottom: 20,
         }}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -573,9 +574,9 @@ const SearchResult = ({ navigation, route }) => {
           <Image
             resizeMode="contain"
             style={{
-              height: 45,
+              height: 35,
               tintColor: COLORS.primary,
-              width: 35,
+              width: Dimensions.get('window').width * 0.1,
               marginHorizontal: '1%',
             }}
             source={icons.filter}
@@ -591,7 +592,7 @@ const SearchResult = ({ navigation, route }) => {
             style={{
               height: 40,
               tintColor: COLORS.primary,
-              width: 35,
+              width: Dimensions.get('window').width * 0.1,
             }}
             source={icons.cart}
           />
@@ -662,7 +663,7 @@ const SearchResult = ({ navigation, route }) => {
                 style={{
                   color: 'black',
                   fontFamily: FONTS.fontFamily,
-                  fontSize: 20,
+                  fontSize: Dimensions.get('window').width * 0.05,
                   fontWeight: 700,
                   textAlign: 'center',
                   paddingBottom: 20,
@@ -688,7 +689,7 @@ const SearchResult = ({ navigation, route }) => {
               style={{
                 color: 'black',
                 fontFamily: FONTS.fontFamily,
-                fontSize: 16,
+                fontSize: Dimensions.get('window').width * 0.045,
                 fontWeight: 700,
               }}>
               Sắp xếp theo
@@ -707,7 +708,7 @@ const SearchResult = ({ navigation, route }) => {
               style={{
                 color: 'black',
                 fontFamily: FONTS.fontFamily,
-                fontSize: 16,
+                fontSize: Dimensions.get('window').width * 0.045,
                 fontWeight: 700,
               }}>
               Lọc theo loại sản phẩm
@@ -732,7 +733,7 @@ const SearchResult = ({ navigation, route }) => {
               <TouchableOpacity
                 style={{
                   width: '50%',
-                  paddingHorizontal: 15,
+                  paddingHorizontal: '2%',
                   paddingVertical: 10,
                   backgroundColor: 'white',
                   borderRadius: 10,
@@ -746,6 +747,7 @@ const SearchResult = ({ navigation, route }) => {
                     color: COLORS.primary,
                     fontWeight: 'bold',
                     textAlign: 'center',
+                    fontSize: Dimensions.get('window').width * 0.035,
                   }}>
                   Thiết lập lại
                 </Text>
@@ -754,7 +756,7 @@ const SearchResult = ({ navigation, route }) => {
               <TouchableOpacity
                 style={{
                   width: '50%',
-                  paddingHorizontal: 15,
+                  paddingHorizontal: '2%',
                   paddingVertical: 10,
                   backgroundColor: COLORS.primary,
                   color: 'white',
@@ -841,7 +843,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   itemImage: {
-    width: 130,
+    width: '40%',
     height: 130,
     borderRadius: 20,
     padding: 10,
@@ -854,11 +856,11 @@ const styles = StyleSheet.create({
   containerSearch: {
     backgroundColor: '#f5f5f5',
     width: '60%',
-    height: 45,
+    height: 40,
     borderRadius: 40,
     paddingLeft: 10,
     marginTop: 10,
-    marginLeft: 20,
+    marginLeft: '2%',
     marginBottom: 10,
     flexDirection: 'row',
     borderWidth: 1,
@@ -866,7 +868,7 @@ const styles = StyleSheet.create({
   },
   input: {
     fontFamily: FONTS.fontFamily,
-    fontSize: 16,
+    fontSize: 14,
     flex: 1,
   },
   wrapperSearch: {
@@ -896,7 +898,7 @@ const styles = StyleSheet.create({
     margin: 20,
     backgroundColor: 'white',
     borderRadius: 20,
-    padding: 20,
+    padding: '5%',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -921,6 +923,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     textAlign: 'center',
+    fontSize: Dimensions.get('window').width * 0.035,
   },
   modalText: {
     marginBottom: 15,

@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 // eslint-disable-next-line prettier/prettier
-import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Image, ScrollView, Dimensions } from 'react-native';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import SearchBar from '../components/SearchBar';
 import { icons } from '../constants';
@@ -37,27 +37,27 @@ const Search = ({ navigation }) => {
         }, 400);
     };
 
-     // system status check
-     useFocusEffect(
+    // system status check
+    useFocusEffect(
         useCallback(() => {
-          database().ref(`systemStatus`).off('value');
-          database()
-            .ref('systemStatus')
-            .on('value', async snapshot => {
-              if (snapshot.val() === 0) {
-                navigation.reset({
-                  index: 0,
-                  routes: [{name: 'Initial'}],
+            database().ref(`systemStatus`).off('value');
+            database()
+                .ref('systemStatus')
+                .on('value', async snapshot => {
+                    if (snapshot.val() === 0) {
+                        navigation.reset({
+                            index: 0,
+                            routes: [{ name: 'Initial' }],
+                        });
+
+                    } else {
+                        // setSystemStatus(snapshot.val());
+
+
+                    }
                 });
-              
-              } else {
-                // setSystemStatus(snapshot.val());
-                
-               
-              }
-            });
         }, []),
-      );
+    );
 
     // fetch search suggestion
     useFocusEffect(
@@ -116,7 +116,7 @@ const Search = ({ navigation }) => {
                 style={{
                     borderColor: '#C8C8C8',
                     borderBottomWidth: 0.2,
-                    paddingLeft: 15,
+                    paddingLeft: '2%',
                 }}
             >
                 <TouchableOpacity
@@ -131,7 +131,7 @@ const Search = ({ navigation }) => {
                         style={{
                             color: 'black',
                             fontFamily: FONTS.fontFamily,
-                            fontSize: 16,
+                            fontSize: Dimensions.get('window').width * 0.04,
                             lineHeight: 40,
                         }}
                     >{item}</Text>
@@ -161,7 +161,7 @@ const Search = ({ navigation }) => {
                         style={{
                             color: 'black',
                             fontFamily: FONTS.fontFamily,
-                            fontSize: 16,
+                            fontSize: Dimensions.get('window').width * 0.045,
                             lineHeight: 40,
                         }}
                     >{item}</Text>
@@ -183,7 +183,8 @@ const Search = ({ navigation }) => {
                     borderColor: '#c8c8c8',
                     maxWidth: '50%',
                     flexDirection: 'row',
-                    alignItems: 'center'
+                    alignItems: 'center',
+                    paddingVertical: '2%'
                 }}
             >
                 <Image
@@ -192,14 +193,14 @@ const Search = ({ navigation }) => {
                         uri: item?.imageUrlImageList[0].imageUrl,
                     }}
                     style={{
-                        width: 100,
+                        width: '50%',
                         height: 100,
                     }}
                 />
                 <Text
                     style={{
                         fontFamily: FONTS.fontFamily,
-                        fontSize: 16,
+                        fontSize: Dimensions.get('window').width * 0.04,
                         paddingRight: '50%',
                         color: 'black',
                     }}
@@ -221,14 +222,14 @@ const Search = ({ navigation }) => {
                     style={{
                         flexDirection: 'row',
                         alignItems: 'center',
-                        paddingLeft: 15,
+                        paddingLeft: '2%',
                     }}
                 >
                     <TouchableOpacity onPress={() => navigation.goBack()}>
                         <Image
                             source={icons.leftArrow}
                             resizeMode="contain"
-                            style={{ width: 35, height: 35, tintColor: COLORS.primary }}
+                            style={{ width: Dimensions.get('window').width * 0.1, height: 35, tintColor: COLORS.primary }}
                         />
                     </TouchableOpacity>
                     <SearchBar
@@ -259,8 +260,8 @@ const Search = ({ navigation }) => {
                                 style={{
                                     textAlign: 'center',
                                     fontFamily: FONTS.fontFamily,
-                                    fontSize: 16,
-                                    paddingVertical: 10,
+                                    fontSize: Dimensions.get('window').width * 0.035,
+                                    paddingVertical: '2%',
                                     borderColor: '#c8c8c8',
                                     borderWidth: 0.8,
                                 }}
@@ -276,11 +277,11 @@ const Search = ({ navigation }) => {
                     <Text
                         style={{
                             color: 'black',
-                            fontSize: 18,
+                            fontSize: Dimensions.get('window').width * 0.045,
                             fontFamily: FONTS.fontFamily,
                             fontWeight: 700,
                             paddingTop: 20,
-                            paddingLeft: 15,
+                            paddingLeft: '2%',
                         }}
                     >
                         Gợi ý tìm kiếm

@@ -7,14 +7,15 @@ import {
   Image,
   StyleSheet,
   Keyboard,
+  Dimensions,
 } from 'react-native';
-import React, {useRef, useState, useCallback, useEffect} from 'react';
-import {icons} from '../constants';
-import {COLORS, FONTS} from '../constants/theme';
-import {ScrollView, TextInput} from 'react-native-gesture-handler';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
+import { icons } from '../constants';
+import { COLORS, FONTS } from '../constants/theme';
+import { ScrollView, TextInput } from 'react-native-gesture-handler';
 import LoadingScreen from '../components/LoadingScreen';
-import {useFocusEffect} from '@react-navigation/native';
-import {API} from '../constants/api';
+import { useFocusEffect } from '@react-navigation/native';
+import { API } from '../constants/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Modal, {
   ModalFooter,
@@ -23,7 +24,7 @@ import Modal, {
 } from 'react-native-modals';
 import database from '@react-native-firebase/database';
 
-const ChangePickupPoint = ({navigation, route}) => {
+const ChangePickupPoint = ({ navigation, route }) => {
   const [pickupPointSuggestionList, setPickupPointSuggestionList] = useState(
     [],
   );
@@ -53,7 +54,7 @@ const ChangePickupPoint = ({navigation, route}) => {
           if (snapshot.val() === 0) {
             navigation.reset({
               index: 0,
-              routes: [{name: 'Initial'}],
+              routes: [{ name: 'Initial' }],
             });
           } else {
             // setSystemStatus(snapshot.val());
@@ -156,14 +157,13 @@ const ChangePickupPoint = ({navigation, route}) => {
       })
       .catch(err => console.log(err));
   };
-  const Item = ({item}) => {
+  const Item = ({ item }) => {
     return (
       <View
         style={{
           borderColor: '#decbcb',
           borderBottomWidth: 0.74,
-
-          paddingVertical: 15,
+          paddingVertical: '2%',
         }}>
         <TouchableOpacity onPress={() => selectLocation(item)}>
           <Text
@@ -171,8 +171,8 @@ const ChangePickupPoint = ({navigation, route}) => {
             style={{
               color: 'black',
               fontFamily: FONTS.fontFamily,
-              fontSize: 16,
-              lineHeight: 40,
+              fontSize: Dimensions.get('window').width * 0.04,
+              lineHeight: Dimensions.get('window').height * 0.06,
             }}>
             {item.description}
           </Text>
@@ -188,13 +188,13 @@ const ChangePickupPoint = ({navigation, route}) => {
           style={{
             flexDirection: 'row',
             alignItems: 'center',
-            paddingLeft: 15,
+            paddingLeft: '2%',
           }}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Image
               source={icons.leftArrow}
               resizeMode="contain"
-              style={{width: 35, height: 35, tintColor: COLORS.primary}}
+              style={{ width: Dimensions.get('window').width * 0.1, height: 35, tintColor: COLORS.primary }}
             />
           </TouchableOpacity>
           {/* Search Bar */}
@@ -235,7 +235,7 @@ const ChangePickupPoint = ({navigation, route}) => {
               borderBottomColor: '#decbcb',
               borderBottomWidth: 0.75,
               height: '100%',
-              paddingHorizontal: 15,
+              paddingHorizontal: '2%',
             }}>
             {data.map((item, i) => (
               <Item key={i} item={item} />
@@ -246,21 +246,21 @@ const ChangePickupPoint = ({navigation, route}) => {
         {/* Suggest Pickup point */}
         <Text
           style={{
-            fontSize: 20,
+            fontSize: Dimensions.get('window').width * 0.055,
             color: 'black',
             fontFamily: 'Roboto',
             fontWeight: 'bold',
             paddingBottom: 20,
             borderBottomColor: '#decbcb',
             borderBottomWidth: 0.75,
-            marginHorizontal: 15,
-            marginVertical: 20,
+            marginHorizontal: '2%',
+            marginVertical: '5%',
           }}>
           Điểm giao hàng gần bạn nhất
         </Text>
         <ScrollView
           style={{
-            paddingHorizontal: 15,
+            paddingHorizontal: '2%',
           }}>
           {pickupPointSuggestionList.map((item, index) => (
             <View key={index}>
@@ -278,8 +278,7 @@ const ChangePickupPoint = ({navigation, route}) => {
                       }
                     }}
                     style={{
-                      paddingVertical: 15,
-
+                      paddingVertical: '4%',
                       borderBottomColor: '#decbcb',
                       borderBottomWidth: 0.75,
                     }}>
@@ -287,24 +286,24 @@ const ChangePickupPoint = ({navigation, route}) => {
                       style={{
                         flexDirection: 'row',
                         alignItems: 'center',
-                        gap: 15,
+                        gap: 12,
                         flex: 1,
                       }}>
                       <Image
                         resizeMode="contain"
-                        style={{width: 25, height: 25}}
+                        style={{ width: Dimensions.get('window').width * 0.06, height: 25 }}
                         source={icons.location}
                       />
                       <Text
                         style={{
-                          fontSize: 17,
+                          fontSize: Dimensions.get('window').width * 0.04,
                           color: 'black',
                           fontFamily: 'Roboto',
                           width: '70%',
                         }}>
                         {item.address}
                       </Text>
-                      <Text style={{fontSize: 14}}>{item.distance}</Text>
+                      <Text style={{ fontSize: Dimensions.get('window').width * 0.035 }}>{item.distance}</Text>
                     </View>
                   </TouchableOpacity>
                 </>
@@ -315,7 +314,7 @@ const ChangePickupPoint = ({navigation, route}) => {
         {/* ******* */}
         <Text
           style={{
-            fontSize: 20,
+            fontSize: Dimensions.get('window').width * 0.055,
             color: 'black',
             fontFamily: 'Roboto',
             fontWeight: 'bold',
@@ -323,14 +322,14 @@ const ChangePickupPoint = ({navigation, route}) => {
             marginTop: 20,
             borderBottomColor: '#decbcb',
             borderBottomWidth: 0.75,
-            marginHorizontal: 15,
+            marginHorizontal: '2%',
           }}>
           Khác
         </Text>
         {/* Order pickup point */}
         <ScrollView
           contentContainerStyle={{
-            paddingHorizontal: 15,
+            paddingHorizontal: '2%',
           }}>
           {otherPickupPointList.map(item => (
             <TouchableOpacity
@@ -345,8 +344,7 @@ const ChangePickupPoint = ({navigation, route}) => {
                 }
               }}
               style={{
-                paddingVertical: 15,
-
+                paddingVertical: '2%',
                 borderBottomColor: '#decbcb',
                 borderBottomWidth: 0.75,
               }}>
@@ -354,24 +352,24 @@ const ChangePickupPoint = ({navigation, route}) => {
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
-                  gap: 15,
+                  gap: 12,
                   flex: 1,
                 }}>
                 <Image
                   resizeMode="contain"
-                  style={{width: 25, height: 25}}
+                  style={{ width: Dimensions.get('window').width * 0.06, height: 25 }}
                   source={icons.location}
                 />
                 <Text
                   style={{
-                    fontSize: 17,
+                    fontSize: Dimensions.get('window').width * 0.04,
                     color: 'black',
                     fontFamily: 'Roboto',
                     width: '70%',
                   }}>
                   {item.address}
                 </Text>
-                <Text style={{fontSize: 14}}>{item.distance}</Text>
+                <Text style={{ fontSize: Dimensions.get('window').width * 0.035 }}>{item.distance}</Text>
               </View>
             </TouchableOpacity>
           ))}
@@ -392,7 +390,7 @@ const ChangePickupPoint = ({navigation, route}) => {
         footer={
           <ModalFooter>
             <ModalButton
-              textStyle={{color: 'red'}}
+              textStyle={{ color: 'red' }}
               text="Đóng"
               onPress={() => {
                 setOpenValidateDialog(false);
@@ -401,7 +399,7 @@ const ChangePickupPoint = ({navigation, route}) => {
           </ModalFooter>
         }>
         <View
-          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
+          style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
           <Text
             style={{
               fontSize: 20,
@@ -436,7 +434,7 @@ const style = StyleSheet.create({
   },
   input: {
     fontFamily: FONTS.fontFamily,
-    fontSize: 16,
+    fontSize: Dimensions.get('window').width * 0.04,
     flex: 1,
   },
   wrapperSearch: {
@@ -447,7 +445,7 @@ const style = StyleSheet.create({
     flex: 0.2,
   },
   icon: {
-    width: 20,
+    width: Dimensions.get('window').width * 0.1,
     height: 20,
   },
   clear: {

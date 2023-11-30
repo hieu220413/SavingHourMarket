@@ -10,6 +10,7 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
+  Dimensions,
 } from 'react-native';
 import Categories from '../components/Categories';
 import DiscountRow from '../components/DiscountRow';
@@ -243,7 +244,7 @@ const Home = ({ navigation }) => {
               numberOfLines={1}
               style={{
                 fontFamily: FONTS.fontFamily,
-                fontSize: 20,
+                fontSize: Dimensions.get('window').width * 0.045,
                 fontWeight: 700,
                 maxWidth: '95%',
                 color: 'black',
@@ -253,7 +254,7 @@ const Home = ({ navigation }) => {
             <Text
               style={{
                 fontFamily: FONTS.fontFamily,
-                fontSize: 16,
+                fontSize: Dimensions.get('window').width * 0.045,
                 marginTop: 8,
                 marginBottom: 10,
               }}>
@@ -267,7 +268,7 @@ const Home = ({ navigation }) => {
               <Text
                 style={{
                   maxWidth: '70%',
-                  fontSize: 18,
+                  fontSize: Dimensions.get('window').width * 0.045,
                   lineHeight: 20,
                   color: COLORS.secondary,
                   fontWeight: 'bold',
@@ -279,7 +280,7 @@ const Home = ({ navigation }) => {
               </Text>
               <Text
                 style={{
-                  fontSize: 12,
+                  fontSize: Dimensions.get('window').width * 0.03,
                   lineHeight: 13,
                   color: COLORS.secondary,
                   fontWeight: 600,
@@ -325,7 +326,7 @@ const Home = ({ navigation }) => {
           // marginLeft: 15,
           // marginRight: 20,
           alignItems: 'center',
-          maxWidth: '20%',
+          maxWidth: '30%',
           shadowColor: '#000',
           shadowOffset: {
             width: 0,
@@ -341,7 +342,7 @@ const Home = ({ navigation }) => {
             uri: data?.imageUrl,
           }}
           style={{
-            width: 50,
+            width: Dimensions.get('window').width * 0.12,
             height: 50,
           }}
         />
@@ -349,8 +350,8 @@ const Home = ({ navigation }) => {
           style={{
             color: 'black',
             fontFamily: FONTS.fontFamily,
-            fontSize: 13,
-            marginTop: 8,
+            fontSize: Dimensions.get('window').width * 0.04,
+            marginTop: 10,
             textAlign: 'center',
           }}>
           {data.name}
@@ -367,10 +368,10 @@ const Home = ({ navigation }) => {
           width: '80%',
           height: 45,
           borderRadius: 40,
-          paddingLeft: 10,
-          marginTop: 10,
-          marginLeft: 20,
-          marginBottom: 10,
+          paddingLeft: '5%',
+          marginTop: '5%',
+          marginLeft: '5%',
+          marginBottom: '5%',
           flexDirection: 'row',
         }}
         onPress={() => {
@@ -388,7 +389,7 @@ const Home = ({ navigation }) => {
           <Image
             resizeMode="contain"
             style={{
-              width: 20,
+              width: Dimensions.get('window').width * 0.1,
               height: 20,
             }}
             source={icons.search}
@@ -397,7 +398,7 @@ const Home = ({ navigation }) => {
           <Text
             style={{
               fontFamily: FONTS.fontFamily,
-              fontSize: 16,
+              fontSize: Dimensions.get('window').width * 0.045,
               paddingLeft: 15,
             }}>
             Bạn cần tìm gì ?
@@ -414,7 +415,7 @@ const Home = ({ navigation }) => {
           paddingHorizontal: 20,
           paddingTop: 10,
         }}>
-        <Text style={{ fontSize: 16, fontFamily: FONTS.fontFamily }}>
+        <Text style={{ fontSize: Dimensions.get('window').width * 0.04, fontFamily: FONTS.fontFamily }}>
           Vị trí mua hàng hiện tại:
         </Text>
         <TouchableOpacity
@@ -446,12 +447,12 @@ const Home = ({ navigation }) => {
                 }}>
                 <Image
                   resizeMode="contain"
-                  style={{ width: 20, height: 20, tintColor: COLORS.primary }}
+                  style={{ width: Dimensions.get('window').width * 0.1, height: 20, tintColor: COLORS.primary }}
                   source={icons.location}
                 />
                 <Text
                   style={{
-                    fontSize: 18,
+                    fontSize: Dimensions.get('window').width * 0.04,
                     fontFamily: 'Roboto',
                     color: 'black',
                     fontWeight: 'bold',
@@ -490,7 +491,7 @@ const Home = ({ navigation }) => {
             style={{
               height: 40,
               tintColor: COLORS.primary,
-              width: 35,
+              width: Dimensions.get('window').width * 0.08,
             }}
             source={icons.cart}
           />
@@ -557,7 +558,7 @@ const Home = ({ navigation }) => {
               <Text
                 style={{
                   fontFamily: FONTS.fontFamily,
-                  fontSize: 22,
+                  fontSize: 18,
                   color: 'black',
                   fontWeight: 700,
                   marginTop: '5%',
@@ -576,7 +577,7 @@ const Home = ({ navigation }) => {
                 <Text
                   style={{
                     fontFamily: FONTS.fontFamily,
-                    fontSize: 22,
+                    fontSize: 18,
                     color: COLORS.primary,
                     fontWeight: 700,
                     marginBottom: 10,
@@ -619,7 +620,7 @@ const Home = ({ navigation }) => {
         <Text
           style={{
             fontFamily: FONTS.fontFamily,
-            fontSize: 22,
+            fontSize: 18,
             color: 'black',
             fontWeight: 700,
             marginLeft: 20,
@@ -642,7 +643,7 @@ const Home = ({ navigation }) => {
             />
             <Text
               style={{
-                fontSize: 20,
+                fontSize: 18,
                 fontFamily: 'Roboto',
                 fontWeight: 'bold',
               }}>
@@ -766,7 +767,7 @@ const styles = StyleSheet.create({
 
   },
   itemImage: {
-    width: 130,
+    width: '40%',
     height: 130,
     borderRadius: 20,
     padding: 10,
