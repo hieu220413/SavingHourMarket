@@ -111,6 +111,16 @@ const TimeframeManagement = () => {
       })
         .then((res) => res.json())
         .then((respond) => {
+          if (respond.code === 403) {
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "error",
+              text: "Khung giờ có đơn hàng chờ xử lí !",
+            });
+            setLoading(false);
+            return;
+          }
           if (respond?.error) {
             setOpenSnackbar({
               ...openSnackbar,
@@ -339,7 +349,6 @@ const TimeframeManagement = () => {
   ];
   return (
     <div>
-      <ManagementMenu menuTabs={menuTabs} />
       <div style={{ marginBottom: 50 }} className="user__container">
         <div className="user__header">
           <div className="search"></div>
@@ -355,7 +364,7 @@ const TimeframeManagement = () => {
           )}
         </div>
         {/* data table + pagination*/}
-        <div className="table__container">
+        <div className="table__container table-box-shadow">
           {/* data table */}
           <table class="table ">
             {timeframeList.length !== 0 && (

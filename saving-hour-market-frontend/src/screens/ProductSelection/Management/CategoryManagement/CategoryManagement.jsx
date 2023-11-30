@@ -190,7 +190,6 @@ const CategoryManagement = () => {
   return (
     <div>
       <div>
-        <ManagementMenu menuTabs={menuTabs} />
         {/* Table */}
         <div className="supermarket__container">
           <div className="supermarket__header">
@@ -217,7 +216,7 @@ const CategoryManagement = () => {
           </div>
 
           {/* data table + pagination*/}
-          <div className="table__container">
+          <div className="table__container table-box-shadow">
             {/* data table */}
             <table class="table ">
               <thead>
