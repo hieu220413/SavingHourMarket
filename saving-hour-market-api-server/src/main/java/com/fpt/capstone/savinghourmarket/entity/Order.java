@@ -32,6 +32,8 @@ public class Order {
     @UuidGenerator
     private UUID id;
 
+    private String code;
+
     private Integer shippingFee;
 
     private Integer totalPrice;
