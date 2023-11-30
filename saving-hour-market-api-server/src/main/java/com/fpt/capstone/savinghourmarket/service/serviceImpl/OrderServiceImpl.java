@@ -1440,7 +1440,6 @@ public class OrderServiceImpl implements OrderService {
         return repository.save(orderSaved);
     }
 
-
     private Order setOrderData(OrderCreate orderCreate, Customer customer) throws ResourceNotFoundException {
         Order order = new Order();
         order.setCustomer(customer);
