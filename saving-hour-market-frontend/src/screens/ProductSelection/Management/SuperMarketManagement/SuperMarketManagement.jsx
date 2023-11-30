@@ -40,6 +40,7 @@ const SuperMarketManagement = () => {
   const [isSwitchRecovery, setIsSwitchRecovery] = useState(false);
   const [supermarketStore, setSupermarketStore] = useState([]);
   const [currentId, setCurrentId] = useState(null);
+  const [supermarketName, setSupermarketName] = useState("");
 
   const [openSnackbar, setOpenSnackbar] = useState({
     open: false,
@@ -175,6 +176,7 @@ const SuperMarketManagement = () => {
                       setLoading={setLoading}
                       setCurrentId={setCurrentId}
                       isSwitchRecovery={isSwitchRecovery}
+                      setSupermarketName={setSupermarketName}
                     />
                   ))}
                 </tbody>
@@ -364,6 +366,7 @@ const SuperMarketManagement = () => {
           stores={supermarketStore}
           supermarketId={currentId}
           isSwitchRecovery={isSwitchRecovery}
+          supermarketName={supermarketName}
         />
       </Dialog>
       <Snackbar
