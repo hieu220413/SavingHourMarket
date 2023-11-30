@@ -72,7 +72,7 @@ public class OrderServiceImpl implements OrderService {
         for(int i = 1 ; i <= 6-String.valueOf(count).length() ; i++ ) {
             zeros = zeros + "0";
         }
-        String orderId = "SHMORD"+createOrderDate.getDayOfMonth()+createOrderDate.getMonth()+createOrderDate.getYear()+zeros+ count;
+        String orderId = "SHMORD"+createOrderDate.getDayOfMonth()+createOrderDate.getMonthValue()+createOrderDate.getYear()+zeros+ count;
 
 
         return orderId;
