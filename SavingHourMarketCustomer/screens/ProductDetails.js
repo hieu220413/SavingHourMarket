@@ -7,13 +7,14 @@ import {
   Image,
   ScrollView,
   StyleSheet,
+  Dimensions,
 } from 'react-native';
-import React, {useCallback, useState, useRef, useMemo} from 'react';
-import {icons} from '../constants';
-import {COLORS, FONTS} from '../constants/theme';
+import React, { useCallback, useState, useRef, useMemo } from 'react';
+import { icons } from '../constants';
+import { COLORS, FONTS } from '../constants/theme';
 import dayjs from 'dayjs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useFocusEffect} from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import Modal, {
   ModalFooter,
   ModalButton,
@@ -27,10 +28,10 @@ import BottomSheet, {
   BottomSheetModalProvider,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import {format} from 'date-fns';
+import { format } from 'date-fns';
 import database from '@react-native-firebase/database';
 
-const ProductDetails = ({navigation, route}) => {
+const ProductDetails = ({ navigation, route }) => {
   const product = route.params.product;
   const pickupPointId = route.params.pickupPointId;
   const [cartList, setCartList] = useState([]);
@@ -75,7 +76,7 @@ const ProductDetails = ({navigation, route}) => {
           if (snapshot.val() === 0) {
             navigation.reset({
               index: 0,
-              routes: [{name: 'Initial'}],
+              routes: [{ name: 'Initial' }],
             });
           } else {
             // setSystemStatus(snapshot.val());
@@ -235,14 +236,14 @@ const ProductDetails = ({navigation, route}) => {
           <Image
             source={icons.leftArrow}
             resizeMode="contain"
-            style={{width: 35, height: 35, tintColor: COLORS.primary}}
+            style={{ width: Dimensions.get('window').width * 0.1, height: 35, tintColor: COLORS.primary }}
           />
         </TouchableOpacity>
         <Text
           style={{
             textAlign: 'center',
             color: 'black',
-            fontSize: 24,
+            fontSize: Dimensions.get('window').width * 0.065,
             fontFamily: FONTS.fontFamily,
           }}>
           Thông tin sản phẩm
@@ -262,7 +263,7 @@ const ProductDetails = ({navigation, route}) => {
             style={{
               height: 40,
               tintColor: COLORS.primary,
-              width: 35,
+              width: Dimensions.get('window').width * 0.1,
             }}
             source={icons.cart}
           />
@@ -280,7 +281,7 @@ const ProductDetails = ({navigation, route}) => {
                 justifyContent: 'center',
               }}>
               <Text
-                style={{fontSize: 12, color: 'white', fontFamily: 'Roboto'}}>
+                style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
                 {cartList.length}
               </Text>
             </View>
@@ -347,7 +348,7 @@ const ProductDetails = ({navigation, route}) => {
           <Text
             style={{
               fontFamily: FONTS.fontFamily,
-              fontSize: 22,
+              fontSize: 20,
               fontWeight: 700,
               maxWidth: '95%',
               color: 'black',
@@ -393,9 +394,11 @@ const ProductDetails = ({navigation, route}) => {
           paddingBottom: 60,
           flexDirection: 'row',
           backgroundColor: '#F5F5F5',
-          marginHorizontal: 20,
-          paddingHorizontal: 20,
-          height: 180,
+          width: '90%',
+          marginHorizontal: '4%',
+          paddingHorizontal: '4%',
+          paddingTop: '8%',
+          paddingBottom: Dimensions.get('window').height * 0.15,
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
           alignItems: 'center',
@@ -409,10 +412,10 @@ const ProductDetails = ({navigation, route}) => {
           shadowRadius: 4.65,
           elevation: 2,
         }}>
-        <View style={{flexDirection: 'row'}}>
+        <View style={{ flexDirection: 'row' }}>
           <Text
             style={{
-              fontSize: 24,
+              fontSize: 22,
               lineHeight: 30,
               color: COLORS.secondary,
               fontWeight: 700,
@@ -424,7 +427,7 @@ const ProductDetails = ({navigation, route}) => {
           </Text>
           <Text
             style={{
-              fontSize: 16,
+              fontSize: 14,
               lineHeight: 18,
               color: COLORS.secondary,
               fontWeight: 700,
@@ -441,14 +444,14 @@ const ProductDetails = ({navigation, route}) => {
           }}>
           <Text
             style={{
-              paddingVertical: 8,
+              paddingVertical: 10,
               paddingHorizontal: '8%',
               backgroundColor: '#ffffff',
               borderRadius: 20,
               fontWeight: 700,
               textAlign: 'center',
               color: COLORS.primary,
-              fontSize: 18,
+              fontSize: 16,
               fontFamily: FONTS.fontFamily,
               borderColor: COLORS.primary,
               borderWidth: 1,
@@ -464,13 +467,13 @@ const ProductDetails = ({navigation, route}) => {
           <Text
             style={{
               paddingVertical: 10,
-              paddingHorizontal: '10%',
+              paddingHorizontal: '8%',
               backgroundColor: COLORS.primary,
               borderRadius: 20,
               fontWeight: 700,
               textAlign: 'center',
               color: '#ffffff',
-              fontSize: 18,
+              fontSize: 16,
               fontFamily: FONTS.fontFamily,
               marginLeft: 5,
             }}>
@@ -498,7 +501,7 @@ const ProductDetails = ({navigation, route}) => {
             />
             <ModalButton
               text="Đăng nhập"
-              textStyle={{color: COLORS.primary}}
+              textStyle={{ color: COLORS.primary }}
               onPress={async () => {
                 try {
                   await AsyncStorage.removeItem('userInfo');
@@ -513,7 +516,7 @@ const ProductDetails = ({navigation, route}) => {
           </ModalFooter>
         }>
         <View
-          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
+          style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
           <Text
             style={{
               fontSize: 20,
@@ -546,7 +549,7 @@ const ProductDetails = ({navigation, route}) => {
           </ModalFooter>
         }>
         <View
-          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
+          style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
           <Text
             style={{
               fontSize: 20,
@@ -586,9 +589,9 @@ const ProductDetails = ({navigation, route}) => {
                   borderRadius: 20,
                 }}
                 resizeMode="contain"
-                source={{uri: product.imageUrlImageList[0].imageUrl}}
+                source={{ uri: product.imageUrlImageList[0].imageUrl }}
               />
-              <View style={{flex: 6, justifyContent: 'space-between'}}>
+              <View style={{ flex: 6, justifyContent: 'space-between' }}>
                 <View></View>
                 <View>
                   <Text
@@ -608,16 +611,16 @@ const ProductDetails = ({navigation, route}) => {
                     }}>
                     {minPrice === maxPrice
                       ? `${minPrice.toLocaleString('vi-VN', {
-                          style: 'currency',
-                          currency: 'VND',
-                        })}`
+                        style: 'currency',
+                        currency: 'VND',
+                      })}`
                       : `${minPrice.toLocaleString('vi-VN', {
-                          style: 'currency',
-                          currency: 'VND',
-                        })} - ${maxPrice.toLocaleString('vi-VN', {
-                          style: 'currency',
-                          currency: 'VND',
-                        })}`}
+                        style: 'currency',
+                        currency: 'VND',
+                      })} - ${maxPrice.toLocaleString('vi-VN', {
+                        style: 'currency',
+                        currency: 'VND',
+                      })}`}
                   </Text>
                 </View>
               </View>
@@ -626,9 +629,9 @@ const ProductDetails = ({navigation, route}) => {
                   bottomSheetRef.current?.close();
                   setIndex(-1);
                 }}
-                style={{flex: 1}}>
+                style={{ flex: 1 }}>
                 <Image
-                  style={{width: 25, height: 25}}
+                  style={{ width: 25, height: 25 }}
                   resizeMode="contain"
                   source={icons.cross}
                 />
@@ -641,7 +644,7 @@ const ProductDetails = ({navigation, route}) => {
                 paddingBottom: 15,
                 marginBottom: 140,
               }}>
-              <View style={{paddingHorizontal: 15}}>
+              <View style={{ paddingHorizontal: 15 }}>
                 <Text
                   style={{
                     fontSize: 18,
@@ -752,7 +755,7 @@ const ProductDetails = ({navigation, route}) => {
                     }}>
                     <Image
                       resizeMode="contain"
-                      style={{height: 20, width: 20}}
+                      style={{ height: 20, width: 20 }}
                       source={icons.minus}
                     />
                   </TouchableOpacity>
@@ -775,7 +778,7 @@ const ProductDetails = ({navigation, route}) => {
                     }}>
                     <Image
                       resizeMode="contain"
-                      style={{height: 20, width: 20}}
+                      style={{ height: 20, width: 20 }}
                       source={icons.plus}
                     />
                   </TouchableOpacity>
@@ -801,7 +804,7 @@ const ProductDetails = ({navigation, route}) => {
               marginTop: 20,
               elevation: 10,
             }}>
-            <View style={{width: '95%'}}>
+            <View style={{ width: '95%' }}>
               <TouchableOpacity
                 onPress={() => {
                   isAddToCart ? handleAddToCart(product) : handleBuy();

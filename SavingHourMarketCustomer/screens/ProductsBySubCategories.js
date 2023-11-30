@@ -8,6 +8,7 @@ import {
   ScrollView,
   StyleSheet,
   Modal,
+  Dimensions,
 } from 'react-native';
 import React, { useCallback, useState } from 'react';
 import { icons } from '../constants';
@@ -255,7 +256,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
               numberOfLines={1}
               style={{
                 fontFamily: FONTS.fontFamily,
-                fontSize: 20,
+                fontSize: Dimensions.get('window').width * 0.05,
                 fontWeight: 700,
                 maxWidth: '95%',
                 color: 'black',
@@ -265,7 +266,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
             <Text
               style={{
                 fontFamily: FONTS.fontFamily,
-                fontSize: 16,
+                fontSize: Dimensions.get('window').width * 0.045,
                 marginTop: 8,
                 marginBottom: 10,
               }}>
@@ -279,7 +280,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
               <Text
                 style={{
                   maxWidth: '70%',
-                  fontSize: 18,
+                  fontSize: Dimensions.get('window').width * 0.045,
                   lineHeight: 20,
                   color: COLORS.secondary,
                   fontWeight: 'bold',
@@ -291,7 +292,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
               </Text>
               <Text
                 style={{
-                  fontSize: 12,
+                  fontSize: Dimensions.get('window').width * 0.03,
                   lineHeight: 13,
                   color: COLORS.secondary,
                   fontWeight: 600,
@@ -358,20 +359,22 @@ const ProductsBySubCategories = ({ navigation, route }) => {
           style={
             item.active == true
               ? {
-                width: 150,
+                width: Dimensions.get('window').width * 0.3,
+                paddingHorizontal: '5%',
                 paddingVertical: 10,
                 textAlign: 'center',
                 color: COLORS.primary,
                 fontFamily: FONTS.fontFamily,
-                fontSize: 12,
+                fontSize: Dimensions.get('window').width * 0.03,
               }
               : {
-                width: 150,
+                width: Dimensions.get('window').width * 0.3,
+                paddingHorizontal: '3%',
                 paddingVertical: 10,
                 textAlign: 'center',
                 color: 'black',
                 fontFamily: FONTS.fontFamily,
-                fontSize: 12,
+                fontSize: Dimensions.get('window').width * 0.03,
               }
           }>
           {item.name}
@@ -387,21 +390,21 @@ const ProductsBySubCategories = ({ navigation, route }) => {
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginVertical: 15,
-            marginHorizontal: 25,
+            marginVertical: '2%',
+            marginHorizontal: '2%',
           }}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Image
               source={icons.leftArrow}
               resizeMode="contain"
-              style={{ width: 35, height: 35, tintColor: COLORS.primary }}
+              style={{ width: Dimensions.get('window').width * 0.1, height: 35, tintColor: COLORS.primary }}
             />
           </TouchableOpacity>
           <Text
             style={{
               textAlign: 'center',
               color: 'black',
-              fontSize: 24,
+              fontSize: Dimensions.get('window').width * 0.065,
               fontFamily: FONTS.fontFamily,
             }}>
             Sản phẩm liên quan
@@ -418,9 +421,9 @@ const ProductsBySubCategories = ({ navigation, route }) => {
               <Image
                 resizeMode="contain"
                 style={{
-                  height: 45,
+                  height: 40,
                   tintColor: COLORS.primary,
-                  width: 35,
+                  width: Dimensions.get('window').width * 0.1,
                   marginHorizontal: '1%',
                 }}
                 source={icons.filter}
@@ -436,7 +439,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
                 style={{
                   height: 40,
                   tintColor: COLORS.primary,
-                  width: 35,
+                  width: Dimensions.get('window').width * 0.1,
                 }}
                 source={icons.cart}
               />
@@ -471,6 +474,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
           keyboardShouldPersistTaps="always"
           contentContainerStyle={{
             paddingBottom: 100,
+            paddingTop: '5%',
           }}>
           {products.map((item, index) => (
             <Item data={item} key={index} />
@@ -485,7 +489,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
             />
             <Text
               style={{
-                fontSize: 20,
+                fontSize: Dimensions.get('window').width * 0.045,
                 fontFamily: 'Roboto',
                 fontWeight: 'bold',
               }}>
@@ -513,7 +517,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
                   style={{
                     color: 'black',
                     fontFamily: FONTS.fontFamily,
-                    fontSize: 20,
+                    fontSize: Dimensions.get('window').width * 0.05,
                     fontWeight: 700,
                     textAlign: 'center',
                     paddingBottom: 20,
@@ -539,7 +543,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
                 style={{
                   color: 'black',
                   fontFamily: FONTS.fontFamily,
-                  fontSize: 16,
+                  fontSize: Dimensions.get('window').width * 0.045,
                   fontWeight: 700,
                 }}>
                 Sắp xếp theo
@@ -563,7 +567,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
                 <TouchableOpacity
                   style={{
                     width: '50%',
-                    paddingHorizontal: 15,
+                    paddingHorizontal: '2%',
                     paddingVertical: 10,
                     backgroundColor: 'white',
                     borderRadius: 10,
@@ -577,6 +581,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
                       color: COLORS.primary,
                       fontWeight: 'bold',
                       textAlign: 'center',
+                      fontSize: Dimensions.get('window').width * 0.035,
                     }}>
                     Thiết lập lại
                   </Text>
@@ -625,7 +630,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   itemImage: {
-    width: 130,
+    width: '40%',
     height: 130,
     borderRadius: 20,
     padding: 10,
@@ -670,6 +675,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     textAlign: 'center',
+    fontSize: Dimensions.get('window').width * 0.035,
   },
   modalText: {
     marginBottom: 15,
