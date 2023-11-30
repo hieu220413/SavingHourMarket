@@ -349,7 +349,6 @@ const PickuppointManagement = () => {
   };
   return (
     <div>
-      <ManagementMenu menuTabs={menuTabs} />
       <div className="pickuppoint__container">
         <div className="pickuppoint__header">
           <div className="search"></div>
@@ -366,7 +365,7 @@ const PickuppointManagement = () => {
           )}
         </div>
         {/* data table + pagination*/}
-        <div className="table__container">
+        <div className="table__container table-box-shadow">
           {/* data table */}
           <table class="table ">
             {pickupPointList.length !== 0 && (

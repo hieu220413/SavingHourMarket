@@ -503,7 +503,6 @@ const ProductManagement = () => {
   };
   return (
     <div>
-      <ManagementMenu menuTabs={menuTabs} />
       {/* Table */}
       <div className="supermarket__container">
         <div className="supermarket__header">
@@ -576,7 +575,10 @@ const ProductManagement = () => {
 
         {/* data table + pagination*/}
         {!isSwitchRecovery && (
-          <div className="table__container" style={{ height: "650px" }}>
+          <div
+            className="table__container table-box-shadow"
+            style={{ height: "650px" }}
+          >
             {/* data table */}
             <table class="table ">
               <thead>

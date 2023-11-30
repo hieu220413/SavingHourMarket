@@ -118,7 +118,6 @@ const SuperMarketManagement = () => {
   };
   return (
     <div>
-      <ManagementMenu menuTabs={menuTabs} />
       <div className="supermarket__container">
         <div className="supermarket__header">
           {/* search bar */}
@@ -146,7 +145,7 @@ const SuperMarketManagement = () => {
         </div>
 
         {/* data table + pagination*/}
-        <div className="table__container">
+        <div className="table__container table-box-shadow">
           {/* data table */}
           <table class="table ">
             {superMarketList.length !== 0 && (

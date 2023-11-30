@@ -170,7 +170,6 @@ const FeedbackManagement = () => {
 
   return (
     <div>
-      <ManagementMenu menuTabs={menuTabs} />
       <div className="feedback__container">
         <div className="feedback__select">
           <h3 className="feedback__select-label">Mục đích :</h3>
@@ -202,7 +201,7 @@ const FeedbackManagement = () => {
           </div>
         </div>
         {/* data table + pagination*/}
-        <div className="table__container">
+        <div className="table__container table-box-shadow">
           {/* data table */}
           <table class="table ">
             {feedbackList.length !== 0 && (
