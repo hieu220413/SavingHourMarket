@@ -1254,7 +1254,7 @@ const OrderGroup = ({navigation}) => {
                         style={{
                           flexDirection: 'row',
                           justifyContent: 'flex-end',
-                          height: '89%',
+                          height: '86%',
                           marginTop: '2%',
                           marginRight: '2%',
                         }}>
@@ -1469,7 +1469,7 @@ const OrderGroup = ({navigation}) => {
                         style={{
                           flexDirection: 'row',
                           justifyContent: 'flex-end',
-                          height: '89%',
+                          height: '86%',
                           marginTop: '2%',
                           marginRight: '2%',
                         }}>

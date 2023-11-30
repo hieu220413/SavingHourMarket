@@ -1102,7 +1102,7 @@ const OrderBatch = ({navigation}) => {
                         style={{
                           flexDirection: 'row',
                           justifyContent: 'flex-end',
-                          height: '85%',
+                          height: '82%',
                           marginTop: '1.6%',
                           marginRight: '2%',
                         }}>
@@ -1300,7 +1300,7 @@ const OrderBatch = ({navigation}) => {
                         style={{
                           flexDirection: 'row',
                           justifyContent: 'flex-end',
-                          height: '85%',
+                          height: '82%',
                           marginTop: '1.6%',
                           marginRight: '2%',
                         }}>

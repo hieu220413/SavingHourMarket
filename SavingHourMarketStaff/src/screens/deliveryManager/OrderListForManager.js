@@ -1512,7 +1512,7 @@ const OrderListForManager = ({navigation}) => {
                         style={{
                           flexDirection: 'row',
                           justifyContent: 'flex-end',
-                          height: '88%',
+                          height: '86%',
                           marginTop: '2%',
                           marginRight: '2%',
                         }}>
@@ -1717,7 +1717,7 @@ const OrderListForManager = ({navigation}) => {
                         style={{
                           flexDirection: 'row',
                           justifyContent: 'flex-end',
-                          height: '89%',
+                          height: '85%',
                           marginTop: '2%',
                           marginRight: '2%',
                         }}>
