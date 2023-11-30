@@ -7,6 +7,7 @@ import {
   TextInput,
   StyleSheet,
   Image,
+  Dimensions
 } from 'react-native';
 import { COLORS, FONTS } from '../constants/theme';
 import { icons } from '../constants';

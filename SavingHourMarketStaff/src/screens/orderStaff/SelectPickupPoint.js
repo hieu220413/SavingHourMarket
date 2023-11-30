@@ -7,6 +7,7 @@ import {
   Keyboard,
   TouchableOpacity,
   Image,
+  Dimensions,
 } from 'react-native';
 import {ScrollView, TextInput} from 'react-native-gesture-handler';
 import React, {useEffect, useState, useCallback} from 'react';

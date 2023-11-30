@@ -10,6 +10,7 @@ import {
   Pressable,
   StyleSheet,
   FlatList,
+  Dimensions,
 } from 'react-native';
 import {
   ScrollView,
@@ -184,7 +185,7 @@ const OrderDetail = ({navigation, route}) => {
               setLoading(false);
             });
         }
-      }
+      };
       fetchOrderDetail();
     }, []),
   );
