@@ -8,6 +8,7 @@ import {
   Image,
   StyleSheet,
   FlatList,
+  Dimensions,
 } from 'react-native';
 import { icons } from '../constants';
 import { COLORS, FONTS } from '../constants/theme';
@@ -155,7 +156,7 @@ const Discount = ({ navigation }) => {
           numberOfLines={1}
           style={{
             fontFamily: FONTS.fontFamily,
-            fontSize: 18,
+            fontSize: Dimensions.get('window').width * 0.045,
             fontWeight: 700,
             maxWidth: '95%',
             color: 'black',
@@ -166,7 +167,7 @@ const Discount = ({ navigation }) => {
         <Text
           style={{
             fontFamily: FONTS.fontFamily,
-            fontSize: 18,
+            fontSize: Dimensions.get('window').width * 0.04,
             marginBottom: 10,
           }}>
           HSD: {dayjs(data.expiredDate).format('DD/MM/YYYY')}
@@ -181,13 +182,14 @@ const Discount = ({ navigation }) => {
           }>
           <Text
             style={{
-              maxWidth: 120,
+              maxWidth: Dimensions.get('window').width * 0.4,
               maxHeight: 38,
               padding: 10,
               backgroundColor: COLORS.primary,
               borderRadius: 10,
               textAlign: 'center',
               color: '#ffffff',
+              fontSize: Dimensions.get('window').width * 0.04,
             }}>
             Dùng ngay
           </Text>
@@ -199,7 +201,7 @@ const Discount = ({ navigation }) => {
     <>
       <View
         style={{
-          paddingHorizontal: 15,
+          paddingHorizontal: '2%',
           paddingTop: 15,
         }}>
         <View
@@ -207,13 +209,12 @@ const Discount = ({ navigation }) => {
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginBottom: 30,
           }}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Image
               source={icons.leftArrow}
               resizeMode="contain"
-              style={{ width: 35, height: 35, tintColor: COLORS.primary }}
+              style={{ width: Dimensions.get('window').width * 0.1, height: 35, tintColor: COLORS.primary }}
             />
           </TouchableOpacity>
           <Text
@@ -224,7 +225,7 @@ const Discount = ({ navigation }) => {
               marginVertical: 15,
               marginHorizontal: 15,
               fontFamily: FONTS.fontFamily,
-              fontSize: 24,
+              fontSize: 20,
               color: 'black',
               fontWeight: 'bold',
             }}>
@@ -244,7 +245,7 @@ const Discount = ({ navigation }) => {
               style={{
                 height: 40,
                 tintColor: COLORS.primary,
-                width: 35,
+                width: Dimensions.get('window').width * 0.1,
               }}
               source={icons.cart}
             />
@@ -284,14 +285,14 @@ const Discount = ({ navigation }) => {
         {discounts.length === 0 ? (
           <View style={{ alignItems: 'center' }}>
             <Image
-              style={{ width: '100%', height: '65%' }}
+              style={{ width: '100%', height: '50%' }}
               resizeMode="contain"
               source={Empty}
             />
             <Text
               style={{
                 fontFamily: FONTS.fontFamily,
-                fontSize: 20,
+                fontSize: Dimensions.get('window').width * 0.05,
               }}>
               Đã hết mã giảm giá cho loại mặt hàng này
             </Text>
@@ -381,7 +382,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   itemImage: {
-    width: 130,
+    width: '40%',
     height: 130,
     borderRadius: 20,
     padding: 10,

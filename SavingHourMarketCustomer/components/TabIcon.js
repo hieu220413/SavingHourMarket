@@ -1,30 +1,32 @@
 /* eslint-disable prettier/prettier */
-import {StyleSheet, Text, View, Image} from 'react-native';
+import { StyleSheet, Text, View, Image, Dimensions } from 'react-native';
 import React from 'react';
-import {COLORS, FONTS} from '../constants/theme';
+import { COLORS, FONTS } from '../constants/theme';
 
-const TabIcon = ({focused, icon, display}) => {
+const TabIcon = ({ focused, icon, display }) => {
+  const iconWidth = Dimensions.get('window').width * 0.08;
+  const iconHeight = Dimensions.get('window').height * 0.06;
   return (
     <View
       style={{
         alignItems: 'center',
-        height: 80,
+        height: '20%',
         width: 80,
         justifyContent: 'center',
-        gap: 5,
+        // gap: 5,
       }}>
       <Image
         source={icon}
         resizeMode="contain"
         style={{
-          width: 30,
-          height: 30,
+          width: iconWidth,
+          height: iconHeight,
           tintColor: focused ? COLORS.secondary : COLORS.tabIcon,
         }}
       />
       <Text
         style={{
-          fontSize: 15,
+          fontSize: 12,
           color: focused ? COLORS.secondary : COLORS.tabIcon,
           fontWeight: 400,
           fontFamily: FONTS.fontFamily,
