@@ -30,6 +30,7 @@ const SupermarketItem = ({
   handleOpenSupermarketStore,
   setSupermarketStore,
   setCurrentId,
+  setSupermarketName,
 }) => {
   const [openEdit, setOpenEdit] = useState(false);
   const handleOpenEdit = () => setOpenEdit(true);
@@ -174,6 +175,7 @@ const SupermarketItem = ({
           onClick={() => {
             setSupermarketStore(item.supermarketAddressList);
             setCurrentId(item.id);
+            setSupermarketName(item.name);
             handleOpenSupermarketStore();
           }}
           className="bi bi-eye"

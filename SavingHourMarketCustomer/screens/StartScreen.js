@@ -1,13 +1,13 @@
-import {Text, View, ActivityIndicator, Image} from 'react-native';
+import { Text, View, ActivityIndicator, Image } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, {useState, useEffect, useCallback} from 'react';
-import {API} from '../constants/api';
-import {COLORS} from '../constants/theme';
-import {useFocusEffect} from '@react-navigation/native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { API } from '../constants/api';
+import { COLORS } from '../constants/theme';
+import { useFocusEffect } from '@react-navigation/native';
 import database from '@react-native-firebase/database';
 
-const StartScreen = ({navigation}) => {
+const StartScreen = ({ navigation }) => {
   const [systemStatus, setSystemStatus] = useState(1);
   const [loading, setLoading] = useState(true);
   const [initializing, setInitializing] = useState(true);
@@ -53,7 +53,7 @@ const StartScreen = ({navigation}) => {
             setLoading(false);
             navigation.reset({
               index: 0,
-              routes: [{name: 'Start'}],
+              routes: [{ name: 'Start' }],
             });
           }
         });
@@ -83,7 +83,7 @@ const StartScreen = ({navigation}) => {
         <ActivityIndicator
           style={{
             position: 'absolute',
-            bottom: '35%',
+            bottom: '30%',
           }}
           color={COLORS.primary}
           size="large"

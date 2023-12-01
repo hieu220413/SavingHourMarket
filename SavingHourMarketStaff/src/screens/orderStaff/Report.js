@@ -544,7 +544,7 @@ const Report = ({ navigation }) => {
         <ScrollView
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}
-          style={{ marginBottom: 80 }}>
+          style={{ marginBottom: "17%",paddingBottom:"5%" }}>
           <ImageBackground
             source={require('../../assets/image/backgroundStaff.jpeg')}
             style={styles.container}>
@@ -588,8 +588,7 @@ const Report = ({ navigation }) => {
                     <TouchableOpacity
                       style={{
                         position: 'absolute',
-                        bottom: '-17%',
-                        right: '-12%',
+                        bottom: -21,
                         zIndex: 100,
                         width: 75,
                         height: 35,

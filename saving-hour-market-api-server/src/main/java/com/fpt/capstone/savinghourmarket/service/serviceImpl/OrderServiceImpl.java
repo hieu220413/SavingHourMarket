@@ -54,6 +54,7 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Service
@@ -101,6 +102,23 @@ public class OrderServiceImpl implements OrderService {
     private String goongApiKey;
     @Value("${goong-distance-matrix-url}")
     private String goongDistanceMatrixUrl;
+
+    private String generateOrderCode(LocalDateTime createOrderDate) {
+//        if(counter.equals(999999)) {
+//            counter.set(1);
+//        }
+//        long count = counter.incrementAndGet();
+        int nextCount = repository.findByCreateDate(createOrderDate.toLocalDate()).size() + 1;
+
+        String zeros = "";
+        for(int i = 1 ; i <= 6-String.valueOf(nextCount).length() ; i++ ) {
+            zeros = zeros + "0";
+        }
+        String orderId = "SHMORD"+createOrderDate.getDayOfMonth()+createOrderDate.getMonthValue()+String.valueOf(createOrderDate.getYear()).substring(2,4)+zeros+ nextCount;
+
+
+        return orderId;
+    }
 
     @Override
     public OrderGroupPageResponse fetchOrderGroups(String staffEmail,
@@ -1437,10 +1455,10 @@ public class OrderServiceImpl implements OrderService {
         mapTransactionToOrder(orderSaved, orderCreate.getTransaction());
         String qrCodeUrl = generateAndUploadQRCode(orderSaved);
         orderSaved.setQrCodeUrl(qrCodeUrl);
+        orderSaved.setCode(generateOrderCode(orderSaved.getCreatedTime()));
 
         return repository.save(orderSaved);
     }
-
 
     private Order setOrderData(OrderCreate orderCreate, Customer customer) throws ResourceNotFoundException {
         Order order = new Order();

@@ -5,7 +5,7 @@ import dayjs from "dayjs";
 import { Dialog } from "@mui/material";
 import { ViewProductBatchAddressList } from "./ViewProductBatchAddressList";
 
-const ViewProductBatch = ({ handleClose, productBatch }) => {
+const ViewProductBatch = ({ handleClose, productBatch, productName }) => {
   const [productBatchAddressList, setProductBatchAddressList] = useState([]);
   const [openAddressList, setOpenAddressList] = useState(false);
   const handleOpenAddressList = () => setOpenAddressList(true);
@@ -49,7 +49,9 @@ const ViewProductBatch = ({ handleClose, productBatch }) => {
     <>
       <div className="modal__container" style={{ width: "100%" }}>
         <div className="modal__container-header">
-          <h3 className="modal__container-header-title">Chi tiết lô hàng</h3>
+          <h3 className="modal__container-header-title">
+            Chi tiết lô hàng của {productName}{" "}
+          </h3>
           <FontAwesomeIcon icon={faXmark} onClick={handleClose} />
         </div>
 

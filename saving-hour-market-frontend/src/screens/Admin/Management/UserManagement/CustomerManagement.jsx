@@ -340,7 +340,7 @@ const CustomerManagement = () => {
       </div>
 
       {/* data table + pagination*/}
-      <div className="table__container">
+      <div className="table__container table-box-shadow">
         {/* data table */}
         <table class="table ">
           {customerList.length !== 0 && (

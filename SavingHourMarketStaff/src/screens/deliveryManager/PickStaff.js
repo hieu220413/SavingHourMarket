@@ -10,6 +10,7 @@ import {
   ScrollView,
   Pressable,
   Alert,
+  Dimensions,
 } from 'react-native';
 import Modal, {
   ModalFooter,
@@ -471,7 +472,7 @@ const PickStaff = ({navigation, route}) => {
           gap: 20,
 
           backgroundColor: '#ffffff',
-          padding: 20,
+          padding: '5%',
           marginBottom: 10,
         }}>
         <TouchableOpacity
@@ -481,12 +482,12 @@ const PickStaff = ({navigation, route}) => {
           <Image
             source={icons.leftArrow}
             resizeMode="contain"
-            style={{width: 35, height: 35, tintColor: COLORS.primary}}
+            style={{width: 25, height: 25, tintColor: COLORS.primary}}
           />
         </TouchableOpacity>
         <Text
           style={{
-            fontSize: 25,
+            fontSize: 20,
             textAlign: 'center',
             color: '#000000',
             fontWeight: 'bold',
@@ -504,7 +505,7 @@ const PickStaff = ({navigation, route}) => {
           />
           <Text
             style={{
-              fontSize: 20,
+              fontSize: 14,
               fontFamily: 'Roboto',
               // color: 'black',
               fontWeight: 'bold',
@@ -514,7 +515,10 @@ const PickStaff = ({navigation, route}) => {
         </View>
       ) : (
         <>
-          <ScrollView contentContainerStyle={{marginTop: 10}}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{marginTop: 10}}>
             <View style={{marginBottom: 100, paddingHorizontal: 10}}>
               {staffList.map((item, index) => (
                 <View
@@ -541,12 +545,12 @@ const PickStaff = ({navigation, route}) => {
                         flexDirection: 'row',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        padding: 20,
+                        padding: '5%',
                       }}>
-                      <View style={{flexDirection: 'column', gap: 8}}>
+                      <View style={{flexDirection: 'column', gap: 8, flex: 10}}>
                         <Text
                           style={{
-                            fontSize: 20,
+                            fontSize: 18,
                             fontWeight: 'bold',
                             fontFamily: 'Roboto',
                             color: COLORS.primary,
@@ -556,13 +560,13 @@ const PickStaff = ({navigation, route}) => {
                         <View
                           style={{
                             position: 'absolute',
-                            right: -10,
-                            top: -10,
+                            right: '3%',
+                            top: '-6%',
                           }}>
                           <Image
                             style={{
-                              width: 60,
-                              height: 60,
+                              width: 45,
+                              height: 45,
                               borderRadius: 40,
                             }}
                             resizeMode="contain"
@@ -573,7 +577,7 @@ const PickStaff = ({navigation, route}) => {
                         </View>
                         <Text
                           style={{
-                            fontSize: 17,
+                            fontSize: 15,
                             fontWeight: 'bold',
                             fontFamily: 'Roboto',
                             color: 'black',
@@ -582,7 +586,7 @@ const PickStaff = ({navigation, route}) => {
                         </Text>
                         <Text
                           style={{
-                            fontSize: 17,
+                            fontSize: 15,
                             fontWeight: 'bold',
                             fontFamily: 'Roboto',
                             color: 'black',
@@ -598,7 +602,7 @@ const PickStaff = ({navigation, route}) => {
                                   fontWeight: 'bold',
                                   fontFamily: 'Roboto',
                                   color: 'red',
-                                  width: 260,
+                                  // width: '75%',
                                 }}>
                                 * {item.alertMessage} ({item.limitExceed})
                               </Text>
@@ -618,31 +622,37 @@ const PickStaff = ({navigation, route}) => {
                           </Text>
                         ) : null}
                       </View>
-                      <CheckBox
-                        disabled={
-                          item?.isAvailableForDelivering === true ? false : true
-                        }
-                        uncheckedCheckBoxColor="#000000"
-                        checkedCheckBoxColor={COLORS.primary}
-                        onClick={() => {
-                          const newStaffList = staffList.map((item, i) => {
-                            if (i === index) {
-                              if (item.checked === true) {
-                                return {...item, checked: false};
+                      <View style={{flex: 1}}>
+                        <CheckBox
+                          disabled={
+                            item?.isAvailableForDelivering === true
+                              ? false
+                              : true
+                          }
+                          uncheckedCheckBoxColor="#000000"
+                          checkedCheckBoxColor={COLORS.primary}
+                          onClick={() => {
+                            const newStaffList = staffList.map((item, i) => {
+                              if (i === index) {
+                                if (item.checked === true) {
+                                  return {...item, checked: false};
+                                }
+                                return {...item, checked: true};
                               }
-                              return {...item, checked: true};
-                            }
-                            return {...item, checked: false};
-                          });
-                          setStaffList(newStaffList);
-                          const selectedStaffArr = newStaffList.filter(item => {
-                            return item.checked === true;
-                          });
-                          // console.log(selectedStaffArr[0]);
-                          setSelectedStaff(selectedStaffArr[0]);
-                        }}
-                        isChecked={item.checked}
-                      />
+                              return {...item, checked: false};
+                            });
+                            setStaffList(newStaffList);
+                            const selectedStaffArr = newStaffList.filter(
+                              item => {
+                                return item.checked === true;
+                              },
+                            );
+                            // console.log(selectedStaffArr[0]);
+                            setSelectedStaff(selectedStaffArr[0]);
+                          }}
+                          isChecked={item.checked}
+                        />
+                      </View>
                     </View>
                   </Pressable>
                   {/* *********************** */}
@@ -658,7 +668,7 @@ const PickStaff = ({navigation, route}) => {
               right: 0,
               backgroundColor: 'white',
               borderTopColor: 'transparent',
-              height: 80,
+              height: 70,
               width: '100%',
               flex: 1,
               flexDirection: 'row',
@@ -673,7 +683,7 @@ const PickStaff = ({navigation, route}) => {
             </Text> */}
               <Text
                 style={{
-                  fontSize: 18,
+                  fontSize: 16,
                   color: COLORS.primary,
                   fontFamily: 'Roboto',
                   fontWeight: 'bold',
@@ -703,8 +713,8 @@ const PickStaff = ({navigation, route}) => {
                 }
               }}
               style={{
-                height: '60%',
-                width: '30%',
+                height: '50%',
+                width: '25%',
                 backgroundColor: COLORS.primary,
                 textAlign: 'center',
                 alignItems: 'center',
@@ -714,7 +724,7 @@ const PickStaff = ({navigation, route}) => {
               <Text
                 style={{
                   color: 'white',
-                  fontSize: 20,
+                  fontSize: 16,
                   fontFamily: 'Roboto',
                   fontWeight: 'bold',
                 }}>

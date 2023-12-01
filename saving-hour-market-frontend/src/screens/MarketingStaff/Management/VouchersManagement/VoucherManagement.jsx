@@ -329,7 +329,10 @@ const VoucherManagement = () => {
 
           {/* data table + pagination*/}
           {!isSwitchRecovery && (
-            <div className="table__container" style={{ height: "700px" }}>
+            <div
+              className="table__container table-box-shadow"
+              style={{ height: "700px" }}
+            >
               {/* data table */}
               <table class="table ">
                 <thead>
@@ -495,7 +498,10 @@ const VoucherManagement = () => {
           )}
 
           {isSwitchRecovery && (
-            <div className="table__container" style={{ height: "700px" }}>
+            <div
+              className="table__container table-box-shadow"
+              style={{ height: "700px" }}
+            >
               {/* data table */}
               <table class="table ">
                 <thead>

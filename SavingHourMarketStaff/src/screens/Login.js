@@ -7,6 +7,7 @@ import {
   Keyboard,
   StyleSheet,
   ImageBackground,
+  Dimensions,
 } from 'react-native';
 import React, {useState, useEffect, useRef, useCallback} from 'react';
 import {TextInput, TouchableOpacity} from 'react-native-gesture-handler';
@@ -207,13 +208,12 @@ const Login = ({navigation}) => {
           return;
         }
         showToast('Sai địa chỉ email hoặc mật khẩu');
-        
       });
   };
 
   const emailValidator = () => {
     if (email == '') {
-      setEmailError('Email không thể rỗng');
+      setEmailError('Vui lòng nhập email');
       setCheck_textInputChange(false);
       return false;
     } else if (!isValidEmail(email)) {
@@ -339,7 +339,7 @@ const Login = ({navigation}) => {
             </Text> */}
             <View style={styles.button}>
               <TouchableOpacity
-                style={{marginTop: 15, width: 370}}
+                style={{marginTop: 15, width: 300}}
                 onPress={() => {
                   if (emailValidator() && passwordValidation()) {
                     login();
@@ -424,7 +424,8 @@ const styles = StyleSheet.create({
   },
   button: {
     alignItems: 'center',
-    marginTop: '30%',
+    marginTop: '20%',
+    // width: '100%',
   },
   login: {
     width: '100%',
