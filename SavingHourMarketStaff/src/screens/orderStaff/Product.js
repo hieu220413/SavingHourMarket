@@ -10,6 +10,7 @@ import {
   FlatList,
   Modal,
   Pressable,
+  Dimensions,
 } from 'react-native';
 import React, {useEffect, useState, useCallback} from 'react';
 import auth from '@react-native-firebase/auth';
@@ -335,7 +336,8 @@ const Product = ({navigation}) => {
                   color: 'black',
                   fontFamily: 'Roboto',
                 }}>
-                Mã đơn hàng: {item.orderPackage.id}
+                Mã đơn hàng: SHMORD21223000456
+                  {/* {item.code}{item.orderPackage.code}   */}
               </Text>
             </View>
           </View>
@@ -455,12 +457,12 @@ const Product = ({navigation}) => {
             }}>
             <Text
               style={{
-                flex:5,
+                flex: 5,
                 fontSize: 16,
                 fontFamily: 'Roboto',
                 backgroundColor: 'white',
                 alignSelf: 'flex-start',
-                marginTop: "2%",
+                marginTop: '2%',
                 paddingVertical: 5,
                 borderRadius: 15,
                 paddingHorizontal: 15,
@@ -673,14 +675,14 @@ const Product = ({navigation}) => {
                               borderWidth: 1,
                               borderRadius: 10,
                               margin: 5,
-                              width: '45%'
+                              width: '45%',
                             }
                           : {
                               borderColor: '#c8c8c8',
                               borderWidth: 0.2,
                               borderRadius: 10,
                               margin: 5,
-                              width: '45%'
+                              width: '45%',
                             }
                       }>
                       <Text

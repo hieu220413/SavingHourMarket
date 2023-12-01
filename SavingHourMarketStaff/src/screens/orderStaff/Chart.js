@@ -1,4 +1,4 @@
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, View, Dimensions} from 'react-native';
 import React from 'react';
 import {BarChart, LineChart, PieChart} from 'react-native-gifted-charts';
 
@@ -19,12 +19,7 @@ const Chart = () => {
   ];
   return (
     <View style={{flex: 1}}>
-      <BarChart
-        data={data}
-        spacing={10}
-        barWidth={20}
-        frontColor='red'
-      />
+      <BarChart data={data} spacing={10} barWidth={20} frontColor="red" />
     </View>
   );
 };

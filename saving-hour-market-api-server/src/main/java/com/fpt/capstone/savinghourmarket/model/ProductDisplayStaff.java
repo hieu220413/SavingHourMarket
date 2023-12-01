@@ -25,6 +25,7 @@ public class ProductDisplayStaff {
         this.id = product.getId();
         this.name = product.getName();
         this.unit = product.getUnit();
+        this.priceListed = product.getPriceListed();
         this.description = product.getDescription();
         this.imageUrlImageList = product.getProductImageList();
         this.status = product.getStatus();
@@ -40,6 +41,8 @@ public class ProductDisplayStaff {
     private String unit;
     @NotNull
     private String description;
+    @NotNull
+    private Integer priceListed;
     @NotNull
     private List<ProductImage> imageUrlImageList;
     @NotNull

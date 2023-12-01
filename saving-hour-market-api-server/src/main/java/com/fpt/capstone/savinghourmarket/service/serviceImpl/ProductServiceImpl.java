@@ -421,6 +421,10 @@ public class ProductServiceImpl implements ProductService {
                 errors.add("Vui lòng thêm hình cho sản phẩm!");
             }
 
+            if (productCreate.getPriceListed() < 0) {
+                errors.add("Giá niêm yết không thể âm!");
+            }
+
             UUID productSubCategoryId = productCreate.getProductSubCategory().getId();
             if (productSubCategoryId == null) {
                 errors.add("Vui lòng nhập thông tin Loại danh mục phụ!");
@@ -864,6 +868,10 @@ public class ProductServiceImpl implements ProductService {
             errorFields.put("Lỗi nhập đơn vị sản phẩm", "Đơn vị sản phẩm chỉ có tối đa 50 kí tự!");
         }
 
+        if (productCreate.getPriceListed() < 0) {
+            errorFields.put("Lỗi nhập giá niêm yết sản phẩm", "Giá niêm yết không thể âm!");
+        }
+
         if (productCreate.getProductSubCategory().getId() == null && productCreate.getProductSubCategory().getName().length() > 50) {
             errorFields.put("Lỗi nhập tên SubCategory", "Tên sản phẩm chỉ có tối đa 50 kí tự!");
         }
@@ -887,7 +895,7 @@ public class ProductServiceImpl implements ProductService {
 
         for (ProductBatchRequest productBatch : productCreate.getProductBatchList()) {
             if (productBatch.getPrice() < 0 || productBatch.getPriceOriginal() < 0) {
-                errorFields.put("Lỗi nhập giá cho lô HSD " + productBatch.getExpiredDate(), "Giá bán không thế âm!");
+                errorFields.put("Lỗi nhập giá cho lô HSD " + productBatch.getExpiredDate(), "Giá bán không thể âm!");
             }
 
             Integer althd = productCreate.getProductSubCategory().getId() != null ?
@@ -1162,6 +1170,18 @@ public class ProductServiceImpl implements ProductService {
                     product.setDescription(cell.getStringCellValue().trim().replaceAll("\\s+", " "));
                 } else {
                     putFormatError(errors, titleRow.getCell(cellIndex).toString(), CellType.STRING);
+                }
+                break;
+            case "Giá niêm yết":
+                if (cell.getCellType().equals(CellType.NUMERIC)) {
+                    int priceListed = (int) cell.getNumericCellValue();
+                    if (priceListed < 0) {
+                        errors.add("Giá niêm yết " + cell.getNumericCellValue() + " đang âm!");
+                    } else {
+                        product.setPriceListed(priceListed);
+                    }
+                } else {
+                    putFormatError(errors, titleRow.getCell(cellIndex).toString(), CellType.NUMERIC);
                 }
                 break;
             case "Đơn vị":

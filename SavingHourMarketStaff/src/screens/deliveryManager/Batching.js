@@ -10,6 +10,7 @@ import {
   ScrollView,
   Pressable,
   Alert,
+  Dimensions,
 } from 'react-native';
 import Modal, {
   ModalFooter,

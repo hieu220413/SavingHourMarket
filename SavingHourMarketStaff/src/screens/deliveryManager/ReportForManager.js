@@ -11,6 +11,7 @@ import {
   Modal,
   Pressable,
   Alert,
+  Dimensions,
 } from 'react-native';
 import React, {useEffect, useState, useCallback} from 'react';
 import auth from '@react-native-firebase/auth';
@@ -177,7 +178,7 @@ const ReportForManager = ({navigation}) => {
         <View style={styles.header}>
           <View style={styles.pagenameAndLogout}>
             <View style={styles.pageName}>
-              <Text style={{fontSize: 25, color: 'white', fontWeight: 'bold'}}>
+              <Text style={{fontSize: 20, color: 'white', fontWeight: 'bold'}}>
                 Báo cáo
               </Text>
             </View>
@@ -188,7 +189,7 @@ const ReportForManager = ({navigation}) => {
                 }}>
                 <Image
                   resizeMode="contain"
-                  style={{width: 38, height: 38, borderRadius: 30}}
+                  style={{width: 30, height: 30, borderRadius: 30}}
                   source={{
                     uri: currentUser?.avatarUrl,
                   }}
@@ -198,11 +199,11 @@ const ReportForManager = ({navigation}) => {
                 <TouchableOpacity
                   style={{
                     position: 'absolute',
-                    bottom: -38,
-                    left: -12,
+                    bottom: -34,
+                    left: -18,
                     zIndex: 100,
-                    width: 75,
-                    height: 35,
+                    width: 70,
+                    height: 30,
                     justifyContent: 'center',
                     alignItems: 'center',
                     borderRadius: 10,
@@ -216,7 +217,8 @@ const ReportForManager = ({navigation}) => {
                       })
                       .catch(e => console.log(e));
                   }}>
-                  <Text style={{color: 'red', fontWeight: 'bold'}}>
+                  <Text
+                    style={{color: 'red', fontWeight: 'bold', fontSize: 12}}>
                     Đăng xuất
                   </Text>
                 </TouchableOpacity>
@@ -248,12 +250,12 @@ const ReportForManager = ({navigation}) => {
                 paddingBottom: 10,
               }}>
               <View style={{gap: 3}}>
-                <Text style={{fontSize: 18, fontWeight: '700'}}>
+                <Text style={{fontSize: 12, fontWeight: '700'}}>
                   Tổng số đơn hàng
                 </Text>
                 <Text
                   style={{
-                    fontSize: 24,
+                    fontSize: 18,
                     color: 'black',
                     fontWeight: 'bold',
                     alignSelf: 'center',
@@ -273,7 +275,7 @@ const ReportForManager = ({navigation}) => {
                 }}>
                 <Text
                   style={{
-                    fontSize: 18,
+                    fontSize: 14,
                     color: COLORS.secondary,
                     fontWeight: '500',
                   }}>
@@ -282,8 +284,8 @@ const ReportForManager = ({navigation}) => {
                 <Image
                   resizeMode="contain"
                   style={{
-                    width: 17,
-                    height: 17,
+                    width: 12,
+                    height: 12,
                     tintColor: COLORS.secondary,
                   }}
                   source={icons.right}
@@ -309,11 +311,11 @@ const ReportForManager = ({navigation}) => {
                   alignItems: 'center',
                   gap: 7,
                 }}>
-                <Text style={{fontSize: 16, fontWeight: '500'}}>
+                <Text style={{fontSize: 12, fontWeight: '500'}}>
                   Đơn thành công
                 </Text>
                 <Text
-                  style={{fontSize: 14, fontWeight: 'bold', color: 'black'}}>
+                  style={{fontSize: 10, fontWeight: 'bold', color: 'black'}}>
                   {successDeliveredOrder}
                 </Text>
               </TouchableOpacity>
@@ -330,11 +332,11 @@ const ReportForManager = ({navigation}) => {
                   gap: 7,
                   alignItems: 'center',
                 }}>
-                <Text style={{fontSize: 16, fontWeight: '500'}}>
+                <Text style={{fontSize: 12, fontWeight: '500'}}>
                   Đơn đang giao
                 </Text>
                 <Text
-                  style={{fontSize: 14, fontWeight: 'bold', color: 'black'}}>
+                  style={{fontSize: 10, fontWeight: 'bold', color: 'black'}}>
                   {deliveringOrder}
                 </Text>
               </TouchableOpacity>
@@ -351,11 +353,11 @@ const ReportForManager = ({navigation}) => {
                   gap: 7,
                   alignItems: 'center',
                 }}>
-                <Text style={{fontSize: 16, fontWeight: '500'}}>
+                <Text style={{fontSize: 12, fontWeight: '500'}}>
                   Đơn trả hàng
                 </Text>
                 <Text
-                  style={{fontSize: 14, fontWeight: 'bold', color: 'black'}}>
+                  style={{fontSize: 10, fontWeight: 'bold', color: 'black'}}>
                   {failDeliveredOrder}
                 </Text>
               </TouchableOpacity>
@@ -365,7 +367,7 @@ const ReportForManager = ({navigation}) => {
         <View style={styles.body}>
           <Text
             style={{
-              fontSize: 19,
+              fontSize: 16,
               fontWeight: 'bold',
               color: 'black',
               marginBottom: 20,
@@ -416,7 +418,7 @@ const ReportForManager = ({navigation}) => {
                   }}>
                   <View style={{borderBottomWidth: 0.4, paddingBottom: 10}}>
                     <Text
-                      style={{fontSize: 18, fontWeight: '500', color: 'black'}}>
+                      style={{fontSize: 14, fontWeight: '500', color: 'black'}}>
                       Nhân viên: {item.staff.fullName}
                     </Text>
                   </View>
@@ -428,8 +430,8 @@ const ReportForManager = ({navigation}) => {
                     }}>
                     <Image
                       style={{
-                        width: 35,
-                        height: 35,
+                        width: 30,
+                        height: 30,
                         borderRadius: 40,
                       }}
                       resizeMode="contain"
@@ -450,10 +452,10 @@ const ReportForManager = ({navigation}) => {
                         gap: 7,
                         alignItems: 'center',
                       }}>
-                      <Text style={{fontSize: 16, fontWeight: '500'}}>
+                      <Text style={{fontSize: 14, fontWeight: '500'}}>
                         Đơn đã giao thành công :{' '}
                       </Text>
-                      <Text style={{fontSize: 16, fontWeight: '500'}}>
+                      <Text style={{fontSize: 14, fontWeight: '500'}}>
                         {item.successDeliveredOrder}
                       </Text>
                     </View>
@@ -463,10 +465,10 @@ const ReportForManager = ({navigation}) => {
                         gap: 7,
                         alignItems: 'center',
                       }}>
-                      <Text style={{fontSize: 16, fontWeight: '500'}}>
+                      <Text style={{fontSize: 14, fontWeight: '500'}}>
                         Đơn giao thất bại :{' '}
                       </Text>
-                      <Text style={{fontSize: 16, fontWeight: '500'}}>
+                      <Text style={{fontSize: 14, fontWeight: '500'}}>
                         {item.failDeliveredOrder}
                       </Text>
                     </View>

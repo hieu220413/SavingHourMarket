@@ -269,7 +269,6 @@ function SuperMarketReport() {
 
   return (
     <div>
-      <ManagementMenu menuTabs={menuTabs} />
       <div className="year_picker">
         <text style={{ fontSize: "16px" }}>Năm: </text>
         <select

@@ -96,6 +96,16 @@ const CreateTimeframe = ({
       .then((res) => res.json())
       .then((respond) => {
         console.log(respond);
+        if (respond.code === 422) {
+          setOpenValidateSnackbar({
+            ...openValidateSnackbar,
+            open: true,
+            severity: "error",
+            text: "Khung giờ trùng với khung giờ đã tồn tại !",
+          });
+          setLoading(false);
+          return;
+        }
 
         fetch(
           `${API.baseURL}/api/timeframe/getAllForAdmin?page=${

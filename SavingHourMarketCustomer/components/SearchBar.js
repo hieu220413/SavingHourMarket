@@ -78,7 +78,7 @@ const style = StyleSheet.create({
   },
   input: {
     fontFamily: FONTS.fontFamily,
-    fontSize: 16,
+    fontSize: 14,
     flex: 1,
   },
   wrapperSearch: {

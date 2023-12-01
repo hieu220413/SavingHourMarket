@@ -37,6 +37,7 @@ public class Product {
         this.id = productDisplayStaff.getId();
         this.name = productDisplayStaff.getName();
         this.description = productDisplayStaff.getDescription();
+        this.priceListed = productDisplayStaff.getPriceListed();
         this.unit = productDisplayStaff.getUnit();
         this.status = productDisplayStaff.getStatus();
         this.productSubCategory = productDisplayStaff.getProductSubCategory();
@@ -69,7 +70,7 @@ public class Product {
     @Column(columnDefinition = "varchar(50) CHARACTER SET utf8 COLLATE utf8_bin")
     private String name;
 
-//    private Integer price;
+    private Integer priceListed;
 //
 //    private Integer priceOriginal;
 

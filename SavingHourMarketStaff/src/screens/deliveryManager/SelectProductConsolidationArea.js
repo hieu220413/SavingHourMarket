@@ -2,7 +2,7 @@
 /* eslint-disable react-native/no-inline-styles */
 
 import React, {useCallback, useState, useEffect} from 'react';
-import {View, TouchableOpacity, Image, Text} from 'react-native';
+import {View, TouchableOpacity, Image, Text, Dimensions} from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import {icons} from '../../constants';
 import {COLORS} from '../../constants/theme';
@@ -12,19 +12,20 @@ import LoadingScreen from '../../components/LoadingScreen';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import database from '@react-native-firebase/database';
-import { checkSystemState } from '../../common/utils';
+import {checkSystemState} from '../../common/utils';
 
 const SelectProductConsolidationArea = ({navigation, route}) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
-        checkSystemState(navigation);
-      }, []),
+      checkSystemState(navigation);
+    }, []),
   );
 
   const [initializing, setInitializing] = useState(true);
   const [tokenId, setTokenId] = useState(null);
-  const [productConsolidationAreaList, setProductConsolidationAreaList] = useState([]);
+  const [productConsolidationAreaList, setProductConsolidationAreaList] =
+    useState([]);
   const [loading, setLoading] = useState(false);
 
   // const onAuthStateChange = async userInfo => {
@@ -75,13 +76,16 @@ const SelectProductConsolidationArea = ({navigation, route}) => {
           const tokenId = await auth().currentUser.getIdToken();
           if (tokenId) {
             setLoading(true);
-            fetch(`${API.baseURL}/api/productConsolidationArea/getAllForStaff`, {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${tokenId}`,
+            fetch(
+              `${API.baseURL}/api/productConsolidationArea/getAllForStaff`,
+              {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${tokenId}`,
+                },
               },
-            })
+            )
               .then(async res => {
                 if (res.status === 403 || res.status === 401) {
                   const tokenIdCheck = await auth()

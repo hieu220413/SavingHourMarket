@@ -347,7 +347,6 @@ const ConsolidationManagement = () => {
   ];
   return (
     <div>
-      <ManagementMenu menuTabs={menuTabs} />
       <div style={{ marginBottom: 50 }} className="user__container">
         <div className="user__header">
           <div className="search"></div>
@@ -364,7 +363,7 @@ const ConsolidationManagement = () => {
           )}
         </div>
         {/* data table + pagination*/}
-        <div className="table__container">
+        <div className="table__container table-box-shadow">
           {/* data table */}
           <table class="table ">
             {consolidationList.length !== 0 && (

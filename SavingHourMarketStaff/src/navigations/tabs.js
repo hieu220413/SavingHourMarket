@@ -1,13 +1,13 @@
 /* eslint-disable prettier/prettier */
-import React, { useEffect, useState, useCallback } from 'react';
-import { View } from 'react-native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import React, {useEffect, useState, useCallback} from 'react';
+import {View, Dimensions} from 'react-native';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import TabIcon from '../components/TabIcon';
 import Home from '../screens/orderStaff/Home';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { icons } from '../constants';
-import { COLORS } from '../constants/theme';
-import { useFocusEffect } from '@react-navigation/native';
+import {icons} from '../constants';
+import {COLORS} from '../constants/theme';
+import {useFocusEffect} from '@react-navigation/native';
 import Test from '../components/Test';
 import Report from '../screens/orderStaff/Report';
 import HomeDeliver from '../screens/deliveryStaff/HomeDeliver';
@@ -25,7 +25,7 @@ import ModalAlertSignOut from '../components/ModalAlertSignOut';
 
 const Tab = createBottomTabNavigator();
 
-const Tabs = ({ navigation }) => {
+const Tabs = ({navigation}) => {
   const [user, setUser] = useState(null);
   const [initializing, setInitializing] = useState(true);
   const [alertVisible, setAlertVisible] = useState(false);
@@ -37,26 +37,23 @@ const Tabs = ({ navigation }) => {
     if (userInfo) {
       console.log('on auth change');
       // check if user sessions is still available. If yes => redirect to another screen
-      const userTokenId = await userInfo
-        .getIdToken(true)
-        .catch(e => {
-          console.log('err', e);
-          return null;
-        });
+      const userTokenId = await userInfo.getIdToken(true).catch(e => {
+        console.log('err', e);
+        return null;
+      });
 
       if (!userTokenId) {
         setAlertVisible(true);
         setTimeout(async () => {
           setAlertVisible(false);
           // sessions end. (revoke refresh token like password change, disable account, ....)
-          await AsyncStorage.removeItem('userInfo')
-            .then(() => {
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'Login' }],
-              });
-              return;
+          await AsyncStorage.removeItem('userInfo').then(() => {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Login'}],
             });
+            return;
+          });
         }, 3000);
       }
       const currentUser = await AsyncStorage.getItem('userInfo');
@@ -66,29 +63,27 @@ const Tabs = ({ navigation }) => {
     } else {
       const isDisableAccount = await AsyncStorage.getItem('isDisableAccount');
       if (isDisableAccount === '1') {
-        await AsyncStorage.setItem('isDisableAccount','0');
+        await AsyncStorage.setItem('isDisableAccount', '0');
         setAlertVisible(true);
         setTimeout(async () => {
           setAlertVisible(false);
           // sessions end. (revoke refresh token like password change, disable account, ....)
-          await AsyncStorage.removeItem('userInfo')
-            .then(() => {
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'Login' }],
-              });
-              return;
+          await AsyncStorage.removeItem('userInfo').then(() => {
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Login'}],
             });
+            return;
+          });
         }, 3000);
       } else {
         console.log('user is not logged in');
-        await AsyncStorage.removeItem('userInfo')
-          .then(() => {
-            navigation.reset({
-              index: 0,
-              routes: [{ name: 'Login' }],
-            });
-          })
+        await AsyncStorage.removeItem('userInfo').then(() => {
+          navigation.reset({
+            index: 0,
+            routes: [{name: 'Login'}],
+          });
+        });
       }
     }
   };
@@ -126,8 +121,9 @@ const Tabs = ({ navigation }) => {
               backgroundColor: COLORS.tabBackground,
               opacity: 0.95,
               borderTopColor: 'transparent',
-              height: 80,
+              height: '10%',
             },
+            
           }}>
           {user?.role === 'STAFF_ORD' && (
             <>
@@ -135,7 +131,7 @@ const Tabs = ({ navigation }) => {
                 name="Report"
                 component={Report}
                 options={{
-                  tabBarIcon: ({ focused }) => (
+                  tabBarIcon: ({focused}) => (
                     <TabIcon
                       display={'Trang chủ'}
                       focused={focused}
@@ -148,7 +144,7 @@ const Tabs = ({ navigation }) => {
                 name="Home"
                 component={Home}
                 options={{
-                  tabBarIcon: ({ focused }) => (
+                  tabBarIcon: ({focused}) => (
                     <TabIcon
                       display={'Đơn hàng'}
                       focused={focused}
@@ -161,7 +157,7 @@ const Tabs = ({ navigation }) => {
                 name="OrderGroupForOrderStaff"
                 component={OrderGroupForOrderStaff}
                 options={{
-                  tabBarIcon: ({ focused }) => (
+                  tabBarIcon: ({focused}) => (
                     <TabIcon
                       display={'Nhóm Đơn'}
                       focused={focused}
@@ -174,7 +170,7 @@ const Tabs = ({ navigation }) => {
                 name="Product"
                 component={Product}
                 options={{
-                  tabBarIcon: ({ focused }) => (
+                  tabBarIcon: ({focused}) => (
                     <TabIcon
                       display={'Sản phẩm'}
                       focused={focused}
@@ -204,7 +200,7 @@ const Tabs = ({ navigation }) => {
                 name="ReportForManager"
                 component={ReportForManager}
                 options={{
-                  tabBarIcon: ({ focused }) => (
+                  tabBarIcon: ({focused}) => (
                     <TabIcon
                       display={'Trang chủ'}
                       focused={focused}
@@ -217,9 +213,9 @@ const Tabs = ({ navigation }) => {
                 name="OrderGroup"
                 component={OrderGroup}
                 options={{
-                  tabBarIcon: ({ focused }) => (
+                  tabBarIcon: ({focused}) => (
                     <TabIcon
-                      display={'Nhóm điểm giao hàng'}
+                      display={'Điểm giao hàng'}
                       focused={focused}
                       icon={icons.pickuppoint}
                     />
@@ -230,9 +226,9 @@ const Tabs = ({ navigation }) => {
                 name="OrderBatch"
                 component={OrderBatch}
                 options={{
-                  tabBarIcon: ({ focused }) => (
+                  tabBarIcon: ({focused}) => (
                     <TabIcon
-                      display={'Nhóm giao tận nhà'}
+                      display={'Giao tận nhà'}
                       focused={focused}
                       icon={icons.homedelivery}
                     />
@@ -243,9 +239,9 @@ const Tabs = ({ navigation }) => {
                 name="OrderListForManager"
                 component={OrderListForManager}
                 options={{
-                  tabBarIcon: ({ focused }) => (
+                  tabBarIcon: ({focused}) => (
                     <TabIcon
-                      display={'Đơn hàng chưa gom'}
+                      display={'Chưa gom'}
                       focused={focused}
                       icon={icons.orderIcon}
                     />
@@ -260,7 +256,7 @@ const Tabs = ({ navigation }) => {
                 name="HomeDeliver"
                 component={HomeDeliver}
                 options={{
-                  tabBarIcon: ({ focused }) => (
+                  tabBarIcon: ({focused}) => (
                     <TabIcon
                       display={'Trang chủ'}
                       focused={focused}
@@ -273,7 +269,7 @@ const Tabs = ({ navigation }) => {
                 name="QrCodeScanner"
                 component={QrCodeScanner}
                 options={{
-                  tabBarIcon: ({ focused }) => (
+                  tabBarIcon: ({focused}) => (
                     <TabIcon
                       display={'Quét QR'}
                       focused={focused}
@@ -286,7 +282,7 @@ const Tabs = ({ navigation }) => {
                 name="HistoryList"
                 component={HistoryList}
                 options={{
-                  tabBarIcon: ({ focused }) => (
+                  tabBarIcon: ({focused}) => (
                     <TabIcon
                       display={'Lịch sử'}
                       focused={focused}
@@ -300,7 +296,6 @@ const Tabs = ({ navigation }) => {
         </Tab.Navigator>
         <ModalAlertSignOut alertVisible={alertVisible} />
       </>
-
     )
   );
 };

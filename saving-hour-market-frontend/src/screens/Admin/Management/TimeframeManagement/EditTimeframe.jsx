@@ -115,6 +115,16 @@ const EditTimeframe = ({
       .then((res) => res.json())
       .then((respond) => {
         console.log(respond);
+        if (respond.code === 403) {
+          setOpenValidateSnackbar({
+            ...openValidateSnackbar,
+            open: true,
+            severity: "error",
+            text: "Khung giờ có đơn hàng chờ xử lí !",
+          });
+          setLoading(false);
+          return;
+        }
 
         fetch(
           `${API.baseURL}/api/timeframe/getAllForAdmin?page=${

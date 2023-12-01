@@ -99,6 +99,8 @@ const ProductManagement = () => {
   const [supermarketId, setSupermarketId] = useState("");
   const [productCategoryId, setProductCategoryId] = useState("");
   const [productSubCategoryId, setProductSubCategoryId] = useState("");
+  
+  const [productName, setProductName] = useState("");
 
   const [openSnackbar, setOpenSnackbar] = useState({
     open: false,
@@ -430,6 +432,7 @@ const ProductManagement = () => {
             <i
               onClick={() => {
                 setProductBatch(item.productBatchList);
+                setProductName(item.name)
                 handleOpenProductBatch();
               }}
               className="bi bi-list"
@@ -503,7 +506,6 @@ const ProductManagement = () => {
   };
   return (
     <div>
-      <ManagementMenu menuTabs={menuTabs} />
       {/* Table */}
       <div className="supermarket__container">
         <div className="supermarket__header">
@@ -576,7 +578,10 @@ const ProductManagement = () => {
 
         {/* data table + pagination*/}
         {!isSwitchRecovery && (
-          <div className="table__container" style={{ height: "650px" }}>
+          <div
+            className="table__container table-box-shadow"
+            style={{ height: "650px" }}
+          >
             {/* data table */}
             <table class="table ">
               <thead>
@@ -1026,6 +1031,7 @@ const ProductManagement = () => {
         <ViewProductBatch
           handleClose={handleCloseProductBatch}
           productBatch={productBatch}
+          productName={productName}
         />
       </Dialog>
 

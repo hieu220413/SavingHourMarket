@@ -7,6 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  Dimensions,
 } from 'react-native';
 import React, { useState, useCallback } from 'react';
 import { icons } from '../constants';
@@ -132,7 +133,7 @@ const DiscountForCategories = ({ navigation, route }) => {
             numberOfLines={1}
             style={{
               fontFamily: FONTS.fontFamily,
-              fontSize: 18,
+              fontSize: Dimensions.get('window').width * 0.045,
               fontWeight: 700,
               maxWidth: '95%',
               color: 'black',
@@ -144,7 +145,7 @@ const DiscountForCategories = ({ navigation, route }) => {
             <Text
               style={{
                 maxWidth: '70%',
-                fontSize: 18,
+                fontSize: Dimensions.get('window').width * 0.045,
                 lineHeight: 30,
                 color: COLORS.secondary,
                 fontWeight: 600,
@@ -156,7 +157,7 @@ const DiscountForCategories = ({ navigation, route }) => {
             </Text>
             <Text
               style={{
-                fontSize: 12,
+                fontSize: Dimensions.get('window').width * 0.03,
                 lineHeight: 18,
                 color: COLORS.secondary,
                 fontWeight: 600,
@@ -169,7 +170,7 @@ const DiscountForCategories = ({ navigation, route }) => {
           <Text
             style={{
               fontFamily: FONTS.fontFamily,
-              fontSize: 18,
+              fontSize: Dimensions.get('window').width * 0.04,
               marginBottom: 10,
             }}>
             HSD:{' '}
@@ -192,21 +193,21 @@ const DiscountForCategories = ({ navigation, route }) => {
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginVertical: 15,
-          marginHorizontal: 30,
+          marginVertical: '2%',
+          marginHorizontal: '2%',
         }}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Image
             source={icons.leftArrow}
             resizeMode="contain"
-            style={{ width: 35, height: 35, tintColor: COLORS.primary }}
+            style={{ width: Dimensions.get('window').width * 0.1, height: 35, tintColor: COLORS.primary }}
           />
         </TouchableOpacity>
         <Text
           style={{
             textAlign: 'center',
             color: 'black',
-            fontSize: 20,
+            fontSize: 18,
             fontFamily: FONTS.fontFamily,
           }}>
           {discount.name}
@@ -225,7 +226,7 @@ const DiscountForCategories = ({ navigation, route }) => {
             style={{
               height: 40,
               tintColor: COLORS.primary,
-              width: 35,
+              width: Dimensions.get('window').width * 0.1,
             }}
             source={icons.cart}
           />
@@ -334,7 +335,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   itemImage: {
-    width: 130,
+    width: '40%',
     height: 130,
     borderRadius: 20,
     padding: 10,

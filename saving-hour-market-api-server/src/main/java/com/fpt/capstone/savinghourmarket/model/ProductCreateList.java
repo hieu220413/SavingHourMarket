@@ -23,6 +23,8 @@ public class ProductCreateList {
 
     private String description;
 
+    private Integer priceListed;
+
     private String unit;
 
     private List<String> imageUrls;
