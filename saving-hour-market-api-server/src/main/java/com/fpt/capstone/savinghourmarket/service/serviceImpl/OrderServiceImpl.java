@@ -61,23 +61,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
-    private static final AtomicLong counter = new AtomicLong(100);
-
-    private String generateOrderCode(LocalDateTime createOrderDate) {
-        if(counter.equals(999999)) {
-            counter.set(1);
-        }
-        long count = counter.incrementAndGet();
-        String zeros = "";
-        for(int i = 1 ; i <= 6-String.valueOf(count).length() ; i++ ) {
-            zeros = zeros + "0";
-        }
-        String orderId = "SHMORD"+createOrderDate.getDayOfMonth()+createOrderDate.getMonthValue()+createOrderDate.getYear()+zeros+ count;
-
-
-        return orderId;
-    }
-
     private final FirebaseAuth firebaseAuth;
 
     private RedissonClient redissonClient;
@@ -118,6 +101,23 @@ public class OrderServiceImpl implements OrderService {
     private String goongApiKey;
     @Value("${goong-distance-matrix-url}")
     private String goongDistanceMatrixUrl;
+
+    private String generateOrderCode(LocalDateTime createOrderDate) {
+//        if(counter.equals(999999)) {
+//            counter.set(1);
+//        }
+//        long count = counter.incrementAndGet();
+        int nextCount = repository.findByCreateDate(createOrderDate.toLocalDate()).size() + 1;
+
+        String zeros = "";
+        for(int i = 1 ; i <= 6-String.valueOf(nextCount).length() ; i++ ) {
+            zeros = zeros + "0";
+        }
+        String orderId = "SHMORD"+createOrderDate.getDayOfMonth()+createOrderDate.getMonthValue()+String.valueOf(createOrderDate.getYear()).substring(2,4)+zeros+ nextCount;
+
+
+        return orderId;
+    }
 
     @Override
     public OrderGroupPageResponse fetchOrderGroups(String staffEmail,

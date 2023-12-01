@@ -301,4 +301,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "AND ord.status IN :statusList")
     List<Order> findOrderExceedDeliverDateList(List<Integer> statusList);
 
+    @Query("SELECT ord FROM Order ord " +
+            "WHERE DATE(ord.createdTime) = :createdDate")
+    List<Order> findByCreateDate(LocalDate createdDate);
 }
