@@ -53,12 +53,30 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
+
+    private static final AtomicLong counter = new AtomicLong(100);
+
+    private String generateOrderCode(LocalDateTime createOrderDate) {
+        if(counter.equals(999999)) {
+            counter.set(1);
+        }
+        long count = counter.incrementAndGet();
+        String zeros = "";
+        for(int i = 1 ; i <= 6-String.valueOf(count).length() ; i++ ) {
+            zeros = zeros + "0";
+        }
+        String orderId = "SHMORD"+createOrderDate.getDayOfMonth()+createOrderDate.getMonthValue()+createOrderDate.getYear()+zeros+ count;
+
+
+        return orderId;
+    }
 
     private final FirebaseAuth firebaseAuth;
 
@@ -1436,6 +1454,7 @@ public class OrderServiceImpl implements OrderService {
         mapTransactionToOrder(orderSaved, orderCreate.getTransaction());
         String qrCodeUrl = generateAndUploadQRCode(orderSaved);
         orderSaved.setQrCodeUrl(qrCodeUrl);
+        orderSaved.setCode(generateOrderCode(orderSaved.getCreatedTime()));
 
         return repository.save(orderSaved);
     }

@@ -156,6 +156,7 @@ SET @NemBoTieuXanh = 'Sản phẩm Nem Bò tiêu xanh được chế biến từ
 \nThêm vào đó là tính tiện dụng của sản phẩm sẽ giúp người dùng dễ dàng chế biến và tiết kiệm thời gian khi nấu nướng. Chỉ cần 10 - 15 phút chiên hoặc nướng sản phẩm bằng nồi chiên không dầu hoặc chảo là có ngay những chiếc nem bò tiêu xanh thơm ngon lạ vị để thưởng thức cùng bạn bè và gia đình.
 ';
 
+
 -- Configuration
 INSERT INTO `saving_hour_market`.`configuration` (`id`, `limit_of_orders`, `number_of_suggested_pickup_point`, `extra_shipping_fee_per_kilometer`, `initial_shipping_fee`, `min_km_distance_for_extra_shipping_fee`, `delete_unpaid_order_time`, `time_allowed_for_order_cancellation`, `limit_meter_per_minute`, `system_status`)
 --     VALUES (`id`, `limit_of_orders`, `number_of_suggested_pickup_point`, `delete_unpaid_order_time`, `system_status`);
