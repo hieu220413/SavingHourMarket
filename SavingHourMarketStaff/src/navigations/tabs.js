@@ -121,7 +121,7 @@ const Tabs = ({navigation}) => {
               backgroundColor: COLORS.tabBackground,
               opacity: 0.95,
               borderTopColor: 'transparent',
-              height: 70,
+              height: 80,
             },
           }}>
           {user?.role === 'STAFF_ORD' && (

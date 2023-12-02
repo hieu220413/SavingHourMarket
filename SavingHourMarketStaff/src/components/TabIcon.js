@@ -17,15 +17,15 @@ const TabIcon = ({focused, icon, display}) => {
         source={icon}
         resizeMode="contain"
         style={{
-          width: 25,
-          height: 25,
+          width: 30,
+          height: 30,
           tintColor: focused ? COLORS.secondary : COLORS.tabIcon,
         }}
       />
       <Text
         style={{
           textAlign: 'center',
-          fontSize: 12,
+          fontSize: 14,
           color: focused ? COLORS.secondary : COLORS.tabIcon,
           fontWeight: 400,
           fontFamily: FONTS.fontFamily,

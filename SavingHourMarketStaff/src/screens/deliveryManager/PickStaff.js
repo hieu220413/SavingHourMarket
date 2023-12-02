@@ -482,12 +482,12 @@ const PickStaff = ({navigation, route}) => {
           <Image
             source={icons.leftArrow}
             resizeMode="contain"
-            style={{width: 25, height: 25, tintColor: COLORS.primary}}
+            style={{width: 30, height: 30, tintColor: COLORS.primary}}
           />
         </TouchableOpacity>
         <Text
           style={{
-            fontSize: 20,
+            fontSize: 24,
             textAlign: 'center',
             color: '#000000',
             fontWeight: 'bold',
@@ -505,7 +505,7 @@ const PickStaff = ({navigation, route}) => {
           />
           <Text
             style={{
-              fontSize: 14,
+              fontSize: 18,
               fontFamily: 'Roboto',
               // color: 'black',
               fontWeight: 'bold',
@@ -518,8 +518,8 @@ const PickStaff = ({navigation, route}) => {
           <ScrollView
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{marginTop: 10}}>
-            <View style={{marginBottom: 100, paddingHorizontal: 10}}>
+            contentContainerStyle={{marginTop: '5%'}}>
+            <View style={{marginBottom: 100, paddingHorizontal: '3%'}}>
               {staffList.map((item, index) => (
                 <View
                   key={item.id}
@@ -527,10 +527,10 @@ const PickStaff = ({navigation, route}) => {
                     item?.isAvailableForDelivering === true
                       ? {
                           backgroundColor: '#FFFFFF',
-                          marginBottom: 20,
+                          marginBottom: '5%',
                           // borderRadius: 10,
                         }
-                      : {backgroundColor: '#E5E5E5', marginBottom: 20}
+                      : {backgroundColor: '#E5E5E5', marginBottom: '5%'}
                   }>
                   {/* List staff */}
                   <Pressable
@@ -550,7 +550,7 @@ const PickStaff = ({navigation, route}) => {
                       <View style={{flexDirection: 'column', gap: 8, flex: 10}}>
                         <Text
                           style={{
-                            fontSize: 18,
+                            fontSize: 20,
                             fontWeight: 'bold',
                             fontFamily: 'Roboto',
                             color: COLORS.primary,
@@ -577,7 +577,7 @@ const PickStaff = ({navigation, route}) => {
                         </View>
                         <Text
                           style={{
-                            fontSize: 15,
+                            fontSize: 16,
                             fontWeight: 'bold',
                             fontFamily: 'Roboto',
                             color: 'black',
@@ -586,7 +586,7 @@ const PickStaff = ({navigation, route}) => {
                         </Text>
                         <Text
                           style={{
-                            fontSize: 15,
+                            fontSize: 16,
                             fontWeight: 'bold',
                             fontFamily: 'Roboto',
                             color: 'black',
@@ -611,8 +611,8 @@ const PickStaff = ({navigation, route}) => {
                         {item?.isAvailableForDelivering === false ? (
                           <Text
                             style={{
-                              fontSize: 17,
-                              width: 320,
+                              fontSize: 16,
+                              width: '100%',
                               fontWeight: 'bold',
                               fontFamily: 'Roboto',
                               color: 'red',
@@ -674,7 +674,7 @@ const PickStaff = ({navigation, route}) => {
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'space-between',
-              paddingHorizontal: 15,
+              paddingHorizontal: '5%',
               marginTop: 10,
             }}>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -683,7 +683,7 @@ const PickStaff = ({navigation, route}) => {
             </Text> */}
               <Text
                 style={{
-                  fontSize: 16,
+                  fontSize: 17,
                   color: COLORS.primary,
                   fontFamily: 'Roboto',
                   fontWeight: 'bold',
@@ -724,7 +724,7 @@ const PickStaff = ({navigation, route}) => {
               <Text
                 style={{
                   color: 'white',
-                  fontSize: 16,
+                  fontSize: 17,
                   fontFamily: 'Roboto',
                   fontWeight: 'bold',
                 }}>

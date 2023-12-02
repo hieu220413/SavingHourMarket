@@ -309,7 +309,7 @@ const OrderListForManager = ({navigation}) => {
                   textAlign: 'center',
                   color: COLORS.primary,
 
-                  fontSize: 10,
+                  fontSize: 12,
                 }
               : {
                   width: '100%',
@@ -317,7 +317,7 @@ const OrderListForManager = ({navigation}) => {
                   textAlign: 'center',
                   color: 'black',
 
-                  fontSize: 10,
+                  fontSize: 12,
                 }
           }>
           {item.name}
@@ -562,7 +562,7 @@ const OrderListForManager = ({navigation}) => {
               return res.json();
             })
             .then(respond => {
-              console.log('order', respond[0]);
+              console.log('order', respond);
               if (respond.error) {
                 setLoading(false);
                 return;
@@ -601,7 +601,7 @@ const OrderListForManager = ({navigation}) => {
               return res.json();
             })
             .then(respond => {
-              console.log('order', respond[0]);
+              console.log('order', respond);
               if (respond.error) {
                 setLoading(false);
                 return;
@@ -653,7 +653,7 @@ const OrderListForManager = ({navigation}) => {
         <View style={styles.header}>
           <View style={styles.pagenameAndLogout}>
             <View style={styles.pageName}>
-              <Text style={{fontSize: 18, color: 'black', fontWeight: 'bold'}}>
+              <Text style={{fontSize: 24, color: 'black', fontWeight: 'bold'}}>
                 Các đơn giao tận nhà
               </Text>
             </View>
@@ -664,7 +664,7 @@ const OrderListForManager = ({navigation}) => {
                 }}>
                 <Image
                   resizeMode="contain"
-                  style={{width: 30, height: 30}}
+                  style={{width: 35, height: 35}}
                   source={{
                     uri: currentUser?.avatarUrl,
                   }}
@@ -675,9 +675,9 @@ const OrderListForManager = ({navigation}) => {
                   style={{
                     position: 'absolute',
                     bottom: -34,
-                    left: -18,
+                    left: -10,
                     zIndex: 100,
-                    width: 70,
+                    width: 74,
                     height: 30,
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -709,10 +709,10 @@ const OrderListForManager = ({navigation}) => {
               style={{
                 backgroundColor: '#f5f5f5',
                 width: '100%',
-                height: '50%',
+                height: '55%',
                 borderRadius: 40,
-                paddingLeft: 10,
-                marginTop: 10,
+                paddingLeft: '5%',
+                marginTop: '4%',
                 flexDirection: 'row',
                 alignItems: 'center',
               }}>
@@ -727,14 +727,14 @@ const OrderListForManager = ({navigation}) => {
                 <Image
                   resizeMode="contain"
                   style={{
-                    width: 18,
-                    height: 18,
+                    width: 24,
+                    height: 24,
                   }}
                   source={icons.calendar}
                 />
                 <Text
                   style={{
-                    fontSize: 14,
+                    fontSize: 16,
                     paddingLeft: 20,
                   }}>
                   {date ? format(date, 'dd/MM/yyyy') : 'Chọn ngày giao'}
@@ -966,7 +966,7 @@ const OrderListForManager = ({navigation}) => {
                       style={[
                         {
                           paddingHorizontal: '2%',
-                          paddingBottom: '3%',
+                          paddingBottom: '5%',
                         },
                         currentStatus.display === item.display && {
                           borderBottomColor: COLORS.primary,
@@ -976,7 +976,7 @@ const OrderListForManager = ({navigation}) => {
                       <Text
                         style={{
                           fontFamily: 'Roboto',
-                          fontSize: 14,
+                          fontSize: 16,
                           color:
                             currentStatus.display === item.display
                               ? COLORS.primary
@@ -1006,9 +1006,9 @@ const OrderListForManager = ({navigation}) => {
                 <Image
                   resizeMode="contain"
                   style={{
-                    height: 25,
+                    height: 30,
                     tintColor: COLORS.primary,
-                    width: 25,
+                    width: 30,
                     // marginHorizontal: '2%',
                   }}
                   source={icons.filter}
@@ -1030,7 +1030,7 @@ const OrderListForManager = ({navigation}) => {
                   />
                   <Text
                     style={{
-                      fontSize: 14,
+                      fontSize: 18,
                       fontFamily: 'Roboto',
                       // color: 'black',
                       fontWeight: 'bold',
@@ -1039,7 +1039,7 @@ const OrderListForManager = ({navigation}) => {
                   </Text>
                 </View>
               ) : (
-                <View style={{marginTop: '18%', marginBottom: '45%'}}>
+                <View style={{marginTop: '18%', marginBottom: '40%'}}>
                   <TouchableOpacity
                     onPress={() => {
                       setModalCreate(!modalCreate);
@@ -1053,11 +1053,11 @@ const OrderListForManager = ({navigation}) => {
                         padding: '2%',
                         flexDirection: 'row',
                         justifyContent: 'center',
-                        marginBottom: 10,
+                        marginBottom: '4%',
                       }}>
                       <Text
                         style={{
-                          fontSize: 16,
+                          fontSize: 18,
                           fontWeight: 'bold',
                           fontFamily: 'Roboto',
                           color: 'white',
@@ -1076,96 +1076,90 @@ const OrderListForManager = ({navigation}) => {
                           <View
                             style={{
                               backgroundColor: 'rgb(240,240,240)',
-                              marginBottom: 20,
+                              marginBottom: '5%',
                               borderRadius: 10,
+                              padding: '5%',
                             }}>
-                            <View
-                              style={{
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                padding: '5%',
-                              }}>
-                              <View style={{flexDirection: 'column', gap: 8}}>
+                            <View style={{flexDirection: 'column', gap: 8}}>
+                              <Text
+                                style={{
+                                  fontSize: 18,
+                                  fontWeight: 'bold',
+                                  fontFamily: 'Roboto',
+                                  color: COLORS.primary,
+                                }}>
+                                Thông tin
+                              </Text>
+                              <View
+                                style={{
+                                  flexDirection: 'row',
+                                  alignItems: 'center',
+                                }}>
                                 <Text
                                   style={{
-                                    fontSize: 18,
+                                    fontSize: 16,
                                     fontWeight: 'bold',
                                     fontFamily: 'Roboto',
-                                    color: COLORS.primary,
+                                    color: 'black',
+                                    paddingRight: '2%',
                                   }}>
-                                  Thông tin
+                                  Ngày giao :
                                 </Text>
-                                <View
-                                  style={{
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    setShowPicker(true);
                                   }}>
-                                  <Text
+                                  <View
                                     style={{
-                                      fontSize: 15,
-                                      fontWeight: 'bold',
-                                      fontFamily: 'Roboto',
-                                      color: 'black',
-                                      paddingRight: '2%',
-                                    }}>
-                                    Ngày giao :
-                                  </Text>
-                                  <TouchableOpacity
-                                    onPress={() => {
-                                      setShowPicker(true);
+                                      backgroundColor: '#f5f5f5',
+                                      // width: '100%',
+                                      height: 35,
+                                      borderRadius: 40,
+                                      paddingHorizontal: 10,
+                                      // marginTop: 10,
+                                      flexDirection: 'row',
+                                      alignItems: 'center',
                                     }}>
                                     <View
                                       style={{
-                                        backgroundColor: '#f5f5f5',
-                                        // width: '100%',
-                                        height: 35,
-                                        borderRadius: 40,
-                                        paddingHorizontal: 10,
-                                        // marginTop: 10,
-                                        flexDirection: 'row',
+                                        justifyContent: 'center',
                                         alignItems: 'center',
+                                        height: '100%',
+                                        flexWrap: 'wrap',
+                                        // paddingLeft: 5,
                                       }}>
-                                      <View
+                                      <Image
+                                        resizeMode="contain"
                                         style={{
-                                          justifyContent: 'center',
-                                          alignItems: 'center',
-                                          height: '100%',
-                                          flexWrap: 'wrap',
-                                          // paddingLeft: 5,
+                                          width: 22,
+                                          height: 22,
+                                        }}
+                                        source={icons.calendar}
+                                      />
+                                      <Text
+                                        style={{
+                                          fontSize: 16,
+                                          paddingLeft: 10,
+                                          color: 'black',
                                         }}>
-                                        <Image
-                                          resizeMode="contain"
-                                          style={{
-                                            width: 20,
-                                            height: 20,
-                                          }}
-                                          source={icons.calendar}
-                                        />
-                                        <Text
-                                          style={{
-                                            fontSize: 14,
-                                            paddingLeft: 10,
-                                            color: 'black',
-                                          }}>
-                                          {dateToBatch
-                                            ? format(dateToBatch, 'dd/MM/yyyy')
-                                            : 'Chọn ngày giao'}
-                                        </Text>
-                                      </View>
+                                        {dateToBatch
+                                          ? format(dateToBatch, 'dd/MM/yyyy')
+                                          : 'Chọn ngày giao'}
+                                      </Text>
                                     </View>
-                                  </TouchableOpacity>
-                                  {showPicker && (
-                                    <DateTimePicker
-                                      mode="date"
-                                      display="spinner"
-                                      value={
-                                        dateToBatch ? dateToBatch : new Date()
-                                      }
-                                      onChange={onChange}
-                                    />
-                                  )}
-                                  {/* <DatePicker
+                                  </View>
+                                </TouchableOpacity>
+                                {showPicker && (
+                                  <DateTimePicker
+                                    mode="date"
+                                    display="spinner"
+                                    value={
+                                      dateToBatch ? dateToBatch : new Date()
+                                    }
+                                    onChange={onChange}
+                                  />
+                                )}
+                                {/* <DatePicker
                                     // minimumDate={new Date()}
                                     modal
                                     mode="date"
@@ -1182,189 +1176,189 @@ const OrderListForManager = ({navigation}) => {
                                       setOpenDateToBatch(false);
                                     }}
                                   /> */}
-                                </View>
-                                <View
+                              </View>
+                              <View
+                                style={{
+                                  flexDirection: 'row',
+                                  alignItems: 'center',
+                                }}>
+                                <Text
                                   style={{
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
+                                    fontSize: 16,
+                                    fontWeight: 'bold',
+                                    fontFamily: 'Roboto',
+                                    color: 'black',
+                                    paddingRight: 10,
                                   }}>
-                                  <Text
-                                    style={{
-                                      fontSize: 15,
-                                      fontWeight: 'bold',
-                                      fontFamily: 'Roboto',
-                                      color: 'black',
-                                      paddingRight: 10,
-                                    }}>
-                                    Khung giờ :
-                                  </Text>
-                                  <TouchableOpacity
-                                    onPress={() => {
-                                      navigation.navigate('SelectTimeFrame', {
-                                        setTimeFrame,
-                                      });
-                                    }}>
-                                    <View
-                                      style={{
-                                        backgroundColor: '#f5f5f5',
-                                        // width: '100%',
-                                        height: 35,
-                                        borderRadius: 40,
-                                        paddingHorizontal: 10,
-                                        // marginTop: 10,
-                                        flexDirection: 'row',
-                                        alignItems: 'center',
-                                      }}>
-                                      <View
-                                        style={{
-                                          justifyContent: 'center',
-                                          alignItems: 'center',
-                                          height: '100%',
-                                          flexWrap: 'wrap',
-                                          // paddingLeft: 5,
-                                        }}>
-                                        <Image
-                                          resizeMode="contain"
-                                          style={{
-                                            width: 20,
-                                            height: 20,
-                                          }}
-                                          source={icons.time}
-                                        />
-                                        <Text
-                                          style={{
-                                            fontSize: 14,
-                                            paddingLeft: 10,
-                                            color: 'black',
-                                          }}>
-                                          {timeFrame
-                                            ? `${timeFrame?.fromHour.slice(
-                                                0,
-                                                5,
-                                              )} đến ${timeFrame?.toHour.slice(
-                                                0,
-                                                5,
-                                              )}`
-                                            : 'Chọn khung giờ'}
-                                        </Text>
-                                      </View>
-                                    </View>
-                                  </TouchableOpacity>
-                                </View>
-                                <View
-                                  style={{
-                                    flexDirection: 'column',
-                                    justifyContent: 'center',
+                                  Khung giờ :
+                                </Text>
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    navigation.navigate('SelectTimeFrame', {
+                                      setTimeFrame,
+                                    });
                                   }}>
-                                  <Text
+                                  <View
                                     style={{
-                                      fontSize: 15,
-                                      fontWeight: 'bold',
-                                      fontFamily: 'Roboto',
-                                      color: 'black',
-                                      paddingBottom: 10,
-                                    }}>
-                                    Điểm tập kết :
-                                  </Text>
-                                  <TouchableOpacity
-                                    onPress={() => {
-                                      navigation.navigate(
-                                        'SelectProductConsolidationArea',
-                                        {
-                                          setProductConsolidationArea,
-                                        },
-                                      );
-                                    }}>
-                                    <View
-                                      style={{
-                                        backgroundColor: '#f5f5f5',
-                                        // width: '100%',
-                                        height: 35,
-                                        borderRadius: 40,
-                                        paddingHorizontal: 10,
-                                        // marginTop: 10,
-                                        flexDirection: 'row',
-                                        alignItems: 'center',
-                                      }}>
-                                      <View
-                                        style={{
-                                          justifyContent: 'center',
-                                          alignItems: 'center',
-                                          height: '100%',
-                                          flexWrap: 'wrap',
-                                          // paddingLeft: 5,
-                                        }}>
-                                        <Image
-                                          resizeMode="contain"
-                                          style={{
-                                            width: 20,
-                                            height: 20,
-                                          }}
-                                          source={icons.location}
-                                        />
-                                        <Text
-                                          style={{
-                                            fontSize: 14,
-                                            paddingLeft: 10,
-                                            color: 'black',
-                                            // width: '100%',
-                                          }}>
-                                          {productConsolidationArea
-                                            ? productConsolidationArea.address
-                                            : 'Chọn điểm tập kết'}
-                                        </Text>
-                                      </View>
-                                    </View>
-                                  </TouchableOpacity>
-                                </View>
-                                <View
-                                  style={{
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                  }}>
-                                  <Text
-                                    style={{
-                                      fontSize: 15,
-                                      fontWeight: 'bold',
-                                      fontFamily: 'Roboto',
-                                      color: 'black',
-                                      paddingRight: 10,
-                                    }}>
-                                    Số lượng nhóm đơn :
-                                  </Text>
-
-                                  <NumericInput
-                                    value={quantity}
-                                    onChange={value => setQuantity(value)}
-                                    minValue={0}
-                                    // maxValue={orderList.length}
-                                    rounded
-                                  />
-                                </View>
-                                <View style={{paddingTop: 10}}>
-                                  <TouchableOpacity
-                                    onPress={() => {
-                                      handleCreate();
-                                    }}
-                                    style={{
+                                      backgroundColor: '#f5f5f5',
+                                      // width: '100%',
+                                      height: 35,
+                                      borderRadius: 40,
+                                      paddingHorizontal: 10,
+                                      // marginTop: 10,
+                                      flexDirection: 'row',
                                       alignItems: 'center',
-                                      justifyContent: 'center',
-                                      backgroundColor: COLORS.primary,
-                                      paddingVertical: '2%',
-                                      width: '100%',
-                                      borderRadius: 30,
                                     }}>
-                                    <Text
+                                    <View
                                       style={{
-                                        fontSize: 16,
-                                        color: 'white',
-                                        fontFamily: 'Roboto',
-                                        fontWeight: 'bold',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        height: '100%',
+                                        flexWrap: 'wrap',
+                                        // paddingLeft: 5,
                                       }}>
-                                      Thiết lập
-                                    </Text>
-                                  </TouchableOpacity>
-                                </View>
+                                      <Image
+                                        resizeMode="contain"
+                                        style={{
+                                          width: 22,
+                                          height: 22,
+                                        }}
+                                        source={icons.time}
+                                      />
+                                      <Text
+                                        style={{
+                                          fontSize: 16,
+                                          paddingLeft: 10,
+                                          color: 'black',
+                                        }}>
+                                        {timeFrame
+                                          ? `${timeFrame?.fromHour.slice(
+                                              0,
+                                              5,
+                                            )} đến ${timeFrame?.toHour.slice(
+                                              0,
+                                              5,
+                                            )}`
+                                          : 'Chọn khung giờ'}
+                                      </Text>
+                                    </View>
+                                  </View>
+                                </TouchableOpacity>
+                              </View>
+                              <View
+                                style={{
+                                  flexDirection: 'column',
+                                  justifyContent: 'center',
+                                }}>
+                                <Text
+                                  style={{
+                                    fontSize: 16,
+                                    fontWeight: 'bold',
+                                    fontFamily: 'Roboto',
+                                    color: 'black',
+                                    paddingBottom: 10,
+                                  }}>
+                                  Điểm tập kết :
+                                </Text>
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    navigation.navigate(
+                                      'SelectProductConsolidationArea',
+                                      {
+                                        setProductConsolidationArea,
+                                      },
+                                    );
+                                  }}>
+                                  <View
+                                    style={{
+                                      backgroundColor: '#f5f5f5',
+                                      width: '100%',
+                                      height: 45,
+                                      borderRadius: 40,
+                                      paddingHorizontal: 10,
+                                      // marginTop: 10,
+                                      flexDirection: 'row',
+                                      alignItems: 'center',
+                                    }}>
+                                    <View
+                                      style={{
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        height: '90%',
+                                        flexWrap: 'wrap',
+                                        // paddingLeft: 5,
+                                      }}>
+                                      <Image
+                                        resizeMode="contain"
+                                        style={{
+                                          width: 22,
+                                          height: 22,
+                                        }}
+                                        source={icons.location}
+                                      />
+                                      <Text
+                                        style={{
+                                          fontSize: 16,
+                                          paddingLeft: 10,
+                                          color: 'black',
+                                          // width: '90%',
+                                        }}>
+                                        {productConsolidationArea
+                                          ? productConsolidationArea.address
+                                          : 'Chọn điểm tập kết'}
+                                      </Text>
+                                    </View>
+                                  </View>
+                                </TouchableOpacity>
+                              </View>
+                              <View
+                                style={{
+                                  flexDirection: 'row',
+                                  alignItems: 'center',
+                                }}>
+                                <Text
+                                  style={{
+                                    fontSize: 16,
+                                    fontWeight: 'bold',
+                                    fontFamily: 'Roboto',
+                                    color: 'black',
+                                    paddingRight: 10,
+                                  }}>
+                                  Số lượng nhóm đơn :
+                                </Text>
+
+                                <NumericInput
+                                  value={quantity}
+                                  onChange={value => setQuantity(value)}
+                                  minValue={0}
+                                  // maxValue={orderList.length}
+                                  rounded
+                                  totalHeight={40}
+                                />
+                              </View>
+                              <View style={{paddingTop: 10}}>
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    handleCreate();
+                                  }}
+                                  style={{
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    backgroundColor: COLORS.primary,
+                                    paddingVertical: '2%',
+                                    width: '100%',
+                                    borderRadius: 30,
+                                  }}>
+                                  <Text
+                                    style={{
+                                      fontSize: 18,
+                                      color: 'white',
+                                      fontFamily: 'Roboto',
+                                      fontWeight: 'bold',
+                                    }}>
+                                    Thiết lập
+                                  </Text>
+                                </TouchableOpacity>
                               </View>
                             </View>
                           </View>
@@ -1378,9 +1372,9 @@ const OrderListForManager = ({navigation}) => {
                         <View
                           key={data.item.id}
                           style={{
-                            marginBottom: 20,
+                            marginBottom: '6%',
                             backgroundColor: 'rgb(240,240,240)',
-                            padding: 10,
+                            padding: '5%',
                             borderRadius: 10,
                             shadowColor: '#000',
                             shadowOffset: {
@@ -1410,11 +1404,11 @@ const OrderListForManager = ({navigation}) => {
                                 style={{
                                   flexDirection: 'column',
                                   gap: 8,
-                                  flex: 7,
+                                  flex: 9,
                                 }}>
                                 <Text
                                   style={{
-                                    fontSize: 18,
+                                    fontSize: 20,
                                     fontWeight: 'bold',
                                     fontFamily: 'Roboto',
                                     color: COLORS.primary,
@@ -1429,8 +1423,8 @@ const OrderListForManager = ({navigation}) => {
                                     }}>
                                     <Image
                                       style={{
-                                        width: 35,
-                                        height: 35,
+                                        width: 40,
+                                        height: 40,
                                         borderRadius: 40,
                                       }}
                                       resizeMode="contain"
@@ -1444,7 +1438,7 @@ const OrderListForManager = ({navigation}) => {
                                 )}
                                 <Text
                                   style={{
-                                    fontSize: 14,
+                                    fontSize: 16,
                                     fontWeight: 'bold',
                                     fontFamily: 'Roboto',
                                     color: 'black',
@@ -1457,7 +1451,7 @@ const OrderListForManager = ({navigation}) => {
                                 </Text>
                                 <Text
                                   style={{
-                                    fontSize: 14,
+                                    fontSize: 16,
                                     fontWeight: 'bold',
                                     fontFamily: 'Roboto',
                                     color: 'black',
@@ -1469,7 +1463,7 @@ const OrderListForManager = ({navigation}) => {
 
                                 <Text
                                   style={{
-                                    fontSize: 14,
+                                    fontSize: 16,
                                     fontWeight: 'bold',
                                     fontFamily: 'Roboto',
                                     color: 'black',
@@ -1479,7 +1473,7 @@ const OrderListForManager = ({navigation}) => {
 
                                 <Text
                                   style={{
-                                    fontSize: 14,
+                                    fontSize: 16,
                                     fontWeight: 'bold',
                                     fontFamily: 'Roboto',
                                     color: 'black',
@@ -1567,7 +1561,7 @@ const OrderListForManager = ({navigation}) => {
                   />
                   <Text
                     style={{
-                      fontSize: 14,
+                      fontSize: 18,
                       fontFamily: 'Roboto',
                       // color: 'black',
                       fontWeight: 'bold',
@@ -1576,7 +1570,7 @@ const OrderListForManager = ({navigation}) => {
                   </Text>
                 </View>
               ) : (
-                <View style={{marginTop: '18%', marginBottom: '30%'}}>
+                <View style={{marginTop: '18%', marginBottom: '25%'}}>
                   <SwipeListView
                     showsVerticalScrollIndicator={false}
                     showsHorizontalScrollIndicator={false}
@@ -1585,9 +1579,9 @@ const OrderListForManager = ({navigation}) => {
                       <View
                         key={data.item.id}
                         style={{
-                          marginBottom: 20,
+                          marginBottom: '6%',
                           backgroundColor: 'rgb(240,240,240)',
-                          padding: 10,
+                          padding: '5%',
                           borderRadius: 10,
                           shadowColor: '#000',
                           shadowOffset: {
@@ -1617,7 +1611,7 @@ const OrderListForManager = ({navigation}) => {
                               style={{
                                 flexDirection: 'column',
                                 gap: 8,
-                                flex: 7,
+                                flex: 9,
                               }}>
                               <Text
                                 style={{
@@ -1636,8 +1630,8 @@ const OrderListForManager = ({navigation}) => {
                                   }}>
                                   <Image
                                     style={{
-                                      width: 30,
-                                      height: 30,
+                                      width: 35,
+                                      height: 35,
                                       borderRadius: 40,
                                     }}
                                     resizeMode="contain"
@@ -1651,7 +1645,7 @@ const OrderListForManager = ({navigation}) => {
                               )}
                               <Text
                                 style={{
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   fontWeight: 'bold',
                                   fontFamily: 'Roboto',
                                   color: 'black',
@@ -1664,7 +1658,7 @@ const OrderListForManager = ({navigation}) => {
                               </Text>
                               <Text
                                 style={{
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   fontWeight: 'bold',
                                   fontFamily: 'Roboto',
                                   color: 'black',
@@ -1675,7 +1669,7 @@ const OrderListForManager = ({navigation}) => {
 
                               <Text
                                 style={{
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   fontWeight: 'bold',
                                   fontFamily: 'Roboto',
                                   color: 'black',
@@ -1685,7 +1679,7 @@ const OrderListForManager = ({navigation}) => {
 
                               <Text
                                 style={{
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   fontWeight: 'bold',
                                   fontFamily: 'Roboto',
                                   color: 'black',
@@ -1782,7 +1776,7 @@ const OrderListForManager = ({navigation}) => {
                   <Text
                     style={{
                       color: 'black',
-                      fontSize: 18,
+                      fontSize: 20,
                       fontWeight: 700,
                       textAlign: 'center',
                       paddingBottom: 20,
@@ -1797,8 +1791,8 @@ const OrderListForManager = ({navigation}) => {
                     <Image
                       resizeMode="contain"
                       style={{
-                        width: 18,
-                        height: 18,
+                        width: 20,
+                        height: 20,
                         tintColor: 'grey',
                       }}
                       source={icons.close}
@@ -1808,7 +1802,7 @@ const OrderListForManager = ({navigation}) => {
                 <Text
                   style={{
                     color: 'black',
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: 700,
                   }}>
                   Sắp xếp theo
@@ -1846,7 +1840,7 @@ const OrderListForManager = ({navigation}) => {
                         color: COLORS.primary,
                         fontWeight: 'bold',
                         textAlign: 'center',
-                        fontSize: 12,
+                        fontSize: 14,
                       }}>
                       Thiết lập lại
                     </Text>
@@ -1934,7 +1928,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   body: {
-    flex: 3.5,
+    flex: 6,
     // backgroundColor: 'pink',
     paddingHorizontal: 20,
   },
@@ -1992,6 +1986,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     textAlign: 'center',
-    fontSize: 12,
+    fontSize: 14,
   },
 });
