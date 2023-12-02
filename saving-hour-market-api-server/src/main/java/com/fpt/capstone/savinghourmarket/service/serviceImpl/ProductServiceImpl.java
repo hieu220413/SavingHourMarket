@@ -409,8 +409,8 @@ public class ProductServiceImpl implements ProductService {
         Integer productCount = 1;
         for (ProductCreateList productCreate : productList) {
             List<String> errors = new ArrayList<>();
-            if (productCreate.getName().length() > 50) {
-                errors.add("Tên sản phẩm: " + productCreate.getName() + " quá 50 kí tự!");
+            if (productCreate.getName().length() > 255) {
+                errors.add("Tên sản phẩm: " + productCreate.getName() + " quá 255 kí tự!");
             }
 
             if (productCreate.getUnit().length() > 50) {
@@ -748,8 +748,8 @@ public class ProductServiceImpl implements ProductService {
             throw new ResourceNotFoundException("Siêu thị không tìm thấy với id: " + productSubCategoryId);
         }
 
-        if (productDisplayStaff.getName().length() > 50) {
-            errorFields.put("Lỗi nhập tên sản phẩm", "Tên sản phẩm chỉ có tối đa 50 kí tự!");
+        if (productDisplayStaff.getName().length() > 255) {
+            errorFields.put("Lỗi nhập tên sản phẩm", "Tên sản phẩm chỉ có tối đa 255 kí tự!");
         }
 
         if (productDisplayStaff.getUnit().length() > 50) {
@@ -860,8 +860,8 @@ public class ProductServiceImpl implements ProductService {
     public Product createProduct(ProductCreate productCreate) throws ResourceNotFoundException {
         HashMap<String, String> errorFields = new HashMap<>();
         Product product = new Product();
-        if (productCreate.getName().length() > 50) {
-            errorFields.put("Lỗi nhập tên sản phẩm", "Tên sản phẩm chỉ có tối đa 50 kí tự!");
+        if (productCreate.getName().length() > 255) {
+            errorFields.put("Lỗi nhập tên sản phẩm", "Tên sản phẩm chỉ có tối đa 255 kí tự!");
         }
 
         if (productCreate.getUnit().length() > 50) {
