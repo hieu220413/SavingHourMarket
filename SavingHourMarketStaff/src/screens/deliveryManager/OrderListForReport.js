@@ -460,6 +460,15 @@ const OrderListForReport = ({navigation, route}) => {
                           fontFamily: 'Roboto',
                           color: 'black',
                         }}>
+                        Mã đơn hàng : {item?.code}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 16,
+                          fontWeight: 'bold',
+                          fontFamily: 'Roboto',
+                          color: 'black',
+                        }}>
                         Ngày giao hàng :{' '}
                         {format(Date.parse(item?.deliveryDate), 'dd/MM/yyyy')}
                       </Text>

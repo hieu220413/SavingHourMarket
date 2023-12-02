@@ -8,6 +8,7 @@ import {
   Image,
   ScrollView,
   Dimensions,
+  Pressable,
 } from 'react-native';
 import React, {useEffect, useState, useCallback} from 'react';
 import auth from '@react-native-firebase/auth';
@@ -392,7 +393,7 @@ const DailyReportForManager = ({navigation}) => {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{paddingBottom: 0}}>
               {deliverReportList?.map((item, index) => (
-                <View
+                <Pressable
                   key={index}
                   style={{
                     marginBottom: 20,
@@ -479,7 +480,7 @@ const DailyReportForManager = ({navigation}) => {
                       </Text>
                     </View>
                   </View>
-                </View>
+                </Pressable>
               ))}
             </ScrollView>
           )}

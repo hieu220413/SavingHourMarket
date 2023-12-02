@@ -1443,6 +1443,15 @@ const OrderListForManager = ({navigation}) => {
                                     fontFamily: 'Roboto',
                                     color: 'black',
                                   }}>
+                                  Mã đơn hàng : {data.item?.code}
+                                </Text>
+                                <Text
+                                  style={{
+                                    fontSize: 16,
+                                    fontWeight: 'bold',
+                                    fontFamily: 'Roboto',
+                                    color: 'black',
+                                  }}>
                                   Ngày giao hàng :{' '}
                                   {format(
                                     Date.parse(data.item?.deliveryDate),
@@ -1506,7 +1515,7 @@ const OrderListForManager = ({navigation}) => {
                         style={{
                           flexDirection: 'row',
                           justifyContent: 'flex-end',
-                          height: '86%',
+                          height: '88%',
                           marginTop: '2%',
                           marginRight: '2%',
                         }}>
@@ -1650,6 +1659,15 @@ const OrderListForManager = ({navigation}) => {
                                   fontFamily: 'Roboto',
                                   color: 'black',
                                 }}>
+                                Mã đơn hàng : {data.item?.code}
+                              </Text>
+                              <Text
+                                style={{
+                                  fontSize: 16,
+                                  fontWeight: 'bold',
+                                  fontFamily: 'Roboto',
+                                  color: 'black',
+                                }}>
                                 Ngày giao hàng :{' '}
                                 {format(
                                   Date.parse(data.item?.deliveryDate),
@@ -1711,7 +1729,7 @@ const OrderListForManager = ({navigation}) => {
                         style={{
                           flexDirection: 'row',
                           justifyContent: 'flex-end',
-                          height: '85%',
+                          height: '88%',
                           marginTop: '2%',
                           marginRight: '2%',
                         }}>

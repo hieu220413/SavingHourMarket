@@ -336,7 +336,7 @@ const OrderGroupDetail = ({navigation, route}) => {
               showsVerticalScrollIndicator={false}
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{marginTop: '5%'}}>
-              <View style={{marginBottom: '2%'}}>
+              <Pressable style={{marginBottom: '2%'}}>
                 <View style={{marginBottom: '2%'}}>
                   <Text
                     style={{fontSize: 20, fontWeight: '500', color: 'black'}}>
@@ -385,6 +385,15 @@ const OrderGroupDetail = ({navigation, route}) => {
                               color: COLORS.primary,
                             }}>
                             Đơn hàng
+                          </Text>
+                          <Text
+                            style={{
+                              fontSize: 16,
+                              fontWeight: 'bold',
+                              fontFamily: 'Roboto',
+                              color: 'black',
+                            }}>
+                            Mã đơn hàng : {item?.code}
                           </Text>
                           <Text
                             style={{
@@ -484,7 +493,7 @@ const OrderGroupDetail = ({navigation, route}) => {
                     {/* ******************** */}
                   </View>
                 ))}
-              </View>
+              </Pressable>
             </ScrollView>
           )}
           {/* ************************ */}
