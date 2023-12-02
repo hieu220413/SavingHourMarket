@@ -53,7 +53,6 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Service
@@ -285,7 +284,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderBatch> fetchOrderBatches(String staffEmail, Integer status, Boolean getOldOrderBatch, SortType deliverDateSortType, LocalDate deliveryDate, UUID delivererID) throws ResourceNotFoundException {
+    public List<OrderBatch> fetchOrderBatches(String staffEmail,UUID timeFrameId, Integer status, Boolean getOldOrderBatch, SortType deliverDateSortType, LocalDate deliveryDate, UUID delivererID) throws ResourceNotFoundException {
         Sort sortable = null;
 
         if (deliverDateSortType != null) {
@@ -299,6 +298,7 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Nhân viên không tìm thấy với email " + staffEmail));
         List<Staff> staffManaged = staff.getDeliverStaffList();
         List<OrderBatch> orderBatches = orderBatchRepository.findByDistrictOrDeliverDate(
+                timeFrameId,
                 getOldOrderBatch,
                 deliveryDate,
                 delivererID,
@@ -1338,7 +1338,7 @@ public class OrderServiceImpl implements OrderService {
             pdfDocument.close();
 
             // Save the document to a byte array
-            return FirebaseService.uploadWordToStorage(byteArrayOutputStream, orderId);
+            return FirebaseService.uploadPdfToStorage(byteArrayOutputStream, orderId);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

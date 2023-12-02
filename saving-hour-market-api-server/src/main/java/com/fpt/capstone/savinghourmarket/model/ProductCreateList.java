@@ -35,4 +35,14 @@ public class ProductCreateList {
 
     private ProductSubCategory productSubCategory;
 
+    @Override
+    public String toString() {
+        return
+                "name='" + name + '\'' +
+                        ", description='" + description + '\'' +
+                        ", priceListed=" + priceListed +
+                        ", unit='" + unit + '\'' +
+                        ", imageUrls=" + imageUrls +
+                        ", supermarket=" + supermarket;
+    }
 }

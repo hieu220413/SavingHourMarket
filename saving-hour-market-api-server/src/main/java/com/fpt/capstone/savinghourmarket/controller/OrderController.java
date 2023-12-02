@@ -164,11 +164,12 @@ public class OrderController {
                                                                   @RequestParam(required = false) OrderStatus status,
                                                                   @RequestParam(required = false) SortType deliverDateSortType,
                                                                   @RequestParam(required = false) LocalDate deliveryDate,
+                                                                  @RequestParam(required = false) UUID timeFrameId,
                                                                   @RequestParam(required = false) UUID delivererId) throws NoSuchOrderException, FirebaseAuthException, ResourceNotFoundException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
         String staffEmail = Utils.validateIdToken(idToken, firebaseAuth);
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderBatches(staffEmail, status != null ? status.ordinal() : null, getOldOrderBatch, deliverDateSortType, deliveryDate, delivererId));
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.fetchOrderBatches(staffEmail,timeFrameId, status != null ? status.ordinal() : null, getOldOrderBatch, deliverDateSortType, deliveryDate, delivererId));
     }
 
     @GetMapping("/getOrderDetail/{id}")

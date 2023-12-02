@@ -41,6 +41,7 @@ public interface OrderService {
                                        int limit) throws FirebaseAuthException;
 
     List<OrderBatch> fetchOrderBatches(String staffEmail,
+                                       UUID timeFrameId,
                                        Integer status,
                                        Boolean getOldOrderBatch,
                                        SortType deliverDateSortType,
