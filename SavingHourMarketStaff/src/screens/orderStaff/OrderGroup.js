@@ -1510,8 +1510,8 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                                               fontFamily: 'Roboto',
                                               color: 'black',
                                             }}>
-                                            Mã đơn hàng:{' '}SHMORD21223001
-                                            {/* {data.item?.code} */}
+                                            Mã đơn hàng:{' '}
+                                            {order?.code}
                                           </Text>
                                           <Text
                                             style={{

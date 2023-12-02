@@ -19,6 +19,8 @@ import java.util.UUID;
 public class OrderWithDetails {
     private UUID id;
 
+    private String code;
+
     private String receiverPhone;
 
     private String receiverName;

@@ -271,7 +271,7 @@ const OrderBatch = ({navigation}) => {
                   textAlign: 'center',
                   color: COLORS.primary,
 
-                  fontSize: 10,
+                  fontSize: 12,
                 }
               : {
                   width: '100%',
@@ -279,7 +279,7 @@ const OrderBatch = ({navigation}) => {
                   textAlign: 'center',
                   color: 'black',
 
-                  fontSize: 10,
+                  fontSize: 12,
                 }
           }>
           {item.name}
@@ -585,7 +585,7 @@ const OrderBatch = ({navigation}) => {
         <View style={styles.header}>
           <View style={styles.pagenameAndLogout}>
             <View style={styles.pageName}>
-              <Text style={{fontSize: 18, color: 'black', fontWeight: 'bold'}}>
+              <Text style={{fontSize: 24, color: 'black', fontWeight: 'bold'}}>
                 Nhóm đơn giao tận nhà
               </Text>
             </View>
@@ -596,7 +596,7 @@ const OrderBatch = ({navigation}) => {
                 }}>
                 <Image
                   resizeMode="contain"
-                  style={{width: 30, height: 30}}
+                  style={{width: 35, height: 35}}
                   source={{
                     uri: currentUser?.avatarUrl,
                   }}
@@ -607,9 +607,9 @@ const OrderBatch = ({navigation}) => {
                   style={{
                     position: 'absolute',
                     bottom: -34,
-                    left: -18,
+                    left: -10,
                     zIndex: 100,
-                    width: 70,
+                    width: 74,
                     height: 30,
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -640,10 +640,10 @@ const OrderBatch = ({navigation}) => {
               style={{
                 backgroundColor: '#f5f5f5',
                 width: '100%',
-                height: '50%',
+                height: '55%',
                 borderRadius: 40,
-                paddingLeft: 10,
-                marginTop: 10,
+                paddingLeft: '5%',
+                marginTop: '4%',
                 flexDirection: 'row',
                 alignItems: 'center',
               }}>
@@ -651,21 +651,21 @@ const OrderBatch = ({navigation}) => {
                 style={{
                   justifyContent: 'center',
                   alignItems: 'center',
-                  height: 35,
+                  height: '60%',
                   flexWrap: 'wrap',
                   paddingLeft: 5,
                 }}>
                 <Image
                   resizeMode="contain"
                   style={{
-                    width: 18,
-                    height: 18,
+                    width: 24,
+                    height: 24,
                   }}
                   source={icons.calendar}
                 />
                 <Text
                   style={{
-                    fontSize: 14,
+                    fontSize: 16,
                     paddingLeft: 20,
                   }}>
                   {date ? format(date, 'dd/MM/yyyy') : 'Chọn ngày giao'}
@@ -896,7 +896,7 @@ const OrderBatch = ({navigation}) => {
                       style={[
                         {
                           paddingHorizontal: '2%',
-                          paddingBottom: '3%',
+                          paddingBottom: '5%',
                         },
                         currentStatus.display === item.display && {
                           borderBottomColor: COLORS.primary,
@@ -906,7 +906,7 @@ const OrderBatch = ({navigation}) => {
                       <Text
                         style={{
                           fontFamily: 'Roboto',
-                          fontSize: 14,
+                          fontSize: 16,
                           color:
                             currentStatus.display === item.display
                               ? COLORS.primary
@@ -936,9 +936,9 @@ const OrderBatch = ({navigation}) => {
                 <Image
                   resizeMode="contain"
                   style={{
-                    height: 25,
+                    height: 30,
                     tintColor: COLORS.primary,
-                    width: 25,
+                    width: 30,
                   }}
                   source={icons.filter}
                 />
@@ -959,7 +959,7 @@ const OrderBatch = ({navigation}) => {
                   />
                   <Text
                     style={{
-                      fontSize: 14,
+                      fontSize: 18,
                       fontFamily: 'Roboto',
                       // color: 'black',
                       fontWeight: 'bold',
@@ -968,7 +968,7 @@ const OrderBatch = ({navigation}) => {
                   </Text>
                 </View>
               ) : (
-                <View style={{marginTop: '18%', marginBottom: '30%'}}>
+                <View style={{marginTop: '18%', marginBottom: '25%'}}>
                   <SwipeListView
                     showsVerticalScrollIndicator={false}
                     showsHorizontalScrollIndicator={false}
@@ -977,9 +977,9 @@ const OrderBatch = ({navigation}) => {
                       <View
                         key={data.item.id}
                         style={{
-                          marginBottom: 20,
+                          marginBottom: '6%',
                           backgroundColor: 'rgb(240,240,240)',
-                          padding: 10,
+                          padding: '5%',
                           borderRadius: 10,
                           shadowColor: '#000',
                           shadowOffset: {
@@ -1013,11 +1013,11 @@ const OrderBatch = ({navigation}) => {
                               style={{
                                 flexDirection: 'column',
                                 gap: 8,
-                                flex: 7,
+                                flex: 9,
                               }}>
                               <Text
                                 style={{
-                                  fontSize: 18,
+                                  fontSize: 20,
                                   fontWeight: 'bold',
                                   fontFamily: 'Roboto',
                                   color: COLORS.primary,
@@ -1032,8 +1032,8 @@ const OrderBatch = ({navigation}) => {
                                   }}>
                                   <Image
                                     style={{
-                                      width: 35,
-                                      height: 35,
+                                      width: 40,
+                                      height: 40,
                                       borderRadius: 40,
                                     }}
                                     resizeMode="contain"
@@ -1047,7 +1047,7 @@ const OrderBatch = ({navigation}) => {
                               )}
                               <Text
                                 style={{
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   fontWeight: 'bold',
                                   fontFamily: 'Roboto',
                                   color: 'black',
@@ -1060,7 +1060,7 @@ const OrderBatch = ({navigation}) => {
                               </Text>
                               <Text
                                 style={{
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   fontWeight: 'bold',
                                   fontFamily: 'Roboto',
                                   color: 'black',
@@ -1070,7 +1070,7 @@ const OrderBatch = ({navigation}) => {
                               </Text>
                               <Text
                                 style={{
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   fontWeight: 'bold',
                                   fontFamily: 'Roboto',
                                   color: 'black',
@@ -1102,7 +1102,7 @@ const OrderBatch = ({navigation}) => {
                         style={{
                           flexDirection: 'row',
                           justifyContent: 'flex-end',
-                          height: '82%',
+                          height: '83%',
                           marginTop: '1.6%',
                           marginRight: '2%',
                         }}>
@@ -1157,7 +1157,7 @@ const OrderBatch = ({navigation}) => {
                   />
                   <Text
                     style={{
-                      fontSize: 14,
+                      fontSize: 18,
                       fontFamily: 'Roboto',
                       // color: 'black',
                       fontWeight: 'bold',
@@ -1166,7 +1166,7 @@ const OrderBatch = ({navigation}) => {
                   </Text>
                 </View>
               ) : (
-                <View style={{marginTop: '18%', marginBottom: '30%'}}>
+                <View style={{marginTop: '18%', marginBottom: '25%'}}>
                   <SwipeListView
                     showsVerticalScrollIndicator={false}
                     showsHorizontalScrollIndicator={false}
@@ -1175,9 +1175,9 @@ const OrderBatch = ({navigation}) => {
                       <View
                         key={data.item.id}
                         style={{
-                          marginBottom: 20,
+                          marginBottom: '6%',
                           backgroundColor: 'rgb(240,240,240)',
-                          padding: 10,
+                          padding: '5%',
                           borderRadius: 10,
                           shadowColor: '#000',
                           shadowOffset: {
@@ -1211,11 +1211,11 @@ const OrderBatch = ({navigation}) => {
                               style={{
                                 flexDirection: 'column',
                                 gap: 8,
-                                flex: 7,
+                                flex: 9,
                               }}>
                               <Text
                                 style={{
-                                  fontSize: 18,
+                                  fontSize: 20,
                                   fontWeight: 'bold',
                                   fontFamily: 'Roboto',
                                   color: COLORS.primary,
@@ -1230,8 +1230,8 @@ const OrderBatch = ({navigation}) => {
                                   }}>
                                   <Image
                                     style={{
-                                      width: 30,
-                                      height: 30,
+                                      width: 35,
+                                      height: 35,
                                       borderRadius: 40,
                                     }}
                                     resizeMode="contain"
@@ -1245,7 +1245,7 @@ const OrderBatch = ({navigation}) => {
                               )}
                               <Text
                                 style={{
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   fontWeight: 'bold',
                                   fontFamily: 'Roboto',
                                   color: 'black',
@@ -1258,7 +1258,7 @@ const OrderBatch = ({navigation}) => {
                               </Text>
                               <Text
                                 style={{
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   fontWeight: 'bold',
                                   fontFamily: 'Roboto',
                                   color: 'black',
@@ -1268,7 +1268,7 @@ const OrderBatch = ({navigation}) => {
                               </Text>
                               <Text
                                 style={{
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   fontWeight: 'bold',
                                   fontFamily: 'Roboto',
                                   color: 'black',
@@ -1300,7 +1300,7 @@ const OrderBatch = ({navigation}) => {
                         style={{
                           flexDirection: 'row',
                           justifyContent: 'flex-end',
-                          height: '82%',
+                          height: '83%',
                           marginTop: '1.6%',
                           marginRight: '2%',
                         }}>
@@ -1365,7 +1365,7 @@ const OrderBatch = ({navigation}) => {
                   <Text
                     style={{
                       color: 'black',
-                      fontSize: 18,
+                      fontSize: 20,
                       fontWeight: 700,
                       textAlign: 'center',
                       paddingBottom: 20,
@@ -1391,7 +1391,7 @@ const OrderBatch = ({navigation}) => {
                 <Text
                   style={{
                     color: 'black',
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: 700,
                   }}>
                   Sắp xếp theo
@@ -1429,7 +1429,7 @@ const OrderBatch = ({navigation}) => {
                         color: COLORS.primary,
                         fontWeight: 'bold',
                         textAlign: 'center',
-                        fontSize: 12,
+                        fontSize: 14,
                       }}>
                       Thiết lập lại
                     </Text>
@@ -1471,7 +1471,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   body: {
-    flex: 3.5,
+    flex: 6,
     // backgroundColor: 'pink',
     paddingHorizontal: 20,
   },
@@ -1515,6 +1515,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     textAlign: 'center',
-    fontSize: 12,
+    fontSize: 14,
   },
 });

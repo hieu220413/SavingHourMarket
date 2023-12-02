@@ -187,15 +187,6 @@ const Profile = ({navigation}) => {
       {/* <Header /> */}
 
       <View style={{marginHorizontal: '6%', marginTop: '3%'}}>
-        <Text
-          style={{
-            fontSize: 25,
-            fontWeight: 'bold',
-            color: 'black',
-            fontFamily: 'Roboto',
-          }}>
-          Tôi
-        </Text>
       </View>
       {/* Profile */}
       <View

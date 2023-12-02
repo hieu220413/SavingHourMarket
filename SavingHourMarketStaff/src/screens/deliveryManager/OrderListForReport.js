@@ -327,21 +327,21 @@ const OrderListForReport = ({navigation, route}) => {
             alignItems: 'center',
             flexDirection: 'row',
             gap: 20,
-            marginBottom: 10,
+            marginBottom: '3%',
             backgroundColor: '#ffffff',
-            padding: 20,
+            padding: '5%',
             elevation: 4,
           }}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Image
               source={icons.leftArrow}
               resizeMode="contain"
-              style={{width: 25, height: 25, tintColor: COLORS.primary}}
+              style={{width: 30, height: 30, tintColor: COLORS.primary}}
             />
           </TouchableOpacity>
           <Text
             style={{
-              fontSize: 20,
+              fontSize: 24,
               textAlign: 'center',
               color: '#000000',
               fontWeight: 'bold',
@@ -362,7 +362,7 @@ const OrderListForReport = ({navigation, route}) => {
             />
             <Text
               style={{
-                fontSize: 14,
+                fontSize: 20,
                 fontFamily: 'Roboto',
                 // color: 'black',
                 fontWeight: 'bold',
@@ -400,7 +400,7 @@ const OrderListForReport = ({navigation, route}) => {
                       {type === 'success' && (
                         <Text
                           style={{
-                            fontSize: 18,
+                            fontSize: 20,
                             fontWeight: 'bold',
                             fontFamily: 'Roboto',
                             color: COLORS.primary,
@@ -411,7 +411,7 @@ const OrderListForReport = ({navigation, route}) => {
                       {type === 'delivering' && (
                         <Text
                           style={{
-                            fontSize: 18,
+                            fontSize: 20,
                             fontWeight: 'bold',
                             fontFamily: 'Roboto',
                             color: COLORS.primary,
@@ -422,7 +422,7 @@ const OrderListForReport = ({navigation, route}) => {
                       {type === 'fail' && (
                         <Text
                           style={{
-                            fontSize: 18,
+                            fontSize: 20,
                             fontWeight: 'bold',
                             fontFamily: 'Roboto',
                             color: 'red',
@@ -440,8 +440,8 @@ const OrderListForReport = ({navigation, route}) => {
                           }}>
                           <Image
                             style={{
-                              width: 35,
-                              height: 35,
+                              width: 40,
+                              height: 40,
                               borderRadius: 40,
                             }}
                             resizeMode="contain"
@@ -455,7 +455,7 @@ const OrderListForReport = ({navigation, route}) => {
                       )}
                       <Text
                         style={{
-                          fontSize: 15,
+                          fontSize: 16,
                           fontWeight: 'bold',
                           fontFamily: 'Roboto',
                           color: 'black',
@@ -465,7 +465,7 @@ const OrderListForReport = ({navigation, route}) => {
                       </Text>
                       <Text
                         style={{
-                          fontSize: 15,
+                          fontSize: 16,
                           fontWeight: 'bold',
                           fontFamily: 'Roboto',
                           color: 'black',
@@ -475,7 +475,7 @@ const OrderListForReport = ({navigation, route}) => {
                       </Text>
                       <Text
                         style={{
-                          fontSize: 15,
+                          fontSize: 16,
                           fontWeight: 'bold',
                           fontFamily: 'Roboto',
                           color: 'black',
@@ -488,7 +488,7 @@ const OrderListForReport = ({navigation, route}) => {
 
                       <Text
                         style={{
-                          fontSize: 15,
+                          fontSize: 16,
                           fontWeight: 'bold',
                           fontFamily: 'Roboto',
                           color: 'black',
@@ -500,7 +500,7 @@ const OrderListForReport = ({navigation, route}) => {
 
                       <Text
                         style={{
-                          fontSize: 15,
+                          fontSize: 16,
                           fontWeight: 'bold',
                           fontFamily: 'Roboto',
                           color: 'black',

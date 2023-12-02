@@ -1034,8 +1034,8 @@ const Home = ({ navigation }) => {
                               fontFamily: 'Roboto',
                               color: 'black',
                             }}>
-                            Mã đơn hàng:{' '}SHMORD21223000456
-                            {/* {data.item?.code} */}
+                            Mã đơn hàng:{' '}
+                            {data.item?.code}
                           </Text>
                           <Text
                             style={{

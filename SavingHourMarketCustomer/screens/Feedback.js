@@ -15,12 +15,13 @@ import {
   Platform,
   Alert,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Entypo from 'react-native-vector-icons/Entypo';
 import * as ImagePicker from 'react-native-image-picker';
 import storage from '@react-native-firebase/storage';
+import {useFocusEffect} from '@react-navigation/native';
 import * as Progress from 'react-native-progress';
 import Feather from 'react-native-vector-icons/Feather';
 import {SelectList} from 'react-native-dropdown-select-list';

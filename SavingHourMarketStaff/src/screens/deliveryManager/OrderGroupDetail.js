@@ -96,11 +96,11 @@ const OrderGroupDetail = ({navigation, route}) => {
               <Image
                 source={icons.leftArrow}
                 resizeMode="contain"
-                style={{width: 25, height: 25, tintColor: COLORS.primary}}
+                style={{width: 30, height: 30, tintColor: COLORS.primary}}
               />
             </TouchableOpacity>
             <View style={styles.pageName}>
-              <Text style={{fontSize: 20, color: 'black', fontWeight: 'bold'}}>
+              <Text style={{fontSize: 24, color: 'black', fontWeight: 'bold'}}>
                 Chi tiết nhóm đơn
               </Text>
             </View>
@@ -165,16 +165,16 @@ const OrderGroupDetail = ({navigation, route}) => {
         </View>
         <View style={styles.body}>
           {/* Order list */}
-          <View style={{marginTop: '5%'}}>
-            <Text style={{fontSize: 18, fontWeight: '500', color: 'black'}}>
+          <View style={{marginTop: '0%'}}>
+            <Text style={{fontSize: 20, fontWeight: '500', color: 'black'}}>
               Thông tin nhân viên giao hàng :
             </Text>
             <View
               style={{
                 backgroundColor: 'rgb(240,240,240)',
-                marginBottom: 10,
+                marginBottom: '3%',
                 borderRadius: 10,
-                marginTop: 10,
+                marginTop: '4%',
                 shadowColor: '#000',
                 shadowOffset: {
                   width: 0,
@@ -196,7 +196,7 @@ const OrderGroupDetail = ({navigation, route}) => {
                   <View style={{flexDirection: 'column', gap: 8}}>
                     <Text
                       style={{
-                        fontSize: 18,
+                        fontSize: 20,
                         fontWeight: 'bold',
                         fontFamily: 'Roboto',
                         color: COLORS.primary,
@@ -205,7 +205,7 @@ const OrderGroupDetail = ({navigation, route}) => {
                     </Text>
                     <Text
                       style={{
-                        fontSize: 15,
+                        fontSize: 16,
                         fontWeight: 'bold',
                         fontFamily: 'Roboto',
                         color: 'black',
@@ -224,7 +224,7 @@ const OrderGroupDetail = ({navigation, route}) => {
                       }}>
                       <Text
                         style={{
-                          fontSize: 15,
+                          fontSize: 16,
                           fontWeight: '100',
                           fontFamily: 'Roboto',
                           color: COLORS.primary,
@@ -245,7 +245,7 @@ const OrderGroupDetail = ({navigation, route}) => {
                   <View style={{flexDirection: 'column', gap: 8}}>
                     <Text
                       style={{
-                        fontSize: 18,
+                        fontSize: 20,
                         fontWeight: 'bold',
                         fontFamily: 'Roboto',
                         color: COLORS.primary,
@@ -272,7 +272,7 @@ const OrderGroupDetail = ({navigation, route}) => {
                     </View>
                     <Text
                       style={{
-                        fontSize: 15,
+                        fontSize: 16,
                         fontWeight: 'bold',
                         fontFamily: 'Roboto',
                         color: 'black',
@@ -281,7 +281,7 @@ const OrderGroupDetail = ({navigation, route}) => {
                     </Text>
                     <Text
                       style={{
-                        fontSize: 15,
+                        fontSize: 16,
                         fontWeight: 'bold',
                         fontFamily: 'Roboto',
                         color: 'black',
@@ -300,7 +300,7 @@ const OrderGroupDetail = ({navigation, route}) => {
                       }}>
                       <Text
                         style={{
-                          fontSize: 15,
+                          fontSize: 16,
                           fontWeight: '100',
                           fontFamily: 'Roboto',
                           color: COLORS.primary,
@@ -323,7 +323,7 @@ const OrderGroupDetail = ({navigation, route}) => {
               />
               <Text
                 style={{
-                  fontSize: 20,
+                  fontSize: 18,
                   fontFamily: 'Roboto',
                   // color: 'black',
                   fontWeight: 'bold',
@@ -339,7 +339,7 @@ const OrderGroupDetail = ({navigation, route}) => {
               <View style={{marginBottom: '2%'}}>
                 <View style={{marginBottom: '2%'}}>
                   <Text
-                    style={{fontSize: 18, fontWeight: '500', color: 'black'}}>
+                    style={{fontSize: 20, fontWeight: '500', color: 'black'}}>
                     Danh sách đơn hàng :
                   </Text>
                 </View>
@@ -379,7 +379,7 @@ const OrderGroupDetail = ({navigation, route}) => {
                         <View style={{flexDirection: 'column', gap: 8}}>
                           <Text
                             style={{
-                              fontSize: 18,
+                              fontSize: 20,
                               fontWeight: 'bold',
                               fontFamily: 'Roboto',
                               color: COLORS.primary,
@@ -388,7 +388,7 @@ const OrderGroupDetail = ({navigation, route}) => {
                           </Text>
                           <Text
                             style={{
-                              fontSize: 15,
+                              fontSize: 16,
                               fontWeight: 'bold',
                               fontFamily: 'Roboto',
                               color: 'black',
@@ -401,7 +401,7 @@ const OrderGroupDetail = ({navigation, route}) => {
                           </Text>
                           <Text
                             style={{
-                              fontSize: 15,
+                              fontSize: 16,
                               fontWeight: 'bold',
                               fontFamily: 'Roboto',
                               color: 'black',
@@ -415,7 +415,7 @@ const OrderGroupDetail = ({navigation, route}) => {
                           {mode === 1 ? (
                             <Text
                               style={{
-                                fontSize: 15,
+                                fontSize: 16,
                                 fontWeight: 'bold',
                                 fontFamily: 'Roboto',
                                 color: 'black',
@@ -425,7 +425,7 @@ const OrderGroupDetail = ({navigation, route}) => {
                           ) : (
                             <Text
                               style={{
-                                fontSize: 15,
+                                fontSize: 16,
                                 fontWeight: 'bold',
                                 fontFamily: 'Roboto',
                                 color: 'black',
@@ -435,7 +435,7 @@ const OrderGroupDetail = ({navigation, route}) => {
                           )}
                           <Text
                             style={{
-                              fontSize: 15,
+                              fontSize: 16,
                               fontWeight: 'bold',
                               fontFamily: 'Roboto',
                               color: 'black',
