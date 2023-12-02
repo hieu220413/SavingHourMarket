@@ -399,7 +399,7 @@ const ReportForManager = ({navigation}) => {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{paddingBottom: 80}}>
               {deliverReportList?.map((item, index) => (
-                <View
+                <Pressable
                   key={index}
                   style={{
                     marginBottom: '6%',
@@ -473,7 +473,7 @@ const ReportForManager = ({navigation}) => {
                       </Text>
                     </View>
                   </View>
-                </View>
+                </Pressable>
               ))}
             </ScrollView>
           )}

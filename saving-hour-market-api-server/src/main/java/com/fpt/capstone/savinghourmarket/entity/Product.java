@@ -67,7 +67,7 @@ public class Product {
     @UuidGenerator
     private UUID id;
 
-    @Column(columnDefinition = "varchar(50) CHARACTER SET utf8 COLLATE utf8_bin")
+    @Column(columnDefinition = "varchar(255) CHARACTER SET utf8 COLLATE utf8_bin")
     private String name;
 
     private Integer priceListed;

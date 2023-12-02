@@ -50,12 +50,12 @@ public class ProductSubCategory {
     )
     private ProductCategory productCategory;
 
-    @OneToMany(
-            mappedBy = "productSubCategory",
-            fetch = FetchType.LAZY
-    )
-    @JsonIgnore
-    private List<Discount> discountList;
+//    @OneToMany(
+//            mappedBy = "productSubCategory",
+//            fetch = FetchType.LAZY
+//    )
+//    @JsonIgnore
+//    private List<Discount> discountList;
 
     public ProductSubCategory(ProductSubCategoryCreateBody productSubCategoryCreateBody) {
         this.id = productSubCategoryCreateBody.getProductCategoryId();
