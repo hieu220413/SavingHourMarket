@@ -41,7 +41,7 @@ public class DiscountController {
             @RequestParam(defaultValue = "2000-01-01T00:00:00") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDatetime,
             @RequestParam(defaultValue = "2100-01-01T00:00:00") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDatetime,
             @RequestParam(required = false) String productCategoryId,
-            @RequestParam(required = false) String productSubCategoryId,
+//            @RequestParam(required = false) String productSubCategoryId,
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "5") Integer limit,
             @RequestParam(defaultValue = "DESC") String expiredSortType,
@@ -56,7 +56,6 @@ public class DiscountController {
                 fromDatetime,
                 toDatetime,
                 productCategoryId,
-                productSubCategoryId,
                 page,
                 limit,
                 expiredSortType,
@@ -72,7 +71,7 @@ public class DiscountController {
             @RequestParam(defaultValue = "2000-01-01T00:00:00") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDatetime,
             @RequestParam(defaultValue = "2100-01-01T00:00:00") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDatetime,
             @RequestParam(required = false) String productCategoryId,
-            @RequestParam(required = false) String productSubCategoryId,
+//            @RequestParam(required = false) String productSubCategoryId,
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "5") Integer limit,
             @RequestParam(defaultValue = "DESC") String expiredSortType) {
@@ -83,7 +82,6 @@ public class DiscountController {
                 fromDatetime,
                 toDatetime,
                 productCategoryId,
-                productSubCategoryId,
                 page,
                 limit,
                 expiredSortType);

@@ -83,12 +83,12 @@ public class Discount {
 //            joinColumns = @JoinColumn(name = "discount_id"),
 //            inverseJoinColumns = @JoinColumn(name = "product_sub_category_id")
 //    )
-    @ManyToOne(
-            fetch = FetchType.EAGER
-    )
-    @JoinColumn(
-            name = "product_sub_category_id",
-            referencedColumnName = "id"
-    )
-    private ProductSubCategory productSubCategory;
+//    @ManyToOne(
+//            fetch = FetchType.EAGER
+//    )
+//    @JoinColumn(
+//            name = "product_sub_category_id",
+//            referencedColumnName = "id"
+//    )
+//    private ProductSubCategory productSubCategory;
 }
