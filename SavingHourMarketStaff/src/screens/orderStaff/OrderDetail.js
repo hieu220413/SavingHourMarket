@@ -777,8 +777,7 @@ const OrderDetail = ({ navigation, route }) => {
                     width: '60%',
                     paddingBottom: 9,
                   }}>
-                  SHMORD21223000456
-                  {/* {item.code} */}
+                  {item.code}
                 </Text>
               </View>
 

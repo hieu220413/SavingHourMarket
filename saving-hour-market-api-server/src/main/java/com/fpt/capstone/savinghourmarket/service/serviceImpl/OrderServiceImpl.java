@@ -639,6 +639,7 @@ public class OrderServiceImpl implements OrderService {
 
         OrderWithDetails orderWithDetails = new OrderWithDetails();
         orderWithDetails.setId(order.getId());
+        orderWithDetails.setCode(order.getCode());
         orderWithDetails.setReceiverName(order.getReceiverName());
         orderWithDetails.setReceiverPhone(order.getReceiverPhone());
         orderWithDetails.setQrCodeUrl(order.getQrCodeUrl());
