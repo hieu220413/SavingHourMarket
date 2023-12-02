@@ -215,7 +215,7 @@ const Search = ({ navigation }) => {
             <View
                 style={{
                     backgroundColor: '#fff',
-                    paddingBottom: '10%'
+                    // paddingBottom: '10%'
                 }}
             >
                 <View

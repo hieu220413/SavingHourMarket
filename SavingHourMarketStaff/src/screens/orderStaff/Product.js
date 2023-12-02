@@ -336,7 +336,8 @@ const Product = ({navigation}) => {
                   color: 'black',
                   fontFamily: 'Roboto',
                 }}>
-                Mã đơn hàng: {item.orderPackage.id}
+                Mã đơn hàng: SHMORD21223000456
+                  {/* {item.code}{item.orderPackage.code}   */}
               </Text>
             </View>
           </View>

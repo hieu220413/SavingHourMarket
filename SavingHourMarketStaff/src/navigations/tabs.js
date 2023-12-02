@@ -121,8 +121,9 @@ const Tabs = ({navigation}) => {
               backgroundColor: COLORS.tabBackground,
               opacity: 0.95,
               borderTopColor: 'transparent',
-              height: 80,
+              height: '10%',
             },
+            
           }}>
           {user?.role === 'STAFF_ORD' && (
             <>
@@ -214,7 +215,7 @@ const Tabs = ({navigation}) => {
                 options={{
                   tabBarIcon: ({focused}) => (
                     <TabIcon
-                      display={'Nhóm điểm giao hàng'}
+                      display={'Điểm giao hàng'}
                       focused={focused}
                       icon={icons.pickuppoint}
                     />
@@ -227,7 +228,7 @@ const Tabs = ({navigation}) => {
                 options={{
                   tabBarIcon: ({focused}) => (
                     <TabIcon
-                      display={'Nhóm giao tận nhà'}
+                      display={'Giao tận nhà'}
                       focused={focused}
                       icon={icons.homedelivery}
                     />
@@ -240,7 +241,7 @@ const Tabs = ({navigation}) => {
                 options={{
                   tabBarIcon: ({focused}) => (
                     <TabIcon
-                      display={'Đơn hàng chưa gom'}
+                      display={'Chưa gom'}
                       focused={focused}
                       icon={icons.orderIcon}
                     />

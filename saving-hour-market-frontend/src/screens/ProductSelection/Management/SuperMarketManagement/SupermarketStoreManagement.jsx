@@ -22,6 +22,7 @@ const SupermarketStoreManagement = ({
   searchValue,
   supermarketId,
   isSwitchRecovery,
+  supermarketName,
 }) => {
   const [openCreate, setOpenCreate] = useState(false);
   const handleOpenCreate = () => setOpenCreate(true);
@@ -181,7 +182,9 @@ const SupermarketStoreManagement = ({
       style={{ width: "max-content", boxSizing: "content-box" }}
     >
       <div className="modal__container-header">
-        <h3 className="modal__container-header-title">Chi tiết chi nhánh</h3>
+        <h3 className="modal__container-header-title">
+          Chi tiết chi nhánh của {supermarketName}{" "}
+        </h3>
         <FontAwesomeIcon icon={faXmark} onClick={handleClose} />
       </div>
 

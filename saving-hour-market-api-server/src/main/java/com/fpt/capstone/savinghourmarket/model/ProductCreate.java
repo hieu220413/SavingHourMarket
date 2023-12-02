@@ -26,6 +26,9 @@ public class ProductCreate {
     private String unit;
 
     @NotNull
+    private Integer priceListed;
+
+    @NotNull
     private List<String> imageUrls;
 
     @NotNull
