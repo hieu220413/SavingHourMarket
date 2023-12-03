@@ -51,6 +51,18 @@ const EditCategory = ({
       .then((res) => res.json())
       .then((res) => {
         console.log(res);
+        if (res.code === 422) {
+          setOpenSnackbar({
+            ...openSnackbar,
+            open: true,
+            severity: "error",
+          });
+          setMsg(
+            "Chỉ được phép nhập kí tự chữ trong bảng chữ cái và dấu cách "
+          );
+          setLoading(false);
+          return;
+        }
         fetch(
           `${
             API.baseURL
