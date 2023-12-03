@@ -1169,7 +1169,7 @@ public class ProductServiceImpl implements ProductService {
             throw new InvalidExcelFileDataException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFieldsFile);
         }
 
-        Integer rowCheckDuplicateBatch = 0;
+        Integer rowCheckDuplicateBatch = 1;
         for (ProductCreateList productCreateList : productList) {
             if (hasObjectsWithSameExpiredDate(productCreateList.getProductBatchList())) {
                 if (errorFields.get(rowCheckDuplicateBatch) != null) {
