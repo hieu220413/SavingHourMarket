@@ -326,10 +326,11 @@ public class OrderServiceImpl implements OrderService {
     public String confirmPackaging(UUID orderId, String staffEmail, UUID productConsolidationAreaId) throws IOException, ResourceNotFoundException, InterruptedException {
         Order order = repository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng với ID " + orderId));
-        RLock rLock = redissonClient.getFairLock(order.getId().toString());
-        boolean res = rLock.tryLock(100, 10, TimeUnit.SECONDS);
+        RLock rLock = redissonClient.getFairLock(orderId.toString());
+        boolean res = rLock.tryLock(5, 10, TimeUnit.SECONDS);
         if (res) {
             try {
+                rLock.lock();
                 Staff staff = staffRepository.findByEmail(staffEmail).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với email: " + staffEmail));
                 ProductConsolidationArea productConsolidationArea = productConsolidationAreaRepository.findById(productConsolidationAreaId)
                         .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy điểm tập kết với ID: " + productConsolidationAreaId));
@@ -346,6 +347,8 @@ public class OrderServiceImpl implements OrderService {
             } finally {
                 rLock.unlock();
             }
+        } else {
+            throw new IllegalArgumentException("Đơn hàng này đang được đóng gói bởi nhân viên khác!");
         }
         return "Đơn hàng này đã được nhận đóng gói thành công!";
     }
@@ -366,62 +369,54 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Transactional
     public String confirmPackagingGroup(UUID orderGroupId, String staffEmail, UUID productConsolidationAreaId) throws NoSuchOrderException, IOException, ResourceNotFoundException, InterruptedException {
         OrderGroup orderGroup = orderGroupRepository.findById(orderGroupId)
                 .orElseThrow(() -> new NoSuchOrderException("Không tìm thấy nhóm đơn hàng với ID " + orderGroupId));
         Staff staff = staffRepository.findByEmail(staffEmail).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với email: " + staffEmail));
         RLock rLock = redissonClient.getFairLock(orderGroup.getId().toString());
-        boolean res = rLock.tryLock(100, 10, TimeUnit.SECONDS);
+        boolean res = rLock.tryLock(10, 10, TimeUnit.SECONDS);
         if (res) {
             try {
-                if (productConsolidationAreaId != null) {
-                    if (orderGroup.getProductConsolidationArea() != null) {
-                        for (Order order : orderGroup.getOrderList().stream().filter(order -> order.getStatus() == 0).toList()) {
-                            Configuration configuration = configurationRepository.findAll().get(0);
-                            if (order.getPackager() == null && LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS)) && (order.getPaymentMethod() == 0 || (order.getPaymentMethod() == 1 && order.getPaymentStatus() == 1))) {
-                                order.setPackager(staff);
-                                order.setProductConsolidationArea(orderGroup.getProductConsolidationArea());
-                                order.setStatus(OrderStatus.PACKAGING.ordinal());
-                                FirebaseService.sendPushNotification("SHM", "Đơn hàng " + order.getCode() + " đang tiến hành đóng gói!", order.getCustomer().getId().toString());
-                            } else {
-                                throw new IllegalArgumentException("Nhóm đơn hàng này đang được đóng gói bởi nhân viên khác!");
-                            }
-                        }
-                    } else {
-                        ProductConsolidationArea productConsolidationArea = productConsolidationAreaRepository.findById(productConsolidationAreaId)
-                                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy điểm tập kết với ID: " + productConsolidationAreaId));
-                        orderGroup.setProductConsolidationArea(productConsolidationArea);
-                        for (Order order : orderGroup.getOrderList().stream().filter(order -> order.getStatus() == 0).toList()) {
-                            Configuration configuration = configurationRepository.findAll().get(0);
-                            if (order.getPackager() == null && LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS)) && (order.getPaymentMethod() == 0 || (order.getPaymentMethod() == 1 && order.getPaymentStatus() == 1))) {
-                                order.setPackager(staff);
-                                order.setProductConsolidationArea(productConsolidationArea);
-                                order.setStatus(OrderStatus.PACKAGING.ordinal());
-                                FirebaseService.sendPushNotification("SHM", "Đơn hàng " + order.getCode() + " đang tiến hành đóng gói!", order.getCustomer().getId().toString());
-                            } else {
-                                throw new IllegalArgumentException("Nhóm đơn hàng này đang được đóng gói bởi nhân viên khác!");
-                            }
+                rLock.lock();
+                if (orderGroup.getProductConsolidationArea() != null) {
+                    List<Order> orderProcessingList = orderGroup.getOrderList().stream().filter(order -> order.getStatus() == 0).toList();
+                    if(orderProcessingList.size() == 0){
+                        throw new IllegalArgumentException("Nhóm đơn hàng này không còn đơn hàng nào đang chờ xác nhận!");
+                    }
+                    for (Order order : orderProcessingList) {
+                        Configuration configuration = configurationRepository.findAll().get(0);
+                        if (order.getPackager() == null && LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS)) && (order.getPaymentMethod() == 0 || (order.getPaymentMethod() == 1 && order.getPaymentStatus() == 1))) {
+                            order.setPackager(staff);
+                            order.setProductConsolidationArea(orderGroup.getProductConsolidationArea());
+                            order.setStatus(OrderStatus.PACKAGING.ordinal());
+                            repository.save(order);
+                            FirebaseService.sendPushNotification("SHM", "Đơn hàng " + order.getCode() + " đang tiến hành đóng gói!", order.getCustomer().getId().toString());
+                        } else {
+                            throw new IllegalArgumentException("Nhóm đơn hàng này đang được đóng gói bởi nhân viên khác!");
                         }
                     }
                 } else {
-                    if (orderGroup.getProductConsolidationArea() != null && orderGroup.getOrderList().stream().filter(order -> order.getStatus() > 0).toList().size() > 0) {
-                        for (Order order : orderGroup.getOrderList().stream().filter(order -> order.getStatus() == 0).toList()) {
-                            Configuration configuration = configurationRepository.findAll().get(0);
-                            if (order.getPackager() == null && LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS)) && (order.getPaymentMethod() == 0 || (order.getPaymentMethod() == 1 && order.getPaymentStatus() == 1))) {
-                                order.setPackager(staff);
-                                order.setProductConsolidationArea(orderGroup.getProductConsolidationArea());
-                                order.setStatus(OrderStatus.PACKAGING.ordinal());
-                                FirebaseService.sendPushNotification("SHM", "Đơn hàng " + order.getCode() + " đang tiến hành đóng gói!", order.getCustomer().getId().toString());
-                            } else {
-                                throw new IllegalArgumentException("Nhóm đơn hàng này đang được đóng gói bởi nhân viên khác!");
-                            }
+                    ProductConsolidationArea productConsolidationArea = productConsolidationAreaRepository.findById(productConsolidationAreaId)
+                            .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy điểm tập kết với ID: " + productConsolidationAreaId));
+                    orderGroup.setProductConsolidationArea(productConsolidationArea);
+                    for (Order order : orderGroup.getOrderList().stream().filter(order -> order.getStatus() == 0).toList()) {
+                        Configuration configuration = configurationRepository.findAll().get(0);
+                        if (order.getPackager() == null && LocalDateTime.now().isAfter(order.getCreatedTime().plus(configuration.getTimeAllowedForOrderCancellation(), ChronoUnit.HOURS)) && (order.getPaymentMethod() == 0 || (order.getPaymentMethod() == 1 && order.getPaymentStatus() == 1))) {
+                            order.setPackager(staff);
+                            order.setProductConsolidationArea(productConsolidationArea);
+                            order.setStatus(OrderStatus.PACKAGING.ordinal());
+                            repository.save(order);
+                            FirebaseService.sendPushNotification("SHM", "Đơn hàng " + order.getCode() + " đang tiến hành đóng gói!", order.getCustomer().getId().toString());
+                        } else {
+                            throw new IllegalArgumentException("Nhóm đơn hàng này đang được đóng gói bởi nhân viên khác!");
                         }
                     }
                 }
             } finally {
                 rLock.unlock();
             }
+        } else {
+            throw new IllegalArgumentException("Nhóm đơn hàng này đang được đóng gói bởi nhân viên khác!");
         }
         return "Nhóm đơn hàng này đã được nhận đóng gói thành công!";
     }
@@ -521,14 +516,18 @@ public class OrderServiceImpl implements OrderService {
     public String assignDeliverToOrderGroupOrBatch(String emailManager, UUID orderGroupId, UUID orderBatchId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException, IOException, ResourceNotFoundException, InterruptedException {
         Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new ResourceNotFoundException("No staff found with this id " + staffId));
         Staff manager = staffRepository.findByEmail(emailManager).orElseThrow(() -> new ResourceNotFoundException("No manager found with this id " + staffId));
+        if(!manager.getDeliverStaffList().stream().anyMatch(staff1 -> staff1.equals(staff))){
+            throw new IllegalArgumentException("Nhân viên này không trong quyền quản lý của bạn!");
+        }
         if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_DLV_0.toString())) {
             if (orderGroupId != null && orderBatchId == null) {
                 OrderGroup orderGroup = orderGroupRepository.findById(orderGroupId)
                         .orElseThrow(() -> new NoSuchOrderException("No group found with this group id " + orderGroupId));
                 RLock rLock = redissonClient.getFairLock(orderGroup.getId().toString());
-                boolean res = rLock.tryLock(100, 10, TimeUnit.SECONDS);
+                boolean res = rLock.tryLock(10, 10, TimeUnit.SECONDS);
                 if (res) {
                     try {
+                        rLock.lock();
                         for (Order order : orderGroup.getOrderList()) {
                             if (order.getStatus() == OrderStatus.PACKAGED.ordinal()) {
                                 order.setDeliverer(staff);
@@ -546,14 +545,17 @@ public class OrderServiceImpl implements OrderService {
                     } finally {
                         rLock.unlock();
                     }
+                } else {
+                    throw new IllegalArgumentException("Nhóm đơn hàng này đang được quản lý bởi quản lý khác!");
                 }
             } else if (orderGroupId == null && orderBatchId != null) {
                 OrderBatch orderBatch = orderBatchRepository.findById(orderBatchId)
                         .orElseThrow(() -> new NoSuchOrderException("No batch found with this batch id " + orderBatchId));
                 RLock rLock = redissonClient.getFairLock(orderBatch.getId().toString());
-                boolean res = rLock.tryLock(100, 10, TimeUnit.SECONDS);
+                boolean res = rLock.tryLock(10, 10, TimeUnit.SECONDS);
                 if (res) {
                     try {
+                        rLock.lock();
                         for (Order order : orderBatch.getOrderList()) {
                             if (order.getStatus() == OrderStatus.PACKAGED.ordinal()) {
                                 order.setStatus(OrderStatus.DELIVERING.ordinal());
@@ -570,6 +572,8 @@ public class OrderServiceImpl implements OrderService {
                     } finally {
                         rLock.unlock();
                     }
+                } else {
+                    throw new IllegalArgumentException("Nhóm đơn hàng này đang được quản lý bởi quản lý khác!");
                 }
             } else {
                 throw new ConflictGroupAndBatchException("Group or batch must be specified");
@@ -585,28 +589,34 @@ public class OrderServiceImpl implements OrderService {
     public String assignDeliverToOrder(String emailManager, UUID orderId, UUID staffId) throws ResourceNotFoundException, IOException, InterruptedException {
         Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new ResourceNotFoundException("No staff found with this id " + staffId));
         Staff manager = staffRepository.findByEmail(emailManager).orElseThrow(() -> new ResourceNotFoundException("No manager found with this email " + emailManager));
+        if(!manager.getDeliverStaffList().stream().anyMatch(staff1 -> staff1.equals(staff))){
+            throw new IllegalArgumentException("Nhân viên này không trong quyền quản lý của bạn!");
+        }
         Order order = repository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("No order found with this id " + orderId));
         RLock rLock = redissonClient.getFairLock(order.getId().toString());
-        boolean res = rLock.tryLock(100, 10, TimeUnit.SECONDS);
+        boolean res = rLock.tryLock(5, 10, TimeUnit.SECONDS);
         if (res) {
             try {
+                rLock.lock();
                 if (order.getStatus() == OrderStatus.DELIVERING.ordinal() && manager.getDeliverStaffList().stream().anyMatch(staff1 -> staff1.equals(order.getDeliverer()))) {
                     order.setDeliverer(staff);
                     repository.save(order);
-                } else if (order.getStatus() == OrderStatus.PACKAGED.ordinal()) {
+                } else if (order.getStatus() == OrderStatus.PACKAGED.ordinal() ) {
                     order.setDeliverer(staff);
                     order.setStatus(OrderStatus.DELIVERING.ordinal());
                     repository.save(order);
                     FirebaseService.sendPushNotification("SHM", "Đơn hàng " + order.getCode() + " chuẩn bị được giao!", order.getCustomer().getId().toString());
                 } else {
-                    throw new IllegalArgumentException("Đơn hàng này đã được quản lý bởi quản lý khác!");
+                    throw new IllegalArgumentException("Đơn hàng này đã được quản lý bởi người khác!");
                 }
             } finally {
                 rLock.unlock();
             }
+        } else {
+            throw new IllegalArgumentException("Đơn hàng này đang được quản lý bởi quản lý khác!");
         }
 
-        return "Staff with id" + staffId + "set successfully";
+        return "Nhân viên " + staff.getFullName() + " được phân công giao hàng thành công!";
     }
 
     @Override
