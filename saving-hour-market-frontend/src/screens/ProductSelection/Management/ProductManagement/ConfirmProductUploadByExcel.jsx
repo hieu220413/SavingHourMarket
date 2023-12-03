@@ -365,6 +365,18 @@ const ConfirmProductUploadByExcel = ({
             )}
           </td>
           <td style={{ paddingTop: 30 }}>
+            {item?.priceListed ? (
+              item?.priceListed.toLocaleString("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              })
+            ) : (
+              <p style={{ fontWeight: 700 }} className="text-danger">
+                Lỗi giá niêm yết
+              </p>
+            )}
+          </td>
+          <td style={{ paddingTop: 30 }}>
             <i
               onClick={() => {
                 handleOpenProductBatch();
@@ -566,6 +578,7 @@ const ConfirmProductUploadByExcel = ({
                 <th>Đơn vị</th>
                 <th>Loại sản phẩm phụ</th>
                 <th>Siêu thị</th>
+                <th>Giá niêm yết</th>
                 <th>Lô hàng</th>
                 <th>Thao tác</th>
                 <th>Lỗi</th>
