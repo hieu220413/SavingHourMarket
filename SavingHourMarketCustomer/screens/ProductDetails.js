@@ -412,30 +412,56 @@ const ProductDetails = ({ navigation, route }) => {
           shadowRadius: 4.65,
           elevation: 2,
         }}>
-        <View style={{ flexDirection: 'row' }}>
-          <Text
-            style={{
-              fontSize: 22,
-              lineHeight: 30,
-              color: COLORS.secondary,
-              fontWeight: 700,
-              fontFamily: FONTS.fontFamily,
-            }}>
-            {product.nearestExpiredBatch.price.toLocaleString('vi-VN', {
-              currency: 'VND',
-            })}
-          </Text>
-          <Text
-            style={{
-              fontSize: 14,
-              lineHeight: 18,
-              color: COLORS.secondary,
-              fontWeight: 700,
-              fontFamily: FONTS.fontFamily,
-              paddingRight: '10%',
-            }}>
-            ₫
-          </Text>
+        <View>
+          <View style={{ flexDirection: 'row', paddingBottom: '2%', }}>
+            <Text
+              style={{
+                maxWidth: '70%',
+                fontSize: Dimensions.get('window').width * 0.035,
+                lineHeight: 20,
+                fontWeight: 'bold',
+                fontFamily: FONTS.fontFamily,
+                textDecorationLine: 'line-through'
+              }}>
+              {product?.priceListed.toLocaleString('vi-VN', {
+                currency: 'VND',
+              })}
+            </Text>
+            <Text
+              style={{
+                fontSize: Dimensions.get('window').width * 0.03,
+                lineHeight: 13,
+                fontWeight: 600,
+                fontFamily: FONTS.fontFamily,
+              }}>
+              ₫
+            </Text>
+          </View>
+          <View style={{ flexDirection: 'row' }}>
+            <Text
+              style={{
+                fontSize: 22,
+                lineHeight: 30,
+                color: COLORS.secondary,
+                fontWeight: 700,
+                fontFamily: FONTS.fontFamily,
+              }}>
+              {product.nearestExpiredBatch.price.toLocaleString('vi-VN', {
+                currency: 'VND',
+              })}
+            </Text>
+            <Text
+              style={{
+                fontSize: 14,
+                lineHeight: 18,
+                color: COLORS.secondary,
+                fontWeight: 700,
+                fontFamily: FONTS.fontFamily,
+                paddingRight: '10%',
+              }}>
+              ₫
+            </Text>
+          </View>
         </View>
         <TouchableOpacity
           onPress={() => {

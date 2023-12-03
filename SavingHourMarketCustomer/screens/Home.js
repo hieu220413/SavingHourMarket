@@ -264,6 +264,31 @@ const Home = ({ navigation }) => {
               )}
             </Text>
 
+            <View style={{ flexDirection: 'row', paddingBottom: '2%', }}>
+              <Text
+                style={{
+                  maxWidth: '70%',
+                  fontSize: Dimensions.get('window').width * 0.035,
+                  lineHeight: 20,
+                  fontWeight: 'bold',
+                  fontFamily: FONTS.fontFamily,
+                  textDecorationLine: 'line-through'
+                }}>
+                {data?.priceListed.toLocaleString('vi-VN', {
+                  currency: 'VND',
+                })}
+              </Text>
+              <Text
+                style={{
+                  fontSize: Dimensions.get('window').width * 0.03,
+                  lineHeight: 13,
+                  fontWeight: 600,
+                  fontFamily: FONTS.fontFamily,
+                }}>
+                ₫
+              </Text>
+            </View>
+
             <View style={{ flexDirection: 'row' }}>
               <Text
                 style={{
