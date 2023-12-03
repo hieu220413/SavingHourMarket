@@ -99,7 +99,7 @@ const ProductManagement = () => {
   const [supermarketId, setSupermarketId] = useState("");
   const [productCategoryId, setProductCategoryId] = useState("");
   const [productSubCategoryId, setProductSubCategoryId] = useState("");
-  
+
   const [productName, setProductName] = useState("");
 
   const [openSnackbar, setOpenSnackbar] = useState({
@@ -425,6 +425,12 @@ const ProductManagement = () => {
             />
           </td>
           <td style={{ paddingTop: 30 }}>{item.name}</td>
+          <td style={{ paddingTop: 30 }}>
+            {item.priceListed.toLocaleString("vi-VN", {
+              style: "currency",
+              currency: "VND",
+            })}
+          </td>
           <td style={{ paddingTop: 30 }}>{item.unit}</td>
           <td style={{ paddingTop: 30 }}>{item.productSubCategory.name}</td>
 
@@ -432,7 +438,7 @@ const ProductManagement = () => {
             <i
               onClick={() => {
                 setProductBatch(item.productBatchList);
-                setProductName(item.name)
+                setProductName(item.name);
                 handleOpenProductBatch();
               }}
               className="bi bi-list"
@@ -481,6 +487,12 @@ const ProductManagement = () => {
             />
           </td>
           <td style={{ paddingTop: 30 }}>{item.name}</td>
+          <td style={{ paddingTop: 30 }}>
+            {item.priceListed.toLocaleString("vi-VN", {
+              style: "currency",
+              currency: "VND",
+            })}
+          </td>
           <td style={{ paddingTop: 30 }}>{item.unit}</td>
           <td style={{ paddingTop: 30 }}>{item.productSubCategory.name}</td>
           <td style={{ paddingTop: 30 }}>
@@ -591,6 +603,7 @@ const ProductManagement = () => {
                       <th>No.</th>
                       <th>Hình ảnh</th>
                       <th>Tên Sản phẩm</th>
+                      <th>Giá niêm yết</th>
                       <th>Đơn vị</th>
                       <th>Tên loại sản phẩm phụ </th>
                       <th>Lô hàng</th>
@@ -762,6 +775,7 @@ const ProductManagement = () => {
                         <th>No.</th>
                         <th>Hình ảnh</th>
                         <th>Tên</th>
+                        <th>Giá niêm yết</th>
                         <th>Đơn vị</th>
                         <th>Tên Sản phẩm</th>
                         <th>Lô hàng</th>

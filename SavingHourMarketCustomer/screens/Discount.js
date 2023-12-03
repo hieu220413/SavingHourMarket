@@ -189,7 +189,7 @@ const Discount = ({ navigation }) => {
               borderRadius: 10,
               textAlign: 'center',
               color: '#ffffff',
-              fontSize: Dimensions.get('window').width * 0.04,
+              fontSize: Dimensions.get('window').width * 0.035,
             }}>
             Dùng ngay
           </Text>
