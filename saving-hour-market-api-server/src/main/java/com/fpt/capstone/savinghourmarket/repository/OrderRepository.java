@@ -48,6 +48,8 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "AND " +
             "((o.paymentMethod = 0) OR ((o.paymentMethod = 1) AND (o.paymentStatus = 1))) " +
             "AND " +
+            "((:timeFrameId IS NULL) OR (o.timeFrame.id = :timeFrameId)) " +
+            "AND " +
             "(((:isPaid IS NULL) OR (:isPaid = FALSE)) " +
             "OR " +
             "((:isPaid = TRUE) AND (SIZE(o.transaction) > 0)))"
@@ -57,6 +59,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
                                   Date deliveryDate,
                                   UUID packageId,
                                   UUID deliverId,
+                                  UUID timeFrameId,
                                   Integer status,
                                   Boolean isGrouped,
                                   Boolean isBatched,
