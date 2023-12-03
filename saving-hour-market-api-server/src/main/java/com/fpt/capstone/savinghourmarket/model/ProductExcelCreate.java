@@ -22,6 +22,8 @@ public class ProductExcelCreate {
 
     private String description;
 
+    private Integer priceListed;
+
     private ProductSubCategory productSubCategory;
 
     private Supermarket supermarket;
@@ -32,6 +34,7 @@ public class ProductExcelCreate {
         if (obj == null || getClass() != obj.getClass()) return false;
         ProductExcelCreate other = (ProductExcelCreate) obj;
         return Objects.equals(name, other.name) &&
+                Objects.equals(priceListed, other.priceListed) &&
                 Objects.equals(unit, other.unit) &&
                 Objects.equals(description, other.description) &&
                 Objects.equals(productSubCategory, other.productSubCategory) &&
@@ -41,6 +44,6 @@ public class ProductExcelCreate {
     // Override the hashCode method to generate a hash code based on all fields
     @Override
     public int hashCode() {
-        return Objects.hash(name, unit, description, productSubCategory, supermarket);
+        return Objects.hash(name, unit, description, priceListed, productSubCategory, supermarket);
     }
 }

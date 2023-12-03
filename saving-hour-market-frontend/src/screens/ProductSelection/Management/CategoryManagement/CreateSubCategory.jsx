@@ -89,6 +89,19 @@ const CreateSubCategory = ({
       .then((res) => res.json())
       .then((res) => {
         console.log(res);
+        if (res.code === 422) {
+          setOpenSnackbar({
+            ...openSnackbar,
+            open: true,
+            severity: "error",
+          });
+          setMsg(
+            "Tạo mới không thành công. \nChỉ được phép nhập kí tự chữ trong bảng chữ cái và dấu cách "
+          );
+          setLoading(false);
+          handleClose();
+          return;
+        }
         fetch(
           `${API.baseURL}/api/product/getSubCategoryForStaff?productCategoryId=${categoryId}&page=0&limit=10`,
           {

@@ -4,6 +4,7 @@ import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.exception.UnverifiedEmailException;
 import com.fpt.capstone.savinghourmarket.model.ApiError;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -22,5 +23,11 @@ public class GeneralExceptionHandler {
     public ResponseEntity<ApiError> invalidUserInputExceptionHandler(InvalidInputException e) {
         ApiError apiError = new ApiError(LocalDateTime.now().toString(), e.getStatusCode().value(), e.getReason(), e.getErrorFields());
         return ResponseEntity.status(e.getStatusCode().value()).body(apiError);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiError> illegalArgumentExceptionHandler(IllegalArgumentException e) {
+        ApiError apiError = new ApiError(LocalDateTime.now().toString(), HttpStatus.CONFLICT.value(), e.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT.value()).body(apiError);
     }
 }

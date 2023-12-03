@@ -317,14 +317,20 @@ const SearchResult = ({ navigation, route }) => {
 
   const Product = ({ data }) => {
     return (
-      <TouchableOpacity
-        key={data.id}
-        onPress={() => {
-          navigation.navigate('ProductDetails', {
-            product: data,
-          });
-        }}>
-        <View style={styles.itemContainer}>
+      <View style={styles.itemContainer}>
+        <TouchableOpacity
+          key={data.id}
+          onPress={() => {
+            navigation.navigate('ProductDetails', {
+              product: data,
+              pickupPointId: pickupPoint.id,
+            });
+          }}
+          style={{
+            flexDirection: 'row',
+            width: '100%',
+          }}
+        >
           {/* Image Product */}
           <Image
             resizeMode="contain"
@@ -334,27 +340,69 @@ const SearchResult = ({ navigation, route }) => {
             style={styles.itemImage}
           />
 
-          <View style={{ justifyContent: 'center', flex: 1, marginRight: 10 }}>
+          <View
+            style={{
+              justifyContent: 'center',
+              flex: 1,
+              marginRight: 10,
+              marginTop: 5,
+            }}>
             <Text
               numberOfLines={1}
               style={{
                 fontFamily: FONTS.fontFamily,
-                fontSize: Dimensions.get('window').width * 0.04,
+                fontSize: Dimensions.get('window').width * 0.05,
                 fontWeight: 700,
                 maxWidth: '95%',
                 color: 'black',
               }}>
               {data.name}
             </Text>
+            <Text
+              style={{
+                fontFamily: FONTS.fontFamily,
+                fontSize: Dimensions.get('window').width * 0.045,
+                marginTop: 8,
+                marginBottom: 10,
+              }}>
+              HSD:{' '}
+              {dayjs(data?.nearestExpiredBatch.expiredDate).format(
+                'DD/MM/YYYY',
+              )}
+            </Text>
+            <View style={{ flexDirection: 'row', paddingBottom: '2%', }}>
+              <Text
+                style={{
+                  maxWidth: '70%',
+                  fontSize: Dimensions.get('window').width * 0.035,
+                  lineHeight: 20,
+                  fontWeight: 'bold',
+                  fontFamily: FONTS.fontFamily,
+                  textDecorationLine: 'line-through'
+                }}>
+                {data?.priceListed.toLocaleString('vi-VN', {
+                  currency: 'VND',
+                })}
+              </Text>
+              <Text
+                style={{
+                  fontSize: Dimensions.get('window').width * 0.03,
+                  lineHeight: 13,
+                  fontWeight: 600,
+                  fontFamily: FONTS.fontFamily,
+                }}>
+                ₫
+              </Text>
+            </View>
 
             <View style={{ flexDirection: 'row' }}>
               <Text
                 style={{
                   maxWidth: '70%',
-                  fontSize: Dimensions.get('window').width * 0.04,
-                  lineHeight: 30,
+                  fontSize: Dimensions.get('window').width * 0.045,
+                  lineHeight: 20,
                   color: COLORS.secondary,
-                  fontWeight: 600,
+                  fontWeight: 'bold',
                   fontFamily: FONTS.fontFamily,
                 }}>
                 {data?.nearestExpiredBatch.price.toLocaleString('vi-VN', {
@@ -364,7 +412,7 @@ const SearchResult = ({ navigation, route }) => {
               <Text
                 style={{
                   fontSize: Dimensions.get('window').width * 0.03,
-                  lineHeight: 18,
+                  lineHeight: 13,
                   color: COLORS.secondary,
                   fontWeight: 600,
                   fontFamily: FONTS.fontFamily,
@@ -373,20 +421,25 @@ const SearchResult = ({ navigation, route }) => {
               </Text>
             </View>
 
+            {/* Button buy */}
+            {/* <TouchableOpacity onPress={() => handleAddToCart(data)}>
             <Text
               style={{
+                maxWidth: 150,
+                maxHeight: 40,
+                padding: 10,
+                backgroundColor: COLORS.primary,
+                borderRadius: 10,
+                textAlign: 'center',
+                color: '#ffffff',
                 fontFamily: FONTS.fontFamily,
-                fontSize: Dimensions.get('window').width * 0.04,
-                marginBottom: 10,
               }}>
-              HSD:{' '}
-              {dayjs(data?.nearestExpiredBatch.expiredDate).format(
-                'DD/MM/YYYY',
-              )}
+              Thêm vào giỏ hàng
             </Text>
+          </TouchableOpacity> */}
           </View>
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </View>
     );
   };
 

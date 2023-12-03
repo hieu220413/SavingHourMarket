@@ -12,22 +12,22 @@ import {
   FlatList,
   Dimensions,
 } from 'react-native';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
-import {Image} from 'react-native-animatable';
-import {icons} from '../../constants';
-import {COLORS, FONTS} from '../../constants/theme';
-import {API} from '../../constants/api';
-import {format} from 'date-fns';
+import { Image } from 'react-native-animatable';
+import { icons } from '../../constants';
+import { COLORS, FONTS } from '../../constants/theme';
+import { API } from '../../constants/api';
+import { format } from 'date-fns';
 import Empty from '../../assets/image/search-empty.png';
 import LoadingScreen from '../../components/LoadingScreen';
-import {useFocusEffect} from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import DatePicker from 'react-native-date-picker';
 import database from '@react-native-firebase/database';
-import {checkSystemState} from '../../common/utils';
+import { checkSystemState } from '../../common/utils';
 
-const HistoryList = ({navigation}) => {
+const HistoryList = ({ navigation }) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
@@ -413,14 +413,14 @@ const HistoryList = ({navigation}) => {
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState(null);
   const orderStatus = [
-    {id: 0, display: 'Giao thành công', value: 'SUCCESS', active: true},
-    {id: 1, display: 'Giao thất bại', value: 'FAIL', active: false},
+    { id: 0, display: 'Giao thành công', value: 'SUCCESS', active: true },
+    { id: 1, display: 'Giao thất bại', value: 'FAIL', active: false },
   ];
 
   const deliveryOptions = [
-    {id: 0, display: 'Giao hàng tại điểm nhận'},
-    {id: 1, display: 'Giao hàng tận nhà'},
-    {id: 2, display: 'Đơn hàng lẻ'},
+    { id: 0, display: 'Giao hàng tại điểm nhận' },
+    { id: 1, display: 'Giao hàng tận nhà' },
+    { id: 2, display: 'Đơn hàng lẻ' },
   ];
 
   const [currentOptions, setCurrentOptions] = useState({
@@ -445,6 +445,7 @@ const HistoryList = ({navigation}) => {
   const [selectSort, setSelectSort] = useState(sortOptions);
   //  filter pickup point
   const [selectedTimeFrameId, setSelectedTimeFrameId] = useState('');
+  const [timeFrameList, setTimeFrameList] = useState([]);
   //  filter date
   const [selectedDate, setSelectedDate] = useState(null);
 
@@ -462,9 +463,50 @@ const HistoryList = ({navigation}) => {
           console.log(err);
         }
       })();
+      const fetchTimeFrame = async () => {
+        if (auth().currentUser) {
+          const tokenId = await auth().currentUser.getIdToken();
+          if (tokenId) {
+            setLoading(true);
+            fetch(`${API.baseURL}/api/timeframe/getAllForStaff`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
+              },
+            })
+              .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                  const tokenIdCheck = await auth()
+                    .currentUser.getIdToken(true)
+                    .catch(async err => {
+                      await AsyncStorage.setItem('isDisableAccount', '1');
+                      return null;
+                    });
+                  if (!tokenIdCheck) {
+                    throw new Error();
+                  }
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.json();
+              })
+              .then(response => {
+                setTimeFrameList(response);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
+          }
+        }
+      }
       setSelectSort(sortOptions);
       setSelectItem(orderStatus);
+      setSelectedDate(null);
+      setSelectedTimeFrameId('');
       fetchOrders(currentOptions.id);
+      fetchTimeFrame();
     }, []),
   );
 
@@ -534,19 +576,15 @@ const HistoryList = ({navigation}) => {
       setLoading(true);
       if (id === 0) {
         fetch(
-          `${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${
-            userFromAS?.id
-          }${
-            selectedDate === null ? '' : `&deliverDate=${deliverDate}`
-          }&status=${filterStatus?.value}&getOldOrderGroup=TRUE${
-            sortItem?.id == 1 && isHadSortItem === true
-              ? '&deliverDateSortType=ASC'
-              : ''
-          }${
-            sortItem?.id == 2 && isHadSortItem === true
-              ? '&deliverDateSortType=DESC'
-              : ''
-          }`,
+          `${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id
+          }${selectedDate === null ? '' : `&deliverDate=${deliverDate}`
+          }&status=${filterStatus?.value}&getOldOrderGroup=TRUE${sortItem?.id == 1 && isHadSortItem === true
+            ? '&deliverDateSortType=ASC'
+            : ''
+          }${sortItem?.id == 2 && isHadSortItem === true
+            ? '&deliverDateSortType=DESC'
+            : ''
+          }${selectedTimeFrameId ? `&timeFrameId=${selectedTimeFrameId}` : ''}`,
           {
             method: 'GET',
             headers: {
@@ -584,19 +622,15 @@ const HistoryList = ({navigation}) => {
           });
       } else if (id === 1) {
         fetch(
-          `${API.baseURL}/api/order/staff/getOrderBatch?delivererId=${
-            userFromAS?.id
-          }${
-            selectedDate === null ? '' : `&deliveryDate=${deliverDate}`
-          }&status=${filterStatus?.value}&getOldOrderGroup=TRUE${
-            sortItem?.id == 1 && isHadSortItem === true
-              ? '&deliverDateSortType=ASC'
-              : ''
-          }${
-            sortItem?.id == 2 && isHadSortItem === true
-              ? '&deliverDateSortType=DESC'
-              : ''
-          }`,
+          `${API.baseURL}/api/order/staff/getOrderBatch?delivererId=${userFromAS?.id
+          }${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`
+          }&status=${filterStatus?.value}&getOldOrderGroup=TRUE${sortItem?.id == 1 && isHadSortItem === true
+            ? '&deliverDateSortType=ASC'
+            : ''
+          }${sortItem?.id == 2 && isHadSortItem === true
+            ? '&deliverDateSortType=DESC'
+            : ''
+          }${selectedTimeFrameId ? `&timeFrameId=${selectedTimeFrameId}` : ''}`,
           {
             method: 'GET',
             headers: {
@@ -636,20 +670,15 @@ const HistoryList = ({navigation}) => {
           });
       } else if (id === 2) {
         fetch(
-          `${
-            API.baseURL
-          }/api/order/staff/getOrders?isGrouped=false&isBatched=false&getOldOrder=true&delivererId=${
-            userFromAS?.id
-          }&orderStatus=${filterStatus?.value}${
-            selectedDate === null ? '' : `&deliveryDate=${deliverDate}`
-          }${
-            sortItem?.id == 1 && isHadSortItem === true
-              ? '&deliveryDateSortType=ASC'
-              : ''
-          }${
-            sortItem?.id == 2 && isHadSortItem === true
-              ? '&deliveryDateSortType=DESC'
-              : ''
+          `${API.baseURL
+          }/api/order/staff/getOrders?isGrouped=false&isBatched=false&getOldOrder=true&delivererId=${userFromAS?.id
+          }&orderStatus=${filterStatus?.value}${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`
+          }${sortItem?.id == 1 && isHadSortItem === true
+            ? '&deliveryDateSortType=ASC'
+            : ''
+          }${sortItem?.id == 2 && isHadSortItem === true
+            ? '&deliveryDateSortType=DESC'
+            : ''
           }`,
           {
             method: 'GET',
@@ -697,6 +726,8 @@ const HistoryList = ({navigation}) => {
     setModalVisible(!modalVisible);
     setSelectSort(sortOptions);
     setSelectItem(orderStatus);
+    setSelectedTimeFrameId('');
+    setSelectedDate(null);
     console.log('clear filter');
     const tokenId = await auth().currentUser.getIdToken();
     const userFromAS = await getUser();
@@ -821,7 +852,7 @@ const HistoryList = ({navigation}) => {
       }
     }
   };
-  const OrderItem = ({item}) => {
+  const OrderItem = ({ item }) => {
     return (
       <TouchableOpacity
         onPress={() => {
@@ -849,23 +880,23 @@ const HistoryList = ({navigation}) => {
           style={
             item?.status === 4
               ? {
-                  position: 'absolute',
-                  top: '10%',
-                  right: '5%',
-                  backgroundColor: COLORS.light_green,
-                  color: COLORS.primary,
-                  padding: 10,
-                  borderRadius: 10,
-                }
+                position: 'absolute',
+                top: '10%',
+                right: '5%',
+                backgroundColor: COLORS.light_green,
+                color: COLORS.primary,
+                padding: 10,
+                borderRadius: 10,
+              }
               : {
-                  position: 'absolute',
-                  top: '10%',
-                  right: '5%',
-                  backgroundColor: '#FBD9D3',
-                  color: COLORS.red,
-                  padding: 10,
-                  borderRadius: 10,
-                }
+                position: 'absolute',
+                top: '10%',
+                right: '5%',
+                backgroundColor: '#FBD9D3',
+                color: COLORS.red,
+                padding: 10,
+                borderRadius: 10,
+              }
           }>
           {item?.status === 3 && 'Đang giao '}
           {item?.status === 4 && 'Đã Giao'}
@@ -902,9 +933,9 @@ const HistoryList = ({navigation}) => {
           Thời gian:{' '}
           {item?.timeFrame
             ? `${item?.timeFrame?.fromHour.slice(
-                0,
-                5,
-              )} đến ${item?.timeFrame?.toHour.slice(0, 5)}`
+              0,
+              5,
+            )} đến ${item?.timeFrame?.toHour.slice(0, 5)}`
             : ''}
         </Text>
         <Text
@@ -935,7 +966,7 @@ const HistoryList = ({navigation}) => {
             paddingVertical: 10,
           }}>
           <View
-            style={{flex: 1, height: 1.5, backgroundColor: COLORS.primary}}
+            style={{ flex: 1, height: 1.5, backgroundColor: COLORS.primary }}
           />
           <View>
             <Text
@@ -951,12 +982,12 @@ const HistoryList = ({navigation}) => {
             </Text>
           </View>
           <View
-            style={{flex: 1, height: 1.5, backgroundColor: COLORS.primary}}
+            style={{ flex: 1, height: 1.5, backgroundColor: COLORS.primary }}
           />
         </View>
 
         <Text>
-          <View style={{flexDirection: 'row'}}>
+          <View style={{ flexDirection: 'row' }}>
             <Text
               style={{
                 fontSize: 18,
@@ -998,15 +1029,15 @@ const HistoryList = ({navigation}) => {
     );
   };
 
-  const ModalItem = ({item}) => {
+  const ModalItem = ({ item }) => {
     return (
       <TouchableOpacity
         onPress={() => {
           const newArray = selectItem.map(i => {
             if (i.id === item.id) {
-              return {...i, active: true};
+              return { ...i, active: true };
             } else {
-              return {...i, active: false};
+              return { ...i, active: false };
             }
           });
           setSelectItem(newArray);
@@ -1014,39 +1045,39 @@ const HistoryList = ({navigation}) => {
         style={
           item.active == true
             ? {
-                borderColor: COLORS.primary,
-                borderWidth: 1,
-                borderRadius: 10,
-                margin: 5,
-              }
+              borderColor: COLORS.primary,
+              borderWidth: 1,
+              borderRadius: 10,
+              margin: 5,
+            }
             : {
-                borderColor: '#c8c8c8',
-                borderWidth: 0.2,
-                borderRadius: 10,
-                margin: 5,
-              }
+              borderColor: '#c8c8c8',
+              borderWidth: 0.2,
+              borderRadius: 10,
+              margin: 5,
+            }
         }>
         <Text
           style={
             item.active == true
               ? {
-                  width: 150,
-                  paddingHorizontal: 20,
-                  paddingVertical: 10,
-                  textAlign: 'center',
-                  color: COLORS.primary,
-                  fontFamily: FONTS.fontFamily,
-                  fontSize: 12,
-                }
+                width: Dimensions.get('window').width * 0.32,
+                paddingHorizontal: '5%',
+                paddingVertical: 10,
+                textAlign: 'center',
+                color: COLORS.primary,
+                fontFamily: FONTS.fontFamily,
+                fontSize: Dimensions.get('window').width * 0.03,
+              }
               : {
-                  width: 150,
-                  paddingHorizontal: 20,
-                  paddingVertical: 10,
-                  textAlign: 'center',
-                  color: 'black',
-                  fontFamily: FONTS.fontFamily,
-                  fontSize: 12,
-                }
+                width: Dimensions.get('window').width * 0.32,
+                paddingHorizontal: '5%',
+                paddingVertical: 10,
+                textAlign: 'center',
+                color: 'black',
+                fontFamily: FONTS.fontFamily,
+                fontSize: Dimensions.get('window').width * 0.03,
+              }
           }>
           {item.display}
         </Text>
@@ -1054,19 +1085,19 @@ const HistoryList = ({navigation}) => {
     );
   };
 
-  const ModalSortItem = ({item}) => {
+  const ModalSortItem = ({ item }) => {
     return (
       <TouchableOpacity
         onPress={() => {
           const newArray = selectSort.map(i => {
             if (i.id === item.id) {
               if (i.active === true) {
-                return {...i, active: false};
+                return { ...i, active: false };
               } else {
-                return {...i, active: true};
+                return { ...i, active: true };
               }
             }
-            return {...i, active: false};
+            return { ...i, active: false };
           });
           // console.log(newArray);
           setSelectSort(newArray);
@@ -1074,39 +1105,91 @@ const HistoryList = ({navigation}) => {
         style={
           item.active == true
             ? {
-                borderColor: COLORS.primary,
-                borderWidth: 1,
-                borderRadius: 10,
-                margin: 5,
-              }
+              borderColor: COLORS.primary,
+              borderWidth: 1,
+              borderRadius: 10,
+              margin: 5,
+            }
             : {
-                borderColor: '#c8c8c8',
-                borderWidth: 0.2,
-                borderRadius: 10,
-                margin: 5,
-              }
+              borderColor: '#c8c8c8',
+              borderWidth: 0.2,
+              borderRadius: 10,
+              margin: 5,
+            }
         }>
         <Text
           style={
             item.active == true
               ? {
-                  width: 150,
-                  paddingVertical: 10,
-                  textAlign: 'center',
-                  color: COLORS.primary,
+                width: 150,
+                paddingVertical: 10,
+                textAlign: 'center',
+                color: COLORS.primary,
 
-                  fontSize: 12,
-                }
+                fontSize: 12,
+              }
               : {
-                  width: 150,
-                  paddingVertical: 10,
-                  textAlign: 'center',
-                  color: 'black',
+                width: 150,
+                paddingVertical: 10,
+                textAlign: 'center',
+                color: 'black',
 
-                  fontSize: 12,
-                }
+                fontSize: 12,
+              }
           }>
           {item.name}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const TimeFrameItem = ({ item }) => {
+    return (
+      <TouchableOpacity
+        key={item.id}
+        onPress={() =>
+          item.id === selectedTimeFrameId
+            ? setSelectedTimeFrameId('')
+            : setSelectedTimeFrameId(item.id)
+        }
+        style={
+          item.id === selectedTimeFrameId
+            ? {
+              borderColor: COLORS.primary,
+              borderWidth: 1,
+              borderRadius: 10,
+              margin: 5,
+              width: '45%',
+            }
+            : {
+              borderColor: '#c8c8c8',
+              borderWidth: 0.2,
+              borderRadius: 10,
+              margin: 5,
+              width: '45%',
+            }
+        }>
+        <Text
+          style={
+            item.id === selectedTimeFrameId
+              ? {
+                width: '100%',
+                paddingVertical: 10,
+                textAlign: 'center',
+                color: COLORS.primary,
+
+                fontSize: 12,
+              }
+              : {
+                width: '100%',
+                paddingVertical: 10,
+                textAlign: 'center',
+                color: 'black',
+
+                fontSize: 12,
+              }
+          }>
+          {item.fromHour.slice(0, 5)} đến {item.toHour.slice(0, 5)}
         </Text>
       </TouchableOpacity>
     );
@@ -1135,10 +1218,10 @@ const HistoryList = ({navigation}) => {
                   }}>
                   <Image
                     resizeMode="contain"
-                    style={{width: 38, height: 38}}
+                    style={{ width: 38, height: 38 }}
                     source={
                       user?.avatarUrl
-                        ? {uri: user?.avatarUrl}
+                        ? { uri: user?.avatarUrl }
                         : icons.userCircle
                     }
                   />
@@ -1165,7 +1248,7 @@ const HistoryList = ({navigation}) => {
                         })
                         .catch(e => console.log(e));
                     }}>
-                    <Text style={{color: 'red', fontWeight: 'bold'}}>
+                    <Text style={{ color: 'red', fontWeight: 'bold' }}>
                       Đăng xuất
                     </Text>
                   </TouchableOpacity>
@@ -1173,7 +1256,7 @@ const HistoryList = ({navigation}) => {
               </View>
             </View>
 
-            <View style={{flexDirection: 'row'}}>
+            <View style={{ flexDirection: 'row' }}>
               {/*  */}
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {deliveryOptions.map((item, index) => (
@@ -1186,9 +1269,8 @@ const HistoryList = ({navigation}) => {
                     <View
                       style={[
                         {
-                          paddingTop: 15,
-                          paddingHorizontal: 8,
-                          paddingBottom: 15,
+                          paddingHorizontal: '1%',
+                          paddingVertical: '2%'
                         },
                         currentOptions.display === item.display && {
                           borderBottomColor: COLORS.primary,
@@ -1198,7 +1280,7 @@ const HistoryList = ({navigation}) => {
                       <Text
                         style={{
                           fontFamily: 'Roboto',
-                          fontSize: 16,
+                          fontSize: Dimensions.get('window').width * 0.045,
                           color:
                             currentOptions.display === item.display
                               ? COLORS.primary
@@ -1222,10 +1304,12 @@ const HistoryList = ({navigation}) => {
                 <Image
                   resizeMode="contain"
                   style={{
-                    height: 45,
                     tintColor: COLORS.primary,
-                    width: 30,
                     marginLeft: '1%',
+                    height: Dimensions.get('window').width * 0.08,
+                    width: Dimensions.get('window').width * 0.08,
+                    paddingHorizontal: '1%',
+                    paddingVertical: '2%'
                   }}
                   source={icons.filter}
                 />
@@ -1238,11 +1322,11 @@ const HistoryList = ({navigation}) => {
                 fontFamily: FONTS.fontFamily,
                 color: 'grey',
                 fontWeight: 'bold',
-                fontSize: 18,
+                fontSize: Dimensions.get('window').width * 0.048,
                 marginLeft: 10,
                 paddingBottom: 20,
               }}>
-              Số lượng đơn hàng cần giao:{' '}
+              Số lượng đơn hàng đã giao:{' '}
               {currentOptions.id === 0 || currentOptions.id === 1
                 ? orderGroupList.length + ' nhóm đơn'
                 : orders.length + ' đơn'}
@@ -1251,7 +1335,7 @@ const HistoryList = ({navigation}) => {
               style={{
                 fontFamily: FONTS.fontFamily,
                 color: 'black',
-                fontSize: 20,
+                fontSize: Dimensions.get('window').width * 0.05,
                 marginLeft: 10,
                 paddingBottom: 20,
               }}>
@@ -1262,15 +1346,15 @@ const HistoryList = ({navigation}) => {
                 {/* Grouping & Batching Order  */}
                 {orderGroupList.length === 0 ? (
                   <View
-                    style={{alignItems: 'center', justifyContent: 'center'}}>
+                    style={{ alignItems: 'center', justifyContent: 'center' }}>
                     <Image
-                      style={{width: '100%', height: '50%'}}
+                      style={{ width: '100%', height: '50%' }}
                       resizeMode="contain"
                       source={Empty}
                     />
                     <Text
                       style={{
-                        fontSize: 20,
+                        fontSize: Dimensions.get('window').width * 0.05,
                         fontFamily: 'Roboto',
                         fontWeight: 'bold',
                       }}>
@@ -1278,11 +1362,11 @@ const HistoryList = ({navigation}) => {
                     </Text>
                     <Text
                       style={{
-                        fontSize: 20,
+                        fontSize: Dimensions.get('window').width * 0.05,
                         fontFamily: 'Roboto',
                         fontWeight: 'bold',
                       }}>
-                      Hãy chọn lại ngày giao
+                      Hãy chọn lại ngày/giờ giao
                     </Text>
                   </View>
                 ) : (
@@ -1360,7 +1444,7 @@ const HistoryList = ({navigation}) => {
                                     {data.item.isExpand ? (
                                       <Text
                                         style={{
-                                          fontSize: 18,
+                                          fontSize: Dimensions.get('window').width * 0.048,
                                           fontWeight: 'bold',
                                           fontFamily: 'Roboto',
                                           color: 'white',
@@ -1382,7 +1466,7 @@ const HistoryList = ({navigation}) => {
                                         }}>
                                         <Text
                                           style={{
-                                            fontSize: 18,
+                                            fontSize: Dimensions.get('window').width * 0.048,
                                             fontWeight: 'bold',
                                             fontFamily: 'Roboto',
                                             color: 'white',
@@ -1394,7 +1478,7 @@ const HistoryList = ({navigation}) => {
                                         </Text>
                                         <Text
                                           style={{
-                                            fontSize: 18,
+                                            fontSize: Dimensions.get('window').width * 0.048,
                                             fontWeight: 'bold',
                                             fontFamily: 'Roboto',
                                             color: 'white',
@@ -1442,24 +1526,26 @@ const HistoryList = ({navigation}) => {
                                       style={
                                         item?.status === 4
                                           ? {
-                                              position: 'absolute',
-                                              top: '10%',
-                                              right: '5%',
-                                              backgroundColor:
-                                                COLORS.light_green,
-                                              color: COLORS.primary,
-                                              padding: 10,
-                                              borderRadius: 10,
-                                            }
+                                            position: 'absolute',
+                                            top: '10%',
+                                            right: '5%',
+                                            backgroundColor:
+                                              COLORS.light_green,
+                                            color: COLORS.primary,
+                                            padding: 10,
+                                            borderRadius: 10,
+                                            fontSize: Dimensions.get('window').width * 0.035,
+                                          }
                                           : {
-                                              position: 'absolute',
-                                              top: '10%',
-                                              right: '5%',
-                                              backgroundColor: '#FBD9D3',
-                                              color: COLORS.red,
-                                              padding: 10,
-                                              borderRadius: 10,
-                                            }
+                                            position: 'absolute',
+                                            top: '10%',
+                                            right: '5%',
+                                            backgroundColor: '#FBD9D3',
+                                            color: COLORS.red,
+                                            padding: 10,
+                                            borderRadius: 10,
+                                            fontSize: Dimensions.get('window').width * 0.035,
+                                          }
                                       }>
                                       {item?.status === 2 && 'Đóng gói'}
                                       {item?.status === 3 && 'Đang giao'}
@@ -1468,7 +1554,7 @@ const HistoryList = ({navigation}) => {
                                     </Text>
                                     <Text
                                       style={{
-                                        fontSize: 18,
+                                        fontSize: Dimensions.get('window').width * 0.048,
                                         fontFamily: FONTS.fontFamily,
                                         color: 'black',
                                         fontWeight: 'bold',
@@ -1480,7 +1566,7 @@ const HistoryList = ({navigation}) => {
 
                                     <Text
                                       style={{
-                                        fontSize: 16,
+                                        fontSize: Dimensions.get('window').width * 0.045,
                                         fontFamily: FONTS.fontFamily,
                                         color: 'black',
                                         paddingBottom: 5,
@@ -1489,7 +1575,7 @@ const HistoryList = ({navigation}) => {
                                     </Text>
                                     <Text
                                       style={{
-                                        fontSize: 16,
+                                        fontSize: Dimensions.get('window').width * 0.045,
                                         fontFamily: FONTS.fontFamily,
                                         color: 'black',
                                         paddingBottom: 5,
@@ -1497,17 +1583,17 @@ const HistoryList = ({navigation}) => {
                                       Thời gian:{' '}
                                       {item?.timeFrame
                                         ? `${item?.timeFrame?.fromHour.slice(
-                                            0,
-                                            5,
-                                          )} đến ${item?.timeFrame?.toHour.slice(
-                                            0,
-                                            5,
-                                          )}`
+                                          0,
+                                          5,
+                                        )} đến ${item?.timeFrame?.toHour.slice(
+                                          0,
+                                          5,
+                                        )}`
                                         : ''}
                                     </Text>
                                     <Text
                                       style={{
-                                        fontSize: 16,
+                                        fontSize: Dimensions.get('window').width * 0.045,
                                         fontFamily: FONTS.fontFamily,
                                         color: 'black',
                                         paddingBottom: 5,
@@ -1520,7 +1606,7 @@ const HistoryList = ({navigation}) => {
                                     </Text>
                                     <Text
                                       style={{
-                                        fontSize: 16,
+                                        fontSize: Dimensions.get('window').width * 0.045,
                                         fontFamily: FONTS.fontFamily,
                                         color: 'black',
                                         paddingBottom: 5,
@@ -1551,7 +1637,7 @@ const HistoryList = ({navigation}) => {
                                             textAlign: 'center',
                                             color: COLORS.primary,
                                             fontWeight: 'bold',
-                                            fontSize: 16,
+                                            fontSize: Dimensions.get('window').width * 0.045,
                                             fontFamily: FONTS.fontFamily,
                                           }}>
                                           {item.paymentMethod === 0
@@ -1569,10 +1655,10 @@ const HistoryList = ({navigation}) => {
                                     </View>
 
                                     <Text>
-                                      <View style={{flexDirection: 'row'}}>
+                                      <View style={{ flexDirection: 'row' }}>
                                         <Text
                                           style={{
-                                            fontSize: 18,
+                                            fontSize: Dimensions.get('window').width * 0.048,
                                             lineHeight: 30,
                                             color: COLORS.secondary,
                                             fontWeight: 700,
@@ -1585,7 +1671,7 @@ const HistoryList = ({navigation}) => {
                                         <Text
                                           style={{
                                             maxWidth: '70%',
-                                            fontSize: 18,
+                                            fontSize: Dimensions.get('window').width * 0.048,
                                             lineHeight: 30,
                                             color: COLORS.secondary,
                                             fontWeight: 700,
@@ -1600,7 +1686,7 @@ const HistoryList = ({navigation}) => {
                                         </Text>
                                         <Text
                                           style={{
-                                            fontSize: 12,
+                                            fontSize: Dimensions.get('window').width * 0.03,
                                             lineHeight: 18,
                                             color: COLORS.secondary,
                                             fontWeight: 700,
@@ -1626,15 +1712,15 @@ const HistoryList = ({navigation}) => {
                 {/* No Groupign No Batching */}
                 {orders.length === 0 ? (
                   <View
-                    style={{alignItems: 'center', justifyContent: 'center'}}>
+                    style={{ alignItems: 'center', justifyContent: 'center' }}>
                     <Image
-                      style={{width: '100%', height: '50%'}}
+                      style={{ width: '100%', height: '50%' }}
                       resizeMode="contain"
                       source={Empty}
                     />
                     <Text
                       style={{
-                        fontSize: 20,
+                        fontSize: Dimensions.get('window').width * 0.05,
                         fontFamily: 'Roboto',
                         fontWeight: 'bold',
                       }}>
@@ -1642,7 +1728,7 @@ const HistoryList = ({navigation}) => {
                     </Text>
                     <Text
                       style={{
-                        fontSize: 20,
+                        fontSize: Dimensions.get('window').width * 0.05,
                         fontFamily: 'Roboto',
                         fontWeight: 'bold',
                       }}>
@@ -1670,9 +1756,9 @@ const HistoryList = ({navigation}) => {
             onRequestClose={() => {
               setModalVisible(!modalVisible);
             }}>
-            <TouchableOpacity
-              onPress={() => setModalVisible(!modalVisible)}
-              style={styles.centeredView}>
+            <View
+              style={styles.centeredView}
+            >
               <View style={styles.modalView}>
                 <View
                   style={{
@@ -1683,10 +1769,10 @@ const HistoryList = ({navigation}) => {
                     style={{
                       color: 'black',
                       fontFamily: FONTS.fontFamily,
-                      fontSize: 20,
+                      fontSize: Dimensions.get('window').width * 0.05,
                       fontWeight: 700,
                       textAlign: 'center',
-                      paddingBottom: 20,
+                      paddingBottom: '2%',
                     }}>
                     Bộ lọc tìm kiếm
                   </Text>
@@ -1697,7 +1783,7 @@ const HistoryList = ({navigation}) => {
                     <Image
                       resizeMode="contain"
                       style={{
-                        width: 20,
+                        width: Dimensions.get('window').width * 0.08,
                         height: 20,
                         tintColor: 'grey',
                       }}
@@ -1705,29 +1791,11 @@ const HistoryList = ({navigation}) => {
                     />
                   </TouchableOpacity>
                 </View>
-                {/* <Text
-                                    style={{
-                                        color: 'black',
-                                        fontSize: 16,
-                                        fontWeight: 700,
-                                    }}>
-                                    Sắp xếp theo
-                                </Text>
-                                <View
-                                    style={{
-                                        flexDirection: 'row',
-                                        flexWrap: 'wrap',
-                                        marginVertical: 10,
-                                    }}>
-                                    {selectSort.map((item, index) => (
-                                        <ModalSortItem item={item} key={index} />
-                                    ))}
-                                </View> */}
                 <Text
                   style={{
                     color: 'black',
                     fontFamily: FONTS.fontFamily,
-                    fontSize: 16,
+                    fontSize: Dimensions.get('window').width * 0.045,
                     fontWeight: 700,
                   }}>
                   Lọc theo trạng thái đơn hàng
@@ -1742,11 +1810,46 @@ const HistoryList = ({navigation}) => {
                     <ModalItem item={item} key={index} />
                   ))}
                 </View>
+                {currentOptions.id !== 2 && (
+                  <>
+                    <View
+                      style={{ flexDirection: 'row', alignItems: 'center' }}
+                    >
+                      <Text
+                        style={{
+                          color: 'black',
+                          fontSize: Dimensions.get('window').width * 0.045,
+                          fontWeight: 700,
+                        }}>
+                        Chọn khung giờ
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: Dimensions.get('window').width * 0.03,
+                          marginLeft: '2%',
+                        }}>
+                        (Kéo xuống để hiện thị thêm)
+                      </Text>
+                    </View>
+                    <ScrollView>
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          flexWrap: 'wrap',
+                          marginVertical: '1%',
+                        }}>
+                        {timeFrameList.map((item, index) => (
+                          <TimeFrameItem item={item} key={index} />
+                        ))}
+                      </View>
+                    </ScrollView>
+                  </>
+                )}
 
                 <Text
                   style={{
                     color: 'black',
-                    fontSize: 16,
+                    fontSize: Dimensions.get('window').width * 0.045,
                     fontWeight: 700,
                   }}>
                   Chọn ngày giao hàng
@@ -1755,7 +1858,7 @@ const HistoryList = ({navigation}) => {
                   style={{
                     flexDirection: 'row',
                     flexWrap: 'wrap',
-                    marginVertical: 10,
+                    justifyContent: 'center'
                   }}>
                   <DatePicker
                     date={selectedDate === null ? new Date() : selectedDate}
@@ -1774,7 +1877,7 @@ const HistoryList = ({navigation}) => {
                   <TouchableOpacity
                     style={{
                       width: '50%',
-                      paddingHorizontal: 15,
+                      paddingHorizontal: '2%',
                       paddingVertical: 10,
                       backgroundColor: 'white',
                       borderRadius: 10,
@@ -1791,6 +1894,7 @@ const HistoryList = ({navigation}) => {
                         color: COLORS.primary,
                         fontWeight: 'bold',
                         textAlign: 'center',
+                        fontSize: Dimensions.get('window').width * 0.045,
                       }}>
                       Thiết lập lại
                     </Text>
@@ -1799,7 +1903,7 @@ const HistoryList = ({navigation}) => {
                   <TouchableOpacity
                     style={{
                       width: '50%',
-                      paddingHorizontal: 15,
+                      paddingHorizontal: '2%',
                       paddingVertical: 10,
                       backgroundColor: COLORS.primary,
                       color: 'white',
@@ -1810,7 +1914,7 @@ const HistoryList = ({navigation}) => {
                   </TouchableOpacity>
                 </View>
               </View>
-            </TouchableOpacity>
+            </View>
           </Modal>
         </View>
       </TouchableWithoutFeedback>
@@ -1884,5 +1988,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     textAlign: 'center',
+    fontSize: Dimensions.get('window').width * 0.045,
   },
 });
