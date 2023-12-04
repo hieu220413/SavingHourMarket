@@ -751,6 +751,7 @@ const SearchResult = ({ navigation, route }) => {
                 flexDirection: 'row',
                 flexWrap: 'wrap',
                 marginVertical: 10,
+                justifyContent: 'center',
               }}>
               {selectSort.map((item, index) => (
                 <ModalSortItem item={item} key={index} />
@@ -770,6 +771,7 @@ const SearchResult = ({ navigation, route }) => {
                 flexDirection: 'row',
                 flexWrap: 'wrap',
                 marginVertical: 10,
+                justifyContent: 'center',
               }}>
               {selectFilter.map((item, index) => (
                 <ModalCateItem item={item} key={index} />
