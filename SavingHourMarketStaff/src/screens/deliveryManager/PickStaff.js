@@ -298,6 +298,15 @@ const PickStaff = ({navigation, route}) => {
     });
   };
 
+  const showFailToast = message => {
+    Toast.show({
+      type: 'unsuccess',
+      text1: 'Thất bại',
+      text2: message + '👋',
+      visibilityTime: 1000,
+    });
+  };
+
   const handlePickStaff = () => {
     if (!staffList.some(item => item.checked === true)) {
       setOpenValidateDialog(true);
@@ -335,6 +344,11 @@ const PickStaff = ({navigation, route}) => {
                 return res.text();
               })
               .then(respond => {
+                if (respond.code === 409) {
+                  showFailToast(respond.message);
+                  setLoading(false);
+                  return;
+                }
                 console.log('res:', respond);
                 showToast(respond);
                 setLoading(false);
@@ -397,6 +411,11 @@ const PickStaff = ({navigation, route}) => {
                 return res.text();
               })
               .then(respond => {
+                if (respond.code === 409) {
+                  showFailToast(respond.message);
+                  setLoading(false);
+                  return;
+                }
                 console.log('res:', respond);
                 showToast(respond);
                 setLoading(false);
@@ -446,6 +465,11 @@ const PickStaff = ({navigation, route}) => {
               return res.text();
             })
             .then(respond => {
+              if (respond.code === 409) {
+                showFailToast(respond.message);
+                setLoading(false);
+                return;
+              }
               console.log('res:', respond);
               showToast(respond);
               setLoading(false);
