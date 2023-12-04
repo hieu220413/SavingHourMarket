@@ -2,10 +2,13 @@
   min-height: 1000px;
   display: flex;
   flex-direction: column;
-  width: 350px;
+  width: 282px;
   align-items: center;
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
   background-color: var(--tab-background);
+  position: fixed;
+  left: 0;
+  top: 0;
 }
 
 .sidemenu-header {

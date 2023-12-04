@@ -411,18 +411,24 @@ const ProductManagement = () => {
         <tr className="table-body-row">
           <td style={{ paddingTop: 30 }}>{index + 1}</td>
           <td>
-            <img
-              style={{
-                cursor: "pointer",
-              }}
-              onClick={() => {
-                setImageUrlList(item.imageUrlImageList);
-                handleOpenImageUrlList();
-              }}
-              width="80px"
-              height="60px"
-              src={item.imageUrlImageList[0].imageUrl}
-            />
+            <div style={{ position: "relative" }}>
+              <img
+                style={{
+                  cursor: "pointer",
+                }}
+                className="img-scale"
+                onClick={() => {
+                  setImageUrlList(item.imageUrlImageList);
+                  handleOpenImageUrlList();
+                }}
+                width="80px"
+                height="60px"
+                src={item.imageUrlImageList[0].imageUrl}
+              />
+              <div className="image-number">
+                1/{item.imageUrlImageList.length}
+              </div>
+            </div>
           </td>
           <td style={{ paddingTop: 30 }}>{item.name}</td>
           <td style={{ paddingTop: 30 }}>
@@ -476,15 +482,21 @@ const ProductManagement = () => {
         <tr className="table-body-row">
           <td style={{ paddingTop: 30 }}>{index + 1}</td>
           <td>
-            <img
-              width="80px"
-              height="60px"
-              onClick={() => {
-                setImageUrlList(item.imageUrlImageList);
-                handleOpenImageUrlList();
-              }}
-              src={item.imageUrlImageList[0].imageUrl}
-            />
+            <div style={{ position: "relative" }}>
+              <img
+                width="80px"
+                height="60px"
+                className="img-scale"
+                onClick={() => {
+                  setImageUrlList(item.imageUrlImageList);
+                  handleOpenImageUrlList();
+                }}
+                src={item.imageUrlImageList[0].imageUrl}
+              />
+              <div className="image-number">
+                1/{item.imageUrlImageList.length}
+              </div>
+            </div>
           </td>
           <td style={{ paddingTop: 30 }}>{item.name}</td>
           <td style={{ paddingTop: 30 }}>

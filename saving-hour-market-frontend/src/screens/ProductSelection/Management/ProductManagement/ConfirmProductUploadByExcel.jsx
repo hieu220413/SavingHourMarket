@@ -172,12 +172,12 @@ const ConfirmProductUploadByExcel = ({
     const createProductListWithMainIndex = productListWithMainIndex.filter(
       (item, index) =>
         !errorList.some((i) => parseInt(i.index) === index + 1) &&
-        item.imageUrls
+        item.imageUrls.length !== 0
     );
     const createProductList = confirmProductList.productList.filter(
       (item, index) =>
         !errorList.some((i) => parseInt(i.index) === index + 1) &&
-        item.imageUrls
+        item.imageUrls.length !== 0
     );
 
     if (createProductList.length === 0) {
@@ -202,6 +202,7 @@ const ConfirmProductUploadByExcel = ({
     })
       .then((res) => res.json())
       .then(async (res) => {
+        console.log(res);
         if (res.status === 500) {
           setOpenSnackbar({
             ...openSnackbar,
@@ -262,7 +263,7 @@ const ConfirmProductUploadByExcel = ({
               const errorProductList = confirmProductList.productList.filter(
                 (item, index) =>
                   errorList.some((i) => parseInt(i.index) === index + 1) ||
-                  !item.imageUrls
+                  item.imageUrls.length === 0
               );
               setPageProduct(1);
               setConfirmProductList({
@@ -313,16 +314,19 @@ const ConfirmProductUploadByExcel = ({
         <tr key={index} className="table-body-row">
           <td style={{ paddingTop: 30 }}>{index + 1}</td>
           <td>
-            {item.imageUrls ? (
-              <img
-                alt="hình"
-                style={{ cursor: "pointer" }}
-                width="80px"
-                height="60px"
-                className="img-scale"
-                onClick={handleOpenImageUpload}
-                src={item?.imageUrls[0]}
-              />
+            {item.imageUrls.length !== 0 ? (
+              <div style={{ position: "relative" }}>
+                <img
+                  alt="hình"
+                  style={{ cursor: "pointer" }}
+                  width="80px"
+                  height="60px"
+                  className="img-scale"
+                  onClick={handleOpenImageUpload}
+                  src={item?.imageUrls[0]}
+                />
+                <div className="image-number">1/{item.imageUrls.length}</div>
+              </div>
             ) : (
               <img
                 className="img-scale"
@@ -390,7 +394,7 @@ const ConfirmProductUploadByExcel = ({
           </td>
           <td style={{ paddingTop: 30 }}>
             {errorList.some((item) => parseInt(item.index) === itemIndex + 1) ||
-            !item.imageUrls ? (
+            item.imageUrls.length === 0 ? (
               <i
                 onClick={handleOpenErrorList}
                 style={{ marginLeft: "-3px" }}

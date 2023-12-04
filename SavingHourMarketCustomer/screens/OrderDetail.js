@@ -30,6 +30,8 @@ const OrderDetail = ({navigation, route}) => {
   const [openAuthModal, setOpenAuthModal] = useState(false);
   const [isDisableAccount, setIsDisableAccount] = useState(false);
 
+  const [openConfirmCancel, setOpenConfirmCancel] = useState(false);
+
   // state open/close modal
   const [openAccountDisableModal, setOpenAccountDisableModal] = useState(false);
 
@@ -135,8 +137,9 @@ const OrderDetail = ({navigation, route}) => {
     }, []),
   );
 
-  const cancelOrder = () => {
+  const cancelOrder = async () => {
     setLoading(true);
+    const tokenId = await auth().currentUser.getIdToken();
     fetch(`${API.baseURL}/api/order/cancelOrder/${id}`, {
       method: 'PUT',
       headers: {
@@ -244,6 +247,9 @@ const OrderDetail = ({navigation, route}) => {
                   style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
                   <View style={{width: 20}} />
                   <View style={{gap: 8}}>
+                    <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                      Mã đơn hàng : {item.code}
+                    </Text>
                     <View style={{gap: 3}}>
                       {/* <Text style={{fontSize: 18, fontWeight: 'bold'}}>
                   Điểm giao hàng:
@@ -684,7 +690,7 @@ const OrderDetail = ({navigation, route}) => {
           <View style={{width: '95%'}}>
             <TouchableOpacity
               onPress={() => {
-                cancelOrder();
+                setOpenConfirmCancel(true);
               }}
               style={{
                 alignItems: 'center',
@@ -747,6 +753,51 @@ const OrderDetail = ({navigation, route}) => {
               textAlign: 'center',
             }}>
             Vui lòng đăng nhập để thực hiện chức năng này
+          </Text>
+        </View>
+      </Modal>
+
+      {/* confirm cancel modal */}
+      <Modal
+        width={0.8}
+        visible={openConfirmCancel}
+        onTouchOutside={() => {
+          setOpenConfirmCancel(false);
+        }}
+        dialogAnimation={
+          new ScaleAnimation({
+            initialValue: 0, // optional
+            useNativeDriver: true, // optional
+          })
+        }
+        footer={
+          <ModalFooter>
+            <ModalButton
+              text="Đóng"
+              onPress={async () => {
+                setOpenConfirmCancel(false);
+              }}
+            />
+            <ModalButton
+              text="Đồng ý"
+              textStyle={{color: COLORS.primary}}
+              onPress={async () => {
+                cancelOrder();
+                setOpenConfirmCancel(false);
+              }}
+            />
+          </ModalFooter>
+        }>
+        <View
+          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
+          <Text
+            style={{
+              fontSize: 20,
+              fontFamily: 'Roboto',
+              color: 'black',
+              textAlign: 'center',
+            }}>
+            Bạn có chắc muốn hủy đơn hàng này
           </Text>
         </View>
       </Modal>
