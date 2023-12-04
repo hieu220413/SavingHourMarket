@@ -10,7 +10,7 @@ const ErrorProductUploadByExcel = ({ handleClose, errorList, imageUrls }) => {
         <FontAwesomeIcon icon={faXmark} onClick={handleClose} />
       </div>
       <div style={{}} className="modal__container-body">
-        {!imageUrls && (
+        {imageUrls.length === 0 && (
           <div className="error__container">
             <i class="bi bi-exclamation-circle-fill text-danger"></i>
             <h3 className="text-danger">Sản phẩm chưa có hình ảnh</h3>
