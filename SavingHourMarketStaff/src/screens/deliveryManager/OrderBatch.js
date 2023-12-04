@@ -45,7 +45,9 @@ const OrderBatch = ({navigation}) => {
   const [groupList, setGroupList] = useState([]);
   const [showLogout, setShowLogout] = useState(false);
   const [date, setDate] = useState(null);
+  const [timeFrameList, setTimeFrameList] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const [selectedTimeFrameId, setSelectedTimeFrameId] = useState(null);
 
   const [currentStatus, setCurrentStatus] = useState({
     display: 'Chưa có nhân viên giao hàng',
@@ -122,6 +124,49 @@ const OrderBatch = ({navigation}) => {
   ];
   const [selectSort, setSelectSort] = useState(sortOptions);
 
+  useFocusEffect(
+    useCallback(() => {
+      const fetchData = async () => {
+        if (auth().currentUser) {
+          const tokenId = await auth().currentUser.getIdToken();
+          if (tokenId) {
+            setLoading(true);
+            fetch(`${API.baseURL}/api/timeframe/getAllForStaff`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
+              },
+            })
+              .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                  const tokenIdCheck = await auth()
+                    .currentUser.getIdToken(true)
+                    .catch(async err => {
+                      await AsyncStorage.setItem('isDisableAccount', '1');
+                      return null;
+                    });
+                  if (!tokenIdCheck) {
+                    throw new Error();
+                  }
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.json();
+              })
+              .then(response => {
+                setTimeFrameList(response);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
+          }
+        }
+      };
+      fetchData();
+    }, []),
+  );
   //get Current User Info
   useFocusEffect(
     useCallback(() => {
@@ -143,7 +188,7 @@ const OrderBatch = ({navigation}) => {
             setLoading(true);
 
             fetch(
-              `${API.baseURL}/api/order/staff/getOrderBatch?status=PACKAGED&getOldOrderBatch=false`,
+              `${API.baseURL}/api/order/staff/getOrderBatch?status=PACKAGED&getOldOrderBatch=false&deliverDateSortType=ASC`,
               {
                 method: 'GET',
                 headers: {
@@ -182,7 +227,7 @@ const OrderBatch = ({navigation}) => {
               });
 
             fetch(
-              `${API.baseURL}/api/order/staff/getOrderBatch?status=DELIVERING&getOldOrderBatch=false`,
+              `${API.baseURL}/api/order/staff/getOrderBatch?status=DELIVERING&getOldOrderBatch=false&deliverDateSortType=ASC`,
               {
                 method: 'GET',
                 headers: {
@@ -224,9 +269,62 @@ const OrderBatch = ({navigation}) => {
       };
       setDate(null);
       setSelectSort(sortOptions);
+      setSelectedTimeFrameId('');
       fetchData();
     }, []),
   );
+
+  const TimeFrameItem = ({item}) => {
+    return (
+      <TouchableOpacity
+        key={item.id}
+        onPress={() =>
+          item.id === selectedTimeFrameId
+            ? setSelectedTimeFrameId('')
+            : setSelectedTimeFrameId(item.id)
+        }
+        style={
+          item.id === selectedTimeFrameId
+            ? {
+                borderColor: COLORS.primary,
+                borderWidth: 1,
+                borderRadius: 10,
+                margin: 5,
+                width: '45%',
+              }
+            : {
+                borderColor: '#c8c8c8',
+                borderWidth: 0.2,
+                borderRadius: 10,
+                margin: 5,
+                width: '45%',
+              }
+        }>
+        <Text
+          style={
+            item.id === selectedTimeFrameId
+              ? {
+                  width: '100%',
+                  paddingVertical: 10,
+                  textAlign: 'center',
+                  color: COLORS.primary,
+
+                  fontSize: 12,
+                }
+              : {
+                  width: '100%',
+                  paddingVertical: 10,
+                  textAlign: 'center',
+                  color: 'black',
+
+                  fontSize: 12,
+                }
+          }>
+          {item.fromHour.slice(0, 5)} đến {item.toHour.slice(0, 5)}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
 
   const ModalSortItem = ({item}) => {
     return (
@@ -390,7 +488,11 @@ const OrderBatch = ({navigation}) => {
           if (tokenId) {
             setLoading(true);
             fetch(
-              `${API.baseURL}/api/order/staff/getOrderBatch?status=PACKAGED`,
+              `${
+                API.baseURL
+              }/api/order/staff/getOrderBatch?status=PACKAGED&deliverDateSortType=ASC${
+                selectedTimeFrameId ? '&timeFrameId=' + selectedTimeFrameId : ''
+              }`,
               {
                 method: 'GET',
                 headers: {
@@ -429,7 +531,11 @@ const OrderBatch = ({navigation}) => {
               });
 
             fetch(
-              `${API.baseURL}/api/order/staff/getOrderBatch?status=DELIVERING`,
+              `${
+                API.baseURL
+              }/api/order/staff/getOrderBatch?status=DELIVERING&deliverDateSortType=ASC${
+                selectedTimeFrameId ? '&timeFrameId=' + selectedTimeFrameId : ''
+              }`,
               {
                 method: 'GET',
                 headers: {
@@ -491,7 +597,7 @@ const OrderBatch = ({navigation}) => {
         if (tokenId) {
           setLoading(true);
           fetch(
-            `${API.baseURL}/api/order/staff/getOrderBatch?status=PACKAGED`,
+            `${API.baseURL}/api/order/staff/getOrderBatch?status=PACKAGED&deliverDateSortType=ASC`,
             {
               method: 'GET',
               headers: {
@@ -530,7 +636,7 @@ const OrderBatch = ({navigation}) => {
             });
 
           fetch(
-            `${API.baseURL}/api/order/staff/getOrderBatch?status=DELIVERING`,
+            `${API.baseURL}/api/order/staff/getOrderBatch?status=DELIVERING&deliverDateSortType=ASC`,
             {
               method: 'GET',
               headers: {
@@ -681,6 +787,7 @@ const OrderBatch = ({navigation}) => {
             date={date ? date : new Date()}
             onConfirm={date => {
               setSelectSort(sortOptions);
+              setSelectedTimeFrameId('');
               setOpen(false);
               setDate(date);
               const fetchData = async () => {
@@ -782,6 +889,7 @@ const OrderBatch = ({navigation}) => {
               fetchData();
             }}
             onCancel={() => {
+              setSelectedTimeFrameId('');
               setSelectSort(sortOptions);
               setDate(null);
               setOpen(false);
@@ -792,7 +900,7 @@ const OrderBatch = ({navigation}) => {
                     setLoading(true);
 
                     fetch(
-                      `${API.baseURL}/api/order/staff/getOrderBatch?status=PACKAGED`,
+                      `${API.baseURL}/api/order/staff/getOrderBatch?status=PACKAGED&deliverDateSortType=ASC`,
                       {
                         method: 'GET',
                         headers: {
@@ -834,7 +942,7 @@ const OrderBatch = ({navigation}) => {
                       });
 
                     fetch(
-                      `${API.baseURL}/api/order/staff/getOrderBatch?status=DELIVERING`,
+                      `${API.baseURL}/api/order/staff/getOrderBatch?status=DELIVERING&deliverDateSortType=ASC`,
                       {
                         method: 'GET',
                         headers: {
@@ -1376,6 +1484,100 @@ const OrderBatch = ({navigation}) => {
                     onPress={() => {
                       setModalVisible(!modalVisible);
                       setSelectSort(sortOptions);
+                      setSelectedTimeFrameId('');
+                      const fetchData = async () => {
+                        if (auth().currentUser) {
+                          const tokenId = await auth().currentUser.getIdToken();
+                          if (tokenId) {
+                            setLoading(true);
+
+                            fetch(
+                              `${API.baseURL}/api/order/staff/getOrderBatch?status=PACKAGED&getOldOrderBatch=false&deliverDateSortType=ASC`,
+                              {
+                                method: 'GET',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  Authorization: `Bearer ${tokenId}`,
+                                },
+                              },
+                            )
+                              .then(async res => {
+                                if (res.status === 403 || res.status === 401) {
+                                  const tokenIdCheck = await auth()
+                                    .currentUser.getIdToken(true)
+                                    .catch(async err => {
+                                      await AsyncStorage.setItem(
+                                        'isDisableAccount',
+                                        '1',
+                                      );
+                                      return null;
+                                    });
+                                  if (!tokenIdCheck) {
+                                    throw new Error();
+                                  }
+                                  // Cac loi 403 khac thi handle duoi day neu co
+                                }
+                                return res.json();
+                              })
+                              .then(respond => {
+                                console.log('batch1', respond);
+                                if (respond.error) {
+                                  setLoading(false);
+                                  return;
+                                }
+                                setGroupListNotYetAssigned(respond);
+                                setLoading(false);
+                              })
+                              .catch(err => {
+                                console.log(err);
+                                setLoading(false);
+                              });
+
+                            fetch(
+                              `${API.baseURL}/api/order/staff/getOrderBatch?status=DELIVERING&getOldOrderBatch=false&deliverDateSortType=ASC`,
+                              {
+                                method: 'GET',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  Authorization: `Bearer ${tokenId}`,
+                                },
+                              },
+                            )
+                              .then(async res => {
+                                if (res.status === 403 || res.status === 401) {
+                                  const tokenIdCheck = await auth()
+                                    .currentUser.getIdToken(true)
+                                    .catch(async err => {
+                                      await AsyncStorage.setItem(
+                                        'isDisableAccount',
+                                        '1',
+                                      );
+                                      return null;
+                                    });
+                                  if (!tokenIdCheck) {
+                                    throw new Error();
+                                  }
+                                  // Cac loi 403 khac thi handle duoi day neu co
+                                }
+                                return res.json();
+                              })
+                              .then(respond => {
+                                console.log('batch2', respond);
+                                if (respond.error) {
+                                  setLoading(false);
+                                  return;
+                                }
+                                setGroupListAssigned(respond);
+                                setLoading(false);
+                              })
+                              .catch(err => {
+                                console.log(err);
+                                setLoading(false);
+                              });
+                          }
+                        }
+                      };
+                      fetchData();
                     }}>
                     <Image
                       resizeMode="contain"
@@ -1388,7 +1590,7 @@ const OrderBatch = ({navigation}) => {
                     />
                   </TouchableOpacity>
                 </View>
-                <Text
+                {/* <Text
                   style={{
                     color: 'black',
                     fontSize: 18,
@@ -1404,6 +1606,24 @@ const OrderBatch = ({navigation}) => {
                   }}>
                   {selectSort.map((item, index) => (
                     <ModalSortItem item={item} key={index} />
+                  ))}
+                </View> */}
+                <Text
+                  style={{
+                    color: 'black',
+                    fontSize: 18,
+                    fontWeight: 700,
+                  }}>
+                  Chọn khung giờ
+                </Text>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                    marginVertical: 10,
+                  }}>
+                  {timeFrameList.map((item, index) => (
+                    <TimeFrameItem item={item} key={index} />
                   ))}
                 </View>
                 <View

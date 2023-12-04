@@ -349,7 +349,7 @@ const OrderListForReport = ({navigation, route}) => {
             }}>
             {type === 'success' && 'Đơn thành công'}
             {type === 'delivering' && 'Đơn đang giao'}
-            {type === 'fail' && 'Đơn trả hàng'}
+            {type === 'fail' && 'Đơn thất bại'}
           </Text>
         </View>
 
@@ -427,7 +427,7 @@ const OrderListForReport = ({navigation, route}) => {
                             fontFamily: 'Roboto',
                             color: 'red',
                           }}>
-                          Đơn trả hàng
+                          Đơn thất bại
                         </Text>
                       )}
 
