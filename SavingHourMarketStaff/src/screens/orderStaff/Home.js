@@ -154,10 +154,19 @@ const Home = ({ navigation }) => {
     }
   };
 
-  const showToast = message => {
+  const showToast = (message) => {
     Toast.show({
       type: 'success',
       text1: 'Thành công',
+      text2: message + '👋',
+      visibilityTime: 3000,
+    });
+  };
+
+  const showToastFail = (message) => {
+    Toast.show({
+      type: 'unsuccess',
+      text1: 'Thất bại',
       text2: message + '👋',
       visibilityTime: 3000,
     });
@@ -411,6 +420,9 @@ const Home = ({ navigation }) => {
                 }
                 // Cac loi 403 khac thi handle duoi day neu co
               }
+              if (res.status === 409) {
+                showToastFail(res.json().message);
+              }
               return res.text();
             })
             .then(respond => {
@@ -452,6 +464,9 @@ const Home = ({ navigation }) => {
                   throw new Error();
                 }
                 // Cac loi 403 khac thi handle duoi day neu co
+                if (res.status === 409) {
+                  showToastFail(res.json().message);
+                }
               }
               return res.text();
             })
