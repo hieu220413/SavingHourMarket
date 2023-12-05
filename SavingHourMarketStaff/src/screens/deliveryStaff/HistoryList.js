@@ -899,19 +899,29 @@ const HistoryList = ({ navigation }) => {
               }
           }>
           {item?.status === 3 && 'Đang giao '}
-          {item?.status === 4 && 'Đã Giao'}
+          {item?.status === 4 && 'Giao thành công'}
           {item?.status === 5 && 'Giao thất bại'}
         </Text>
         <Text
           style={{
-            fontSize: 18,
+            fontSize: Dimensions.get('window').width * 0.04,
             fontFamily: FONTS.fontFamily,
             color: 'black',
             fontWeight: 'bold',
             paddingBottom: 5,
             maxWidth: '80%',
           }}>
-          {item?.customer.fullName}
+          {item?.code}
+        </Text>
+
+        <Text
+          style={{
+            fontSize: Dimensions.get('window').width * 0.045,
+            fontFamily: FONTS.fontFamily,
+            color: 'black',
+            paddingBottom: 5,
+          }}>
+          Tên: {item?.customer.fullName}
         </Text>
 
         <Text
@@ -1554,14 +1564,24 @@ const HistoryList = ({ navigation }) => {
                                     </Text>
                                     <Text
                                       style={{
-                                        fontSize: Dimensions.get('window').width * 0.048,
+                                        fontSize: Dimensions.get('window').width * 0.04,
                                         fontFamily: FONTS.fontFamily,
                                         color: 'black',
                                         fontWeight: 'bold',
                                         paddingBottom: 5,
                                         maxWidth: '80%',
                                       }}>
-                                      {item?.customer.fullName}
+                                      {item?.code}
+                                    </Text>
+
+                                    <Text
+                                      style={{
+                                        fontSize: Dimensions.get('window').width * 0.045,
+                                        fontFamily: FONTS.fontFamily,
+                                        color: 'black',
+                                        paddingBottom: 5,
+                                      }}>
+                                      Tên: {item?.customer.fullName}
                                     </Text>
 
                                     <Text

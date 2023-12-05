@@ -10,19 +10,19 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
-import React, {useState, useEffect, useCallback} from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
-import {icons} from '../../constants';
-import {COLORS, FONTS} from '../../constants/theme';
-import {format} from 'date-fns';
-import {useFocusEffect} from '@react-navigation/native';
-import {API} from '../../constants/api';
+import { icons } from '../../constants';
+import { COLORS, FONTS } from '../../constants/theme';
+import { format } from 'date-fns';
+import { useFocusEffect } from '@react-navigation/native';
+import { API } from '../../constants/api';
 import LoadingScreen from '../../components/LoadingScreen';
 import database from '@react-native-firebase/database';
-import {checkSystemState} from '../../common/utils';
+import { checkSystemState } from '../../common/utils';
 
-const OrderDetails = ({navigation, route}) => {
+const OrderDetails = ({ navigation, route }) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
@@ -184,8 +184,7 @@ const OrderDetails = ({navigation, route}) => {
     const tokenId = await auth().currentUser.getIdToken();
     if (tokenId) {
       fetch(
-        `${API.baseURL}/api/order/deliveryStaff/${
-          bool === true ? 'confirmSucceeded' : 'confirmFail'
+        `${API.baseURL}/api/order/deliveryStaff/${bool === true ? 'confirmSucceeded' : 'confirmFail'
         }?orderId=${id}`,
         {
           method: 'PUT',
@@ -239,7 +238,7 @@ const OrderDetails = ({navigation, route}) => {
             <Image
               source={icons.leftArrow}
               resizeMode="contain"
-              style={{width: 35, height: 35, tintColor: COLORS.primary}}
+              style={{ width: 35, height: 35, tintColor: COLORS.primary }}
             />
           </TouchableOpacity>
           <Text
@@ -261,11 +260,11 @@ const OrderDetails = ({navigation, route}) => {
             <View
               style={
                 item?.status === 5 && 'Đơn hàng thất bại'
-                  ? {padding: 20, backgroundColor: COLORS.red}
-                  : {padding: 20, backgroundColor: COLORS.primary}
+                  ? { padding: 20, backgroundColor: COLORS.red }
+                  : { padding: 20, backgroundColor: COLORS.primary }
               }>
               <Text
-                style={{color: 'white', fontSize: 18, fontFamily: 'Roboto'}}>
+                style={{ color: 'white', fontSize: 18, fontFamily: 'Roboto' }}>
                 {item?.status === 0 && 'Đơn hàng đang chờ xác nhận'}
                 {item?.status === 1 && 'Đơn hàng đang đóng gói'}
                 {item?.status === 2 && 'Đơn hàng đã đóng gói'}
@@ -276,7 +275,7 @@ const OrderDetails = ({navigation, route}) => {
               </Text>
             </View>
             <View
-              style={{padding: 20, backgroundColor: 'white', marginBottom: 20}}>
+              style={{ padding: 20, backgroundColor: 'white', marginBottom: 20 }}>
               {/* pickup location */}
               <View
                 style={{
@@ -287,22 +286,25 @@ const OrderDetails = ({navigation, route}) => {
                   borderBottomWidth: 0.75,
                 }}>
                 <View
-                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                   <Image
-                    style={{width: 20, height: 20}}
+                    style={{ width: 20, height: 20 }}
                     resizeMode="contain"
                     source={icons.location}
                   />
                   <Text
-                    style={{fontSize: 20, color: 'black', fontWeight: 'bold'}}>
+                    style={{ fontSize: 20, color: 'black', fontWeight: 'bold' }}>
                     Thông tin giao hàng
                   </Text>
                 </View>
                 <View
-                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
-                  <View style={{width: 20}} />
-                  <View style={{gap: 8}}>
-                    <View style={{gap: 3}}>
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <View style={{ width: 20 }} />
+                  <View style={{ gap: 8 }}>
+                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                      Mã đơn hàng : {item.code}
+                    </Text>
+                    <View style={{ gap: 3 }}>
                       <Text
                         style={{
                           fontSize: 18,
@@ -315,16 +317,16 @@ const OrderDetails = ({navigation, route}) => {
                       </Text>
                     </View>
                     {item.timeFrame && (
-                      <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                      <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
                         {item?.timeFrame
                           ? `${item?.timeFrame?.fromHour.slice(
-                              0,
-                              5,
-                            )} đến ${item?.timeFrame?.toHour.slice(0, 5)}`
+                            0,
+                            5,
+                          )} đến ${item?.timeFrame?.toHour.slice(0, 5)}`
                           : ''}
                       </Text>
                     )}
-                    <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
                       Ngày giao hàng:{' '}
                       {format(new Date(item?.deliveryDate), 'dd/MM/yyyy')}
                     </Text>
@@ -335,9 +337,9 @@ const OrderDetails = ({navigation, route}) => {
                           navigation.navigate('EditDeliveryDate', {
                             timeFrame: item?.timeFrame
                               ? `${item?.timeFrame?.fromHour.slice(
-                                  0,
-                                  5,
-                                )} đến ${item?.timeFrame?.toHour.slice(0, 5)}`
+                                0,
+                                5,
+                              )} đến ${item?.timeFrame?.toHour.slice(0, 5)}`
                               : '',
                             deliveryDate: item?.deliveryDate,
                             picked: route.params.picked,
@@ -386,25 +388,25 @@ const OrderDetails = ({navigation, route}) => {
                   gap: 10,
                 }}>
                 <View
-                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                   <Image
-                    style={{width: 20, height: 20}}
+                    style={{ width: 20, height: 20 }}
                     resizeMode="contain"
                     source={icons.phone}
                   />
                   <Text
-                    style={{fontSize: 20, color: 'black', fontWeight: 'bold'}}>
+                    style={{ fontSize: 20, color: 'black', fontWeight: 'bold' }}>
                     Thông tin liên lạc
                   </Text>
                 </View>
                 <View
-                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
-                  <View style={{width: 20}} />
-                  <View style={{gap: 5}}>
-                    <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <View style={{ width: 20 }} />
+                  <View style={{ gap: 5 }}>
+                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
                       {item.customer.fullName}
                     </Text>
-                    <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
                       {item.customer.phone}
                     </Text>
                   </View>
@@ -437,7 +439,7 @@ const OrderDetails = ({navigation, route}) => {
                     source={{
                       uri: product.images[0].imageUrl,
                     }}
-                    style={{flex: 4, width: '100%', height: '95%'}}
+                    style={{ flex: 4, width: '100%', height: '95%' }}
                   />
                   <View
                     style={{
@@ -569,10 +571,10 @@ const OrderDetails = ({navigation, route}) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
+                  style={{ fontSize: 20, fontFamily: 'Roboto', color: 'black' }}>
                   Trạng thái
                 </Text>
-                <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
+                <Text style={{ fontSize: 20, fontFamily: 'Roboto' }}>
                   {item.paymentStatus === 0
                     ? 'Chưa thanh toán'
                     : 'Đã thanh toán'}
@@ -589,10 +591,10 @@ const OrderDetails = ({navigation, route}) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
+                  style={{ fontSize: 20, fontFamily: 'Roboto', color: 'black' }}>
                   Phương thức
                 </Text>
-                <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
+                <Text style={{ fontSize: 20, fontFamily: 'Roboto' }}>
                   {item.paymentMethod === 0 ? 'COD' : 'VN Pay'}
                 </Text>
               </View>
@@ -634,10 +636,10 @@ const OrderDetails = ({navigation, route}) => {
                   borderTopWidth: 0.75,
                 }}>
                 <Text
-                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
+                  style={{ fontSize: 20, fontFamily: 'Roboto', color: 'black' }}>
                   Tổng tiền sản phẩm:
                 </Text>
-                <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
+                <Text style={{ fontSize: 20, fontFamily: 'Roboto' }}>
                   {item.totalPrice.toLocaleString('vi-VN', {
                     style: 'currency',
                     currency: 'VND',
@@ -654,10 +656,10 @@ const OrderDetails = ({navigation, route}) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
+                  style={{ fontSize: 20, fontFamily: 'Roboto', color: 'black' }}>
                   Phí giao hàng:
                 </Text>
-                <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
+                <Text style={{ fontSize: 20, fontFamily: 'Roboto' }}>
                   {item.shippingFee.toLocaleString('vi-VN', {
                     style: 'currency',
                     currency: 'VND',
@@ -674,10 +676,10 @@ const OrderDetails = ({navigation, route}) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
+                  style={{ fontSize: 20, fontFamily: 'Roboto', color: 'black' }}>
                   Giá đã giảm:
                 </Text>
-                <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
+                <Text style={{ fontSize: 20, fontFamily: 'Roboto' }}>
                   {item.totalDiscountPrice.toLocaleString('vi-VN', {
                     style: 'currency',
                     currency: 'VND',
@@ -693,7 +695,7 @@ const OrderDetails = ({navigation, route}) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
+                  style={{ fontSize: 20, fontFamily: 'Roboto', color: 'black' }}>
                   Tổng cộng:
                 </Text>
                 <Text
@@ -734,7 +736,7 @@ const OrderDetails = ({navigation, route}) => {
             marginTop: 20,
             elevation: 10,
           }}>
-          <View style={{width: '95%'}}>
+          <View style={{ width: '95%' }}>
             <TouchableOpacity
               onPress={() => {
                 confirmOrder(true);
@@ -778,7 +780,7 @@ const OrderDetails = ({navigation, route}) => {
             marginTop: 20,
             elevation: 10,
           }}>
-          <View style={{width: '95%'}}>
+          <View style={{ width: '95%' }}>
             <TouchableOpacity
               onPress={() => {
                 confirmOrder(false);
