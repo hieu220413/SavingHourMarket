@@ -229,7 +229,9 @@ const EditPickuppoint = ({
     >
       {/* // modal header */}
       <div className="modal__container-header">
-        <h3 className="modal__container-header-title">Thêm điểm giao hàng</h3>
+        <h3 className="modal__container-header-title">
+          Chỉnh sửa điểm giao hàng
+        </h3>
         <FontAwesomeIcon onClick={handleClose} icon={faXmark} />
       </div>
       {/* ****************** */}
