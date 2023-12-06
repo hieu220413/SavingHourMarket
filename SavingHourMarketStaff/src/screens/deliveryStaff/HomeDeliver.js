@@ -842,14 +842,24 @@ const HomeDeliver = ({ navigation }) => {
         </Text>
         <Text
           style={{
-            fontSize: Dimensions.get('window').width * 0.05,
+            fontSize: Dimensions.get('window').width * 0.048,
             fontFamily: FONTS.fontFamily,
             color: 'black',
             fontWeight: 'bold',
             paddingBottom: 5,
             maxWidth: '80%',
           }}>
-          {item?.customer.fullName}
+          {item?.code}
+        </Text>
+
+        <Text
+          style={{
+            fontSize: Dimensions.get('window').width * 0.045,
+            fontFamily: FONTS.fontFamily,
+            color: 'black',
+            paddingBottom: 5,
+          }}>
+          Tên: {item?.customer.fullName}
         </Text>
 
         <Text
@@ -1424,14 +1434,24 @@ const HomeDeliver = ({ navigation }) => {
                                     </Text>
                                     <Text
                                       style={{
-                                        fontSize: Dimensions.get('window').width * 0.05,
+                                        fontSize: Dimensions.get('window').width * 0.04,
                                         fontFamily: FONTS.fontFamily,
                                         color: 'black',
                                         fontWeight: 'bold',
                                         paddingBottom: 5,
                                         maxWidth: '80%',
                                       }}>
-                                      {item?.customer.fullName}
+                                      {item?.code}
+                                    </Text>
+
+                                    <Text
+                                      style={{
+                                        fontSize: Dimensions.get('window').width * 0.045,
+                                        fontFamily: FONTS.fontFamily,
+                                        color: 'black',
+                                        paddingBottom: 5,
+                                      }}>
+                                      Tên: {item?.customer.fullName}
                                     </Text>
 
                                     <Text

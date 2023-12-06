@@ -52,11 +52,22 @@ public class FeedBack {
     private FeedbackObject object;
 
     @ManyToOne(
-            fetch = FetchType.EAGER
+            fetch = FetchType.EAGER,
+            cascade = CascadeType.ALL
     )
     @JoinColumn(
             name = "customer_id",
             referencedColumnName = "id"
     )
     private Customer customer;
+
+    @OneToOne(
+            fetch = FetchType.EAGER,
+            cascade = CascadeType.ALL
+    )
+    @JoinColumn(
+            name = "order_id",
+            referencedColumnName = "id"
+    )
+    private Order order;
 }

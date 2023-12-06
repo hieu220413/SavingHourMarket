@@ -13,6 +13,7 @@ import org.hibernate.annotations.UuidGenerator;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.util.List;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -24,6 +25,8 @@ public class FeedbackCreate {
     private Integer rate;
 
     private String message;
+
+    private UUID orderId;
 
     private List<String> imageUrls;
 
