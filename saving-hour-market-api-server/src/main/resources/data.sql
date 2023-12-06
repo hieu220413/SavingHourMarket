@@ -105,6 +105,19 @@ SET @NuocSelectLilyDescription = '- Sản phẩm cải tiến hương lily và h
 \n- Bổ sung thêm size túi giúp người tiêu dùng tiết kiệm hơn khi mua chai, thích hợp cho mọi gia đình.
 \n- Sản xuất bởi: Công ty Cổ phần Bột giặt LIX là đơn vị nổi tiếng trên thị trường về hóa chất tẩy rửa với nhiều sản phẩm mang thương hiệu LIX được ưa chuộng trên thị trường.';
 
+SET @NuocTayDuckDescription = 'Với công thức tẩy rửa nhà tắm siêu ưu việt, nước tẩy bồn cầu Duck giúp tiêu diệt 99,9% vi khuẩn từ sâu bên trong mép bồn cầu, loại bỏ cặn bẩn, mùi hôi hiệu quả. Nước tẩy bồn cầu & nhà tắm Duck Mr Muscle 700ml tẩy sạch vi khuẩn mà không có hại cho da tay.
+\n\nĐôi nét về thương hiệu: Duck là thương hiệu chuyên sản xuất và cung cấp các mặt hàng tẩy rửa bề mặt đồ dùng trong nhà tắm nổi tiếng vậ hiện đang thuộc quản lý của Công ty Tập đoàn S. C.Johnson & Son. Hiện nay, Duck đã trở thành cái tên nổi bật qua nhiều thế hệ người tiêu dùng Việt Nam, mang đến đa dạng sản phẩm đat chuẩn chất lượng, với quy trình kiểm định hiện đại, an toàn cho khách hàng.
+\n\nƯu điểm của sản phẩm:
+\n- Với công thức tẩy rửa cực mạnh, Duck Mr. Muscle 700ml có tác dụng khử mùi, giúp tẩy sạch vết gỉ sét, vết hóa vôi, vết xà phòng đọng lại, vết thâm đen trong kẽ gạch, vết cáu bẩn trên bồn cầu...
+\n- Sản phẩm còn diệt trùng hiệu quả đến 99.9% ngay khi tiếp xúc trên bề mặt, cho bồn cầu sạch bóng và trắng sáng, mang lại hương thơm tự nhiên cho không gian.
+\n- Có thiết kế dạng chai tiện lợi, dễ sử dụng, giúp phân tán chất lỏng đến tất cả mọi bề mặt, mọi vị trí mong muốn, cho hiệu quả vệ sinh cao hơn.';
+
+SET @NuocTaySWATDescription = 'Nước tẩy nhà tắm Swat loại bỏ nhanh vết bẩn, vết ố vàng, mảng bám, mùi hôi khó chịu. Nước tẩy nhà tắm giúp giữ cho nhà tắm luôn sạch bóng như mới, đảm bảo vệ sinh an toàn cho gia đình bạn. Nước tẩy nhà tắm Swat siêu sạch 1 lít sạch nhanh vết bẩn, sạch cả vi khuẩn.
+\n\nĐôi nét về thương hiệu: Thương hiệu Swat hiện thuộc công ty TNHH Sản xuất – Thương mại CLEAN HOUSE và hiện đang là một trong những nhà sản xuất các mặt hàng hóa phẩm chuyên tẩy rửa và vệ sinh nhà cửa, hàng gia dụng nổi tiếng hiện nay. Với danh hiệu top 50 thương hiệu - nhãn hiệu nổi tiếng trong ngành hàng hóa phẩm, Swat đã tạo được ấn tượng trong lòng phần đông người tiêu dùng Việt, thở thành người bạn đồng hành trong công việc vệ sinh nhà cửa mỗi ngày.
+\n\nCông dụng: Diệt nhanh, diệt gọn, diệt sạch các vết bẩn, vết ố vàng, vết rỉ sét, vết vôi hóa, vết xà phòng...đọng lại trong nhà tắm như mặt sàn, bồn tắm, bồn rửa mặt. Đảm bảo vệ sinh và an toàn cho gia đình bạn
+\n\nLưu ý: Để xa tầm tay trẻ em. Mang găng tay và giày bảo hộ (ủng) khi chà rửa. Không trộn chung với bất kỳ sản phẩm hay hóa chất khác. Tránh tiếp xúc với quần áo, da, mắt. Nếu dính vào mắt rửa sạch ngay với nhiều nước và đến kiểm tra tại cơ sở y tê
+';
+
 SET @ChaGioTomCuaDescription = 'Chả giò tôm cua Vissan được sản xuất theo quy trình khép kín với những nguyên liệu tự nhiên, được chọn lựa kỹ lưỡng từ khâu chọn lựa đến khâu chế biến đảm bảo chất lượng người tiêu dùng. Với chả giò tôm cua người dùng sẽ cảm nhận được vị thịt tôm và cua tự nhiên, hương vị của các loại gia vị hòa quyện, giòn rụm của bánh đa khó quên.
 \nSản phẩm được đóng gói an toàn, cuốn sẵn tiện dụng chỉ việc cho vào rán kèm nước chấm pha sẵn thơm ngon đặc trưng, tiện dụng cho bữa cơm của gia đình bạn.
 \n\nThành phần: Bánh tráng (gạo, nước, bột năng, muối), tôm (20%), cua (10%), nạc heo, mỡ heo, tôm, củ sắn, khoai môn, hành, tỏi, nấm mèo, bún tàu, đường, muối i-ốt, tiêu, chất điều vị (621).';
@@ -327,6 +340,7 @@ INSERT INTO `saving_hour_market`.`supermarket_address` (`id`, `address`, `superm
             (UUID_TO_BIN('ec5e2090-56dc-11ee-8a50-a85e45c41921'), '48 Cầu Xây,Tân Phú,Thủ Đức,Hồ Chí Minh', UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('ec5e8dca-56dc-11ee-8a50-a85e45c41921'), '191 Quang Trung, Hiệp Phú, Thủ Đức, Hồ Chí Minh', UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0e1e-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('ec5e1f3a-56dc-11ee-8a50-a85e45c41921'), '82 Ngô Quyền,Hiệp Phú,Quận 9,Hồ Chí Minh', UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0e1e-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ea6f09c8-89ad-11ee-bef9-a85e45c41921'), '702 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh', UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('ec5e8f16-56dc-11ee-8a50-a85e45c41921'), '172 Nguyễn Xiển,Trường Thạnh,Thủ Đức,Hồ Chí Minh', UUID_TO_BIN('accf028b-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('ec5e9073-56dc-11ee-8a50-a85e45c41921'), '25 Cầu Xây,Tân Phú,Thủ Đức,Hồ Chí Minh', UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('ec5e9414-56dc-11ee-8a50-a85e45c41921'), '344 Lê Văn Việt, Tăng Nhơn Phú B, Thủ Đức, Hồ Chí Minh', UUID_TO_BIN('accf0709-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0e1e-5541-11ee-8a50-a85e45c41921')),
@@ -431,8 +445,8 @@ INSERT INTO `saving_hour_market`.`product` (`id`, `name`, `unit`, `price_listed`
             (UUID_TO_BIN('ea6e8010-89ad-11ee-bef9-a85e45c41921'), 'Nước rửa chén Gift trà chanh 800g', 'chai', 32000, @NuocRuaChenGiftDescription, @enable, UUID_TO_BIN('ea6d53d6-89ad-11ee-bef9-a85e45c41921'), UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('ea6eedcf-89ad-11ee-bef9-a85e45c41921'), 'Nước lau sàn Power 100 thiên nhiên 3.8kg', 'chai', 95000, @NuocPower100Description, @enable, UUID_TO_BIN('ea6d7645-89ad-11ee-bef9-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('ea6efe32-89ad-11ee-bef9-a85e45c41921'), 'Nước lau sàn Select lily 3.6L', 'chai', 84000, @NuocSelectLilyDescription, @enable, UUID_TO_BIN('ea6d7645-89ad-11ee-bef9-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921')),
---             (UUID_TO_BIN(''), '', '', 0, @Description, @enable, UUID_TO_BIN('ea6d814d-89ad-11ee-bef9-a85e45c41921'), UUID_TO_BIN('')),
---             (UUID_TO_BIN(''), '', '', 0, @Description, @enable, UUID_TO_BIN('ea6d814d-89ad-11ee-bef9-a85e45c41921'), UUID_TO_BIN('')),
+            (UUID_TO_BIN('ea6f5e5b-89ad-11ee-bef9-a85e45c41921'), 'Nước tẩy Duck đậm đặc 700ml', 'chai', 40000, @NuocTayDuckDescription, @enable, UUID_TO_BIN('ea6d814d-89ad-11ee-bef9-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ea6f7d41-89ad-11ee-bef9-a85e45c41921'), 'Nước tẩy nhà tắm SWAT 1L', 'chai', 35000, @NuocTaySWATDescription, @enable, UUID_TO_BIN('ea6d814d-89ad-11ee-bef9-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('accf2c1d-5541-11ee-8a50-a85e45c41921'), 'Chả Giò Tôm Cua 500g', 'bịch', 75000, @ChaGioTomCuaDescription, @enable, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0709-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('accf2d37-5541-11ee-8a50-a85e45c41921'), 'Giò Heo Xông Khói 500g', 'bịch', 115000, @GioHeoXongKhoi, @enable, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0709-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('accf2f65-5541-11ee-8a50-a85e45c41921'), 'Kem Wall’s Oreo hộp 750ml', 'hộp', 100000, @KemWallOreo, @enable, UUID_TO_BIN('accf4210-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
@@ -481,6 +495,10 @@ INSERT INTO `saving_hour_market`.`product_image` (`id`, `image_url`, `product_id
             (UUID_TO_BIN('ea6e8d85-89ad-11ee-bef9-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnuoc-lau-san-power-100-thien-nhien.jpg?alt=media', UUID_TO_BIN('ea6eedcf-89ad-11ee-bef9-a85e45c41921')),
 --  Nước lau sàn Select lily 3.6L
             (UUID_TO_BIN('ea6e98dd-89ad-11ee-bef9-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnuoc-lau-san-select-lily.jpg?alt=media', UUID_TO_BIN('ea6efe32-89ad-11ee-bef9-a85e45c41921')),
+--  Nước tẩy Duck đậm đặc 700ml
+            (UUID_TO_BIN('ea6f15b5-89ad-11ee-bef9-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnuoc-tay-duck.jpg?alt=media', UUID_TO_BIN('ea6f5e5b-89ad-11ee-bef9-a85e45c41921')),
+--  Nước tẩy nhà tắm SWAT 1L
+            (UUID_TO_BIN('ea6f36f7-89ad-11ee-bef9-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnuoc-tay-nha-tam-swat.jpg?alt=media', UUID_TO_BIN('ea6f7d41-89ad-11ee-bef9-a85e45c41921')),
 --  Chả Giò Tôm Cua 500g
             (UUID_TO_BIN('a4e38d2e-78cf-11ee-a832-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fcha-gio-tom-cua-500g.jpg?alt=media', UUID_TO_BIN('accf2c1d-5541-11ee-8a50-a85e45c41921')),
 --  Giò Heo Xông Khói 500g
@@ -560,6 +578,12 @@ SET @Power100FirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 40 DAY),'%Y-%m-%
 
 --  Nước lau sàn Select lily 3.6L
 SET @SelectLilyFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 40 DAY),'%Y-%m-%d');
+
+--  Nước tẩy Duck đậm đặc 700ml
+SET @DuckFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 45 DAY),'%Y-%m-%d');
+
+--  Nước tẩy nhà tắm SWAT 1L
+SET @SwatFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 45 DAY),'%Y-%m-%d');
 
 --  Chả Giò Tôm Cua 500g (2023-11-20)
 SET @ChaGioTomCuaFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 15 DAY),'%Y-%m-%d');
@@ -656,6 +680,10 @@ INSERT INTO `saving_hour_market`.`product_batch` (`id`, `price`, `price_original
             (UUID_TO_BIN('ea6ec13a-89ad-11ee-bef9-a85e45c41921'), 80000, 70000, 30, '2023-10-30 00:00:00', @Power100FirstBatchDate, UUID_TO_BIN('ea6eedcf-89ad-11ee-bef9-a85e45c41921'), UUID_TO_BIN('ec5e2090-56dc-11ee-8a50-a85e45c41921')),
 --  Nước lau sàn Select lily 3.6L
             (UUID_TO_BIN('ea6ece6c-89ad-11ee-bef9-a85e45c41921'), 75000, 66000, 30, '2023-10-30 00:00:00', @SelectLilyFirstBatchDate, UUID_TO_BIN('ea6efe32-89ad-11ee-bef9-a85e45c41921'), UUID_TO_BIN('ec5e2090-56dc-11ee-8a50-a85e45c41921')),
+--  Nước tẩy Duck đậm đặc 700ml
+            (UUID_TO_BIN('ea6f4793-89ad-11ee-bef9-a85e45c41921'), 33000, 28000, 30, '2023-10-30 00:00:00', @DuckFirstBatchDate, UUID_TO_BIN('ea6f5e5b-89ad-11ee-bef9-a85e45c41921'), UUID_TO_BIN('ea6f09c8-89ad-11ee-bef9-a85e45c41921')),
+--  Nước tẩy nhà tắm SWAT 1L
+            (UUID_TO_BIN('ea6f539e-89ad-11ee-bef9-a85e45c41921'), 31000, 26000, 30, '2023-10-30 00:00:00', @SwatFirstBatchDate, UUID_TO_BIN('ea6f7d41-89ad-11ee-bef9-a85e45c41921'), UUID_TO_BIN('ea6f09c8-89ad-11ee-bef9-a85e45c41921')),
 --  Chả Giò Tôm Cua 500g
             (UUID_TO_BIN('ec5ea831-56dc-11ee-8a50-a85e45c41921'), 55000, 48000, 15, '2023-10-15 00:00:00', @ChaGioTomCuaFirstBatchDate, UUID_TO_BIN('accf2c1d-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e9414-56dc-11ee-8a50-a85e45c41921')),
 --  Giò Heo Xông Khói 500g
@@ -721,25 +749,35 @@ INSERT INTO `saving_hour_market`.`product_batch` (`id`, `price`, `price_original
 -- Discount
 INSERT INTO `saving_hour_market`.`discount` (`id`, `name`, `percentage`, `quantity`, `spent_amount_required`, `expired_date`, `status`, `image_url`, `product_category_id`)
 --     VALUES (`id`, `name`, `percentage`, `quantity`, `spent_amount_required`, `expired_date`, `status`);
-    VALUES  (UUID_TO_BIN('accf51d6-5541-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi 20%', 20, 50, 150000, DATE_FORMAT((CURDATE() + INTERVAL 20 DAY),'%Y-%m-%d'), @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fbig-sale-2.jpg?alt=media', UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921')),
+    VALUES
+            -- Đồ uống category
             (UUID_TO_BIN('ec5e5994-56dc-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi 20%', 20, 50, 150000, DATE_FORMAT((CURDATE() + INTERVAL 30 DAY),'%Y-%m-%d'), @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fbig-sale.jpg?alt=media', UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('ec5e5e8d-56dc-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi 20%', 20, 50, 150000, DATE_FORMAT((CURDATE() + INTERVAL 35 DAY),'%Y-%m-%d'), @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2F20-discount.jpg?alt=media', UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921')),
---             (UUID_TO_BIN('accf52f8-5541-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi 10%', 10, 40, 90000, '2023-11-20 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', null, UUID_TO_BIN('accf4875-5541-11ee-8a50-a85e45c41921')),
---             (UUID_TO_BIN('ec5e6233-56dc-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi 10%', 10, 40, 90000, '2023-11-20 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', null, UUID_TO_BIN('accf4766-5541-11ee-8a50-a85e45c41921')),
---             (UUID_TO_BIN('ec5e65cb-56dc-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi 10%', 10, 40, 90000, '2023-11-20 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', null, UUID_TO_BIN('accf4656-5541-11ee-8a50-a85e45c41921')),
---             (UUID_TO_BIN('ec5e68fd-56dc-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi 10%', 10, 40, 90000, '2023-11-20 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', null, UUID_TO_BIN('accf4547-5541-11ee-8a50-a85e45c41921')),
---             (UUID_TO_BIN('ec5e6c43-56dc-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi 10%', 10, 40, 90000, '2023-11-20 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', null, UUID_TO_BIN('accf4320-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e68fd-56dc-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi 40%', 40, 40, 300000, DATE_FORMAT((CURDATE() + INTERVAL 25 DAY),'%Y-%m-%d'), @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fbig-sale-2.jpg?alt=media', UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e6c43-56dc-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi 15%', 15, 40, 120000, DATE_FORMAT((CURDATE() + INTERVAL 35 DAY),'%Y-%m-%d'), @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fbig-discount.jpg?alt=media', UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921')),
+            -- Thực phẩm category
+            (UUID_TO_BIN('accf51d6-5541-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi 20%', 20, 50, 150000, DATE_FORMAT((CURDATE() + INTERVAL 20 DAY),'%Y-%m-%d'), @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fbig-sale-2.jpg?alt=media', UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('ec5e574e-56dc-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi 10%', 10, 40, 90000, '2023-09-20 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2F10-discount.jpg?alt=media', UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921')),
---             (UUID_TO_BIN('accf5414-5541-11ee-8a50-a85e45c41921'), 'Siêu Ưu Đãi Khuyến mãi 35%', 35, 25, 300000, '2023-10-20 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fbig-sale.png?alt=media', null, UUID_TO_BIN('accf442f-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf6fdd-5541-11ee-8a50-a85e45c41921'), 'Tuần lễ vàng - Ưu Đãi lớn 25%', 25, 35, 250000, DATE_FORMAT((CURDATE() + INTERVAL 15 DAY),'%Y-%m-%d'), @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fbig-discount.jpg?alt=media', UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('accf7135-5541-11ee-8a50-a85e45c41921'), 'Ưu Đãi 5%', 5, 100, 60000, DATE_FORMAT((CURDATE() + INTERVAL 25 DAY),'%Y-%m-%d'), @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fmega-sale.jpg?alt=media', UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921')),
---             (UUID_TO_BIN('ec5e6db5-56dc-11ee-8a50-a85e45c41921'), 'Ưu Đãi 5%', 5, 100, 60000, '2023-11-20 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', null, UUID_TO_BIN('accf3fdf-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf77a1-5541-11ee-8a50-a85e45c41921'), 'Ưu Đãi lớn - Giảm giá 20%', 20, 0, 200000, DATE_FORMAT((CURDATE() + INTERVAL 20 DAY),'%Y-%m-%d'), @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2F20-discount.jpg?alt=media', UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921')),
+            -- Chăm sóc sức khỏe category
+            (UUID_TO_BIN('ec5e5e8d-56dc-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi 20%', 20, 50, 150000, DATE_FORMAT((CURDATE() + INTERVAL 35 DAY),'%Y-%m-%d'), @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2F20-discount.jpg?alt=media', UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf6fdd-5541-11ee-8a50-a85e45c41921'), 'Tuần lễ vàng - Ưu Đãi lớn 25%', 25, 35, 250000, DATE_FORMAT((CURDATE() + INTERVAL 15 DAY),'%Y-%m-%d'), @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fbig-discount.jpg?alt=media', UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('ec5e6f17-56dc-11ee-8a50-a85e45c41921'), 'Ưu Đãi 5%', 5, 100, 60000, DATE_FORMAT((CURDATE() + INTERVAL 30 DAY) ,'%Y-%m-%d'), @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fmega-sale.jpg?alt=media', UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921')),
---             (UUID_TO_BIN('ec5e713f-56dc-11ee-8a50-a85e45c41921'), 'Ưu Đãi 5%', 5, 100, 60000, '2023-11-20 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', null, UUID_TO_BIN('accf4656-5541-11ee-8a50-a85e45c41921')),
+            -- Vật tư vệ sinh category
             (UUID_TO_BIN('accf7525-5541-11ee-8a50-a85e45c41921'), 'Giảm giá bất ngờ - Ưu đãi 15%', 15, 25, 15000, '2023-09-20 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fsuper-sale.jpg?alt=media', UUID_TO_BIN('accf0055-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('accf52f8-5541-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi lớn 35%', 35, 40, 200000, DATE_FORMAT((CURDATE() + INTERVAL 15 DAY) ,'%Y-%m-%d'), @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fmega-sale.jpg?alt=media', UUID_TO_BIN('accf0055-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e6233-56dc-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi sốc 25%', 25, 40, 150000, DATE_FORMAT((CURDATE() + INTERVAL 20 DAY) ,'%Y-%m-%d'), @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fbig-sale-2.jpg?alt=media', UUID_TO_BIN('accf0055-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e65cb-56dc-11ee-8a50-a85e45c41921'), 'Giảm giá, Ưu Đãi 10%', 10, 40, 90000, DATE_FORMAT((CURDATE() + INTERVAL 30 DAY) ,'%Y-%m-%d'), @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fbig-discount.jpg?alt=media', UUID_TO_BIN('accf0055-5541-11ee-8a50-a85e45c41921'));
+--             (UUID_TO_BIN('accf5414-5541-11ee-8a50-a85e45c41921'), 'Siêu Ưu Đãi Khuyến mãi 35%', 35, 25, 300000, '2023-10-20 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fbig-sale.png?alt=media', null, UUID_TO_BIN('accf442f-5541-11ee-8a50-a85e45c41921')),
+
+
+--             (UUID_TO_BIN('ec5e6db5-56dc-11ee-8a50-a85e45c41921'), 'Ưu Đãi 5%', 5, 100, 60000, '2023-11-20 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', null, UUID_TO_BIN('accf3fdf-5541-11ee-8a50-a85e45c41921')),
+
+--             (UUID_TO_BIN('ec5e713f-56dc-11ee-8a50-a85e45c41921'), 'Ưu Đãi 5%', 5, 100, 60000, '2023-11-20 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', null, UUID_TO_BIN('accf4656-5541-11ee-8a50-a85e45c41921')),
+
 --             (UUID_TO_BIN('accf7392-5541-11ee-8a50-a85e45c41921'), 'Ưu Đãi Tháng 10 - Giảm giá 20%', 20, 80, 200000, '2023-11-01 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', null, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921')),
 --             (UUID_TO_BIN('accf765b-5541-11ee-8a50-a85e45c41921'), 'Ưu Đãi Tháng 8 - Giảm giá 20%', 20, 80, 200000, '2023-09-01 00:00:00', @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fspecial-diascount-banner.png?alt=media', null, UUID_TO_BIN('accf3fdf-5541-11ee-8a50-a85e45c41921')),
-            (UUID_TO_BIN('accf77a1-5541-11ee-8a50-a85e45c41921'), 'Ưu Đãi lớn - Giảm giá 20%', 20, 0, 200000, DATE_FORMAT((CURDATE() + INTERVAL 20 DAY),'%Y-%m-%d'), @enable, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2F20-discount.jpg?alt=media', UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'));
+
 
 
 
@@ -1509,15 +1547,6 @@ INSERT INTO `saving_hour_market`.`transaction` (`id`, `payment_method`, `payment
 
 
 
-
-
--- 'ea6f09c8-89ad-11ee-bef9-a85e45c41921'
--- 'ea6f15b5-89ad-11ee-bef9-a85e45c41921'
--- 'ea6f36f7-89ad-11ee-bef9-a85e45c41921'
--- 'ea6f4793-89ad-11ee-bef9-a85e45c41921'
--- 'ea6f539e-89ad-11ee-bef9-a85e45c41921'
--- 'ea6f5e5b-89ad-11ee-bef9-a85e45c41921'
--- 'ea6f7d41-89ad-11ee-bef9-a85e45c41921'
 -- 'ea6fa014-89ad-11ee-bef9-a85e45c41921'
 -- 'ea6fbbd7-89ad-11ee-bef9-a85e45c41921'
 -- 'ea6fc673-89ad-11ee-bef9-a85e45c41921'
