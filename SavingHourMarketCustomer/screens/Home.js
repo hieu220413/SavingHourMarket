@@ -351,7 +351,7 @@ const Home = ({ navigation }) => {
           // marginLeft: 15,
           // marginRight: 20,
           alignItems: 'center',
-          maxWidth: '30%',
+          width: (Dimensions.get('window').width - 20*2 - 40 - 21) / 4,
           shadowColor: '#000',
           shadowOffset: {
             width: 0,
@@ -372,12 +372,13 @@ const Home = ({ navigation }) => {
           }}
         />
         <Text
+          numberOfLines={2}
           style={{
             color: 'black',
             fontFamily: FONTS.fontFamily,
-            fontSize: Dimensions.get('window').width * 0.04,
+            fontSize: Dimensions.get('window').width * 0.03,
             marginTop: 10,
-            textAlign: 'center',
+            textAlign: 'center'      
           }}>
           {data.name}
         </Text>
