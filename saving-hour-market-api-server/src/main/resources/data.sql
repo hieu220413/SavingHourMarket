@@ -197,6 +197,26 @@ SET @BiaHeineken = 'Heineken là loại bia có hương vị đậm đà, khó q
 \nHeineken được tạo ra bởi một nhóm người tận tâm theo đuổi chất lượng cao nhất, bảo tồn theo công thức phát minh ra ba thế hệ trước bởi gia đình Heineken. Hương vị của nó hơi chua chua, ngọt, hương thơm nhẹ, màu sắc tươi sáng và rõ nét, đặc biệt được làm từ nước tinh khiết, hoa bia và mạch nha lúa mạch, Heineken không chứa các chất phụ gia.
 ';
 
+SET @TraTamSenDaiGiaDescription = 'Trà tâm sen (tim sen) là sử dụng phôi mầm nằm giữa hạt sen làm trà. Tâm sen có tác dụng thanh lọc cơ thể qua 2 đường tiết niệu và gan, lại thêm tác dụng an thần giúp ngủ rất sâu và êm.
+\n\nTâm Sen có chất lượng tốt nhất phải được lấy từ hạt sen đã chín. Thu hoạch khi sen vừa chín tới, hạt sen đang dần trở nên sẫm màu và bóc vỏ hạt ngay trước khi nó trở nên cứng như một lớp sừng.
+\n\nTrà tâm sen trên thị trường sẽ có chất lượng khác nhau chủ yếu là do thời điểm thu hoạch. Một số nơi lấy tâm sen khi vẫn còn xanh để dễ bóc hạt để đạt năng suất cao hơn, tất nhiên điều đó sẽ ảnh hưởng đến chất lượng.';
+
+SET @TraCungDinhHueDescription = 'Trà cung đình Huế G8 được bào chế từ 16 vị thảo dược mỗi vị thảo dược có một công dụng riêng khi kết hợp với nhau tạo ra một sản phẩm rất tốt cho sức khoẻ. Các vị thảo dược được thu mua từ ba miền Bắc Trung Nam hoàn toàn xanh sạch và là thức uống có lợi cho sức khỏe. Vậy hãy uống trà Cung đình Huế để cảm nhận được hương sắc vị thần và giúp cho long thể khoẻ mạnh mỗi ngày!
+\n\nThưởng thức trà Huế G8 vừa khiến tinh thần thư giãn vừa các tác dụng thanh nhiệt, giải độc và mát gan. Vua chúa, Hoàng Tộc hay bậc quan đại thần thời xưa có lối sống toàn là “Sơn trân hải vị”. Trong đó, thưởng Trà Cung Đình là một thú vui tao nhã của Vua chúa xưa được lưu truyền cho tới ngày nay.
+\n\nĐược chế biến từ 16 loại thảo dược thiên nhiên tốt cho sức khoẻ như: Atiso, cúc hoa, cỏ ngọt, hoài sơn, đẳng sâm, đại táo, hồng táo, hồi hoa, cam thảo bắc, hoa lài, hoa hòe, thảo quyết minh, khổ qua, kỷ tử, vối nụ, tim sen và một số thảo dược gia truyền quý. Trà cung đình G8 có vị ngọt nhẹ nhàng, thanh tao.';
+
+SET @NuocEpTaoMarigoldDescription = '- Xuất xứ: Malaysia
+\n- Thông tin sản phẩm:
+\n- Nước Ép MariGold là nước trái cây ép được sản xuất trên dây chuyền công nghệ hiện đại, không đường, không sử dụng chất bảo quản hay màu nhân tạo.
+\n- Nước Ép được kết hợp giữa nhiều loại trái cây như táo, cam, cà rốt theo tỉ lệ pha trộn hài hòa đã đem đễ cho sản phẩm hương vị thơm ngon hảo hạng.
+\n- Sử dụng Nước Ép thường xuyên sẽ giúp cho cơ thể bạn khỏe khoắn và tinh thần luôn tươi vui mỗi ngày.
+\n- Nước Ép được đóng chai với nắp nhựa xoáy tiện dụng và giúp bảo quản nước ép luôn giữ được hương vị tự nhiên thơm ngon lâu dài, đem lại sự yên tâm cho bạn và cả gia đình mỗi khi sử dụng.';
+
+SET @NuocEpLuuTaoVfreshDescription = 'Sản phẩm nước ép trái cây từ thương hiệu nước ép Vfresh được làm từ nguyên liệu tự nhiên tươi ngon có hương vị ngọt dịu, thơm mát từ những trái táo tươi ngon, sản phẩm chứa nhiều khoáng chất, dinh dưỡng, chất chống oxy hóa, lượng vitamin C cao tốt cho sức khỏe
+\n\nNước ép lựu táo Vfresh được làm từ 100% lựu táo tự nhiên có hương vị ngọt dịu, thơm mát từ những trái táo tươi ngon, sản phẩm chứa nhiều khoáng chất, dinh dưỡng, chất chống oxy hóa, lượng vitamin C cao tốt cho hệ miễn dịch và cơ thể, giúp phòng ngừa ung thư một cách hiệu quả.
+\n\nNước ép táo có rất nhiều lợi ích. Táo là loại trái cây tốt nhất cho sức khỏe và tiêu thụ nó dưới dạng nước ép thậm chí còn tốt hơn. Nước ép táo có thể giải độc và làm sạch cơ thể. Ngoài ra nước táo Vfresh còn có tác dụng hỗ trợ điều trị bệnh thiếu máu, giảm viêm khớp và yếu cơ.
+\n\nSản phẩm được sản xuất từ trái cây nguyên chất, không phẩm màu, không chứa chất bảo quản, đạt tiêu chuẩn an toàn vệ sinh thực phẩm, an toàn tuyệt đối cho người tiêu dùng.';
+
 SET @MiHaoHaoKimChi = 'Hương vị mới Lẩu Kim Chi Hàn Quốc còn sở hữu vị nước súp ngon chua chua cay cay thơm lừng mùi kim chi, đặc biệt phù hợp với khẩu vị của người Việt Nam. Cùng với tính tiện lợi sẵn có, Hảo Hảo tin chắc rằng bạn có thể thưởng thức hương vị mới này ở bất kì khi nào và bạn sẽ có thêm thật nhiều hạnh phúc khi nhớ đến những ký ức tốt đẹp và động lực để phát triến trong tương lai.
 \n\nThành phần: Bột mì, dầu cọ, tinh bột khoai mì, muối, đường, nước mắm, chất điều vị (621), chất ổn định (451(i), 501(i)), chất điều chỉnh độ acid (500(i)), phẩm màu curcumin tự nhiên, bột nghệ, chất chống oxy hóa (320, 321). Muối, dầu cọ, chất điều vị (621, 631, 627, 951), đường, các gia vị (tỏi, ớt, gừng, tiêu), chất điều chỉnh độ acid (330, 296), hương liệu (hương kim chi tự nhiên, hương bò tổng hợp), chiết xuất nấm men, chất chống đông vón (551), hành lá sấy, phẩm màu paprika oleoresin tự nhiên.
 ';
@@ -311,7 +331,6 @@ INSERT INTO `saving_hour_market`.`product_sub_category` (`id`, `name`, `allowabl
             (UUID_TO_BIN('ec5e1ddc-56dc-11ee-8a50-a85e45c41921'), 'Rau củ', 2, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fvegetable.png?alt=media'),
             (UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), 'Thực phẩm đông lạnh gói', 4, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ffrozen-food.png?alt=media'),
             (UUID_TO_BIN('accf4210-5541-11ee-8a50-a85e45c41921'), 'Đồ tráng miệng lạnh', 4, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ffrozen-desert.png?alt=media'),
-            (UUID_TO_BIN('accf4320-5541-11ee-8a50-a85e45c41921'), 'Sữa', 2, UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdiary-product.png?alt=media'),
             (UUID_TO_BIN('accf4875-5541-11ee-8a50-a85e45c41921'), 'Mì', 5, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnoodles.png?alt=media'),
             (UUID_TO_BIN('accf4766-5541-11ee-8a50-a85e45c41921'), 'Mỹ phẩm', 30, UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fcosmetics.png?alt=media'),
             (UUID_TO_BIN('accf442f-5541-11ee-8a50-a85e45c41921'), 'Đồ dùng vệ sinh cá nhân', 30, UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ftoiletries.png?alt=media'),
@@ -319,7 +338,11 @@ INSERT INTO `saving_hour_market`.`product_sub_category` (`id`, `name`, `allowabl
             (UUID_TO_BIN('ea6d53d6-89ad-11ee-bef9-a85e45c41921'), 'Nước rửa chén', 30, UUID_TO_BIN('accf0055-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdish-detergent.png?alt=media'),
             (UUID_TO_BIN('ea6d7645-89ad-11ee-bef9-a85e45c41921'), 'Nước lau sàn', 30, UUID_TO_BIN('accf0055-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ffloor-cleaner.png?alt=media'),
             (UUID_TO_BIN('ea6d814d-89ad-11ee-bef9-a85e45c41921'), 'Nước tẩy nhà vệ sinh', 30, UUID_TO_BIN('accf0055-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ftoilet-detergent.png?alt=media'),
-            (UUID_TO_BIN('accf4656-5541-11ee-8a50-a85e45c41921'), 'Đồ uống có cồn', 5, UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Falcoholic-drink.png?alt=media');
+            (UUID_TO_BIN('accf4320-5541-11ee-8a50-a85e45c41921'), 'Sữa', 2, UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdiary-product.png?alt=media'),
+            (UUID_TO_BIN('accf4656-5541-11ee-8a50-a85e45c41921'), 'Đồ uống có cồn', 5, UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Falcoholic-drink.png?alt=media'),
+            (UUID_TO_BIN('ea6fa014-89ad-11ee-bef9-a85e45c41921'), 'Trà', 6, UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ftea.png?alt=media'),
+            (UUID_TO_BIN('ea6fbbd7-89ad-11ee-bef9-a85e45c41921'), 'Nước trái cây', 7, UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fjuice.png?alt=media');
+
 
 
 
@@ -465,6 +488,10 @@ INSERT INTO `saving_hour_market`.`product` (`id`, `name`, `unit`, `price_listed`
             (UUID_TO_BIN('ec5e3e40-56dc-11ee-8a50-a85e45c41921'), 'Thùng 30 gói mì Hảo Hảo hương vị lẩu kim chi', 'thùng', 110000, @MiHaoHaoKimChi, @enable, UUID_TO_BIN('accf4875-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('accf3ac4-5541-11ee-8a50-a85e45c41921'), '1 lốc Strongbow Appple Ciders Gold (6 lon)', 'lốc', 105000, @StrongbowAppleGold, @enable, UUID_TO_BIN('accf4656-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf028b-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('ec5e4012-56dc-11ee-8a50-a85e45c41921'), 'Thùng 24 lon bia Heineken Silver', 'thùng', 390000, @BiaHeineken, @enable, UUID_TO_BIN('accf4656-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ea708ef6-89ad-11ee-bef9-a85e45c41921'), 'Trà tâm sen đặc biệt Đại Gia 200g', 'gói', 125000, @TraTamSenDaiGiaDescription, @enable, UUID_TO_BIN('ea6fa014-89ad-11ee-bef9-a85e45c41921'), UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ea70a03f-89ad-11ee-bef9-a85e45c41921'), 'Trà cung đình Huế gói 500g', 'gói', 75000, @TraCungDinhHueDescription, @enable, UUID_TO_BIN('ea6fa014-89ad-11ee-bef9-a85e45c41921'), UUID_TO_BIN('accf04c8-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ea70c2ef-89ad-11ee-bef9-a85e45c41921'), 'Nước ép táo Marigold hộp 1L', 'hộp', 66000, @NuocEpTaoMarigoldDescription, @enable, UUID_TO_BIN('ea6fbbd7-89ad-11ee-bef9-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ea70d5e1-89ad-11ee-bef9-a85e45c41921'), 'Nước ép lựu táo Vfresh hộp 1L', 'hộp', 67000, @NuocEpLuuTaoVfreshDescription, @enable, UUID_TO_BIN('ea6fbbd7-89ad-11ee-bef9-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('accf3be3-5541-11ee-8a50-a85e45c41921'), 'Há Cảo Mini Cầu Tre Gói 500G', 'bịch', 75000, @HaCaoMiniCauTre, @enable, UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf028b-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('accf3cf4-5541-11ee-8a50-a85e45c41921'), 'Bông trang điểm Silcot hộp 82 miếng', 'hộp', 40000, @BongTrangDiemSilcot, @enable, UUID_TO_BIN('accf4766-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf0172-5541-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('ec5e41d8-56dc-11ee-8a50-a85e45c41921'), 'Sáp dưỡng ẩm Vaseline 50ml', 'hũ', 60000, @sapVaseline, @enable, UUID_TO_BIN('accf4766-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf03a7-5541-11ee-8a50-a85e45c41921')),
@@ -535,6 +562,14 @@ INSERT INTO `saving_hour_market`.`product_image` (`id`, `image_url`, `product_id
             (UUID_TO_BIN('a4e3a3b1-78cf-11ee-a832-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fstrongbow-apple-cider.jpg?alt=media', UUID_TO_BIN('accf3ac4-5541-11ee-8a50-a85e45c41921')),
 -- Thùng 24 lon bia Heineken Silver
             (UUID_TO_BIN('a4e3a4ec-78cf-11ee-a832-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fthung-bia-heineken.jpg?alt=media', UUID_TO_BIN('ec5e4012-56dc-11ee-8a50-a85e45c41921')),
+-- Trà tâm sen đặc biệt Đại Gia 200g
+            (UUID_TO_BIN('ea6fc673-89ad-11ee-bef9-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ftra-tam-sen-dai-gia.jpg?alt=media', UUID_TO_BIN('ea708ef6-89ad-11ee-bef9-a85e45c41921')),
+-- Trà cung đình Huế gói 500g
+            (UUID_TO_BIN('ea6fe613-89ad-11ee-bef9-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ftra-cung-dinh-hue.jpg?alt=media', UUID_TO_BIN('ea70a03f-89ad-11ee-bef9-a85e45c41921')),
+-- Nước ép táo Marigold hộp 1L
+            (UUID_TO_BIN('ea6ff64b-89ad-11ee-bef9-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnuoc-ep-tao-marigold.jpg?alt=media', UUID_TO_BIN('ea70c2ef-89ad-11ee-bef9-a85e45c41921')),
+-- Nước ép lựu táo Vfresh hộp 1L
+            (UUID_TO_BIN('ea7013be-89ad-11ee-bef9-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnuoc-ep-luu-tao-vfresh.jpg?alt=media', UUID_TO_BIN('ea70d5e1-89ad-11ee-bef9-a85e45c41921')),
 -- Há Cảo Mini Cầu Tre Gói 500G
             (UUID_TO_BIN('a4e3a611-78cf-11ee-a832-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fha-cao-mini.jpg?alt=media', UUID_TO_BIN('accf3be3-5541-11ee-8a50-a85e45c41921')),
 -- Bông trang điểm Silcot hộp 82 miếng
@@ -638,6 +673,18 @@ SET @ThungMiHaoHaoKimChiFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 24 DA
 -- 1 lốc Strongbow Appple Ciders Gold (6 lon)
 SET @LocStrongbowAppleGoldFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 20 DAY),'%Y-%m-%d');
 
+-- Trà tâm sen đặc biệt Đại Gia 200g
+SET @TraTamSenFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 20 DAY),'%Y-%m-%d');
+
+-- Trà cung đình Huế gói 500g
+SET @TraCungDinhHueFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 20 DAY),'%Y-%m-%d');
+
+-- Nước ép táo Marigold hộp 1L
+SET @NuocEpTaoMarigoldFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 8 DAY),'%Y-%m-%d');
+
+-- Nước ép lựu táo Vfresh hộp 1L
+SET @NuocEpTaoVfreshFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 8 DAY),'%Y-%m-%d');
+
 -- Thùng 24 lon bia Heineken Silver
 SET @ThungBiaLonHeinekenFirstBatchDate = DATE_FORMAT((CURDATE() + INTERVAL 25 DAY),'%Y-%m-%d');
 
@@ -721,7 +768,15 @@ INSERT INTO `saving_hour_market`.`product_batch` (`id`, `price`, `price_original
 -- 1 lốc Strongbow Appple Ciders Gold (6 lon)
             (UUID_TO_BIN('ec5e744a-56dc-11ee-8a50-a85e45c41921'), 88000, 75000, 20, '2023-10-20 00:00:00', @LocStrongbowAppleGoldFirstBatchDate, UUID_TO_BIN('accf3ac4-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8f16-56dc-11ee-8a50-a85e45c41921')),
 -- Thùng 24 lon bia Heineken Silver
-            (UUID_TO_BIN('ec5e77a5-56dc-11ee-8a50-a85e45c41921'), 340000, 300000, 10, '2023-11-01 00:00:00', @ThungBiaLonHeinekenFirstBatchDate, UUID_TO_BIN('ec5e4012-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e9073-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e77a5-56dc-11ee-8a50-a85e45c41921'), 340000, 300000, 15, '2023-11-01 00:00:00', @ThungBiaLonHeinekenFirstBatchDate, UUID_TO_BIN('ec5e4012-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e9073-56dc-11ee-8a50-a85e45c41921')),
+-- Trà tâm sen đặc biệt Đại Gia 200g
+            (UUID_TO_BIN('ea70342a-89ad-11ee-bef9-a85e45c41921'), 105000, 88000, 10, '2023-11-01 00:00:00', @TraTamSenFirstBatchDate, UUID_TO_BIN('ea708ef6-89ad-11ee-bef9-a85e45c41921'), UUID_TO_BIN('ea6f09c8-89ad-11ee-bef9-a85e45c41921')),
+-- Trà cung đình Huế gói 500g
+            (UUID_TO_BIN('ea7044bc-89ad-11ee-bef9-a85e45c41921'), 66000, 60000, 20, '2023-11-01 00:00:00', @TraCungDinhHueFirstBatchDate, UUID_TO_BIN('ea70a03f-89ad-11ee-bef9-a85e45c41921'), UUID_TO_BIN('ea6f09c8-89ad-11ee-bef9-a85e45c41921')),
+-- Nước ép táo Marigold hộp 1L
+            (UUID_TO_BIN('ea7061f6-89ad-11ee-bef9-a85e45c41921'), 60000, 55000, 15, '2023-11-01 00:00:00', @NuocEpTaoMarigoldFirstBatchDate, UUID_TO_BIN('ea70c2ef-89ad-11ee-bef9-a85e45c41921'), UUID_TO_BIN('ec5e9073-56dc-11ee-8a50-a85e45c41921')),
+-- Nước ép lựu táo Vfresh hộp 1L
+            (UUID_TO_BIN('ea706eb7-89ad-11ee-bef9-a85e45c41921'), 61000, 56000, 15, '2023-11-01 00:00:00', @NuocEpTaoVfreshFirstBatchDate, UUID_TO_BIN('ea70d5e1-89ad-11ee-bef9-a85e45c41921'), UUID_TO_BIN('ec5e9073-56dc-11ee-8a50-a85e45c41921')),
 -- Há Cảo Mini Cầu Tre Gói 500G
             (UUID_TO_BIN('ec5e7bef-56dc-11ee-8a50-a85e45c41921'), 58000, 49000, 15, '2023-10-01 00:00:00', @HaCaoMiniCauTreFirstBatchDate, UUID_TO_BIN('accf3be3-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8f16-56dc-11ee-8a50-a85e45c41921')),
 -- Bông trang điểm Silcot hộp 82 miếng
@@ -1547,20 +1602,6 @@ INSERT INTO `saving_hour_market`.`transaction` (`id`, `payment_method`, `payment
 
 
 
--- 'ea6fa014-89ad-11ee-bef9-a85e45c41921'
--- 'ea6fbbd7-89ad-11ee-bef9-a85e45c41921'
--- 'ea6fc673-89ad-11ee-bef9-a85e45c41921'
--- 'ea6fe613-89ad-11ee-bef9-a85e45c41921'
--- 'ea6ff64b-89ad-11ee-bef9-a85e45c41921'
--- 'ea7013be-89ad-11ee-bef9-a85e45c41921'
--- 'ea70342a-89ad-11ee-bef9-a85e45c41921'
--- 'ea7044bc-89ad-11ee-bef9-a85e45c41921'
--- 'ea7061f6-89ad-11ee-bef9-a85e45c41921'
--- 'ea706eb7-89ad-11ee-bef9-a85e45c41921'
--- 'ea708ef6-89ad-11ee-bef9-a85e45c41921'
--- 'ea70a03f-89ad-11ee-bef9-a85e45c41921'
--- 'ea70c2ef-89ad-11ee-bef9-a85e45c41921'
--- 'ea70d5e1-89ad-11ee-bef9-a85e45c41921'
 -- 'ea70f46a-89ad-11ee-bef9-a85e45c41921'
 -- 'ea7100b8-89ad-11ee-bef9-a85e45c41921'
 -- 'ea710cbd-89ad-11ee-bef9-a85e45c41921'
