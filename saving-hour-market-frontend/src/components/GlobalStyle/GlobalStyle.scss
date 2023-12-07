@@ -329,3 +329,12 @@ input {
     scale: (1.2);
   }
 }
+
+.image-number {
+  position: absolute;
+  bottom: -8px;
+  right: 0;
+  background-color: #f0f0f0;
+  padding: 1px 10px;
+  border-radius: 10px;
+}

@@ -42,6 +42,8 @@ public class Order {
 
     private String receiverName;
 
+    private Boolean isFeedBack;
+
     @Column(columnDefinition = "decimal(23,20)")
     private Float longitude;
 
@@ -155,4 +157,8 @@ public class Order {
     )
     @JsonIgnore
     private List<OrderDetail> orderDetailList;
+
+    @OneToOne(mappedBy = "order", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private FeedBack feedBack;
 }

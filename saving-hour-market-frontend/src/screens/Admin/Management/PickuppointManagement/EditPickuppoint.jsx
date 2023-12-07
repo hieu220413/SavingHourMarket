@@ -148,6 +148,17 @@ const EditPickuppoint = ({
     )
       .then((res) => res.json())
       .then((respond) => {
+        if (respond.code === 403) {
+          setOpenValidateSnackbar({
+            ...openValidateSnackbar,
+            open: true,
+            severity: "error",
+            text: "Tồn tại đơn hàng đang xử lí tại điểm giao hàng này !",
+          });
+
+          setLoading(false);
+          return;
+        }
         if (respond?.code === 422) {
           setOpenValidateSnackbar({
             ...openValidateSnackbar,
@@ -218,7 +229,9 @@ const EditPickuppoint = ({
     >
       {/* // modal header */}
       <div className="modal__container-header">
-        <h3 className="modal__container-header-title">Thêm điểm giao hàng</h3>
+        <h3 className="modal__container-header-title">
+          Chỉnh sửa điểm giao hàng
+        </h3>
         <FontAwesomeIcon onClick={handleClose} icon={faXmark} />
       </div>
       {/* ****************** */}

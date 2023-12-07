@@ -42,7 +42,7 @@ export default function App() {
       <BaseToast
         {...props}
         style={{ backgroundColor: COLORS.primary, borderLeftWidth: 0 }}
-        contentContainerStyle={{ paddingHorizontal: 15 }}
+        contentContainerStyle={{ paddingHorizontal: 15}}
         text1Style={{
           fontSize: 16,
           fontWeight: '700',

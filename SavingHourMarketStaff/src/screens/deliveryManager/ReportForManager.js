@@ -354,7 +354,7 @@ const ReportForManager = ({navigation}) => {
                   alignItems: 'center',
                 }}>
                 <Text style={{fontSize: 16, fontWeight: '500'}}>
-                  Đơn trả hàng
+                  Đơn thất bại
                 </Text>
                 <Text
                   style={{fontSize: 14, fontWeight: 'bold', color: 'black'}}>

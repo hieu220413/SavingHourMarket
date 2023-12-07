@@ -1,34 +1,34 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
-import React, { useState, useCallback, useEffect } from 'react';
-import { View, Image, Text } from 'react-native';
-import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
-import { icons } from '../constants';
-import { COLORS } from '../constants/theme';
-import { useFocusEffect } from '@react-navigation/native';
+import React, {useState, useCallback, useEffect} from 'react';
+import {View, Image, Text} from 'react-native';
+import {ScrollView, TouchableOpacity} from 'react-native-gesture-handler';
+import {icons} from '../constants';
+import {COLORS} from '../constants/theme';
+import {useFocusEffect} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
-import { API } from '../constants/api';
-import { format } from 'date-fns';
+import {API} from '../constants/api';
+import {format} from 'date-fns';
 import CartEmpty from '../assets/image/search-empty.png';
 import Modal, {
   ModalFooter,
   ModalButton,
   ScaleAnimation,
 } from 'react-native-modals';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import LoadingScreen from '../components/LoadingScreen';
 import AccountDisable from '../components/AccountDisable';
 import database from '@react-native-firebase/database';
 
-const Orders = ({ navigation }) => {
+const Orders = ({navigation}) => {
   const orderStatus = [
-    { display: 'Chờ xác nhận', value: 'PROCESSING' },
-    { display: 'Đóng gói', value: 'PACKAGING' },
-    { display: 'Giao hàng', value: 'DELIVERING' },
-    { display: 'Đã giao', value: 'SUCCESS' },
-    { display: 'Đơn thất bại', value: 'FAIL' },
-    { display: 'Đã hủy', value: 'CANCEL' },
+    {display: 'Chờ xác nhận', value: 'PROCESSING'},
+    {display: 'Đóng gói', value: 'PACKAGING'},
+    {display: 'Giao hàng', value: 'DELIVERING'},
+    {display: 'Đã giao', value: 'SUCCESS'},
+    {display: 'Đơn thất bại', value: 'FAIL'},
+    {display: 'Đã hủy', value: 'CANCEL'},
   ];
   const [currentStatus, setCurrentStatus] = useState({
     display: 'Chờ xác nhận',
@@ -99,7 +99,7 @@ const Orders = ({ navigation }) => {
           if (snapshot.val() === 0) {
             navigation.reset({
               index: 0,
-              routes: [{ name: 'Initial' }],
+              routes: [{name: 'Initial'}],
             });
           } else {
             // setSystemStatus(snapshot.val());
@@ -183,7 +183,7 @@ const Orders = ({ navigation }) => {
           if (currentStatus.display !== 'Đóng gói') {
             // setLoading(true);
             fetch(
-              `${API.baseURL}/api/order/getOrdersForCustomer?orderStatus=${currentStatus.value}`,
+              `${API.baseURL}/api/order/getOrdersForCustomer?orderStatus=${currentStatus.value}&createdTimeSortType=DESC`,
               {
                 method: 'GET',
                 headers: {
@@ -221,7 +221,7 @@ const Orders = ({ navigation }) => {
             // setLoading(true);
             let list = [];
             fetch(
-              `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGING`,
+              `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGING&createdTimeSortType=DESC`,
               {
                 method: 'GET',
                 headers: {
@@ -250,7 +250,7 @@ const Orders = ({ navigation }) => {
                 list = list.concat(respond);
 
                 fetch(
-                  `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGED`,
+                  `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGED&createdTimeSortType=DESC`,
                   {
                     method: 'GET',
                     headers: {
@@ -333,7 +333,7 @@ const Orders = ({ navigation }) => {
             <Image
               source={icons.leftArrow}
               resizeMode="contain"
-              style={{ width: 35, height: 35, tintColor: COLORS.primary }}
+              style={{width: 35, height: 35, tintColor: COLORS.primary}}
             />
           </TouchableOpacity>
           <Text
@@ -373,7 +373,7 @@ const Orders = ({ navigation }) => {
                   justifyContent: 'center',
                 }}>
                 <Text
-                  style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
+                  style={{fontSize: 12, color: 'white', fontFamily: 'Roboto'}}>
                   {cartList.length}
                 </Text>
               </View>
@@ -419,9 +419,9 @@ const Orders = ({ navigation }) => {
 
       {/* Order list */}
       {orderList.length === 0 ? (
-        <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{alignItems: 'center', justifyContent: 'center'}}>
           <Image
-            style={{ width: '100%', height: '50%' }}
+            style={{width: '100%', height: '50%'}}
             resizeMode="contain"
             source={CartEmpty}
           />
@@ -436,12 +436,12 @@ const Orders = ({ navigation }) => {
           </Text>
         </View>
       ) : (
-        <ScrollView contentContainerStyle={{ marginTop: 20 }}>
-          <View style={{ marginBottom: 100 }}>
+        <ScrollView contentContainerStyle={{marginTop: 20}}>
+          <View style={{marginBottom: 100}}>
             {orderList.map(item => (
               <View
                 key={item.id}
-                style={{ backgroundColor: 'white', marginBottom: 20 }}>
+                style={{backgroundColor: 'white', marginBottom: 20}}>
                 {/* Order detail */}
                 <TouchableOpacity
                   onPress={() => {
@@ -457,7 +457,7 @@ const Orders = ({ navigation }) => {
                       justifyContent: 'space-between',
                       padding: 20,
                     }}>
-                    <View style={{ flexDirection: 'column', gap: 8 }}>
+                    <View style={{flexDirection: 'column', gap: 8}}>
                       <Text
                         style={{
                           fontSize: 20,
@@ -473,6 +473,16 @@ const Orders = ({ navigation }) => {
                         {item?.status === 5 && 'Đơn thất bại'}
                         {item?.status === 6 && 'Đã hủy'}
                       </Text>
+                      <Text
+                        style={{
+                          fontSize: 17,
+                          fontWeight: 'bold',
+                          fontFamily: 'Roboto',
+                          color: 'black',
+                        }}>
+                        Mã đơn hàng : {item.code}
+                      </Text>
+
                       <Text
                         style={{
                           fontSize: 17,
@@ -516,10 +526,25 @@ const Orders = ({ navigation }) => {
                         Phương thức thanh toán:{' '}
                         {item?.paymentMethod === 0 ? 'COD' : 'VN Pay'}
                       </Text>
+                      {(item.status === 0 || item.status === 1) && (
+                        <TouchableOpacity onPress={() => {
+                          navigation.navigate('Order Feedback');
+                        }}>
+                          <Text
+                            style={{
+                              fontSize: 18,
+                              fontWeight: '100',
+                              fontFamily: 'Roboto',
+                              color: COLORS.primary,
+                            }}>
+                            Đánh giá đơn hàng
+                          </Text>
+                        </TouchableOpacity>
+                      )}
                     </View>
                     <Image
                       resizeMode="contain"
-                      style={{ width: 30, height: 30, tintColor: COLORS.primary }}
+                      style={{width: 30, height: 30, tintColor: COLORS.primary}}
                       source={icons.rightArrow}
                     />
                   </View>
@@ -578,7 +603,7 @@ const Orders = ({ navigation }) => {
             />
             <ModalButton
               text="Đăng nhập"
-              textStyle={{ color: COLORS.primary }}
+              textStyle={{color: COLORS.primary}}
               onPress={async () => {
                 try {
                   await AsyncStorage.clear();
@@ -592,7 +617,7 @@ const Orders = ({ navigation }) => {
           </ModalFooter>
         }>
         <View
-          style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
+          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
           <Text
             style={{
               fontSize: 20,

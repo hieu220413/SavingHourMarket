@@ -65,6 +65,7 @@ const EditConfirmProduct = ({
   const [productName, setProductName] = useState(product?.name);
   const [unit, setUnit] = useState(product?.unit);
   const [description, setDescription] = useState(product.description);
+  const [priceListed, setPriceListed] = useState(product?.priceListed);
   const [image, setImage] = useState(
     product?.imageUrls ? product?.imageUrls : []
   );
@@ -127,6 +128,7 @@ const EditConfirmProduct = ({
     allowableDisplayThreshold: "",
     imageUrlSubCate: "",
     unit: "",
+    priceListed: "",
   });
 
   useEffect(() => {
@@ -221,6 +223,11 @@ const EditConfirmProduct = ({
 
     if (!unit) {
       setError({ ...error, unit: "Vui lòng không để trống" });
+      return;
+    }
+
+    if (!priceListed) {
+      setError({ ...error, priceListed: "Vui lòng không để trống" });
       return;
     }
 
@@ -745,7 +752,7 @@ const EditConfirmProduct = ({
           <div>
             <input
               value={unit}
-              placeholder="Nhập tên sản phẩm"
+              placeholder="Nhập đơn vị bán"
               type="text"
               className="modal__container-body-inputcontrol-input"
               onChange={(e) => {
@@ -759,6 +766,34 @@ const EditConfirmProduct = ({
                 className="text-danger"
               >
                 {error.unit}
+              </p>
+            )}
+          </div>
+        </div>
+        {/* * * */}
+
+        {/* price listed */}
+        <div className="modal__container-body-inputcontrol">
+          <h4 className="modal__container-body-inputcontrol-label">
+            Giá niêm yết
+          </h4>
+          <div>
+            <input
+              value={priceListed}
+              placeholder="Nhập giá niêm yết"
+              type="text"
+              className="modal__container-body-inputcontrol-input"
+              onChange={(e) => {
+                setUnit(e.target.value);
+                setError({ ...error, unit: "" });
+              }}
+            />
+            {error.priceListed && (
+              <p
+                style={{ fontSize: "14px", marginBottom: "-10px" }}
+                className="text-danger"
+              >
+                {error.priceListed}
               </p>
             )}
           </div>

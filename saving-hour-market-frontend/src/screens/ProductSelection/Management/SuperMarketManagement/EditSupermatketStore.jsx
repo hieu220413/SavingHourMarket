@@ -323,7 +323,7 @@ const EditSupermatketStore = ({
             onClick={handleEdit}
             className="modal__container-footer-buttons-create"
           >
-            Thêm
+            Thay đổi
           </button>
         </div>
       </div>

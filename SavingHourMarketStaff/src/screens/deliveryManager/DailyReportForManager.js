@@ -341,7 +341,7 @@ const DailyReportForManager = ({navigation}) => {
                 }}>
                 <View style={{flex: 1}}>
                   <Text style={{fontSize: 14, color: 'black'}}>
-                    Đơn trả hàng:
+                    Đơn thất bại:
                   </Text>
                 </View>
                 <View

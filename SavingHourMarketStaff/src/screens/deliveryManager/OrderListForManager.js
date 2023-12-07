@@ -13,7 +13,7 @@ import {
   Alert,
   Dimensions,
 } from 'react-native';
-import React, {useEffect, useState, useCallback} from 'react';
+import React, {useEffect, useState, useCallback, useRef} from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {COLORS} from '../../constants/theme';
@@ -57,6 +57,11 @@ const OrderListForManager = ({navigation}) => {
   const [openDateToBatch, setOpenDateToBatch] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
   const [openValidateDialog, setOpenValidateDialog] = useState(false);
+  const [timeFrameList, setTimeFrameList] = useState([]);
+  // const [tempSelectedTimeFrameId, setTempSelectedTimeFrameId] = useState(null);
+  const [selectedTimeFrameId, setSelectedTimeFrameId] = useState(null);
+
+  const listRef = useRef(null);
 
   const toggleDatepicker = () => {
     setShowPicker(!showPicker);
@@ -137,16 +142,16 @@ const OrderListForManager = ({navigation}) => {
   // );
 
   const sortOptions = [
-    {
-      id: 1,
-      name: 'Ngày giao gần nhất',
-      active: false,
-    },
-    {
-      id: 2,
-      name: 'Ngày giao xa nhất',
-      active: false,
-    },
+    // {
+    //   id: 1,
+    //   name: 'Ngày giao gần nhất',
+    //   active: false,
+    // },
+    // {
+    //   id: 2,
+    //   name: 'Ngày giao xa nhất',
+    //   active: false,
+    // },
     {
       id: 3,
       name: 'Đơn mới nhất',
@@ -159,6 +164,50 @@ const OrderListForManager = ({navigation}) => {
     },
   ];
   const [selectSort, setSelectSort] = useState(sortOptions);
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchData = async () => {
+        if (auth().currentUser) {
+          const tokenId = await auth().currentUser.getIdToken();
+          if (tokenId) {
+            setLoading(true);
+            fetch(`${API.baseURL}/api/timeframe/getAllForStaff`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
+              },
+            })
+              .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                  const tokenIdCheck = await auth()
+                    .currentUser.getIdToken(true)
+                    .catch(async err => {
+                      await AsyncStorage.setItem('isDisableAccount', '1');
+                      return null;
+                    });
+                  if (!tokenIdCheck) {
+                    throw new Error();
+                  }
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.json();
+              })
+              .then(response => {
+                setTimeFrameList(response);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
+          }
+        }
+      };
+      fetchData();
+    }, []),
+  );
 
   //get Current User Info
   useFocusEffect(
@@ -181,7 +230,7 @@ const OrderListForManager = ({navigation}) => {
             setLoading(true);
 
             fetch(
-              `${API.baseURL}/api/order/staff/getOrders?orderStatus=PACKAGED&isGrouped=false&isBatched=false`,
+              `${API.baseURL}/api/order/staff/getOrders?orderStatus=PACKAGED&isGrouped=false&isBatched=false&deliveryDateSortType=ASC`,
               {
                 method: 'GET',
                 headers: {
@@ -220,7 +269,7 @@ const OrderListForManager = ({navigation}) => {
               });
 
             fetch(
-              `${API.baseURL}/api/order/staff/getOrders?orderStatus=DELIVERING&isGrouped=false&isBatched=false`,
+              `${API.baseURL}/api/order/staff/getOrders?orderStatus=DELIVERING&isGrouped=false&isBatched=false&deliveryDateSortType=ASC`,
               {
                 method: 'GET',
                 headers: {
@@ -263,8 +312,61 @@ const OrderListForManager = ({navigation}) => {
       setDate(null);
       setSelectSort(sortOptions);
       fetchData();
+      setSelectedTimeFrameId('');
     }, []),
   );
+
+  const TimeFrameItem = ({item}) => {
+    return (
+      <TouchableOpacity
+        key={item.id}
+        onPress={() =>
+          item.id === selectedTimeFrameId
+            ? setSelectedTimeFrameId('')
+            : setSelectedTimeFrameId(item.id)
+        }
+        style={
+          item.id === selectedTimeFrameId
+            ? {
+                borderColor: COLORS.primary,
+                borderWidth: 1,
+                borderRadius: 10,
+                margin: 5,
+                width: '45%',
+              }
+            : {
+                borderColor: '#c8c8c8',
+                borderWidth: 0.2,
+                borderRadius: 10,
+                margin: 5,
+                width: '45%',
+              }
+        }>
+        <Text
+          style={
+            item.id === selectedTimeFrameId
+              ? {
+                  width: '100%',
+                  paddingVertical: 10,
+                  textAlign: 'center',
+                  color: COLORS.primary,
+
+                  fontSize: 12,
+                }
+              : {
+                  width: '100%',
+                  paddingVertical: 10,
+                  textAlign: 'center',
+                  color: 'black',
+
+                  fontSize: 12,
+                }
+          }>
+          {item.fromHour.slice(0, 5)} đến {item.toHour.slice(0, 5)}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
 
   const ModalSortItem = ({item}) => {
     return (
@@ -436,7 +538,11 @@ const OrderListForManager = ({navigation}) => {
           if (tokenId) {
             setLoading(true);
             fetch(
-              `${API.baseURL}/api/order/staff/getOrders?orderStatus=PACKAGED&isGrouped=false&isBatched=false`,
+              `${
+                API.baseURL
+              }/api/order/staff/getOrders?orderStatus=PACKAGED&isGrouped=false&isBatched=false&deliveryDateSortType=ASC${
+                selectedTimeFrameId ? '&timeFrameId=' + selectedTimeFrameId : ''
+              }`,
               {
                 method: 'GET',
                 headers: {
@@ -475,7 +581,11 @@ const OrderListForManager = ({navigation}) => {
               });
 
             fetch(
-              `${API.baseURL}/api/order/staff/getOrders?orderStatus=DELIVERING&isGrouped=false&isBatched=false`,
+              `${
+                API.baseURL
+              }/api/order/staff/getOrders?orderStatus=DELIVERING&isGrouped=false&isBatched=false&deliveryDateSortType=ASC${
+                selectedTimeFrameId ? '&timeFrameId=' + selectedTimeFrameId : ''
+              }`,
               {
                 method: 'GET',
                 headers: {
@@ -531,13 +641,14 @@ const OrderListForManager = ({navigation}) => {
     setModalVisible(!modalVisible);
     setSelectSort(sortOptions);
     setLoading(true);
+    setSelectedTimeFrameId('');
     const fetchData = async () => {
       if (auth().currentUser) {
         const tokenId = await auth().currentUser.getIdToken();
         if (tokenId) {
           setLoading(true);
           fetch(
-            `${API.baseURL}/api/order/staff/getOrders?orderStatus=PACKAGED&isGrouped=false&isBatched=false`,
+            `${API.baseURL}/api/order/staff/getOrders?orderStatus=PACKAGED&isGrouped=false&isBatched=false&deliveryDateSortType=ASC`,
             {
               method: 'GET',
               headers: {
@@ -576,7 +687,7 @@ const OrderListForManager = ({navigation}) => {
             });
 
           fetch(
-            `${API.baseURL}/api/order/staff/getOrders?orderStatus=DELIVERING&isGrouped=false&isBatched=false`,
+            `${API.baseURL}/api/order/staff/getOrders?orderStatus=DELIVERING&isGrouped=false&isBatched=false&deliveryDateSortType=ASC`,
             {
               method: 'GET',
               headers: {
@@ -751,6 +862,7 @@ const OrderListForManager = ({navigation}) => {
             onConfirm={date => {
               setModalCreate(false);
               setSelectSort(sortOptions);
+              setSelectedTimeFrameId('');
               setOpen(false);
               setDate(date);
               const fetchData = async () => {
@@ -853,6 +965,7 @@ const OrderListForManager = ({navigation}) => {
             onCancel={() => {
               setModalCreate(false);
               setSelectSort(sortOptions);
+              setSelectedTimeFrameId('');
               setDate(null);
               setOpen(false);
               const fetchData = async () => {
@@ -862,7 +975,7 @@ const OrderListForManager = ({navigation}) => {
                     setLoading(true);
 
                     fetch(
-                      `${API.baseURL}/api/order/staff/getOrders?orderStatus=PACKAGED&isGrouped=false&isBatched=false`,
+                      `${API.baseURL}/api/order/staff/getOrders?orderStatus=PACKAGED&isGrouped=false&isBatched=false&deliveryDateSortType=ASC`,
                       {
                         method: 'GET',
                         headers: {
@@ -904,7 +1017,7 @@ const OrderListForManager = ({navigation}) => {
                       });
 
                     fetch(
-                      `${API.baseURL}/api/order/staff/getOrders?orderStatus=DELIVERING&isGrouped=false&isBatched=false`,
+                      `${API.baseURL}/api/order/staff/getOrders?orderStatus=DELIVERING&isGrouped=false&isBatched=false&deliveryDateSortType=ASC`,
                       {
                         method: 'GET',
                         headers: {
@@ -1044,6 +1157,10 @@ const OrderListForManager = ({navigation}) => {
                     onPress={() => {
                       setModalCreate(!modalCreate);
                       setOpen(false);
+                      listRef.current.scrollToOffset({
+                        animated: true,
+                        offset: 0,
+                      });
                     }}>
                     <View
                       style={{
@@ -1067,6 +1184,7 @@ const OrderListForManager = ({navigation}) => {
                     </View>
                   </TouchableOpacity>
                   <SwipeListView
+                    listViewRef={listRef}
                     showsVerticalScrollIndicator={false}
                     showsHorizontalScrollIndicator={false}
                     data={orderNotYetAssigned}
@@ -1629,7 +1747,7 @@ const OrderListForManager = ({navigation}) => {
                                   fontFamily: 'Roboto',
                                   color: COLORS.primary,
                                 }}>
-                                Đơn hàng
+                                Đơn hàng đang giao
                               </Text>
                               {data.item?.deliverer ? (
                                 <View
@@ -1805,6 +1923,100 @@ const OrderListForManager = ({navigation}) => {
                     onPress={() => {
                       setModalVisible(!modalVisible);
                       setSelectSort(sortOptions);
+                      setSelectedTimeFrameId('');
+                      const fetchData = async () => {
+                        if (auth().currentUser) {
+                          const tokenId = await auth().currentUser.getIdToken();
+                          if (tokenId) {
+                            setLoading(true);
+
+                            fetch(
+                              `${API.baseURL}/api/order/staff/getOrders?orderStatus=PACKAGED&isGrouped=false&isBatched=false&deliveryDateSortType=ASC`,
+                              {
+                                method: 'GET',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  Authorization: `Bearer ${tokenId}`,
+                                },
+                              },
+                            )
+                              .then(async res => {
+                                if (res.status === 403 || res.status === 401) {
+                                  const tokenIdCheck = await auth()
+                                    .currentUser.getIdToken(true)
+                                    .catch(async err => {
+                                      await AsyncStorage.setItem(
+                                        'isDisableAccount',
+                                        '1',
+                                      );
+                                      return null;
+                                    });
+                                  if (!tokenIdCheck) {
+                                    throw new Error();
+                                  }
+                                  // Cac loi 403 khac thi handle duoi day neu co
+                                }
+                                return res.json();
+                              })
+                              .then(respond => {
+                                console.log('order', respond[0]);
+                                if (respond.error) {
+                                  setLoading(false);
+                                  return;
+                                }
+                                setOrderNotYetAssigned(respond);
+                                setLoading(false);
+                              })
+                              .catch(err => {
+                                console.log(err);
+                                setLoading(false);
+                              });
+
+                            fetch(
+                              `${API.baseURL}/api/order/staff/getOrders?orderStatus=DELIVERING&isGrouped=false&isBatched=false&deliveryDateSortType=ASC`,
+                              {
+                                method: 'GET',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  Authorization: `Bearer ${tokenId}`,
+                                },
+                              },
+                            )
+                              .then(async res => {
+                                if (res.status === 403 || res.status === 401) {
+                                  const tokenIdCheck = await auth()
+                                    .currentUser.getIdToken(true)
+                                    .catch(async err => {
+                                      await AsyncStorage.setItem(
+                                        'isDisableAccount',
+                                        '1',
+                                      );
+                                      return null;
+                                    });
+                                  if (!tokenIdCheck) {
+                                    throw new Error();
+                                  }
+                                  // Cac loi 403 khac thi handle duoi day neu co
+                                }
+                                return res.json();
+                              })
+                              .then(respond => {
+                                console.log('order', respond[0]);
+                                if (respond.error) {
+                                  setLoading(false);
+                                  return;
+                                }
+                                setOrderAssigned(respond);
+                                setLoading(false);
+                              })
+                              .catch(err => {
+                                console.log(err);
+                                setLoading(false);
+                              });
+                          }
+                        }
+                      };
+                      fetchData();
                     }}>
                     <Image
                       resizeMode="contain"
@@ -1817,7 +2029,7 @@ const OrderListForManager = ({navigation}) => {
                     />
                   </TouchableOpacity>
                 </View>
-                <Text
+                {/* <Text
                   style={{
                     color: 'black',
                     fontSize: 18,
@@ -1833,6 +2045,24 @@ const OrderListForManager = ({navigation}) => {
                   }}>
                   {selectSort.map((item, index) => (
                     <ModalSortItem item={item} key={index} />
+                  ))}
+                </View> */}
+                <Text
+                  style={{
+                    color: 'black',
+                    fontSize: 18,
+                    fontWeight: 700,
+                  }}>
+                  Chọn khung giờ
+                </Text>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                    marginVertical: 10,
+                  }}>
+                  {timeFrameList.map((item, index) => (
+                    <TimeFrameItem item={item} key={index} />
                   ))}
                 </View>
                 <View

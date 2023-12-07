@@ -59,6 +59,15 @@ const OrderDetail = ({ navigation, route }) => {
     });
   };
 
+  const showToastFail = (message) => {
+    Toast.show({
+      type: unsuccess,
+      text1: 'Thất bại',
+      text2: message + '👋',
+      visibilityTime: 3000,
+    });
+  };
+
   const getConsolidationArea = async pickupPointId => {
     const tokenId = await auth().currentUser.getIdToken();
     if (tokenId) {

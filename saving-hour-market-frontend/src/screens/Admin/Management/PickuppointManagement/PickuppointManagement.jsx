@@ -147,6 +147,17 @@ const PickuppointManagement = () => {
       })
         .then((res) => res.json())
         .then((respond) => {
+          if (respond.code === 403) {
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "error",
+              text: "Tồn tại đơn hàng đang xử lí tại điểm giao hàng này !",
+            });
+
+            setLoading(false);
+            return;
+          }
           if (respond?.error) {
             setOpenSnackbar({
               ...openSnackbar,

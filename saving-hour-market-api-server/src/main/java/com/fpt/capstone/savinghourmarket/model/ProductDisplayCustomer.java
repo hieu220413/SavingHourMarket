@@ -22,7 +22,7 @@ public class ProductDisplayCustomer {
 
     public ProductDisplayCustomer(LocalDate nearestBatchExpiredDate, Integer nearestBatchPrice, Integer nearestBatchPriceOriginal, Product product) {
         this.id = product.getId();
-        this.name = product.getName();
+        this.name = product.getName() + " (" + product.getSupermarket().getName() + ")";
         this.description = product.getDescription();
         this.imageUrlImageList = product.getProductImageList();
         this.status = product.getStatus();

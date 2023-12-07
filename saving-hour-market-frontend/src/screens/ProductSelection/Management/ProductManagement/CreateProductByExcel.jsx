@@ -48,9 +48,12 @@ const CreateProductByExcel = ({
     }
     setLoading(true);
     const tokenId = await auth.currentUser.getIdToken();
+
     let formData = new FormData();
     formData.append("file", excelFile);
+
     fetch(`${API.baseURL}/api/product/uploadExcelFile`, {
+      // mode: "no-cors",
       method: "POST",
       headers: {
         // Accept: "application/json, application/xml, text/plain, text/html, *.*",
@@ -59,7 +62,9 @@ const CreateProductByExcel = ({
       },
       body: formData,
     })
-      .then((res) => res.json())
+      .then((res) => {
+        return res.json();
+      })
       .then((res) => {
         console.log(res);
 
@@ -105,7 +110,7 @@ const CreateProductByExcel = ({
         <div className="modal__container-body-wrapper">
           <div className="template-wrapper">
             <h3>Tải bản mẫu tại đây :</h3>
-            <a href="https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/ExcelTemplate%2FProductUploadTemplate.xlsx?alt=media&token=daa531a9-59f9-41be-9799-3cc3161f4816&_gl=1*rg67ju*_ga*MTYxMzkwMjU5MC4xNjg4NDU2Mzc5*_ga_CW55HF8NVT*MTY5OTQxNzQ1NS40NS4xLjE2OTk0MTc1MDYuOS4wLjA.">
+            <a href="https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/ExcelTemplate%2FProductUploadTemplate.xlsx?alt=media&token=7df215cc-e75c-4ca1-ac5c-604cb64d63f1">
               Bản mẫu
             </a>
           </div>
