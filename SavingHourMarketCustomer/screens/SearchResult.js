@@ -105,7 +105,7 @@ const SearchResult = ({ navigation, route }) => {
     setLoading(true);
     if (sortItem) {
       fetch(
-        `${API.baseURL}/api/product/getProductsForCustomer?name=${productName}${currentCate === '' ? '' : '&productCategoryId=' + currentCate
+        `${API.baseURL}/api/product/getProductsForCustomer?name=${encodeURIComponent(productName)}${currentCate === '' ? '' : '&productCategoryId=' + currentCate
         }&page=0&limit=10${sortItem?.id == 1 ? '&expiredSortType=ASC' : ''}${sortItem?.id == 2 ? '&expiredSortType=DESC' : ''
         }${sortItem?.id == 3 ? '&priceSort=ASC' : ''}${sortItem?.id == 4 ? '&priceSort=DESC' : ''
         }&pickupPointId=${pickupPoint.id}`,
@@ -123,7 +123,7 @@ const SearchResult = ({ navigation, route }) => {
         });
     } else {
       fetch(
-        `${API.baseURL}/api/product/getProductsForCustomer?name=${productName}${currentCate === '' ? '' : '&productCategoryId=' + currentCate
+        `${API.baseURL}/api/product/getProductsForCustomer?name=${encodeURIComponent(productName)}${currentCate === '' ? '' : '&productCategoryId=' + currentCate
         }&page=0&limit=10&pickupPointId=${pickupPoint.id}`,
       )
         .then(res => res.json())
@@ -171,7 +171,7 @@ const SearchResult = ({ navigation, route }) => {
     setSortItemSelected(null);
     setLoading(true);
     fetch(
-      `${API.baseURL}/api/product/getProductsForCustomer?name=${productName}&pickupPointId=${pickupPoint.id}&page=0&limit=10`,
+      `${API.baseURL}/api/product/getProductsForCustomer?name=${encodeURIComponent(productName)}&pickupPointId=${pickupPoint.id}&page=0&limit=10`,
     )
       .then(res => res.json())
       .then(data => {
@@ -257,7 +257,7 @@ const SearchResult = ({ navigation, route }) => {
           setPickupPoint(JSON.parse(value));
           fetch(
             `${API.baseURL
-            }/api/product/getProductsForCustomer?name=${productName}&pickupPointId=${JSON.parse(value).id
+            }/api/product/getProductsForCustomer?name=${encodeURIComponent(productName)}&pickupPointId=${JSON.parse(value).id
             }&page=0&limit=10`,
           )
             .then(res => res.json())
@@ -586,7 +586,7 @@ const SearchResult = ({ navigation, route }) => {
               setLoading(true);
               fetch(
                 `${API.baseURL
-                }/api/product/getProductsForCustomer?name=${productName}${currentCate === '' ? '' : '&productCategoryId=' + currentCate
+                }/api/product/getProductsForCustomer?name=${encodeURIComponent(productName)}${currentCate === '' ? '' : '&productCategoryId=' + currentCate
                 }&pickupPointId=${pickupPoint?.id}&page=${page
                 }&limit=10${sortItemSelected?.id == 1 ? '&expiredSortType=ASC' : ''}${sortItemSelected?.id == 2 ? '&expiredSortType=DESC' : ''
                 }${sortItemSelected?.id == 3 ? '&priceSort=ASC' : ''}${sortItemSelected?.id == 4 ? '&priceSort=DESC' : ''
