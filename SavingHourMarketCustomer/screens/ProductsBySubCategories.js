@@ -387,7 +387,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
           style={
             item.active == true
               ? {
-                width: Dimensions.get('window').width * 0.3,
+                width: Dimensions.get('window').width * 0.35,
                 paddingHorizontal: '5%',
                 paddingVertical: 10,
                 textAlign: 'center',
@@ -396,7 +396,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
                 fontSize: Dimensions.get('window').width * 0.03,
               }
               : {
-                width: Dimensions.get('window').width * 0.3,
+                width: Dimensions.get('window').width * 0.35,
                 paddingHorizontal: '3%',
                 paddingVertical: 10,
                 textAlign: 'center',
@@ -581,7 +581,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
                   flexDirection: 'row',
                   flexWrap: 'wrap',
                   marginVertical: 10,
-                  justifyContent: 'center',
+                  justifyContent: 'space-around',
                 }}>
                 {selectSort.map((item, index) => (
                   <ModalSortItem item={item} key={index} />

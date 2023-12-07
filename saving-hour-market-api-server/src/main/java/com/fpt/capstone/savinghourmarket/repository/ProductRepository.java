@@ -95,13 +95,13 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 //            "JOIN FETCH p.productBatchList pbp " +
             "JOIN pb.supermarketAddress pba " +
             "JOIN pb.supermarketAddress.pickupPoint pbap " +
-            "JOIN FETCH p.supermarket " +
+            "JOIN FETCH p.supermarket sp " +
             "JOIN FETCH p.productSubCategory " +
             "JOIN FETCH p.productSubCategory.productCategory " +
             "WHERE " +
             "pbap.id = :pickupPointId " +
             "AND " +
-            "UPPER(p.name) LIKE UPPER(CONCAT('%',:name,'%')) " +
+            "((UPPER(p.name) LIKE UPPER(CONCAT('%',:name,'%'))) OR (UPPER(sp.name) LIKE UPPER(CONCAT('%',:name,'%'))) OR (UPPER(CONCAT(p.name, ' (',sp.name,')')) LIKE UPPER(CONCAT('%',:name,'%')))) " +
             "AND " +
             "((:supermarketId IS NULL) OR (p.supermarket.id = :supermarketId)) " +
             "AND " +
