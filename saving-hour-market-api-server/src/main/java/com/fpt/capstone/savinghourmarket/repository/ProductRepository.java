@@ -101,7 +101,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "WHERE " +
             "pbap.id = :pickupPointId " +
             "AND " +
-            "((UPPER(p.name) LIKE UPPER(CONCAT('%',:name,'%'))) OR (UPPER(CONCAT(p.name, ' (',sp.name,')')) LIKE UPPER(CONCAT('%',:name,'%')))) " +
+            "((UPPER(p.name) LIKE UPPER(CONCAT('%',:name,'%'))) OR (UPPER(sp.name) LIKE UPPER(CONCAT('%',:name,'%'))) OR (UPPER(CONCAT(p.name, ' (',sp.name,')')) LIKE UPPER(CONCAT('%',:name,'%')))) " +
             "AND " +
             "((:supermarketId IS NULL) OR (p.supermarket.id = :supermarketId)) " +
             "AND " +
