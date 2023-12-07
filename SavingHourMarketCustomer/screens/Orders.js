@@ -526,6 +526,21 @@ const Orders = ({navigation}) => {
                         Phương thức thanh toán:{' '}
                         {item?.paymentMethod === 0 ? 'COD' : 'VN Pay'}
                       </Text>
+                      {(item.status === 0 || item.status === 1) && (
+                        <TouchableOpacity onPress={() => {
+                          navigation.navigate('Order Feedback');
+                        }}>
+                          <Text
+                            style={{
+                              fontSize: 18,
+                              fontWeight: '100',
+                              fontFamily: 'Roboto',
+                              color: COLORS.primary,
+                            }}>
+                            Đánh giá đơn hàng
+                          </Text>
+                        </TouchableOpacity>
+                      )}
                     </View>
                     <Image
                       resizeMode="contain"
