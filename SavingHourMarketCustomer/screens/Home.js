@@ -146,8 +146,6 @@ const Home = ({ navigation }) => {
       )
         .then(res => res.json())
         .then(data => {
-          // console.log("san pham", data.productList[0].supermarket);
-          // console.log(data);
           setProductsByCategory(data.productList);
           setPage(1);
           setTotalPage(data.totalPage);
@@ -351,7 +349,7 @@ const Home = ({ navigation }) => {
           // marginLeft: 15,
           // marginRight: 20,
           alignItems: 'center',
-          width: (Dimensions.get('window').width - 20*2 - 40 - 21) / 4,
+          width: (Dimensions.get('window').width - 20 * 2 - 40 - 21) / 4,
           shadowColor: '#000',
           shadowOffset: {
             width: 0,
@@ -378,7 +376,7 @@ const Home = ({ navigation }) => {
             fontFamily: FONTS.fontFamily,
             fontSize: Dimensions.get('window').width * 0.03,
             marginTop: 10,
-            textAlign: 'center'      
+            textAlign: 'center'
           }}>
           {data.name}
         </Text>
@@ -685,8 +683,8 @@ const Home = ({ navigation }) => {
               setLoading(true);
               fetch(
                 `${API.baseURL
-                }/api/product/getProductsForCustomer?productCategoryId=${currentCate}&page=${page + 1
-                }&limit=5`,
+                }/api/product/getProductsForCustomer?productCategoryId=${currentCate}&pickupPointId=${pickupPoint?.id}&page=${page
+                }&limit=10&quantitySortType=DESC&expiredSortType=ASC`,
               )
                 .then(res => res.json())
                 .then(data => {
