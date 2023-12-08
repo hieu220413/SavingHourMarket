@@ -165,7 +165,8 @@ const Signup = ({navigation}) => {
       return;
     }
     if (registerWithEmailPasswordRequest.status === 422) {
-      showToast('Sai định dạng');
+      console.log(await registerWithEmailPasswordRequest.json())
+      showToast('Sai định dạng hoặc email đã được sử dụng');
       return null;
     }
     if (registerWithEmailPasswordRequest.status === 403) {

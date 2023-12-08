@@ -241,6 +241,15 @@ const CreateStaff = ({
       .then((res) => res.json())
       .then((respond) => {
         console.log(respond);
+        if (respond.code === 422) {
+          setOpenSnackbar({
+            ...openSnackbar,
+            open: true,
+            text: "Sai định dạng hoặc email đã tồn tại",
+          });
+          setLoading(false);
+          return;
+        }
         if (respond.code === 403) {
           setOpenSnackbar({
             ...openSnackbar,
