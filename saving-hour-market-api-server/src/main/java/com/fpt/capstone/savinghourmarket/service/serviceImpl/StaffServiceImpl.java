@@ -239,12 +239,16 @@ public class StaffServiceImpl implements StaffService {
         UserRecord userRecord = checkIsStaffInOrderProcess(staff);
 
         Map<String, Object> claims = new HashMap<>();
-        if(staff.get().getRole().equals(StaffRole.STAFF_ORD)) {
+        if(staff.get().getRole().equals(StaffRole.STAFF_ORD.toString())) {
             staff.get().getPickupPoint().clear();
         }
-        if(staff.get().getRole().equals(StaffRole.STAFF_DLV_1)) {
+        if(staff.get().getRole().equals(StaffRole.STAFF_DLV_1.toString())) {
             staff.get().getDeliverStaffList().forEach(deliverStaff -> deliverStaff.setDeliverManagerStaff(null));
             staff.get().getDeliverStaffList().clear();
+        }
+        if(staff.get().getRole().equals(StaffRole.STAFF_DLV_0.toString())) {
+            staff.get().getDeliverManagerStaff().getDeliverStaffList().removeIf(deliverStaff -> deliverStaff.getId() == staff.get().getId());
+            staff.get().setDeliverManagerStaff(null);
         }
         staff.get().setRole(staffRoleUpdateRequestBody.getRole().toString());
         claims.put("user_role", staffRoleUpdateRequestBody.getRole().toString());

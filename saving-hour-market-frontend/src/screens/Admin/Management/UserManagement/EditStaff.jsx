@@ -245,7 +245,7 @@ const EditStaff = ({
               "Content-Type": "application/json",
               Authorization: `Bearer ${tokenId}`,
             },
-            body: JSON.stringify(),
+            body: JSON.stringify({ staffEmail: staff.email, pickupPointId: selectedPickupPoint.id}),
           })
             .then((res) => res.json())
             .then((res) => {
