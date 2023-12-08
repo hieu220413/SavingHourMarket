@@ -117,7 +117,7 @@ const ReplyFeedback = ({
               ...openSnackbar,
               open: true,
               severity: "success",
-              text: "Trả lời thành công thành công",
+              text: "Trả lời thành công ",
             });
           })
           .catch((err) => console.log(err));
