@@ -58,6 +58,7 @@ import OrderFeedback from './screens/OrderFeedback';
 import FeedbackList from './screens/FeedbackList';
 import RemotePushController from './src/services/RemotePushController';
 import StartScreen from './screens/StartScreen';
+import EditPassword from './screens/EditPassword';
 
 const Stack = createStackNavigator();
 export default function App() {
@@ -205,6 +206,7 @@ export default function App() {
           <Stack.Screen name="Upload" component={UploadScreen} />
           <Stack.Screen name="Order Feedback" component={OrderFeedback} />
           <Stack.Screen name="List Feedback" component={FeedbackList} />
+          <Stack.Screen name="Edit Password" component={EditPassword} />
           <Stack.Screen
             name="ChangePickupPoint"
             component={ChangePickupPoint}
