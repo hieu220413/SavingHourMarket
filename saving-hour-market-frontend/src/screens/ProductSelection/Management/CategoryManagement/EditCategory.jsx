@@ -51,15 +51,31 @@ const EditCategory = ({
       .then((res) => res.json())
       .then((res) => {
         console.log(res);
-        if (res.code === 422) {
+        if (
+          res.code === 422 &&
+          res.errorFields.nameError ===
+            "Contain only alphabet en/vn and space. Minimum characters is 2 and maximum is 50"
+        ) {
           setOpenSnackbar({
             ...openSnackbar,
             open: true,
             severity: "error",
           });
           setMsg(
-            "Chỉ được phép nhập kí tự chữ trong bảng chữ cái và dấu cách "
+            "Chỉ được phép nhập kí tự chữ trong bảng chữ cái và dấu cách. Cho phép từ 2-50 kí tự."
           );
+          setLoading(false);
+          return;
+        } else if (
+          res.code === 422 &&
+          res.errorFields.nameError === "Duplicate category name"
+        ) {
+          setOpenSnackbar({
+            ...openSnackbar,
+            open: true,
+            severity: "error",
+          });
+          setMsg("Tên loại sản phẩm này đã tồn tại trong hệ thống");
           setLoading(false);
           return;
         }
