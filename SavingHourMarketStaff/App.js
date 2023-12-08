@@ -26,6 +26,7 @@ import OrderListForManager from './src/screens/deliveryManager/OrderListForManag
 import DailyReportForManager from './src/screens/deliveryManager/DailyReportForManager';
 import OrderListForReport from './src/screens/deliveryManager/OrderListForReport';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import EditPassword from './src/screens/EditPassword';
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -127,6 +128,7 @@ export default function App() {
             name="OrderListForReport"
             component={OrderListForReport}
           />
+          <Stack.Screen name="Edit Password" component={EditPassword} />
         </Stack.Navigator>
       </NavigationContainer>
       <ModalPortal />

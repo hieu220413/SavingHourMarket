@@ -19,6 +19,7 @@ import OrderBatch from '../screens/deliveryManager/OrderBatch';
 import OrderGroupForOrderStaff from '../screens/orderStaff/OrderGroup';
 import OrderListForManager from '../screens/deliveryManager/OrderListForManager';
 import ReportForManager from '../screens/deliveryManager/ReportForManager';
+import Profile from '../screens/Profile';
 import HistoryList from '../screens/deliveryStaff/HistoryList';
 import auth from '@react-native-firebase/auth';
 import ModalAlertSignOut from '../components/ModalAlertSignOut';
@@ -293,6 +294,19 @@ const Tabs = ({navigation}) => {
               />
             </>
           )}
+          <Tab.Screen
+                name="Profile"
+                component={Profile}
+                options={{
+                  tabBarIcon: ({focused}) => (
+                    <TabIcon
+                      display={'Tôi'}
+                      focused={focused}
+                      icon={icons.user}
+                    />
+                  ),
+                }}
+              />
         </Tab.Navigator>
         <ModalAlertSignOut alertVisible={alertVisible} />
       </>
