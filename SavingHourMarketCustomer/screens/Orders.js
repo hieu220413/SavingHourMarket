@@ -526,7 +526,7 @@ const Orders = ({navigation}) => {
                         Phương thức thanh toán:{' '}
                         {item?.paymentMethod === 0 ? 'COD' : 'VN Pay'}
                       </Text>
-                      {(item.status === 0 || item.status === 1) && (
+                      {(item.status === 4 || item.status === 5) && (
                         <TouchableOpacity onPress={() => {
                           navigation.navigate('Order Feedback');
                         }}>
