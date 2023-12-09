@@ -14,6 +14,7 @@ import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import Toast from 'react-native-toast-message';
 import LoadingScreen from '../components/LoadingScreen';
 import AccountDisable from '../components/AccountDisable';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import database from '@react-native-firebase/database';
 import Modal, {
   ModalFooter,
@@ -197,14 +198,32 @@ const OrderDetail = ({navigation, route}) => {
           </TouchableOpacity>
           <Text
             style={{
+              flexGrow: 1,
               fontSize: 25,
-              textAlign: 'center',
+              textAlign: 'left',
               color: '#000000',
               fontWeight: 'bold',
               fontFamily: 'Roboto',
             }}>
             Chi tiết đơn hàng
           </Text>
+          {item?.status === 4 && !item?.isFeedback && <TouchableOpacity onPress={() => {
+            navigation.navigate('Order Feedback', {orderId: item.id});
+          }}>
+            <MaterialIcons
+              name="feedback"
+              size={30}
+              color="black"></MaterialIcons>
+            {/* <Text
+              style={{
+                fontSize: 18,
+                fontWeight: '100',
+                fontFamily: 'Roboto',
+                color: COLORS.primary,
+              }}>
+              Đánh giá đơn hàng
+            </Text> */}
+          </TouchableOpacity> }
         </View>
         {item && (
           <ScrollView>

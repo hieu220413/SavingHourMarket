@@ -49,6 +49,8 @@ public class OrderWithDetails {
 
     private Integer paymentStatus;
 
+    private Boolean isFeedback;
+
     private Customer customer;
 
     private List<Transaction> transaction;
