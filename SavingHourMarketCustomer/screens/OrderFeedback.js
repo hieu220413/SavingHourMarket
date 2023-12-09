@@ -33,6 +33,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {API} from '../constants/api';
 import database from '@react-native-firebase/database';
+import Toast from 'react-native-toast-message';
 
 const numStar = 5;
 
@@ -50,7 +51,7 @@ class Star extends React.Component {
 
 const OrderFeedback = ({navigation, route}) => {
   //-----------------RATING---------------------
-  const orderId = JSON.parse(JSON.stringify(route.params));
+  const {orderId} = route.params;
   const [rating, setRating] = useState(5);
   const [animation, setAnimation] = useState(new Animated.Value(1));
 
@@ -233,6 +234,17 @@ const OrderFeedback = ({navigation, route}) => {
   const [message, setMessage] = useState('');
   const [initializing, setInitializing] = useState(true);
   const [tokenId, setTokenId] = useState(null);
+
+  const showToastSuccess = message => {
+    Toast.show({
+      type: 'success',
+      text1: 'Thành công',
+      text2: message,
+      visibilityTime: 2000,
+    });
+  };
+
+
   //authen check
   const onAuthStateChange = async userInfo => {
     // console.log(userInfo);
@@ -325,7 +337,8 @@ const OrderFeedback = ({navigation, route}) => {
           })
           .then(async respond => {
             console.log('respone', JSON.stringify(respond));
-            Alert.alert(respond);
+            showToastSuccess(respond);
+            navigation.goBack();
           })
           .catch(err => console.log(err));
       }
