@@ -51,6 +51,7 @@ const VoucherManagement = () => {
     e.preventDefault();
     setSearchValue(textSearch);
     setPage(1);
+    setTextPage(1);
   };
 
   const [openSnackbar, setOpenSnackbar] = useState({

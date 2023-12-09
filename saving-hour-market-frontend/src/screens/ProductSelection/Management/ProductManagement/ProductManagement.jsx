@@ -287,6 +287,7 @@ const ProductManagement = () => {
       setSupermarketId("");
       setProductCategoryId("");
       setProductSubCategoryId("");
+      setTextPage(1);
       if (userAuth) {
         const tokenId = await auth.currentUser.getIdToken();
         fetch(
@@ -403,6 +404,7 @@ const ProductManagement = () => {
     e.preventDefault();
     setSearchValue(textSearch);
     setPage(1);
+    setTextPage(1);
   };
 
   const ProductRow = ({ item, index }) => {
@@ -1082,6 +1084,8 @@ const ProductManagement = () => {
           setProducts={setProducts}
           isSwitchRecovery={isSwitchRecovery}
           page={page}
+          setPage={setPage}
+          setTextPage={setTextPage}
           setTotalPage={setTotalPage}
           searchValue={searchValue}
           openSnackbar={openSnackbar}

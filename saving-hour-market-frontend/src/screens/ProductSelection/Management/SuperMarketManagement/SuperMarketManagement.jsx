@@ -116,6 +116,7 @@ const SuperMarketManagement = () => {
     e.preventDefault();
     setSearchValue(textSearch);
     setPage(1);
+    setTextPage(1);
   };
   return (
     <div>
