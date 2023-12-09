@@ -48,8 +48,9 @@ class Star extends React.Component {
   }
 }
 
-const OrderFeedback = ({navigation}) => {
+const OrderFeedback = ({navigation, route}) => {
   //-----------------RATING---------------------
+  const orderId = JSON.parse(JSON.stringify(route.params));
   const [rating, setRating] = useState(5);
   const [animation, setAnimation] = useState(new Animated.Value(1));
 
@@ -223,11 +224,11 @@ const OrderFeedback = ({navigation}) => {
   };
   //--------------------END----------------------
 
-  const [selected, setSelected] = useState('');
+  const [selected, setSelected] = useState('Đơn hàng');
   const data = [
-    {value: 'Đơn hàng'},
-    {value: 'Đóng gói'},
-    {value: 'Vận chuyển'},
+    {key: 'Đơn hàng', value: 'Đơn hàng'},
+    {key: 'Đóng gói', value: 'Đóng gói'},
+    {key: 'Vận chuyển', value: 'Vận chuyển'},
   ];
   const [message, setMessage] = useState('');
   const [initializing, setInitializing] = useState(true);
@@ -279,8 +280,9 @@ const OrderFeedback = ({navigation}) => {
   //----------------SEND---------------------------
   const sendFeedback = async () => {
     let feedbackInfo = {};
+    console.log('feedback type: ', selected)
     if (selected === '') {
-      Alert.alert('Vui long chọn mục để đánh giá !!!');
+      Alert.alert('Vui lòng chọn mục để đánh giá !!!');
       return;
     } else {
       let listImages;
@@ -302,7 +304,9 @@ const OrderFeedback = ({navigation}) => {
         message: message,
         imageUrls: listImages,
         object: object,
+        orderId: orderId
       };
+      console.log(feedbackInfo)
       console.log('Token', tokenId);
       if (tokenId === null) {
         Alert.alert('Unauthorized');
@@ -394,6 +398,8 @@ const OrderFeedback = ({navigation}) => {
                 dropdownStyles={{backgroundColor: 'white'}}
                 inputStyles={{color: 'black'}}
                 dropdownTextStyles={{color: 'black'}}
+                defaultOption={{key: 'Đơn hàng', value: 'Đơn hàng'}}
+                dropdownShown={false}
               />
             </View>
           </View>

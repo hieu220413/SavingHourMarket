@@ -727,6 +727,7 @@ public class OrderServiceImpl implements OrderService {
         orderWithDetails.setTransaction(order.getTransaction());
         orderWithDetails.setTimeFrame(order.getTimeFrame());
         orderWithDetails.setPickupPoint(order.getPickupPoint());
+        orderWithDetails.setIsFeedback(order.getIsFeedBack());
 
         List<OrderDetail> orderDetails = order.getOrderDetailList();
         List<OrderProduct> orderProducts = orderDetails.stream()

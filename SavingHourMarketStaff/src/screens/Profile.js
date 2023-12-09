@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 /* eslint-disable prettier/prettier */
 import React, {useState, useEffect, useCallback} from 'react';
 import {
@@ -10,7 +11,7 @@ import {
   Switch,
 } from 'react-native';
 // import {Switch} from 'react-native-switch';
-import Header from '../shared/Header';
+// import Header from '../shared/Header';
 import {COLORS} from '../constants/theme';
 import {icons} from '../constants';
 import {ScrollView, TouchableOpacity} from 'react-native-gesture-handler';
@@ -18,14 +19,9 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Feather from 'react-native-vector-icons/Feather';
 import auth from '@react-native-firebase/auth';
-import {
-  GoogleSignin,
-  GoogleSigninButton,
-} from '@react-native-google-signin/google-signin';
 import {useFocusEffect} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoadingScreen from '../components/LoadingScreen';
-import messaging from '@react-native-firebase/messaging';
 import Modal, {
   ModalFooter,
   ModalButton,
@@ -33,29 +29,18 @@ import Modal, {
   ScaleAnimation,
 } from 'react-native-modals';
 import database from '@react-native-firebase/database';
+import {checkSystemState} from '../common/utils';
 
 const Profile = ({navigation}) => {
+  useFocusEffect(
+    useCallback(() => {
+      const onSystemStateChange = checkSystemState(navigation);
+    }, []),
+  );
+
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [isEnable, setIsEnable] = useState(true);
-  const [openAuthModal, setOpenAuthModal] = useState(false);
-  const [isPasswordLoginType, setIsPasswordLoginType] = useState(false);
-  useFocusEffect(
-    useCallback(() => {
-      (async () => {
-        try {
-          setLoading(true);
-          const isEnabled = await AsyncStorage.getItem('isEnable');
-          setIsEnable(isEnabled ? JSON.parse(isEnabled) : true);
-          setLoading(false);
-        } catch (err) {
-          console.log(err);
-          setLoading(false);
-        }
-      })();
-    }, []),
-  );
 
   useFocusEffect(
     useCallback(() => {
@@ -72,79 +57,54 @@ const Profile = ({navigation}) => {
       })();
     }, []),
   );
-  const toggleSwitch = async value => {
-    if (value) {
-      console.log('hello');
-      messaging()
-        .subscribeToTopic(user ? user.id : '.')
-        .then(() => console.log('Subscribed to topic!'));
-      await AsyncStorage.setItem('isEnable', JSON.stringify(value));
-    } else {
-      messaging()
-        .unsubscribeFromTopic(user ? user.id : '.')
-        .then(() => console.log('Unsubscribed fom the topic!'));
-      await AsyncStorage.setItem('isEnable', JSON.stringify(value));
-    }
-    setIsEnable(value);
-  };
   //authen check
-  const onAuthStateChange = async userInfo => {
-    // console.log(userInfo);
-    setLoading(true);
-    if (initializing) {
-      setInitializing(false);
-    }
-    if (userInfo) {
-      // check if user sessions is still available. If yes => redirect to another screen
-      const userTokenId = await userInfo
-        .getIdToken(true)
-        .then(token => token)
-        .catch(async e => {
-          console.log(e);
-          setLoading(false);
-          return null;
-        });
-      if (!userTokenId) {
-        // sessions end. (revoke refresh token like password change, disable account, ....)
+  // const onAuthStateChange = async userInfo => {
+  //   // console.log(userInfo);
+  //   setLoading(true);
+  //   if (initializing) {
+  //     setInitializing(false);
+  //   }
+  //   if (userInfo) {
+  //     // check if user sessions is still available. If yes => redirect to another screen
+  //     const userTokenId = await userInfo
+  //       .getIdToken(true)
+  //       .then(token => token)
+  //       .catch(async e => {
+  //         console.log(e);
+  //         setLoading(false);
+  //         return null;
+  //       });
+  //     if (!userTokenId) {
+  //       // sessions end. (revoke refresh token like password change, disable account, ....)
 
-        setLoading(false);
-        return;
-      }
-      const loginType = (await userInfo.getIdTokenResult()).signInProvider;
-      console.log(loginType);
-      if (loginType && loginType === 'password') {
-        setIsPasswordLoginType(true);
-      }
-      console.log('user is logged in');
-      const info = await AsyncStorage.getItem('userInfo');
-      console.log('info: ' + info);
-      setUser(JSON.parse(info));
-      // console.log('Username: ' + user?.fullName);
-      setLoading(false);
-    } else {
-      // no sessions found.
-      await AsyncStorage.removeItem('userInfo');
-      await AsyncStorage.removeItem('CartList');
-      console.log('user is not logged in');
-      setLoading(false);
-      // console.log(user);
-    }
-  };
+  //       setLoading(false);
+  //       return;
+  //     }
+  //     console.log('user is logged in');
+  //     const info = await AsyncStorage.getItem('userInfo');
+  //     console.log('info: ' + info);
+  //     setUser(JSON.parse(info));
+  //     // console.log('Username: ' + user?.fullName);
+  //     setLoading(false);
+  //   } else {
+  //     // no sessions found.
+  //     await AsyncStorage.removeItem('userInfo');
+  //     console.log('user is not logged in');
+  //     setLoading(false);
+  //     // console.log(user);
+  //   }
+  // };
 
-  useFocusEffect(
-    useCallback(() => {
-      // auth().currentUser.reload()
-      const subscriber = auth().onAuthStateChanged(
-        async userInfo => await onAuthStateChange(userInfo),
-      );
-      GoogleSignin.configure({
-        webClientId:
-          '857253936194-dmrh0nls647fpqbuou6mte9c7e4o6e6h.apps.googleusercontent.com',
-      });
-      return subscriber;
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []),
-  );
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     // auth().currentUser.reload()
+  //     const subscriber = auth().onAuthStateChanged(
+  //       async userInfo => await onAuthStateChange(userInfo),
+  //     );
+  //     return subscriber;
+  //     // eslint-disable-next-line react-hooks/exhaustive-deps
+  //   }, []),
+  // );
 
   // system status check
   useFocusEffect(
@@ -166,15 +126,13 @@ const Profile = ({navigation}) => {
   );
 
   const logout = async () => {
-    messaging()
-      .unsubscribeFromTopic(user ? user.id : '.')
-      .then(() => console.log('Unsubscribed fom the topic!'));
-
-    await GoogleSignin.signOut().catch(e => console.log(e));
-    await AsyncStorage.clear();
     auth()
       .signOut()
-      .then(() => setUser(null), console.log('Signed out successfully!'))
+      .then(async () => {
+        await AsyncStorage.removeItem('userInfo');
+        setUser(null);
+        console.log('Signed out successfully!');
+      })
       .catch(e => console.log(e));
   };
   // let userInfo;
@@ -193,15 +151,14 @@ const Profile = ({navigation}) => {
       }}>
       {/* <Header /> */}
 
-      <View style={{marginHorizontal: '6%', marginTop: '3%'}}>
-      </View>
+      <View style={{marginHorizontal: '6%', marginTop: '3%'}}></View>
       {/* Profile */}
       <View
         style={{
           paddingHorizontal: '6%',
           flexDirection: 'row',
           alignItems: 'center',
-          marginBottom: '5%',
+          marginBottom: '2%',
           marginTop: '5%',
         }}>
         {user ? (
@@ -212,7 +169,13 @@ const Profile = ({navigation}) => {
               // alignSelf: 'center',
               borderRadius: 100,
             }}
-            source={{uri: `${user?.avatarUrl}`}}
+            source={{
+              uri: `${
+                user.avatarUrl
+                  ? user.avatarUrl
+                  : require('../assets/image/avatarDefault.png')
+              }`
+            }}
           />
         ) : (
           <Image
@@ -324,7 +287,7 @@ const Profile = ({navigation}) => {
         />
         {/* Options 1 */}
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -360,7 +323,7 @@ const Profile = ({navigation}) => {
           <View>
             <AntDesign name="right" size={20} color="black"></AntDesign>
           </View>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         {/* <TouchableOpacity
           style={{
@@ -423,42 +386,6 @@ const Profile = ({navigation}) => {
             alignSelf: 'center',
           }}
         /> */}
-        {/* Options 2 */}
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginHorizontal: '3%',
-            justifyContent: 'space-between',
-          }}
-          activeOpacity={0.8}>
-          <View
-            style={{flexDirection: 'row', columnGap: 15, alignItems: 'center'}}>
-            <MaterialIcons
-              name="notifications-none"
-              size={30}
-              color="black"></MaterialIcons>
-            <Text
-              style={{
-                fontFamily: 'Roboto',
-                fontSize: 16,
-                fontWeight: '700',
-                color: 'black',
-              }}>
-              Thông báo
-            </Text>
-          </View>
-          <Switch
-            disabled={user ? false : true}
-            trackColor={{false: 'grey', true: 'tomato'}}
-            thumbColor={isEnable ? '#f4f3f4' : '#f4f3f4'}
-            // ios_backgroundColor="#3e3e3e"
-            onValueChange={value => {
-              toggleSwitch(value);
-            }}
-            value={user ? isEnable : false}
-          />
-        </View>
         {/* <TouchableOpacity
           onPress={() => {
             navigation.navigate('Upload');
@@ -485,45 +412,10 @@ const Profile = ({navigation}) => {
           </View>
           <AntDesign name="right" size={20} color="black"></AntDesign>
         </TouchableOpacity> */}
-
-        <TouchableOpacity
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginHorizontal: '3%',
-            justifyContent: 'space-between',
-          }}
-          onPress={() => {
-            if (user == null) {
-              setOpenAuthModal(true);
-              return;
-            } else {
-              navigation.navigate('List Feedback');
-            }
-          }}
-          activeOpacity={0.8}>
-          <View
-            style={{flexDirection: 'row', columnGap: 15, alignItems: 'center'}}>
-            <AntDesign
-              name="questioncircleo"
-              size={30}
-              color="black"></AntDesign>
-            <Text
-              style={{
-                fontFamily: 'Roboto',
-                fontSize: 16,
-                fontWeight: '700',
-                color: 'black',
-              }}>
-              Đánh giá
-            </Text>
-          </View>
-          <AntDesign name="right" size={20} color="black"></AntDesign>
-        </TouchableOpacity>
         {/*  */}
         {user ? (
           <>
-            {isPasswordLoginType && <TouchableOpacity
+            <TouchableOpacity
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
@@ -531,20 +423,16 @@ const Profile = ({navigation}) => {
                 justifyContent: 'space-between',
               }}
               onPress={() => {
-                if (user == null) {
-                  setOpenAuthModal(true);
-                  return;
-                } else {
-                  navigation.navigate('Edit Password', {user});
-                }
+                navigation.navigate('Edit Password', {user});
               }}
               activeOpacity={0.8}>
               <View
-                style={{flexDirection: 'row', columnGap: 15, alignItems: 'center'}}>
-                <AntDesign
-                  name="lock"
-                  size={30}
-                  color="black"></AntDesign>
+                style={{
+                  flexDirection: 'row',
+                  columnGap: 15,
+                  alignItems: 'center',
+                }}>
+                <AntDesign name="lock" size={30} color="black"></AntDesign>
                 <Text
                   style={{
                     fontFamily: 'Roboto',
@@ -556,7 +444,7 @@ const Profile = ({navigation}) => {
                 </Text>
               </View>
               <AntDesign name="right" size={20} color="black"></AntDesign>
-            </TouchableOpacity> }
+            </TouchableOpacity>
             <TouchableOpacity
               style={{
                 flexDirection: 'row',
@@ -587,84 +475,11 @@ const Profile = ({navigation}) => {
                 </Text>
               </View>
             </TouchableOpacity>
-          </>   
+          </>
         ) : (
-          <TouchableOpacity
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginHorizontal: '3%',
-              justifyContent: 'space-between',
-            }}
-            activeOpacity={0.8}
-            onPress={async () => {
-              navigation.navigate('Login');
-            }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                columnGap: 15,
-                alignItems: 'center',
-              }}>
-              <AntDesign name="login" size={30} color="black"></AntDesign>
-              <Text
-                style={{
-                  fontFamily: 'Roboto',
-                  fontSize: 16,
-                  fontWeight: '700',
-                  color: 'black',
-                }}>
-                Đăng nhập
-              </Text>
-            </View>
-          </TouchableOpacity>
+          <></>
         )}
       </View>
-      {/* auth modal */}
-      <Modal
-        width={0.8}
-        visible={openAuthModal}
-        dialogAnimation={
-          new ScaleAnimation({
-            initialValue: 0, // optional
-            useNativeDriver: true, // optional
-          })
-        }
-        footer={
-          <ModalFooter>
-            <ModalButton
-              text="Ở lại trang"
-              onPress={() => {
-                setOpenAuthModal(false);
-              }}
-            />
-            <ModalButton
-              text="Đăng nhập"
-              onPress={async () => {
-                try {
-                  await AsyncStorage.clear();
-                  navigation.navigate('Login');
-                  setOpenAuthModal(false);
-                } catch (error) {
-                  console.log(error);
-                }
-              }}
-            />
-          </ModalFooter>
-        }>
-        <View
-          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
-          <Text
-            style={{
-              fontSize: 20,
-              fontFamily: 'Roboto',
-              color: 'black',
-              textAlign: 'center',
-            }}>
-            Vui lòng đăng nhập để thực hiện thao tác này
-          </Text>
-        </View>
-      </Modal>
       {loading && <LoadingScreen />}
     </SafeAreaView>
   );
