@@ -72,7 +72,7 @@ public class FeedBackServiceImpl implements FeedBackService {
             order.setIsFeedBack(true);
         }
         feedBackRepository.save(feedBack);
-        return "Feedback sent successfully";
+        return "Gửi phản hồi nhận xét thành công";
     }
 
     @Override
