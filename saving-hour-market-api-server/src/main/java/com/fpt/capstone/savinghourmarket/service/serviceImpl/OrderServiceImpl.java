@@ -560,6 +560,7 @@ public class OrderServiceImpl implements OrderService {
                         for (Order order : orderBatch.getOrderList()) {
                             if (order.getStatus() == OrderStatus.PACKAGED.ordinal()) {
                                 order.setStatus(OrderStatus.DELIVERING.ordinal());
+                                order.setDeliverer(staff);
                                 FirebaseService.sendPushNotification("SHM", "Đơn hàng " + order.getCode() + " chuẩn bị được giao!", order.getCustomer().getId().toString());
                             } else if (order.getStatus() == OrderStatus.DELIVERING.ordinal() && manager.getDeliverStaffList().stream().anyMatch(staff1 -> staff1.equals(order.getDeliverer()))) {
                                 order.setDeliverer(staff);
