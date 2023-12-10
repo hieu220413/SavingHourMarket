@@ -1331,9 +1331,10 @@ const HomeDeliver = ({ navigation }) => {
                                     style={{
                                       flexDirection: 'row',
                                       alignItems: 'center',
+                                      paddingHorizontal: data.item.isExpand ? 0 : 5,
                                       flexGrow: 1,
                                       flexShrink: 1,
-                                      justifyContent: 'center',
+                                      justifyContent:  data.item.isExpand ? 'center' : 'flex-start',
                                     }}>
                                     {data.item.isExpand ? (
                                       <Text
@@ -1343,9 +1344,9 @@ const HomeDeliver = ({ navigation }) => {
                                           fontFamily: 'Roboto',
                                           color: 'white',
                                         }}>
-                                        {data.item.timeFrame.fromHour +
+                                        {data.item.timeFrame.fromHour.slice(0,5) +
                                           '-' +
-                                          data.item.timeFrame.toHour +
+                                          data.item.timeFrame.toHour.slice(0,5) +
                                           ' ' +
                                           format(
                                             Date.parse(data.item.deliverDate),
@@ -1366,9 +1367,9 @@ const HomeDeliver = ({ navigation }) => {
                                             color: 'white',
                                           }}>
                                           Khung giờ:{' '}
-                                          {data.item.timeFrame.fromHour +
+                                          {data.item.timeFrame.fromHour.slice(0,5) +
                                             '-' +
-                                            data.item.timeFrame.toHour}
+                                            data.item.timeFrame.toHour.slice(0,5)}
                                         </Text>
                                         <Text
                                           style={{
@@ -1383,6 +1384,34 @@ const HomeDeliver = ({ navigation }) => {
                                             'dd/MM/yyyy',
                                           )}
                                         </Text>
+                                        {data.item.pickupPoint && (
+                                          <Text
+                                          style={{
+                                            fontSize: 18,
+                                            fontWeight: 'bold',
+                                            fontFamily: 'Roboto',
+                                            color: 'white',
+                                          }}
+                                          numberOfLines={2}>
+                                          Điểm giao:
+                                          {' ' + data.item.pickupPoint.address}
+                                        </Text>
+                                        )}
+                                        {data.item.productConsolidationArea && (
+                                        <Text
+                                          style={{
+                                            fontSize: 18,
+                                            fontWeight: 'bold',
+                                            fontFamily: 'Roboto',
+                                            color: 'white',
+                                          }}
+                                          numberOfLines={2}>
+                                          Điểm tập kết:
+                                          {' ' +
+                                            data.item.productConsolidationArea
+                                              .address}
+                                        </Text>
+                                      )}
                                       </View>
                                     )}
                                   </View>
