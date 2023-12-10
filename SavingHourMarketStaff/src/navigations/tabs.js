@@ -122,7 +122,7 @@ const Tabs = ({navigation}) => {
               backgroundColor: COLORS.tabBackground,
               opacity: 0.95,
               borderTopColor: 'transparent',
-              height: '10%',
+              height: '9%',
             },
             
           }}>

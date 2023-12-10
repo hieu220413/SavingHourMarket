@@ -1641,9 +1641,9 @@ const Home = ({ navigation }) => {
                 {orderList[0]?.status === 1 && (
                   <Text
                     style={{
-                      color: 'black',
-                      fontSize: 18,
-                      fontWeight: 400,
+                      color: 'grey',
+                      fontSize: 16,
+                      fontWeight: 'bold',
                       paddingBottom: 20,
                     }}>
                     Bạn đã hoàn thành đóng gói đơn hàng này ?
@@ -1655,37 +1655,20 @@ const Home = ({ navigation }) => {
                     flexDirection: 'row',
                     justifyContent: 'center',
                   }}>
-                  <TouchableOpacity
-                    style={{
-                      width: '50%',
-                      paddingHorizontal: 15,
-                      paddingVertical: 10,
-                      backgroundColor: 'white',
-                      borderRadius: 10,
-                      borderColor: COLORS.primary,
-                      borderWidth: 0.5,
-                      marginRight: '2%',
-                    }}
-                    onPress={handleCancel}>
-                    <Text
-                      style={{
-                        color: COLORS.primary,
-                        fontWeight: 'bold',
-                        textAlign: 'center',
-                      }}>
-                      Đóng
-                    </Text>
-                  </TouchableOpacity>
 
                   <TouchableOpacity
                     style={{
-                      width: '50%',
+                      width: '100%',
                       paddingHorizontal: 15,
                       paddingVertical: 10,
-                      backgroundColor: COLORS.primary,
+                      backgroundColor:
+                      orderList[0]?.status === 0 && selectedConsolidationAreaId === ''
+                          ? COLORS.light_green
+                          : COLORS.primary,
                       color: 'white',
                       borderRadius: 10,
                     }}
+                    disabled={orderList[0]?.status === 0 && selectedConsolidationAreaId === ''}
                     onPress={() => {
                       handleConfirm();
                     }}>

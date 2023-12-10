@@ -624,6 +624,9 @@ const Profile = ({navigation}) => {
       <Modal
         width={0.8}
         visible={openAuthModal}
+        onTouchOutside={() => {
+          setOpenAuthModal(false);
+        }}
         dialogAnimation={
           new ScaleAnimation({
             initialValue: 0, // optional
@@ -632,12 +635,6 @@ const Profile = ({navigation}) => {
         }
         footer={
           <ModalFooter>
-            <ModalButton
-              text="Ở lại trang"
-              onPress={() => {
-                setOpenAuthModal(false);
-              }}
-            />
             <ModalButton
               text="Đăng nhập"
               onPress={async () => {

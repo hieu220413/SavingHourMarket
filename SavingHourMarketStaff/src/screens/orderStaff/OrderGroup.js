@@ -1262,7 +1262,7 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                                     }
                                   />
                                 </TouchableOpacity>
-                                <View
+                                <Pressable
                                   style={{
                                     flexDirection: 'row',
                                     alignItems: 'center',
@@ -1356,7 +1356,7 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                                       )}
                                     </View>
                                   )}
-                                </View>
+                                </Pressable>
                                 <View
                                   style={{
                                     height: '100%',

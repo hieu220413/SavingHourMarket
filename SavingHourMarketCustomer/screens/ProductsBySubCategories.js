@@ -499,6 +499,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
         </View>
         {/* List products */}
         <ScrollView
+          showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="always"
           contentContainerStyle={{
             paddingBottom: 100,

@@ -17,21 +17,21 @@ import {
   GoogleSignin,
   GoogleSigninButton,
 } from '@react-native-google-signin/google-signin';
-import React, {useState, useEffect, useCallback} from 'react';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import React, { useState, useEffect, useCallback } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FlatButton from '../shared/button';
-import {useFocusEffect} from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {API} from '../constants/api';
+import { API } from '../constants/api';
 import LoadingScreen from '../components/LoadingScreen';
-import database, {firebase} from '@react-native-firebase/database';
-import {ScrollView} from 'react-native-gesture-handler';
-import {TouchableOpacity} from '@gorhom/bottom-sheet';
+import database, { firebase } from '@react-native-firebase/database';
+import { ScrollView } from 'react-native-gesture-handler';
+import { TouchableOpacity } from '@gorhom/bottom-sheet';
 import Toast from 'react-native-toast-message';
 
-const EditPassword = ({navigation, route}) => {
+const EditPassword = ({ navigation, route }) => {
   const user = route.params.user;
   const [email, setEmail] = useState(user ? user.email : '');
   const [oldPassword, setOldPassword] = useState('');
@@ -52,7 +52,7 @@ const EditPassword = ({navigation, route}) => {
           if (snapshot.val() === 0) {
             navigation.reset({
               index: 0,
-              routes: [{name: 'Initial'}],
+              routes: [{ name: 'Initial' }],
             });
           } else {
             // setSystemStatus(snapshot.val());
@@ -137,7 +137,7 @@ const EditPassword = ({navigation, route}) => {
         .catch(error => {
           console.log(error);
           setLoading(false)
-          if(error.message.includes("auth/wrong-password")){
+          if (error.message.includes("auth/wrong-password")) {
             Alert.alert("Sai mật khẩu hiện tại")
           } else {
             Alert.alert("Xảy ra lỗi ngoài sự cố")
@@ -164,7 +164,7 @@ const EditPassword = ({navigation, route}) => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <SafeAreaView style={{backgroundColor: 'white', height: '100%'}}>
+      <SafeAreaView style={{ backgroundColor: 'white', height: '100%' }}>
         <View
           style={{
             marginHorizontal: '5%',
@@ -177,7 +177,7 @@ const EditPassword = ({navigation, route}) => {
               navigation.goBack();
             }}>
             <Ionicons
-              style={{top: '10%'}}
+              style={{ top: '10%' }}
               name="arrow-back-sharp"
               size={28}
               color="black"
@@ -197,10 +197,11 @@ const EditPassword = ({navigation, route}) => {
         {/* Form */}
         <KeyboardAvoidingView
           enabled
-          style={{flex: 1, marginBottom: 10}}
+          style={{ flex: 1, marginBottom: 10 }}
           behavior={Platform.OS === 'ios' ? 'padding' : null}>
           <ScrollView
-            style={{flexDirection: 'column'}}
+            showsVerticalScrollIndicator={false}
+            style={{ flexDirection: 'column' }}
             contentContainerStyle={{
               justifyContent: 'space-between',
               flexGrow: 1,
@@ -234,8 +235,8 @@ const EditPassword = ({navigation, route}) => {
                 keyboardType="default"
               />
               {oldPasswordError && (
-                <View style={{width: '85%', marginTop: '-3%'}}>
-                  <Text style={{color: 'red'}}>{oldPasswordError}</Text>
+                <View style={{ width: '85%', marginTop: '-3%' }}>
+                  <Text style={{ color: 'red' }}>{oldPasswordError}</Text>
                 </View>
               )}
               <TextInput
@@ -261,8 +262,8 @@ const EditPassword = ({navigation, route}) => {
                 placeholder="Mật khẩu mới"
               />
               {newPasswordError && (
-                <View style={{width: '85%', marginTop: '-3%'}}>
-                  <Text style={{color: 'red'}}>{newPasswordError}</Text>
+                <View style={{ width: '85%', marginTop: '-3%' }}>
+                  <Text style={{ color: 'red' }}>{newPasswordError}</Text>
                 </View>
               )}
               <TextInput
@@ -287,8 +288,8 @@ const EditPassword = ({navigation, route}) => {
                 secureTextEntry={true}
               />
               {confirmNewPasswordError && (
-                <View style={{width: '85%', marginTop: '-3%'}}>
-                  <Text style={{color: 'red'}}>{confirmNewPasswordError}</Text>
+                <View style={{ width: '85%', marginTop: '-3%' }}>
+                  <Text style={{ color: 'red' }}>{confirmNewPasswordError}</Text>
                 </View>
               )}
             </View>
@@ -298,7 +299,7 @@ const EditPassword = ({navigation, route}) => {
                 alignItems: 'center',
                 marginBottom: '4%',
               }}>
-              <View style={{width: '90%'}}>
+              <View style={{ width: '90%' }}>
                 <FlatButton text="Cập nhật" onPress={handleSubmit} />
               </View>
             </View>

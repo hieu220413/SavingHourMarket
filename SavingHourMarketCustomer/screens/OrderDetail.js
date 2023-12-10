@@ -226,7 +226,8 @@ const OrderDetail = ({navigation, route}) => {
           </TouchableOpacity> }
         </View>
         {item && (
-          <ScrollView>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            
             <View style={{padding: 20, backgroundColor: COLORS.primary}}>
               <Text
                 style={{color: 'white', fontSize: 18, fontFamily: 'Roboto'}}>
