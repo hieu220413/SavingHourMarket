@@ -1387,7 +1387,7 @@ const HomeDeliver = ({ navigation }) => {
                                         {data.item.pickupPoint && (
                                           <Text
                                           style={{
-                                            fontSize: 18,
+                                            fontSize: Dimensions.get('window').width * 0.045,
                                             fontWeight: 'bold',
                                             fontFamily: 'Roboto',
                                             color: 'white',
@@ -1400,7 +1400,7 @@ const HomeDeliver = ({ navigation }) => {
                                         {data.item.productConsolidationArea && (
                                         <Text
                                           style={{
-                                            fontSize: 18,
+                                            fontSize: Dimensions.get('window').width * 0.045,
                                             fontWeight: 'bold',
                                             fontFamily: 'Roboto',
                                             color: 'white',
