@@ -33,6 +33,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {API} from '../constants/api';
 import LoadingScreen from '../components/LoadingScreen';
+import Toast from 'react-native-toast-message';
 import database from '@react-native-firebase/database';
 
 const numStar = 5;
