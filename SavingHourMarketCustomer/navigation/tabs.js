@@ -20,7 +20,7 @@ const Tabs = () => {
         headerShown: false,
         tabBarShowLabel: false,
         tabBarStyle: {
-          height: '7%',
+          height: '6%',
           position: 'absolute',
           bottom: 3,
           right: 7,

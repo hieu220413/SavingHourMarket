@@ -45,7 +45,7 @@ const TabIcon = (props) => {
           width:imageWidth*1.9,
           height:imageHeight+imageHeight*0.01,
           borderRadius: 100,
-          borderWidth: 4,
+          borderWidth: 6,
           borderColor: COLORS.tabBackground,
           backgroundColor: focused ? COLORS.primary: COLORS.tabBackground,
           justifyContent: 'center',
