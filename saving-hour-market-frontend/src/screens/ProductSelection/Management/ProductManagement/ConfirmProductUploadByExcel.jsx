@@ -314,7 +314,7 @@ const ConfirmProductUploadByExcel = ({
         <tr key={index} className="table-body-row">
           <td style={{ paddingTop: 30 }}>{index + 1}</td>
           <td>
-            {item.imageUrls.length !== 0 ? (
+            {item.imageUrls?.length !== 0 && item.imageUrls !== null ? (
               <div style={{ position: "relative" }}>
                 <img
                   alt="hình"
@@ -394,7 +394,8 @@ const ConfirmProductUploadByExcel = ({
           </td>
           <td style={{ paddingTop: 30 }}>
             {errorList.some((item) => parseInt(item.index) === itemIndex + 1) ||
-            item.imageUrls.length === 0 ? (
+            item.imageUrls?.length === 0 ||
+            item.imageUrls === null ? (
               <i
                 onClick={handleOpenErrorList}
                 style={{ marginLeft: "-3px" }}

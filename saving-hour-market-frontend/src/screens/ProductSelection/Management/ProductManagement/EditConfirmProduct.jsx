@@ -394,6 +394,7 @@ const EditConfirmProduct = ({
         item.productSubCategory.id === selectedDropdownItemSubCate.id &&
         item.unit === unit &&
         item.supermarket.id === selectedSupermarketDropdownItem.id &&
+        item.priceListed === priceListed &&
         i !== index
       ) {
         return Object.assign(item, { index: i });
@@ -435,6 +436,7 @@ const EditConfirmProduct = ({
         name: productName,
         description: description,
         unit: unit,
+        priceListed: parseInt(priceListed),
         status: 1,
         productSubCategory: {
           ...selectedDropdownItemSubCate,
@@ -456,6 +458,7 @@ const EditConfirmProduct = ({
         name: productName,
         description: description,
         unit: unit,
+        priceListed: parseInt(priceListed),
         status: 1,
         productSubCategory: {
           ...selectedDropdownItemSubCate,
@@ -784,8 +787,8 @@ const EditConfirmProduct = ({
               type="text"
               className="modal__container-body-inputcontrol-input"
               onChange={(e) => {
-                setUnit(e.target.value);
-                setError({ ...error, unit: "" });
+                setPriceListed(e.target.value);
+                setError({ ...error, priceListed: "" });
               }}
             />
             {error.priceListed && (

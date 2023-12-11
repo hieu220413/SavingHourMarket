@@ -102,6 +102,25 @@ const StaffManagement = () => {
 
     const handleDelete = async () => {
       setLoading(true);
+      let isSystemDisable = true;
+      await get(child(ref(database), "systemStatus")).then((snapshot) => {
+        const data = snapshot.val();
+        if (data !== null) {
+          if (data === 1) {
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "error",
+              text: "Hệ thống không trong trạng thái bảo trì !",
+            });
+            isSystemDisable = false;
+          }
+        }
+      });
+      if (!isSystemDisable) {
+        setLoading(false);
+        return;
+      }
       const tokenId = await auth.currentUser.getIdToken();
       fetch(`${API.baseURL}/api/staff/updateStaffAccountStatus`, {
         method: "PUT",
@@ -116,6 +135,17 @@ const StaffManagement = () => {
       })
         .then((res) => res.json())
         .then((respond) => {
+          if (respond.code === 409) {
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "error",
+              text: "Hệ thống không trong trạng thái bảo trì !",
+            });
+
+            setLoading(false);
+            return;
+          }
           if (respond.code === 403) {
             console.log("a");
             setOpenSnackbar({
@@ -183,6 +213,26 @@ const StaffManagement = () => {
 
     const handleReverse = async () => {
       setLoading(true);
+      setLoading(true);
+      let isSystemDisable = true;
+      await get(child(ref(database), "systemStatus")).then((snapshot) => {
+        const data = snapshot.val();
+        if (data !== null) {
+          if (data === 1) {
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "error",
+              text: "Hệ thống không trong trạng thái bảo trì !",
+            });
+            isSystemDisable = false;
+          }
+        }
+      });
+      if (!isSystemDisable) {
+        setLoading(false);
+        return;
+      }
       const tokenId = await auth.currentUser.getIdToken();
       fetch(`${API.baseURL}/api/staff/updateStaffAccountStatus`, {
         method: "PUT",
@@ -197,6 +247,17 @@ const StaffManagement = () => {
       })
         .then((res) => res.json())
         .then((respond) => {
+          if (respond.code === 409) {
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "error",
+              text: "Hệ thống không trong trạng thái bảo trì !",
+            });
+
+            setLoading(false);
+            return;
+          }
           if (respond?.error) {
             setOpenSnackbar({
               ...openSnackbar,

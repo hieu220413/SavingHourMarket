@@ -1076,10 +1076,11 @@ const OrderBatch = ({navigation}) => {
                   </Text>
                 </View>
               ) : (
-                <View style={{marginTop: '18%', marginBottom: '25%'}}>
+                <View style={{marginTop: '18%'}}>
                   <SwipeListView
                     showsVerticalScrollIndicator={false}
                     showsHorizontalScrollIndicator={false}
+                    style={{marginBottom:'12%'}}
                     data={groupListNotYetAssigned}
                     renderItem={(data, rowMap) => (
                       <View
@@ -1274,10 +1275,11 @@ const OrderBatch = ({navigation}) => {
                   </Text>
                 </View>
               ) : (
-                <View style={{marginTop: '18%', marginBottom: '25%'}}>
+                <View style={{marginTop: '18%'}}>
                   <SwipeListView
                     showsVerticalScrollIndicator={false}
                     showsHorizontalScrollIndicator={false}
+                    style={{marginBottom:'12%'}}
                     data={groupListAssigned}
                     renderItem={(data, rowMap) => (
                       <View

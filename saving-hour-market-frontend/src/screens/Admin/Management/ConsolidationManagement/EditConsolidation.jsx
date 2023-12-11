@@ -8,10 +8,11 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useRef, useState } from "react";
 import { API } from "../../../../contanst/api";
-import { auth } from "../../../../firebase/firebase.config";
+import { auth, database } from "../../../../firebase/firebase.config";
 import MuiAlert from "@mui/material/Alert";
 import { Snackbar } from "@mui/material";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
+import { child, get, ref } from "firebase/database";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -84,6 +85,25 @@ const EditConsolidation = ({
   }, []);
 
   const handleEdit = async () => {
+    let isSystemDisable = true;
+    await get(child(ref(database), "systemStatus")).then((snapshot) => {
+      const data = snapshot.val();
+      if (data !== null) {
+        if (data === 1) {
+          setOpenSnackbar({
+            ...openSnackbar,
+            open: true,
+            severity: "error",
+            text: "Hệ thống không trong trạng thái bảo trì !",
+          });
+          isSystemDisable = false;
+        }
+      }
+    });
+    if (!isSystemDisable) {
+      setLoading(false);
+      return;
+    }
     if (!address.selectAddress) {
       setAddress({ ...address, error: "Địa chỉ không hợp lệ" });
       return;
@@ -147,6 +167,17 @@ const EditConsolidation = ({
             severity: "error",
             text: "Điểm tập kết đã tồn tại !",
           });
+          setLoading(false);
+          return;
+        }
+        if (respond.code === 403) {
+          setOpenValidateSnackbar({
+            ...openValidateSnackbar,
+            open: true,
+            severity: "error",
+            text: "Tồn tại đơn hàng đang xử lí tại điểm tập kết này !",
+          });
+
           setLoading(false);
           return;
         }
@@ -286,7 +317,7 @@ const EditConsolidation = ({
             )}
 
             {address.isFocused && locationData.length !== 0 && (
-              <div className="suggest-location">
+              <div style={{ left: 190 }} className="suggest-location">
                 {locationData.map((data) => (
                   <div
                     onClick={() => {

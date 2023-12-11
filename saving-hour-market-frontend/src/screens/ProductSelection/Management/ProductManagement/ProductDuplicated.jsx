@@ -57,15 +57,23 @@ const ProductDuplicated = ({ handleClose, item, confirmProductList }) => {
               <tr key={item?.index} className="table-body-row">
                 <td style={{ paddingTop: 30 }}>{item?.index + 1}</td>
                 <td>
-                  {item?.productImageList ? (
-                    <img
-                      alt="hình"
-                      width="80px"
-                      height="60px"
-                      src={item?.productImageList[0]?.image}
-                    />
+                  {item.imageUrls?.length !== 0 && item.imageUrls !== null ? (
+                    <div style={{ position: "relative" }}>
+                      <img
+                        alt="hình"
+                        style={{ cursor: "pointer" }}
+                        width="80px"
+                        height="60px"
+                        className="img-scale"
+                        src={item?.imageUrls[0]}
+                      />
+                      <div style={{ right: 40 }} className="image-number">
+                        1/{item.imageUrls.length}
+                      </div>
+                    </div>
                   ) : (
                     <img
+                      className="img-scale"
                       alt="hình"
                       width="80px"
                       height="60px"
@@ -115,7 +123,9 @@ const ProductDuplicated = ({ handleClose, item, confirmProductList }) => {
                 <td style={{ paddingTop: 30 }}>
                   {errorList.some(
                     (data) => parseInt(data?.index) === item.index + 1
-                  ) || !item.productImageList ? (
+                  ) ||
+                  item.imageUrls?.length === 0 ||
+                  item.imageUrls === null ? (
                     <i
                       onClick={handleOpenErrorList}
                       style={{ marginLeft: "-3px" }}
