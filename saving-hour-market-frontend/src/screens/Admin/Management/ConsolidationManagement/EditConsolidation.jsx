@@ -8,10 +8,11 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useRef, useState } from "react";
 import { API } from "../../../../contanst/api";
-import { auth } from "../../../../firebase/firebase.config";
+import { auth, database } from "../../../../firebase/firebase.config";
 import MuiAlert from "@mui/material/Alert";
 import { Snackbar } from "@mui/material";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
+import { child, get, ref } from "firebase/database";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -84,6 +85,25 @@ const EditConsolidation = ({
   }, []);
 
   const handleEdit = async () => {
+    let isSystemDisable = true;
+    await get(child(ref(database), "systemStatus")).then((snapshot) => {
+      const data = snapshot.val();
+      if (data !== null) {
+        if (data === 1) {
+          setOpenSnackbar({
+            ...openSnackbar,
+            open: true,
+            severity: "error",
+            text: "Hệ thống không trong trạng thái bảo trì !",
+          });
+          isSystemDisable = false;
+        }
+      }
+    });
+    if (!isSystemDisable) {
+      setLoading(false);
+      return;
+    }
     if (!address.selectAddress) {
       setAddress({ ...address, error: "Địa chỉ không hợp lệ" });
       return;

@@ -5,9 +5,10 @@ import MuiAlert from "@mui/material/Alert";
 import { Dialog, Snackbar } from "@mui/material";
 import AddSupermarketStore from "./AddSupermarketStore";
 import EditSupermatketStore from "./EditSupermatketStore";
-import { auth } from "../../../../firebase/firebase.config";
+import { auth, database } from "../../../../firebase/firebase.config";
 import { API } from "../../../../contanst/api";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
+import { child, get, ref } from "firebase/database";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -113,8 +114,62 @@ const SupermarketStoreManagement = ({
           <td>{item?.pickupPoint.address}</td>
           {!isSwitchRecovery && (
             <td>
-              <i onClick={handleOpenEdit} class="bi bi-pencil-square"></i>
-              <i onClick={handleOpenDelete} class="bi bi-trash-fill"></i>
+              <i
+                onClick={async () => {
+                  let isSystemDisable = true;
+                  await get(child(ref(database), "systemStatus")).then(
+                    (snapshot) => {
+                      const data = snapshot.val();
+                      if (data !== null) {
+                        if (data === 1) {
+                          setOpenSnackbar({
+                            ...openSnackbar,
+                            open: true,
+                            severity: "error",
+                            text: "Hệ thống không trong trạng thái bảo trì",
+                          });
+
+                          isSystemDisable = false;
+                        }
+                      }
+                    }
+                  );
+                  if (!isSystemDisable) {
+                    setLoading(false);
+                    return;
+                  }
+                  handleOpenEdit();
+                }}
+                class="bi bi-pencil-square"
+              ></i>
+              <i
+                onClick={async () => {
+                  let isSystemDisable = true;
+                  await get(child(ref(database), "systemStatus")).then(
+                    (snapshot) => {
+                      const data = snapshot.val();
+                      if (data !== null) {
+                        if (data === 1) {
+                          setOpenSnackbar({
+                            ...openSnackbar,
+                            open: true,
+                            severity: "error",
+                            text: "Hệ thống không trong trạng thái bảo trì",
+                          });
+
+                          isSystemDisable = false;
+                        }
+                      }
+                    }
+                  );
+                  if (!isSystemDisable) {
+                    setLoading(false);
+                    return;
+                  }
+                  handleOpenDelete();
+                }}
+                class="bi bi-trash-fill"
+              ></i>
             </td>
           )}
         </tr>
@@ -197,7 +252,31 @@ const SupermarketStoreManagement = ({
             <div></div>
 
             <div
-              onClick={handleOpenCreate}
+              onClick={async () => {
+                let isSystemDisable = true;
+                await get(child(ref(database), "systemStatus")).then(
+                  (snapshot) => {
+                    const data = snapshot.val();
+                    if (data !== null) {
+                      if (data === 1) {
+                        setOpenSnackbar({
+                          ...openSnackbar,
+                          open: true,
+                          severity: "error",
+                          text: "Hệ thống không trong trạng thái bảo trì",
+                        });
+
+                        isSystemDisable = false;
+                      }
+                    }
+                  }
+                );
+                if (!isSystemDisable) {
+                  setLoading(false);
+                  return;
+                }
+                handleOpenCreate();
+              }}
               className="supermarket__header-button"
             >
               <FontAwesomeIcon icon={faPlus} />
