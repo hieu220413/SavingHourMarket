@@ -89,7 +89,7 @@ const BatchList = ({navigation, route}) => {
         setLoading(true);
         if (auth().currentUser) {
           const tokenId = await auth().currentUser.getIdToken();
-          if (tokenId) {
+          if (tokenId && !route.params.isGoBackFromBatchingDetail) {
             fetch(
               `${API.baseURL}/api/order/deliveryManager/batchingForStaff?deliverDate=${date}&timeFrameId=${timeFrame.id}&productConsolidationAreaId=${productConsolidationArea.id}&batchQuantity=${quantity}`,
               {
@@ -124,11 +124,13 @@ const BatchList = ({navigation, route}) => {
                 console.log(err);
                 setLoading(false);
               });
+          } else {
+            setLoading(false);
           }
         }
       };
       fetchData();
-    }, []),
+    }, [route.params.isGoBackFromBatchingDetail]),
   );
 
   const showToast = message => {

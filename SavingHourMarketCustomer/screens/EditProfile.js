@@ -15,26 +15,26 @@ import {
   GoogleSignin,
   GoogleSigninButton,
 } from '@react-native-google-signin/google-signin';
-import React, {useState, useEffect, useCallback} from 'react';
-import {format} from 'date-fns';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import React, { useState, useEffect, useCallback } from 'react';
+import { format } from 'date-fns';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {TouchableOpacity} from 'react-native-gesture-handler';
-import {ScrollView} from 'react-native-gesture-handler';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import { ScrollView } from 'react-native-gesture-handler';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import FlatButton from '../shared/button';
-import {useFocusEffect} from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
 import * as ImagePicker from 'react-native-image-picker';
 import storage from '@react-native-firebase/storage';
 import * as Progress from 'react-native-progress';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {API} from '../constants/api';
+import { API } from '../constants/api';
 import LoadingScreen from '../components/LoadingScreen';
 import database from '@react-native-firebase/database';
 
-const EditProfile = ({navigation, route}) => {
+const EditProfile = ({ navigation, route }) => {
   const user = route.params.user;
   // console.log(user);
   const [username, setUsername] = useState(user?.fullName);
@@ -67,7 +67,7 @@ const EditProfile = ({navigation, route}) => {
           if (snapshot.val() === 0) {
             navigation.reset({
               index: 0,
-              routes: [{name: 'Initial'}],
+              routes: [{ name: 'Initial' }],
             });
           } else {
             // setSystemStatus(snapshot.val());
@@ -178,7 +178,7 @@ const EditProfile = ({navigation, route}) => {
   const toggleDatepicker = () => {
     setShowPicker(!showPicker);
   };
-  const onChange = ({type}, selectedDate) => {
+  const onChange = ({ type }, selectedDate) => {
     if (type == 'set') {
       const currentDate = selectedDate;
       setDate(currentDate);
@@ -300,7 +300,7 @@ const EditProfile = ({navigation, route}) => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <SafeAreaView style={{backgroundColor: 'white', height: '100%'}}>
+      <SafeAreaView style={{ backgroundColor: 'white', height: '100%' }}>
         <View
           style={{
             marginHorizontal: '5%',
@@ -312,7 +312,7 @@ const EditProfile = ({navigation, route}) => {
               navigation.goBack();
             }}>
             <Ionicons
-              style={{top: '10%'}}
+              style={{ top: '10%' }}
               name="arrow-back-sharp"
               size={28}
               color="black"></Ionicons>
@@ -336,7 +336,7 @@ const EditProfile = ({navigation, route}) => {
           <TouchableOpacity onPress={selectImage}>
             {image !== null ? (
               <Image
-                source={{uri: image}}
+                source={{ uri: image }}
                 style={{
                   width: 120,
                   height: 120,
@@ -352,7 +352,7 @@ const EditProfile = ({navigation, route}) => {
                   alignSelf: 'center',
                   borderRadius: 100,
                 }}
-                source={{uri: `${user?.avatarUrl}`}}
+                source={{ uri: `${user?.avatarUrl}` }}
               />
             )}
           </TouchableOpacity>
@@ -360,10 +360,11 @@ const EditProfile = ({navigation, route}) => {
         {/* Form */}
         <KeyboardAvoidingView
           enabled
-          style={{flex: 1, marginBottom: 10}}
+          style={{ flex: 1, marginBottom: 10 }}
           behavior={Platform.OS === 'ios' ? 'padding' : null}>
           <ScrollView
-            style={{flexDirection: 'column'}}
+            showsVerticalScrollIndicator={false}
+            style={{ flexDirection: 'column' }}
             contentContainerStyle={{
               justifyContent: 'space-between',
               flexGrow: 1,
@@ -384,15 +385,15 @@ const EditProfile = ({navigation, route}) => {
                     borderRadius: 20,
                     padding: 10,
                   },
-                  usernameError ? {borderColor: 'red', borderWidth: 1} : {},
+                  usernameError ? { borderColor: 'red', borderWidth: 1 } : {},
                 ]}
                 onChangeText={setUsername}
                 placeholder="User Name"
                 value={username}
                 keyboardType="default"></TextInput>
               {usernameError && (
-                <View style={{width: '85%', marginTop: '-4%'}}>
-                  <Text style={{color: 'red'}}>{usernameError}</Text>
+                <View style={{ width: '85%', marginTop: '-4%' }}>
+                  <Text style={{ color: 'red' }}>{usernameError}</Text>
                 </View>
               )}
               <View
@@ -405,7 +406,7 @@ const EditProfile = ({navigation, route}) => {
                     margin: 12,
                     paddingHorizontal: 8,
                   },
-                  dateOfBirthError ? {borderColor: 'red', borderWidth: 1} : {},
+                  dateOfBirthError ? { borderColor: 'red', borderWidth: 1 } : {},
                 ]}>
                 {showPicker && (
                   <DateTimePicker
@@ -424,7 +425,7 @@ const EditProfile = ({navigation, route}) => {
                   }}
                   onPress={toggleDatepicker}>
                   <TextInput
-                    style={{flex: 1, color: 'black'}}
+                    style={{ flex: 1, color: 'black' }}
                     onChangeText={setDateOfBirth}
                     value={
                       dateOfBirth
@@ -442,8 +443,8 @@ const EditProfile = ({navigation, route}) => {
                 </Pressable>
               </View>
               {dateOfBirthError && (
-                <View style={{width: '85%', marginTop: '-4%'}}>
-                  <Text style={{color: 'red'}}>{dateOfBirthError}</Text>
+                <View style={{ width: '85%', marginTop: '-4%' }}>
+                  <Text style={{ color: 'red' }}>{dateOfBirthError}</Text>
                 </View>
               )}
               <TextInput
@@ -456,7 +457,7 @@ const EditProfile = ({navigation, route}) => {
                     borderRadius: 20,
                     padding: 10,
                   },
-                  emailError ? {borderColor: 'red', borderWidth: 1} : {},
+                  emailError ? { borderColor: 'red', borderWidth: 1 } : {},
                 ]}
                 onChangeText={text => {
                   setEmail(text);
@@ -466,8 +467,8 @@ const EditProfile = ({navigation, route}) => {
                 placeholder="Email"
                 keyboardType="email-address"></TextInput>
               {emailError && (
-                <View style={{width: '85%', marginTop: '-4%'}}>
-                  <Text style={{color: 'red'}}>{emailError}</Text>
+                <View style={{ width: '85%', marginTop: '-4%' }}>
+                  <Text style={{ color: 'red' }}>{emailError}</Text>
                 </View>
               )}
               <TextInput
@@ -480,7 +481,7 @@ const EditProfile = ({navigation, route}) => {
                     borderRadius: 20,
                     padding: 10,
                   },
-                  addressError ? {borderColor: 'red', borderWidth: 1} : {},
+                  addressError ? { borderColor: 'red', borderWidth: 1 } : {},
                 ]}
                 onChangeText={text => {
                   setAddress(text);
@@ -489,8 +490,8 @@ const EditProfile = ({navigation, route}) => {
                 placeholder="Địa chỉ"
                 keyboardType="default"></TextInput>
               {addressError && (
-                <View style={{width: '85%', marginTop: '-4%'}}>
-                  <Text style={{color: 'red'}}>{addressError}</Text>
+                <View style={{ width: '85%', marginTop: '-4%' }}>
+                  <Text style={{ color: 'red' }}>{addressError}</Text>
                 </View>
               )}
               <TextInput
@@ -503,7 +504,7 @@ const EditProfile = ({navigation, route}) => {
                     borderRadius: 20,
                     padding: 10,
                   },
-                  phoneError ? {borderColor: 'red', borderWidth: 1} : {},
+                  phoneError ? { borderColor: 'red', borderWidth: 1 } : {},
                 ]}
                 onChangeText={text => {
                   setPhone(text);
@@ -512,8 +513,8 @@ const EditProfile = ({navigation, route}) => {
                 placeholder="Số điện thoại"
                 keyboardType="numeric"></TextInput>
               {phoneError && (
-                <View style={{width: '85%', marginTop: '-4%'}}>
-                  <Text style={{color: 'red'}}>{phoneError}</Text>
+                <View style={{ width: '85%', marginTop: '-4%' }}>
+                  <Text style={{ color: 'red' }}>{phoneError}</Text>
                 </View>
               )}
             </View>
@@ -523,7 +524,7 @@ const EditProfile = ({navigation, route}) => {
                 alignItems: 'center',
                 marginBottom: '4%',
               }}>
-              <View style={{width: '90%'}}>
+              <View style={{ width: '90%' }}>
                 <FlatButton text="Cập nhật" onPress={submitForm} />
               </View>
             </View>

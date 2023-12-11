@@ -809,7 +809,7 @@ const Payment = ({navigation, route}) => {
             Thanh toán
           </Text>
         </View>
-        <ScrollView automaticallyAdjustKeyboardInsets={true}>
+        <ScrollView  automaticallyAdjustKeyboardInsets={true}>
           <View style={{marginBottom: 200}}>
             {/* OrderItem */}
             {Object.keys(groupByCategory).map(function (key) {
@@ -1931,6 +1931,9 @@ const Payment = ({navigation, route}) => {
       <Modal
         width={0.8}
         visible={openAuthModal}
+        onTouchOutside={() => {
+          setOpenAuthModal(false);
+        }}
         dialogAnimation={
           new ScaleAnimation({
             initialValue: 0, // optional
@@ -1939,12 +1942,6 @@ const Payment = ({navigation, route}) => {
         }
         footer={
           <ModalFooter>
-            <ModalButton
-              text="Ở lại trang"
-              onPress={() => {
-                setOpenAuthModal(false);
-              }}
-            />
             <ModalButton
               text="Đăng nhập"
               textStyle={{color: COLORS.primary}}

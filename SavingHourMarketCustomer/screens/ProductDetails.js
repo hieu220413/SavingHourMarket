@@ -243,12 +243,12 @@ const ProductDetails = ({ navigation, route }) => {
           style={{
             textAlign: 'center',
             color: 'black',
-            fontSize: Dimensions.get('window').width * 0.065,
+            fontSize: Dimensions.get('window').width * 0.05,
+            fontWeight: 'bold',
             fontFamily: FONTS.fontFamily,
           }}>
           Thông tin sản phẩm
         </Text>
-
         <TouchableOpacity
           onPress={async () => {
             const user = await AsyncStorage.getItem('userInfo');
@@ -290,14 +290,14 @@ const ProductDetails = ({ navigation, route }) => {
       </View>
 
       <ScrollView
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingBottom: 150,
         }}>
         <Swiper
           style={{
-            height: 250,
+            height: 260,
           }}
-          activeDotColor="#37A65B"
+          showsPagination={false}
           showsButtons={false}>
           {product?.imageUrlImageList.map((item, index) => (
             <View key={index}>
@@ -313,7 +313,7 @@ const ProductDetails = ({ navigation, route }) => {
                   uri: item.imageUrl,
                 }}
               />
-              {product?.imageUrlImageList.length !== 1 && (
+              {product?.imageUrlImageList.length !== 0 && (
                 <View
                   style={{
                     position: 'absolute',
@@ -339,11 +339,22 @@ const ProductDetails = ({ navigation, route }) => {
             </View>
           ))}
         </Swiper>
-
         <View
           style={{
-            marginHorizontal: 30,
-            marginVertical: 20,
+            paddingHorizontal: 30,
+            marginTop: '5%',
+            paddingTop: '10%',
+            paddingBottom: '40%',
+            shadowColor: 'grey',
+            borderTopStartRadius: 24,
+            borderTopEndRadius: 24,
+            shadowOffset: {
+              width: 0,
+              height: 3,
+            },
+            shadowOpacity: 0.27,
+            shadowRadius: 4.65,
+            elevation: 1.5,
           }}>
           <Text
             style={{
@@ -391,14 +402,13 @@ const ProductDetails = ({ navigation, route }) => {
         style={{
           position: 'absolute',
           bottom: 0,
-          paddingBottom: 60,
           flexDirection: 'row',
           backgroundColor: '#F5F5F5',
-          width: '90%',
-          marginHorizontal: '4%',
-          paddingHorizontal: '4%',
+          width: '96%',
+          paddingHorizontal: '2%',
+          marginHorizontal: '2%',
           paddingTop: '8%',
-          paddingBottom: Dimensions.get('window').height * 0.15,
+          paddingBottom: Dimensions.get('window').height * 0.1,
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
           alignItems: 'center',
@@ -440,26 +450,28 @@ const ProductDetails = ({ navigation, route }) => {
           <View style={{ flexDirection: 'row' }}>
             <Text
               style={{
-                fontSize: 22,
+                fontSize: 17,
                 lineHeight: 30,
                 color: COLORS.secondary,
                 fontWeight: 700,
                 fontFamily: FONTS.fontFamily,
+                paddingRight: minPrice === maxPrice ? '24%' : '3%'
               }}>
-              {product.nearestExpiredBatch.price.toLocaleString('vi-VN', {
+              {/* {product.nearestExpiredBatch.price.toLocaleString('vi-VN', {
                 currency: 'VND',
-              })}
-            </Text>
-            <Text
-              style={{
-                fontSize: 14,
-                lineHeight: 18,
-                color: COLORS.secondary,
-                fontWeight: 700,
-                fontFamily: FONTS.fontFamily,
-                paddingRight: '10%',
-              }}>
-              ₫
+              })} */}
+              {minPrice === maxPrice
+                ? `${minPrice.toLocaleString('vi-VN', {
+                  style: 'currency',
+                  currency: 'VND',
+                })}`
+                : `${minPrice.toLocaleString('vi-VN', {
+                  style: 'currency',
+                  currency: 'VND',
+                })} - ${maxPrice.toLocaleString('vi-VN', {
+                  style: 'currency',
+                  currency: 'VND',
+                })}`}
             </Text>
           </View>
         </View>
@@ -511,6 +523,9 @@ const ProductDetails = ({ navigation, route }) => {
       <Modal
         width={0.8}
         visible={openAuthModal}
+        onTouchOutside={() => {
+          setOpenAuthModal(false);
+        }}
         dialogAnimation={
           new ScaleAnimation({
             initialValue: 0, // optional
@@ -519,12 +534,6 @@ const ProductDetails = ({ navigation, route }) => {
         }
         footer={
           <ModalFooter>
-            <ModalButton
-              text="Ở lại trang"
-              onPress={() => {
-                setOpenAuthModal(false);
-              }}
-            />
             <ModalButton
               text="Đăng nhập"
               textStyle={{ color: COLORS.primary }}

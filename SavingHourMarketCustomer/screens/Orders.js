@@ -436,7 +436,7 @@ const Orders = ({navigation}) => {
           </Text>
         </View>
       ) : (
-        <ScrollView contentContainerStyle={{marginTop: 20}}>
+        <ScrollView contentContainerStyle={{marginTop: 20}} showsVerticalScrollIndicator={false}>
           <View style={{marginBottom: 100}}>
             {orderList.map(item => (
               <View
@@ -580,12 +580,6 @@ const Orders = ({navigation}) => {
         }
         footer={
           <ModalFooter>
-            <ModalButton
-              text="Ở lại trang"
-              onPress={async () => {
-                setOpenAuthModal(false);
-              }}
-            />
             <ModalButton
               text="Đăng nhập"
               textStyle={{color: COLORS.primary}}

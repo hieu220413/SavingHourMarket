@@ -543,6 +543,7 @@ const Home = ({ navigation }) => {
 
       {/* Body */}
       <ScrollView
+        showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="always"
         contentContainerStyle={{
           paddingBottom: 100,
@@ -615,10 +616,11 @@ const Home = ({ navigation }) => {
               style={{
                 height: 200,
               }}
-              activeDotColor="#37A65B"
+              // activeDotColor="black"
               showsButtons={false}
               autoplay={true}
-              autoplayTimeout={5}
+              autoplayTimeout={4}
+              showsPagination={false}
             >
               {imageDiscountForSlider.map((item, index) => (
                 <Image
@@ -721,6 +723,9 @@ const Home = ({ navigation }) => {
       <Modal
         width={0.8}
         visible={openAuthModal}
+        onTouchOutside={() => {
+          setOpenAuthModal(false);
+        }}
         dialogAnimation={
           new ScaleAnimation({
             initialValue: 0, // optional
@@ -729,12 +734,6 @@ const Home = ({ navigation }) => {
         }
         footer={
           <ModalFooter>
-            <ModalButton
-              text="Ở lại trang"
-              onPress={() => {
-                setOpenAuthModal(false);
-              }}
-            />
             <ModalButton
               text="Đăng nhập"
               textStyle={{ color: COLORS.primary }}
