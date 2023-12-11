@@ -9,11 +9,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useState } from "react";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 import { API } from "../../../../contanst/api";
-import { auth } from "../../../../firebase/firebase.config";
+import { auth, database } from "../../../../firebase/firebase.config";
 import { Dialog } from "@mui/material";
 import AssignPickupPoint from "./AssignPickupPoint";
 import MuiAlert from "@mui/material/Alert";
 import { Snackbar } from "@mui/material";
+import { child, get, ref } from "firebase/database";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -179,6 +180,7 @@ const EditStaff = ({
 
   const handleDelete = async () => {
     setLoading(true);
+
     const tokenId = await auth.currentUser.getIdToken();
     fetch(`${API.baseURL}/api/staff/unAssignPickupPoint`, {
       method: "PUT",
@@ -212,6 +214,25 @@ const EditStaff = ({
 
   const handleEdit = async () => {
     setLoading(true);
+    let isSystemDisable = true;
+    await get(child(ref(database), "systemStatus")).then((snapshot) => {
+      const data = snapshot.val();
+      if (data !== null) {
+        if (data === 1) {
+          setOpenSnackbar({
+            ...openSnackbar,
+            open: true,
+            severity: "error",
+            text: "Hệ thống không trong trạng thái bảo trì !",
+          });
+          isSystemDisable = false;
+        }
+      }
+    });
+    if (!isSystemDisable) {
+      setLoading(false);
+      return;
+    }
     const tokenId = await auth.currentUser.getIdToken();
     if (staff.role !== "STAFF_ORD" && selectedRole === "STAFF_ORD") {
       if (!selectedPickupPoint) {
@@ -245,7 +266,10 @@ const EditStaff = ({
               "Content-Type": "application/json",
               Authorization: `Bearer ${tokenId}`,
             },
-            body: JSON.stringify(),
+            body: JSON.stringify({
+              staffEmail: staff.email,
+              pickupPointId: selectedPickupPoint.id,
+            }),
           })
             .then((res) => res.json())
             .then((res) => {
@@ -799,7 +823,28 @@ const EditStaff = ({
               <div className="modal__container-body-inputcontrol">
                 {selectedPickupPointList.length !== 1 && (
                   <div
-                    onClick={() => {
+                    onClick={async () => {
+                      let isSystemDisable = true;
+                      await get(child(ref(database), "systemStatus")).then(
+                        (snapshot) => {
+                          const data = snapshot.val();
+                          if (data !== null) {
+                            if (data === 1) {
+                              setOpenAssignSnackbar({
+                                ...openAssignSnackbar,
+                                open: true,
+                                severity: "error",
+                                text: "Hệ thống không trong trạng thái bảo trì !",
+                              });
+                              isSystemDisable = false;
+                            }
+                          }
+                        }
+                      );
+                      if (!isSystemDisable) {
+                        setLoading(false);
+                        return;
+                      }
                       setCurrentPickupPoint(item);
                       handleOpenDeleteDialog();
                     }}
@@ -848,7 +893,30 @@ const EditStaff = ({
         {selectedRole === "STAFF_ORD" && staff.role === "STAFF_ORD" && (
           <div className="modal__container-body-inputcontrol">
             <button
-              onClick={handleOpenCreateDialog}
+              onClick={async () => {
+                let isSystemDisable = true;
+                await get(child(ref(database), "systemStatus")).then(
+                  (snapshot) => {
+                    const data = snapshot.val();
+                    if (data !== null) {
+                      if (data === 1) {
+                        setOpenAssignSnackbar({
+                          ...openAssignSnackbar,
+                          open: true,
+                          severity: "error",
+                          text: "Hệ thống không trong trạng thái bảo trì !",
+                        });
+                        isSystemDisable = false;
+                      }
+                    }
+                  }
+                );
+                if (!isSystemDisable) {
+                  setLoading(false);
+                  return;
+                }
+                handleOpenCreateDialog();
+              }}
               className="buttonAddSupermarkerAddress"
             >
               Thêm điểm giao hàng

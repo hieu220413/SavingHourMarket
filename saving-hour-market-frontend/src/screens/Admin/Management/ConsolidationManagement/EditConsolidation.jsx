@@ -150,6 +150,17 @@ const EditConsolidation = ({
           setLoading(false);
           return;
         }
+        if (respond.code === 403) {
+          setOpenValidateSnackbar({
+            ...openValidateSnackbar,
+            open: true,
+            severity: "error",
+            text: "Tồn tại đơn hàng đang xử lí tại điểm tập kết này !",
+          });
+
+          setLoading(false);
+          return;
+        }
         fetch(
           `${API.baseURL}/api/productConsolidationArea/updatePickupPointList`,
           {
@@ -286,7 +297,7 @@ const EditConsolidation = ({
             )}
 
             {address.isFocused && locationData.length !== 0 && (
-              <div className="suggest-location">
+              <div style={{ left: 190 }} className="suggest-location">
                 {locationData.map((data) => (
                   <div
                     onClick={() => {
