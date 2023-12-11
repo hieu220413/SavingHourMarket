@@ -5,6 +5,7 @@ import { COLORS, FONTS } from '../constants/theme';
 import * as Animatable from 'react-native-animatable';
 
 const TabIcon = (props) => {
+
   const { icon, display, accessibilityState, onPress } = props;
   const focused = accessibilityState.selected;
   const imageWidth = Dimensions.get('window').width * 0.055;
@@ -57,8 +58,8 @@ const TabIcon = (props) => {
             source={icon}
             resizeMode="contain"
             style={{
-              width: imageWidth,
-              height: imageHeight,
+              width: !focused ? imageWidth: Dimensions.get('window').width * 0.045,
+              height: !focused ? imageHeight: Dimensions.get('window').height * 0.05,
               tintColor: focused ? '#fff' : COLORS.tabIcon,
             }}
           />

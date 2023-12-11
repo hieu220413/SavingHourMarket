@@ -641,7 +641,7 @@ const ProductDetails = ({ navigation, route }) => {
                   <Text
                     style={{
                       fontSize: 16,
-                      color: 'red',
+                      color: COLORS.primary,
                       fontFamily: FONTS.fontFamily,
                     }}>
                     {minPrice === maxPrice

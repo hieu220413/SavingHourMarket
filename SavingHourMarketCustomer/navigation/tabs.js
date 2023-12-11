@@ -50,8 +50,8 @@ const Tabs = () => {
           tabBarButton: (props) => (
             <TabIcon
               {...props}
-              display={'Trang chủ'}
-              icon={icons.home}
+              display={'Sản phẩm'}
+              icon={icons.products}
             />
           ),
         }}
@@ -79,20 +79,7 @@ const Tabs = () => {
           ),
         }}
       />
-      <Tab.Screen
-        name="CartBottom"
-        component={Cart}
-        options={{
-          tabBarStyle:{display:'none'},
-          tabBarButton: (props) => (
-            <TabIcon
-              {...props}
-              display={'Giỏ hàng'}
-              icon={icons.cart}
-            />
-          ),
-        }}
-      />
+
       <Tab.Screen
         name="Orders"
         component={Orders}
@@ -102,6 +89,20 @@ const Tabs = () => {
               {...props}
               display={'Đơn hàng'}
               icon={icons.order}
+            />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="CartBottom"
+        component={Cart}
+        options={{
+          tabBarStyle: { display: 'none' },
+          tabBarButton: (props) => (
+            <TabIcon
+              {...props}
+              display={'Giỏ hàng'}
+              icon={icons.cart}
             />
           ),
         }}
