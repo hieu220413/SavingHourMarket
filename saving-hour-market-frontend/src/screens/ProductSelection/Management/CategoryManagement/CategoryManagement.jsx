@@ -132,6 +132,7 @@ const CategoryManagement = () => {
     e.preventDefault();
     setSearchValue(textSearch);
     setPage(1);
+    setTextPage(1);
   };
 
   const menuTabs = [

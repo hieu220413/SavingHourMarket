@@ -21,9 +21,9 @@ public class OrderExceptionHandler {
 
 
     @ExceptionHandler(OrderCancellationNotAllowedException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ResponseStatus(HttpStatus.CONFLICT)
     public ResponseEntity<ApiError> handleOrderCancellationNotAllowedException (Exception e){
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiError(LocalDateTime.now().toString(), HttpStatus.METHOD_NOT_ALLOWED.value(),e.getMessage()));
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiError(LocalDateTime.now().toString(), HttpStatus.METHOD_NOT_ALLOWED.value(),e.getMessage()));
     }
 
     @ExceptionHandler(OrderDeletionNotAllowedException.class)

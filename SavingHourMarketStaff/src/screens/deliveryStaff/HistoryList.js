@@ -624,7 +624,7 @@ const HistoryList = ({ navigation }) => {
         fetch(
           `${API.baseURL}/api/order/staff/getOrderBatch?delivererId=${userFromAS?.id
           }${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`
-          }&status=${filterStatus?.value}&getOldOrderGroup=TRUE${sortItem?.id == 1 && isHadSortItem === true
+          }&status=${filterStatus?.value}&getOldOrderBatch=TRUE${sortItem?.id == 1 && isHadSortItem === true
             ? '&deliverDateSortType=ASC'
             : ''
           }${sortItem?.id == 2 && isHadSortItem === true
@@ -775,7 +775,7 @@ const HistoryList = ({ navigation }) => {
           });
       } else if (currentOptions.id === 1) {
         fetch(
-          `${API.baseURL}/api/order/staff/getOrderBatch?delivererId=${userFromAS?.id}&status=SUCCESS&getOldOrderGroup=TRUE`,
+          `${API.baseURL}/api/order/staff/getOrderBatch?delivererId=${userFromAS?.id}&status=SUCCESS&getOldOrderBatch=TRUE`,
           {
             method: 'GET',
             headers: {
@@ -1432,7 +1432,7 @@ const HistoryList = ({ navigation }) => {
                                   <Image
                                     resizeMode="contain"
                                     style={{
-                                      width: 20,
+                                      width: Dimensions.get('window').width * 0.1,
                                       height: 20,
                                       tintColor: 'white',
                                     }}
@@ -1447,9 +1447,10 @@ const HistoryList = ({ navigation }) => {
                                     style={{
                                       flexDirection: 'row',
                                       alignItems: 'center',
+                                      paddingHorizontal: data.item.isExpand ? 0 : 5,
                                       flexGrow: 1,
                                       flexShrink: 1,
-                                      justifyContent: 'center',
+                                      justifyContent:  data.item.isExpand ? 'center' : 'flex-start'
                                     }}>
                                     {data.item.isExpand ? (
                                       <Text
@@ -1459,9 +1460,9 @@ const HistoryList = ({ navigation }) => {
                                           fontFamily: 'Roboto',
                                           color: 'white',
                                         }}>
-                                        {data.item.timeFrame.fromHour +
+                                        {data.item.timeFrame.fromHour.slice(0,5) +
                                           '-' +
-                                          data.item.timeFrame.toHour +
+                                          data.item.timeFrame.toHour.slice(0,5) +
                                           ' ' +
                                           format(
                                             Date.parse(data.item.deliverDate),
@@ -1476,19 +1477,19 @@ const HistoryList = ({ navigation }) => {
                                         }}>
                                         <Text
                                           style={{
-                                            fontSize: Dimensions.get('window').width * 0.048,
+                                            fontSize: Dimensions.get('window').width * 0.045,
                                             fontWeight: 'bold',
                                             fontFamily: 'Roboto',
                                             color: 'white',
                                           }}>
                                           Khung giờ:{' '}
-                                          {data.item.timeFrame.fromHour +
+                                          {data.item.timeFrame.fromHour.slice(0,5) +
                                             '-' +
-                                            data.item.timeFrame.toHour}
+                                            data.item.timeFrame.toHour.slice(0,5)}
                                         </Text>
                                         <Text
                                           style={{
-                                            fontSize: Dimensions.get('window').width * 0.048,
+                                            fontSize: Dimensions.get('window').width * 0.045,
                                             fontWeight: 'bold',
                                             fontFamily: 'Roboto',
                                             color: 'white',
@@ -1499,6 +1500,34 @@ const HistoryList = ({ navigation }) => {
                                             'dd/MM/yyyy',
                                           )}
                                         </Text>
+                                        {data.item.pickupPoint && (
+                                          <Text
+                                          style={{
+                                            fontSize: Dimensions.get('window').width * 0.045,
+                                            fontWeight: 'bold',
+                                            fontFamily: 'Roboto',
+                                            color: 'white',
+                                          }}
+                                          numberOfLines={2}>
+                                          Điểm giao:
+                                          {' ' + data.item.pickupPoint.address}
+                                        </Text>
+                                        )}
+                                        {data.item.productConsolidationArea && (
+                                        <Text
+                                          style={{
+                                            fontSize: Dimensions.get('window').width * 0.045,
+                                            fontWeight: 'bold',
+                                            fontFamily: 'Roboto',
+                                            color: 'white',
+                                          }}
+                                          numberOfLines={2}>
+                                          Điểm tập kết:
+                                          {' ' +
+                                            data.item.productConsolidationArea
+                                              .address}
+                                        </Text>
+                                        )}
                                       </View>
                                     )}
                                   </View>

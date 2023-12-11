@@ -139,6 +139,8 @@ const Item = ({data}) => {
     object = 'Câu hỏi';
   } else if (data?.object === 'OTHER') {
     object = 'Khác ...';
+  } else {
+    object = 'Phản hồi Đơn hàng';
   }
   return (
     <View
@@ -169,6 +171,7 @@ const Item = ({data}) => {
         }}>
         <View style={{flexDirection: 'row', marginLeft: -3}}>{stars}</View>
         <Text>Mục : {object}</Text>
+        <Text>Mã đơn hàng : {data?.order?.code}</Text>
         <Text style={{fontFamily: 'Roboto', fontSize: 18, color: 'black'}}>
           {data?.message}
         </Text>
@@ -190,7 +193,7 @@ const Item = ({data}) => {
         <View
           style={{
             backgroundColor: '#F4F4F4',
-            padding: 10,
+            padding: '2%',
             marginVertical: 5,
           }}>
           <Text style={{fontFamily: 'Roboto', fontSize: 18, color: 'black'}}>
@@ -338,7 +341,7 @@ const FeedbackList = ({navigation}) => {
             </TouchableOpacity>
             <Text style={styles.text_header}>Đánh giá của tôi</Text>
           </View>
-          <View style={{justifyContent: 'center'}}>
+          {/* <View style={{justifyContent: 'center'}}>
             <TouchableOpacity
               onPress={() => {
                 navigation.navigate('Feedback');
@@ -354,7 +357,7 @@ const FeedbackList = ({navigation}) => {
                 Tạo
               </Text>
             </TouchableOpacity>
-          </View>
+          </View> */}
         </View>
       </View>
       <View style={styles.footer}>

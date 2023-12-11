@@ -241,6 +241,7 @@ const Search = ({ navigation }) => {
                     />
                 </View>
                 <ScrollView
+                    showsVerticalScrollIndicator={false}
                     contentContainerStyle={{
                         paddingBottom: 100,
                     }}

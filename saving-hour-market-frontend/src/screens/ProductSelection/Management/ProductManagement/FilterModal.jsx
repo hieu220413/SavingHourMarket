@@ -10,6 +10,8 @@ const FilterModal = ({
   setProducts,
   isSwitchRecovery,
   page,
+  setPage,
+  setTextPage,
   expiredShownOptions,
   supermarkets,
   categories,
@@ -100,6 +102,8 @@ const FilterModal = ({
           open: true,
           severity: "success",
         });
+        setPage(1);
+        setTextPage(1);
         setMsg("Đã thiết lập lại");
       })
       .catch((err) => {
@@ -146,6 +150,8 @@ const FilterModal = ({
           open: true,
           severity: "success",
         });
+        setPage(1);
+        setTextPage(1);
         setMsg("Đã lọc theo bộ lọc");
       })
       .catch((err) => {
@@ -177,7 +183,8 @@ const FilterModal = ({
           {/* isExpiredShown */}
           <div className="modal__container-body-inputcontrol">
             <h4 className="modal__container-body-inputcontrol-label">
-              Hiện thị lô hàng đã bị ẩn
+              Hiện thị lô hàng đã bị ẩn <br />
+              (Do hết HSD)
             </h4>
             <div>
               <div

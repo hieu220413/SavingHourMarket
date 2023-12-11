@@ -1014,12 +1014,12 @@ public class ProductServiceImpl implements ProductService {
                     byte[] data = pic.getPictureData().getData();
                     ByteArrayOutputStream productImageByteArrayOutputStream = new ByteArrayOutputStream();
                     productImageByteArrayOutputStream.write(data, 0, data.length);
-                    if(productImages.get(rowImage) != null && productImages.get(rowImage).size() > 0){
+                    if (productImages.get(rowImage) != null && productImages.get(rowImage).size() > 0) {
                         productImages.get(rowImage).add(productImageByteArrayOutputStream);
-                    }else{
+                    } else {
                         List<ByteArrayOutputStream> imageList = new ArrayList<>();
                         imageList.add(productImageByteArrayOutputStream);
-                        productImages.put(rowImage,imageList);
+                        productImages.put(rowImage, imageList);
                     }
                 }
             }
@@ -1051,8 +1051,8 @@ public class ProductServiceImpl implements ProductService {
                     }
 
 
-                    if (product.getName() == null || product.getDescription() == null || product.getUnit() == null || productSubCategory.getName() == null || supermarket.getName() == null || productBatchCreate.hasNullField()) {
-                        errors.add("Thông tin của sản phẩm có một thông tin bị trống nên không được hệ thống nhận biết!");
+                    if (product.getName() == null || product.getPriceListed() == null || product.getDescription() == null || product.getUnit() == null || productSubCategory.getName() == null || supermarket.getName() == null || productBatchCreate.hasNullField()) {
+                        errors.add("Một số thông tin của sản phẩm đang trống! Vui lòng điền đầy đủ!");
                     }
 
                     if (cellIndex > 0) {
@@ -1077,7 +1077,7 @@ public class ProductServiceImpl implements ProductService {
                             productBatch.setPrice(productExcelBatchCreate.getPrice());
                             productBatch.setPriceOriginal(productExcelBatchCreate.getPriceOriginal());
                             if (productSubCategory.getAllowableDisplayThreshold() != null && productExcelBatchCreate.getExpiredDate() != null && productExcelBatchCreate.getExpiredDate().isBefore(LocalDate.now().plus(productSubCategory.getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
-                                errors.add("HSD(" + productExcelBatchCreate.getExpiredDate() + ") hiện trước ngày hiện tại cộng thêm số ngày điều kiện cho hàng cận hạn sử dụng có trong SUBCATEGORY!");
+                                errors.add("HSD(" + productExcelBatchCreate.getExpiredDate() + ") chênh lệch với ngày hiện tại phải lớn hơn số ngày điều kiện cho hàng cận hạn sử dụng được định nghĩa theo loại sản phẩm này!");
                             } else {
                                 productBatch.setExpiredDate(productExcelBatchCreate.getExpiredDate());
                             }
@@ -1113,12 +1113,12 @@ public class ProductServiceImpl implements ProductService {
                         productExcelCreate.setProductSubCategory(product.getProductSubCategory());
                         productExcelCreate.setSupermarket(product.getSupermarket());
 
+                        List<String> imageUrls = new ArrayList<>();
                         if (product.getName() != null && product.getDescription() != null && product.getUnit() != null && product.getProductSubCategory() != null) {
-                            List<String> imageUrls = new ArrayList<>();
                             if (productSeenData.add(productExcelCreate)) {
                                 if (productImages.get(rowIndex) != null) {
-                                    productImages.get(rowIndex).forEach(image ->{
-                                        String imageUrl = FirebaseService.uploadImageToStorage(image, "productImage"+ UUID.randomUUID().toString());
+                                    productImages.get(rowIndex).forEach(image -> {
+                                        String imageUrl = FirebaseService.uploadImageToStorage(image, "productImage" + UUID.randomUUID().toString());
                                         imageUrls.add(imageUrl);
                                     });
                                 }
@@ -1135,8 +1135,8 @@ public class ProductServiceImpl implements ProductService {
                                     productDuplicate.setSupermarket(p.getSupermarket());
                                     if (productDuplicate.equals(productExcelCreate)) {
                                         if (productImages.get(rowIndex) != null) {
-                                            productImages.get(rowIndex).forEach(image ->{
-                                                String imageUrl = FirebaseService.uploadImageToStorage(image, "productImage"+ UUID.randomUUID().toString());
+                                            productImages.get(rowIndex).forEach(image -> {
+                                                String imageUrl = FirebaseService.uploadImageToStorage(image, "productImage" + UUID.randomUUID().toString());
                                                 imageUrls.add(imageUrl);
                                             });
                                         }
@@ -1146,6 +1146,7 @@ public class ProductServiceImpl implements ProductService {
                                 }
                             }
                         } else {
+                            product.setImageUrls(imageUrls);
                             productList.add(product);
                         }
                     }

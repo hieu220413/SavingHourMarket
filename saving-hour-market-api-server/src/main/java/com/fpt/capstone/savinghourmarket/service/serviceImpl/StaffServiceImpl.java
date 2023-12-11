@@ -239,12 +239,16 @@ public class StaffServiceImpl implements StaffService {
         UserRecord userRecord = checkIsStaffInOrderProcess(staff);
 
         Map<String, Object> claims = new HashMap<>();
-        if(staff.get().getRole().equals(StaffRole.STAFF_ORD)) {
+        if(staff.get().getRole().equals(StaffRole.STAFF_ORD.toString())) {
             staff.get().getPickupPoint().clear();
         }
-        if(staff.get().getRole().equals(StaffRole.STAFF_DLV_1)) {
+        if(staff.get().getRole().equals(StaffRole.STAFF_DLV_1.toString())) {
             staff.get().getDeliverStaffList().forEach(deliverStaff -> deliverStaff.setDeliverManagerStaff(null));
             staff.get().getDeliverStaffList().clear();
+        }
+        if(staff.get().getRole().equals(StaffRole.STAFF_DLV_0.toString())) {
+            staff.get().getDeliverManagerStaff().getDeliverStaffList().removeIf(deliverStaff -> deliverStaff.getId() == staff.get().getId());
+            staff.get().setDeliverManagerStaff(null);
         }
         staff.get().setRole(staffRoleUpdateRequestBody.getRole().toString());
         claims.put("user_role", staffRoleUpdateRequestBody.getRole().toString());
@@ -408,7 +412,7 @@ public class StaffServiceImpl implements StaffService {
                         if(difference > 0) {
                             String fromHourOfOrderGroupAfterTargetGroupFormat = orderGroupAfterTargetGroup.getTimeFrame().getFromHour().toString().substring(0, 5);
                             String toHourOfOrderGroupAfterTargetGroupFormat = orderGroupAfterTargetGroup.getTimeFrame().getToHour().toString().substring(0, 5);
-                            String alertMessage = "Vướt giới hạn so với khung giờ " + "kế tiếp " + "(" + fromHourOfOrderGroupAfterTargetGroupFormat + "-" + toHourOfOrderGroupAfterTargetGroupFormat + ")";
+                            String alertMessage = "Vượt giới hạn so với khung giờ " + "sau " + "(" + fromHourOfOrderGroupAfterTargetGroupFormat + "-" + toHourOfOrderGroupAfterTargetGroupFormat + ")";
                             Double limitExceedValue = Precision.round(difference, 1);
                             String limitExceed = Precision.round(difference, 1) + "km";
                             staff.getOverLimitAlertList().add(new OverLimitAlertBody(limitExceedValue, limitExceed, alertMessage));
@@ -429,7 +433,7 @@ public class StaffServiceImpl implements StaffService {
                         if(difference > 0) {
                             String fromHourOfOrderGroupBeforeTargetGroupFormat = orderGroupBeforeTargetGroup.getTimeFrame().getFromHour().toString().substring(0, 5);
                             String toHourOfOrderGroupBeforeTargetGroupFormat = orderGroupBeforeTargetGroup.getTimeFrame().getToHour().toString().substring(0, 5);
-                            String alertMessage = "Vướt giới hạn so với khung giờ " + "kế trước " + "(" + fromHourOfOrderGroupBeforeTargetGroupFormat + "-" + toHourOfOrderGroupBeforeTargetGroupFormat + ")";
+                            String alertMessage = "Vượt giới hạn so với khung giờ " + "trước " + "(" + fromHourOfOrderGroupBeforeTargetGroupFormat + "-" + toHourOfOrderGroupBeforeTargetGroupFormat + ")";
                             Double limitExceedValue = Precision.round(difference, 1);
                             String limitExceed = Precision.round(difference, 1) + "km";
                             staff.getOverLimitAlertList().add(new OverLimitAlertBody(limitExceedValue, limitExceed, alertMessage));
@@ -502,7 +506,7 @@ public class StaffServiceImpl implements StaffService {
                         if(difference > 0) {
                             String fromHourOfOrderBatchAfterTargetBatchFormat = orderBatchAfterTargetBatch.getTimeFrame().getFromHour().toString().substring(0, 5);
                             String toHourOfOrderBatchAfterTargetBatchFormat = orderBatchAfterTargetBatch.getTimeFrame().getToHour().toString().substring(0, 5);
-                            String alertMessage = "Vướt giới hạn so với khung giờ " + "kế tiếp " + "(" + fromHourOfOrderBatchAfterTargetBatchFormat + "-" + toHourOfOrderBatchAfterTargetBatchFormat + ")";
+                            String alertMessage = "Vượt giới hạn so với khung giờ " + "sau " + "(" + fromHourOfOrderBatchAfterTargetBatchFormat + "-" + toHourOfOrderBatchAfterTargetBatchFormat + ")";
                             Double limitExceedValue = Precision.round(difference, 1);
                             String limitExceed = Precision.round(difference, 1) + "km";
                             staff.getOverLimitAlertList().add(new OverLimitAlertBody(limitExceedValue, limitExceed, alertMessage));
@@ -524,7 +528,7 @@ public class StaffServiceImpl implements StaffService {
                         if(difference > 0) {
                             String fromHourOfOrderBatchBeforeTargetBatchFormat = orderBatchBeforeTargetBatch.getTimeFrame().getFromHour().toString().substring(0, 5);
                             String toHourOfOrderBatchBeforeTargetBatchFormat = orderBatchBeforeTargetBatch.getTimeFrame().getToHour().toString().substring(0, 5);
-                            String alertMessage = "Vướt giới hạn so với khung giờ " + "kế trước " + "(" + fromHourOfOrderBatchBeforeTargetBatchFormat + "-" + toHourOfOrderBatchBeforeTargetBatchFormat + ")";
+                            String alertMessage = "Vượt giới hạn so với khung giờ " + "trước " + "(" + fromHourOfOrderBatchBeforeTargetBatchFormat + "-" + toHourOfOrderBatchBeforeTargetBatchFormat + ")";
                             Double limitExceedValue = Precision.round(difference, 1);
                             String limitExceed = Precision.round(difference, 1) + "km";
                             staff.getOverLimitAlertList().add(new OverLimitAlertBody(limitExceedValue, limitExceed, alertMessage));

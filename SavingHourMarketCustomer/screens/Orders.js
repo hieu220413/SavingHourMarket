@@ -436,7 +436,7 @@ const Orders = ({navigation}) => {
           </Text>
         </View>
       ) : (
-        <ScrollView contentContainerStyle={{marginTop: 20}}>
+        <ScrollView contentContainerStyle={{marginTop: 20}} showsVerticalScrollIndicator={false}>
           <View style={{marginBottom: 100}}>
             {orderList.map(item => (
               <View
@@ -526,21 +526,6 @@ const Orders = ({navigation}) => {
                         Phương thức thanh toán:{' '}
                         {item?.paymentMethod === 0 ? 'COD' : 'VN Pay'}
                       </Text>
-                      {(item.status === 4 || item.status === 5) && (
-                        <TouchableOpacity onPress={() => {
-                          navigation.navigate('Order Feedback');
-                        }}>
-                          <Text
-                            style={{
-                              fontSize: 18,
-                              fontWeight: '100',
-                              fontFamily: 'Roboto',
-                              color: COLORS.primary,
-                            }}>
-                            Đánh giá đơn hàng
-                          </Text>
-                        </TouchableOpacity>
-                      )}
                     </View>
                     <Image
                       resizeMode="contain"
@@ -595,12 +580,6 @@ const Orders = ({navigation}) => {
         }
         footer={
           <ModalFooter>
-            <ModalButton
-              text="Ở lại trang"
-              onPress={async () => {
-                setOpenAuthModal(false);
-              }}
-            />
             <ModalButton
               text="Đăng nhập"
               textStyle={{color: COLORS.primary}}
