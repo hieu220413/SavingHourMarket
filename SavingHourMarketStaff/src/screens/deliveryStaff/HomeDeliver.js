@@ -842,14 +842,24 @@ const HomeDeliver = ({ navigation }) => {
         </Text>
         <Text
           style={{
-            fontSize: Dimensions.get('window').width * 0.05,
+            fontSize: Dimensions.get('window').width * 0.048,
             fontFamily: FONTS.fontFamily,
             color: 'black',
             fontWeight: 'bold',
             paddingBottom: 5,
             maxWidth: '80%',
           }}>
-          {item?.customer.fullName}
+          {item?.code}
+        </Text>
+
+        <Text
+          style={{
+            fontSize: Dimensions.get('window').width * 0.045,
+            fontFamily: FONTS.fontFamily,
+            color: 'black',
+            paddingBottom: 5,
+          }}>
+          Tên: {item?.customer.fullName}
         </Text>
 
         <Text
@@ -1321,9 +1331,10 @@ const HomeDeliver = ({ navigation }) => {
                                     style={{
                                       flexDirection: 'row',
                                       alignItems: 'center',
+                                      paddingHorizontal: data.item.isExpand ? 0 : 5,
                                       flexGrow: 1,
                                       flexShrink: 1,
-                                      justifyContent: 'center',
+                                      justifyContent:  data.item.isExpand ? 'center' : 'flex-start',
                                     }}>
                                     {data.item.isExpand ? (
                                       <Text
@@ -1333,9 +1344,9 @@ const HomeDeliver = ({ navigation }) => {
                                           fontFamily: 'Roboto',
                                           color: 'white',
                                         }}>
-                                        {data.item.timeFrame.fromHour +
+                                        {data.item.timeFrame.fromHour.slice(0,5) +
                                           '-' +
-                                          data.item.timeFrame.toHour +
+                                          data.item.timeFrame.toHour.slice(0,5) +
                                           ' ' +
                                           format(
                                             Date.parse(data.item.deliverDate),
@@ -1356,9 +1367,9 @@ const HomeDeliver = ({ navigation }) => {
                                             color: 'white',
                                           }}>
                                           Khung giờ:{' '}
-                                          {data.item.timeFrame.fromHour +
+                                          {data.item.timeFrame.fromHour.slice(0,5) +
                                             '-' +
-                                            data.item.timeFrame.toHour}
+                                            data.item.timeFrame.toHour.slice(0,5)}
                                         </Text>
                                         <Text
                                           style={{
@@ -1373,6 +1384,34 @@ const HomeDeliver = ({ navigation }) => {
                                             'dd/MM/yyyy',
                                           )}
                                         </Text>
+                                        {data.item.pickupPoint && (
+                                          <Text
+                                          style={{
+                                            fontSize: Dimensions.get('window').width * 0.045,
+                                            fontWeight: 'bold',
+                                            fontFamily: 'Roboto',
+                                            color: 'white',
+                                          }}
+                                          numberOfLines={2}>
+                                          Điểm giao:
+                                          {' ' + data.item.pickupPoint.address}
+                                        </Text>
+                                        )}
+                                        {data.item.productConsolidationArea && (
+                                        <Text
+                                          style={{
+                                            fontSize: Dimensions.get('window').width * 0.045,
+                                            fontWeight: 'bold',
+                                            fontFamily: 'Roboto',
+                                            color: 'white',
+                                          }}
+                                          numberOfLines={2}>
+                                          Điểm tập kết:
+                                          {' ' +
+                                            data.item.productConsolidationArea
+                                              .address}
+                                        </Text>
+                                      )}
                                       </View>
                                     )}
                                   </View>
@@ -1424,14 +1463,24 @@ const HomeDeliver = ({ navigation }) => {
                                     </Text>
                                     <Text
                                       style={{
-                                        fontSize: Dimensions.get('window').width * 0.05,
+                                        fontSize: Dimensions.get('window').width * 0.04,
                                         fontFamily: FONTS.fontFamily,
                                         color: 'black',
                                         fontWeight: 'bold',
                                         paddingBottom: 5,
                                         maxWidth: '80%',
                                       }}>
-                                      {item?.customer.fullName}
+                                      {item?.code}
+                                    </Text>
+
+                                    <Text
+                                      style={{
+                                        fontSize: Dimensions.get('window').width * 0.045,
+                                        fontFamily: FONTS.fontFamily,
+                                        color: 'black',
+                                        paddingBottom: 5,
+                                      }}>
+                                      Tên: {item?.customer.fullName}
                                     </Text>
 
                                     <Text

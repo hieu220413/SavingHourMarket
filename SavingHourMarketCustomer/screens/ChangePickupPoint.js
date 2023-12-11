@@ -259,6 +259,7 @@ const ChangePickupPoint = ({ navigation, route }) => {
           Điểm giao hàng gần bạn nhất
         </Text>
         <ScrollView
+          showsVerticalScrollIndicator={false}
           style={{
             paddingHorizontal: '2%',
           }}>
@@ -328,6 +329,7 @@ const ChangePickupPoint = ({ navigation, route }) => {
         </Text>
         {/* Order pickup point */}
         <ScrollView
+          showsVerticalScrollIndicator={false}
           contentContainerStyle={{
             paddingHorizontal: '2%',
           }}>

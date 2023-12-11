@@ -309,6 +309,7 @@ const DiscountForCategories = ({ navigation, route }) => {
 
       {/* List product of Category */}
       <ScrollView
+        showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="always"
         contentContainerStyle={{
           paddingBottom: 100,
@@ -322,6 +323,9 @@ const DiscountForCategories = ({ navigation, route }) => {
       <Modal
         width={0.8}
         visible={openAuthModal}
+        onTouchOutside={() => {
+          setOpenAuthModal(false);
+        }}
         dialogAnimation={
           new ScaleAnimation({
             initialValue: 0, // optional
@@ -330,12 +334,6 @@ const DiscountForCategories = ({ navigation, route }) => {
         }
         footer={
           <ModalFooter>
-            <ModalButton
-              text="Ở lại trang"
-              onPress={() => {
-                setOpenAuthModal(false);
-              }}
-            />
             <ModalButton
               text="Đăng nhập"
               textStyle={{ color: COLORS.primary }}

@@ -146,8 +146,6 @@ const Home = ({ navigation }) => {
       )
         .then(res => res.json())
         .then(data => {
-          // console.log("san pham", data.productList[0].supermarket);
-          // console.log(data);
           setProductsByCategory(data.productList);
           setPage(1);
           setTotalPage(data.totalPage);
@@ -351,7 +349,7 @@ const Home = ({ navigation }) => {
           // marginLeft: 15,
           // marginRight: 20,
           alignItems: 'center',
-          maxWidth: '30%',
+          width: (Dimensions.get('window').width - 20 * 2 - 40 - 21) / 4,
           shadowColor: '#000',
           shadowOffset: {
             width: 0,
@@ -372,12 +370,13 @@ const Home = ({ navigation }) => {
           }}
         />
         <Text
+          numberOfLines={2}
           style={{
             color: 'black',
             fontFamily: FONTS.fontFamily,
-            fontSize: Dimensions.get('window').width * 0.04,
+            fontSize: Dimensions.get('window').width * 0.03,
             marginTop: 10,
-            textAlign: 'center',
+            textAlign: 'center'
           }}>
           {data.name}
         </Text>
@@ -544,6 +543,7 @@ const Home = ({ navigation }) => {
 
       {/* Body */}
       <ScrollView
+        showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="always"
         contentContainerStyle={{
           paddingBottom: 100,
@@ -616,10 +616,11 @@ const Home = ({ navigation }) => {
               style={{
                 height: 200,
               }}
-              activeDotColor="#37A65B"
+              // activeDotColor="black"
               showsButtons={false}
               autoplay={true}
-              autoplayTimeout={5}
+              autoplayTimeout={4}
+              showsPagination={false}
             >
               {imageDiscountForSlider.map((item, index) => (
                 <Image
@@ -684,8 +685,8 @@ const Home = ({ navigation }) => {
               setLoading(true);
               fetch(
                 `${API.baseURL
-                }/api/product/getProductsForCustomer?productCategoryId=${currentCate}&page=${page + 1
-                }&limit=5`,
+                }/api/product/getProductsForCustomer?productCategoryId=${currentCate}&pickupPointId=${pickupPoint?.id}&page=${page
+                }&limit=10&quantitySortType=DESC&expiredSortType=ASC`,
               )
                 .then(res => res.json())
                 .then(data => {
@@ -722,6 +723,9 @@ const Home = ({ navigation }) => {
       <Modal
         width={0.8}
         visible={openAuthModal}
+        onTouchOutside={() => {
+          setOpenAuthModal(false);
+        }}
         dialogAnimation={
           new ScaleAnimation({
             initialValue: 0, // optional
@@ -730,12 +734,6 @@ const Home = ({ navigation }) => {
         }
         footer={
           <ModalFooter>
-            <ModalButton
-              text="Ở lại trang"
-              onPress={() => {
-                setOpenAuthModal(false);
-              }}
-            />
             <ModalButton
               text="Đăng nhập"
               textStyle={{ color: COLORS.primary }}

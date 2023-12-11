@@ -380,7 +380,7 @@ public class OrderServiceImpl implements OrderService {
                 rLock.lock();
                 if (orderGroup.getProductConsolidationArea() != null) {
                     List<Order> orderProcessingList = orderGroup.getOrderList().stream().filter(order -> order.getStatus() == 0).toList();
-                    if(orderProcessingList.size() == 0){
+                    if (orderProcessingList.size() == 0) {
                         throw new IllegalArgumentException("Nhóm đơn hàng này không còn đơn hàng nào đang chờ xác nhận!");
                     }
                     for (Order order : orderProcessingList) {
@@ -516,7 +516,7 @@ public class OrderServiceImpl implements OrderService {
     public String assignDeliverToOrderGroupOrBatch(String emailManager, UUID orderGroupId, UUID orderBatchId, UUID staffId) throws NoSuchOrderException, ConflictGroupAndBatchException, IOException, ResourceNotFoundException, InterruptedException {
         Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new ResourceNotFoundException("No staff found with this id " + staffId));
         Staff manager = staffRepository.findByEmail(emailManager).orElseThrow(() -> new ResourceNotFoundException("No manager found with this id " + staffId));
-        if(!manager.getDeliverStaffList().stream().anyMatch(staff1 -> staff1.equals(staff))){
+        if (!manager.getDeliverStaffList().stream().anyMatch(staff1 -> staff1.equals(staff))) {
             throw new IllegalArgumentException("Nhân viên này không trong quyền quản lý của bạn!");
         }
         if (staff.getRole().equalsIgnoreCase(StaffRole.STAFF_DLV_0.toString())) {
@@ -559,6 +559,7 @@ public class OrderServiceImpl implements OrderService {
                         for (Order order : orderBatch.getOrderList()) {
                             if (order.getStatus() == OrderStatus.PACKAGED.ordinal()) {
                                 order.setStatus(OrderStatus.DELIVERING.ordinal());
+                                order.setDeliverer(staff);
                                 FirebaseService.sendPushNotification("SHM", "Đơn hàng " + order.getCode() + " chuẩn bị được giao!", order.getCustomer().getId().toString());
                             } else if (order.getStatus() == OrderStatus.DELIVERING.ordinal() && manager.getDeliverStaffList().stream().anyMatch(staff1 -> staff1.equals(order.getDeliverer()))) {
                                 order.setDeliverer(staff);
@@ -589,7 +590,7 @@ public class OrderServiceImpl implements OrderService {
     public String assignDeliverToOrder(String emailManager, UUID orderId, UUID staffId) throws ResourceNotFoundException, IOException, InterruptedException {
         Staff staff = staffRepository.findById(staffId).orElseThrow(() -> new ResourceNotFoundException("No staff found with this id " + staffId));
         Staff manager = staffRepository.findByEmail(emailManager).orElseThrow(() -> new ResourceNotFoundException("No manager found with this email " + emailManager));
-        if(!manager.getDeliverStaffList().stream().anyMatch(staff1 -> staff1.equals(staff))){
+        if (!manager.getDeliverStaffList().stream().anyMatch(staff1 -> staff1.equals(staff))) {
             throw new IllegalArgumentException("Nhân viên này không trong quyền quản lý của bạn!");
         }
         Order order = repository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("No order found with this id " + orderId));
@@ -601,7 +602,7 @@ public class OrderServiceImpl implements OrderService {
                 if (order.getStatus() == OrderStatus.DELIVERING.ordinal() && manager.getDeliverStaffList().stream().anyMatch(staff1 -> staff1.equals(order.getDeliverer()))) {
                     order.setDeliverer(staff);
                     repository.save(order);
-                } else if (order.getStatus() == OrderStatus.PACKAGED.ordinal() ) {
+                } else if (order.getStatus() == OrderStatus.PACKAGED.ordinal()) {
                     order.setDeliverer(staff);
                     order.setStatus(OrderStatus.DELIVERING.ordinal());
                     repository.save(order);
@@ -726,6 +727,7 @@ public class OrderServiceImpl implements OrderService {
         orderWithDetails.setTransaction(order.getTransaction());
         orderWithDetails.setTimeFrame(order.getTimeFrame());
         orderWithDetails.setPickupPoint(order.getPickupPoint());
+        orderWithDetails.setIsFeedback(order.getIsFeedBack());
 
         List<OrderDetail> orderDetails = order.getOrderDetailList();
         List<OrderProduct> orderProducts = orderDetails.stream()
@@ -796,7 +798,7 @@ public class OrderServiceImpl implements OrderService {
             }
             repository.save(order);
         } else {
-            return "Đơn hàng đã quá thời gian huỷ cho phép là " + systemConfigurationService.getConfiguration().getTimeAllowedForOrderCancellation() + " tiếng kể từ khi đặt hàng!";
+            throw new OrderCancellationNotAllowedException("Đơn hàng đã quá thời gian huỷ cho phép là " + systemConfigurationService.getConfiguration().getTimeAllowedForOrderCancellation() + " tiếng kể từ khi đặt hàng!");
         }
 
         return "Successfully canceled order " + id;
@@ -960,7 +962,7 @@ public class OrderServiceImpl implements OrderService {
                 records.add(record);
             }
 
-            Map<Centroid, List<Record>> clusters = KMeans.fit(records, batchQuantity, new HaversineDistance(), 1000);
+            Map<Centroid, List<Record>> clusters = KMeans.fit(records, batchQuantity, new HaversineDistance(), 100);
 
 
             for (Map.Entry<Centroid, List<Record>> cluster : clusters.entrySet()) {

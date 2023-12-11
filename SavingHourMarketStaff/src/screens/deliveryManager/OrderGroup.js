@@ -189,7 +189,7 @@ const OrderGroup = ({navigation}) => {
             setLoading(true);
 
             fetch(
-              `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED`,
+              `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED&deliverDateSortType=ASC`,
               {
                 method: 'GET',
                 headers: {
@@ -228,7 +228,7 @@ const OrderGroup = ({navigation}) => {
               });
 
             fetch(
-              `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING`,
+              `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING&deliverDateSortType=ASC`,
               {
                 method: 'GET',
                 headers: {
@@ -270,6 +270,7 @@ const OrderGroup = ({navigation}) => {
       };
       setDate(null);
       setSelectSort(sortOptions);
+      setSelectedTimeFrameId('');
       fetchData();
     }, []),
   );
@@ -504,7 +505,7 @@ const OrderGroup = ({navigation}) => {
           if (tokenId) {
             setLoading(true);
             fetch(
-              `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED${
+              `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED&deliverDateSortType=ASC${
                 selectedTimeFrameId ? '&timeFrameId=' + selectedTimeFrameId : ''
               }`,
               {
@@ -545,7 +546,7 @@ const OrderGroup = ({navigation}) => {
               });
 
             fetch(
-              `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING${
+              `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING&deliverDateSortType=ASC${
                 selectedTimeFrameId ? '&timeFrameId=' + selectedTimeFrameId : ''
               }`,
               {
@@ -604,14 +605,13 @@ const OrderGroup = ({navigation}) => {
     setSelectSort(sortOptions);
     setLoading(true);
     setSelectedTimeFrameId('');
-    // setSelectedTimeFrameId('');
     const fetchData = async () => {
       if (auth().currentUser) {
         const tokenId = await auth().currentUser.getIdToken();
         if (tokenId) {
           setLoading(true);
           fetch(
-            `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED`,
+            `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED&deliverDateSortType=ASC`,
             {
               method: 'GET',
               headers: {
@@ -650,7 +650,7 @@ const OrderGroup = ({navigation}) => {
             });
 
           fetch(
-            `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING`,
+            `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING&deliverDateSortType=ASC`,
             {
               method: 'GET',
               headers: {
@@ -803,6 +803,7 @@ const OrderGroup = ({navigation}) => {
             date={date ? date : new Date()}
             onConfirm={date => {
               setSelectSort(sortOptions);
+              setSelectedTimeFrameId('');
               setOpen(false);
               setDate(date);
               const fetchData = async () => {
@@ -923,6 +924,7 @@ const OrderGroup = ({navigation}) => {
             }}
             onCancel={() => {
               setSelectSort(sortOptions);
+              setSelectedTimeFrameId('');
               setDate(null);
               setOpen(false);
               const fetchData = async () => {
@@ -931,7 +933,7 @@ const OrderGroup = ({navigation}) => {
                   if (tokenId) {
                     setLoading(true);
                     fetch(
-                      `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED`,
+                      `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED&deliverDateSortType=ASC`,
                       {
                         method: 'GET',
                         headers: {
@@ -973,7 +975,7 @@ const OrderGroup = ({navigation}) => {
                       });
 
                     fetch(
-                      `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING`,
+                      `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING&deliverDateSortType=ASC`,
                       {
                         method: 'GET',
                         headers: {
@@ -1556,7 +1558,7 @@ const OrderGroup = ({navigation}) => {
                           if (tokenId) {
                             setLoading(true);
                             fetch(
-                              `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED`,
+                              `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED&deliverDateSortType=ASC`,
                               {
                                 method: 'GET',
                                 headers: {
@@ -1598,7 +1600,7 @@ const OrderGroup = ({navigation}) => {
                               });
 
                             fetch(
-                              `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING`,
+                              `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING&deliverDateSortType=ASC`,
                               {
                                 method: 'GET',
                                 headers: {
@@ -1654,7 +1656,7 @@ const OrderGroup = ({navigation}) => {
                     />
                   </TouchableOpacity>
                 </View>
-                <Text
+                {/* <Text
                   style={{
                     color: 'black',
                     fontSize: 18,
@@ -1671,7 +1673,7 @@ const OrderGroup = ({navigation}) => {
                   {selectSort.map((item, index) => (
                     <ModalSortItem item={item} key={index} />
                   ))}
-                </View>
+                </View> */}
                 <Text
                   style={{
                     color: 'black',

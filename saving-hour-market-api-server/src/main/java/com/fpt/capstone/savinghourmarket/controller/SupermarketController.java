@@ -1,9 +1,14 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
+import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
+import com.fpt.capstone.savinghourmarket.common.SystemStatus;
+import com.fpt.capstone.savinghourmarket.entity.Configuration;
 import com.fpt.capstone.savinghourmarket.entity.Supermarket;
+import com.fpt.capstone.savinghourmarket.exception.SystemNotInMaintainStateException;
 import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.service.SupermarketService;
+import com.fpt.capstone.savinghourmarket.service.SystemConfigurationService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -27,13 +32,17 @@ import java.util.UUID;
 public class SupermarketController {
 
     private final SupermarketService supermarketService;
-
+    private final SystemConfigurationService systemConfigurationService;
     private final FirebaseAuth firebaseAuth;
 
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     public ResponseEntity<Supermarket> create(@RequestBody @Valid SupermarketCreateRequestBody supermarketCreateRequestBody, @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
+        Configuration configuration = systemConfigurationService.getConfiguration();
+        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+        }
         Supermarket supermarket = supermarketService.create(supermarketCreateRequestBody);
         return ResponseEntity.status(HttpStatus.OK).body(supermarket);
     }
@@ -42,6 +51,10 @@ public class SupermarketController {
     public ResponseEntity<Supermarket> updateInfo(@RequestBody SupermarketUpdateRequestBody supermarketUpdateRequestBody, @RequestParam UUID supermarketId, @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
+        Configuration configuration = systemConfigurationService.getConfiguration();
+        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+        }
         Supermarket supermarket = supermarketService.update(supermarketUpdateRequestBody, supermarketId);
         return ResponseEntity.status(HttpStatus.OK).body(supermarket);
     }
@@ -50,6 +63,10 @@ public class SupermarketController {
     public ResponseEntity<Supermarket> createSupermarketAddressForSupermarket(@RequestBody @Size(min = 1) List<@Valid SupermarketAddressCreateBody> supermarketAddressCreateBodyList, @RequestParam UUID supermarketId, @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
+        Configuration configuration = systemConfigurationService.getConfiguration();
+        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+        }
         Supermarket supermarket = supermarketService.createSupermarketAddress(supermarketAddressCreateBodyList, supermarketId);
         return ResponseEntity.status(HttpStatus.OK).body(supermarket);
     }
@@ -58,6 +75,10 @@ public class SupermarketController {
     public ResponseEntity<Supermarket> updateSupermarketAddressForSupermarket(@RequestBody @Valid SupermarketAddressUpdateBody supermarketAddressUpdateBody, @RequestParam UUID supermarketAddressId, @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
+        Configuration configuration = systemConfigurationService.getConfiguration();
+        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+        }
         Supermarket supermarket = supermarketService.updateSupermarketAddress(supermarketAddressUpdateBody, supermarketAddressId);
         return ResponseEntity.status(HttpStatus.OK).body(supermarket);
     }
@@ -67,6 +88,10 @@ public class SupermarketController {
     public ResponseEntity<Supermarket> deleteSupermarketAddressForSupermarket(@RequestParam UUID supermarketAddressId, @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
+        Configuration configuration = systemConfigurationService.getConfiguration();
+        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+        }
         Supermarket supermarket = supermarketService.deleteSupermarketAddress(supermarketAddressId);
         return ResponseEntity.status(HttpStatus.OK).body(supermarket);
     }
@@ -76,6 +101,10 @@ public class SupermarketController {
     public ResponseEntity<Supermarket> changeStatus(@RequestParam EnableDisableStatus status, @RequestParam UUID supermarketId, @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwtToken) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
+        Configuration configuration = systemConfigurationService.getConfiguration();
+        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+        }
         Supermarket supermarket = supermarketService.changeStatus(supermarketId, status);
         return ResponseEntity.status(HttpStatus.OK).body(supermarket);
     }

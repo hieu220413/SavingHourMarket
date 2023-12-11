@@ -5,13 +5,12 @@ import { COLORS, FONTS } from '../constants/theme';
 
 const TabIcon = ({ focused, icon, display }) => {
   const iconWidth = Dimensions.get('window').width * 0.08;
-  const iconHeight = Dimensions.get('window').height * 0.06;
+  const iconHeight = Dimensions.get('window').height * 0.05;
   return (
     <View
       style={{
         alignItems: 'center',
         height: '20%',
-        width: 80,
         justifyContent: 'center',
         // gap: 5,
       }}>

@@ -294,7 +294,7 @@ const EditTimeframe = ({
             onClick={handleCreate}
             className="modal__container-footer-buttons-create"
           >
-            Tạo mới
+            Chỉnh sửa
           </button>
         </div>
       </div>

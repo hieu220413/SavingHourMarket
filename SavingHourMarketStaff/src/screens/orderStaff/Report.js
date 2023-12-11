@@ -76,7 +76,7 @@ const Report = ({ navigation }) => {
       let numberTotal = 0;
       await fetch(
         `${API.baseURL
-        }/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${pickupPoint && pickupPoint.id ? `pickupPointId=${pickupPoint.id}` : ''
+        }/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${pickupPoint && pickupPoint.id ? `pickupPointId=${pickupPoint.id}&getOldOrder=true` : ''
         }`,
         {
           method: 'GET',
@@ -160,7 +160,7 @@ const Report = ({ navigation }) => {
 
       await fetch(
         `${API.baseURL
-        }/api/order/packageStaff/getOrders?deliveryMethod=PICKUP_POINT&${pickupPoint && pickupPoint.id ? `pickupPointId=${pickupPoint.id}` : ''
+        }/api/order/packageStaff/getOrders?deliveryMethod=PICKUP_POINT&${pickupPoint && pickupPoint.id ? `pickupPointId=${pickupPoint.id}&getOldOrder=true` : ''
         }`,
         {
           method: 'GET',

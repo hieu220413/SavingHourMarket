@@ -1215,7 +1215,7 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                                   alignItems: 'center',
                                   borderRadius: 5,
                                   flexDirection: 'row',
-                                  columnGap: 15,
+                                  columnGap: 13,
                                   shadowColor: '#000',
                                   shadowOffset: {
                                     width: 0,
@@ -1262,13 +1262,13 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                                     }
                                   />
                                 </TouchableOpacity>
-                                <View
+                                <Pressable
                                   style={{
                                     flexDirection: 'row',
                                     alignItems: 'center',
                                     flexGrow: 1,
                                     flexShrink: 1,
-                                    justifyContent: 'center',
+                                    justifyContent:  data.item.isExpand ? 'center' : 'flex-start',
                                   }}>
                                   {data.item.isExpand ? (
                                     <Text
@@ -1356,7 +1356,7 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                                       )}
                                     </View>
                                   )}
-                                </View>
+                                </Pressable>
                                 <View
                                   style={{
                                     height: '100%',
