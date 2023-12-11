@@ -539,12 +539,13 @@ const Report = ({ navigation }) => {
         Keyboard.dismiss;
         setOpen(false);
       }}
-      accessible={false}>
+      accessible={false}
+      >
       <>
         <ScrollView
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}
-          style={{ marginBottom: "17%",paddingBottom:"5%" }}>
+          style={{paddingBottom:"22%",height:Dimensions.get('window').height *0.8}}>
           <ImageBackground
             source={require('../../assets/image/backgroundStaff.jpeg')}
             style={styles.container}>
@@ -613,7 +614,6 @@ const Report = ({ navigation }) => {
                 </View>
               </View>
             </View>
-
             <View style={styles.body}>
               <View
                 style={{
@@ -791,7 +791,7 @@ const Report = ({ navigation }) => {
                       shadowRadius: 4,
                       elevation: 3,
                       marginHorizontal: 15,
-                      marginBottom: 20,
+                      marginBottom: '20%',
                     }}>
                     <View
                       style={{
