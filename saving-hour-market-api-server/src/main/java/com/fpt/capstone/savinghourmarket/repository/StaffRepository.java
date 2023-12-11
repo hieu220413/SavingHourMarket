@@ -92,7 +92,7 @@ public interface StaffRepository extends JpaRepository<Staff, UUID> {
     List<Object[]> countCollideBatchForStaff(List<UUID> staffIdList, LocalDate deliverDate, LocalTime fromHour, LocalTime toHour);
 
     @Query("SELECT DISTINCT s FROM Staff s " +
-            "LEFT JOIN s.orderBatchList obl " +
+            "LEFT JOIN FETCH s.orderBatchList obl " +
 //            "LEFT JOIN FETCH s.pickupPoint " +
             "WHERE " +
             "s.id IN :staffIdList " +
@@ -116,7 +116,7 @@ public interface StaffRepository extends JpaRepository<Staff, UUID> {
     List<Staff> getStaffWithDeliverDateWithBatchWithSameTimeFrame(List<UUID> staffIdList, LocalDate deliverDate, UUID timeFrameId);
 
     @Query("SELECT DISTINCT s FROM Staff s " +
-            "LEFT JOIN s.orderGroupList og " +
+            "LEFT JOIN FETCH s.orderGroupList og " +
 //            "LEFT JOIN FETCH s.pickupPoint " +
             "WHERE " +
             "s.id IN :staffIdList " +
