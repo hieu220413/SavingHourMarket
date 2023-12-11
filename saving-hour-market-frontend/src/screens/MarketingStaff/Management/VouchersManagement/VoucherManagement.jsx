@@ -10,13 +10,14 @@ import MuiAlert from "@mui/material/Alert";
 import { Dialog, Snackbar } from "@mui/material";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 import { API } from "../../../../contanst/api";
-import { auth } from "../../../../firebase/firebase.config";
+import { auth, database } from "../../../../firebase/firebase.config";
 import dayjs from "dayjs";
 import { onAuthStateChanged } from "firebase/auth";
 import CreateVoucher from "./CreateVoucher";
 import EditVoucher from "./EditVoucher";
 import { useAuthState } from "react-firebase-hooks/auth";
 import Empty from "../../../../assets/Empty.png";
+import { child, get, ref } from "firebase/database";
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
@@ -136,6 +137,25 @@ const VoucherManagement = () => {
   };
 
   const handleDisableDiscount = async (id) => {
+    let isSystemDisable = true;
+    await get(child(ref(database), "systemStatus")).then((snapshot) => {
+      const data = snapshot.val();
+      if (data !== null) {
+        if (data === 1) {
+          setOpenSnackbar({
+            ...openSnackbar,
+            open: true,
+            severity: "error",
+          });
+          setMsg("Hệ thống không trong trạng thái bảo trì !");
+          isSystemDisable = false;
+        }
+      }
+    });
+    if (!isSystemDisable) {
+      setLoading(false);
+      return;
+    }
     const tokenId = await auth.currentUser.getIdToken();
     setLoading(true);
     fetch(`${API.baseURL}/api/discount/disableDiscount/${id}`, {
@@ -197,6 +217,25 @@ const VoucherManagement = () => {
   };
 
   const handleRecovery = async (id) => {
+    let isSystemDisable = true;
+    await get(child(ref(database), "systemStatus")).then((snapshot) => {
+      const data = snapshot.val();
+      if (data !== null) {
+        if (data === 1) {
+          setOpenSnackbar({
+            ...openSnackbar,
+            open: true,
+            severity: "error",
+          });
+          setMsg("Hệ thống không trong trạng thái bảo trì !");
+          isSystemDisable = false;
+        }
+      }
+    });
+    if (!isSystemDisable) {
+      setLoading(false);
+      return;
+    }
     const tokenId = await auth.currentUser.getIdToken();
     setLoading(true);
     fetch(`${API.baseURL}/api/discount/enableDiscount/${id}`, {
@@ -249,7 +288,28 @@ const VoucherManagement = () => {
           </td>
           <td style={{ paddingTop: 30 }}>
             <i
-              onClick={() => {
+              onClick={async () => {
+                let isSystemDisable = true;
+                await get(child(ref(database), "systemStatus")).then(
+                  (snapshot) => {
+                    const data = snapshot.val();
+                    if (data !== null) {
+                      if (data === 1) {
+                        setOpenSnackbar({
+                          ...openSnackbar,
+                          open: true,
+                          severity: "error",
+                        });
+                        setMsg("Hệ thống không trong trạng thái bảo trì !");
+                        isSystemDisable = false;
+                      }
+                    }
+                  }
+                );
+                if (!isSystemDisable) {
+                  setLoading(false);
+                  return;
+                }
                 setVoucherToEdit(item);
                 handleOpenEdit();
               }}
