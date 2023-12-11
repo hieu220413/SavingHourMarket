@@ -342,7 +342,7 @@ const FeedbackList = ({navigation}) => {
             </TouchableOpacity>
             <Text style={styles.text_header}>Đánh giá của tôi</Text>
           </View>
-          <View style={{justifyContent: 'center'}}>
+          {/* <View style={{justifyContent: 'center'}}>
             <TouchableOpacity
               onPress={() => {
                 navigation.navigate('Feedback');
@@ -358,7 +358,7 @@ const FeedbackList = ({navigation}) => {
                 Tạo
               </Text>
             </TouchableOpacity>
-          </View>
+          </View> */}
         </View>
       </View>
       <View style={styles.footer}>
