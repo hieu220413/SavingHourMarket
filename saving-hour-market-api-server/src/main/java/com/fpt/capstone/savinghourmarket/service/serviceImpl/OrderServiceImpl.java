@@ -962,7 +962,7 @@ public class OrderServiceImpl implements OrderService {
                 records.add(record);
             }
 
-            Map<Centroid, List<Record>> clusters = KMeans.fit(records, batchQuantity, new HaversineDistance(), 1000);
+            Map<Centroid, List<Record>> clusters = KMeans.fit(records, batchQuantity, new HaversineDistance(), 100);
 
 
             for (Map.Entry<Centroid, List<Record>> cluster : clusters.entrySet()) {
