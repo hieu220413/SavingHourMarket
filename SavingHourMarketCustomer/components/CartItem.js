@@ -79,7 +79,6 @@ const CartItem = ({item, cartItems, setcartItems, navigation, pickupPoint}) => {
             flexDirection: 'row',
             paddingHorizontal: 10,
             paddingTop: 20,
-            paddingBottom: 10,
             gap: 10,
           }}>
           <CheckBox
@@ -117,7 +116,7 @@ const CartItem = ({item, cartItems, setcartItems, navigation, pickupPoint}) => {
             <Text
               numberOfLines={1}
               style={{
-                fontSize: 23,
+                fontSize: 20,
                 color: 'black',
                 fontFamily: 'Roboto',
                 fontWeight: 'bold',
@@ -126,7 +125,7 @@ const CartItem = ({item, cartItems, setcartItems, navigation, pickupPoint}) => {
             </Text>
             <Text
               style={{
-                fontSize: 18,
+                fontSize: 16,
                 color: COLORS.primary,
 
                 fontFamily: 'Roboto',
@@ -143,7 +142,7 @@ const CartItem = ({item, cartItems, setcartItems, navigation, pickupPoint}) => {
             </Text>
             <Text
               style={{
-                fontSize: 18,
+                fontSize: 16,
                 color: 'black',
                 fontFamily: 'Roboto',
                 fontWeight: 'bold',
@@ -152,8 +151,8 @@ const CartItem = ({item, cartItems, setcartItems, navigation, pickupPoint}) => {
             </Text>
             <Text
               style={{
-                fontSize: 20,
-                color: 'red',
+                fontSize: 18,
+                color: COLORS.primary,
                 fontFamily: 'Roboto',
                 fontWeight: 'bold',
               }}>
@@ -186,7 +185,7 @@ const CartItem = ({item, cartItems, setcartItems, navigation, pickupPoint}) => {
                 source={icons.minus}
               />
             </TouchableOpacity>
-            <Text style={{fontSize: 22, color: 'black', fontFamily: 'Roboto'}}>
+            <Text style={{fontSize: 20, color: 'black', fontFamily: 'Roboto'}}>
               {item.cartQuantity}
             </Text>
             <TouchableOpacity

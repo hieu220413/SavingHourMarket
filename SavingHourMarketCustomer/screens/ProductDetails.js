@@ -401,13 +401,13 @@ const ProductDetails = ({ navigation, route }) => {
       <View
         style={{
           position: 'absolute',
-          bottom: 0,
+          bottom: 2,
           flexDirection: 'row',
           backgroundColor: '#F5F5F5',
           width: '96%',
           paddingHorizontal: '2%',
           marginHorizontal: '2%',
-          paddingTop: '8%',
+          paddingTop: '4%',
           paddingBottom: Dimensions.get('window').height * 0.1,
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
