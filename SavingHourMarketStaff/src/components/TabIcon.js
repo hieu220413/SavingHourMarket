@@ -37,13 +37,13 @@ const TabIcon = (props) => {
       style={styles.container}>
       <Animatable.View
         ref={viewRef}
-        duration={1000}
+        duration={500}
         style={styles.container}>
         <View 
         style={{
-          width: imageWidth+20,
-          height: imageHeight,
-          borderRadius: 25,
+          width:imageWidth*1.9,
+          height:imageHeight+imageHeight*0.01,
+          borderRadius: 100,
           borderWidth: 4,
           borderColor: COLORS.tabBackground,
           backgroundColor: focused ? COLORS.primary: COLORS.tabBackground,
@@ -96,10 +96,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.primary,
-    borderRadius: 25,
+    borderRadius: 75,
   },
   text: {
-    fontSize: 10,
+    fontSize: 9,
     textAlign: 'center',
     color: COLORS.primary,
   }
