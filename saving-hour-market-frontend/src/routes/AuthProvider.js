@@ -61,20 +61,20 @@ const AuthProvider = ({ children }) => {
         }
       }
     });
-    onValue(ref(database, "systemStatus"), async (snapshot) => {
-      const data = snapshot.val();
-      console.log(data);
-      if (data !== null) {
-        if (data === 0) {
-          if (user?.role !== "ADMIN") {
-            localStorage.clear();
-            const action = setUser(null);
-            dispatch(action);
-            navigate("/login");
-          }
-        }
-      }
-    });
+    // onValue(ref(database, "systemStatus"), async (snapshot) => {
+    //   const data = snapshot.val();
+    //   console.log(data);
+    //   if (data !== null) {
+    //     if (data === 0) {
+    //       if (user?.role !== "ADMIN") {
+    //         localStorage.clear();
+    //         const action = setUser(null);
+    //         dispatch(action);
+    //         navigate("/login");
+    //       }
+    //     }
+    //   }
+    // });
   }, []);
 
   const events = [

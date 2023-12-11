@@ -186,7 +186,10 @@ const EditProductByExcel = ({
                 ? batch?.priceOriginal
                 : "Lỗi giá tiền !",
               batchAddress: batchAddressAndQuantity,
-              imageUrls: product.imageUrls.length === 0 ? "Lỗi hình ảnh !" : "",
+              imageUrls:
+                product.imageUrls?.length === 0 || product.imageUrls === null
+                  ? "Lỗi hình ảnh !"
+                  : "",
             });
           });
         } else {
@@ -210,12 +213,15 @@ const EditProductByExcel = ({
             price: "Lỗi lô hàng !",
             priceOriginal: "Lỗi lô hàng !",
             batchAddress: "Lỗi lô hàng !",
-            imageUrls: product.imageUrls.length === 0 ? "Lỗi hình ảnh !" : "",
+            imageUrls:
+              product.imageUrls?.length === 0 || product.imageUrls === null
+                ? "Lỗi hình ảnh !"
+                : "",
           });
         }
         const temProductList = [...confirmProductList.productList];
 
-        if (product.imageUrls.length !== 0) {
+        if (product.imageUrls?.length !== 0 && product.imageUrls !== null) {
           for (let j = 0; j < product.imageUrls.length; j++) {
             const imageUrl = await toImageUrl(product.imageUrls[j]);
             console.log(imageUrl);

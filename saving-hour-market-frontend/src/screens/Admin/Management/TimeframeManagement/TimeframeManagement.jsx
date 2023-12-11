@@ -15,8 +15,9 @@ import ManagementMenu from "../../../../components/ManagementMenu/ManagementMenu
 import CreateTimeframe from "./CreateTimeframe";
 import EditTimeframe from "./EditTimeframe";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../../../../firebase/firebase.config";
+import { auth, database } from "../../../../firebase/firebase.config";
 import { API } from "../../../../contanst/api";
+import { child, get, ref } from "firebase/database";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -97,6 +98,25 @@ const TimeframeManagement = () => {
 
     const handleDelete = async () => {
       setLoading(true);
+      let isSystemDisable = true;
+      await get(child(ref(database), "systemStatus")).then((snapshot) => {
+        const data = snapshot.val();
+        if (data !== null) {
+          if (data === 1) {
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "error",
+              text: "Hệ thống không trong trạng thái bảo trì !",
+            });
+            isSystemDisable = false;
+          }
+        }
+      });
+      if (!isSystemDisable) {
+        setLoading(false);
+        return;
+      }
       const tokenId = await auth.currentUser.getIdToken();
       fetch(`${API.baseURL}/api/timeframe/updateStatus`, {
         method: "PUT",
@@ -173,6 +193,25 @@ const TimeframeManagement = () => {
 
     const handleReverse = async () => {
       setLoading(true);
+      let isSystemDisable = true;
+      await get(child(ref(database), "systemStatus")).then((snapshot) => {
+        const data = snapshot.val();
+        if (data !== null) {
+          if (data === 1) {
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "error",
+              text: "Hệ thống không trong trạng thái bảo trì !",
+            });
+            isSystemDisable = false;
+          }
+        }
+      });
+      if (!isSystemDisable) {
+        setLoading(false);
+        return;
+      }
       const tokenId = await auth.currentUser.getIdToken();
       fetch(`${API.baseURL}/api/timeframe/updateStatus`, {
         method: "PUT",

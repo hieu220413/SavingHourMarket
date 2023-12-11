@@ -13,8 +13,9 @@ import dayjs from "dayjs";
 import MuiAlert from "@mui/material/Alert";
 import { Dialog, Snackbar } from "@mui/material";
 import { API } from "../../../../contanst/api";
-import { auth } from "../../../../firebase/firebase.config";
+import { auth, database } from "../../../../firebase/firebase.config";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
+import { child, get, ref } from "firebase/database";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -62,6 +63,25 @@ const EditTimeframe = ({
   };
 
   const handleCreate = async () => {
+    let isSystemDisable = true;
+    await get(child(ref(database), "systemStatus")).then((snapshot) => {
+      const data = snapshot.val();
+      if (data !== null) {
+        if (data === 1) {
+          setOpenSnackbar({
+            ...openSnackbar,
+            open: true,
+            severity: "error",
+            text: "Hệ thống không trong trạng thái bảo trì !",
+          });
+          isSystemDisable = false;
+        }
+      }
+    });
+    if (!isSystemDisable) {
+      setLoading(false);
+      return;
+    }
     if (!selectedDeliveryMethod) {
       setError({ ...error, deliveryMethods: "Vui lòng không để trống" });
       return;
