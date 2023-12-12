@@ -30,6 +30,7 @@ import Modal, {
 import Empty from '../assets/image/search-empty.png';
 import database from '@react-native-firebase/database';
 import Swiper from 'react-native-swiper';
+import Geolocation from '@react-native-community/geolocation';
 
 const Home = ({ navigation }) => {
   const [categories, setCategories] = useState([]);
@@ -42,13 +43,7 @@ const Home = ({ navigation }) => {
   const [cartList, setCartList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openAuthModal, setOpenAuthModal] = useState(false);
-  const [pickupPoint, setPickupPoint] = useState({
-    id: 'accf0ac0-5541-11ee-8a50-a85e45c41921',
-    address: 'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh',
-    status: 1,
-    longitude: 106.83102962168277,
-    latitude: 10.845020092805793,
-  });
+  const [pickupPoint, setPickupPoint] = useState(null);
   const [imageDiscountForSlider, setImageDiscountForSlider] = useState([]);
 
   const showToast = () => {
@@ -83,6 +78,7 @@ const Home = ({ navigation }) => {
 
   useFocusEffect(
     useCallback(() => {
+      setLoading(true);
       // Get pickup point from AS
       (async () => {
         try {
@@ -114,32 +110,96 @@ const Home = ({ navigation }) => {
           setLoading(false);
         }
       })();
+      if (pickupPoint === null) {
+        console.log('run geolocation');
+        Geolocation.getCurrentPosition(
+          position => {
+            const currentLongitude = position.coords.longitude;
+            const currentLatitude = position.coords.latitude;
+            // get nearest pick up point by current lat,long
+            fetch(
+              `${API.baseURL}/api/pickupPoint/getWithSortAndSuggestion?latitude=${currentLatitude}&longitude=${currentLongitude}`,
+            )
+              .then(res => res.json())
+              .then(response => {
+                setPickupPoint(response.sortedPickupPointSuggestionList[0]);
+                //fetch categories
+                fetch(
+                  `${API.baseURL}/api/product/getAllCategory?pickupPointId=${response.sortedPickupPointSuggestionList[0].id}`,
+                )
+                  .then(res => res.json())
+                  .then(category => {
+                    if (category.error) {
+                      setCategories([]);
+                      return;
+                    }
+                    setCategories(category);
+                    setCurrentCate(category[0].id);
+                    // fetch products
+                    fetch(
+                      `${API.baseURL}/api/product/getProductsForCustomer?productCategoryId=${category[0].id}&pickupPointId=${response.sortedPickupPointSuggestionList[0].id}&page=0&limit=10&quantitySortType=DESC&expiredSortType=ASC`,
+                    )
+                      .then(res => res.json())
+                      .then(data => {
+                        setProductsByCategory(data.productList);
+                        setPage(1);
+                        setTotalPage(data.totalPage);
+                        setLoading(false);
+                      })
+                      .catch(err => {
+                        console.log(err);
+                        setLoading(false);
+                      });
+                    setLoading(false);
+                  })
+                  .catch(err => {
+                    console.log(err);
+                    setLoading(false);
+                  });
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              }
+              );
+          },
+          error => {
+            console.log(error.message);
+          },
+          {
+            enableHighAccuracy: true,
+          },
+        );
+      }
     }, []),
   );
 
   useEffect(() => {
     setLoading(true);
-    fetch(
-      `${API.baseURL}/api/product/getAllCategory?pickupPointId=${pickupPoint?.id}`,
-    )
-      .then(res => res.json())
-      .then(data => {
-        if (data.error) {
-          setCategories([]);
-          return;
-        }
-        setCategories(data);
-        setCurrentCate(data[0].id);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.log(err);
-        setLoading(false);
-      });
-  }, [pickupPoint?.id]);
+    if (pickupPoint) {
+      fetch(
+        `${API.baseURL}/api/product/getAllCategory?pickupPointId=${pickupPoint.id}`,
+      )
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            setCategories([]);
+            return;
+          }
+          setCategories(data);
+          setCurrentCate(data[0].id);
+          // setLoading(false);
+        })
+        .catch(err => {
+          console.log(err);
+          setLoading(false);
+        });
+    }
+  }, [pickupPoint]);
 
   useEffect(() => {
-    if (currentCate) {
+    if (currentCate && pickupPoint) {
       setLoading(true);
       fetch(
         `${API.baseURL}/api/product/getProductsForCustomer?productCategoryId=${currentCate}&pickupPointId=${pickupPoint?.id}&page=0&limit=10&quantitySortType=DESC&expiredSortType=ASC`,
@@ -177,7 +237,7 @@ const Home = ({ navigation }) => {
         item.id === currentCate && setSubCategories(item.productSubCategories);
       });
     }
-  }, [currentCate, categories, pickupPoint?.id]);
+  }, [currentCate, categories, pickupPoint]);
 
   const handleAddToCart = async data => {
     try {
