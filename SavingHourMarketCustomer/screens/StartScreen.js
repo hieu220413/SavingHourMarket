@@ -1,3 +1,6 @@
+/* eslint-disable prettier/prettier */
+/* eslint-disable react-native/no-inline-styles */
+/* eslint-disable react/no-unstable-nested-components */
 import { Text, View, ActivityIndicator, Image } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -6,6 +9,7 @@ import { API } from '../constants/api';
 import { COLORS } from '../constants/theme';
 import { useFocusEffect } from '@react-navigation/native';
 import database from '@react-native-firebase/database';
+import Geolocation from '@react-native-community/geolocation';
 
 const StartScreen = ({ navigation }) => {
   const [systemStatus, setSystemStatus] = useState(1);
@@ -50,11 +54,37 @@ const StartScreen = ({ navigation }) => {
             setLoading(false);
           } else {
             // setSystemStatus(snapshot.val());
-            setLoading(false);
-            navigation.reset({
-              index: 0,
-              routes: [{ name: 'Start' }],
-            });
+            Geolocation.getCurrentPosition(
+              position => {
+                const currentLongitude = position.coords.longitude;
+                const currentLatitude = position.coords.latitude;
+                // get nearest pick up point by current lat,long
+                fetch(
+                  `${API.baseURL}/api/pickupPoint/getWithSortAndSuggestion?latitude=${currentLatitude}&longitude=${currentLongitude}`,
+                )
+                  .then(res => res.json())
+                  .then(response => {
+                    // setPickupPoint(response.sortedPickupPointSuggestionList[0]);
+                    setLoading(false);
+                    navigation.reset({
+                      index: 0,
+                      routes: [{ name: 'Start' }],
+                    });
+                    setLoading(false);
+                  })
+                  .catch(err => {
+                    console.log(err);
+                    setLoading(false);
+                  }
+                  );
+              },
+              error => {
+                console.log(error.message);
+              },
+              {
+                enableHighAccuracy: true,
+              },
+            );
           }
         });
     }, []),
