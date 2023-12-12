@@ -346,15 +346,16 @@ const ProductDetails = ({ navigation, route }) => {
             paddingTop: '10%',
             paddingBottom: '40%',
             shadowColor: 'grey',
-            borderTopStartRadius: 24,
-            borderTopEndRadius: 24,
+            borderTopStartRadius: 40,
+            borderTopEndRadius: 40,
             shadowOffset: {
               width: 0,
               height: 3,
             },
             shadowOpacity: 0.27,
             shadowRadius: 4.65,
-            elevation: 1.5,
+            elevation: 3,
+            index:10
           }}>
           <Text
             style={{
@@ -599,8 +600,9 @@ const ProductDetails = ({ navigation, route }) => {
       <BottomSheetModalProvider>
         <BottomSheet
           ref={bottomSheetRef}
-          enableOverDrag={false}
+          enablePanDownToClose={true}
           index={index}
+          onClose={() => setIndex(-1)}
           style={sheetStyle}
           snapPoints={snapPoints}>
           <View
@@ -659,18 +661,6 @@ const ProductDetails = ({ navigation, route }) => {
                   </Text>
                 </View>
               </View>
-              <TouchableOpacity
-                onPress={() => {
-                  bottomSheetRef.current?.close();
-                  setIndex(-1);
-                }}
-                style={{ flex: 1 }}>
-                <Image
-                  style={{ width: 25, height: 25 }}
-                  resizeMode="contain"
-                  source={icons.cross}
-                />
-              </TouchableOpacity>
             </View>
           </View>
           <BottomSheetScrollView>
@@ -859,7 +849,7 @@ const ProductDetails = ({ navigation, route }) => {
                     fontFamily: 'Roboto',
                     fontWeight: 'bold',
                   }}>
-                  {isAddToCart ? 'Mua hàng' : 'Đặt hàng'}
+                  {isAddToCart ? 'Thêm vào giỏ hàng' : 'Đặt hàng'}
                 </Text>
               </TouchableOpacity>
             </View>

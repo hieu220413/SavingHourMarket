@@ -23,8 +23,8 @@ const Tabs = () => {
           height: '6%',
           position: 'absolute',
           bottom: 3,
-          right: 7,
-          left: 7,
+          right: 12,
+          left: 12,
           borderRadius: 16,
           backgroundColor: COLORS.tabBackground
         },
@@ -93,7 +93,7 @@ const Tabs = () => {
           ),
         }}
       />
-      <Tab.Screen
+      {/* <Tab.Screen
         name="CartBottom"
         component={Cart}
         options={{
@@ -106,7 +106,7 @@ const Tabs = () => {
             />
           ),
         }}
-      />
+      /> */}
       <Tab.Screen
         name="Profile"
         component={Profile}
