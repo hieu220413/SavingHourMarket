@@ -53,6 +53,7 @@ const PickStaff = ({navigation, route}) => {
   const [showLogout, setShowLogout] = useState(false);
   const [openValidateDialog, setOpenValidateDialog] = useState(false);
   const [openConfirmModal, setOpenConfirmModal] = useState(false);
+  const [config, setConfig] = useState(null);
 
   // const onAuthStateChange = async userInfo => {
   //   // console.log(userInfo);
@@ -285,6 +286,48 @@ const PickStaff = ({navigation, route}) => {
           }
         }
       };
+
+      const fetchDataConfig = async () => {
+        const currentUser = await AsyncStorage.getItem('userInfo');
+        if (auth().currentUser) {
+          const tokenId = await auth().currentUser.getIdToken();
+          if (tokenId) {
+            setLoading(true);
+            fetch(`${API.baseURL}/api/configuration/getConfiguration`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
+              },
+            })
+              .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                  const tokenIdCheck = await auth()
+                    .currentUser.getIdToken(true)
+                    .catch(async err => {
+                      await AsyncStorage.setItem('isDisableAccount', '1');
+                      return null;
+                    });
+                  if (!tokenIdCheck) {
+                    throw new Error();
+                  }
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.json();
+              })
+              .then(respond => {
+                console.log('respond:', respond);
+                setConfig(respond);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
+          }
+        }
+      };
+      fetchDataConfig();
       fetchData();
     }, []),
   );
@@ -539,10 +582,60 @@ const PickStaff = ({navigation, route}) => {
         </View>
       ) : (
         <>
+          <View
+            style={{
+              backgroundColor: '#FFFFFF',
+              marginHorizontal: '3%',
+              padding: '5%',
+              flexDirection: 'column',
+              marginTop: '2%',
+              marginBottom: '2%',
+              gap: 8,
+            }}>
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: 'bold',
+                fontFamily: 'Roboto',
+                color: COLORS.primary,
+              }}>
+              Thông tin
+            </Text>
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: 'bold',
+                fontFamily: 'Roboto',
+                color: 'black',
+              }}>
+              Ngày giao hàng : {deliverDate}
+            </Text>
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: 'bold',
+                fontFamily: 'Roboto',
+                color: 'black',
+              }}>
+              Giờ giao hàng : {timeFrame?.fromHour} đến {timeFrame?.toHour}
+            </Text>
+            <Text
+              style={{
+                fontSize: 14,
+                fontWeight: 'bold',
+                fontFamily: 'Roboto',
+                color: 'orange',
+              }}>
+              Giới hạn khoảng cách trên mỗi phút là {config.limitMeterPerMinute}
+              m. Số khoảng cách vượt quá giới hạn được tính bằng: khoảng cách
+              cần giao – (giới hạn khoảng cách trên mỗi phút x số phút chênh
+              lệch giữa 2 khung giờ)
+            </Text>
+          </View>
           <ScrollView
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{marginTop: '5%'}}>
+            contentContainerStyle={{marginTop: '3%'}}>
             <View style={{marginBottom: 100, paddingHorizontal: '3%'}}>
               {staffList.map((item, index) => (
                 <View
@@ -622,7 +715,7 @@ const PickStaff = ({navigation, route}) => {
                               <Text
                                 key={index}
                                 style={{
-                                  fontSize: 14,
+                                  fontSize: 13,
                                   fontWeight: 'bold',
                                   fontFamily: 'Roboto',
                                   color: 'red',
@@ -635,7 +728,7 @@ const PickStaff = ({navigation, route}) => {
                         {item?.isAvailableForDelivering === false ? (
                           <Text
                             style={{
-                              fontSize: 16,
+                              fontSize: 14,
                               width: '100%',
                               fontWeight: 'bold',
                               fontFamily: 'Roboto',

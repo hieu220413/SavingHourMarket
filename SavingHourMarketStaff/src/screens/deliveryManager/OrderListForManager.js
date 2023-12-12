@@ -1152,7 +1152,7 @@ const OrderListForManager = ({navigation}) => {
                   </Text>
                 </View>
               ) : (
-                <View style={{marginTop: '18%', marginBottom: '40%'}}>
+                <View style={{marginTop: '18%'}}>
                   <TouchableOpacity
                     onPress={() => {
                       setModalCreate(!modalCreate);
@@ -1187,6 +1187,7 @@ const OrderListForManager = ({navigation}) => {
                     listViewRef={listRef}
                     showsVerticalScrollIndicator={false}
                     showsHorizontalScrollIndicator={false}
+                    style={{marginBottom:'28%'}}
                     data={orderNotYetAssigned}
                     ListHeaderComponent={
                       modalCreate === true ? (
@@ -1697,10 +1698,11 @@ const OrderListForManager = ({navigation}) => {
                   </Text>
                 </View>
               ) : (
-                <View style={{marginTop: '18%', marginBottom: '25%'}}>
+                <View style={{marginTop: '18%'}}>
                   <SwipeListView
                     showsVerticalScrollIndicator={false}
                     showsHorizontalScrollIndicator={false}
+                    style={{marginBottom:'12%'}}
                     data={orderAssigned}
                     renderItem={(data, rowMap) => (
                       <View

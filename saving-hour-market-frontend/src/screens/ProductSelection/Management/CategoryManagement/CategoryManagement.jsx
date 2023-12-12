@@ -7,7 +7,7 @@ import {
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { Dialog } from "@mui/material";
-import { auth } from "../../../../firebase/firebase.config";
+import { auth, database } from "../../../../firebase/firebase.config";
 import { API } from "../../../../contanst/api";
 import MuiAlert from "@mui/material/Alert";
 import { Snackbar } from "@mui/material";
@@ -17,6 +17,7 @@ import CreateCategory from "./CreateCategory";
 import { onAuthStateChanged } from "firebase/auth";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { child, get, ref } from "firebase/database";
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
@@ -170,7 +171,28 @@ const CategoryManagement = () => {
               className="bi bi-eye"
             ></i>
             <i
-              onClick={() => {
+              onClick={async () => {
+                let isSystemDisable = true;
+                await get(child(ref(database), "systemStatus")).then(
+                  (snapshot) => {
+                    const data = snapshot.val();
+                    if (data !== null) {
+                      if (data === 1) {
+                        setOpenSnackbar({
+                          ...openSnackbar,
+                          open: true,
+                          severity: "error",
+                        });
+                        setMsg("Hệ thống không trong trạng thái bảo trì !");
+                        isSystemDisable = false;
+                      }
+                    }
+                  }
+                );
+                if (!isSystemDisable) {
+                  setLoading(false);
+                  return;
+                }
                 setCategoryToEdit(item);
                 handleOpenEdit();
               }}

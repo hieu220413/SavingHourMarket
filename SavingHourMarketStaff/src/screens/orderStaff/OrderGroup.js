@@ -2214,7 +2214,7 @@ const styles = StyleSheet.create({
   },
   body: {
     flex: 11,
-    // backgroundColor: 'pink',
+    backgroundColor: '#fff',
     paddingHorizontal: 15,
   },
   areaAndLogout: {

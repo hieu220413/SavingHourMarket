@@ -847,10 +847,11 @@ const Home = ({ navigation }) => {
               </Text>
             </View>
           ) : (
-            <View style={{ height: '87%' }}>
+            <View style={{paddingBottom:'15%'}}>
               <SwipeListView
                 showsVerticalScrollIndicator={false}
                 showsHorizontalScrollIndicator={false}
+                style={{paddingBottom:'12%'}}
                 ref={swipeListViewRef}
                 data={
                   currentStatus.display === 'Giao hàng'
@@ -1854,7 +1855,7 @@ const styles = StyleSheet.create({
   },
   body: {
     flex: 11,
-    // backgroundColor: 'pink',
+    backgroundColor: '#fff',
     marginTop: 10,
     paddingHorizontal: 20,
   },
