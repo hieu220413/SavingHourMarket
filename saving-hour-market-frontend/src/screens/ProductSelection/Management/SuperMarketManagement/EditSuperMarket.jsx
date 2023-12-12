@@ -10,8 +10,9 @@ import {
 import { API } from "../../../../contanst/api";
 import MuiAlert from "@mui/material/Alert";
 import { Snackbar } from "@mui/material";
-import { auth } from "../../../../firebase/firebase.config";
+import { auth, database } from "../../../../firebase/firebase.config";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
+import { child, get, ref } from "firebase/database";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -35,6 +36,26 @@ const EditSuperMarket = ({
   const [phone, setPhone] = useState(supermarket.phone);
   const [loading, setLoading] = useState(false);
   const handleEdit = async () => {
+    let isSystemDisable = true;
+    await get(child(ref(database), "systemStatus")).then((snapshot) => {
+      const data = snapshot.val();
+      if (data !== null) {
+        if (data === 1) {
+          setOpenSnackbar({
+            ...openSnackbar,
+            open: true,
+            severity: "error",
+          });
+          setError("Hệ thống không trong trạng thái bảo trì");
+
+          isSystemDisable = false;
+        }
+      }
+    });
+    if (!isSystemDisable) {
+      setLoading(false);
+      return;
+    }
     if (!name) {
       setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
       setError("Vui lòng không để trống tên");

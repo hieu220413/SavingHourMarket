@@ -33,6 +33,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {API} from '../constants/api';
 import LoadingScreen from '../components/LoadingScreen';
+import Toast from 'react-native-toast-message';
 import database from '@react-native-firebase/database';
 
 const numStar = 5;
@@ -70,10 +71,8 @@ const Feedback = ({navigation}) => {
               index: 0,
               routes: [{name: 'Initial'}],
             });
-         
           } else {
             // setSystemStatus(snapshot.val());
-          
           }
         });
     }, []),
@@ -127,6 +126,15 @@ const Feedback = ({navigation}) => {
     );
   }
   //--------------------END----------------------
+
+  const showToast = () => {
+    Toast.show({
+      type: 'success',
+      text1: 'Thành công',
+      text2: 'Để lại đánh giá thành công 👋',
+      visibilityTime: 1000,
+    });
+  };
 
   //--------------------IMAGE----------------------
   const [images, setImages] = useState([]);
@@ -333,7 +341,7 @@ const Feedback = ({navigation}) => {
           })
           .then(async respond => {
             console.log('respone', respond);
-            Alert.alert(respond);
+            showToast(respond);
             setLoading(false);
             navigation.navigate('List Feedback');
           })

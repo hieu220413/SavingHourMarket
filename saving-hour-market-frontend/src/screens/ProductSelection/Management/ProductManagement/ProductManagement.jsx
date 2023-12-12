@@ -12,7 +12,7 @@ import {
   faClipboard,
   faFilter,
 } from "@fortawesome/free-solid-svg-icons";
-import { auth } from "../../../../firebase/firebase.config";
+import { auth, database } from "../../../../firebase/firebase.config";
 import { API } from "../../../../contanst/api";
 import { Dialog, Menu, MenuItem } from "@mui/material";
 import CreateProductByExcel from "./CreateProductByExcel";
@@ -26,6 +26,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import ViewProductBatch from "./ViewProductBatch";
 import ProductImageSlider from "./ProductImageSlider";
 import FilterModal from "./FilterModal";
+import { child, get, ref } from "firebase/database";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -227,6 +228,25 @@ const ProductManagement = () => {
 
   const handleDeleteProduct = async (id) => {
     setLoading(true);
+    let isSystemDisable = true;
+    await get(child(ref(database), "systemStatus")).then((snapshot) => {
+      const data = snapshot.val();
+      if (data !== null) {
+        if (data === 1) {
+          setOpenSnackbar({
+            ...openSnackbar,
+            open: true,
+            severity: "error",
+          });
+          setMsg("Hệ thống không trong trạng thái bảo trì !");
+          isSystemDisable = false;
+        }
+      }
+    });
+    if (!isSystemDisable) {
+      setLoading(false);
+      return;
+    }
     const tokenId = await auth.currentUser.getIdToken();
     fetch(`${API.baseURL}/api/product/disable`, {
       method: "PUT",
@@ -331,6 +351,25 @@ const ProductManagement = () => {
 
   const handleRecoveryProduct = async (id) => {
     setLoading(true);
+    let isSystemDisable = true;
+    await get(child(ref(database), "systemStatus")).then((snapshot) => {
+      const data = snapshot.val();
+      if (data !== null) {
+        if (data === 1) {
+          setOpenSnackbar({
+            ...openSnackbar,
+            open: true,
+            severity: "error",
+          });
+          setMsg("Hệ thống không trong trạng thái bảo trì !");
+          isSystemDisable = false;
+        }
+      }
+    });
+    if (!isSystemDisable) {
+      setLoading(false);
+      return;
+    }
     const tokenId = await auth.currentUser.getIdToken();
     fetch(`${API.baseURL}/api/product/enable`, {
       method: "PUT",
@@ -454,7 +493,28 @@ const ProductManagement = () => {
           </td>
           <td style={{ paddingTop: 30 }}>
             <i
-              onClick={() => {
+              onClick={async () => {
+                let isSystemDisable = true;
+                await get(child(ref(database), "systemStatus")).then(
+                  (snapshot) => {
+                    const data = snapshot.val();
+                    if (data !== null) {
+                      if (data === 1) {
+                        setOpenSnackbar({
+                          ...openSnackbar,
+                          open: true,
+                          severity: "error",
+                        });
+                        setMsg("Hệ thống không trong trạng thái bảo trì !");
+                        isSystemDisable = false;
+                      }
+                    }
+                  }
+                );
+                if (!isSystemDisable) {
+                  setLoading(false);
+                  return;
+                }
                 setProductToEdit(item);
                 const arr = [];
                 item.productBatchList.map((item) => {

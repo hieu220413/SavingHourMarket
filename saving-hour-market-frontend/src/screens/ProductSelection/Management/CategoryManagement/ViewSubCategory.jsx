@@ -6,6 +6,8 @@ import MuiAlert from "@mui/material/Alert";
 import { Snackbar } from "@mui/material";
 import EditSubCategory from "./EditSubCategory";
 import CreateSubCategory from "./CreateSubCategory";
+import { child, get, ref } from "firebase/database";
+import { database } from "../../../../firebase/firebase.config";
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
@@ -48,7 +50,28 @@ const ViewSubCategory = ({ handleClose, subCategoryToView, categoryName }) => {
           </td>
           <td style={{ paddingTop: 30 }}>
             <i
-              onClick={() => {
+              onClick={async () => {
+                let isSystemDisable = true;
+                await get(child(ref(database), "systemStatus")).then(
+                  (snapshot) => {
+                    const data = snapshot.val();
+                    if (data !== null) {
+                      if (data === 1) {
+                        setOpenSnackbar({
+                          ...openSnackbar,
+                          open: true,
+                          severity: "error",
+                        });
+                        setMsg("Hệ thống không trong trạng thái bảo trì");
+
+                        isSystemDisable = false;
+                      }
+                    }
+                  }
+                );
+                if (!isSystemDisable) {
+                  return;
+                }
                 setSubCategoryToEdit(item);
                 handleOpenEdit();
               }}
