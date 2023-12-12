@@ -477,7 +477,7 @@ public class StaffServiceImpl implements StaffService {
 
                         }
                     }
-                    staff.getOverLimitAlertList().sort((o1, o2) -> o2.getLimitExceedValue().compareTo(o1.getLimitExceedValue()));
+//                    staff.getOverLimitAlertList().sort((o1, o2) -> o2.getLimitExceedValue().compareTo(o1.getLimitExceedValue()));
                 }
             }
             // map calculated alert to real staff list
@@ -570,7 +570,7 @@ public class StaffServiceImpl implements StaffService {
                         }
                     }
 
-                    staff.getOverLimitAlertList().sort((o1, o2) -> o2.getLimitExceedValue().compareTo(o1.getLimitExceedValue()));
+//                    staff.getOverLimitAlertList().sort((o1, o2) -> o2.getLimitExceedValue().compareTo(o1.getLimitExceedValue()));
                 }
             }
             // map calculated alert to real staff list
@@ -622,6 +622,8 @@ public class StaffServiceImpl implements StaffService {
                         staff.getOverLimitAlertList().removeIf(overLimitAlertBody -> overLimitAlertBody.getFromHour().equals(secondOverLimitAlertForAfterTimeFrame.getFromHour()));
                     }
                 }
+                // sort highest distance alert on top
+                staff.getOverLimitAlertList().sort((o1, o2) -> o2.getLimitExceedValue().compareTo(o1.getLimitExceedValue()));
             }
             // init field for staff have null overLimitAlertMap
             if(staff.getOverLimitAlertList() == null) {
