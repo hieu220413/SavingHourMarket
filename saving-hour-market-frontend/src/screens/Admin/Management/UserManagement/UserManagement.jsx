@@ -34,7 +34,6 @@ const UserManagement = () => {
 
   return (
     <div>
-      <ManagementMenu menuTabs={menuTabs} />
       <StaffManagement />
       <CustomerManagement />
     </div>

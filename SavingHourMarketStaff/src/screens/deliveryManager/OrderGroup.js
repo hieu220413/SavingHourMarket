@@ -11,6 +11,7 @@ import {
   Modal,
   Pressable,
   Alert,
+  Dimensions,
 } from 'react-native';
 import React, {useEffect, useState, useCallback} from 'react';
 import auth from '@react-native-firebase/auth';
@@ -188,7 +189,7 @@ const OrderGroup = ({navigation}) => {
             setLoading(true);
 
             fetch(
-              `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED`,
+              `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED&deliverDateSortType=ASC`,
               {
                 method: 'GET',
                 headers: {
@@ -227,7 +228,7 @@ const OrderGroup = ({navigation}) => {
               });
 
             fetch(
-              `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING`,
+              `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING&deliverDateSortType=ASC`,
               {
                 method: 'GET',
                 headers: {
@@ -269,6 +270,7 @@ const OrderGroup = ({navigation}) => {
       };
       setDate(null);
       setSelectSort(sortOptions);
+      setSelectedTimeFrameId('');
       fetchData();
     }, []),
   );
@@ -289,19 +291,21 @@ const OrderGroup = ({navigation}) => {
                 borderWidth: 1,
                 borderRadius: 10,
                 margin: 5,
+                width: '45%',
               }
             : {
                 borderColor: '#c8c8c8',
                 borderWidth: 0.2,
                 borderRadius: 10,
                 margin: 5,
+                width: '45%',
               }
         }>
         <Text
           style={
             item.id === selectedTimeFrameId
               ? {
-                  width: 150,
+                  width: '100%',
                   paddingVertical: 10,
                   textAlign: 'center',
                   color: COLORS.primary,
@@ -309,7 +313,7 @@ const OrderGroup = ({navigation}) => {
                   fontSize: 12,
                 }
               : {
-                  width: 150,
+                  width: '100%',
                   paddingVertical: 10,
                   textAlign: 'center',
                   color: 'black',
@@ -347,19 +351,21 @@ const OrderGroup = ({navigation}) => {
                 borderWidth: 1,
                 borderRadius: 10,
                 margin: 5,
+                width: '45%',
               }
             : {
                 borderColor: '#c8c8c8',
                 borderWidth: 0.2,
                 borderRadius: 10,
                 margin: 5,
+                width: '45%',
               }
         }>
         <Text
           style={
             item.active == true
               ? {
-                  width: 150,
+                  width: '100%',
                   paddingVertical: 10,
                   textAlign: 'center',
                   color: COLORS.primary,
@@ -367,7 +373,7 @@ const OrderGroup = ({navigation}) => {
                   fontSize: 12,
                 }
               : {
-                  width: 150,
+                  width: '100%',
                   paddingVertical: 10,
                   textAlign: 'center',
                   color: 'black',
@@ -499,7 +505,7 @@ const OrderGroup = ({navigation}) => {
           if (tokenId) {
             setLoading(true);
             fetch(
-              `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED${
+              `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED&deliverDateSortType=ASC${
                 selectedTimeFrameId ? '&timeFrameId=' + selectedTimeFrameId : ''
               }`,
               {
@@ -540,7 +546,7 @@ const OrderGroup = ({navigation}) => {
               });
 
             fetch(
-              `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING${
+              `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING&deliverDateSortType=ASC${
                 selectedTimeFrameId ? '&timeFrameId=' + selectedTimeFrameId : ''
               }`,
               {
@@ -599,14 +605,13 @@ const OrderGroup = ({navigation}) => {
     setSelectSort(sortOptions);
     setLoading(true);
     setSelectedTimeFrameId('');
-    // setSelectedTimeFrameId('');
     const fetchData = async () => {
       if (auth().currentUser) {
         const tokenId = await auth().currentUser.getIdToken();
         if (tokenId) {
           setLoading(true);
           fetch(
-            `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED`,
+            `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED&deliverDateSortType=ASC`,
             {
               method: 'GET',
               headers: {
@@ -645,7 +650,7 @@ const OrderGroup = ({navigation}) => {
             });
 
           fetch(
-            `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING`,
+            `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING&deliverDateSortType=ASC`,
             {
               method: 'GET',
               headers: {
@@ -700,7 +705,7 @@ const OrderGroup = ({navigation}) => {
         <View style={styles.header}>
           <View style={styles.pagenameAndLogout}>
             <View style={styles.pageName}>
-              <Text style={{fontSize: 25, color: 'black', fontWeight: 'bold'}}>
+              <Text style={{fontSize: 24, color: 'black', fontWeight: 'bold'}}>
                 Nhóm đơn điểm giao hàng{' '}
                 {/* {selectedTimeFrameId ? selectedTimeFrameId : ''} */}
               </Text>
@@ -712,7 +717,7 @@ const OrderGroup = ({navigation}) => {
                 }}>
                 <Image
                   resizeMode="contain"
-                  style={{width: 38, height: 38}}
+                  style={{width: 35, height: 35}}
                   source={{
                     uri: currentUser?.avatarUrl,
                   }}
@@ -722,11 +727,11 @@ const OrderGroup = ({navigation}) => {
                 <TouchableOpacity
                   style={{
                     position: 'absolute',
-                    bottom: -38,
-                    left: -12,
+                    bottom: -34,
+                    left: -10,
                     zIndex: 100,
-                    width: 75,
-                    height: 35,
+                    width: 74,
+                    height: 30,
                     justifyContent: 'center',
                     alignItems: 'center',
                     borderRadius: 10,
@@ -740,7 +745,8 @@ const OrderGroup = ({navigation}) => {
                       })
                       .catch(e => console.log(e));
                   }}>
-                  <Text style={{color: 'red', fontWeight: 'bold'}}>
+                  <Text
+                    style={{color: 'red', fontWeight: 'bold', fontSize: 14}}>
                     Đăng xuất
                   </Text>
                 </TouchableOpacity>
@@ -756,10 +762,10 @@ const OrderGroup = ({navigation}) => {
               style={{
                 backgroundColor: '#f5f5f5',
                 width: '100%',
-                height: 45,
+                height: '55%',
                 borderRadius: 40,
-                paddingLeft: 10,
-                marginTop: 10,
+                paddingLeft: '5%',
+                marginTop: '4%',
                 flexDirection: 'row',
                 alignItems: 'center',
               }}>
@@ -767,15 +773,15 @@ const OrderGroup = ({navigation}) => {
                 style={{
                   justifyContent: 'center',
                   alignItems: 'center',
-                  height: 40,
+                  height: '60%',
                   flexWrap: 'wrap',
                   paddingLeft: 5,
                 }}>
                 <Image
                   resizeMode="contain"
                   style={{
-                    width: 20,
-                    height: 20,
+                    width: 24,
+                    height: 24,
                   }}
                   source={icons.calendar}
                 />
@@ -797,6 +803,7 @@ const OrderGroup = ({navigation}) => {
             date={date ? date : new Date()}
             onConfirm={date => {
               setSelectSort(sortOptions);
+              setSelectedTimeFrameId('');
               setOpen(false);
               setDate(date);
               const fetchData = async () => {
@@ -917,6 +924,7 @@ const OrderGroup = ({navigation}) => {
             }}
             onCancel={() => {
               setSelectSort(sortOptions);
+              setSelectedTimeFrameId('');
               setDate(null);
               setOpen(false);
               const fetchData = async () => {
@@ -925,7 +933,7 @@ const OrderGroup = ({navigation}) => {
                   if (tokenId) {
                     setLoading(true);
                     fetch(
-                      `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED`,
+                      `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED&deliverDateSortType=ASC`,
                       {
                         method: 'GET',
                         headers: {
@@ -967,7 +975,7 @@ const OrderGroup = ({navigation}) => {
                       });
 
                     fetch(
-                      `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING`,
+                      `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING&deliverDateSortType=ASC`,
                       {
                         method: 'GET',
                         headers: {
@@ -1017,7 +1025,7 @@ const OrderGroup = ({navigation}) => {
             style={{
               flexDirection: 'row',
             }}>
-            <View style={{flex: 6}}>
+            <View style={{flex: 8}}>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {groupStatus.map((item, index) => (
                   <TouchableOpacity
@@ -1028,9 +1036,8 @@ const OrderGroup = ({navigation}) => {
                     <View
                       style={[
                         {
-                          paddingTop: 15,
-                          paddingHorizontal: 15,
-                          paddingBottom: 15,
+                          paddingHorizontal: '2%',
+                          paddingBottom: '5%',
                         },
                         currentStatus.display === item.display && {
                           borderBottomColor: COLORS.primary,
@@ -1070,10 +1077,10 @@ const OrderGroup = ({navigation}) => {
                 <Image
                   resizeMode="contain"
                   style={{
-                    height: 35,
+                    height: 30,
                     tintColor: COLORS.primary,
-                    width: 35,
-                    marginHorizontal: '1%',
+                    width: 30,
+                    // marginHorizontal: '2%',
                   }}
                   source={icons.filter}
                 />
@@ -1094,7 +1101,7 @@ const OrderGroup = ({navigation}) => {
                   />
                   <Text
                     style={{
-                      fontSize: 20,
+                      fontSize: 18,
                       fontFamily: 'Roboto',
                       // color: 'black',
                       fontWeight: 'bold',
@@ -1103,18 +1110,19 @@ const OrderGroup = ({navigation}) => {
                   </Text>
                 </View>
               ) : (
-                <View style={{marginTop: 10, marginBottom: 100}}>
+                <View style={{marginTop: '18%'}}>
                   <SwipeListView
                     showsVerticalScrollIndicator={false}
                     showsHorizontalScrollIndicator={false}
+                    style={{marginBottom:'12%'}}
                     data={groupListNotYetAssigned}
                     renderItem={(data, rowMap) => (
                       <View
                         key={data.item.id}
                         style={{
-                          marginBottom: 20,
+                          marginBottom: '6%',
                           backgroundColor: 'rgb(240,240,240)',
-                          padding: 10,
+                          padding: '5%',
                           borderRadius: 10,
                           shadowColor: '#000',
                           shadowOffset: {
@@ -1144,7 +1152,12 @@ const OrderGroup = ({navigation}) => {
                               alignItems: 'center',
                               justifyContent: 'space-between',
                             }}>
-                            <View style={{flexDirection: 'column', gap: 8}}>
+                            <View
+                              style={{
+                                flexDirection: 'column',
+                                gap: 8,
+                                flex: 9,
+                              }}>
                               <Text
                                 style={{
                                   fontSize: 20,
@@ -1158,12 +1171,12 @@ const OrderGroup = ({navigation}) => {
                                 <View
                                   style={{
                                     position: 'absolute',
-                                    right: -30,
+                                    right: '-5%',
                                   }}>
                                   <Image
                                     style={{
-                                      width: 35,
-                                      height: 35,
+                                      width: 40,
+                                      height: 40,
                                       borderRadius: 40,
                                     }}
                                     resizeMode="contain"
@@ -1177,7 +1190,7 @@ const OrderGroup = ({navigation}) => {
                               )}
                               <Text
                                 style={{
-                                  fontSize: 17,
+                                  fontSize: 16,
                                   fontWeight: 'bold',
                                   fontFamily: 'Roboto',
                                   color: 'black',
@@ -1188,9 +1201,10 @@ const OrderGroup = ({navigation}) => {
                                   'dd/MM/yyyy',
                                 )}
                               </Text>
+
                               <Text
                                 style={{
-                                  fontSize: 17,
+                                  fontSize: 16,
                                   fontWeight: 'bold',
                                   fontFamily: 'Roboto',
                                   color: 'black',
@@ -1198,21 +1212,21 @@ const OrderGroup = ({navigation}) => {
                                 Giờ giao hàng : {data.item?.timeFrame?.fromHour}{' '}
                                 đến {data.item?.timeFrame?.toHour}
                               </Text>
-                              <View style={{width: 320}}>
-                                <Text
-                                  style={{
-                                    fontSize: 17,
-                                    fontWeight: 'bold',
-                                    fontFamily: 'Roboto',
-                                    color: 'black',
-                                  }}>
-                                  Điểm giao hàng :{' '}
-                                  {data.item?.pickupPoint.address}
-                                </Text>
-                              </View>
+
                               <Text
                                 style={{
-                                  fontSize: 17,
+                                  fontSize: 16,
+                                  fontWeight: 'bold',
+                                  fontFamily: 'Roboto',
+                                  color: 'black',
+                                }}>
+                                Điểm giao hàng :{' '}
+                                {data.item?.pickupPoint.address}
+                              </Text>
+
+                              <Text
+                                style={{
+                                  fontSize: 16,
                                   fontWeight: 'bold',
                                   fontFamily: 'Roboto',
                                   color: 'black',
@@ -1223,15 +1237,17 @@ const OrderGroup = ({navigation}) => {
                                   : data.item?.deliverer.fullName}
                               </Text>
                             </View>
-                            <Image
-                              resizeMode="contain"
-                              style={{
-                                width: 30,
-                                height: 30,
-                                tintColor: COLORS.primary,
-                              }}
-                              source={icons.rightArrow}
-                            />
+                            <View style={{flex: 1}}>
+                              <Image
+                                resizeMode="contain"
+                                style={{
+                                  width: 30,
+                                  height: 30,
+                                  tintColor: COLORS.primary,
+                                }}
+                                source={icons.rightArrow}
+                              />
+                            </View>
                           </View>
                         </TouchableOpacity>
                         {/* *********************** */}
@@ -1242,8 +1258,8 @@ const OrderGroup = ({navigation}) => {
                         style={{
                           flexDirection: 'row',
                           justifyContent: 'flex-end',
-                          height: '89%',
-                          marginTop: '1%',
+                          height: '87%',
+                          marginTop: '2%',
                           marginRight: '2%',
                         }}>
                         <TouchableOpacity
@@ -1301,7 +1317,7 @@ const OrderGroup = ({navigation}) => {
                   />
                   <Text
                     style={{
-                      fontSize: 20,
+                      fontSize: 18,
                       fontFamily: 'Roboto',
                       // color: 'black',
                       fontWeight: 'bold',
@@ -1310,18 +1326,19 @@ const OrderGroup = ({navigation}) => {
                   </Text>
                 </View>
               ) : (
-                <View style={{marginTop: 10, marginBottom: 100}}>
+                <View style={{marginTop: '18%'}}>
                   <SwipeListView
                     showsVerticalScrollIndicator={false}
                     showsHorizontalScrollIndicator={false}
+                    style={{marginBottom:'12%'}}
                     data={groupListAssigned}
                     renderItem={(data, rowMap) => (
                       <View
                         key={data.item.id}
                         style={{
-                          marginBottom: 20,
+                          marginBottom: '6%',
                           backgroundColor: 'rgb(240,240,240)',
-                          padding: 10,
+                          padding: '5%',
                           borderRadius: 10,
                           shadowColor: '#000',
                           shadowOffset: {
@@ -1351,7 +1368,12 @@ const OrderGroup = ({navigation}) => {
                               alignItems: 'center',
                               justifyContent: 'space-between',
                             }}>
-                            <View style={{flexDirection: 'column', gap: 8}}>
+                            <View
+                              style={{
+                                flexDirection: 'column',
+                                gap: 8,
+                                flex: 9,
+                              }}>
                               <Text
                                 style={{
                                   fontSize: 20,
@@ -1365,7 +1387,7 @@ const OrderGroup = ({navigation}) => {
                                 <View
                                   style={{
                                     position: 'absolute',
-                                    right: -30,
+                                    right: '-5%',
                                   }}>
                                   <Image
                                     style={{
@@ -1384,7 +1406,7 @@ const OrderGroup = ({navigation}) => {
                               )}
                               <Text
                                 style={{
-                                  fontSize: 17,
+                                  fontSize: 16,
                                   fontWeight: 'bold',
                                   fontFamily: 'Roboto',
                                   color: 'black',
@@ -1395,9 +1417,10 @@ const OrderGroup = ({navigation}) => {
                                   'dd/MM/yyyy',
                                 )}
                               </Text>
+
                               <Text
                                 style={{
-                                  fontSize: 17,
+                                  fontSize: 16,
                                   fontWeight: 'bold',
                                   fontFamily: 'Roboto',
                                   color: 'black',
@@ -1405,21 +1428,21 @@ const OrderGroup = ({navigation}) => {
                                 Giờ giao hàng : {data.item?.timeFrame?.fromHour}{' '}
                                 đến {data.item?.timeFrame?.toHour}
                               </Text>
-                              <View style={{width: 320}}>
-                                <Text
-                                  style={{
-                                    fontSize: 17,
-                                    fontWeight: 'bold',
-                                    fontFamily: 'Roboto',
-                                    color: 'black',
-                                  }}>
-                                  Điểm giao hàng :{' '}
-                                  {data.item?.pickupPoint.address}
-                                </Text>
-                              </View>
+
                               <Text
                                 style={{
-                                  fontSize: 17,
+                                  fontSize: 16,
+                                  fontWeight: 'bold',
+                                  fontFamily: 'Roboto',
+                                  color: 'black',
+                                }}>
+                                Điểm giao hàng :{' '}
+                                {data.item?.pickupPoint.address}
+                              </Text>
+
+                              <Text
+                                style={{
+                                  fontSize: 16,
                                   fontWeight: 'bold',
                                   fontFamily: 'Roboto',
                                   color: 'black',
@@ -1430,15 +1453,17 @@ const OrderGroup = ({navigation}) => {
                                   : data.item?.deliverer.fullName}
                               </Text>
                             </View>
-                            <Image
-                              resizeMode="contain"
-                              style={{
-                                width: 30,
-                                height: 30,
-                                tintColor: COLORS.primary,
-                              }}
-                              source={icons.rightArrow}
-                            />
+                            <View style={{flex: 1}}>
+                              <Image
+                                resizeMode="contain"
+                                style={{
+                                  width: 30,
+                                  height: 30,
+                                  tintColor: COLORS.primary,
+                                }}
+                                source={icons.rightArrow}
+                              />
+                            </View>
                           </View>
                         </TouchableOpacity>
                         {/* *********************** */}
@@ -1449,8 +1474,8 @@ const OrderGroup = ({navigation}) => {
                         style={{
                           flexDirection: 'row',
                           justifyContent: 'flex-end',
-                          height: '89%',
-                          marginTop: '1%',
+                          height: '87%',
+                          marginTop: '2%',
                           marginRight: '2%',
                         }}>
                         <TouchableOpacity
@@ -1535,7 +1560,7 @@ const OrderGroup = ({navigation}) => {
                           if (tokenId) {
                             setLoading(true);
                             fetch(
-                              `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED`,
+                              `${API.baseURL}/api/order/staff/getOrderGroup?status=PACKAGED&deliverDateSortType=ASC`,
                               {
                                 method: 'GET',
                                 headers: {
@@ -1577,7 +1602,7 @@ const OrderGroup = ({navigation}) => {
                               });
 
                             fetch(
-                              `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING`,
+                              `${API.baseURL}/api/order/staff/getOrderGroup?status=DELIVERING&deliverDateSortType=ASC`,
                               {
                                 method: 'GET',
                                 headers: {
@@ -1633,10 +1658,10 @@ const OrderGroup = ({navigation}) => {
                     />
                   </TouchableOpacity>
                 </View>
-                <Text
+                {/* <Text
                   style={{
                     color: 'black',
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: 700,
                   }}>
                   Sắp xếp theo
@@ -1650,11 +1675,11 @@ const OrderGroup = ({navigation}) => {
                   {selectSort.map((item, index) => (
                     <ModalSortItem item={item} key={index} />
                   ))}
-                </View>
+                </View> */}
                 <Text
                   style={{
                     color: 'black',
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: 700,
                   }}>
                   Chọn khung giờ
@@ -1678,7 +1703,7 @@ const OrderGroup = ({navigation}) => {
                   <TouchableOpacity
                     style={{
                       width: '50%',
-                      paddingHorizontal: 15,
+                      paddingHorizontal: 14,
                       paddingVertical: 10,
                       backgroundColor: 'white',
                       borderRadius: 10,
@@ -1692,6 +1717,7 @@ const OrderGroup = ({navigation}) => {
                         color: COLORS.primary,
                         fontWeight: 'bold',
                         textAlign: 'center',
+                        fontSize: 14,
                       }}>
                       Thiết lập lại
                     </Text>
@@ -1700,7 +1726,7 @@ const OrderGroup = ({navigation}) => {
                   <TouchableOpacity
                     style={{
                       width: '50%',
-                      paddingHorizontal: 15,
+                      paddingHorizontal: 14,
                       paddingVertical: 10,
                       backgroundColor: COLORS.primary,
                       color: 'white',
@@ -1733,7 +1759,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   body: {
-    flex: 3.5,
+    flex: 6,
     // backgroundColor: 'pink',
     paddingHorizontal: 20,
   },
@@ -1777,5 +1803,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     textAlign: 'center',
+    fontSize: 14,
   },
 });

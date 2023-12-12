@@ -809,8 +809,8 @@ const Payment = ({navigation, route}) => {
             Thanh toán
           </Text>
         </View>
-        <ScrollView automaticallyAdjustKeyboardInsets={true}>
-          <View style={{marginBottom: 200}}>
+        <ScrollView showsVerticalScrollIndicator={false}  automaticallyAdjustKeyboardInsets={true}>
+          <View style={{marginBottom: '37%'}}>
             {/* OrderItem */}
             {Object.keys(groupByCategory).map(function (key) {
               const totalPriceByCategory = groupByCategory[key].reduce(
@@ -1825,18 +1825,18 @@ const Payment = ({navigation, route}) => {
         <View
           style={{
             position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
+            bottom: 5,
+            left: '5%',
+            right: '5%',
             backgroundColor: 'white',
             borderTopColor: 'transparent',
-            height: 100,
-            width: '100%',
-
+            height: '6%',
+            width: '90%',
+            borderRadius: 30,
             flexDirection: 'row',
+            alignSelf:'center',
             alignItems: 'center',
             justifyContent: 'center',
-            paddingLeft: 20,
             marginTop: 20,
             elevation: 3,
           }}>
@@ -1845,8 +1845,8 @@ const Payment = ({navigation, route}) => {
               handleOrder();
             }}
             style={{
-              height: '60%',
-              width: '95%',
+              height: '100%',
+              width: '100%',
               backgroundColor: COLORS.primary,
               textAlign: 'center',
               alignItems: 'center',
@@ -1931,6 +1931,9 @@ const Payment = ({navigation, route}) => {
       <Modal
         width={0.8}
         visible={openAuthModal}
+        onTouchOutside={() => {
+          setOpenAuthModal(false);
+        }}
         dialogAnimation={
           new ScaleAnimation({
             initialValue: 0, // optional
@@ -1939,12 +1942,6 @@ const Payment = ({navigation, route}) => {
         }
         footer={
           <ModalFooter>
-            <ModalButton
-              text="Ở lại trang"
-              onPress={() => {
-                setOpenAuthModal(false);
-              }}
-            />
             <ModalButton
               text="Đăng nhập"
               textStyle={{color: COLORS.primary}}

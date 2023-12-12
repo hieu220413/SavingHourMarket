@@ -70,6 +70,9 @@ const SearchResult = ({ navigation, route }) => {
     longitude: 106.83102962168277,
     latitude: 10.845020092805793,
   });
+  const [page, setPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(1);
+  const [sortItemSelected, setSortItemSelected] = useState(null);
 
   const showToast = () => {
     Toast.show({
@@ -98,17 +101,20 @@ const SearchResult = ({ navigation, route }) => {
 
   const sortProduct = item => {
     const sortItem = item.find(item => item.active === true);
+    setSortItemSelected(sortItem);
     setLoading(true);
     if (sortItem) {
       fetch(
-        `${API.baseURL}/api/product/getProductsForCustomer?name=${productName}${currentCate === '' ? '' : '&productCategoryId=' + currentCate
+        `${API.baseURL}/api/product/getProductsForCustomer?name=${encodeURIComponent(productName)}${currentCate === '' ? '' : '&productCategoryId=' + currentCate
         }&page=0&limit=10${sortItem?.id == 1 ? '&expiredSortType=ASC' : ''}${sortItem?.id == 2 ? '&expiredSortType=DESC' : ''
         }${sortItem?.id == 3 ? '&priceSort=ASC' : ''}${sortItem?.id == 4 ? '&priceSort=DESC' : ''
-        }`,
+        }&pickupPointId=${pickupPoint.id}`,
       )
         .then(res => res.json())
         .then(data => {
           setResult(data.productList);
+          setPage(1);
+          setTotalPage(data.totalPage);
           setLoading(false);
         })
         .catch(err => {
@@ -117,12 +123,14 @@ const SearchResult = ({ navigation, route }) => {
         });
     } else {
       fetch(
-        `${API.baseURL}/api/product/getProductsForCustomer?name=${productName}${currentCate === '' ? '' : '&productCategoryId=' + currentCate
-        }&page=0&limit=10`,
+        `${API.baseURL}/api/product/getProductsForCustomer?name=${encodeURIComponent(productName)}${currentCate === '' ? '' : '&productCategoryId=' + currentCate
+        }&page=0&limit=10&pickupPointId=${pickupPoint.id}`,
       )
         .then(res => res.json())
         .then(data => {
           setResult(data.productList);
+          setPage(1);
+          setTotalPage(data.totalPage);
           setLoading(false);
         })
         .catch(err => {
@@ -160,13 +168,16 @@ const SearchResult = ({ navigation, route }) => {
   const handleClear = () => {
     setModalVisible(!modalVisible);
     setCurrentCate('');
+    setSortItemSelected(null);
     setLoading(true);
     fetch(
-      `${API.baseURL}/api/product/getProductsForCustomer?name=${productName}&pickupPointId=${pickupPoint.id}&page=0&limit=10`,
+      `${API.baseURL}/api/product/getProductsForCustomer?name=${encodeURIComponent(productName)}&pickupPointId=${pickupPoint.id}&page=0&limit=10`,
     )
       .then(res => res.json())
       .then(data => {
         setResult(data.productList);
+        setPage(1);
+        setTotalPage(data.totalPage);
         setSelectSort(sortOptions);
         setSelectFilter(selectFilterInit);
         setLoading(false);
@@ -246,12 +257,14 @@ const SearchResult = ({ navigation, route }) => {
           setPickupPoint(JSON.parse(value));
           fetch(
             `${API.baseURL
-            }/api/product/getProductsForCustomer?name=${productName}&pickupPointId=${JSON.parse(value).id
-            }&quantitySortType=DESC&expiredSortType=DESC`,
+            }/api/product/getProductsForCustomer?name=${encodeURIComponent(productName)}&pickupPointId=${JSON.parse(value).id
+            }&page=0&limit=10`,
           )
             .then(res => res.json())
             .then(data => {
               setResult(data.productList);
+              setPage(1);
+              setTotalPage(data.totalPage);
               setLoading(false);
             })
             .catch(err => {
@@ -317,14 +330,20 @@ const SearchResult = ({ navigation, route }) => {
 
   const Product = ({ data }) => {
     return (
-      <TouchableOpacity
-        key={data.id}
-        onPress={() => {
-          navigation.navigate('ProductDetails', {
-            product: data,
-          });
-        }}>
-        <View style={styles.itemContainer}>
+      <View style={styles.itemContainer}>
+        <TouchableOpacity
+          key={data.id}
+          onPress={() => {
+            navigation.navigate('ProductDetails', {
+              product: data,
+              pickupPointId: pickupPoint.id,
+            });
+          }}
+          style={{
+            flexDirection: 'row',
+            width: '100%',
+          }}
+        >
           {/* Image Product */}
           <Image
             resizeMode="contain"
@@ -334,27 +353,69 @@ const SearchResult = ({ navigation, route }) => {
             style={styles.itemImage}
           />
 
-          <View style={{ justifyContent: 'center', flex: 1, marginRight: 10 }}>
+          <View
+            style={{
+              justifyContent: 'center',
+              flex: 1,
+              marginRight: 10,
+              marginTop: 5,
+            }}>
             <Text
               numberOfLines={1}
               style={{
                 fontFamily: FONTS.fontFamily,
-                fontSize: Dimensions.get('window').width * 0.04,
+                fontSize: Dimensions.get('window').width * 0.05,
                 fontWeight: 700,
                 maxWidth: '95%',
                 color: 'black',
               }}>
               {data.name}
             </Text>
+            <Text
+              style={{
+                fontFamily: FONTS.fontFamily,
+                fontSize: Dimensions.get('window').width * 0.045,
+                marginTop: 8,
+                marginBottom: 10,
+              }}>
+              HSD:{' '}
+              {dayjs(data?.nearestExpiredBatch.expiredDate).format(
+                'DD/MM/YYYY',
+              )}
+            </Text>
+            <View style={{ flexDirection: 'row', paddingBottom: '2%', }}>
+              <Text
+                style={{
+                  maxWidth: '70%',
+                  fontSize: Dimensions.get('window').width * 0.035,
+                  lineHeight: 20,
+                  fontWeight: 'bold',
+                  fontFamily: FONTS.fontFamily,
+                  textDecorationLine: 'line-through'
+                }}>
+                {data?.priceListed.toLocaleString('vi-VN', {
+                  currency: 'VND',
+                })}
+              </Text>
+              <Text
+                style={{
+                  fontSize: Dimensions.get('window').width * 0.03,
+                  lineHeight: 13,
+                  fontWeight: 600,
+                  fontFamily: FONTS.fontFamily,
+                }}>
+                ₫
+              </Text>
+            </View>
 
             <View style={{ flexDirection: 'row' }}>
               <Text
                 style={{
                   maxWidth: '70%',
-                  fontSize: Dimensions.get('window').width * 0.04,
-                  lineHeight: 30,
+                  fontSize: Dimensions.get('window').width * 0.045,
+                  lineHeight: 20,
                   color: COLORS.secondary,
-                  fontWeight: 600,
+                  fontWeight: 'bold',
                   fontFamily: FONTS.fontFamily,
                 }}>
                 {data?.nearestExpiredBatch.price.toLocaleString('vi-VN', {
@@ -364,7 +425,7 @@ const SearchResult = ({ navigation, route }) => {
               <Text
                 style={{
                   fontSize: Dimensions.get('window').width * 0.03,
-                  lineHeight: 18,
+                  lineHeight: 13,
                   color: COLORS.secondary,
                   fontWeight: 600,
                   fontFamily: FONTS.fontFamily,
@@ -373,20 +434,25 @@ const SearchResult = ({ navigation, route }) => {
               </Text>
             </View>
 
+            {/* Button buy */}
+            {/* <TouchableOpacity onPress={() => handleAddToCart(data)}>
             <Text
               style={{
+                maxWidth: 150,
+                maxHeight: 40,
+                padding: 10,
+                backgroundColor: COLORS.primary,
+                borderRadius: 10,
+                textAlign: 'center',
+                color: '#ffffff',
                 fontFamily: FONTS.fontFamily,
-                fontSize: Dimensions.get('window').width * 0.04,
-                marginBottom: 10,
               }}>
-              HSD:{' '}
-              {dayjs(data?.nearestExpiredBatch.expiredDate).format(
-                'DD/MM/YYYY',
-              )}
+              Thêm vào giỏ hàng
             </Text>
+          </TouchableOpacity> */}
           </View>
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -509,6 +575,56 @@ const SearchResult = ({ navigation, route }) => {
       </TouchableOpacity>
     );
   };
+
+  const LoadMoreButton = () => {
+    return (
+      <>
+        {page < totalPage && (
+          <TouchableOpacity
+            onPress={() => {
+              setPage(page + 1);
+              setLoading(true);
+              fetch(
+                `${API.baseURL
+                }/api/product/getProductsForCustomer?name=${encodeURIComponent(productName)}${currentCate === '' ? '' : '&productCategoryId=' + currentCate
+                }&pickupPointId=${pickupPoint?.id}&page=${page
+                }&limit=10${sortItemSelected?.id == 1 ? '&expiredSortType=ASC' : ''}${sortItemSelected?.id == 2 ? '&expiredSortType=DESC' : ''
+                }${sortItemSelected?.id == 3 ? '&priceSort=ASC' : ''}${sortItemSelected?.id == 4 ? '&priceSort=DESC' : ''
+                }`,
+              )
+                .then(res => res.json())
+                .then(data => {
+                  setResult([
+                    ...result,
+                    ...data.productList,
+                  ]);
+                  setTotalPage(data.totalPage);
+                  setLoading(false);
+                })
+                .catch(err => {
+                  console.log(err);
+                  setLoading(false);
+                });
+            }}>
+            <Text
+              style={{
+                backgroundColor: COLORS.light_green,
+                color: COLORS.primary,
+                borderColor: COLORS.primary,
+                borderWidth: 1,
+                paddingVertical: 10,
+                width: '40%',
+                borderRadius: 20,
+                textAlign: 'center',
+                marginLeft: '30%',
+              }}>
+              Xem thêm sản phẩm
+            </Text>
+          </TouchableOpacity>
+        )}
+      </>
+    )
+  }
 
   return (
     <View
@@ -641,6 +757,10 @@ const SearchResult = ({ navigation, route }) => {
           data={result}
           keyExtractor={item => `${item.id}`}
           renderItem={({ item }) => <Product data={item} />}
+          ListFooterComponent={<LoadMoreButton />}
+          ListFooterComponentStyle={{
+            paddingBottom: Dimensions.get('window').width * 0.05,
+          }}
         />
       )}
       {/* Modal filter */}
@@ -698,6 +818,7 @@ const SearchResult = ({ navigation, route }) => {
                 flexDirection: 'row',
                 flexWrap: 'wrap',
                 marginVertical: 10,
+                justifyContent: 'center',
               }}>
               {selectSort.map((item, index) => (
                 <ModalSortItem item={item} key={index} />
@@ -717,6 +838,7 @@ const SearchResult = ({ navigation, route }) => {
                 flexDirection: 'row',
                 flexWrap: 'wrap',
                 marginVertical: 10,
+                justifyContent: 'center',
               }}>
               {selectFilter.map((item, index) => (
                 <ModalCateItem item={item} key={index} />
@@ -772,6 +894,9 @@ const SearchResult = ({ navigation, route }) => {
       <Modal
         width={0.8}
         visible={openAuthModal}
+        onTouchOutside={() => {
+          setOpenAuthModal(false);
+        }}
         dialogAnimation={
           new ScaleAnimation({
             initialValue: 0, // optional
@@ -780,12 +905,6 @@ const SearchResult = ({ navigation, route }) => {
         }
         footer={
           <ModalFooter>
-            <ModalButton
-              text="Ở lại trang"
-              onPress={() => {
-                setOpenAuthModal(false);
-              }}
-            />
             <ModalButton
               text="Đăng nhập"
               textStyle={{ color: COLORS.primary }}

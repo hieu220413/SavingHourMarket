@@ -243,12 +243,12 @@ const ProductDetails = ({ navigation, route }) => {
           style={{
             textAlign: 'center',
             color: 'black',
-            fontSize: Dimensions.get('window').width * 0.065,
+            fontSize: Dimensions.get('window').width * 0.05,
+            fontWeight: 'bold',
             fontFamily: FONTS.fontFamily,
           }}>
           Thông tin sản phẩm
         </Text>
-
         <TouchableOpacity
           onPress={async () => {
             const user = await AsyncStorage.getItem('userInfo');
@@ -290,14 +290,14 @@ const ProductDetails = ({ navigation, route }) => {
       </View>
 
       <ScrollView
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingBottom: 150,
         }}>
         <Swiper
           style={{
-            height: 250,
+            height: 260,
           }}
-          activeDotColor="#37A65B"
+          showsPagination={false}
           showsButtons={false}>
           {product?.imageUrlImageList.map((item, index) => (
             <View key={index}>
@@ -313,7 +313,7 @@ const ProductDetails = ({ navigation, route }) => {
                   uri: item.imageUrl,
                 }}
               />
-              {product?.imageUrlImageList.length !== 1 && (
+              {product?.imageUrlImageList.length !== 0 && (
                 <View
                   style={{
                     position: 'absolute',
@@ -339,11 +339,23 @@ const ProductDetails = ({ navigation, route }) => {
             </View>
           ))}
         </Swiper>
-
         <View
           style={{
-            marginHorizontal: 30,
-            marginVertical: 20,
+            paddingHorizontal: 30,
+            marginTop: '5%',
+            paddingTop: '10%',
+            paddingBottom: '40%',
+            shadowColor: 'grey',
+            borderTopStartRadius: 40,
+            borderTopEndRadius: 40,
+            shadowOffset: {
+              width: 0,
+              height: 3,
+            },
+            shadowOpacity: 0.27,
+            shadowRadius: 4.65,
+            elevation: 3,
+            index:10
           }}>
           <Text
             style={{
@@ -390,15 +402,14 @@ const ProductDetails = ({ navigation, route }) => {
       <View
         style={{
           position: 'absolute',
-          bottom: 0,
-          paddingBottom: 60,
+          bottom: 2,
           flexDirection: 'row',
           backgroundColor: '#F5F5F5',
-          width: '90%',
-          marginHorizontal: '4%',
-          paddingHorizontal: '4%',
-          paddingTop: '8%',
-          paddingBottom: Dimensions.get('window').height * 0.15,
+          width: '96%',
+          paddingHorizontal: '2%',
+          marginHorizontal: '2%',
+          paddingTop: '4%',
+          paddingBottom: Dimensions.get('window').height * 0.1,
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
           alignItems: 'center',
@@ -412,30 +423,58 @@ const ProductDetails = ({ navigation, route }) => {
           shadowRadius: 4.65,
           elevation: 2,
         }}>
-        <View style={{ flexDirection: 'row' }}>
-          <Text
-            style={{
-              fontSize: 22,
-              lineHeight: 30,
-              color: COLORS.secondary,
-              fontWeight: 700,
-              fontFamily: FONTS.fontFamily,
-            }}>
-            {product.nearestExpiredBatch.price.toLocaleString('vi-VN', {
-              currency: 'VND',
-            })}
-          </Text>
-          <Text
-            style={{
-              fontSize: 14,
-              lineHeight: 18,
-              color: COLORS.secondary,
-              fontWeight: 700,
-              fontFamily: FONTS.fontFamily,
-              paddingRight: '10%',
-            }}>
-            ₫
-          </Text>
+        <View>
+          <View style={{ flexDirection: 'row', paddingBottom: '2%', }}>
+            <Text
+              style={{
+                maxWidth: '70%',
+                fontSize: Dimensions.get('window').width * 0.035,
+                lineHeight: 20,
+                fontWeight: 'bold',
+                fontFamily: FONTS.fontFamily,
+                textDecorationLine: 'line-through'
+              }}>
+              {product?.priceListed.toLocaleString('vi-VN', {
+                currency: 'VND',
+              })}
+            </Text>
+            <Text
+              style={{
+                fontSize: Dimensions.get('window').width * 0.03,
+                lineHeight: 13,
+                fontWeight: 600,
+                fontFamily: FONTS.fontFamily,
+              }}>
+              ₫
+            </Text>
+          </View>
+          <View style={{ flexDirection: 'row' }}>
+            <Text
+              style={{
+                fontSize: 17,
+                lineHeight: 30,
+                color: COLORS.secondary,
+                fontWeight: 700,
+                fontFamily: FONTS.fontFamily,
+                paddingRight: minPrice === maxPrice ? '24%' : '3%'
+              }}>
+              {/* {product.nearestExpiredBatch.price.toLocaleString('vi-VN', {
+                currency: 'VND',
+              })} */}
+              {minPrice === maxPrice
+                ? `${minPrice.toLocaleString('vi-VN', {
+                  style: 'currency',
+                  currency: 'VND',
+                })}`
+                : `${minPrice.toLocaleString('vi-VN', {
+                  style: 'currency',
+                  currency: 'VND',
+                })} - ${maxPrice.toLocaleString('vi-VN', {
+                  style: 'currency',
+                  currency: 'VND',
+                })}`}
+            </Text>
+          </View>
         </View>
         <TouchableOpacity
           onPress={() => {
@@ -485,6 +524,9 @@ const ProductDetails = ({ navigation, route }) => {
       <Modal
         width={0.8}
         visible={openAuthModal}
+        onTouchOutside={() => {
+          setOpenAuthModal(false);
+        }}
         dialogAnimation={
           new ScaleAnimation({
             initialValue: 0, // optional
@@ -493,12 +535,6 @@ const ProductDetails = ({ navigation, route }) => {
         }
         footer={
           <ModalFooter>
-            <ModalButton
-              text="Ở lại trang"
-              onPress={() => {
-                setOpenAuthModal(false);
-              }}
-            />
             <ModalButton
               text="Đăng nhập"
               textStyle={{ color: COLORS.primary }}
@@ -564,8 +600,9 @@ const ProductDetails = ({ navigation, route }) => {
       <BottomSheetModalProvider>
         <BottomSheet
           ref={bottomSheetRef}
-          enableOverDrag={false}
+          enablePanDownToClose={true}
           index={index}
+          onClose={() => setIndex(-1)}
           style={sheetStyle}
           snapPoints={snapPoints}>
           <View
@@ -606,7 +643,7 @@ const ProductDetails = ({ navigation, route }) => {
                   <Text
                     style={{
                       fontSize: 16,
-                      color: 'red',
+                      color: COLORS.primary,
                       fontFamily: FONTS.fontFamily,
                     }}>
                     {minPrice === maxPrice
@@ -624,18 +661,6 @@ const ProductDetails = ({ navigation, route }) => {
                   </Text>
                 </View>
               </View>
-              <TouchableOpacity
-                onPress={() => {
-                  bottomSheetRef.current?.close();
-                  setIndex(-1);
-                }}
-                style={{ flex: 1 }}>
-                <Image
-                  style={{ width: 25, height: 25 }}
-                  resizeMode="contain"
-                  source={icons.cross}
-                />
-              </TouchableOpacity>
             </View>
           </View>
           <BottomSheetScrollView>
@@ -824,7 +849,7 @@ const ProductDetails = ({ navigation, route }) => {
                     fontFamily: 'Roboto',
                     fontWeight: 'bold',
                   }}>
-                  {isAddToCart ? 'Mua hàng' : 'Đặt hàng'}
+                  {isAddToCart ? 'Thêm vào giỏ hàng' : 'Đặt hàng'}
                 </Text>
               </TouchableOpacity>
             </View>

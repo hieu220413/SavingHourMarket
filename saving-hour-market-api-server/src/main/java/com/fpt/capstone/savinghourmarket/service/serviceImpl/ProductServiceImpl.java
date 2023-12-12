@@ -8,6 +8,7 @@ import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
 import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.repository.*;
+import com.fpt.capstone.savinghourmarket.service.FirebaseService;
 import com.fpt.capstone.savinghourmarket.service.ProductCategoryService;
 import com.fpt.capstone.savinghourmarket.service.ProductService;
 import com.fpt.capstone.savinghourmarket.service.ProductSubCategoryService;
@@ -15,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.usermodel.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,12 +27,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -409,8 +412,8 @@ public class ProductServiceImpl implements ProductService {
         Integer productCount = 1;
         for (ProductCreateList productCreate : productList) {
             List<String> errors = new ArrayList<>();
-            if (productCreate.getName().length() > 50) {
-                errors.add("Tên sản phẩm: " + productCreate.getName() + " quá 50 kí tự!");
+            if (productCreate.getName().length() > 255) {
+                errors.add("Tên sản phẩm: " + productCreate.getName() + " quá 255 kí tự!");
             }
 
             if (productCreate.getUnit().length() > 50) {
@@ -419,6 +422,10 @@ public class ProductServiceImpl implements ProductService {
 
             if (productCreate.getImageUrls().size() == 0) {
                 errors.add("Vui lòng thêm hình cho sản phẩm!");
+            }
+
+            if (productCreate.getPriceListed() < 0) {
+                errors.add("Giá niêm yết không thể âm!");
             }
 
             UUID productSubCategoryId = productCreate.getProductSubCategory().getId();
@@ -744,8 +751,8 @@ public class ProductServiceImpl implements ProductService {
             throw new ResourceNotFoundException("Siêu thị không tìm thấy với id: " + productSubCategoryId);
         }
 
-        if (productDisplayStaff.getName().length() > 50) {
-            errorFields.put("Lỗi nhập tên sản phẩm", "Tên sản phẩm chỉ có tối đa 50 kí tự!");
+        if (productDisplayStaff.getName().length() > 255) {
+            errorFields.put("Lỗi nhập tên sản phẩm", "Tên sản phẩm chỉ có tối đa 255 kí tự!");
         }
 
         if (productDisplayStaff.getUnit().length() > 50) {
@@ -856,12 +863,16 @@ public class ProductServiceImpl implements ProductService {
     public Product createProduct(ProductCreate productCreate) throws ResourceNotFoundException {
         HashMap<String, String> errorFields = new HashMap<>();
         Product product = new Product();
-        if (productCreate.getName().length() > 50) {
-            errorFields.put("Lỗi nhập tên sản phẩm", "Tên sản phẩm chỉ có tối đa 50 kí tự!");
+        if (productCreate.getName().length() > 255) {
+            errorFields.put("Lỗi nhập tên sản phẩm", "Tên sản phẩm chỉ có tối đa 255 kí tự!");
         }
 
         if (productCreate.getUnit().length() > 50) {
             errorFields.put("Lỗi nhập đơn vị sản phẩm", "Đơn vị sản phẩm chỉ có tối đa 50 kí tự!");
+        }
+
+        if (productCreate.getPriceListed() < 0) {
+            errorFields.put("Lỗi nhập giá niêm yết sản phẩm", "Giá niêm yết không thể âm!");
         }
 
         if (productCreate.getProductSubCategory().getId() == null && productCreate.getProductSubCategory().getName().length() > 50) {
@@ -887,7 +898,7 @@ public class ProductServiceImpl implements ProductService {
 
         for (ProductBatchRequest productBatch : productCreate.getProductBatchList()) {
             if (productBatch.getPrice() < 0 || productBatch.getPriceOriginal() < 0) {
-                errorFields.put("Lỗi nhập giá cho lô HSD " + productBatch.getExpiredDate(), "Giá bán không thế âm!");
+                errorFields.put("Lỗi nhập giá cho lô HSD " + productBatch.getExpiredDate(), "Giá bán không thể âm!");
             }
 
             Integer althd = productCreate.getProductSubCategory().getId() != null ?
@@ -972,7 +983,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductExcelResponse createProductByExcel(MultipartFile file) throws IOException, InvalidExcelFileDataException {
 
         LinkedHashMap<Integer, List<String>> errorFields = new LinkedHashMap<>();
-
+        LinkedHashMap<Integer, List<ByteArrayOutputStream>> productImages = new LinkedHashMap<>();
         Workbook workbook;
         if (isXLSFile(file)) {
             workbook = new HSSFWorkbook(file.getInputStream());
@@ -990,6 +1001,29 @@ public class ProductServiceImpl implements ProductService {
         Sheet sheet = workbook.getSheetAt(0);
 
         try {
+            XSSFDrawing drawing = (XSSFDrawing) sheet.createDrawingPatriarch();
+            for (XSSFShape shape : drawing.getShapes()) {
+                if (shape instanceof XSSFPicture) {
+                    XSSFPicture pic = (XSSFPicture) shape;
+                    XSSFClientAnchor anchor = pic.getClientAnchor();
+
+                    // Extracting row and column information from the anchor
+                    int rowImage = anchor.getRow1();
+                    int colImage = anchor.getCol1();
+
+                    byte[] data = pic.getPictureData().getData();
+                    ByteArrayOutputStream productImageByteArrayOutputStream = new ByteArrayOutputStream();
+                    productImageByteArrayOutputStream.write(data, 0, data.length);
+                    if (productImages.get(rowImage) != null && productImages.get(rowImage).size() > 0) {
+                        productImages.get(rowImage).add(productImageByteArrayOutputStream);
+                    } else {
+                        List<ByteArrayOutputStream> imageList = new ArrayList<>();
+                        imageList.add(productImageByteArrayOutputStream);
+                        productImages.put(rowImage, imageList);
+                    }
+                }
+            }
+
             //Get first row as title
             Row titleRow = sheet.getRow(0);
 
@@ -1016,8 +1050,9 @@ public class ProductServiceImpl implements ProductService {
                         cellIndex++;
                     }
 
-                    if (product.getName() == null || product.getDescription() == null || product.getUnit() == null || productSubCategory.getName() == null || supermarket.getName() == null || productBatchCreate.hasNullField()) {
-                        errors.add("Thông tin của sản phẩm có một thông tin bị trống nên không được hệ thống nhận biết!");
+
+                    if (product.getName() == null || product.getPriceListed() == null || product.getDescription() == null || product.getUnit() == null || productSubCategory.getName() == null || supermarket.getName() == null || productBatchCreate.hasNullField()) {
+                        errors.add("Một số thông tin của sản phẩm đang trống! Vui lòng điền đầy đủ!");
                     }
 
                     if (cellIndex > 0) {
@@ -1025,14 +1060,14 @@ public class ProductServiceImpl implements ProductService {
                         Optional<ProductSubCategory> productSubCategoryExistedCheck = productSubCategoryRepository.findByName(productSubCategory.getName());
                         if (productSubCategoryExistedCheck.isPresent()) {
                             productSubCategory = productSubCategoryExistedCheck.get();
-                        } else if(productSubCategory.getName() != null) {
+                        } else if (productSubCategory.getName() != null) {
                             errors.add("Tên danh mục phụ " + productSubCategory.getName() + " không tìm thấy trong hệ thống!");
                         }
 
                         Optional<Supermarket> supermarketExistedCheck = supermarketRepository.findByName(supermarket.getName());
                         if (supermarketExistedCheck.isPresent()) {
                             supermarket = supermarketExistedCheck.get();
-                        } else if(supermarket.getName() != null){
+                        } else if (supermarket.getName() != null) {
                             errors.add("Tên siêu thị " + supermarket.getName() + " không tìm thấy trong hệ thống!");
                         }
 
@@ -1042,7 +1077,7 @@ public class ProductServiceImpl implements ProductService {
                             productBatch.setPrice(productExcelBatchCreate.getPrice());
                             productBatch.setPriceOriginal(productExcelBatchCreate.getPriceOriginal());
                             if (productSubCategory.getAllowableDisplayThreshold() != null && productExcelBatchCreate.getExpiredDate() != null && productExcelBatchCreate.getExpiredDate().isBefore(LocalDate.now().plus(productSubCategory.getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
-                                errors.add("HSD(" + productExcelBatchCreate.getExpiredDate() + ") hiện trước ngày hiện tại cộng thêm số ngày điều kiện cho hàng cận hạn sử dụng có trong SUBCATEGORY!");
+                                errors.add("HSD(" + productExcelBatchCreate.getExpiredDate() + ") chênh lệch với ngày hiện tại phải lớn hơn số ngày điều kiện cho hàng cận hạn sử dụng được định nghĩa theo loại sản phẩm này!");
                             } else {
                                 productBatch.setExpiredDate(productExcelBatchCreate.getExpiredDate());
                             }
@@ -1063,11 +1098,8 @@ public class ProductServiceImpl implements ProductService {
                             productBatches.add(productBatch);
                         }
 
-                        if (errors.size() > 0) {
-                            errorFields.put(rowIndex, errors);
-                        }
 
-                        String unit = product.getUnit() != null ? product.getUnit().toLowerCase(): null;
+                        String unit = product.getUnit() != null ? product.getUnit().toLowerCase() : null;
                         product.setUnit(unit);
                         product.setProductBatchList(productBatches);
                         product.setProductSubCategory(productSubCategory);
@@ -1076,31 +1108,52 @@ public class ProductServiceImpl implements ProductService {
                         ProductExcelCreate productExcelCreate = new ProductExcelCreate();
                         productExcelCreate.setName(product.getName());
                         productExcelCreate.setUnit(product.getUnit());
-                        productExcelCreate.setDescription(product.getDescription());
+                        productExcelCreate.setPriceListed(product.getPriceListed());
+                        productExcelCreate.setDescription(product.getDescription().trim().replaceAll("\\s+", " "));
                         productExcelCreate.setProductSubCategory(product.getProductSubCategory());
                         productExcelCreate.setSupermarket(product.getSupermarket());
 
+                        List<String> imageUrls = new ArrayList<>();
                         if (product.getName() != null && product.getDescription() != null && product.getUnit() != null && product.getProductSubCategory() != null) {
                             if (productSeenData.add(productExcelCreate)) {
+                                if (productImages.get(rowIndex) != null) {
+                                    productImages.get(rowIndex).forEach(image -> {
+                                        String imageUrl = FirebaseService.uploadImageToStorage(image, "productImage" + UUID.randomUUID().toString());
+                                        imageUrls.add(imageUrl);
+                                    });
+                                }
+                                product.setImageUrls(imageUrls);
                                 productList.add(product);
                             } else {
                                 for (ProductCreateList p : productList) {
                                     ProductExcelCreate productDuplicate = new ProductExcelCreate();
                                     productDuplicate.setName(p.getName());
                                     productDuplicate.setDescription(p.getDescription());
+                                    productDuplicate.setPriceListed(p.getPriceListed());
                                     productDuplicate.setUnit(p.getUnit());
                                     productDuplicate.setProductSubCategory(p.getProductSubCategory());
                                     productDuplicate.setSupermarket(p.getSupermarket());
                                     if (productDuplicate.equals(productExcelCreate)) {
+                                        if (productImages.get(rowIndex) != null) {
+                                            productImages.get(rowIndex).forEach(image -> {
+                                                String imageUrl = FirebaseService.uploadImageToStorage(image, "productImage" + UUID.randomUUID().toString());
+                                                imageUrls.add(imageUrl);
+                                            });
+                                        }
                                         p.getProductBatchList().addAll(productBatches);
+                                        p.getImageUrls().addAll(imageUrls);
                                     }
                                 }
                             }
                         } else {
+                            product.setImageUrls(imageUrls);
                             productList.add(product);
                         }
                     }
 
+                    if (errors.size() > 0) {
+                        errorFields.put(rowIndex, errors);
+                    }
                 }
                 rowIndex++;
             }
@@ -1117,7 +1170,29 @@ public class ProductServiceImpl implements ProductService {
             throw new InvalidExcelFileDataException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFieldsFile);
         }
 
+        Integer rowCheckDuplicateBatch = 1;
+        for (ProductCreateList productCreateList : productList) {
+            if (hasObjectsWithSameExpiredDate(productCreateList.getProductBatchList())) {
+                if (errorFields.get(rowCheckDuplicateBatch) != null) {
+                    errorFields.get(rowCheckDuplicateBatch).add("Sản phẩm có tồn tại 2 hay nhiều lô hàng có cùng HSD!");
+                } else {
+                    List<String> errors = new ArrayList<>();
+                    errors.add("Sản phẩm có tồn tại 2 hay nhiều lô hàng có cùng HSD!");
+                    errorFields.put(rowCheckDuplicateBatch, errors);
+                }
+            }
+            rowCheckDuplicateBatch++;
+        }
+
         return new ProductExcelResponse(productList, errorFields);
+    }
+
+    private static boolean hasObjectsWithSameExpiredDate(List<ProductBatchCreateList> objectList) {
+        Map<LocalDate, List<ProductBatchCreateList>> groupedByExpiredDate = objectList.stream()
+                .collect(Collectors.groupingBy(ProductBatchCreateList::getExpiredDate));
+
+        return groupedByExpiredDate.values().stream()
+                .anyMatch(objects -> objects.size() > 1);
     }
 
     private static boolean isXLSXFile(MultipartFile file) {
@@ -1162,6 +1237,18 @@ public class ProductServiceImpl implements ProductService {
                     product.setDescription(cell.getStringCellValue().trim().replaceAll("\\s+", " "));
                 } else {
                     putFormatError(errors, titleRow.getCell(cellIndex).toString(), CellType.STRING);
+                }
+                break;
+            case "Giá niêm yết":
+                if (cell.getCellType().equals(CellType.NUMERIC)) {
+                    int priceListed = (int) cell.getNumericCellValue();
+                    if (priceListed < 0) {
+                        errors.add("Giá niêm yết " + cell.getNumericCellValue() + " đang âm!");
+                    } else {
+                        product.setPriceListed(priceListed);
+                    }
+                } else {
+                    putFormatError(errors, titleRow.getCell(cellIndex).toString(), CellType.NUMERIC);
                 }
                 break;
             case "Đơn vị":

@@ -91,15 +91,34 @@ const EditProductByExcel = ({
       });
   };
 
+  const toImageUrl = async (url) => {
+    const promise = new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.onload = function () {
+        const reader = new FileReader();
+        reader.readAsDataURL(xhr.response);
+        reader.onloadend = () => {
+          resolve({ base64Url: reader.result });
+        };
+      };
+
+      xhr.open("GET", url);
+      xhr.responseType = "blob";
+      xhr.send();
+    });
+    return promise;
+  };
+
   const handleExportExcel = () => {
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet("EditProductUpload");
-    sheet.properties.defaultRowHeight = 40;
-
+    sheet.properties.defaultRowHeight = 150;
+    sheet.properties.defaultColWidth = 40;
     sheet.columns = [
       { header: "STT", key: "stt", width: 6 },
       { header: "Tên", key: "name", width: 20 },
       { header: "Mô tả sản phẩm", key: "description", width: 35 },
+      { header: "Giá niêm yết", key: "priceListed", width: 15 },
       { header: "Đơn vị", key: "unit", width: 15 },
       { header: "Danh mục phụ", key: "subCategory", width: 30 },
       { header: "Siêu thị", key: "supermarket", width: 15 },
@@ -111,40 +130,78 @@ const EditProductByExcel = ({
         key: "batchAddress",
         width: 70,
       },
+      {
+        header: "Hình ảnh",
+        key: "imageUrls",
+        width: 40,
+      },
     ];
-    confirmProductList.productList.map((product, i) => {
-      if (product.productBatchList.length !== 0) {
-        const lineBreak = `
-`;
-        product.productBatchList.map((batch, numBatch) => {
-          const batchAddressAndQuantity = batch.productBatchAddresses.reduce(
-            (start, address) => {
-              if (address.supermarketAddress) {
-                return start.concat(
-                  start !== "" ? " \n" : "",
-                  address.supermarketAddress.address.concat(
-                    ";",
-                    address?.quantity ? address?.quantity : "Lỗi số lượng !"
-                  )
-                );
-              } else {
-                return start.concat(
-                  start !== "" ? " \n" : "",
-                  "Lỗi địa chỉ".concat(
-                    ";",
-                    address?.quantity ? address?.quantity : "Lỗi số lượng !"
-                  )
-                );
-              }
-            },
-            ""
-          );
+    const promise = Promise.all(
+      confirmProductList.productList.map(async (product, i) => {
+        if (product.productBatchList.length !== 0) {
+          product.productBatchList.map(async (batch, numBatch) => {
+            const batchAddressAndQuantity = batch.productBatchAddresses.reduce(
+              (start, address) => {
+                if (address.supermarketAddress) {
+                  return start.concat(
+                    start !== "" ? " \n" : "",
+                    address.supermarketAddress.address.concat(
+                      ";",
+                      address?.quantity ? address?.quantity : "Lỗi số lượng !"
+                    )
+                  );
+                } else {
+                  return start.concat(
+                    start !== "" ? " \n" : "",
+                    "Lỗi địa chỉ".concat(
+                      ";",
+                      address?.quantity ? address?.quantity : "Lỗi số lượng !"
+                    )
+                  );
+                }
+              },
+              ""
+            );
+            sheet.addRow({
+              stt: i + 1,
+              name: product?.name ? product?.name : "Lỗi tên !",
+              description: product?.description
+                ? product?.description
+                : "Lỗi mô tả !",
+              priceListed: product?.priceListed
+                ? product?.priceListed
+                : "Lỗi giá niêm yết",
+              unit: product?.unit ? product?.unit : "Lỗi đơn vị !",
+              subCategory: product?.productSubCategory?.id
+                ? product?.productSubCategory?.name
+                : "Lỗi loại sản phẩm phụ !",
+              supermarket: product?.supermarket?.id
+                ? product?.supermarket?.name
+                : "Lỗi siêu thị !",
+              expDate: batch?.expiredDate
+                ? new Date(batch.expiredDate)
+                : "Lỗi HSD !",
+              price: batch?.price ? batch?.price : "Lỗi giá tiền !",
+              priceOriginal: batch?.priceOriginal
+                ? batch?.priceOriginal
+                : "Lỗi giá tiền !",
+              batchAddress: batchAddressAndQuantity,
+              imageUrls:
+                product.imageUrls?.length === 0 || product.imageUrls === null
+                  ? "Lỗi hình ảnh !"
+                  : "",
+            });
+          });
+        } else {
           sheet.addRow({
             stt: i + 1,
             name: product?.name ? product?.name : "Lỗi tên !",
             description: product?.description
               ? product?.description
               : "Lỗi mô tả !",
+            priceListed: product?.priceListed
+              ? product?.priceListed
+              : "Lỗi giá niêm yết",
             unit: product?.unit ? product?.unit : "Lỗi đơn vị !",
             subCategory: product?.productSubCategory?.id
               ? product?.productSubCategory?.name
@@ -152,87 +209,97 @@ const EditProductByExcel = ({
             supermarket: product?.supermarket?.id
               ? product?.supermarket?.name
               : "Lỗi siêu thị !",
-            expDate: batch?.expiredDate
-              ? new Date(batch.expiredDate)
-              : "Lỗi HSD !",
-            price: batch?.price ? batch?.price : "Lỗi giá tiền !",
-            priceOriginal: batch?.priceOriginal
-              ? batch?.priceOriginal
-              : "Lỗi giá tiền !",
-            batchAddress: batchAddressAndQuantity,
+            expDate: "Lỗi lô hàng !",
+            price: "Lỗi lô hàng !",
+            priceOriginal: "Lỗi lô hàng !",
+            batchAddress: "Lỗi lô hàng !",
+            imageUrls:
+              product.imageUrls?.length === 0 || product.imageUrls === null
+                ? "Lỗi hình ảnh !"
+                : "",
           });
+        }
+        const temProductList = [...confirmProductList.productList];
+
+        if (product.imageUrls?.length !== 0 && product.imageUrls !== null) {
+          for (let j = 0; j < product.imageUrls.length; j++) {
+            const imageUrl = await toImageUrl(product.imageUrls[j]);
+            console.log(imageUrl);
+            const imageId = workbook.addImage({
+              base64: imageUrl.base64Url,
+              extension: "png",
+            });
+            sheet.addImage(imageId, {
+              tl: {
+                col: j + 11,
+                row:
+                  i > 0
+                    ? i +
+                      1 +
+                      (temProductList[i - 1]?.productBatchList.length - 1)
+                    : i + 1,
+              },
+              ext: { width: 100, height: 100 },
+              editAs: "oneCell",
+            });
+          }
+        }
+      })
+    );
+
+    promise.then(() => {
+      sheet.eachRow({ includeEmpty: true }, function (row, rowNumber) {
+        row.eachCell(function (cell, colNumber) {
+          if (colNumber !== 8) {
+            cell.font = {
+              name: "Helvetica",
+              bold: false,
+              size: 12,
+            };
+          }
+
+          if (rowNumber === 1) {
+            row.height = 20;
+            row.font = {
+              name: "Helvetica",
+              bold: true,
+              size: 12,
+            };
+          } else {
+            row.height = 150;
+          }
+
+          if (row.getCell(colNumber).toString().includes("Lỗi")) {
+            cell.border = {
+              top: { style: "thick", color: { argb: "dc3545" } },
+              left: { style: "thick", color: { argb: "dc3545" } },
+              bottom: { style: "thick", color: { argb: "dc3545" } },
+              right: { style: "thick", color: { argb: "dc3545" } },
+            };
+            cell.font = {
+              name: "Helvetica",
+              bold: true,
+              size: 12,
+              color: { argb: "dc3545" },
+            };
+          }
         });
-      } else {
-        sheet.addRow({
-          stt: i + 1,
-          name: product?.name ? product?.name : "Lỗi tên !",
-          description: product?.description
-            ? product?.description
-            : "Lỗi mô tả !",
-          unit: product?.unit ? product?.unit : "Lỗi đơn vị !",
-          subCategory: product?.productSubCategory?.id
-            ? product?.productSubCategory?.name
-            : "Lỗi loại sản phẩm phụ !",
-          supermarket: product?.supermarket?.id
-            ? product?.supermarket?.name
-            : "Lỗi siêu thị !",
-          expDate: "Lỗi lô hàng !",
-          price: "Lỗi lô hàng !",
-          priceOriginal: "Lỗi lô hàng !",
-          batchAddress: "Lỗi lô hàng !",
+      });
+
+      workbook.xlsx.writeBuffer().then((data) => {
+        const blob = new Blob([data], {
+          type: "application/vnd.openxmlformats-officedocument.spreedsheet.sheet",
         });
-      }
-    });
-    sheet.eachRow({ includeEmpty: true }, function (row, rowNumber) {
-      row.eachCell(function (cell, colNumber) {
-        if (colNumber !== 7) {
-          cell.font = {
-            name: "Helvetica",
-            bold: false,
-            size: 12,
-          };
-        }
-
-        if (rowNumber === 1) {
-          row.height = 20;
-          row.font = {
-            name: "Helvetica",
-            bold: true,
-            size: 12,
-          };
-        } else {
-          row.height = 60;
-        }
-
-        if (row.getCell(colNumber).toString().includes("Lỗi")) {
-          cell.border = {
-            top: { style: "thick", color: { argb: "dc3545" } },
-            left: { style: "thick", color: { argb: "dc3545" } },
-            bottom: { style: "thick", color: { argb: "dc3545" } },
-            right: { style: "thick", color: { argb: "dc3545" } },
-          };
-          cell.font = {
-            name: "Helvetica",
-            bold: true,
-            size: 12,
-            color: { argb: "dc3545" },
-          };
-        }
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = "EditProductUpload.xlsx";
+        anchor.click();
+        window.URL.revokeObjectURL(url);
       });
-    });
-
-    workbook.xlsx.writeBuffer().then((data) => {
-      const blob = new Blob([data], {
-        type: "application/vnd.openxmlformats-officedocument.spreedsheet.sheet",
-      });
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = "EditProductUpload.xlsx";
-      anchor.click();
-      window.URL.revokeObjectURL(url);
     });
   };
+
   return (
     <div className={`modal__container `}>
       <div className="modal__container-header">

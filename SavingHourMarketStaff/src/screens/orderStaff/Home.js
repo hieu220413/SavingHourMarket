@@ -40,7 +40,6 @@ const Home = ({ navigation }) => {
   );
 
   const orderStatus = [
-    { display: 'Tất cả', value: '' },
     { display: 'Chờ đóng gói', value: 'PROCESSING' },
     { display: 'Đang đóng gói', value: 'PACKAGING' },
     { display: 'Đã đóng gói', value: 'PACKAGED' },
@@ -97,9 +96,10 @@ const Home = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const swipeListViewRef = useRef();
   const isMountingRef = useRef(false);
+  const [viewHeight, setViewHeight] = useState(0);
   const [currentStatus, setCurrentStatus] = useState({
-    display: 'Tất cả',
-    value: '',
+    display: 'Chờ đóng gói',
+    value: 'PROCESSING',
   });
   const [alertVisible, setAlertVisible] = useState(false);
   const [clickSignOut, setClickSignOut] = useState(false);
@@ -154,10 +154,19 @@ const Home = ({ navigation }) => {
     }
   };
 
-  const showToast = message => {
+  const showToast = (message) => {
     Toast.show({
       type: 'success',
       text1: 'Thành công',
+      text2: message + '👋',
+      visibilityTime: 3000,
+    });
+  };
+
+  const showToastFail = (message) => {
+    Toast.show({
+      type: 'unsuccess',
+      text1: 'Thất bại',
       text2: message + '👋',
       visibilityTime: 3000,
     });
@@ -411,6 +420,9 @@ const Home = ({ navigation }) => {
                 }
                 // Cac loi 403 khac thi handle duoi day neu co
               }
+              if (res.status === 409) {
+                showToastFail(res.json().message);
+              }
               return res.text();
             })
             .then(respond => {
@@ -452,6 +464,9 @@ const Home = ({ navigation }) => {
                   throw new Error();
                 }
                 // Cac loi 403 khac thi handle duoi day neu co
+                if (res.status === 409) {
+                  showToastFail(res.json().message);
+                }
               }
               return res.text();
             })
@@ -832,10 +847,11 @@ const Home = ({ navigation }) => {
               </Text>
             </View>
           ) : (
-            <View style={{ height: '87%' }}>
+            <View style={{paddingBottom:'15%'}}>
               <SwipeListView
                 showsVerticalScrollIndicator={false}
                 showsHorizontalScrollIndicator={false}
+                style={{paddingBottom:'12%'}}
                 ref={swipeListViewRef}
                 data={
                   currentStatus.display === 'Giao hàng'
@@ -864,6 +880,9 @@ const Home = ({ navigation }) => {
                       elevation: 6,
                       paddingHorizontal: 10,
                       margin: 4,
+                    }}
+                    onLayout={(event) => {
+                      setViewHeight(event.nativeEvent.layout.height); // Set the height in state
                     }}>
                     {/* Order detail */}
                     <TouchableOpacity
@@ -896,7 +915,7 @@ const Home = ({ navigation }) => {
                           {data.item?.status === 5 && 'Giao thất bại'}
                           {data.item?.status === 6 && 'Đã huỷ'}
                         </Text>
-                        {data.item?.status >= 2 &&
+                        {/* {data.item?.status >= 2 &&
                           data.item?.status < 6 &&
                           data.item?.packager?.fullName != null && (
                             <>
@@ -1015,7 +1034,7 @@ const Home = ({ navigation }) => {
                                 {data.item?.packager?.fullName}
                               </Text>
                             </>
-                          )}
+                          )} */}
                       </View>
                       <View
                         style={{
@@ -1031,16 +1050,26 @@ const Home = ({ navigation }) => {
                               fontFamily: 'Roboto',
                               color: 'black',
                             }}>
-                            Ngày đặt :{' '}
+                            Mã đơn hàng:{' '}
+                            {data.item?.code}
+                          </Text>
+                          <Text
+                            style={{
+                              fontSize: 17,
+                              fontFamily: 'Roboto',
+                              color: 'black',
+                            }}>
+                            Thời gian đặt :{' '}
+                            {/* {Date.parse(data.item?.createdTime)} */}
                             {format(
                               Date.parse(data.item?.createdTime),
-                              'dd/MM/yyyy',
+                              'dd/MM/yyyy - HH:mm:ss',
                             )}
                           </Text>
                           <Text
                             style={{
                               fontSize: 17,
-                              fontWeight: 'bold',
+
                               fontFamily: 'Roboto',
                               color: 'black',
                             }}>
@@ -1053,7 +1082,7 @@ const Home = ({ navigation }) => {
                           <Text
                             style={{
                               fontSize: 17,
-                              fontWeight: 'bold',
+
                               fontFamily: 'Roboto',
                               color: 'black',
                             }}>
@@ -1072,7 +1101,7 @@ const Home = ({ navigation }) => {
                             <Text
                               style={{
                                 fontSize: 17,
-                                fontWeight: 'bold',
+
                                 fontFamily: 'Roboto',
                                 color: 'black',
                                 maxWidth: '84%',
@@ -1105,7 +1134,7 @@ const Home = ({ navigation }) => {
                       flexDirection: 'row',
                       justifyContent:
                         data.item?.status === 1 ? 'space-between' : 'flex-end',
-                      height: data.item?.status === 0 ? '85%' : '89%',
+                      height: viewHeight,
                       paddingHorizontal: 10,
                       margin: 4,
                     }}>
@@ -1292,7 +1321,7 @@ const Home = ({ navigation }) => {
             }}>
             <Pressable
               style={styles.centeredView}>
-              <View style={styles.modalView}>
+              <View style={styles.modalSortView}>
                 <View
                   style={{
                     flexDirection: 'row',
@@ -1329,137 +1358,141 @@ const Home = ({ navigation }) => {
                     />
                   </TouchableOpacity>
                 </View>
-                <ScrollView>
-                  <Text
-                    style={{
-                      color: 'black',
-                      fontSize: 16,
-                      fontWeight: 700,
-                    }}>
-                    Sắp xếp theo
-                  </Text>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      flexWrap: 'wrap',
-                      marginVertical: 10,
-                      gap: 2,
-                      alignItems: 'center'
-                    }}>
-                    {selectSort.map((item, index) => (
-                      <ModalSortItem item={item} key={index} />
-                    ))}
-                  </View>
-                  <Text
-                    style={{
-                      color: 'black',
-                      fontSize: 16,
-                      fontWeight: 700,
-                    }}>
-                    Chọn khung giờ
-                  </Text>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      flexWrap: 'wrap',
-                      marginVertical: 10,
-                      gap: 2,
-                      alignItems: 'center'
-                    }}>
-                    {timeFrameList &&
-                      timeFrameList.map(item => (
-                        <TouchableOpacity
-                          key={item.id}
-                          onPress={() =>
-                            item.id === tempSelectedTimeFrameId
-                              ? setTempSelectedTimeFrameId('')
-                              : setTempSelectedTimeFrameId(item.id)
-                          }
-                          style={
-                            item.id === tempSelectedTimeFrameId
-                              ? {
-                                borderColor: COLORS.primary,
-                                borderWidth: 1,
-                                borderRadius: 10,
-                                margin: 5,
-                                width: '45%'
-                              }
-                              : {
-                                borderColor: '#c8c8c8',
-                                borderWidth: 0.2,
-                                borderRadius: 10,
-                                margin: 5,
-                                width: '45%'
-                              }
-                          }>
-                          <Text
-                            style={
-                              item.id === tempSelectedTimeFrameId
-                                ? {
-                                  width: '100%',
-                                  paddingVertical: 10,
-                                  textAlign: 'center',
-                                  color: COLORS.primary,
-                                  fontSize: 12,
-                                }
-                                : {
-                                  width: '100%',
-                                  paddingVertical: 10,
-                                  textAlign: 'center',
-                                  color: 'black',
-                                  fontSize: 12,
-                                }
-                            }>
-                            {item.fromHour.slice(0, 5)} đến{' '}
-                            {item.toHour.slice(0, 5)}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                  </View>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                    }}>
+                <ScrollView
+                  showsVerticalScrollIndicator={false}
+                  showsHorizontalScrollIndicator={false}>
+                  <Pressable>
                     <Text
                       style={{
                         color: 'black',
                         fontSize: 16,
                         fontWeight: 700,
                       }}>
-                      Chọn ngày giao hàng
+                      Sắp xếp theo
                     </Text>
-                    <Switch
-                      trackColor={{ false: 'grey', true: COLORS.primary }}
-                      thumbColor={isEnableDateFilter ? '#f4f3f4' : '#f4f3f4'}
-                      // ios_backgroundColor="#3e3e3e"
-                      onValueChange={value => {
-                        toggleSwitchFilterDate(value);
-                      }}
-                      value={isEnableDateFilter}
-                    />
-                  </View>
-                  {isEnableDateFilter ? (
                     <View
                       style={{
-                        marginVertical: 5,
-                        alignItems: 'center',
-                        alignSelf: 'center'
+                        flexDirection: 'row',
+                        flexWrap: 'wrap',
+                        marginVertical: 10,
+                        gap: 2,
+                        alignItems: 'center'
                       }}>
-                      <DatePicker
-                        date={
-                          tempSelectedDate === ''
-                            ? new Date()
-                            : tempSelectedDate
-                        }
-                        mode="date"
-                        androidVariant="nativeAndroid"
-                        onDateChange={setTempSelectedDate}
+                      {selectSort.map((item, index) => (
+                        <ModalSortItem item={item} key={index} />
+                      ))}
+                    </View>
+                    <Text
+                      style={{
+                        color: 'black',
+                        fontSize: 16,
+                        fontWeight: 700,
+                      }}>
+                      Chọn khung giờ
+                    </Text>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        flexWrap: 'wrap',
+                        marginVertical: 10,
+                        gap: 2,
+                        alignItems: 'center'
+                      }}>
+                      {timeFrameList &&
+                        timeFrameList.map(item => (
+                          <TouchableOpacity
+                            key={item.id}
+                            onPress={() =>
+                              item.id === tempSelectedTimeFrameId
+                                ? setTempSelectedTimeFrameId('')
+                                : setTempSelectedTimeFrameId(item.id)
+                            }
+                            style={
+                              item.id === tempSelectedTimeFrameId
+                                ? {
+                                  borderColor: COLORS.primary,
+                                  borderWidth: 1,
+                                  borderRadius: 10,
+                                  margin: 5,
+                                  width: '45%'
+                                }
+                                : {
+                                  borderColor: '#c8c8c8',
+                                  borderWidth: 0.2,
+                                  borderRadius: 10,
+                                  margin: 5,
+                                  width: '45%'
+                                }
+                            }>
+                            <Text
+                              style={
+                                item.id === tempSelectedTimeFrameId
+                                  ? {
+                                    width: '100%',
+                                    paddingVertical: 10,
+                                    textAlign: 'center',
+                                    color: COLORS.primary,
+                                    fontSize: 12,
+                                  }
+                                  : {
+                                    width: '100%',
+                                    paddingVertical: 10,
+                                    textAlign: 'center',
+                                    color: 'black',
+                                    fontSize: 12,
+                                  }
+                              }>
+                              {item.fromHour.slice(0, 5)} đến{' '}
+                              {item.toHour.slice(0, 5)}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                    </View>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                      }}>
+                      <Text
+                        style={{
+                          color: 'black',
+                          fontSize: 16,
+                          fontWeight: 700,
+                        }}>
+                        Chọn ngày giao hàng
+                      </Text>
+                      <Switch
+                        trackColor={{ false: 'grey', true: COLORS.primary }}
+                        thumbColor={isEnableDateFilter ? '#f4f3f4' : '#f4f3f4'}
+                        // ios_backgroundColor="#3e3e3e"
+                        onValueChange={value => {
+                          toggleSwitchFilterDate(value);
+                        }}
+                        value={isEnableDateFilter}
                       />
                     </View>
-                  ) : (
-                    <></>
-                  )}
+                    {isEnableDateFilter ? (
+                      <View
+                        style={{
+                          marginVertical: 5,
+                          alignItems: 'center',
+                          alignSelf: 'center'
+                        }}>
+                        <DatePicker
+                          date={
+                            tempSelectedDate === ''
+                              ? new Date()
+                              : tempSelectedDate
+                          }
+                          mode="date"
+                          androidVariant="nativeAndroid"
+                          onDateChange={setTempSelectedDate}
+                        />
+                      </View>
+                    ) : (
+                      <></>
+                    )}
+                  </Pressable>
                 </ScrollView>
                 <View
                   style={{
@@ -1609,9 +1642,9 @@ const Home = ({ navigation }) => {
                 {orderList[0]?.status === 1 && (
                   <Text
                     style={{
-                      color: 'black',
-                      fontSize: 18,
-                      fontWeight: 400,
+                      color: 'grey',
+                      fontSize: 16,
+                      fontWeight: 'bold',
                       paddingBottom: 20,
                     }}>
                     Bạn đã hoàn thành đóng gói đơn hàng này ?
@@ -1623,37 +1656,20 @@ const Home = ({ navigation }) => {
                     flexDirection: 'row',
                     justifyContent: 'center',
                   }}>
-                  <TouchableOpacity
-                    style={{
-                      width: '50%',
-                      paddingHorizontal: 15,
-                      paddingVertical: 10,
-                      backgroundColor: 'white',
-                      borderRadius: 10,
-                      borderColor: COLORS.primary,
-                      borderWidth: 0.5,
-                      marginRight: '2%',
-                    }}
-                    onPress={handleCancel}>
-                    <Text
-                      style={{
-                        color: COLORS.primary,
-                        fontWeight: 'bold',
-                        textAlign: 'center',
-                      }}>
-                      Đóng
-                    </Text>
-                  </TouchableOpacity>
 
                   <TouchableOpacity
                     style={{
-                      width: '50%',
+                      width: '100%',
                       paddingHorizontal: 15,
                       paddingVertical: 10,
-                      backgroundColor: COLORS.primary,
+                      backgroundColor:
+                      orderList[0]?.status === 0 && selectedConsolidationAreaId === ''
+                          ? COLORS.light_green
+                          : COLORS.primary,
                       color: 'white',
                       borderRadius: 10,
                     }}
+                    disabled={orderList[0]?.status === 0 && selectedConsolidationAreaId === ''}
                     onPress={() => {
                       handleConfirm();
                     }}>
@@ -1839,7 +1855,7 @@ const styles = StyleSheet.create({
   },
   body: {
     flex: 11,
-    // backgroundColor: 'pink',
+    backgroundColor: '#fff',
     marginTop: 10,
     paddingHorizontal: 20,
   },
@@ -1876,9 +1892,24 @@ const styles = StyleSheet.create({
     paddingBottom: '15%',
     backgroundColor: 'rgba(50,50,50,0.5)',
   },
-  modalView: {
+  modalSortView: {
     margin: 20,
     height: '65%',
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    zIndex: 10
+  },
+  modalView: {
+    margin: 20,
     backgroundColor: 'white',
     borderRadius: 20,
     padding: 20,

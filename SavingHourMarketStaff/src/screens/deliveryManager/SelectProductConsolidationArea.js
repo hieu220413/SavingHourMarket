@@ -2,7 +2,7 @@
 /* eslint-disable react-native/no-inline-styles */
 
 import React, {useCallback, useState, useEffect} from 'react';
-import {View, TouchableOpacity, Image, Text} from 'react-native';
+import {View, TouchableOpacity, Image, Text, Dimensions} from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import {icons} from '../../constants';
 import {COLORS} from '../../constants/theme';
@@ -12,19 +12,20 @@ import LoadingScreen from '../../components/LoadingScreen';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import database from '@react-native-firebase/database';
-import { checkSystemState } from '../../common/utils';
+import {checkSystemState} from '../../common/utils';
 
 const SelectProductConsolidationArea = ({navigation, route}) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
-        checkSystemState(navigation);
-      }, []),
+      checkSystemState(navigation);
+    }, []),
   );
 
   const [initializing, setInitializing] = useState(true);
   const [tokenId, setTokenId] = useState(null);
-  const [productConsolidationAreaList, setProductConsolidationAreaList] = useState([]);
+  const [productConsolidationAreaList, setProductConsolidationAreaList] =
+    useState([]);
   const [loading, setLoading] = useState(false);
 
   // const onAuthStateChange = async userInfo => {
@@ -75,13 +76,16 @@ const SelectProductConsolidationArea = ({navigation, route}) => {
           const tokenId = await auth().currentUser.getIdToken();
           if (tokenId) {
             setLoading(true);
-            fetch(`${API.baseURL}/api/productConsolidationArea/getAllForStaff`, {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${tokenId}`,
+            fetch(
+              `${API.baseURL}/api/productConsolidationArea/getAllForStaff`,
+              {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${tokenId}`,
+                },
               },
-            })
+            )
               .then(async res => {
                 if (res.status === 403 || res.status === 401) {
                   const tokenIdCheck = await auth()
@@ -120,21 +124,21 @@ const SelectProductConsolidationArea = ({navigation, route}) => {
             alignItems: 'center',
             flexDirection: 'row',
             gap: 20,
-            marginBottom: 30,
+            marginBottom: '7%',
             backgroundColor: '#ffffff',
-            padding: 20,
+            padding: '4%',
             elevation: 4,
           }}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Image
               source={icons.leftArrow}
               resizeMode="contain"
-              style={{width: 35, height: 35, tintColor: COLORS.primary}}
+              style={{width: 30, height: 30, tintColor: COLORS.primary}}
             />
           </TouchableOpacity>
           <Text
             style={{
-              fontSize: 25,
+              fontSize: 24,
               textAlign: 'center',
               color: '#000000',
               fontWeight: 'bold',
@@ -143,14 +147,14 @@ const SelectProductConsolidationArea = ({navigation, route}) => {
             Chọn điểm tập kết
           </Text>
         </View>
-        <View style={{backgroundColor: 'white', padding: 20}}>
+        <View style={{backgroundColor: 'white', padding: '5%'}}>
           <Text
             style={{
               fontSize: 20,
               color: 'black',
               fontFamily: 'Roboto',
               fontWeight: 'bold',
-              marginBottom: 20,
+              marginBottom: '5%',
             }}>
             Điểm tập kết
           </Text>
@@ -163,7 +167,7 @@ const SelectProductConsolidationArea = ({navigation, route}) => {
                 navigation.navigate('OrderListForManager');
               }}
               style={{
-                paddingVertical: 15,
+                paddingVertical: '5%',
                 borderTopColor: '#decbcb',
                 borderTopWidth: 0.75,
               }}>
@@ -177,7 +181,7 @@ const SelectProductConsolidationArea = ({navigation, route}) => {
                 }}>
                 <Text
                   style={{
-                    fontSize: 17,
+                    fontSize: 16,
                     color: 'black',
                     fontFamily: 'Roboto',
                   }}>
@@ -185,7 +189,7 @@ const SelectProductConsolidationArea = ({navigation, route}) => {
                 </Text>
                 <Text
                   style={{
-                    fontSize: 17,
+                    fontSize: 16,
                     color: 'black',
                     fontFamily: 'Roboto',
                   }}>

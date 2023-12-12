@@ -2,7 +2,7 @@
 /* eslint-disable react-native/no-inline-styles */
 
 import React, {useCallback, useState, useEffect} from 'react';
-import {View, TouchableOpacity, Image, Text} from 'react-native';
+import {View, TouchableOpacity, Image, Text, Dimensions} from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import {icons} from '../../constants';
 import {COLORS} from '../../constants/theme';
@@ -122,21 +122,21 @@ const SelectTimeFrame = ({navigation, route}) => {
             alignItems: 'center',
             flexDirection: 'row',
             gap: 20,
-            marginBottom: 30,
+            marginBottom: '7%',
             backgroundColor: '#ffffff',
-            padding: 20,
+            padding: '4%',
             elevation: 4,
           }}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Image
               source={icons.leftArrow}
               resizeMode="contain"
-              style={{width: 35, height: 35, tintColor: COLORS.primary}}
+              style={{width: 30, height: 30, tintColor: COLORS.primary}}
             />
           </TouchableOpacity>
           <Text
             style={{
-              fontSize: 25,
+              fontSize: 24,
               textAlign: 'center',
               color: '#000000',
               fontWeight: 'bold',
@@ -145,14 +145,14 @@ const SelectTimeFrame = ({navigation, route}) => {
             Chọn khung giờ
           </Text>
         </View>
-        <View style={{backgroundColor: 'white', padding: 20}}>
+        <View style={{backgroundColor: 'white', padding: '5%'}}>
           <Text
             style={{
               fontSize: 20,
               color: 'black',
               fontFamily: 'Roboto',
               fontWeight: 'bold',
-              marginBottom: 20,
+              marginBottom: '5%',
             }}>
             Khung giờ
           </Text>
@@ -165,7 +165,7 @@ const SelectTimeFrame = ({navigation, route}) => {
                 navigation.navigate('OrderListForManager');
               }}
               style={{
-                paddingVertical: 15,
+                paddingVertical: '5%',
                 borderTopColor: '#decbcb',
                 borderTopWidth: 0.75,
               }}>
@@ -179,7 +179,7 @@ const SelectTimeFrame = ({navigation, route}) => {
                 }}>
                 <Text
                   style={{
-                    fontSize: 17,
+                    fontSize: 16,
                     color: 'black',
                     fontFamily: 'Roboto',
                   }}>
@@ -187,7 +187,7 @@ const SelectTimeFrame = ({navigation, route}) => {
                 </Text>
                 <Text
                   style={{
-                    fontSize: 17,
+                    fontSize: 16,
                     color: 'black',
                     fontFamily: 'Roboto',
                   }}>

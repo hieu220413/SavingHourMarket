@@ -11,32 +11,32 @@ import org.hibernate.annotations.UuidGenerator;
 
 import java.util.UUID;
 
-@Entity
+//@Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Getter
 public class Policy {
-    @Id
-    @UuidGenerator
+//    @Id
+//    @UuidGenerator
     private UUID id;
 
-    @Column(columnDefinition = "text")
+//    @Column(columnDefinition = "text")
     private String termsOfService;
 
-    @Column(columnDefinition = "text")
+//    @Column(columnDefinition = "text")
     private String privacyPolicy;
 
-    @Column(columnDefinition = "text")
+//    @Column(columnDefinition = "text")
     private String operatingRegulations;
 
-    @Column(columnDefinition = "text")
+//    @Column(columnDefinition = "text")
     private String shippingPolicy;
 
-    @Column(columnDefinition = "text")
+//    @Column(columnDefinition = "text")
     private String returnAndRefundPolicy;
 
-    @Column(columnDefinition = "text")
+//    @Column(columnDefinition = "text")
     private String complaintHandlingProcess;
 
 }

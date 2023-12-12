@@ -16,6 +16,8 @@ import java.util.UUID;
 public class OrderPackaging {
     private UUID id;
 
+    private String code;
+
     private String receiverPhone;
 
     private String receiverName;

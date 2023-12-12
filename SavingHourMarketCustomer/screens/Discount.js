@@ -189,7 +189,7 @@ const Discount = ({ navigation }) => {
               borderRadius: 10,
               textAlign: 'center',
               color: '#ffffff',
-              fontSize: Dimensions.get('window').width * 0.04,
+              fontSize: Dimensions.get('window').width * 0.035,
             }}>
             Dùng ngay
           </Text>
@@ -299,6 +299,7 @@ const Discount = ({ navigation }) => {
           </View>
         ) : (
           <ScrollView
+            showsVerticalScrollIndicator={false}
             contentContainerStyle={{
               paddingBottom: 240,
             }}>
@@ -311,6 +312,9 @@ const Discount = ({ navigation }) => {
         <Modal
           width={0.8}
           visible={openAuthModal}
+          onTouchOutside={() => {
+            setOpenAuthModal(false);
+          }}
           dialogAnimation={
             new ScaleAnimation({
               initialValue: 0, // optional
@@ -319,12 +323,6 @@ const Discount = ({ navigation }) => {
           }
           footer={
             <ModalFooter>
-              <ModalButton
-                text="Ở lại trang"
-                onPress={() => {
-                  setOpenAuthModal(false);
-                }}
-              />
               <ModalButton
                 text="Đăng nhập"
                 textStyle={{ color: COLORS.primary }}

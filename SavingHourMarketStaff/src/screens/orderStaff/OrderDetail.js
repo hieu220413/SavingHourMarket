@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
-import React, {useState, useCallback, useEffect} from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Image,
@@ -10,25 +10,26 @@ import {
   Pressable,
   StyleSheet,
   FlatList,
+  Dimensions,
 } from 'react-native';
 import {
   ScrollView,
   TouchableWithoutFeedback,
 } from 'react-native-gesture-handler';
-import {icons} from '../../constants';
-import {COLORS} from '../../constants/theme';
+import { icons } from '../../constants';
+import { COLORS } from '../../constants/theme';
 import QrCode from '../../assets/image/test-qrcode.png';
-import {API} from '../../constants/api';
-import {useFocusEffect} from '@react-navigation/native';
+import { API } from '../../constants/api';
+import { useFocusEffect } from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
-import {format} from 'date-fns';
+import { format } from 'date-fns';
 import Toast from 'react-native-toast-message';
 import LoadingScreen from '../../components/LoadingScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import database from '@react-native-firebase/database';
-import {checkSystemState} from '../../common/utils';
+import { checkSystemState } from '../../common/utils';
 
-const OrderDetail = ({navigation, route}) => {
+const OrderDetail = ({ navigation, route }) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
@@ -36,7 +37,7 @@ const OrderDetail = ({navigation, route}) => {
     }, []),
   );
 
-  const {id, orderSuccess, isFromOrderGroup} = route.params;
+  const { id, orderSuccess, isFromOrderGroup } = route.params;
   const [initializing, setInitializing] = useState(true);
   // const [tokenId, setTokenId] = useState(null);
   const [item, setItem] = useState(null);
@@ -55,6 +56,15 @@ const OrderDetail = ({navigation, route}) => {
       text1: 'Thành công',
       text2: message + '👋',
       visibilityTime: 1000,
+    });
+  };
+
+  const showToastFail = (message) => {
+    Toast.show({
+      type: unsuccess,
+      text1: 'Thất bại',
+      text2: message + '👋',
+      visibilityTime: 3000,
     });
   };
 
@@ -184,7 +194,7 @@ const OrderDetail = ({navigation, route}) => {
               setLoading(false);
             });
         }
-      }
+      };
       fetchOrderDetail();
     }, []),
   );
@@ -410,7 +420,7 @@ const OrderDetail = ({navigation, route}) => {
             <Image
               source={icons.leftArrow}
               resizeMode="contain"
-              style={{width: 35, height: 35, tintColor: COLORS.primary}}
+              style={{ width: 35, height: 35, tintColor: COLORS.primary }}
             />
           </TouchableOpacity>
           <Text
@@ -425,14 +435,14 @@ const OrderDetail = ({navigation, route}) => {
           </Text>
           {(item?.status === 1 || item?.status === 2) && (
             <TouchableOpacity
-              style={{marginLeft: 'auto'}}
+              style={{ marginLeft: 'auto' }}
               onPress={() => {
                 print(id);
               }}>
               <Image
                 source={icons.print}
                 resizeMode="contain"
-                style={{width: 35, height: 35, tintColor: COLORS.primary}}
+                style={{ width: 35, height: 35, tintColor: COLORS.primary }}
               />
             </TouchableOpacity>
           )}
@@ -453,7 +463,7 @@ const OrderDetail = ({navigation, route}) => {
                     : COLORS.primary,
               }}>
               <Text
-                style={{color: 'white', fontSize: 18, fontFamily: 'Roboto'}}>
+                style={{ color: 'white', fontSize: 18, fontFamily: 'Roboto' }}>
                 {item?.status === 0 && 'Đơn hàng đang chờ đóng gói'}
                 {item?.status === 1 && 'Đơn hàng đang đóng gói'}
                 {item?.status === 2 && 'Đơn hàng đã đóng gói'}
@@ -464,7 +474,7 @@ const OrderDetail = ({navigation, route}) => {
               </Text>
             </View>
             <View
-              style={{padding: 20, backgroundColor: 'white', marginBottom: 20}}>
+              style={{ padding: 20, backgroundColor: 'white', marginBottom: 20 }}>
               {/* pickup location */}
               <View
                 style={{
@@ -475,42 +485,42 @@ const OrderDetail = ({navigation, route}) => {
                   borderBottomWidth: 0.75,
                 }}>
                 <View
-                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                   <Image
-                    style={{width: 20, height: 20}}
+                    style={{ width: 20, height: 20 }}
                     resizeMode="contain"
                     source={icons.location}
                   />
                   <Text
-                    style={{fontSize: 20, color: 'black', fontWeight: 'bold'}}>
+                    style={{ fontSize: 20, color: 'black', fontWeight: 'bold' }}>
                     Thông tin giao hàng
                   </Text>
                 </View>
                 <View
-                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
-                  <View style={{width: 20}} />
-                  <View style={{gap: 8}}>
-                    <View style={{gap: 3, paddingRight: 20}}>
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <View style={{ width: 20 }} />
+                  <View style={{ gap: 8 }}>
+                    <View style={{ gap: 3, paddingRight: 20 }}>
                       {/* <Text style={{fontSize: 18, fontWeight: 'bold'}}>
                   Điểm giao hàng:
                 </Text> */}
-                      <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                      <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
                         {item?.addressDeliver
                           ? item?.addressDeliver
                           : item?.pickupPoint.address}
                       </Text>
                     </View>
                     {item.timeFrame && (
-                      <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                      <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
                         {item?.timeFrame
                           ? `${item?.timeFrame?.fromHour.slice(
-                              0,
-                              5,
-                            )} đến ${item?.timeFrame?.toHour.slice(0, 5)}`
+                            0,
+                            5,
+                          )} đến ${item?.timeFrame?.toHour.slice(0, 5)}`
                           : ''}
                       </Text>
                     )}
-                    <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
                       Ngày giao hàng:{' '}
                       {format(new Date(item?.deliveryDate), 'dd/MM/yyyy')}
                     </Text>
@@ -526,25 +536,25 @@ const OrderDetail = ({navigation, route}) => {
                   gap: 10,
                 }}>
                 <View
-                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                   <Image
-                    style={{width: 20, height: 20}}
+                    style={{ width: 20, height: 20 }}
                     resizeMode="contain"
                     source={icons.phone}
                   />
                   <Text
-                    style={{fontSize: 20, color: 'black', fontWeight: 'bold'}}>
+                    style={{ fontSize: 20, color: 'black', fontWeight: 'bold' }}>
                     Thông tin liên lạc
                   </Text>
                 </View>
                 <View
-                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
-                  <View style={{width: 20}} />
-                  <View style={{gap: 5}}>
-                    <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <View style={{ width: 20 }} />
+                  <View style={{ gap: 5 }}>
+                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
                       {item.receiverName}
                     </Text>
-                    <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
                       {item.receiverPhone}
                     </Text>
                   </View>
@@ -593,7 +603,7 @@ const OrderDetail = ({navigation, route}) => {
                         source={{
                           uri: product.images[0].imageUrl,
                         }}
-                        style={{width: 100, height: 100}}
+                        style={{ width: 100, height: 100 }}
                       />
                       <View
                         style={{
@@ -760,13 +770,13 @@ const OrderDetail = ({navigation, route}) => {
                   flexDirection: 'row',
                   alignItems: 'center',
                   gap: 15,
-                  paddingTop: 20,
+                  paddingTop: 10,
                   borderTopColor: '#decbcb',
                   borderTopWidth: 0.75,
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
+                  style={{ paddingBottom: 9,fontSize: 20, fontFamily: 'Roboto', color: 'black' }}>
                   Mã đơn hàng:
                 </Text>
                 <Text
@@ -776,7 +786,7 @@ const OrderDetail = ({navigation, route}) => {
                     width: '60%',
                     paddingBottom: 9,
                   }}>
-                  {item.id}
+                  {item.code}
                 </Text>
               </View>
 
@@ -791,10 +801,10 @@ const OrderDetail = ({navigation, route}) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
+                  style={{ fontSize: 20, fontFamily: 'Roboto', color: 'black' }}>
                   Trạng thái
                 </Text>
-                <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
+                <Text style={{ fontSize: 20, fontFamily: 'Roboto' }}>
                   {item.paymentStatus === 0
                     ? 'Chưa thanh toán'
                     : 'Đã thanh toán'}
@@ -811,10 +821,10 @@ const OrderDetail = ({navigation, route}) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
+                  style={{ fontSize: 20, fontFamily: 'Roboto', color: 'black' }}>
                   Phương thức
                 </Text>
-                <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
+                <Text style={{ fontSize: 20, fontFamily: 'Roboto' }}>
                   {item.paymentMethod === 0 ? 'COD' : 'VN Pay'}
                 </Text>
               </View>
@@ -870,7 +880,7 @@ const OrderDetail = ({navigation, route}) => {
                     </Text>
                   </View>
                   <FlatList
-                    style={{maxHeight: 170}}
+                    style={{ maxHeight: 170 }}
                     data={consolidationAreaList}
                     renderItem={data => (
                       <TouchableOpacity
@@ -893,7 +903,7 @@ const OrderDetail = ({navigation, route}) => {
                           }}>
                           <Image
                             resizeMode="contain"
-                            style={{width: 20, height: 20}}
+                            style={{ width: 20, height: 20 }}
                             source={icons.location}
                             tintColor={
                               data.item.id === selectedConsolidationAreaId
@@ -937,37 +947,20 @@ const OrderDetail = ({navigation, route}) => {
                   flexDirection: 'row',
                   justifyContent: 'center',
                 }}>
-                <TouchableOpacity
-                  style={{
-                    width: 150,
-                    paddingHorizontal: 15,
-                    paddingVertical: 10,
-                    backgroundColor: 'white',
-                    borderRadius: 10,
-                    borderColor: COLORS.primary,
-                    borderWidth: 0.5,
-                    marginRight: '2%',
-                  }}
-                  onPress={handleCancel}>
-                  <Text
-                    style={{
-                      color: COLORS.primary,
-                      fontWeight: 'bold',
-                      textAlign: 'center',
-                    }}>
-                    Đóng
-                  </Text>
-                </TouchableOpacity>
 
                 <TouchableOpacity
                   style={{
-                    width: 150,
+                    width: "100%",
                     paddingHorizontal: 15,
                     paddingVertical: 10,
-                    backgroundColor: COLORS.primary,
+                    backgroundColor:
+                    item?.status === 0 && selectedConsolidationAreaId === ''
+                          ? COLORS.light_green
+                          : COLORS.primary,
                     color: 'white',
                     borderRadius: 10,
                   }}
+                  disabled={item?.status === 0 && selectedConsolidationAreaId === ''}
                   onPress={() => {
                     handleConfirm();
                   }}>

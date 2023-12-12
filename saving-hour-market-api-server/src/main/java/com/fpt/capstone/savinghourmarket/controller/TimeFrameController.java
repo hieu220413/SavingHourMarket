@@ -1,11 +1,16 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
+import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
 import com.fpt.capstone.savinghourmarket.common.DeliverMethodAvailableTimeFrame;
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
+import com.fpt.capstone.savinghourmarket.common.SystemStatus;
+import com.fpt.capstone.savinghourmarket.entity.Configuration;
 import com.fpt.capstone.savinghourmarket.entity.TimeFrame;
+import com.fpt.capstone.savinghourmarket.exception.SystemNotInMaintainStateException;
 import com.fpt.capstone.savinghourmarket.model.EnableDisableStatusChangeBody;
 import com.fpt.capstone.savinghourmarket.model.TimeFrameCreateUpdateBody;
 import com.fpt.capstone.savinghourmarket.model.TimeFrameListResponseBody;
+import com.fpt.capstone.savinghourmarket.service.SystemConfigurationService;
 import com.fpt.capstone.savinghourmarket.service.TimeFrameService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
@@ -28,6 +33,7 @@ public class TimeFrameController {
 
     private final FirebaseAuth firebaseAuth;
     private final TimeFrameService timeFrameService;
+    private final SystemConfigurationService systemConfigurationService;
 
     @RequestMapping(value = "/getAll", method = RequestMethod.GET)
     public ResponseEntity<List<TimeFrame>> getAll() {
@@ -62,6 +68,10 @@ public class TimeFrameController {
             , @RequestBody @Valid TimeFrameCreateUpdateBody timeFrameCreateUpdateBody) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
+        Configuration configuration = systemConfigurationService.getConfiguration();
+        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+        }
         TimeFrame timeFrame = timeFrameService.create(timeFrameCreateUpdateBody);
         return ResponseEntity.status(HttpStatus.OK).body(timeFrame);
     }
@@ -72,6 +82,10 @@ public class TimeFrameController {
             , @RequestParam UUID timeFrameId) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
+        Configuration configuration = systemConfigurationService.getConfiguration();
+        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+        }
         TimeFrame timeFrame = timeFrameService.update(timeFrameUpdateBody, timeFrameId);
         return ResponseEntity.status(HttpStatus.OK).body(timeFrame);
     }
@@ -81,6 +95,10 @@ public class TimeFrameController {
             , @RequestBody @Valid EnableDisableStatusChangeBody enableDisableStatusChangeBody) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
+        Configuration configuration = systemConfigurationService.getConfiguration();
+        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+        }
         TimeFrame timeFrame = timeFrameService.updateStatus(enableDisableStatusChangeBody);
         return ResponseEntity.status(HttpStatus.OK).body(timeFrame);
     }

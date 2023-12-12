@@ -3,7 +3,6 @@ package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 import com.fpt.capstone.savinghourmarket.common.*;
 import com.fpt.capstone.savinghourmarket.entity.Discount;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
-import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
 import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
@@ -39,7 +38,7 @@ public class DiscountServiceImpl implements DiscountService {
 
     @Override
     @Transactional(readOnly = true)
-    public DiscountForStaffListResponseBody getDiscountsForStaff(Boolean isExpiredShown, String name, Integer fromPercentage, Integer toPercentage, LocalDateTime fromDatetime, LocalDateTime toDatetime, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, String expiredSortType, EnableDisableStatus status) {
+    public DiscountForStaffListResponseBody getDiscountsForStaff(Boolean isExpiredShown, String name, Integer fromPercentage, Integer toPercentage, LocalDateTime fromDatetime, LocalDateTime toDatetime, String productCategoryId, Integer page, Integer limit, String expiredSortType, EnableDisableStatus status) {
         Sort sortable;
         if (expiredSortType.equals("DESC")) {
             sortable = Sort.by("expiredDate").descending();
@@ -58,7 +57,7 @@ public class DiscountServiceImpl implements DiscountService {
                 toDatetime,
                 status == null ? EnableDisableStatus.ENABLE.ordinal() : status.ordinal(),
                 productCategoryId == null ? null : UUID.fromString(productCategoryId),
-                productSubCategoryId == null ? null : UUID.fromString(productSubCategoryId),
+//                productSubCategoryId == null ? null : UUID.fromString(productSubCategoryId),
                 pageable
         );
 
@@ -71,7 +70,7 @@ public class DiscountServiceImpl implements DiscountService {
     }
 
     @Override
-    public List<DiscountOnly> getDiscountsForCustomer(String name, Integer fromPercentage, Integer toPercentage, LocalDateTime fromDatetime, LocalDateTime toDatetime, String productCategoryId, String productSubCategoryId, Integer page, Integer limit, String expiredSortType) {
+    public List<DiscountOnly> getDiscountsForCustomer(String name, Integer fromPercentage, Integer toPercentage, LocalDateTime fromDatetime, LocalDateTime toDatetime, String productCategoryId, Integer page, Integer limit, String expiredSortType) {
         Sort sortable;
         if (expiredSortType.equals("DESC")) {
             sortable = Sort.by("expiredDate").descending();
@@ -88,7 +87,7 @@ public class DiscountServiceImpl implements DiscountService {
                 fromDatetime,
                 toDatetime,
                 productCategoryId == null ? null : UUID.fromString(productCategoryId),
-                productSubCategoryId == null ? null : UUID.fromString(productSubCategoryId),
+//                productSubCategoryId == null ? null : UUID.fromString(productSubCategoryId),
                 pageable
         );
         return discountList;

@@ -1,12 +1,11 @@
 /* eslint-disable prettier/prettier */
 import React from 'react';
-import {View} from 'react-native';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import { View } from 'react-native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import TabIcon from '../components/TabIcon';
 import Home from '../screens/Home';
-
-import {icons} from '../constants';
-import {COLORS} from '../constants/theme';
+import { icons } from '../constants';
+import { COLORS } from '../constants/theme';
 import Discount from '../screens/Discount';
 import Orders from '../screens/Orders';
 import Cart from '../screens/Cart';
@@ -21,40 +20,38 @@ const Tabs = () => {
         headerShown: false,
         tabBarShowLabel: false,
         tabBarStyle: {
+          height: '6%',
           position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          elevation: 0,
-          backgroundColor: COLORS.tabBackground,
-          opacity: 0.95,
-          borderTopColor: 'transparent',
-          height: 80,
+          bottom: 3,
+          right: 12,
+          left: 12,
+          borderRadius: 16,
+          backgroundColor: COLORS.tabBackground
         },
       }}
-      //   tabBarOptions={{
-      //     showLabel: true,
-      //     style: {
-      //       position: "absolute",
-      //       bottom: 0,
-      //       left: 0,
-      //       right: 0,
-      //       elevation: 0,
-      //       backgroundColor: COLORS.white,
-      //       borderTopColor: "transparent",
-      //       height: 100,
-      //     },
-      //   }}
+    //   tabBarOptions={{
+    //     showLabel: true,
+    //     style: {
+    //       position: "absolute",
+    //       bottom: 0,
+    //       left: 0,
+    //       right: 0,
+    //       elevation: 0,
+    //       backgroundColor: COLORS.white,
+    //       borderTopColor: "transparent",
+    //       height: 100,
+    //     },
+    //   }}
     >
       <Tab.Screen
         name="Home"
         component={Home}
         options={{
-          tabBarIcon: ({focused}) => (
+          tabBarButton: (props) => (
             <TabIcon
-              display={'Trang chủ'}
-              focused={focused}
-              icon={icons.home}
+              {...props}
+              display={'Sản phẩm'}
+              icon={icons.products}
             />
           ),
         }}
@@ -68,38 +65,55 @@ const Tabs = () => {
           ),
         }}
       /> */}
+
       <Tab.Screen
         name="Discount"
         component={Discount}
         options={{
-          tabBarIcon: ({focused}) => (
+          tabBarButton: (props) => (
             <TabIcon
+              {...props}
               display={'Giảm giá'}
-              focused={focused}
               icon={icons.discount}
             />
           ),
         }}
       />
+
       <Tab.Screen
         name="Orders"
         component={Orders}
         options={{
-          tabBarIcon: ({focused}) => (
+          tabBarButton: (props) => (
             <TabIcon
+              {...props}
               display={'Đơn hàng'}
-              focused={focused}
               icon={icons.order}
             />
           ),
         }}
       />
+      {/* <Tab.Screen
+        name="CartBottom"
+        component={Cart}
+        options={{
+          tabBarStyle: { display: 'none' },
+          tabBarButton: (props) => (
+            <TabIcon
+              {...props}
+              display={'Giỏ hàng'}
+              icon={icons.cart}
+            />
+          ),
+        }}
+      /> */}
       <Tab.Screen
         name="Profile"
         component={Profile}
         options={{
-          tabBarIcon: ({focused}) => (
-            <TabIcon display={'Tôi'} focused={focused} icon={icons.user} />
+          tabBarButton: (props) => (
+            <TabIcon
+              {...props} display={'Tôi'} icon={icons.user} />
           ),
         }}
       />

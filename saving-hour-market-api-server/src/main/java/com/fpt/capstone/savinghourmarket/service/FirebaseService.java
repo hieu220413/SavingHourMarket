@@ -3,8 +3,6 @@ package com.fpt.capstone.savinghourmarket.service;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.cloud.storage.*;
 import com.google.firebase.cloud.StorageClient;
-import com.google.firebase.messaging.Message;
-import com.google.gson.JsonObject;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -15,8 +13,6 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 public interface FirebaseService {
@@ -38,13 +34,13 @@ public interface FirebaseService {
         }
     }
 
-    static String uploadWordToStorage(ByteArrayOutputStream fileStream, UUID orderId) {
+    static String uploadPdfToStorage(ByteArrayOutputStream fileStream, UUID orderId) {
         try {
             Storage storage = StorageOptions.newBuilder().setProjectId("capstone-project-398104").build().getService();
             Bucket bucket = StorageClient.getInstance().bucket();
 
             byte[] qrCodeBytes = fileStream.toByteArray();
-            String objectName = "OrderPrintWord/" + orderId + ".pdf"; // Set the desired object name
+            String objectName = "OrderPrint/" + orderId + ".pdf"; // Set the desired object name
 
             bucket.create(objectName, qrCodeBytes, "application/pdf");
 

@@ -227,15 +227,19 @@ const ProductsBySubCategories = ({ navigation, route }) => {
 
   const Item = ({ data }) => {
     return (
-      <TouchableOpacity
-        key={data.id}
-        onPress={() => {
-          navigation.navigate('ProductDetails', {
-            product: data,
-            pickupPointId: pickupPoint.id,
-          });
-        }}>
-        <View style={styles.itemContainer}>
+      <View style={styles.itemContainer}>
+        <TouchableOpacity
+          key={data.id}
+          onPress={() => {
+            navigation.navigate('ProductDetails', {
+              product: data,
+              pickupPointId: pickupPoint.id,
+            });
+          }}
+          style={{
+            flexDirection: 'row',
+          }}
+        >
           {/* Image Product */}
           <Image
             resizeMode="contain"
@@ -275,6 +279,30 @@ const ProductsBySubCategories = ({ navigation, route }) => {
                 'DD/MM/YYYY',
               )}
             </Text>
+            <View style={{ flexDirection: 'row', paddingBottom: '2%', }}>
+              <Text
+                style={{
+                  maxWidth: '70%',
+                  fontSize: Dimensions.get('window').width * 0.035,
+                  lineHeight: 20,
+                  fontWeight: 'bold',
+                  fontFamily: FONTS.fontFamily,
+                  textDecorationLine: 'line-through'
+                }}>
+                {data?.priceListed.toLocaleString('vi-VN', {
+                  currency: 'VND',
+                })}
+              </Text>
+              <Text
+                style={{
+                  fontSize: Dimensions.get('window').width * 0.03,
+                  lineHeight: 13,
+                  fontWeight: 600,
+                  fontFamily: FONTS.fontFamily,
+                }}>
+                ₫
+              </Text>
+            </View>
 
             <View style={{ flexDirection: 'row' }}>
               <Text
@@ -319,8 +347,8 @@ const ProductsBySubCategories = ({ navigation, route }) => {
             </Text>
           </TouchableOpacity> */}
           </View>
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -359,7 +387,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
           style={
             item.active == true
               ? {
-                width: Dimensions.get('window').width * 0.3,
+                width: Dimensions.get('window').width * 0.35,
                 paddingHorizontal: '5%',
                 paddingVertical: 10,
                 textAlign: 'center',
@@ -368,7 +396,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
                 fontSize: Dimensions.get('window').width * 0.03,
               }
               : {
-                width: Dimensions.get('window').width * 0.3,
+                width: Dimensions.get('window').width * 0.35,
                 paddingHorizontal: '3%',
                 paddingVertical: 10,
                 textAlign: 'center',
@@ -471,6 +499,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
         </View>
         {/* List products */}
         <ScrollView
+          showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="always"
           contentContainerStyle={{
             paddingBottom: 100,
@@ -553,6 +582,7 @@ const ProductsBySubCategories = ({ navigation, route }) => {
                   flexDirection: 'row',
                   flexWrap: 'wrap',
                   marginVertical: 10,
+                  justifyContent: 'space-around',
                 }}>
                 {selectSort.map((item, index) => (
                   <ModalSortItem item={item} key={index} />
@@ -614,12 +644,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   itemContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: '#F5F5F5',
     maxWidth: '90%',
     borderRadius: 20,
-    marginHorizontal: '5%',
+    marginHorizontal: '6%',
     marginBottom: 20,
-    flexDirection: 'row',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,

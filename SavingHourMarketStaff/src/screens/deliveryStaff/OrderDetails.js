@@ -8,6 +8,7 @@ import {
   ScrollView,
   Modal,
   StyleSheet,
+  Dimensions,
 } from 'react-native';
 import React, { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -218,7 +219,6 @@ const OrderDetails = ({ navigation, route }) => {
           setLoading(false);
         });
     }
-
   };
 
   return (
@@ -301,6 +301,9 @@ const OrderDetails = ({ navigation, route }) => {
                   style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                   <View style={{ width: 20 }} />
                   <View style={{ gap: 8 }}>
+                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                      Mã đơn hàng : {item.code}
+                    </Text>
                     <View style={{ gap: 3 }}>
                       <Text
                         style={{

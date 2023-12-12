@@ -1,11 +1,16 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
+import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
 import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
+import com.fpt.capstone.savinghourmarket.common.SystemStatus;
+import com.fpt.capstone.savinghourmarket.entity.Configuration;
 import com.fpt.capstone.savinghourmarket.entity.PickupPoint;
 import com.fpt.capstone.savinghourmarket.entity.ProductConsolidationArea;
+import com.fpt.capstone.savinghourmarket.exception.SystemNotInMaintainStateException;
 import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.service.PickupPointService;
 import com.fpt.capstone.savinghourmarket.service.ProductConsolidationAreaService;
+import com.fpt.capstone.savinghourmarket.service.SystemConfigurationService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.api.Http;
 import com.google.firebase.auth.FirebaseAuth;
@@ -31,6 +36,7 @@ public class PickupPointController {
     private final FirebaseAuth firebaseAuth;
     private final PickupPointService pickupPointService;
 
+    private final SystemConfigurationService systemConfigurationService;
 
     @RequestMapping(value = "/getAll", method = RequestMethod.GET)
     public ResponseEntity<List<PickupPoint>> getAll() {
@@ -73,18 +79,26 @@ public class PickupPointController {
             @RequestBody @Valid PickupPointCreateBody pickupPointCreateBody) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
+        Configuration configuration = systemConfigurationService.getConfiguration();
+        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+        }
         PickupPointWithProductConsolidationArea pickupPointWithProductConsolidationArea = pickupPointService.create(pickupPointCreateBody);
         return ResponseEntity.status(HttpStatus.OK).body(pickupPointWithProductConsolidationArea);
     }
 
 
     @RequestMapping(value = "/updateInfo", method = RequestMethod.PUT)
-    public ResponseEntity<PickupPoint> create(
+    public ResponseEntity<PickupPoint> updateInfo(
             @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken,
             @RequestBody @Valid PickupPointUpdateBody pickupPointUpdateBody,
             @RequestParam UUID pickupPointId) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
+        Configuration configuration = systemConfigurationService.getConfiguration();
+        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+        }
         PickupPoint pickupPoint = pickupPointService.updateInfo(pickupPointUpdateBody, pickupPointId);
         return ResponseEntity.status(HttpStatus.OK).body(pickupPoint);
     }
@@ -94,17 +108,25 @@ public class PickupPointController {
             , @RequestBody @Valid EnableDisableStatusChangeBody enableDisableStatusChangeBody) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
+        Configuration configuration = systemConfigurationService.getConfiguration();
+        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+        }
         PickupPoint pickupPoint = pickupPointService.updateStatus(enableDisableStatusChangeBody);
         return ResponseEntity.status(HttpStatus.OK).body(pickupPoint);
     }
 
     @RequestMapping(value = "/updateProductConsolidationAreaList", method = RequestMethod.PUT)
-    public ResponseEntity<PickupPointWithProductConsolidationArea> updatePickupPointList(
+    public ResponseEntity<PickupPointWithProductConsolidationArea> updateProductConsolidationAreaList(
             @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken,
             @RequestBody @Valid ProductConsolidationAreaPickupPointUpdateListBody productConsolidationAreaPickupPointUpdateListBody
     ) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
+        Configuration configuration = systemConfigurationService.getConfiguration();
+        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+        }
         PickupPointWithProductConsolidationArea pickupPointWithProductConsolidationArea = pickupPointService.updateProductConsolidationAreaList(productConsolidationAreaPickupPointUpdateListBody);
         return ResponseEntity.status(HttpStatus.OK).body(pickupPointWithProductConsolidationArea);
     }

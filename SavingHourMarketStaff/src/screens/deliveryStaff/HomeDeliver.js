@@ -10,6 +10,7 @@ import {
   Keyboard,
   Modal,
   FlatList,
+  Dimensions,
 } from 'react-native';
 import React, { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -29,9 +30,9 @@ import { checkSystemState } from '../../common/utils';
 const HomeDeliver = ({ navigation }) => {
   // listen to system state
   useFocusEffect(
-      useCallback(() => {
-          checkSystemState(navigation);
-      }, []),
+    useCallback(() => {
+      checkSystemState(navigation);
+    }, []),
   );
 
   const [initializing, setInitializing] = useState(true);
@@ -431,6 +432,7 @@ const HomeDeliver = ({ navigation }) => {
 
   const [selectItem, setSelectItem] = useState(orderStatus);
   //  filter pickup point
+  const [timeFrameList, setTimeFrameList] = useState([]);
   const [selectedTimeFrameId, setSelectedTimeFrameId] = useState('');
   //  filter date
   const [selectedDate, setSelectedDate] = useState(null);
@@ -449,9 +451,49 @@ const HomeDeliver = ({ navigation }) => {
           console.log(err);
         }
       })();
+      const fetchTimeFrame = async () => {
+        if (auth().currentUser) {
+          const tokenId = await auth().currentUser.getIdToken();
+          if (tokenId) {
+            setLoading(true);
+            fetch(`${API.baseURL}/api/timeframe/getAllForStaff`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
+              },
+            })
+              .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                  const tokenIdCheck = await auth()
+                    .currentUser.getIdToken(true)
+                    .catch(async err => {
+                      await AsyncStorage.setItem('isDisableAccount', '1');
+                      return null;
+                    });
+                  if (!tokenIdCheck) {
+                    throw new Error();
+                  }
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.json();
+              })
+              .then(response => {
+                setTimeFrameList(response);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
+          }
+        }
+      }
       console.log(currentOptions.id);
       setSelectedDate(null);
+      setSelectedTimeFrameId('');
       fetchOrders(currentOptions.id);
+      fetchTimeFrame();
     }, []),
   );
 
@@ -515,7 +557,9 @@ const HomeDeliver = ({ navigation }) => {
       setLoading(true);
       if (id === 0) {
         fetch(
-          `${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}${selectedDate === null ? '' : `&deliverDate=${deliverDate}`}&status=DELIVERING`,
+          `${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id
+          }${selectedDate === null ? '' : `&deliverDate=${deliverDate}`
+          }${selectedTimeFrameId ? `&timeFrameId=${selectedTimeFrameId}` : ''}&status=DELIVERING`,
           {
             method: 'GET',
             headers: {
@@ -549,7 +593,8 @@ const HomeDeliver = ({ navigation }) => {
           });
       } else if (id === 1) {
         fetch(
-          `${API.baseURL}/api/order/staff/getOrderBatch?status=DELIVERING${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}&delivererId=${userFromAS?.id}`,
+          `${API.baseURL}/api/order/staff/getOrderBatch?status=DELIVERING${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`
+          }&delivererId=${userFromAS?.id}${selectedTimeFrameId ? `&timeFrameId=${selectedTimeFrameId}` : ''}`,
           {
             method: 'GET',
             headers: {
@@ -561,14 +606,14 @@ const HomeDeliver = ({ navigation }) => {
           .then(async res => {
             if (res.status === 403 || res.status === 401) {
               const tokenIdCheck = await auth()
-              .currentUser.getIdToken(true)
-              .catch(async err => {
-                await AsyncStorage.setItem('isDisableAccount', '1');
-                return null;
-              });
-            if (!tokenIdCheck) {
-              throw new Error();
-            }
+                .currentUser.getIdToken(true)
+                .catch(async err => {
+                  await AsyncStorage.setItem('isDisableAccount', '1');
+                  return null;
+                });
+              if (!tokenIdCheck) {
+                throw new Error();
+              }
               // Cac loi 403 khac thi handle duoi day neu co
             }
             return res.json();
@@ -587,7 +632,10 @@ const HomeDeliver = ({ navigation }) => {
           });
       } else if (id === 2) {
         fetch(
-          `${API.baseURL}/api/order/staff/getOrders?isGrouped=false&isBatched=false&delivererId=${userFromAS?.id}&orderStatus=DELIVERING${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`}`,
+          `${API.baseURL
+          }/api/order/staff/getOrders?isGrouped=false&isBatched=false&delivererId=${userFromAS?.id
+          }&orderStatus=DELIVERING${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`
+          }`,
           {
             method: 'GET',
             headers: {
@@ -631,6 +679,8 @@ const HomeDeliver = ({ navigation }) => {
 
   const handleClear = async () => {
     setModalVisible(!modalVisible);
+    setSelectedTimeFrameId('');
+    setSelectedDate(null);
     console.log('clear filter');
     const tokenId = await auth().currentUser.getIdToken();
     const userFromAS = await getUser();
@@ -663,7 +713,9 @@ const HomeDeliver = ({ navigation }) => {
             return res.json();
           })
           .then(respond => {
-            console.log(`${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}&status=DELIVERING`);
+            console.log(
+              `${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id}&status=DELIVERING`,
+            );
             console.log('0', respond);
             setOrderGroupList(respond.orderGroups);
             setLoading(false);
@@ -782,6 +834,7 @@ const HomeDeliver = ({ navigation }) => {
             color: COLORS.primary,
             padding: 10,
             borderRadius: 10,
+            fontSize: Dimensions.get('window').width * 0.035,
           }}>
           {item?.status === 3 && 'Đang giao '}
           {item?.status === 4 && 'Đã Giao'}
@@ -789,19 +842,29 @@ const HomeDeliver = ({ navigation }) => {
         </Text>
         <Text
           style={{
-            fontSize: 18,
+            fontSize: Dimensions.get('window').width * 0.048,
             fontFamily: FONTS.fontFamily,
             color: 'black',
             fontWeight: 'bold',
             paddingBottom: 5,
             maxWidth: '80%',
           }}>
-          {item?.customer.fullName}
+          {item?.code}
         </Text>
 
         <Text
           style={{
-            fontSize: 16,
+            fontSize: Dimensions.get('window').width * 0.045,
+            fontFamily: FONTS.fontFamily,
+            color: 'black',
+            paddingBottom: 5,
+          }}>
+          Tên: {item?.customer.fullName}
+        </Text>
+
+        <Text
+          style={{
+            fontSize: Dimensions.get('window').width * 0.045,
             fontFamily: FONTS.fontFamily,
             color: 'black',
             paddingBottom: 5,
@@ -810,7 +873,7 @@ const HomeDeliver = ({ navigation }) => {
         </Text>
         <Text
           style={{
-            fontSize: 16,
+            fontSize: Dimensions.get('window').width * 0.045,
             fontFamily: FONTS.fontFamily,
             color: 'black',
             paddingBottom: 5,
@@ -825,7 +888,7 @@ const HomeDeliver = ({ navigation }) => {
         </Text>
         <Text
           style={{
-            fontSize: 16,
+            fontSize: Dimensions.get('window').width * 0.045,
             fontFamily: FONTS.fontFamily,
             color: 'black',
             paddingBottom: 5,
@@ -835,7 +898,7 @@ const HomeDeliver = ({ navigation }) => {
 
         <Text
           style={{
-            fontSize: 16,
+            fontSize: Dimensions.get('window').width * 0.045,
             fontFamily: FONTS.fontFamily,
             color: 'black',
             paddingBottom: 5,
@@ -860,7 +923,7 @@ const HomeDeliver = ({ navigation }) => {
                 textAlign: 'center',
                 color: COLORS.primary,
                 fontWeight: 'bold',
-                fontSize: 16,
+                fontSize: Dimensions.get('window').width * 0.045,
                 fontFamily: FONTS.fontFamily,
               }}>
               {item.paymentMethod === 0 ? 'COD' : 'VN Pay'}
@@ -875,7 +938,7 @@ const HomeDeliver = ({ navigation }) => {
           <View style={{ flexDirection: 'row' }}>
             <Text
               style={{
-                fontSize: 18,
+                fontSize: Dimensions.get('window').width * 0.05,
                 lineHeight: 30,
                 color: COLORS.secondary,
                 fontWeight: 700,
@@ -888,7 +951,7 @@ const HomeDeliver = ({ navigation }) => {
             <Text
               style={{
                 maxWidth: '70%',
-                fontSize: 18,
+                fontSize: Dimensions.get('window').width * 0.048,
                 lineHeight: 30,
                 color: COLORS.secondary,
                 fontWeight: 700,
@@ -900,7 +963,7 @@ const HomeDeliver = ({ navigation }) => {
             </Text>
             <Text
               style={{
-                fontSize: 12,
+                fontSize: Dimensions.get('window').width * 0.03,
                 lineHeight: 18,
                 color: COLORS.secondary,
                 fontWeight: 700,
@@ -972,6 +1035,59 @@ const HomeDeliver = ({ navigation }) => {
       </TouchableOpacity>
     );
   };
+
+  const TimeFrameItem = ({ item }) => {
+    return (
+      <TouchableOpacity
+        key={item.id}
+        onPress={() =>
+          item.id === selectedTimeFrameId
+            ? setSelectedTimeFrameId('')
+            : setSelectedTimeFrameId(item.id)
+        }
+        style={
+          item.id === selectedTimeFrameId
+            ? {
+              borderColor: COLORS.primary,
+              borderWidth: 1,
+              borderRadius: 10,
+              margin: 5,
+              width: '45%',
+            }
+            : {
+              borderColor: '#c8c8c8',
+              borderWidth: 0.2,
+              borderRadius: 10,
+              margin: 5,
+              width: '45%',
+            }
+        }>
+        <Text
+          style={
+            item.id === selectedTimeFrameId
+              ? {
+                width: '100%',
+                paddingVertical: 10,
+                textAlign: 'center',
+                color: COLORS.primary,
+
+                fontSize: 12,
+              }
+              : {
+                width: '100%',
+                paddingVertical: 10,
+                textAlign: 'center',
+                color: 'black',
+
+                fontSize: 12,
+              }
+          }>
+          {item.fromHour.slice(0, 5)} đến {item.toHour.slice(0, 5)}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
 
   return (
     <>
@@ -1048,9 +1164,8 @@ const HomeDeliver = ({ navigation }) => {
                     <View
                       style={[
                         {
-                          paddingTop: 15,
-                          paddingHorizontal: 8,
-                          paddingBottom: 15,
+                          paddingHorizontal: '1%',
+                          paddingVertical: '2%'
                         },
                         currentOptions.display === item.display && {
                           borderBottomColor: COLORS.primary,
@@ -1060,7 +1175,7 @@ const HomeDeliver = ({ navigation }) => {
                       <Text
                         style={{
                           fontFamily: 'Roboto',
-                          fontSize: 16,
+                          fontSize: Dimensions.get('window').width * 0.045,
                           color:
                             currentOptions.display === item.display
                               ? COLORS.primary
@@ -1084,10 +1199,12 @@ const HomeDeliver = ({ navigation }) => {
                 <Image
                   resizeMode="contain"
                   style={{
-                    height: 45,
                     tintColor: COLORS.primary,
-                    width: 30,
                     marginLeft: '1%',
+                    height: Dimensions.get('window').width * 0.08,
+                    width: Dimensions.get('window').width * 0.08,
+                    paddingHorizontal: '1%',
+                    paddingVertical: '2%'
                   }}
                   source={icons.filter}
                 />
@@ -1100,17 +1217,20 @@ const HomeDeliver = ({ navigation }) => {
                 fontFamily: FONTS.fontFamily,
                 color: 'grey',
                 fontWeight: 'bold',
-                fontSize: 18,
+                fontSize: Dimensions.get('window').width * 0.048,
                 marginLeft: 10,
                 paddingBottom: 20,
               }}>
-              Số lượng đơn hàng cần giao: {currentOptions.id === 0 || currentOptions.id === 1 ? orderGroupList.length + ' nhóm đơn' : orders.length + ' đơn'}
+              Số lượng đơn hàng cần giao:{' '}
+              {currentOptions.id === 0 || currentOptions.id === 1
+                ? orderGroupList.length + ' nhóm đơn'
+                : orders.length + ' đơn'}
             </Text>
             <Text
               style={{
                 fontFamily: FONTS.fontFamily,
                 color: 'black',
-                fontSize: 20,
+                fontSize: Dimensions.get('window').width * 0.05,
                 marginLeft: 10,
                 paddingBottom: 20,
               }}>
@@ -1129,7 +1249,7 @@ const HomeDeliver = ({ navigation }) => {
                     />
                     <Text
                       style={{
-                        fontSize: 20,
+                        fontSize: Dimensions.get('window').width * 0.05,
                         fontFamily: 'Roboto',
                         fontWeight: 'bold',
                       }}>
@@ -1137,11 +1257,11 @@ const HomeDeliver = ({ navigation }) => {
                     </Text>
                     <Text
                       style={{
-                        fontSize: 20,
+                        fontSize: Dimensions.get('window').width * 0.05,
                         fontFamily: 'Roboto',
                         fontWeight: 'bold',
                       }}>
-                      Hãy chọn lại ngày giao
+                      Hãy chọn lại ngày/giờ giao
                     </Text>
                   </View>
                 ) : (
@@ -1196,7 +1316,7 @@ const HomeDeliver = ({ navigation }) => {
                                   <Image
                                     resizeMode="contain"
                                     style={{
-                                      width: 20,
+                                      width: Dimensions.get('window').width * 0.1,
                                       height: 20,
                                       tintColor: 'white',
                                     }}
@@ -1211,21 +1331,22 @@ const HomeDeliver = ({ navigation }) => {
                                     style={{
                                       flexDirection: 'row',
                                       alignItems: 'center',
+                                      paddingHorizontal: data.item.isExpand ? 0 : 5,
                                       flexGrow: 1,
                                       flexShrink: 1,
-                                      justifyContent: 'center',
+                                      justifyContent:  data.item.isExpand ? 'center' : 'flex-start',
                                     }}>
                                     {data.item.isExpand ? (
                                       <Text
                                         style={{
-                                          fontSize: 18,
+                                          fontSize: Dimensions.get('window').width * 0.045,
                                           fontWeight: 'bold',
                                           fontFamily: 'Roboto',
                                           color: 'white',
                                         }}>
-                                        {data.item.timeFrame.fromHour +
+                                        {data.item.timeFrame.fromHour.slice(0,5) +
                                           '-' +
-                                          data.item.timeFrame.toHour +
+                                          data.item.timeFrame.toHour.slice(0,5) +
                                           ' ' +
                                           format(
                                             Date.parse(data.item.deliverDate),
@@ -1240,19 +1361,19 @@ const HomeDeliver = ({ navigation }) => {
                                         }}>
                                         <Text
                                           style={{
-                                            fontSize: 18,
+                                            fontSize: Dimensions.get('window').width * 0.045,
                                             fontWeight: 'bold',
                                             fontFamily: 'Roboto',
                                             color: 'white',
                                           }}>
                                           Khung giờ:{' '}
-                                          {data.item.timeFrame.fromHour +
+                                          {data.item.timeFrame.fromHour.slice(0,5) +
                                             '-' +
-                                            data.item.timeFrame.toHour}
+                                            data.item.timeFrame.toHour.slice(0,5)}
                                         </Text>
                                         <Text
                                           style={{
-                                            fontSize: 18,
+                                            fontSize: Dimensions.get('window').width * 0.045,
                                             fontWeight: 'bold',
                                             fontFamily: 'Roboto',
                                             color: 'white',
@@ -1263,6 +1384,34 @@ const HomeDeliver = ({ navigation }) => {
                                             'dd/MM/yyyy',
                                           )}
                                         </Text>
+                                        {data.item.pickupPoint && (
+                                          <Text
+                                          style={{
+                                            fontSize: Dimensions.get('window').width * 0.045,
+                                            fontWeight: 'bold',
+                                            fontFamily: 'Roboto',
+                                            color: 'white',
+                                          }}
+                                          numberOfLines={2}>
+                                          Điểm giao:
+                                          {' ' + data.item.pickupPoint.address}
+                                        </Text>
+                                        )}
+                                        {data.item.productConsolidationArea && (
+                                        <Text
+                                          style={{
+                                            fontSize: Dimensions.get('window').width * 0.045,
+                                            fontWeight: 'bold',
+                                            fontFamily: 'Roboto',
+                                            color: 'white',
+                                          }}
+                                          numberOfLines={2}>
+                                          Điểm tập kết:
+                                          {' ' +
+                                            data.item.productConsolidationArea
+                                              .address}
+                                        </Text>
+                                      )}
                                       </View>
                                     )}
                                   </View>
@@ -1305,6 +1454,7 @@ const HomeDeliver = ({ navigation }) => {
                                         color: COLORS.primary,
                                         padding: 10,
                                         borderRadius: 10,
+                                        fontSize: Dimensions.get('window').width * 0.035,
                                       }}>
                                       {item?.status === 2 && 'Đóng gói'}
                                       {item?.status === 3 && 'Đang giao'}
@@ -1313,19 +1463,29 @@ const HomeDeliver = ({ navigation }) => {
                                     </Text>
                                     <Text
                                       style={{
-                                        fontSize: 18,
+                                        fontSize: Dimensions.get('window').width * 0.04,
                                         fontFamily: FONTS.fontFamily,
                                         color: 'black',
                                         fontWeight: 'bold',
                                         paddingBottom: 5,
                                         maxWidth: '80%',
                                       }}>
-                                      {item?.customer.fullName}
+                                      {item?.code}
                                     </Text>
 
                                     <Text
                                       style={{
-                                        fontSize: 16,
+                                        fontSize: Dimensions.get('window').width * 0.045,
+                                        fontFamily: FONTS.fontFamily,
+                                        color: 'black',
+                                        paddingBottom: 5,
+                                      }}>
+                                      Tên: {item?.customer.fullName}
+                                    </Text>
+
+                                    <Text
+                                      style={{
+                                        fontSize: Dimensions.get('window').width * 0.045,
                                         fontFamily: FONTS.fontFamily,
                                         color: 'black',
                                         paddingBottom: 5,
@@ -1334,7 +1494,7 @@ const HomeDeliver = ({ navigation }) => {
                                     </Text>
                                     <Text
                                       style={{
-                                        fontSize: 16,
+                                        fontSize: Dimensions.get('window').width * 0.045,
                                         fontFamily: FONTS.fontFamily,
                                         color: 'black',
                                         paddingBottom: 5,
@@ -1352,7 +1512,7 @@ const HomeDeliver = ({ navigation }) => {
                                     </Text>
                                     <Text
                                       style={{
-                                        fontSize: 16,
+                                        fontSize: Dimensions.get('window').width * 0.045,
                                         fontFamily: FONTS.fontFamily,
                                         color: 'black',
                                         paddingBottom: 5,
@@ -1365,7 +1525,7 @@ const HomeDeliver = ({ navigation }) => {
                                     </Text>
                                     <Text
                                       style={{
-                                        fontSize: 16,
+                                        fontSize: Dimensions.get('window').width * 0.045,
                                         fontFamily: FONTS.fontFamily,
                                         color: 'black',
                                         paddingBottom: 5,
@@ -1396,7 +1556,7 @@ const HomeDeliver = ({ navigation }) => {
                                             textAlign: 'center',
                                             color: COLORS.primary,
                                             fontWeight: 'bold',
-                                            fontSize: 16,
+                                            fontSize: Dimensions.get('window').width * 0.045,
                                             fontFamily: FONTS.fontFamily,
                                           }}>
                                           {item.paymentMethod === 0
@@ -1417,7 +1577,7 @@ const HomeDeliver = ({ navigation }) => {
                                       <View style={{ flexDirection: 'row' }}>
                                         <Text
                                           style={{
-                                            fontSize: 18,
+                                            fontSize: Dimensions.get('window').width * 0.048,
                                             lineHeight: 30,
                                             color: COLORS.secondary,
                                             fontWeight: 700,
@@ -1430,7 +1590,7 @@ const HomeDeliver = ({ navigation }) => {
                                         <Text
                                           style={{
                                             maxWidth: '70%',
-                                            fontSize: 18,
+                                            fontSize: Dimensions.get('window').width * 0.048,
                                             lineHeight: 30,
                                             color: COLORS.secondary,
                                             fontWeight: 700,
@@ -1445,7 +1605,7 @@ const HomeDeliver = ({ navigation }) => {
                                         </Text>
                                         <Text
                                           style={{
-                                            fontSize: 12,
+                                            fontSize: Dimensions.get('window').width * 0.03,
                                             lineHeight: 18,
                                             color: COLORS.secondary,
                                             fontWeight: 700,
@@ -1479,7 +1639,7 @@ const HomeDeliver = ({ navigation }) => {
                     />
                     <Text
                       style={{
-                        fontSize: 20,
+                        fontSize: Dimensions.get('window').width * 0.045,
                         fontFamily: 'Roboto',
                         fontWeight: 'bold',
                       }}>
@@ -1487,7 +1647,7 @@ const HomeDeliver = ({ navigation }) => {
                     </Text>
                     <Text
                       style={{
-                        fontSize: 20,
+                        fontSize: Dimensions.get('window').width * 0.045,
                         fontFamily: 'Roboto',
                         fontWeight: 'bold',
                       }}>
@@ -1528,7 +1688,7 @@ const HomeDeliver = ({ navigation }) => {
                     style={{
                       color: 'black',
                       fontFamily: FONTS.fontFamily,
-                      fontSize: 20,
+                      fontSize: Dimensions.get('window').width * 0.06,
                       fontWeight: 700,
                       textAlign: 'center',
                       paddingBottom: 20,
@@ -1542,7 +1702,7 @@ const HomeDeliver = ({ navigation }) => {
                     <Image
                       resizeMode="contain"
                       style={{
-                        width: 20,
+                        width: Dimensions.get('window').width * 0.08,
                         height: 20,
                         tintColor: 'grey',
                       }}
@@ -1550,29 +1710,32 @@ const HomeDeliver = ({ navigation }) => {
                     />
                   </TouchableOpacity>
                 </View>
-                {/* <Text
-                                    style={{
-                                        color: 'black',
-                                        fontFamily: FONTS.fontFamily,
-                                        fontSize: 16,
-                                        fontWeight: 700,
-                                    }}>
-                                    Lọc theo trạng thái đơn hàng
-                                </Text>
-                                <View
-                                    style={{
-                                        flexDirection: 'row',
-                                        flexWrap: 'wrap',
-                                        marginVertical: 10,
-                                    }}>
-                                    {selectItem.map((item, index) => (
-                                        <ModalItem item={item} key={index} />
-                                    ))}
-                                </View> */}
+                {currentOptions.id !== 2 && (
+                  <>
+                    <Text
+                      style={{
+                        color: 'black',
+                        fontSize: Dimensions.get('window').width * 0.045,
+                        fontWeight: 700,
+                      }}>
+                      Chọn khung giờ
+                    </Text>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        flexWrap: 'wrap',
+                        marginVertical: '1%',
+                      }}>
+                      {timeFrameList.map((item, index) => (
+                        <TimeFrameItem item={item} key={index} />
+                      ))}
+                    </View></>
+                )}
+
                 <Text
                   style={{
                     color: 'black',
-                    fontSize: 16,
+                    fontSize: Dimensions.get('window').width * 0.045,
                     fontWeight: 700,
                   }}>
                   Chọn ngày giao hàng
@@ -1581,7 +1744,7 @@ const HomeDeliver = ({ navigation }) => {
                   style={{
                     flexDirection: 'row',
                     flexWrap: 'wrap',
-                    marginVertical: 10,
+                    justifyContent: 'center'
                   }}>
                   <DatePicker
                     date={selectedDate === null ? new Date() : selectedDate}
@@ -1600,7 +1763,7 @@ const HomeDeliver = ({ navigation }) => {
                   <TouchableOpacity
                     style={{
                       width: '50%',
-                      paddingHorizontal: 15,
+                      paddingHorizontal: '2%',
                       paddingVertical: 10,
                       backgroundColor: 'white',
                       borderRadius: 10,
@@ -1617,6 +1780,7 @@ const HomeDeliver = ({ navigation }) => {
                         color: COLORS.primary,
                         fontWeight: 'bold',
                         textAlign: 'center',
+                        fontSize: Dimensions.get('window').width * 0.04,
                       }}>
                       Thiết lập lại
                     </Text>
@@ -1625,7 +1789,7 @@ const HomeDeliver = ({ navigation }) => {
                   <TouchableOpacity
                     style={{
                       width: '50%',
-                      paddingHorizontal: 15,
+                      paddingHorizontal: '2%',
                       paddingVertical: 10,
                       backgroundColor: COLORS.primary,
                       color: 'white',
@@ -1710,5 +1874,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     textAlign: 'center',
+    fontSize: Dimensions.get('window').width * 0.04,
   },
 });

@@ -11,6 +11,8 @@ import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.math3.util.Precision;
 import org.springframework.data.domain.Page;
@@ -54,6 +56,9 @@ public class StaffServiceImpl implements StaffService {
     private final TimeFrameRepository timeFrameRepository;
 
     private final SystemConfigurationService systemConfigurationService;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
 //    @Override
 //    public Staff getInfoGoogleLogged(String email) throws FirebaseAuthException {
@@ -239,12 +244,16 @@ public class StaffServiceImpl implements StaffService {
         UserRecord userRecord = checkIsStaffInOrderProcess(staff);
 
         Map<String, Object> claims = new HashMap<>();
-        if(staff.get().getRole().equals(StaffRole.STAFF_ORD)) {
+        if(staff.get().getRole().equals(StaffRole.STAFF_ORD.toString())) {
             staff.get().getPickupPoint().clear();
         }
-        if(staff.get().getRole().equals(StaffRole.STAFF_DLV_1)) {
+        if(staff.get().getRole().equals(StaffRole.STAFF_DLV_1.toString())) {
             staff.get().getDeliverStaffList().forEach(deliverStaff -> deliverStaff.setDeliverManagerStaff(null));
             staff.get().getDeliverStaffList().clear();
+        }
+        if(staff.get().getRole().equals(StaffRole.STAFF_DLV_0.toString())) {
+            staff.get().getDeliverManagerStaff().getDeliverStaffList().removeIf(deliverStaff -> deliverStaff.getId() == staff.get().getId());
+            staff.get().setDeliverManagerStaff(null);
         }
         staff.get().setRole(staffRoleUpdateRequestBody.getRole().toString());
         claims.put("user_role", staffRoleUpdateRequestBody.getRole().toString());
@@ -308,6 +317,11 @@ public class StaffServiceImpl implements StaffService {
              throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.TIME_FRAME_NOT_FOUND.getCode()), AdditionalResponseCode.TIME_FRAME_NOT_FOUND.toString());
          }
 
+         // target timeframe, target Latitude, target Longitude used for calculate distance for group or batch
+         TimeFrame targetTimeFrame = null;
+         Double targetLatitude = null;
+         Double targetLongitude = null;
+
          // check if batch id exist if mode is batch
         Optional<OrderBatch> orderBatch = null;
         if(orderType.ordinal() == OrderType.ORDER_BATCH.ordinal()) {
@@ -318,6 +332,9 @@ public class StaffServiceImpl implements StaffService {
             if(!orderBatch.isPresent()){
                 throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.ORDER_BATCH_NOT_FOUND.getCode()), AdditionalResponseCode.ORDER_BATCH_NOT_FOUND.toString());
             }
+            targetTimeFrame = orderBatch.get().getTimeFrame();
+            targetLatitude = orderBatch.get().getAverageLatitude();
+            targetLongitude = orderBatch.get().getAverageLongitude();
         }
 
         // check if group id exist if mode is group
@@ -330,6 +347,9 @@ public class StaffServiceImpl implements StaffService {
             if(!orderGroup.isPresent()){
                 throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.ORDER_GROUP_NOT_FOUND.getCode()), AdditionalResponseCode.ORDER_GROUP_NOT_FOUND.toString());
             }
+            targetTimeFrame = orderGroup.get().getTimeFrame();
+            targetLatitude = orderGroup.get().getPickupPoint().getLatitude();
+            targetLongitude = orderGroup.get().getPickupPoint().getLongitude();
         }
 
         List<Staff> staffList = staffRepository.getAllStaffForDeliverManager(name, StaffRole.STAFF_DLV_0.toString(), deliverMangerId);
@@ -341,14 +361,15 @@ public class StaffServiceImpl implements StaffService {
         }
 
          // check collide with order group (for all mode BATCH, GROUP, SINGLE)
+
         List<Staff> removeStaffList = staffRepository.getStaffWithDeliverDateAndTimeFrame(staffList.stream().map(staff -> staff.getId()).collect(Collectors.toList()), name, StaffRole.STAFF_DLV_0.toString(), deliverDate, timeFrame.get().getId());
         HashMap<UUID, Staff> removeStaffHashMap = new HashMap<>();
         for (Staff removeStaff : removeStaffList) {
             removeStaffHashMap.put(removeStaff.getId(), removeStaff);
         }
 
+        // check collide with order batch / single order in group mode
         if(orderType.ordinal() == OrderType.ORDER_GROUP.ordinal()) {
-            // check collide with order batch / single order
             List<Staff> removeStaffByDoorToDoorOrderList = staffRepository.getStaffWithDeliverDateAndTimeFrameByDoorToDoorOrder(staffList.stream().map(staff -> staff.getId()).collect(Collectors.toList()), name, StaffRole.STAFF_DLV_0.toString(), deliverDate, timeFrame.get().getId());
             for (Staff removeStaffByDoorToDoorOrder : removeStaffByDoorToDoorOrderList) {
                 if(!removeStaffHashMap.containsKey(removeStaffByDoorToDoorOrder.getId())) {
@@ -356,7 +377,24 @@ public class StaffServiceImpl implements StaffService {
                     removeStaffList.add(removeStaffByDoorToDoorOrder);
                 }
             }
+
         }
+
+        // check collide with order batch in batch mode
+        if(orderType.ordinal() == OrderType.ORDER_BATCH.ordinal()){
+            // remove staff from staff list which have been already assigned batch in the same time frame and date
+            List<Staff> removeStaffListForBatch = staffRepository.getStaffWithDeliverDateWithBatchWithSameTimeFrame(staffList.stream().filter(staff -> staff.getIsAvailableForDelivering() == true).map(staff -> staff.getId()).collect(Collectors.toList()), deliverDate, timeFrame.get().getId());
+            for (Staff removeStaffForBatch : removeStaffListForBatch) {
+//                staffList.removeIf(staff -> removeStaff.getId() == staff.getId());
+//                staffHashMap.remove(removeStaff.getId());
+                if(!removeStaffHashMap.containsKey(removeStaffForBatch.getId())) {
+                    removeStaffHashMap.put(removeStaffForBatch.getId(), removeStaffForBatch);
+                    removeStaffList.add(removeStaffForBatch);
+                }
+//                staffHashMap.get(removeStaff.getId()).setIsAvailableForDelivering(false);
+            }
+        }
+
 
         for (Staff removeStaff : removeStaffList) {
 //            staffList.removeIf(staff -> removeStaff.getId() == staff.getId());
@@ -366,7 +404,8 @@ public class StaffServiceImpl implements StaffService {
 
 
         // over limit handler for group mode (no need to check with collide batch, single order because it's already been done above)
-        if(orderType.ordinal() == OrderType.ORDER_GROUP.ordinal()) {
+        if((orderType.ordinal() == OrderType.ORDER_GROUP.ordinal()) || (orderType.ordinal() == OrderType.ORDER_BATCH.ordinal())) {
+            entityManager.clear();
             List<Staff> staffWithOrderGroup = staffRepository.getStaffWithDeliverDateWithGroupWithDifferentTimeFrame(staffList.stream().filter(staff -> staff.getIsAvailableForDelivering() == true).map(staff -> staff.getId()).collect(Collectors.toList()), deliverDate, timeFrame.get().getId());
             for (Staff staff : staffWithOrderGroup) {
                 if(staff.getOrderGroupList() != null &&  staff.getOrderGroupList().size() > 0){
@@ -374,32 +413,34 @@ public class StaffServiceImpl implements StaffService {
                     staff.getOrderGroupList().sort(Comparator.comparing(b -> b.getTimeFrame().getFromHour()));
 
                     // init over limit alert list
-                    staff.setOverLimitAlertList(new ArrayList<>());
+                    if(staff.getOverLimitAlertList() == null) {
+                        staff.setOverLimitAlertList(new ArrayList<>());
+                    }
 
-                    // find groups that after and before for target group
+                    // find groups that after and before for target group/batch
                     OrderGroup orderGroupAfterTargetGroup = null;
                     OrderGroup orderGroupBeforeTargetGroup = null;
                     for (int i = 0; i < staff.getOrderGroupList().size() ; i++) {
-                        // find batch in staff batch list which is after the target batch
-                        if(orderGroup.get().getTimeFrame().getFromHour().isBefore(staff.getOrderGroupList().get(i).getTimeFrame().getFromHour())) {
+                        // find group in staff group list which is after the target group/batch
+                        if(targetTimeFrame.getFromHour().isBefore(staff.getOrderGroupList().get(i).getTimeFrame().getFromHour())) {
                             orderGroupAfterTargetGroup = staff.getOrderGroupList().get(i);
                             orderGroupBeforeTargetGroup = i - 1 >= 0 ? staff.getOrderGroupList().get(i-1) :  null;
                             break;
                         }
                     }
 
-                    // if orderGroupAfterTargetGroup is null after loop -> time frame of target group is the highest -> assign last group in staff batch list to orderGroupBeforeTargetGroup
+                    // if orderGroupAfterTargetGroup is null after loop -> time frame of target group/batch is the highest -> assign last group in staff group list to orderGroupBeforeTargetGroup
                     if (orderGroupAfterTargetGroup == null) {
                         orderGroupBeforeTargetGroup = staff.getOrderGroupList().get(staff.getOrderGroupList().size()-1);
                     }
 
                     if(orderGroupAfterTargetGroup != null) {
-                        Double distance = Utils.haversineFormulaCalculate(orderGroup.get().getPickupPoint().getLatitude(), orderGroup.get().getPickupPoint().getLongitude()
+                        Double distance = Utils.haversineFormulaCalculate(targetLatitude, targetLongitude
                                 , orderGroupAfterTargetGroup.getPickupPoint().getLatitude(), orderGroupAfterTargetGroup.getPickupPoint().getLongitude());
 
 
-                        // Calculate duration between toHour of target group and fromHour of orderGroupAfterTargetGroup
-                        Duration duration = Duration.between(orderGroup.get().getTimeFrame().getToHour(), orderGroupAfterTargetGroup.getTimeFrame().getFromHour());
+                        // Calculate duration between toHour of target group/batch and fromHour of orderGroupAfterTargetGroup
+                        Duration duration = Duration.between(targetTimeFrame.getToHour(), orderGroupAfterTargetGroup.getTimeFrame().getFromHour());
 
                         Double limit =  Precision.round(systemConfigurationService.getConfiguration().getLimitMeterPerMinute() * Math.abs(duration.toMinutes()) * 0.001, 1);
 
@@ -408,19 +449,19 @@ public class StaffServiceImpl implements StaffService {
                         if(difference > 0) {
                             String fromHourOfOrderGroupAfterTargetGroupFormat = orderGroupAfterTargetGroup.getTimeFrame().getFromHour().toString().substring(0, 5);
                             String toHourOfOrderGroupAfterTargetGroupFormat = orderGroupAfterTargetGroup.getTimeFrame().getToHour().toString().substring(0, 5);
-                            String alertMessage = "Vướt giới hạn so với khung giờ " + "kế tiếp " + "(" + fromHourOfOrderGroupAfterTargetGroupFormat + "-" + toHourOfOrderGroupAfterTargetGroupFormat + ")";
+                            String alertMessage = "Vượt giới hạn so với khung giờ " + "sau " + "(" + fromHourOfOrderGroupAfterTargetGroupFormat + "-" + toHourOfOrderGroupAfterTargetGroupFormat + ")";
                             Double limitExceedValue = Precision.round(difference, 1);
                             String limitExceed = Precision.round(difference, 1) + "km";
-                            staff.getOverLimitAlertList().add(new OverLimitAlertBody(limitExceedValue, limitExceed, alertMessage));
+                            staff.getOverLimitAlertList().add(new OverLimitAlertBody(limitExceedValue, orderGroupAfterTargetGroup.getTimeFrame().getFromHour(), orderGroupAfterTargetGroup.getTimeFrame().getToHour(), limitExceed, alertMessage));
 
                         }
 
                     }
 
                     if(orderGroupBeforeTargetGroup != null) {
-                        Double distance = Utils.haversineFormulaCalculate(orderGroup.get().getPickupPoint().getLatitude(), orderGroup.get().getPickupPoint().getLongitude()
+                        Double distance = Utils.haversineFormulaCalculate(targetLatitude, targetLongitude
                                 , orderGroupBeforeTargetGroup.getPickupPoint().getLatitude(), orderGroupBeforeTargetGroup.getPickupPoint().getLongitude());
-                        Duration duration = Duration.between(orderGroupBeforeTargetGroup.getTimeFrame().getToHour(), orderGroup.get().getTimeFrame().getFromHour());
+                        Duration duration = Duration.between(orderGroupBeforeTargetGroup.getTimeFrame().getToHour(), targetTimeFrame.getFromHour());
 
                         Double limit =  Precision.round(systemConfigurationService.getConfiguration().getLimitMeterPerMinute() * Math.abs(duration.toMinutes()) * 0.001, 1);
 
@@ -429,20 +470,23 @@ public class StaffServiceImpl implements StaffService {
                         if(difference > 0) {
                             String fromHourOfOrderGroupBeforeTargetGroupFormat = orderGroupBeforeTargetGroup.getTimeFrame().getFromHour().toString().substring(0, 5);
                             String toHourOfOrderGroupBeforeTargetGroupFormat = orderGroupBeforeTargetGroup.getTimeFrame().getToHour().toString().substring(0, 5);
-                            String alertMessage = "Vướt giới hạn so với khung giờ " + "kế trước " + "(" + fromHourOfOrderGroupBeforeTargetGroupFormat + "-" + toHourOfOrderGroupBeforeTargetGroupFormat + ")";
+                            String alertMessage = "Vượt giới hạn so với khung giờ " + "trước " + "(" + fromHourOfOrderGroupBeforeTargetGroupFormat + "-" + toHourOfOrderGroupBeforeTargetGroupFormat + ")";
                             Double limitExceedValue = Precision.round(difference, 1);
                             String limitExceed = Precision.round(difference, 1) + "km";
-                            staff.getOverLimitAlertList().add(new OverLimitAlertBody(limitExceedValue, limitExceed, alertMessage));
+                            staff.getOverLimitAlertList().add(new OverLimitAlertBody(limitExceedValue, orderGroupBeforeTargetGroup.getTimeFrame().getFromHour(), orderGroupBeforeTargetGroup.getTimeFrame().getToHour(), limitExceed, alertMessage));
 
                         }
                     }
-                    staff.getOverLimitAlertList().sort((o1, o2) -> o2.getLimitExceedValue().compareTo(o1.getLimitExceedValue()));
+//                    staff.getOverLimitAlertList().sort((o1, o2) -> o2.getLimitExceedValue().compareTo(o1.getLimitExceedValue()));
                 }
             }
             // map calculated alert to real staff list
             for (Staff staff : staffWithOrderGroup) {
                 if(staff.getOverLimitAlertList() != null) {
-                    staffHashMap.get(staff.getId()).setOverLimitAlertList(staff.getOverLimitAlertList());
+                    if(staffHashMap.get(staff.getId()).getOverLimitAlertList() == null) {
+                        staffHashMap.get(staff.getId()).setOverLimitAlertList(new ArrayList<>());
+                    }
+                    staffHashMap.get(staff.getId()).getOverLimitAlertList().addAll(staff.getOverLimitAlertList());
                 }
             }
         }
@@ -450,16 +494,9 @@ public class StaffServiceImpl implements StaffService {
 
 
         // over limit handler for batch mode
-        if(orderType.ordinal() == OrderType.ORDER_BATCH.ordinal()) {
+        if((orderType.ordinal() == OrderType.ORDER_BATCH.ordinal()) || (orderType.ordinal() == OrderType.ORDER_GROUP.ordinal())) {
 //            List<Object[]> countCollideBatchForStaffList =  staffRepository.countCollideBatchForStaff(staffList.stream().map(staff -> staff.getId()).collect(Collectors.toList()), deliverDate, timeFrame.get().getFromHour(), timeFrame.get().getToHour());
-            // remove staff from staff list which have been already assigned batch in the same time frame and date
-            List<Staff> removeStaffListForBatch = staffRepository.getStaffWithDeliverDateWithBatchWithSameTimeFrame(staffList.stream().filter(staff -> staff.getIsAvailableForDelivering() == true).map(staff -> staff.getId()).collect(Collectors.toList()), deliverDate, timeFrame.get().getId());
-            for (Staff removeStaff : removeStaffListForBatch) {
-//                staffList.removeIf(staff -> removeStaff.getId() == staff.getId());
-//                staffHashMap.remove(removeStaff.getId());
-                staffHashMap.get(removeStaff.getId()).setIsAvailableForDelivering(false);
-            }
-
+            entityManager.clear();
             List<Staff> staffWithOrderBatch = staffRepository.getStaffWithDeliverDateWithBatchWithDifferentTimeFrame(staffList.stream().filter(staff -> staff.getIsAvailableForDelivering() == true).map(staff -> staff.getId()).collect(Collectors.toList()), deliverDate, timeFrame.get().getId());
 
             for (Staff staff : staffWithOrderBatch) {
@@ -468,32 +505,34 @@ public class StaffServiceImpl implements StaffService {
                     staff.getOrderBatchList().sort(Comparator.comparing(b -> b.getTimeFrame().getFromHour()));
 
                     // init over limit alert list
-                    staff.setOverLimitAlertList(new ArrayList<>());
+                    if(staff.getOverLimitAlertList() == null) {
+                        staff.setOverLimitAlertList(new ArrayList<>());
+                    }
 
-                    // find batches that after and before for target batch
+                    // find batches that after and before for target group/batch
                     OrderBatch orderBatchAfterTargetBatch = null;
                     OrderBatch orderBatchBeforeTargetBatch = null;
                     for (int i = 0; i < staff.getOrderBatchList().size() ; i++) {
                         // find batch in staff batch list which is after the target batch
-                        if(orderBatch.get().getTimeFrame().getFromHour().isBefore(staff.getOrderBatchList().get(i).getTimeFrame().getFromHour())) {
+                        if(targetTimeFrame.getFromHour().isBefore(staff.getOrderBatchList().get(i).getTimeFrame().getFromHour())) {
                             orderBatchAfterTargetBatch = staff.getOrderBatchList().get(i);
                             orderBatchBeforeTargetBatch = i - 1 >= 0 ? staff.getOrderBatchList().get(i-1) :  null;
                             break;
                         }
                     }
 
-                    // if orderBatchAfterTargetBatch is null after loop -> time frame of target batch is the highest -> assign last batch in staff batch list to orderBatchBeforeTargetBatch
+                    // if orderBatchAfterTargetBatch is null after loop -> time frame of target group/batch is the highest -> assign last batch in staff batch list to orderBatchBeforeTargetBatch
                     if (orderBatchAfterTargetBatch == null) {
                         orderBatchBeforeTargetBatch = staff.getOrderBatchList().get(staff.getOrderBatchList().size()-1);
                     }
 
                     if(orderBatchAfterTargetBatch != null) {
-                        Double distance = Utils.haversineFormulaCalculate(orderBatch.get().getAverageLatitude(), orderBatch.get().getAverageLongitude()
+                        Double distance = Utils.haversineFormulaCalculate(targetLatitude, targetLongitude
                                 , orderBatchAfterTargetBatch.getAverageLatitude(), orderBatchAfterTargetBatch.getAverageLongitude());
 
 
-                        // Calculate duration between toHour of target batch and fromHour of orderBatchAfterTargetBatch
-                        Duration duration = Duration.between(orderBatch.get().getTimeFrame().getToHour(), orderBatchAfterTargetBatch.getTimeFrame().getFromHour());
+                        // Calculate duration between toHour of target group/batch and fromHour of orderBatchAfterTargetBatch
+                        Duration duration = Duration.between(targetTimeFrame.getToHour(), orderBatchAfterTargetBatch.getTimeFrame().getFromHour());
 
                         Double limit =  Precision.round(systemConfigurationService.getConfiguration().getLimitMeterPerMinute() * Math.abs(duration.toMinutes()) * 0.001, 1);
 
@@ -502,20 +541,20 @@ public class StaffServiceImpl implements StaffService {
                         if(difference > 0) {
                             String fromHourOfOrderBatchAfterTargetBatchFormat = orderBatchAfterTargetBatch.getTimeFrame().getFromHour().toString().substring(0, 5);
                             String toHourOfOrderBatchAfterTargetBatchFormat = orderBatchAfterTargetBatch.getTimeFrame().getToHour().toString().substring(0, 5);
-                            String alertMessage = "Vướt giới hạn so với khung giờ " + "kế tiếp " + "(" + fromHourOfOrderBatchAfterTargetBatchFormat + "-" + toHourOfOrderBatchAfterTargetBatchFormat + ")";
+                            String alertMessage = "Vượt giới hạn so với khung giờ " + "sau " + "(" + fromHourOfOrderBatchAfterTargetBatchFormat + "-" + toHourOfOrderBatchAfterTargetBatchFormat + ")";
                             Double limitExceedValue = Precision.round(difference, 1);
                             String limitExceed = Precision.round(difference, 1) + "km";
-                            staff.getOverLimitAlertList().add(new OverLimitAlertBody(limitExceedValue, limitExceed, alertMessage));
+                            staff.getOverLimitAlertList().add(new OverLimitAlertBody(limitExceedValue, orderBatchAfterTargetBatch.getTimeFrame().getFromHour(), orderBatchAfterTargetBatch.getTimeFrame().getToHour(), limitExceed, alertMessage));
 
                         }
                     }
 
                     if(orderBatchBeforeTargetBatch != null) {
-                        Double distance = Utils.haversineFormulaCalculate(orderBatch.get().getAverageLatitude(), orderBatch.get().getAverageLongitude()
+                        Double distance = Utils.haversineFormulaCalculate(targetLatitude, targetLongitude
                                 , orderBatchBeforeTargetBatch.getAverageLatitude(), orderBatchBeforeTargetBatch.getAverageLongitude());
 
-                        // Calculate duration between toHour of orderBatchBeforeTargetBatch and toHour of target batch
-                        Duration duration = Duration.between(orderBatchBeforeTargetBatch.getTimeFrame().getToHour(), orderBatch.get().getTimeFrame().getFromHour());
+                        // Calculate duration between toHour of orderBatchBeforeTargetBatch and toHour of target group/batch
+                        Duration duration = Duration.between(orderBatchBeforeTargetBatch.getTimeFrame().getToHour(), targetTimeFrame.getFromHour());
 
                         Double limit =  Precision.round(systemConfigurationService.getConfiguration().getLimitMeterPerMinute() * Math.abs(duration.toMinutes()) * 0.001, 1);
 
@@ -524,20 +563,23 @@ public class StaffServiceImpl implements StaffService {
                         if(difference > 0) {
                             String fromHourOfOrderBatchBeforeTargetBatchFormat = orderBatchBeforeTargetBatch.getTimeFrame().getFromHour().toString().substring(0, 5);
                             String toHourOfOrderBatchBeforeTargetBatchFormat = orderBatchBeforeTargetBatch.getTimeFrame().getToHour().toString().substring(0, 5);
-                            String alertMessage = "Vướt giới hạn so với khung giờ " + "kế trước " + "(" + fromHourOfOrderBatchBeforeTargetBatchFormat + "-" + toHourOfOrderBatchBeforeTargetBatchFormat + ")";
+                            String alertMessage = "Vượt giới hạn so với khung giờ " + "trước " + "(" + fromHourOfOrderBatchBeforeTargetBatchFormat + "-" + toHourOfOrderBatchBeforeTargetBatchFormat + ")";
                             Double limitExceedValue = Precision.round(difference, 1);
                             String limitExceed = Precision.round(difference, 1) + "km";
-                            staff.getOverLimitAlertList().add(new OverLimitAlertBody(limitExceedValue, limitExceed, alertMessage));
+                            staff.getOverLimitAlertList().add(new OverLimitAlertBody(limitExceedValue, orderBatchBeforeTargetBatch.getTimeFrame().getFromHour(), orderBatchBeforeTargetBatch.getTimeFrame().getToHour(), limitExceed, alertMessage));
                         }
                     }
 
-                    staff.getOverLimitAlertList().sort((o1, o2) -> o2.getLimitExceedValue().compareTo(o1.getLimitExceedValue()));
+//                    staff.getOverLimitAlertList().sort((o1, o2) -> o2.getLimitExceedValue().compareTo(o1.getLimitExceedValue()));
                 }
             }
             // map calculated alert to real staff list
             for (Staff staff : staffWithOrderBatch) {
                 if(staff.getOverLimitAlertList() != null) {
-                    staffHashMap.get(staff.getId()).setOverLimitAlertList(staff.getOverLimitAlertList());
+                    if(staffHashMap.get(staff.getId()).getOverLimitAlertList() == null) {
+                        staffHashMap.get(staff.getId()).setOverLimitAlertList(new ArrayList<>());
+                    }
+                    staffHashMap.get(staff.getId()).getOverLimitAlertList().addAll(staff.getOverLimitAlertList());
                 }
             }
 //            for(Object[] countCollideBatchForStaff : countCollideBatchForStaffList) {
@@ -552,8 +594,38 @@ public class StaffServiceImpl implements StaffService {
 //            }
         }
 
-        // init field for staff which have null overLimitAlertMap
+        // init field for staff which have null overLimitAlertMap and choose the most nearby after/before time frame
         for (Staff staff : staffList) {
+            // choose the most nearby after/before time frame
+            if(staff.getOverLimitAlertList() != null) {
+                // choose before time frame if two found
+                List<OverLimitAlertBody> overLimitAlertForBeforeTimeFrameList = staff.getOverLimitAlertList().stream().filter(overLimitAlertBody -> overLimitAlertBody.getAlertMessage().contains("trước")).collect(Collectors.toList());
+                if (overLimitAlertForBeforeTimeFrameList.size() == 2) {
+                    // select the one which have fromHour higher
+                    OverLimitAlertBody firstOverLimitAlertForBeforeTimeFrame = overLimitAlertForBeforeTimeFrameList.get(0);
+                    OverLimitAlertBody secondOverLimitAlertForBeforeTimeFrame = overLimitAlertForBeforeTimeFrameList.get(1);
+                    if(firstOverLimitAlertForBeforeTimeFrame.getFromHour().isAfter(secondOverLimitAlertForBeforeTimeFrame.getFromHour())){
+                        staff.getOverLimitAlertList().removeIf(overLimitAlertBody -> overLimitAlertBody.getFromHour().equals(secondOverLimitAlertForBeforeTimeFrame.getFromHour()));
+                    } else {
+                        staff.getOverLimitAlertList().removeIf(overLimitAlertBody -> overLimitAlertBody.getFromHour().equals(firstOverLimitAlertForBeforeTimeFrame.getFromHour()));
+                    }
+                }
+                // choose after time frame if two found
+                List<OverLimitAlertBody> overLimitAlertForAfterTimeFrameList = staff.getOverLimitAlertList().stream().filter(overLimitAlertBody -> overLimitAlertBody.getAlertMessage().contains("sau")).collect(Collectors.toList());
+                if (overLimitAlertForAfterTimeFrameList.size() == 2) {
+                    // select the one which have fromHour smaller
+                    OverLimitAlertBody firstOverLimitAlertForAfterTimeFrame = overLimitAlertForAfterTimeFrameList.get(0);
+                    OverLimitAlertBody secondOverLimitAlertForAfterTimeFrame = overLimitAlertForAfterTimeFrameList.get(1);
+                    if(firstOverLimitAlertForAfterTimeFrame.getFromHour().isAfter(secondOverLimitAlertForAfterTimeFrame.getFromHour())){
+                        staff.getOverLimitAlertList().removeIf(overLimitAlertBody -> overLimitAlertBody.getFromHour().equals(firstOverLimitAlertForAfterTimeFrame.getFromHour()));
+                    } else {
+                        staff.getOverLimitAlertList().removeIf(overLimitAlertBody -> overLimitAlertBody.getFromHour().equals(secondOverLimitAlertForAfterTimeFrame.getFromHour()));
+                    }
+                }
+                // sort highest distance alert on top
+                staff.getOverLimitAlertList().sort((o1, o2) -> o2.getLimitExceedValue().compareTo(o1.getLimitExceedValue()));
+            }
+            // init field for staff have null overLimitAlertMap
             if(staff.getOverLimitAlertList() == null) {
                 staff.setOverLimitAlertList(new ArrayList<>());
             }

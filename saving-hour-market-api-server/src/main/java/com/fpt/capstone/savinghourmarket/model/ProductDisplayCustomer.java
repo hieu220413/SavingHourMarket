@@ -5,6 +5,7 @@ import com.fpt.capstone.savinghourmarket.entity.Product;
 import com.fpt.capstone.savinghourmarket.entity.ProductImage;
 import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
 import com.fpt.capstone.savinghourmarket.entity.Supermarket;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,10 +22,11 @@ public class ProductDisplayCustomer {
 
     public ProductDisplayCustomer(LocalDate nearestBatchExpiredDate, Integer nearestBatchPrice, Integer nearestBatchPriceOriginal, Product product) {
         this.id = product.getId();
-        this.name = product.getName();
+        this.name = product.getName() + " (" + product.getSupermarket().getName() + ")";
         this.description = product.getDescription();
         this.imageUrlImageList = product.getProductImageList();
         this.status = product.getStatus();
+        this.priceListed = product.getPriceListed();
         this.unit = product.getUnit();
         this.productSubCategory = product.getProductSubCategory();
         this.supermarket = product.getSupermarket();
@@ -52,6 +54,7 @@ public class ProductDisplayCustomer {
 
     private String unit;
 
+    private Integer priceListed;
 
     private List<ProductImage> imageUrlImageList;
 

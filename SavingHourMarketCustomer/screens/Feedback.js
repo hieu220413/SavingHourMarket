@@ -15,12 +15,13 @@ import {
   Platform,
   Alert,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Entypo from 'react-native-vector-icons/Entypo';
 import * as ImagePicker from 'react-native-image-picker';
 import storage from '@react-native-firebase/storage';
+import {useFocusEffect} from '@react-navigation/native';
 import * as Progress from 'react-native-progress';
 import Feather from 'react-native-vector-icons/Feather';
 import {SelectList} from 'react-native-dropdown-select-list';
@@ -32,6 +33,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {API} from '../constants/api';
 import LoadingScreen from '../components/LoadingScreen';
+import Toast from 'react-native-toast-message';
 import database from '@react-native-firebase/database';
 
 const numStar = 5;
@@ -69,10 +71,8 @@ const Feedback = ({navigation}) => {
               index: 0,
               routes: [{name: 'Initial'}],
             });
-         
           } else {
             // setSystemStatus(snapshot.val());
-          
           }
         });
     }, []),
@@ -126,6 +126,15 @@ const Feedback = ({navigation}) => {
     );
   }
   //--------------------END----------------------
+
+  const showToast = () => {
+    Toast.show({
+      type: 'success',
+      text1: 'Thành công',
+      text2: 'Để lại đánh giá thành công 👋',
+      visibilityTime: 1000,
+    });
+  };
 
   //--------------------IMAGE----------------------
   const [images, setImages] = useState([]);
@@ -332,7 +341,7 @@ const Feedback = ({navigation}) => {
           })
           .then(async respond => {
             console.log('respone', respond);
-            Alert.alert(respond);
+            showToast(respond);
             setLoading(false);
             navigation.navigate('List Feedback');
           })

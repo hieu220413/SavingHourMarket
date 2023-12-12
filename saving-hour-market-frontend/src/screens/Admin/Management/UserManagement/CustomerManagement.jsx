@@ -8,7 +8,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { onAuthStateChanged } from "firebase/auth";
 import React, { useEffect, useState } from "react";
-import { auth } from "../../../../firebase/firebase.config";
+import { auth, database } from "../../../../firebase/firebase.config";
 import { API } from "../../../../contanst/api";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 import { Dialog } from "@mui/material";
@@ -17,6 +17,7 @@ import { Snackbar } from "@mui/material";
 import Empty from "../../../../assets/Empty.png";
 import { useLocation } from "react-router";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { child, get, ref } from "firebase/database";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -86,6 +87,25 @@ const CustomerManagement = () => {
 
     const handleDelete = async () => {
       setLoading(true);
+      let isSystemDisable = true;
+      await get(child(ref(database), "systemStatus")).then((snapshot) => {
+        const data = snapshot.val();
+        if (data !== null) {
+          if (data === 1) {
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "error",
+              text: "Hệ thống không trong trạng thái bảo trì !",
+            });
+            isSystemDisable = false;
+          }
+        }
+      });
+      if (!isSystemDisable) {
+        setLoading(false);
+        return;
+      }
       const tokenId = await auth.currentUser.getIdToken();
       fetch(`${API.baseURL}/api/customer/updateCustomerAccountStatus`, {
         method: "PUT",
@@ -101,6 +121,17 @@ const CustomerManagement = () => {
         .then((res) => res.json())
         .then((respond) => {
           console.log(respond);
+          if (respond.code === 409) {
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "error",
+              text: "Hệ thống không trong trạng thái bảo trì !",
+            });
+
+            setLoading(false);
+            return;
+          }
           if (respond.code === 403) {
             setOpenSnackbar({
               ...openSnackbar,
@@ -169,6 +200,25 @@ const CustomerManagement = () => {
 
     const handleReverse = async () => {
       setLoading(true);
+      let isSystemDisable = true;
+      await get(child(ref(database), "systemStatus")).then((snapshot) => {
+        const data = snapshot.val();
+        if (data !== null) {
+          if (data === 1) {
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "error",
+              text: "Hệ thống không trong trạng thái bảo trì !",
+            });
+            isSystemDisable = false;
+          }
+        }
+      });
+      if (!isSystemDisable) {
+        setLoading(false);
+        return;
+      }
       const tokenId = await auth.currentUser.getIdToken();
       fetch(`${API.baseURL}/api/customer/updateCustomerAccountStatus`, {
         method: "PUT",
@@ -184,6 +234,17 @@ const CustomerManagement = () => {
         .then((res) => res.json())
         .then((respond) => {
           console.log(respond);
+          if (respond.code === 409) {
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "error",
+              text: "Hệ thống không trong trạng thái bảo trì !",
+            });
+
+            setLoading(false);
+            return;
+          }
           if (respond.code === 403) {
             setOpenSnackbar({
               ...openSnackbar,
@@ -340,7 +401,7 @@ const CustomerManagement = () => {
       </div>
 
       {/* data table + pagination*/}
-      <div className="table__container">
+      <div className="table__container table-box-shadow">
         {/* data table */}
         <table class="table ">
           {customerList.length !== 0 && (

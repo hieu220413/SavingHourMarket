@@ -33,7 +33,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "AND " +
             "((:productSubCategoryId IS NULL) OR (p.productSubCategory.id = :productSubCategoryId)) " +
             "AND " +
-            "((:isHiddenBatchShown = true AND pb.expiredDate < CURRENT_DATE + p.productSubCategory.allowableDisplayThreshold DAY ) OR (:isHiddenBatchShown = false AND pb.expiredDate >= CURRENT_DATE + p.productSubCategory.allowableDisplayThreshold DAY)) " +
+            "((:isHiddenBatchShown = true AND pb.expiredDate <= CURRENT_DATE + p.productSubCategory.allowableDisplayThreshold DAY ) OR (:isHiddenBatchShown = false AND pb.expiredDate > CURRENT_DATE + p.productSubCategory.allowableDisplayThreshold DAY)) " +
 //            "AND " +
 //            "((:isExpiredShown IS NULL) OR (:isExpiredShown = TRUE AND pb.expiredDate < CURRENT_TIMESTAMP) OR (:isExpiredShown = FALSE AND pb.expiredDate > CURRENT_TIMESTAMP)) " +
             "AND p.status = :status")
@@ -84,7 +84,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "AND " +
             "((:productSubCategoryId IS NULL) OR (p.productSubCategory.id = :productSubCategoryId)) " +
             "AND " +
-            "pb.expiredDate >= CURRENT_DATE + p.productSubCategory.allowableDisplayThreshold DAY " +
+            "pb.expiredDate > CURRENT_DATE + p.productSubCategory.allowableDisplayThreshold DAY " +
             "AND pb.quantity > 0" +
             "AND p.status = 1 ")
 
@@ -95,13 +95,13 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 //            "JOIN FETCH p.productBatchList pbp " +
             "JOIN pb.supermarketAddress pba " +
             "JOIN pb.supermarketAddress.pickupPoint pbap " +
-            "JOIN FETCH p.supermarket " +
+            "JOIN FETCH p.supermarket sp " +
             "JOIN FETCH p.productSubCategory " +
             "JOIN FETCH p.productSubCategory.productCategory " +
             "WHERE " +
             "pbap.id = :pickupPointId " +
             "AND " +
-            "UPPER(p.name) LIKE UPPER(CONCAT('%',:name,'%')) " +
+            "((UPPER(p.name) LIKE UPPER(CONCAT('%',:name,'%'))) OR (UPPER(sp.name) LIKE UPPER(CONCAT('%',:name,'%'))) OR (UPPER(CONCAT(p.name, ' (',sp.name,')')) LIKE UPPER(CONCAT('%',:name,'%')))) " +
             "AND " +
             "((:supermarketId IS NULL) OR (p.supermarket.id = :supermarketId)) " +
             "AND " +
@@ -114,7 +114,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
               "JOIN pbsub.product psub " +
               "JOIN pbsub.supermarketAddress spa " +
               "JOIN spa.pickupPoint pp " +
-              "WHERE pbsub.expiredDate >= CURRENT_DATE + psub.productSubCategory.allowableDisplayThreshold DAY  " +
+              "WHERE pbsub.expiredDate > CURRENT_DATE + psub.productSubCategory.allowableDisplayThreshold DAY  " +
               "AND psub.id = p.id AND pp.id = :pickupPointId" +
             ") " +
             "AND pb.quantity > 0 " +
@@ -135,7 +135,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "AND " +
             "pb.quantity > 0" +
             "AND " +
-            "pb.expiredDate >= CURRENT_DATE + p.productSubCategory.allowableDisplayThreshold DAY ")
+            "pb.expiredDate > CURRENT_DATE + p.productSubCategory.allowableDisplayThreshold DAY ")
     List<Product> findProductWithAvailableBatch(List<UUID> productIdTargetList, UUID pickupPointId);
 
 

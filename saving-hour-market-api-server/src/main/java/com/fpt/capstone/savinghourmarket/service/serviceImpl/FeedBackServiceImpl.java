@@ -7,6 +7,7 @@ import com.fpt.capstone.savinghourmarket.common.SortType;
 import com.fpt.capstone.savinghourmarket.entity.Customer;
 import com.fpt.capstone.savinghourmarket.entity.FeedBack;
 import com.fpt.capstone.savinghourmarket.entity.FeedBackImage;
+import com.fpt.capstone.savinghourmarket.entity.Order;
 import com.fpt.capstone.savinghourmarket.exception.FeedBackNotFoundException;
 import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
 import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
@@ -15,6 +16,7 @@ import com.fpt.capstone.savinghourmarket.model.FeedbackCreate;
 import com.fpt.capstone.savinghourmarket.model.FeedbackReplyRequestBody;
 import com.fpt.capstone.savinghourmarket.repository.CustomerRepository;
 import com.fpt.capstone.savinghourmarket.repository.FeedBackRepository;
+import com.fpt.capstone.savinghourmarket.repository.OrderRepository;
 import com.fpt.capstone.savinghourmarket.service.FeedBackService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
@@ -40,11 +42,11 @@ public class FeedBackServiceImpl implements FeedBackService {
 
     private final FirebaseAuth firebaseAuth;
 
-    @Autowired
-    private CustomerRepository customerRepository;
+    private final CustomerRepository customerRepository;
 
-    @Autowired
-    private FeedBackRepository feedBackRepository;
+    private final OrderRepository orderRepository;
+
+    private final FeedBackRepository feedBackRepository;
 
     @Override
     @Transactional
@@ -64,8 +66,13 @@ public class FeedBackServiceImpl implements FeedBackService {
             feedBack.setImageUrls(feedBackImages);
         }
         feedBack.setCustomer(customer);
+        if (feedBackCreate.getOrderId() != null) {
+            Order order = orderRepository.findById(feedBackCreate.getOrderId()).orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + feedBackCreate.getOrderId()));
+            feedBack.setOrder(order);
+            order.setIsFeedBack(true);
+        }
         feedBackRepository.save(feedBack);
-        return "Feedback sent successfully";
+        return "Gửi phản hồi nhận xét thành công";
     }
 
     @Override
@@ -116,7 +123,7 @@ public class FeedBackServiceImpl implements FeedBackService {
             sort = Sort.by("rate").descending();
         } else if (createTimeSortType != null && createTimeSortType.equals(SortType.ASC)) {
             sort = Sort.by("createdTime").ascending();
-        } else{
+        } else {
             sort = Sort.by("createdTime").descending();
         }
 
@@ -141,20 +148,20 @@ public class FeedBackServiceImpl implements FeedBackService {
         HashMap errorFields = new HashMap<>();
         Optional<FeedBack> feedBack = feedBackRepository.findById(feedbackId);
 
-        if(!feedBack.isPresent()){
+        if (!feedBack.isPresent()) {
             throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.FEEDBACK_NOT_FOUND.getCode()), AdditionalResponseCode.FEEDBACK_NOT_FOUND.toString());
         }
 
-        if(feedbackReplyRequestBody.getResponseMessage().trim().isBlank()){
+        if (feedbackReplyRequestBody.getResponseMessage().trim().isBlank()) {
             errorFields.put("responseMessageError", "Value can not be blank");
         }
 
-        if(errorFields.size() > 0){
+        if (errorFields.size() > 0) {
             throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
         }
 
         feedBack.get().setResponseMessage(feedbackReplyRequestBody.getResponseMessage());
-        if(feedBack.get().getStatus() != FeedbackStatus.COMPLETED){
+        if (feedBack.get().getStatus() != FeedbackStatus.COMPLETED) {
             feedBack.get().setStatus(FeedbackStatus.COMPLETED);
         }
 

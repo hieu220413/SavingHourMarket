@@ -1,5 +1,13 @@
 import React, {useState, useCallback, useEffect} from 'react';
-import {View, Image, Text, Modal, Pressable, StyleSheet} from 'react-native';
+import {
+  View,
+  Image,
+  Text,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Dimensions,
+} from 'react-native';
 import {ScrollView, TouchableOpacity} from 'react-native-gesture-handler';
 import {icons} from '../../constants';
 import {COLORS} from '../../constants/theme';
@@ -92,20 +100,20 @@ const OrderDetailForManager = ({navigation, route}) => {
             },
           })
             .then(async res => {
-                if (res.status === 403 || res.status === 401) {
-                  const tokenIdCheck = await auth()
-                    .currentUser.getIdToken(true)
-                    .catch(async err => {
-                      await AsyncStorage.setItem('isDisableAccount', '1');
-                      return null;
-                    });
-                  if (!tokenIdCheck) {
-                    throw new Error();
-                  }
-                  // Cac loi 403 khac thi handle duoi day neu co
+              if (res.status === 403 || res.status === 401) {
+                const tokenIdCheck = await auth()
+                  .currentUser.getIdToken(true)
+                  .catch(async err => {
+                    await AsyncStorage.setItem('isDisableAccount', '1');
+                    return null;
+                  });
+                if (!tokenIdCheck) {
+                  throw new Error();
                 }
-                return res.json();
-              })
+                // Cac loi 403 khac thi handle duoi day neu co
+              }
+              return res.json();
+            })
             .then(respond => {
               console.log('asd', respond);
               setItem(respond);
@@ -151,12 +159,12 @@ const OrderDetailForManager = ({navigation, route}) => {
             <Image
               source={icons.leftArrow}
               resizeMode="contain"
-              style={{width: 35, height: 35, tintColor: COLORS.primary}}
+              style={{width: 30, height: 30, tintColor: COLORS.primary}}
             />
           </TouchableOpacity>
           <Text
             style={{
-              fontSize: 25,
+              fontSize: 24,
               textAlign: 'center',
               color: '#000000',
               fontWeight: 'bold',
@@ -170,7 +178,7 @@ const OrderDetailForManager = ({navigation, route}) => {
             <View style={{padding: 20, backgroundColor: COLORS.primary}}>
               <Text
                 style={{color: 'white', fontSize: 18, fontFamily: 'Roboto'}}>
-                Đơn hàng
+                Đơn hàng : {item.code}
               </Text>
             </View>
             <View

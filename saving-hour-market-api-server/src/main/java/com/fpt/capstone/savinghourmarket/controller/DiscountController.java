@@ -1,12 +1,13 @@
 package com.fpt.capstone.savinghourmarket.controller;
 
-import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
-import com.fpt.capstone.savinghourmarket.common.Month;
-import com.fpt.capstone.savinghourmarket.common.Quarter;
+import com.fpt.capstone.savinghourmarket.common.*;
+import com.fpt.capstone.savinghourmarket.entity.Configuration;
 import com.fpt.capstone.savinghourmarket.entity.Discount;
 import com.fpt.capstone.savinghourmarket.exception.ResourceNotFoundException;
+import com.fpt.capstone.savinghourmarket.exception.SystemNotInMaintainStateException;
 import com.fpt.capstone.savinghourmarket.model.*;
 import com.fpt.capstone.savinghourmarket.service.DiscountService;
+import com.fpt.capstone.savinghourmarket.service.SystemConfigurationService;
 import com.fpt.capstone.savinghourmarket.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -31,6 +32,8 @@ public class DiscountController {
     private final DiscountService discountService;
     private final FirebaseAuth firebaseAuth;
 
+    private final SystemConfigurationService systemConfigurationService;
+
     @RequestMapping(value = "/getDiscountsForStaff", method = RequestMethod.GET)
     public ResponseEntity<DiscountForStaffListResponseBody> getDiscountsForStaff(
             @RequestParam(required = false) Boolean isExpiredShown,
@@ -41,7 +44,7 @@ public class DiscountController {
             @RequestParam(defaultValue = "2000-01-01T00:00:00") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDatetime,
             @RequestParam(defaultValue = "2100-01-01T00:00:00") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDatetime,
             @RequestParam(required = false) String productCategoryId,
-            @RequestParam(required = false) String productSubCategoryId,
+//            @RequestParam(required = false) String productSubCategoryId,
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "5") Integer limit,
             @RequestParam(defaultValue = "DESC") String expiredSortType,
@@ -56,7 +59,6 @@ public class DiscountController {
                 fromDatetime,
                 toDatetime,
                 productCategoryId,
-                productSubCategoryId,
                 page,
                 limit,
                 expiredSortType,
@@ -72,7 +74,7 @@ public class DiscountController {
             @RequestParam(defaultValue = "2000-01-01T00:00:00") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDatetime,
             @RequestParam(defaultValue = "2100-01-01T00:00:00") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDatetime,
             @RequestParam(required = false) String productCategoryId,
-            @RequestParam(required = false) String productSubCategoryId,
+//            @RequestParam(required = false) String productSubCategoryId,
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "5") Integer limit,
             @RequestParam(defaultValue = "DESC") String expiredSortType) {
@@ -83,7 +85,6 @@ public class DiscountController {
                 fromDatetime,
                 toDatetime,
                 productCategoryId,
-                productSubCategoryId,
                 page,
                 limit,
                 expiredSortType);
@@ -129,6 +130,10 @@ public class DiscountController {
                                                    @Valid @RequestBody DiscountCreate discountCreate) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
+        Configuration configuration = systemConfigurationService.getConfiguration();
+        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+        }
         return ResponseEntity.status(HttpStatus.OK).body(discountService.create(discountCreate));
     }
 
@@ -137,6 +142,10 @@ public class DiscountController {
                                                    @Valid @RequestBody DiscountUpdate discount) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
+        Configuration configuration = systemConfigurationService.getConfiguration();
+        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+        }
         return ResponseEntity.status(HttpStatus.OK).body(discountService.update(discount));
     }
 
@@ -145,6 +154,10 @@ public class DiscountController {
                                                    @PathVariable UUID id) throws FirebaseAuthException, ResourceNotFoundException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
+        Configuration configuration = systemConfigurationService.getConfiguration();
+        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+        }
         return ResponseEntity.status(HttpStatus.OK).body(discountService.disable(id));
     }
 
@@ -153,6 +166,10 @@ public class DiscountController {
                                                     @PathVariable UUID id) throws FirebaseAuthException, ResourceNotFoundException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
+        Configuration configuration = systemConfigurationService.getConfiguration();
+        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+        }
         return ResponseEntity.status(HttpStatus.OK).body(discountService.enable(id));
     }
 

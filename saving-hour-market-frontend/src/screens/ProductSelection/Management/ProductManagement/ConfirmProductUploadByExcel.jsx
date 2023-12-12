@@ -172,12 +172,12 @@ const ConfirmProductUploadByExcel = ({
     const createProductListWithMainIndex = productListWithMainIndex.filter(
       (item, index) =>
         !errorList.some((i) => parseInt(i.index) === index + 1) &&
-        item.imageUrls
+        item.imageUrls.length !== 0
     );
     const createProductList = confirmProductList.productList.filter(
       (item, index) =>
         !errorList.some((i) => parseInt(i.index) === index + 1) &&
-        item.imageUrls
+        item.imageUrls.length !== 0
     );
 
     if (createProductList.length === 0) {
@@ -202,6 +202,7 @@ const ConfirmProductUploadByExcel = ({
     })
       .then((res) => res.json())
       .then(async (res) => {
+        console.log(res);
         if (res.status === 500) {
           setOpenSnackbar({
             ...openSnackbar,
@@ -262,7 +263,7 @@ const ConfirmProductUploadByExcel = ({
               const errorProductList = confirmProductList.productList.filter(
                 (item, index) =>
                   errorList.some((i) => parseInt(i.index) === index + 1) ||
-                  !item.imageUrls
+                  item.imageUrls.length === 0
               );
               setPageProduct(1);
               setConfirmProductList({
@@ -313,16 +314,19 @@ const ConfirmProductUploadByExcel = ({
         <tr key={index} className="table-body-row">
           <td style={{ paddingTop: 30 }}>{index + 1}</td>
           <td>
-            {item.imageUrls ? (
-              <img
-                alt="hình"
-                style={{ cursor: "pointer" }}
-                width="80px"
-                height="60px"
-                className="img-scale"
-                onClick={handleOpenImageUpload}
-                src={item?.imageUrls[0]}
-              />
+            {item.imageUrls?.length !== 0 && item.imageUrls !== null ? (
+              <div style={{ position: "relative" }}>
+                <img
+                  alt="hình"
+                  style={{ cursor: "pointer" }}
+                  width="80px"
+                  height="60px"
+                  className="img-scale"
+                  onClick={handleOpenImageUpload}
+                  src={item?.imageUrls[0]}
+                />
+                <div className="image-number">1/{item.imageUrls.length}</div>
+              </div>
             ) : (
               <img
                 className="img-scale"
@@ -365,6 +369,18 @@ const ConfirmProductUploadByExcel = ({
             )}
           </td>
           <td style={{ paddingTop: 30 }}>
+            {item?.priceListed ? (
+              item?.priceListed.toLocaleString("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              })
+            ) : (
+              <p style={{ fontWeight: 700 }} className="text-danger">
+                Lỗi giá niêm yết
+              </p>
+            )}
+          </td>
+          <td style={{ paddingTop: 30 }}>
             <i
               onClick={() => {
                 handleOpenProductBatch();
@@ -378,7 +394,8 @@ const ConfirmProductUploadByExcel = ({
           </td>
           <td style={{ paddingTop: 30 }}>
             {errorList.some((item) => parseInt(item.index) === itemIndex + 1) ||
-            !item.imageUrls ? (
+            item.imageUrls?.length === 0 ||
+            item.imageUrls === null ? (
               <i
                 onClick={handleOpenErrorList}
                 style={{ marginLeft: "-3px" }}
@@ -566,6 +583,7 @@ const ConfirmProductUploadByExcel = ({
                 <th>Đơn vị</th>
                 <th>Loại sản phẩm phụ</th>
                 <th>Siêu thị</th>
+                <th>Giá niêm yết</th>
                 <th>Lô hàng</th>
                 <th>Thao tác</th>
                 <th>Lỗi</th>

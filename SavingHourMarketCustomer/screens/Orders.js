@@ -183,7 +183,7 @@ const Orders = ({ navigation }) => {
           if (currentStatus.display !== 'Đóng gói') {
             // setLoading(true);
             fetch(
-              `${API.baseURL}/api/order/getOrdersForCustomer?orderStatus=${currentStatus.value}`,
+              `${API.baseURL}/api/order/getOrdersForCustomer?orderStatus=${currentStatus.value}&createdTimeSortType=DESC`,
               {
                 method: 'GET',
                 headers: {
@@ -221,7 +221,7 @@ const Orders = ({ navigation }) => {
             // setLoading(true);
             let list = [];
             fetch(
-              `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGING`,
+              `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGING&createdTimeSortType=DESC`,
               {
                 method: 'GET',
                 headers: {
@@ -250,7 +250,7 @@ const Orders = ({ navigation }) => {
                 list = list.concat(respond);
 
                 fetch(
-                  `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGED`,
+                  `${API.baseURL}/api/order/getOrdersForCustomer?page=0&orderStatus=PACKAGED&createdTimeSortType=DESC`,
                   {
                     method: 'GET',
                     headers: {
@@ -319,6 +319,14 @@ const Orders = ({ navigation }) => {
           paddingHorizontal: 15,
           paddingTop: 15,
           backgroundColor: 'white',
+          shadowColor: '#000',
+          shadowOffset: {
+            width: 0,
+            height: 3,
+          },
+          shadowOpacity: 0.27,
+          shadowRadius: 4.65,
+          elevation: 3,
         }}>
         <View
           style={{
@@ -392,6 +400,7 @@ const Orders = ({ navigation }) => {
                   {
                     paddingHorizontal: 15,
                     paddingBottom: 15,
+
                   },
                   currentStatus.display === item.display && {
                     borderBottomColor: COLORS.primary,
@@ -436,12 +445,25 @@ const Orders = ({ navigation }) => {
           </Text>
         </View>
       ) : (
-        <ScrollView contentContainerStyle={{ marginTop: 20 }}>
+        <ScrollView contentContainerStyle={{ marginTop: 20 }} showsVerticalScrollIndicator={false}>
           <View style={{ marginBottom: 100 }}>
             {orderList.map(item => (
               <View
                 key={item.id}
-                style={{ backgroundColor: 'white', marginBottom: 20 }}>
+                style={{
+                  borderRadius:10,
+                  shadowColor: '#000',
+                  shadowOffset: {
+                    width: 0,
+                    height: 3,
+                  },
+                  shadowOpacity: 0.27,
+                  shadowRadius: 4.65,
+                  elevation: 2,
+                  marginHorizontal: '2%',
+                  backgroundColor: 'white', 
+                  marginBottom: 20
+                }}>
                 {/* Order detail */}
                 <TouchableOpacity
                   onPress={() => {
@@ -463,7 +485,7 @@ const Orders = ({ navigation }) => {
                           fontSize: 20,
                           fontWeight: 'bold',
                           fontFamily: 'Roboto',
-                          color: COLORS.primary,
+                          color: item?.status === 5 || item?.status === 6 ? 'red' :COLORS.primary,
                         }}>
                         {item?.status === 0 && 'Chờ xác nhận'}
                         {item?.status === 1 && 'Đang đóng gói'}
@@ -480,13 +502,21 @@ const Orders = ({ navigation }) => {
                           fontFamily: 'Roboto',
                           color: 'black',
                         }}>
+                        Mã đơn hàng : {item.code}
+                      </Text>
+
+                      <Text
+                        style={{
+                          fontSize: 17,
+                          fontFamily: 'Roboto',
+                          color: 'black',
+                        }}>
                         Ngày đặt :{' '}
                         {format(Date.parse(item?.createdTime), 'dd/MM/yyyy')}
                       </Text>
                       <Text
                         style={{
                           fontSize: 17,
-                          fontWeight: 'bold',
                           fontFamily: 'Roboto',
                           color: 'black',
                         }}>
@@ -496,7 +526,6 @@ const Orders = ({ navigation }) => {
                       <Text
                         style={{
                           fontSize: 17,
-                          fontWeight: 'bold',
                           fontFamily: 'Roboto',
                           color: 'black',
                         }}>
@@ -505,16 +534,6 @@ const Orders = ({ navigation }) => {
                           style: 'currency',
                           currency: 'VND',
                         })}
-                      </Text>
-                      <Text
-                        style={{
-                          fontSize: 17,
-                          fontWeight: 'bold',
-                          fontFamily: 'Roboto',
-                          color: 'black',
-                        }}>
-                        Phương thức thanh toán:{' '}
-                        {item?.paymentMethod === 0 ? 'COD' : 'VN Pay'}
                       </Text>
                     </View>
                     <Image
@@ -570,12 +589,6 @@ const Orders = ({ navigation }) => {
         }
         footer={
           <ModalFooter>
-            <ModalButton
-              text="Ở lại trang"
-              onPress={async () => {
-                setOpenAuthModal(false);
-              }}
-            />
             <ModalButton
               text="Đăng nhập"
               textStyle={{ color: COLORS.primary }}

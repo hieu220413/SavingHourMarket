@@ -11,8 +11,9 @@ import {
   Modal,
   Pressable,
   Alert,
+  Dimensions,
 } from 'react-native';
-import React, {useEffect, useState, useCallback} from 'react';
+import React, {useEffect, useState, useCallback, useRef} from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {COLORS} from '../../constants/theme';
@@ -56,6 +57,11 @@ const OrderListForManager = ({navigation}) => {
   const [openDateToBatch, setOpenDateToBatch] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
   const [openValidateDialog, setOpenValidateDialog] = useState(false);
+  const [timeFrameList, setTimeFrameList] = useState([]);
+  // const [tempSelectedTimeFrameId, setTempSelectedTimeFrameId] = useState(null);
+  const [selectedTimeFrameId, setSelectedTimeFrameId] = useState(null);
+
+  const listRef = useRef(null);
 
   const toggleDatepicker = () => {
     setShowPicker(!showPicker);
@@ -136,16 +142,16 @@ const OrderListForManager = ({navigation}) => {
   // );
 
   const sortOptions = [
-    {
-      id: 1,
-      name: 'Ngày giao gần nhất',
-      active: false,
-    },
-    {
-      id: 2,
-      name: 'Ngày giao xa nhất',
-      active: false,
-    },
+    // {
+    //   id: 1,
+    //   name: 'Ngày giao gần nhất',
+    //   active: false,
+    // },
+    // {
+    //   id: 2,
+    //   name: 'Ngày giao xa nhất',
+    //   active: false,
+    // },
     {
       id: 3,
       name: 'Đơn mới nhất',
@@ -158,6 +164,50 @@ const OrderListForManager = ({navigation}) => {
     },
   ];
   const [selectSort, setSelectSort] = useState(sortOptions);
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchData = async () => {
+        if (auth().currentUser) {
+          const tokenId = await auth().currentUser.getIdToken();
+          if (tokenId) {
+            setLoading(true);
+            fetch(`${API.baseURL}/api/timeframe/getAllForStaff`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
+              },
+            })
+              .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                  const tokenIdCheck = await auth()
+                    .currentUser.getIdToken(true)
+                    .catch(async err => {
+                      await AsyncStorage.setItem('isDisableAccount', '1');
+                      return null;
+                    });
+                  if (!tokenIdCheck) {
+                    throw new Error();
+                  }
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.json();
+              })
+              .then(response => {
+                setTimeFrameList(response);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
+          }
+        }
+      };
+      fetchData();
+    }, []),
+  );
 
   //get Current User Info
   useFocusEffect(
@@ -180,7 +230,7 @@ const OrderListForManager = ({navigation}) => {
             setLoading(true);
 
             fetch(
-              `${API.baseURL}/api/order/staff/getOrders?orderStatus=PACKAGED&isGrouped=false&isBatched=false`,
+              `${API.baseURL}/api/order/staff/getOrders?orderStatus=PACKAGED&isGrouped=false&isBatched=false&deliveryDateSortType=ASC`,
               {
                 method: 'GET',
                 headers: {
@@ -219,7 +269,7 @@ const OrderListForManager = ({navigation}) => {
               });
 
             fetch(
-              `${API.baseURL}/api/order/staff/getOrders?orderStatus=DELIVERING&isGrouped=false&isBatched=false`,
+              `${API.baseURL}/api/order/staff/getOrders?orderStatus=DELIVERING&isGrouped=false&isBatched=false&deliveryDateSortType=ASC`,
               {
                 method: 'GET',
                 headers: {
@@ -262,8 +312,61 @@ const OrderListForManager = ({navigation}) => {
       setDate(null);
       setSelectSort(sortOptions);
       fetchData();
+      setSelectedTimeFrameId('');
     }, []),
   );
+
+  const TimeFrameItem = ({item}) => {
+    return (
+      <TouchableOpacity
+        key={item.id}
+        onPress={() =>
+          item.id === selectedTimeFrameId
+            ? setSelectedTimeFrameId('')
+            : setSelectedTimeFrameId(item.id)
+        }
+        style={
+          item.id === selectedTimeFrameId
+            ? {
+                borderColor: COLORS.primary,
+                borderWidth: 1,
+                borderRadius: 10,
+                margin: 5,
+                width: '45%',
+              }
+            : {
+                borderColor: '#c8c8c8',
+                borderWidth: 0.2,
+                borderRadius: 10,
+                margin: 5,
+                width: '45%',
+              }
+        }>
+        <Text
+          style={
+            item.id === selectedTimeFrameId
+              ? {
+                  width: '100%',
+                  paddingVertical: 10,
+                  textAlign: 'center',
+                  color: COLORS.primary,
+
+                  fontSize: 12,
+                }
+              : {
+                  width: '100%',
+                  paddingVertical: 10,
+                  textAlign: 'center',
+                  color: 'black',
+
+                  fontSize: 12,
+                }
+          }>
+          {item.fromHour.slice(0, 5)} đến {item.toHour.slice(0, 5)}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
 
   const ModalSortItem = ({item}) => {
     return (
@@ -289,19 +392,21 @@ const OrderListForManager = ({navigation}) => {
                 borderWidth: 1,
                 borderRadius: 10,
                 margin: 5,
+                width: '45%',
               }
             : {
                 borderColor: '#c8c8c8',
                 borderWidth: 0.2,
                 borderRadius: 10,
                 margin: 5,
+                width: '45%',
               }
         }>
         <Text
           style={
             item.active == true
               ? {
-                  width: 150,
+                  width: '100%',
                   paddingVertical: 10,
                   textAlign: 'center',
                   color: COLORS.primary,
@@ -309,7 +414,7 @@ const OrderListForManager = ({navigation}) => {
                   fontSize: 12,
                 }
               : {
-                  width: 150,
+                  width: '100%',
                   paddingVertical: 10,
                   textAlign: 'center',
                   color: 'black',
@@ -433,7 +538,11 @@ const OrderListForManager = ({navigation}) => {
           if (tokenId) {
             setLoading(true);
             fetch(
-              `${API.baseURL}/api/order/staff/getOrders?orderStatus=PACKAGED&isGrouped=false&isBatched=false`,
+              `${
+                API.baseURL
+              }/api/order/staff/getOrders?orderStatus=PACKAGED&isGrouped=false&isBatched=false&deliveryDateSortType=ASC${
+                selectedTimeFrameId ? '&timeFrameId=' + selectedTimeFrameId : ''
+              }`,
               {
                 method: 'GET',
                 headers: {
@@ -472,7 +581,11 @@ const OrderListForManager = ({navigation}) => {
               });
 
             fetch(
-              `${API.baseURL}/api/order/staff/getOrders?orderStatus=DELIVERING&isGrouped=false&isBatched=false`,
+              `${
+                API.baseURL
+              }/api/order/staff/getOrders?orderStatus=DELIVERING&isGrouped=false&isBatched=false&deliveryDateSortType=ASC${
+                selectedTimeFrameId ? '&timeFrameId=' + selectedTimeFrameId : ''
+              }`,
               {
                 method: 'GET',
                 headers: {
@@ -528,13 +641,14 @@ const OrderListForManager = ({navigation}) => {
     setModalVisible(!modalVisible);
     setSelectSort(sortOptions);
     setLoading(true);
+    setSelectedTimeFrameId('');
     const fetchData = async () => {
       if (auth().currentUser) {
         const tokenId = await auth().currentUser.getIdToken();
         if (tokenId) {
           setLoading(true);
           fetch(
-            `${API.baseURL}/api/order/staff/getOrders?orderStatus=PACKAGED&isGrouped=false&isBatched=false`,
+            `${API.baseURL}/api/order/staff/getOrders?orderStatus=PACKAGED&isGrouped=false&isBatched=false&deliveryDateSortType=ASC`,
             {
               method: 'GET',
               headers: {
@@ -559,7 +673,7 @@ const OrderListForManager = ({navigation}) => {
               return res.json();
             })
             .then(respond => {
-              console.log('order', respond[0]);
+              console.log('order', respond);
               if (respond.error) {
                 setLoading(false);
                 return;
@@ -573,7 +687,7 @@ const OrderListForManager = ({navigation}) => {
             });
 
           fetch(
-            `${API.baseURL}/api/order/staff/getOrders?orderStatus=DELIVERING&isGrouped=false&isBatched=false`,
+            `${API.baseURL}/api/order/staff/getOrders?orderStatus=DELIVERING&isGrouped=false&isBatched=false&deliveryDateSortType=ASC`,
             {
               method: 'GET',
               headers: {
@@ -598,7 +712,7 @@ const OrderListForManager = ({navigation}) => {
               return res.json();
             })
             .then(respond => {
-              console.log('order', respond[0]);
+              console.log('order', respond);
               if (respond.error) {
                 setLoading(false);
                 return;
@@ -650,7 +764,7 @@ const OrderListForManager = ({navigation}) => {
         <View style={styles.header}>
           <View style={styles.pagenameAndLogout}>
             <View style={styles.pageName}>
-              <Text style={{fontSize: 25, color: 'black', fontWeight: 'bold'}}>
+              <Text style={{fontSize: 24, color: 'black', fontWeight: 'bold'}}>
                 Các đơn giao tận nhà
               </Text>
             </View>
@@ -661,7 +775,7 @@ const OrderListForManager = ({navigation}) => {
                 }}>
                 <Image
                   resizeMode="contain"
-                  style={{width: 38, height: 38}}
+                  style={{width: 35, height: 35}}
                   source={{
                     uri: currentUser?.avatarUrl,
                   }}
@@ -671,11 +785,11 @@ const OrderListForManager = ({navigation}) => {
                 <TouchableOpacity
                   style={{
                     position: 'absolute',
-                    bottom: -38,
-                    left: -12,
+                    bottom: -34,
+                    left: -10,
                     zIndex: 100,
-                    width: 75,
-                    height: 35,
+                    width: 74,
+                    height: 30,
                     justifyContent: 'center',
                     alignItems: 'center',
                     borderRadius: 10,
@@ -706,10 +820,10 @@ const OrderListForManager = ({navigation}) => {
               style={{
                 backgroundColor: '#f5f5f5',
                 width: '100%',
-                height: 45,
+                height: '55%',
                 borderRadius: 40,
-                paddingLeft: 10,
-                marginTop: 10,
+                paddingLeft: '5%',
+                marginTop: '4%',
                 flexDirection: 'row',
                 alignItems: 'center',
               }}>
@@ -717,15 +831,15 @@ const OrderListForManager = ({navigation}) => {
                 style={{
                   justifyContent: 'center',
                   alignItems: 'center',
-                  height: 40,
+                  height: 35,
                   flexWrap: 'wrap',
                   paddingLeft: 5,
                 }}>
                 <Image
                   resizeMode="contain"
                   style={{
-                    width: 20,
-                    height: 20,
+                    width: 24,
+                    height: 24,
                   }}
                   source={icons.calendar}
                 />
@@ -748,6 +862,7 @@ const OrderListForManager = ({navigation}) => {
             onConfirm={date => {
               setModalCreate(false);
               setSelectSort(sortOptions);
+              setSelectedTimeFrameId('');
               setOpen(false);
               setDate(date);
               const fetchData = async () => {
@@ -850,6 +965,7 @@ const OrderListForManager = ({navigation}) => {
             onCancel={() => {
               setModalCreate(false);
               setSelectSort(sortOptions);
+              setSelectedTimeFrameId('');
               setDate(null);
               setOpen(false);
               const fetchData = async () => {
@@ -859,7 +975,7 @@ const OrderListForManager = ({navigation}) => {
                     setLoading(true);
 
                     fetch(
-                      `${API.baseURL}/api/order/staff/getOrders?orderStatus=PACKAGED&isGrouped=false&isBatched=false`,
+                      `${API.baseURL}/api/order/staff/getOrders?orderStatus=PACKAGED&isGrouped=false&isBatched=false&deliveryDateSortType=ASC`,
                       {
                         method: 'GET',
                         headers: {
@@ -901,7 +1017,7 @@ const OrderListForManager = ({navigation}) => {
                       });
 
                     fetch(
-                      `${API.baseURL}/api/order/staff/getOrders?orderStatus=DELIVERING&isGrouped=false&isBatched=false`,
+                      `${API.baseURL}/api/order/staff/getOrders?orderStatus=DELIVERING&isGrouped=false&isBatched=false&deliveryDateSortType=ASC`,
                       {
                         method: 'GET',
                         headers: {
@@ -951,7 +1067,7 @@ const OrderListForManager = ({navigation}) => {
             style={{
               flexDirection: 'row',
             }}>
-            <View style={{flex: 6}}>
+            <View style={{flex: 8}}>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {groupStatus.map((item, index) => (
                   <TouchableOpacity
@@ -962,9 +1078,8 @@ const OrderListForManager = ({navigation}) => {
                     <View
                       style={[
                         {
-                          paddingTop: 15,
-                          paddingHorizontal: 15,
-                          paddingBottom: 15,
+                          paddingHorizontal: '2%',
+                          paddingBottom: '5%',
                         },
                         currentStatus.display === item.display && {
                           borderBottomColor: COLORS.primary,
@@ -1004,10 +1119,10 @@ const OrderListForManager = ({navigation}) => {
                 <Image
                   resizeMode="contain"
                   style={{
-                    height: 35,
+                    height: 30,
                     tintColor: COLORS.primary,
-                    width: 35,
-                    marginHorizontal: '1%',
+                    width: 30,
+                    // marginHorizontal: '2%',
                   }}
                   source={icons.filter}
                 />
@@ -1028,7 +1143,7 @@ const OrderListForManager = ({navigation}) => {
                   />
                   <Text
                     style={{
-                      fontSize: 20,
+                      fontSize: 18,
                       fontFamily: 'Roboto',
                       // color: 'black',
                       fontWeight: 'bold',
@@ -1037,21 +1152,25 @@ const OrderListForManager = ({navigation}) => {
                   </Text>
                 </View>
               ) : (
-                <View style={{marginTop: 10, marginBottom: 150}}>
+                <View style={{marginTop: '18%'}}>
                   <TouchableOpacity
                     onPress={() => {
                       setModalCreate(!modalCreate);
                       setOpen(false);
+                      listRef.current.scrollToOffset({
+                        animated: true,
+                        offset: 0,
+                      });
                     }}>
                     <View
                       style={{
                         backgroundColor: COLORS.secondary,
                         alignItems: 'center',
                         borderRadius: 5,
-                        padding: 10,
+                        padding: '2%',
                         flexDirection: 'row',
                         justifyContent: 'center',
-                        marginBottom: 10,
+                        marginBottom: '4%',
                       }}>
                       <Text
                         style={{
@@ -1065,8 +1184,10 @@ const OrderListForManager = ({navigation}) => {
                     </View>
                   </TouchableOpacity>
                   <SwipeListView
+                    listViewRef={listRef}
                     showsVerticalScrollIndicator={false}
                     showsHorizontalScrollIndicator={false}
+                    style={{marginBottom:'28%'}}
                     data={orderNotYetAssigned}
                     ListHeaderComponent={
                       modalCreate === true ? (
@@ -1074,96 +1195,90 @@ const OrderListForManager = ({navigation}) => {
                           <View
                             style={{
                               backgroundColor: 'rgb(240,240,240)',
-                              marginBottom: 20,
+                              marginBottom: '5%',
                               borderRadius: 10,
+                              padding: '5%',
                             }}>
-                            <View
-                              style={{
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                padding: 20,
-                              }}>
-                              <View style={{flexDirection: 'column', gap: 8}}>
+                            <View style={{flexDirection: 'column', gap: 8}}>
+                              <Text
+                                style={{
+                                  fontSize: 18,
+                                  fontWeight: 'bold',
+                                  fontFamily: 'Roboto',
+                                  color: COLORS.primary,
+                                }}>
+                                Thông tin
+                              </Text>
+                              <View
+                                style={{
+                                  flexDirection: 'row',
+                                  alignItems: 'center',
+                                }}>
                                 <Text
                                   style={{
-                                    fontSize: 20,
+                                    fontSize: 16,
                                     fontWeight: 'bold',
                                     fontFamily: 'Roboto',
-                                    color: COLORS.primary,
+                                    color: 'black',
+                                    paddingRight: '2%',
                                   }}>
-                                  Thông tin
+                                  Ngày giao :
                                 </Text>
-                                <View
-                                  style={{
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    setShowPicker(true);
                                   }}>
-                                  <Text
+                                  <View
                                     style={{
-                                      fontSize: 17,
-                                      fontWeight: 'bold',
-                                      fontFamily: 'Roboto',
-                                      color: 'black',
-                                      paddingRight: 10,
-                                    }}>
-                                    Ngày giao :
-                                  </Text>
-                                  <TouchableOpacity
-                                    onPress={() => {
-                                      setShowPicker(true);
+                                      backgroundColor: '#f5f5f5',
+                                      // width: '100%',
+                                      height: 35,
+                                      borderRadius: 40,
+                                      paddingHorizontal: 10,
+                                      // marginTop: 10,
+                                      flexDirection: 'row',
+                                      alignItems: 'center',
                                     }}>
                                     <View
                                       style={{
-                                        backgroundColor: '#f5f5f5',
-                                        // width: '100%',
-                                        height: 45,
-                                        borderRadius: 40,
-                                        paddingHorizontal: 10,
-                                        // marginTop: 10,
-                                        flexDirection: 'row',
+                                        justifyContent: 'center',
                                         alignItems: 'center',
+                                        height: '100%',
+                                        flexWrap: 'wrap',
+                                        // paddingLeft: 5,
                                       }}>
-                                      <View
+                                      <Image
+                                        resizeMode="contain"
                                         style={{
-                                          justifyContent: 'center',
-                                          alignItems: 'center',
-                                          height: 40,
-                                          flexWrap: 'wrap',
-                                          // paddingLeft: 5,
+                                          width: 22,
+                                          height: 22,
+                                        }}
+                                        source={icons.calendar}
+                                      />
+                                      <Text
+                                        style={{
+                                          fontSize: 16,
+                                          paddingLeft: 10,
+                                          color: 'black',
                                         }}>
-                                        <Image
-                                          resizeMode="contain"
-                                          style={{
-                                            width: 20,
-                                            height: 20,
-                                          }}
-                                          source={icons.calendar}
-                                        />
-                                        <Text
-                                          style={{
-                                            fontSize: 16,
-                                            paddingLeft: 10,
-                                            color: 'black',
-                                          }}>
-                                          {dateToBatch
-                                            ? format(dateToBatch, 'dd/MM/yyyy')
-                                            : 'Chọn ngày giao'}
-                                        </Text>
-                                      </View>
+                                        {dateToBatch
+                                          ? format(dateToBatch, 'dd/MM/yyyy')
+                                          : 'Chọn ngày giao'}
+                                      </Text>
                                     </View>
-                                  </TouchableOpacity>
-                                  {showPicker && (
-                                    <DateTimePicker
-                                      mode="date"
-                                      display="spinner"
-                                      value={
-                                        dateToBatch ? dateToBatch : new Date()
-                                      }
-                                      onChange={onChange}
-                                    />
-                                  )}
-                                  {/* <DatePicker
+                                  </View>
+                                </TouchableOpacity>
+                                {showPicker && (
+                                  <DateTimePicker
+                                    mode="date"
+                                    display="spinner"
+                                    value={
+                                      dateToBatch ? dateToBatch : new Date()
+                                    }
+                                    onChange={onChange}
+                                  />
+                                )}
+                                {/* <DatePicker
                                     // minimumDate={new Date()}
                                     modal
                                     mode="date"
@@ -1180,189 +1295,189 @@ const OrderListForManager = ({navigation}) => {
                                       setOpenDateToBatch(false);
                                     }}
                                   /> */}
-                                </View>
-                                <View
+                              </View>
+                              <View
+                                style={{
+                                  flexDirection: 'row',
+                                  alignItems: 'center',
+                                }}>
+                                <Text
                                   style={{
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
+                                    fontSize: 16,
+                                    fontWeight: 'bold',
+                                    fontFamily: 'Roboto',
+                                    color: 'black',
+                                    paddingRight: 10,
                                   }}>
-                                  <Text
-                                    style={{
-                                      fontSize: 17,
-                                      fontWeight: 'bold',
-                                      fontFamily: 'Roboto',
-                                      color: 'black',
-                                      paddingRight: 10,
-                                    }}>
-                                    Khung giờ :
-                                  </Text>
-                                  <TouchableOpacity
-                                    onPress={() => {
-                                      navigation.navigate('SelectTimeFrame', {
-                                        setTimeFrame,
-                                      });
-                                    }}>
-                                    <View
-                                      style={{
-                                        backgroundColor: '#f5f5f5',
-                                        // width: '100%',
-                                        height: 45,
-                                        borderRadius: 40,
-                                        paddingHorizontal: 10,
-                                        // marginTop: 10,
-                                        flexDirection: 'row',
-                                        alignItems: 'center',
-                                      }}>
-                                      <View
-                                        style={{
-                                          justifyContent: 'center',
-                                          alignItems: 'center',
-                                          height: 40,
-                                          flexWrap: 'wrap',
-                                          // paddingLeft: 5,
-                                        }}>
-                                        <Image
-                                          resizeMode="contain"
-                                          style={{
-                                            width: 20,
-                                            height: 20,
-                                          }}
-                                          source={icons.time}
-                                        />
-                                        <Text
-                                          style={{
-                                            fontSize: 16,
-                                            paddingLeft: 10,
-                                            color: 'black',
-                                          }}>
-                                          {timeFrame
-                                            ? `${timeFrame?.fromHour.slice(
-                                                0,
-                                                5,
-                                              )} đến ${timeFrame?.toHour.slice(
-                                                0,
-                                                5,
-                                              )}`
-                                            : 'Chọn khung giờ'}
-                                        </Text>
-                                      </View>
-                                    </View>
-                                  </TouchableOpacity>
-                                </View>
-                                <View
-                                  style={{
-                                    flexDirection: 'column',
-                                    justifyContent: 'center',
+                                  Khung giờ :
+                                </Text>
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    navigation.navigate('SelectTimeFrame', {
+                                      setTimeFrame,
+                                    });
                                   }}>
-                                  <Text
+                                  <View
                                     style={{
-                                      fontSize: 17,
-                                      fontWeight: 'bold',
-                                      fontFamily: 'Roboto',
-                                      color: 'black',
-                                      paddingBottom: 10,
-                                    }}>
-                                    Điểm tập kết :
-                                  </Text>
-                                  <TouchableOpacity
-                                    onPress={() => {
-                                      navigation.navigate(
-                                        'SelectProductConsolidationArea',
-                                        {
-                                          setProductConsolidationArea,
-                                        },
-                                      );
-                                    }}>
-                                    <View
-                                      style={{
-                                        backgroundColor: '#f5f5f5',
-                                        // width: '100%',
-                                        height: 45,
-                                        borderRadius: 40,
-                                        paddingHorizontal: 10,
-                                        // marginTop: 10,
-                                        flexDirection: 'row',
-                                        alignItems: 'center',
-                                      }}>
-                                      <View
-                                        style={{
-                                          justifyContent: 'center',
-                                          alignItems: 'center',
-                                          height: 40,
-                                          flexWrap: 'wrap',
-                                          // paddingLeft: 5,
-                                        }}>
-                                        <Image
-                                          resizeMode="contain"
-                                          style={{
-                                            width: 20,
-                                            height: 20,
-                                          }}
-                                          source={icons.location}
-                                        />
-                                        <Text
-                                          style={{
-                                            fontSize: 16,
-                                            paddingLeft: 10,
-                                            color: 'black',
-                                            width: 290,
-                                          }}>
-                                          {productConsolidationArea
-                                            ? productConsolidationArea.address
-                                            : 'Chọn điểm tập kết'}
-                                        </Text>
-                                      </View>
-                                    </View>
-                                  </TouchableOpacity>
-                                </View>
-                                <View
-                                  style={{
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                  }}>
-                                  <Text
-                                    style={{
-                                      fontSize: 17,
-                                      fontWeight: 'bold',
-                                      fontFamily: 'Roboto',
-                                      color: 'black',
-                                      paddingRight: 10,
-                                    }}>
-                                    Số lượng nhóm đơn :
-                                  </Text>
-
-                                  <NumericInput
-                                    value={quantity}
-                                    onChange={value => setQuantity(value)}
-                                    minValue={0}
-                                    // maxValue={orderList.length}
-                                    rounded
-                                  />
-                                </View>
-                                <View style={{paddingTop: 10}}>
-                                  <TouchableOpacity
-                                    onPress={() => {
-                                      handleCreate();
-                                    }}
-                                    style={{
+                                      backgroundColor: '#f5f5f5',
+                                      // width: '100%',
+                                      height: 35,
+                                      borderRadius: 40,
+                                      paddingHorizontal: 10,
+                                      // marginTop: 10,
+                                      flexDirection: 'row',
                                       alignItems: 'center',
-                                      justifyContent: 'center',
-                                      backgroundColor: COLORS.primary,
-                                      paddingVertical: 10,
-                                      width: '100%',
-                                      borderRadius: 30,
                                     }}>
-                                    <Text
+                                    <View
                                       style={{
-                                        fontSize: 18,
-                                        color: 'white',
-                                        fontFamily: 'Roboto',
-                                        fontWeight: 'bold',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        height: '100%',
+                                        flexWrap: 'wrap',
+                                        // paddingLeft: 5,
                                       }}>
-                                      Thiết lập
-                                    </Text>
-                                  </TouchableOpacity>
-                                </View>
+                                      <Image
+                                        resizeMode="contain"
+                                        style={{
+                                          width: 22,
+                                          height: 22,
+                                        }}
+                                        source={icons.time}
+                                      />
+                                      <Text
+                                        style={{
+                                          fontSize: 16,
+                                          paddingLeft: 10,
+                                          color: 'black',
+                                        }}>
+                                        {timeFrame
+                                          ? `${timeFrame?.fromHour.slice(
+                                              0,
+                                              5,
+                                            )} đến ${timeFrame?.toHour.slice(
+                                              0,
+                                              5,
+                                            )}`
+                                          : 'Chọn khung giờ'}
+                                      </Text>
+                                    </View>
+                                  </View>
+                                </TouchableOpacity>
+                              </View>
+                              <View
+                                style={{
+                                  flexDirection: 'column',
+                                  justifyContent: 'center',
+                                }}>
+                                <Text
+                                  style={{
+                                    fontSize: 16,
+                                    fontWeight: 'bold',
+                                    fontFamily: 'Roboto',
+                                    color: 'black',
+                                    paddingBottom: 10,
+                                  }}>
+                                  Điểm tập kết :
+                                </Text>
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    navigation.navigate(
+                                      'SelectProductConsolidationArea',
+                                      {
+                                        setProductConsolidationArea,
+                                      },
+                                    );
+                                  }}>
+                                  <View
+                                    style={{
+                                      backgroundColor: '#f5f5f5',
+                                      width: '100%',
+                                      height: 45,
+                                      borderRadius: 40,
+                                      paddingHorizontal: 10,
+                                      // marginTop: 10,
+                                      flexDirection: 'row',
+                                      alignItems: 'center',
+                                    }}>
+                                    <View
+                                      style={{
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        height: '90%',
+                                        flexWrap: 'wrap',
+                                        // paddingLeft: 5,
+                                      }}>
+                                      <Image
+                                        resizeMode="contain"
+                                        style={{
+                                          width: 22,
+                                          height: 22,
+                                        }}
+                                        source={icons.location}
+                                      />
+                                      <Text
+                                        style={{
+                                          fontSize: 16,
+                                          paddingLeft: 10,
+                                          color: 'black',
+                                          // width: '90%',
+                                        }}>
+                                        {productConsolidationArea
+                                          ? productConsolidationArea.address
+                                          : 'Chọn điểm tập kết'}
+                                      </Text>
+                                    </View>
+                                  </View>
+                                </TouchableOpacity>
+                              </View>
+                              <View
+                                style={{
+                                  flexDirection: 'row',
+                                  alignItems: 'center',
+                                }}>
+                                <Text
+                                  style={{
+                                    fontSize: 16,
+                                    fontWeight: 'bold',
+                                    fontFamily: 'Roboto',
+                                    color: 'black',
+                                    paddingRight: 10,
+                                  }}>
+                                  Số lượng nhóm đơn :
+                                </Text>
+
+                                <NumericInput
+                                  value={quantity}
+                                  onChange={value => setQuantity(value)}
+                                  minValue={0}
+                                  // maxValue={orderList.length}
+                                  rounded
+                                  totalHeight={40}
+                                />
+                              </View>
+                              <View style={{paddingTop: 10}}>
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    handleCreate();
+                                  }}
+                                  style={{
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    backgroundColor: COLORS.primary,
+                                    paddingVertical: '2%',
+                                    width: '100%',
+                                    borderRadius: 30,
+                                  }}>
+                                  <Text
+                                    style={{
+                                      fontSize: 18,
+                                      color: 'white',
+                                      fontFamily: 'Roboto',
+                                      fontWeight: 'bold',
+                                    }}>
+                                    Thiết lập
+                                  </Text>
+                                </TouchableOpacity>
                               </View>
                             </View>
                           </View>
@@ -1376,9 +1491,9 @@ const OrderListForManager = ({navigation}) => {
                         <View
                           key={data.item.id}
                           style={{
-                            marginBottom: 20,
+                            marginBottom: '6%',
                             backgroundColor: 'rgb(240,240,240)',
-                            padding: 10,
+                            padding: '5%',
                             borderRadius: 10,
                             shadowColor: '#000',
                             shadowOffset: {
@@ -1404,7 +1519,12 @@ const OrderListForManager = ({navigation}) => {
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
                               }}>
-                              <View style={{flexDirection: 'column', gap: 8}}>
+                              <View
+                                style={{
+                                  flexDirection: 'column',
+                                  gap: 8,
+                                  flex: 9,
+                                }}>
                                 <Text
                                   style={{
                                     fontSize: 20,
@@ -1418,12 +1538,12 @@ const OrderListForManager = ({navigation}) => {
                                   <View
                                     style={{
                                       position: 'absolute',
-                                      right: -30,
+                                      right: '-5%',
                                     }}>
                                     <Image
                                       style={{
-                                        width: 35,
-                                        height: 35,
+                                        width: 40,
+                                        height: 40,
                                         borderRadius: 40,
                                       }}
                                       resizeMode="contain"
@@ -1437,7 +1557,16 @@ const OrderListForManager = ({navigation}) => {
                                 )}
                                 <Text
                                   style={{
-                                    fontSize: 17,
+                                    fontSize: 16,
+                                    fontWeight: 'bold',
+                                    fontFamily: 'Roboto',
+                                    color: 'black',
+                                  }}>
+                                  Mã đơn hàng : {data.item?.code}
+                                </Text>
+                                <Text
+                                  style={{
+                                    fontSize: 16,
                                     fontWeight: 'bold',
                                     fontFamily: 'Roboto',
                                     color: 'black',
@@ -1450,7 +1579,7 @@ const OrderListForManager = ({navigation}) => {
                                 </Text>
                                 <Text
                                   style={{
-                                    fontSize: 17,
+                                    fontSize: 16,
                                     fontWeight: 'bold',
                                     fontFamily: 'Roboto',
                                     color: 'black',
@@ -1459,20 +1588,20 @@ const OrderListForManager = ({navigation}) => {
                                   {data.item?.timeFrame?.fromHour} đến{' '}
                                   {data.item?.timeFrame?.toHour}
                                 </Text>
-                                <View style={{width: 320}}>
-                                  <Text
-                                    style={{
-                                      fontSize: 17,
-                                      fontWeight: 'bold',
-                                      fontFamily: 'Roboto',
-                                      color: 'black',
-                                    }}>
-                                    Địa chỉ : {data.item?.addressDeliver}
-                                  </Text>
-                                </View>
+
                                 <Text
                                   style={{
-                                    fontSize: 17,
+                                    fontSize: 16,
+                                    fontWeight: 'bold',
+                                    fontFamily: 'Roboto',
+                                    color: 'black',
+                                  }}>
+                                  Địa chỉ : {data.item?.addressDeliver}
+                                </Text>
+
+                                <Text
+                                  style={{
+                                    fontSize: 16,
                                     fontWeight: 'bold',
                                     fontFamily: 'Roboto',
                                     color: 'black',
@@ -1483,15 +1612,17 @@ const OrderListForManager = ({navigation}) => {
                                     : data.item?.deliverer.fullName}
                                 </Text>
                               </View>
-                              <Image
-                                resizeMode="contain"
-                                style={{
-                                  width: 30,
-                                  height: 30,
-                                  tintColor: COLORS.primary,
-                                }}
-                                source={icons.rightArrow}
-                              />
+                              <View style={{flex: 1}}>
+                                <Image
+                                  resizeMode="contain"
+                                  style={{
+                                    width: 30,
+                                    height: 30,
+                                    tintColor: COLORS.primary,
+                                  }}
+                                  source={icons.rightArrow}
+                                />
+                              </View>
                             </View>
                           </TouchableOpacity>
                           {/* *********************** */}
@@ -1503,8 +1634,8 @@ const OrderListForManager = ({navigation}) => {
                         style={{
                           flexDirection: 'row',
                           justifyContent: 'flex-end',
-                          height: '89%',
-                          marginTop: '1%',
+                          height: '88%',
+                          marginTop: '2%',
                           marginRight: '2%',
                         }}>
                         <TouchableOpacity
@@ -1558,7 +1689,7 @@ const OrderListForManager = ({navigation}) => {
                   />
                   <Text
                     style={{
-                      fontSize: 20,
+                      fontSize: 18,
                       fontFamily: 'Roboto',
                       // color: 'black',
                       fontWeight: 'bold',
@@ -1567,18 +1698,19 @@ const OrderListForManager = ({navigation}) => {
                   </Text>
                 </View>
               ) : (
-                <View style={{marginTop: 10, marginBottom: 100}}>
+                <View style={{marginTop: '18%'}}>
                   <SwipeListView
                     showsVerticalScrollIndicator={false}
                     showsHorizontalScrollIndicator={false}
+                    style={{marginBottom:'12%'}}
                     data={orderAssigned}
                     renderItem={(data, rowMap) => (
                       <View
                         key={data.item.id}
                         style={{
-                          marginBottom: 20,
+                          marginBottom: '6%',
                           backgroundColor: 'rgb(240,240,240)',
-                          padding: 10,
+                          padding: '5%',
                           borderRadius: 10,
                           shadowColor: '#000',
                           shadowOffset: {
@@ -1604,7 +1736,12 @@ const OrderListForManager = ({navigation}) => {
                               alignItems: 'center',
                               justifyContent: 'space-between',
                             }}>
-                            <View style={{flexDirection: 'column', gap: 8}}>
+                            <View
+                              style={{
+                                flexDirection: 'column',
+                                gap: 8,
+                                flex: 9,
+                              }}>
                               <Text
                                 style={{
                                   fontSize: 20,
@@ -1612,13 +1749,13 @@ const OrderListForManager = ({navigation}) => {
                                   fontFamily: 'Roboto',
                                   color: COLORS.primary,
                                 }}>
-                                Đơn hàng
+                                Đơn hàng đang giao
                               </Text>
                               {data.item?.deliverer ? (
                                 <View
                                   style={{
                                     position: 'absolute',
-                                    right: -30,
+                                    right: '-5%',
                                   }}>
                                   <Image
                                     style={{
@@ -1637,7 +1774,16 @@ const OrderListForManager = ({navigation}) => {
                               )}
                               <Text
                                 style={{
-                                  fontSize: 17,
+                                  fontSize: 16,
+                                  fontWeight: 'bold',
+                                  fontFamily: 'Roboto',
+                                  color: 'black',
+                                }}>
+                                Mã đơn hàng : {data.item?.code}
+                              </Text>
+                              <Text
+                                style={{
+                                  fontSize: 16,
                                   fontWeight: 'bold',
                                   fontFamily: 'Roboto',
                                   color: 'black',
@@ -1650,7 +1796,7 @@ const OrderListForManager = ({navigation}) => {
                               </Text>
                               <Text
                                 style={{
-                                  fontSize: 17,
+                                  fontSize: 16,
                                   fontWeight: 'bold',
                                   fontFamily: 'Roboto',
                                   color: 'black',
@@ -1658,20 +1804,20 @@ const OrderListForManager = ({navigation}) => {
                                 Giờ giao hàng : {data.item?.timeFrame?.fromHour}{' '}
                                 đến {data.item?.timeFrame?.toHour}
                               </Text>
-                              <View style={{width: 320}}>
-                                <Text
-                                  style={{
-                                    fontSize: 17,
-                                    fontWeight: 'bold',
-                                    fontFamily: 'Roboto',
-                                    color: 'black',
-                                  }}>
-                                  Địa chỉ : {data.item?.addressDeliver}
-                                </Text>
-                              </View>
+
                               <Text
                                 style={{
-                                  fontSize: 17,
+                                  fontSize: 16,
+                                  fontWeight: 'bold',
+                                  fontFamily: 'Roboto',
+                                  color: 'black',
+                                }}>
+                                Địa chỉ : {data.item?.addressDeliver}
+                              </Text>
+
+                              <Text
+                                style={{
+                                  fontSize: 16,
                                   fontWeight: 'bold',
                                   fontFamily: 'Roboto',
                                   color: 'black',
@@ -1682,15 +1828,17 @@ const OrderListForManager = ({navigation}) => {
                                   : data.item?.deliverer.fullName}
                               </Text>
                             </View>
-                            <Image
-                              resizeMode="contain"
-                              style={{
-                                width: 30,
-                                height: 30,
-                                tintColor: COLORS.primary,
-                              }}
-                              source={icons.rightArrow}
-                            />
+                            <View style={{flex: 1}}>
+                              <Image
+                                resizeMode="contain"
+                                style={{
+                                  width: 30,
+                                  height: 30,
+                                  tintColor: COLORS.primary,
+                                }}
+                                source={icons.rightArrow}
+                              />
+                            </View>
                           </View>
                         </TouchableOpacity>
                         {/* *********************** */}
@@ -1701,8 +1849,8 @@ const OrderListForManager = ({navigation}) => {
                         style={{
                           flexDirection: 'row',
                           justifyContent: 'flex-end',
-                          height: '89%',
-                          marginTop: '1%',
+                          height: '88%',
+                          marginTop: '2%',
                           marginRight: '2%',
                         }}>
                         <TouchableOpacity
@@ -1777,6 +1925,100 @@ const OrderListForManager = ({navigation}) => {
                     onPress={() => {
                       setModalVisible(!modalVisible);
                       setSelectSort(sortOptions);
+                      setSelectedTimeFrameId('');
+                      const fetchData = async () => {
+                        if (auth().currentUser) {
+                          const tokenId = await auth().currentUser.getIdToken();
+                          if (tokenId) {
+                            setLoading(true);
+
+                            fetch(
+                              `${API.baseURL}/api/order/staff/getOrders?orderStatus=PACKAGED&isGrouped=false&isBatched=false&deliveryDateSortType=ASC`,
+                              {
+                                method: 'GET',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  Authorization: `Bearer ${tokenId}`,
+                                },
+                              },
+                            )
+                              .then(async res => {
+                                if (res.status === 403 || res.status === 401) {
+                                  const tokenIdCheck = await auth()
+                                    .currentUser.getIdToken(true)
+                                    .catch(async err => {
+                                      await AsyncStorage.setItem(
+                                        'isDisableAccount',
+                                        '1',
+                                      );
+                                      return null;
+                                    });
+                                  if (!tokenIdCheck) {
+                                    throw new Error();
+                                  }
+                                  // Cac loi 403 khac thi handle duoi day neu co
+                                }
+                                return res.json();
+                              })
+                              .then(respond => {
+                                console.log('order', respond[0]);
+                                if (respond.error) {
+                                  setLoading(false);
+                                  return;
+                                }
+                                setOrderNotYetAssigned(respond);
+                                setLoading(false);
+                              })
+                              .catch(err => {
+                                console.log(err);
+                                setLoading(false);
+                              });
+
+                            fetch(
+                              `${API.baseURL}/api/order/staff/getOrders?orderStatus=DELIVERING&isGrouped=false&isBatched=false&deliveryDateSortType=ASC`,
+                              {
+                                method: 'GET',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  Authorization: `Bearer ${tokenId}`,
+                                },
+                              },
+                            )
+                              .then(async res => {
+                                if (res.status === 403 || res.status === 401) {
+                                  const tokenIdCheck = await auth()
+                                    .currentUser.getIdToken(true)
+                                    .catch(async err => {
+                                      await AsyncStorage.setItem(
+                                        'isDisableAccount',
+                                        '1',
+                                      );
+                                      return null;
+                                    });
+                                  if (!tokenIdCheck) {
+                                    throw new Error();
+                                  }
+                                  // Cac loi 403 khac thi handle duoi day neu co
+                                }
+                                return res.json();
+                              })
+                              .then(respond => {
+                                console.log('order', respond[0]);
+                                if (respond.error) {
+                                  setLoading(false);
+                                  return;
+                                }
+                                setOrderAssigned(respond);
+                                setLoading(false);
+                              })
+                              .catch(err => {
+                                console.log(err);
+                                setLoading(false);
+                              });
+                          }
+                        }
+                      };
+                      fetchData();
                     }}>
                     <Image
                       resizeMode="contain"
@@ -1789,10 +2031,10 @@ const OrderListForManager = ({navigation}) => {
                     />
                   </TouchableOpacity>
                 </View>
-                <Text
+                {/* <Text
                   style={{
                     color: 'black',
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: 700,
                   }}>
                   Sắp xếp theo
@@ -1805,6 +2047,24 @@ const OrderListForManager = ({navigation}) => {
                   }}>
                   {selectSort.map((item, index) => (
                     <ModalSortItem item={item} key={index} />
+                  ))}
+                </View> */}
+                <Text
+                  style={{
+                    color: 'black',
+                    fontSize: 18,
+                    fontWeight: 700,
+                  }}>
+                  Chọn khung giờ
+                </Text>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                    marginVertical: 10,
+                  }}>
+                  {timeFrameList.map((item, index) => (
+                    <TimeFrameItem item={item} key={index} />
                   ))}
                 </View>
                 <View
@@ -1830,6 +2090,7 @@ const OrderListForManager = ({navigation}) => {
                         color: COLORS.primary,
                         fontWeight: 'bold',
                         textAlign: 'center',
+                        fontSize: 14,
                       }}>
                       Thiết lập lại
                     </Text>
@@ -1917,7 +2178,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   body: {
-    flex: 3.5,
+    flex: 6,
     // backgroundColor: 'pink',
     paddingHorizontal: 20,
   },
@@ -1975,5 +2236,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     textAlign: 'center',
+    fontSize: 14,
   },
 });

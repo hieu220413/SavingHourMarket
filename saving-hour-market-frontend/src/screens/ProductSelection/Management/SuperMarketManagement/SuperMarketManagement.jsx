@@ -40,6 +40,7 @@ const SuperMarketManagement = () => {
   const [isSwitchRecovery, setIsSwitchRecovery] = useState(false);
   const [supermarketStore, setSupermarketStore] = useState([]);
   const [currentId, setCurrentId] = useState(null);
+  const [supermarketName, setSupermarketName] = useState("");
 
   const [openSnackbar, setOpenSnackbar] = useState({
     open: false,
@@ -115,10 +116,10 @@ const SuperMarketManagement = () => {
     e.preventDefault();
     setSearchValue(textSearch);
     setPage(1);
+    setTextPage(1);
   };
   return (
     <div>
-      <ManagementMenu menuTabs={menuTabs} />
       <div className="supermarket__container">
         <div className="supermarket__header">
           {/* search bar */}
@@ -146,7 +147,7 @@ const SuperMarketManagement = () => {
         </div>
 
         {/* data table + pagination*/}
-        <div className="table__container">
+        <div className="table__container table-box-shadow">
           {/* data table */}
           <table class="table ">
             {superMarketList.length !== 0 && (
@@ -176,6 +177,7 @@ const SuperMarketManagement = () => {
                       setLoading={setLoading}
                       setCurrentId={setCurrentId}
                       isSwitchRecovery={isSwitchRecovery}
+                      setSupermarketName={setSupermarketName}
                     />
                   ))}
                 </tbody>
@@ -365,6 +367,7 @@ const SuperMarketManagement = () => {
           stores={supermarketStore}
           supermarketId={currentId}
           isSwitchRecovery={isSwitchRecovery}
+          supermarketName={supermarketName}
         />
       </Dialog>
       <Snackbar

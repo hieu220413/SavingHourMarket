@@ -1,19 +1,21 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
-import React, {useState, useCallback, useEffect} from 'react';
-import {View, Image, Text} from 'react-native';
-import {ScrollView, TouchableOpacity} from 'react-native-gesture-handler';
-import {icons} from '../constants';
-import {COLORS} from '../constants/theme';
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, Image, Text, Dimensions } from 'react-native';
+import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
+import { icons } from '../constants';
+import { COLORS } from '../constants/theme';
 import QrCode from '../assets/image/test-qrcode.png';
-import {API} from '../constants/api';
-import {useFocusEffect} from '@react-navigation/native';
+import { API } from '../constants/api';
+import { useFocusEffect } from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
-import {format} from 'date-fns';
-import {GoogleSignin} from '@react-native-google-signin/google-signin';
+import { format } from 'date-fns';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import Toast from 'react-native-toast-message';
 import LoadingScreen from '../components/LoadingScreen';
 import AccountDisable from '../components/AccountDisable';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import database from '@react-native-firebase/database';
 import Modal, {
   ModalFooter,
@@ -21,14 +23,16 @@ import Modal, {
   ScaleAnimation,
 } from 'react-native-modals';
 
-const OrderDetail = ({navigation, route}) => {
-  const {id, orderSuccess} = route.params;
+const OrderDetail = ({ navigation, route }) => {
+  const { id, orderSuccess } = route.params;
   const [initializing, setInitializing] = useState(true);
 
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(false);
   const [openAuthModal, setOpenAuthModal] = useState(false);
   const [isDisableAccount, setIsDisableAccount] = useState(false);
+  const [openQrModal, setOpenQrModal] = useState(false);
+  const [openConfirmCancel, setOpenConfirmCancel] = useState(false);
 
   // state open/close modal
   const [openAccountDisableModal, setOpenAccountDisableModal] = useState(false);
@@ -43,7 +47,7 @@ const OrderDetail = ({navigation, route}) => {
           if (snapshot.val() === 0) {
             navigation.reset({
               index: 0,
-              routes: [{name: 'Initial'}],
+              routes: [{ name: 'Initial' }],
             });
           } else {
             // setSystemStatus(snapshot.val());
@@ -135,8 +139,9 @@ const OrderDetail = ({navigation, route}) => {
     }, []),
   );
 
-  const cancelOrder = () => {
+  const cancelOrder = async () => {
     setLoading(true);
+    const tokenId = await auth().currentUser.getIdToken();
     fetch(`${API.baseURL}/api/order/cancelOrder/${id}`, {
       method: 'PUT',
       headers: {
@@ -189,25 +194,59 @@ const OrderDetail = ({navigation, route}) => {
             <Image
               source={icons.leftArrow}
               resizeMode="contain"
-              style={{width: 35, height: 35, tintColor: COLORS.primary}}
+              style={{ width: 35, height: 35, tintColor: COLORS.primary }}
             />
           </TouchableOpacity>
           <Text
             style={{
+              flexGrow: 1,
               fontSize: 25,
-              textAlign: 'center',
+              textAlign: 'left',
               color: '#000000',
               fontWeight: 'bold',
               fontFamily: 'Roboto',
             }}>
             Chi tiết đơn hàng
           </Text>
+          {(item?.status < 4) && (
+            <View>
+              <TouchableOpacity
+                style={{ marginLeft: 'auto', marginRight: '5%' }}
+                onPress={() => {
+                  setOpenQrModal(true);
+                }}>
+                <AntDesign
+                  name="qrcode"
+                  size={30}
+                  color="black"></AntDesign>
+              </TouchableOpacity>
+              <Text style={{ marginLeft: 'auto', marginTop: 2 }}>Mã QR</Text>
+            </View>
+          )}
+          {item?.status === 4 && !item?.isFeedback && <TouchableOpacity onPress={() => {
+            navigation.navigate('Order Feedback', { orderId: item.id });
+          }}>
+            <MaterialIcons
+              name="feedback"
+              size={30}
+              color="black"></MaterialIcons>
+            {/* <Text
+              style={{
+                fontSize: 18,
+                fontWeight: '100',
+                fontFamily: 'Roboto',
+                color: COLORS.primary,
+              }}>
+              Đánh giá đơn hàng
+            </Text> */}
+          </TouchableOpacity>}
         </View>
         {item && (
-          <ScrollView>
-            <View style={{padding: 20, backgroundColor: COLORS.primary}}>
+          <ScrollView showsVerticalScrollIndicator={false}>
+
+            <View style={{ padding: 20, backgroundColor: item?.status === 5 || item?.status === 6 ? 'red' : COLORS.primary }}>
               <Text
-                style={{color: 'white', fontSize: 18, fontFamily: 'Roboto'}}>
+                style={{ color: 'white', fontSize: 18, fontFamily: 'Roboto' }}>
                 {item?.status === 0 && 'Đơn hàng đang chờ xác nhận'}
                 {item?.status === 1 && 'Đơn hàng đang đóng gói'}
                 {item?.status === 2 && 'Đơn hàng đã đóng gói'}
@@ -218,8 +257,11 @@ const OrderDetail = ({navigation, route}) => {
               </Text>
             </View>
             <View
-              style={{padding: 20, backgroundColor: 'white', marginBottom: 20}}>
+              style={{ padding: 20, backgroundColor: 'white', marginBottom: 20 }}>
               {/* pickup location */}
+              <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                Mã đơn hàng : {item.code}
+              </Text>
               <View
                 style={{
                   backgroundColor: 'white',
@@ -229,42 +271,44 @@ const OrderDetail = ({navigation, route}) => {
                   borderBottomWidth: 0.75,
                 }}>
                 <View
-                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                   <Image
-                    style={{width: 20, height: 20}}
+                    style={{ width: 20, height: 20 }}
                     resizeMode="contain"
                     source={icons.location}
                   />
                   <Text
-                    style={{fontSize: 20, color: 'black', fontWeight: 'bold'}}>
+                    style={{ fontSize: 20, color: 'black', fontWeight: 'bold' }}>
                     Thông tin giao hàng
                   </Text>
                 </View>
                 <View
-                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
-                  <View style={{width: 20}} />
-                  <View style={{gap: 8}}>
-                    <View style={{gap: 3}}>
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <View style={{ width: 20 }} />
+                  <View style={{ gap: 8 }}>
+
+                    <View style={{ gap: 3 }}>
                       {/* <Text style={{fontSize: 18, fontWeight: 'bold'}}>
                   Điểm giao hàng:
                 </Text> */}
-                      <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                      <Text style={{ fontSize: 16, color: 'black', maxWidth: '95%' }}>
                         {item?.addressDeliver
                           ? item?.addressDeliver
                           : item?.pickupPoint.address}
                       </Text>
                     </View>
                     {item.timeFrame && (
-                      <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                      <Text style={{ fontSize: 16, color: 'black' }}>
+                        Khung giờ:{' '}
                         {item?.timeFrame
                           ? `${item?.timeFrame?.fromHour.slice(
-                              0,
-                              5,
-                            )} đến ${item?.timeFrame?.toHour.slice(0, 5)}`
+                            0,
+                            5,
+                          )} đến ${item?.timeFrame?.toHour.slice(0, 5)}`
                           : ''}
                       </Text>
                     )}
-                    <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                    <Text style={{ fontSize: 16, color: 'black' }}>
                       Ngày giao hàng:{' '}
                       {format(new Date(item?.deliveryDate), 'dd/MM/yyyy')}
                     </Text>
@@ -280,26 +324,26 @@ const OrderDetail = ({navigation, route}) => {
                   gap: 10,
                 }}>
                 <View
-                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                   <Image
-                    style={{width: 20, height: 20}}
+                    style={{ width: 20, height: 20 }}
                     resizeMode="contain"
                     source={icons.phone}
                   />
                   <Text
-                    style={{fontSize: 20, color: 'black', fontWeight: 'bold'}}>
+                    style={{ fontSize: 20, color: 'black', fontWeight: 'bold' }}>
                     Thông tin liên lạc
                   </Text>
                 </View>
                 <View
-                  style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
-                  <View style={{width: 20}} />
-                  <View style={{gap: 5}}>
-                    <Text style={{fontSize: 18, fontWeight: 'bold'}}>
-                      {item.receiverName}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <View style={{ width: 20 }} />
+                  <View style={{ gap: 5 }}>
+                    <Text style={{ fontSize: 16, color: 'black' }}>
+                      Họ và tên KH: {item.receiverName}
                     </Text>
-                    <Text style={{fontSize: 18, fontWeight: 'bold'}}>
-                      {item.receiverPhone}
+                    <Text style={{ fontSize: 16, color: 'black' }}>
+                      SĐT:{' '}{item.receiverPhone}
                     </Text>
                   </View>
                 </View>
@@ -312,7 +356,7 @@ const OrderDetail = ({navigation, route}) => {
               style={{
                 backgroundColor: 'white',
                 paddingBottom: 10,
-                marginBottom: 10,
+                marginBottom: 5,
                 padding: 20,
               }}>
               {item?.orderDetailList?.map(product => (
@@ -331,7 +375,7 @@ const OrderDetail = ({navigation, route}) => {
                     source={{
                       uri: product.images[0].imageUrl,
                     }}
-                    style={{flex: 4, width: '100%', height: '95%'}}
+                    style={{ flex: 4, width: '100%', height: '95%' }}
                   />
                   <View
                     style={{
@@ -341,7 +385,7 @@ const OrderDetail = ({navigation, route}) => {
                     }}>
                     <Text
                       style={{
-                        fontSize: 23,
+                        fontSize: 18,
                         color: 'black',
                         fontFamily: 'Roboto',
                         fontWeight: 'bold',
@@ -350,9 +394,8 @@ const OrderDetail = ({navigation, route}) => {
                     </Text>
                     <Text
                       style={{
-                        fontSize: 18,
+                        fontSize: 15,
                         color: COLORS.primary,
-
                         fontFamily: 'Roboto',
                         backgroundColor: 'white',
                         alignSelf: 'flex-start',
@@ -367,7 +410,7 @@ const OrderDetail = ({navigation, route}) => {
                     </Text>
                     <Text
                       style={{
-                        fontSize: 18,
+                        fontSize: 16,
                         color: 'black',
                         fontFamily: 'Roboto',
                         fontWeight: 'bold',
@@ -388,8 +431,7 @@ const OrderDetail = ({navigation, route}) => {
                       }}>
                       <Text
                         style={{
-                          fontSize: 20,
-
+                          fontSize: 16,
                           fontFamily: 'Roboto',
                         }}>
                         {product.productPrice.toLocaleString('vi-VN', {
@@ -399,7 +441,7 @@ const OrderDetail = ({navigation, route}) => {
                       </Text>
                       <Text
                         style={{
-                          fontSize: 18,
+                          fontSize: 16,
                           fontFamily: 'Roboto',
                         }}>
                         x{product.boughtQuantity}
@@ -408,39 +450,124 @@ const OrderDetail = ({navigation, route}) => {
                   </View>
                 </View>
               ))}
-
+            </View>
+            {/* ********************* */}
+            {/* Price information */}
+            <View
+              style={{
+                backgroundColor: 'white',
+                marginTop: 10,
+                padding: 20,
+              }}>
               <View
                 style={{
-                  paddingHorizontal: 20,
-                  paddingBottom: 20,
-                  marginTop: 20,
                   flexDirection: 'row',
                   alignItems: 'center',
-                  justifyContent: 'space-between',
+                  gap: 10,
+
+                  marginBottom: 10,
                 }}>
                 <Text
                   style={{
                     fontSize: 20,
                     fontFamily: 'Roboto',
                     color: 'black',
-                  }}>
-                  Tổng cộng :
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 20,
-                    color: 'red',
-                    fontFamily: 'Roboto',
                     fontWeight: 'bold',
                   }}>
+                  Giá tiền
+                </Text>
+              </View>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 15,
+                  paddingTop: 20,
+                  justifyContent: 'space-between',
+                  borderTopColor: '#decbcb',
+                  borderTopWidth: 0.75,
+                }}>
+                <Text
+                  style={{ fontSize: 18, fontFamily: 'Roboto', color: 'black' }}>
+                  Tổng tiền sản phẩm:
+                </Text>
+                <Text style={{ fontSize: 18, fontFamily: 'Roboto' }}>
                   {item.totalPrice.toLocaleString('vi-VN', {
                     style: 'currency',
                     currency: 'VND',
                   })}
                 </Text>
               </View>
+
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 15,
+                  paddingVertical: 15,
+                  justifyContent: 'space-between',
+                }}>
+                <Text
+                  style={{ fontSize: 18, fontFamily: 'Roboto', color: 'black' }}>
+                  Phí giao hàng:
+                </Text>
+                <Text style={{ fontSize: 18, fontFamily: 'Roboto' }}>
+                  {item.shippingFee.toLocaleString('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND',
+                  })}
+                </Text>
+              </View>
+
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 15,
+                  paddingBottom: 15,
+                  justifyContent: 'space-between',
+                }}>
+                <Text
+                  style={{ fontSize: 18, fontFamily: 'Roboto', color: 'black' }}>
+                  Giá đã giảm:
+                </Text>
+                <Text style={{ fontSize: 18, fontFamily: 'Roboto' }}>
+                  {item.totalDiscountPrice.toLocaleString('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND',
+                  })}
+                </Text>
+              </View>
+
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 15,
+                  justifyContent: 'space-between',
+                }}>
+                <Text
+                  style={{ fontSize: 18, fontFamily: 'Roboto', color: 'black' }}>
+                  Tổng cộng:
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 18,
+                    fontFamily: 'Roboto',
+                    color: COLORS.primary,
+                    fontWeight: 'bold',
+                  }}>
+                  {(item.totalPrice - item.totalDiscountPrice).toLocaleString(
+                    'vi-VN',
+                    {
+                      style: 'currency',
+                      currency: 'VND',
+                    },
+                  )}
+                </Text>
+              </View>
             </View>
-            {/* ********************* */}
+            {/* ******************** */}
 
             {/* Detail information */}
             <View
@@ -448,18 +575,18 @@ const OrderDetail = ({navigation, route}) => {
                 backgroundColor: 'white',
                 padding: 20,
                 marginTop: 20,
-                marginBottom: 20,
+                marginBottom: item?.status === 0 ? 180 : 110,
               }}>
               <View
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
                   gap: 10,
-                  marginBottom: 20,
+                  marginBottom: 10,
                 }}>
                 <Text
                   style={{
-                    fontSize: 22,
+                    fontSize: 20,
                     fontFamily: 'Roboto',
                     color: 'black',
                     fontWeight: 'bold',
@@ -498,10 +625,10 @@ const OrderDetail = ({navigation, route}) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
+                  style={{ fontSize: 18, fontFamily: 'Roboto', color: 'black' }}>
                   Trạng thái
                 </Text>
-                <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
+                <Text style={{ fontSize: 18, fontFamily: 'Roboto' }}>
                   {item.paymentStatus === 0
                     ? 'Chưa thanh toán'
                     : 'Đã thanh toán'}
@@ -518,10 +645,10 @@ const OrderDetail = ({navigation, route}) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
+                  style={{ fontSize: 18, fontFamily: 'Roboto', color: 'black' }}>
                   Phương thức
                 </Text>
-                <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
+                <Text style={{ fontSize: 18, fontFamily: 'Roboto' }}>
                   {item.paymentMethod === 0 ? 'COD' : 'VN Pay'}
                 </Text>
               </View>
@@ -529,123 +656,10 @@ const OrderDetail = ({navigation, route}) => {
 
             {/* ******************* */}
 
-            {/* Price information */}
-            <View
-              style={{
-                backgroundColor: 'white',
-                padding: 20,
-              }}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 10,
-                  marginBottom: 20,
-                }}>
-                <Text
-                  style={{
-                    fontSize: 22,
-                    fontFamily: 'Roboto',
-                    color: 'black',
-                    fontWeight: 'bold',
-                  }}>
-                  Giá tiền
-                </Text>
-              </View>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 15,
-                  paddingTop: 20,
-                  justifyContent: 'space-between',
-                  borderTopColor: '#decbcb',
-                  borderTopWidth: 0.75,
-                }}>
-                <Text
-                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
-                  Tổng tiền sản phẩm:
-                </Text>
-                <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
-                  {item.totalPrice.toLocaleString('vi-VN', {
-                    style: 'currency',
-                    currency: 'VND',
-                  })}
-                </Text>
-              </View>
 
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 15,
-                  paddingVertical: 15,
-                  justifyContent: 'space-between',
-                }}>
-                <Text
-                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
-                  Phí giao hàng:
-                </Text>
-                <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
-                  {item.shippingFee.toLocaleString('vi-VN', {
-                    style: 'currency',
-                    currency: 'VND',
-                  })}
-                </Text>
-              </View>
-
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 15,
-                  paddingBottom: 15,
-                  justifyContent: 'space-between',
-                }}>
-                <Text
-                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
-                  Giá đã giảm:
-                </Text>
-                <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
-                  {item.totalDiscountPrice.toLocaleString('vi-VN', {
-                    style: 'currency',
-                    currency: 'VND',
-                  })}
-                </Text>
-              </View>
-
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 15,
-                  justifyContent: 'space-between',
-                }}>
-                <Text
-                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
-                  Tổng cộng:
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontFamily: 'Roboto',
-                    color: 'red',
-                    fontWeight: 'bold',
-                  }}>
-                  {(item.totalPrice - item.totalDiscountPrice).toLocaleString(
-                    'vi-VN',
-                    {
-                      style: 'currency',
-                      currency: 'VND',
-                    },
-                  )}
-                </Text>
-              </View>
-            </View>
-            {/* ******************** */}
 
             {/* QR code */}
-            <View
+            {/* <View
               style={{
                 backgroundColor: 'white',
                 padding: 20,
@@ -656,10 +670,10 @@ const OrderDetail = ({navigation, route}) => {
               }}>
               <Image
                 resizeMode="contain"
-                style={{width: '100%', height: 300}}
-                source={{uri: item.qrCodeUrl}}
+                style={{ width: '100%', height: 300 }}
+                source={{ uri: item.qrCodeUrl }}
               />
-            </View>
+            </View> */}
           </ScrollView>
         )}
       </View>
@@ -681,10 +695,10 @@ const OrderDetail = ({navigation, route}) => {
             marginTop: 20,
             elevation: 10,
           }}>
-          <View style={{width: '95%'}}>
+          <View style={{ width: '95%' }}>
             <TouchableOpacity
               onPress={() => {
-                cancelOrder();
+                setOpenConfirmCancel(true);
               }}
               style={{
                 alignItems: 'center',
@@ -724,7 +738,7 @@ const OrderDetail = ({navigation, route}) => {
           <ModalFooter>
             <ModalButton
               text="Đăng nhập"
-              textStyle={{color: COLORS.primary}}
+              textStyle={{ color: COLORS.primary }}
               onPress={async () => {
                 try {
                   await AsyncStorage.clear();
@@ -738,7 +752,7 @@ const OrderDetail = ({navigation, route}) => {
           </ModalFooter>
         }>
         <View
-          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
+          style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
           <Text
             style={{
               fontSize: 20,
@@ -750,9 +764,69 @@ const OrderDetail = ({navigation, route}) => {
           </Text>
         </View>
       </Modal>
+      {/* QR code modal */}
+      {item && (
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={openQrModal}
+          onTouchOutside={() => {
+            setOpenQrModal(false);
+          }}>
+          <Image
+            resizeMode="contain"
+            style={{ width: Dimensions.get('window').width * 0.8, height: Dimensions.get('window').width * 0.8 }}
+            source={{ uri: item.qrCodeUrl }}
+          />
+        </Modal >
+      )}
+      {/* confirm cancel modal */}
+      < Modal
+        width={0.8}
+        visible={openConfirmCancel}
+        onTouchOutside={() => {
+          setOpenConfirmCancel(false);
+        }}
+        dialogAnimation={
+          new ScaleAnimation({
+            initialValue: 0, // optional
+            useNativeDriver: true, // optional
+          })
+        }
+        footer={
+          < ModalFooter >
+            <ModalButton
+              text="Đóng"
+              onPress={async () => {
+                setOpenConfirmCancel(false);
+              }}
+            />
+            <ModalButton
+              text="Đồng ý"
+              textStyle={{ color: COLORS.primary }}
+              onPress={async () => {
+                cancelOrder();
+                setOpenConfirmCancel(false);
+              }}
+            />
+          </ModalFooter >
+        }>
+        <View
+          style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
+          <Text
+            style={{
+              fontSize: 20,
+              fontFamily: 'Roboto',
+              color: 'black',
+              textAlign: 'center',
+            }}>
+            Bạn có chắc muốn hủy đơn hàng này
+          </Text>
+        </View>
+      </Modal >
 
       {/* account disable modal  */}
-      <AccountDisable
+      < AccountDisable
         openAccountDisableModal={openAccountDisableModal}
         setOpenAccountDisableModal={setOpenAccountDisableModal}
         navigation={navigation}

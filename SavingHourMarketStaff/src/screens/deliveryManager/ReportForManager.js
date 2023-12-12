@@ -11,6 +11,7 @@ import {
   Modal,
   Pressable,
   Alert,
+  Dimensions,
 } from 'react-native';
 import React, {useEffect, useState, useCallback} from 'react';
 import auth from '@react-native-firebase/auth';
@@ -177,7 +178,7 @@ const ReportForManager = ({navigation}) => {
         <View style={styles.header}>
           <View style={styles.pagenameAndLogout}>
             <View style={styles.pageName}>
-              <Text style={{fontSize: 25, color: 'white', fontWeight: 'bold'}}>
+              <Text style={{fontSize: 24, color: 'white', fontWeight: 'bold'}}>
                 Báo cáo
               </Text>
             </View>
@@ -188,7 +189,7 @@ const ReportForManager = ({navigation}) => {
                 }}>
                 <Image
                   resizeMode="contain"
-                  style={{width: 38, height: 38, borderRadius: 30}}
+                  style={{width: 35, height: 35, borderRadius: 30}}
                   source={{
                     uri: currentUser?.avatarUrl,
                   }}
@@ -198,11 +199,11 @@ const ReportForManager = ({navigation}) => {
                 <TouchableOpacity
                   style={{
                     position: 'absolute',
-                    bottom: -38,
-                    left: -12,
+                    bottom: -34,
+                    left: -10,
                     zIndex: 100,
-                    width: 75,
-                    height: 35,
+                    width: 74,
+                    height: 30,
                     justifyContent: 'center',
                     alignItems: 'center',
                     borderRadius: 10,
@@ -216,7 +217,8 @@ const ReportForManager = ({navigation}) => {
                       })
                       .catch(e => console.log(e));
                   }}>
-                  <Text style={{color: 'red', fontWeight: 'bold'}}>
+                  <Text
+                    style={{color: 'red', fontWeight: 'bold', fontSize: 14}}>
                     Đăng xuất
                   </Text>
                 </TouchableOpacity>
@@ -227,9 +229,9 @@ const ReportForManager = ({navigation}) => {
             style={{
               backgroundColor: 'rgb(255,255,255)',
               borderRadius: 10,
-              marginTop: 12,
+              marginTop: '5%',
               flexDirection: 'column',
-              padding: 10,
+              padding: '5%',
               shadowColor: '#000',
               shadowOffset: {
                 width: 0,
@@ -253,7 +255,7 @@ const ReportForManager = ({navigation}) => {
                 </Text>
                 <Text
                   style={{
-                    fontSize: 24,
+                    fontSize: 20,
                     color: 'black',
                     fontWeight: 'bold',
                     alignSelf: 'center',
@@ -282,8 +284,8 @@ const ReportForManager = ({navigation}) => {
                 <Image
                   resizeMode="contain"
                   style={{
-                    width: 17,
-                    height: 17,
+                    width: 14,
+                    height: 14,
                     tintColor: COLORS.secondary,
                   }}
                   source={icons.right}
@@ -352,7 +354,7 @@ const ReportForManager = ({navigation}) => {
                   alignItems: 'center',
                 }}>
                 <Text style={{fontSize: 16, fontWeight: '500'}}>
-                  Đơn trả hàng
+                  Đơn thất bại
                 </Text>
                 <Text
                   style={{fontSize: 14, fontWeight: 'bold', color: 'black'}}>
@@ -365,11 +367,11 @@ const ReportForManager = ({navigation}) => {
         <View style={styles.body}>
           <Text
             style={{
-              fontSize: 19,
+              fontSize: 18,
               fontWeight: 'bold',
               color: 'black',
-              marginBottom: 20,
-              marginTop: 100,
+              marginBottom: '6%',
+              marginTop: '25%',
             }}>
             Danh sách nhân viên giao hàng
           </Text>
@@ -397,12 +399,12 @@ const ReportForManager = ({navigation}) => {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{paddingBottom: 80}}>
               {deliverReportList?.map((item, index) => (
-                <View
+                <Pressable
                   key={index}
                   style={{
-                    marginBottom: 20,
+                    marginBottom: '6%',
                     backgroundColor: 'rgb(240,240,240)',
-                    padding: 10,
+                    padding: '5%',
                     borderRadius: 10,
                     shadowColor: '#000',
                     shadowOffset: {
@@ -416,15 +418,15 @@ const ReportForManager = ({navigation}) => {
                   }}>
                   <View style={{borderBottomWidth: 0.4, paddingBottom: 10}}>
                     <Text
-                      style={{fontSize: 18, fontWeight: '500', color: 'black'}}>
+                      style={{fontSize: 16, fontWeight: '500', color: 'black'}}>
                       Nhân viên: {item.staff.fullName}
                     </Text>
                   </View>
                   <View
                     style={{
                       position: 'absolute',
-                      right: 10,
-                      top: 5,
+                      right: 18,
+                      top: 8,
                     }}>
                     <Image
                       style={{
@@ -471,7 +473,7 @@ const ReportForManager = ({navigation}) => {
                       </Text>
                     </View>
                   </View>
-                </View>
+                </Pressable>
               ))}
             </ScrollView>
           )}

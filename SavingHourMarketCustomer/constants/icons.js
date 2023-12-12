@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 const home = require('../assets/icons/home.png');
+const products = require('../assets/icons/products.png');
 const discount = require('../assets/icons/discount.png');
 const order = require('../assets/icons/order.png');
 const cart = require('../assets/icons/cart.png');
@@ -30,6 +31,7 @@ const filter = require('../assets/icons/filter.png');
 const searchIcon = require('../assets/icons/searchIcon.png');
 
 export default {
+  products,
   home,
   discount,
   order,

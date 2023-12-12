@@ -215,7 +215,7 @@ const Search = ({ navigation }) => {
             <View
                 style={{
                     backgroundColor: '#fff',
-                    paddingBottom: '10%'
+                    // paddingBottom: '10%'
                 }}
             >
                 <View
@@ -241,6 +241,7 @@ const Search = ({ navigation }) => {
                     />
                 </View>
                 <ScrollView
+                    showsVerticalScrollIndicator={false}
                     contentContainerStyle={{
                         paddingBottom: 100,
                     }}

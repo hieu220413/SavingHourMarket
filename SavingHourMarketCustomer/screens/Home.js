@@ -30,6 +30,7 @@ import Modal, {
 import Empty from '../assets/image/search-empty.png';
 import database from '@react-native-firebase/database';
 import Swiper from 'react-native-swiper';
+import Geolocation from '@react-native-community/geolocation';
 
 const Home = ({ navigation }) => {
   const [categories, setCategories] = useState([]);
@@ -42,13 +43,7 @@ const Home = ({ navigation }) => {
   const [cartList, setCartList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openAuthModal, setOpenAuthModal] = useState(false);
-  const [pickupPoint, setPickupPoint] = useState({
-    id: 'accf0ac0-5541-11ee-8a50-a85e45c41921',
-    address: 'Hẻm 662 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh',
-    status: 1,
-    longitude: 106.83102962168277,
-    latitude: 10.845020092805793,
-  });
+  const [pickupPoint, setPickupPoint] = useState(null);
   const [imageDiscountForSlider, setImageDiscountForSlider] = useState([]);
 
   const showToast = () => {
@@ -83,6 +78,7 @@ const Home = ({ navigation }) => {
 
   useFocusEffect(
     useCallback(() => {
+      setLoading(true);
       // Get pickup point from AS
       (async () => {
         try {
@@ -114,40 +110,102 @@ const Home = ({ navigation }) => {
           setLoading(false);
         }
       })();
+      if (pickupPoint === null) {
+        console.log('run geolocation');
+        Geolocation.getCurrentPosition(
+          position => {
+            const currentLongitude = position.coords.longitude;
+            const currentLatitude = position.coords.latitude;
+            // get nearest pick up point by current lat,long
+            fetch(
+              `${API.baseURL}/api/pickupPoint/getWithSortAndSuggestion?latitude=${currentLatitude}&longitude=${currentLongitude}`,
+            )
+              .then(res => res.json())
+              .then(response => {
+                setPickupPoint(response.sortedPickupPointSuggestionList[0]);
+                //fetch categories
+                fetch(
+                  `${API.baseURL}/api/product/getAllCategory?pickupPointId=${response.sortedPickupPointSuggestionList[0].id}`,
+                )
+                  .then(res => res.json())
+                  .then(category => {
+                    if (category.error) {
+                      setCategories([]);
+                      return;
+                    }
+                    setCategories(category);
+                    setCurrentCate(category[0].id);
+                    // fetch products
+                    fetch(
+                      `${API.baseURL}/api/product/getProductsForCustomer?productCategoryId=${category[0].id}&pickupPointId=${response.sortedPickupPointSuggestionList[0].id}&page=0&limit=10&quantitySortType=DESC&expiredSortType=ASC`,
+                    )
+                      .then(res => res.json())
+                      .then(data => {
+                        setProductsByCategory(data.productList);
+                        setPage(1);
+                        setTotalPage(data.totalPage);
+                        setLoading(false);
+                      })
+                      .catch(err => {
+                        console.log(err);
+                        setLoading(false);
+                      });
+                    setLoading(false);
+                  })
+                  .catch(err => {
+                    console.log(err);
+                    setLoading(false);
+                  });
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              }
+              );
+          },
+          error => {
+            console.log(error.message);
+          },
+          {
+            enableHighAccuracy: true,
+          },
+        );
+      }
     }, []),
   );
 
   useEffect(() => {
     setLoading(true);
-    fetch(
-      `${API.baseURL}/api/product/getAllCategory?pickupPointId=${pickupPoint?.id}`,
-    )
-      .then(res => res.json())
-      .then(data => {
-        if (data.error) {
-          setCategories([]);
-          return;
-        }
-        setCategories(data);
-        setCurrentCate(data[0].id);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.log(err);
-        setLoading(false);
-      });
-  }, [pickupPoint?.id]);
+    if (pickupPoint) {
+      fetch(
+        `${API.baseURL}/api/product/getAllCategory?pickupPointId=${pickupPoint.id}`,
+      )
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            setCategories([]);
+            return;
+          }
+          setCategories(data);
+          setCurrentCate(data[0].id);
+          // setLoading(false);
+        })
+        .catch(err => {
+          console.log(err);
+          setLoading(false);
+        });
+    }
+  }, [pickupPoint]);
 
   useEffect(() => {
-    if (currentCate) {
+    if (currentCate && pickupPoint) {
       setLoading(true);
       fetch(
         `${API.baseURL}/api/product/getProductsForCustomer?productCategoryId=${currentCate}&pickupPointId=${pickupPoint?.id}&page=0&limit=10&quantitySortType=DESC&expiredSortType=ASC`,
       )
         .then(res => res.json())
         .then(data => {
-          // console.log("san pham", data.productList[0].supermarket);
-          // console.log(data);
           setProductsByCategory(data.productList);
           setPage(1);
           setTotalPage(data.totalPage);
@@ -179,7 +237,7 @@ const Home = ({ navigation }) => {
         item.id === currentCate && setSubCategories(item.productSubCategories);
       });
     }
-  }, [currentCate, categories, pickupPoint?.id]);
+  }, [currentCate, categories, pickupPoint]);
 
   const handleAddToCart = async data => {
     try {
@@ -264,6 +322,31 @@ const Home = ({ navigation }) => {
               )}
             </Text>
 
+            <View style={{ flexDirection: 'row', paddingBottom: '2%', }}>
+              <Text
+                style={{
+                  maxWidth: '70%',
+                  fontSize: Dimensions.get('window').width * 0.035,
+                  lineHeight: 20,
+                  fontWeight: 'bold',
+                  fontFamily: FONTS.fontFamily,
+                  textDecorationLine: 'line-through'
+                }}>
+                {data?.priceListed.toLocaleString('vi-VN', {
+                  currency: 'VND',
+                })}
+              </Text>
+              <Text
+                style={{
+                  fontSize: Dimensions.get('window').width * 0.03,
+                  lineHeight: 13,
+                  fontWeight: 600,
+                  fontFamily: FONTS.fontFamily,
+                }}>
+                ₫
+              </Text>
+            </View>
+
             <View style={{ flexDirection: 'row' }}>
               <Text
                 style={{
@@ -326,7 +409,7 @@ const Home = ({ navigation }) => {
           // marginLeft: 15,
           // marginRight: 20,
           alignItems: 'center',
-          maxWidth: '30%',
+          width: (Dimensions.get('window').width - 20 * 2 - 40 - 21) / 4,
           shadowColor: '#000',
           shadowOffset: {
             width: 0,
@@ -347,12 +430,13 @@ const Home = ({ navigation }) => {
           }}
         />
         <Text
+          numberOfLines={2}
           style={{
             color: 'black',
             fontFamily: FONTS.fontFamily,
-            fontSize: Dimensions.get('window').width * 0.04,
+            fontSize: Dimensions.get('window').width * 0.03,
             marginTop: 10,
-            textAlign: 'center',
+            textAlign: 'center'
           }}>
           {data.name}
         </Text>
@@ -519,6 +603,7 @@ const Home = ({ navigation }) => {
 
       {/* Body */}
       <ScrollView
+        showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="always"
         contentContainerStyle={{
           paddingBottom: 100,
@@ -591,10 +676,11 @@ const Home = ({ navigation }) => {
               style={{
                 height: 200,
               }}
-              activeDotColor="#37A65B"
+              // activeDotColor="black"
               showsButtons={false}
               autoplay={true}
-              autoplayTimeout={5}
+              autoplayTimeout={4}
+              showsPagination={false}
             >
               {imageDiscountForSlider.map((item, index) => (
                 <Image
@@ -659,8 +745,8 @@ const Home = ({ navigation }) => {
               setLoading(true);
               fetch(
                 `${API.baseURL
-                }/api/product/getProductsForCustomer?productCategoryId=${currentCate}&page=${page + 1
-                }&limit=5`,
+                }/api/product/getProductsForCustomer?productCategoryId=${currentCate}&pickupPointId=${pickupPoint?.id}&page=${page
+                }&limit=10&quantitySortType=DESC&expiredSortType=ASC`,
               )
                 .then(res => res.json())
                 .then(data => {
@@ -697,6 +783,9 @@ const Home = ({ navigation }) => {
       <Modal
         width={0.8}
         visible={openAuthModal}
+        onTouchOutside={() => {
+          setOpenAuthModal(false);
+        }}
         dialogAnimation={
           new ScaleAnimation({
             initialValue: 0, // optional
@@ -705,12 +794,6 @@ const Home = ({ navigation }) => {
         }
         footer={
           <ModalFooter>
-            <ModalButton
-              text="Ở lại trang"
-              onPress={() => {
-                setOpenAuthModal(false);
-              }}
-            />
             <ModalButton
               text="Đăng nhập"
               textStyle={{ color: COLORS.primary }}

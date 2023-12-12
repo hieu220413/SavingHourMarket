@@ -1,15 +1,15 @@
 /* eslint-disable prettier/prettier */
 // eslint-disable-next-line prettier/prettier
-import {View, Text, Image} from 'react-native';
+import { View, Text, Image, Dimensions } from 'react-native';
 
-import React, {useCallback, useState} from 'react';
-import {ScrollView, TouchableOpacity} from 'react-native-gesture-handler';
-import {icons} from '../../constants';
-import {COLORS} from '../../constants/theme';
-import {useFocusEffect} from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
+import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
+import { icons } from '../../constants';
+import { COLORS } from '../../constants/theme';
+import { useFocusEffect } from '@react-navigation/native';
 import DatePicker from 'react-native-date-picker';
-import {format} from 'date-fns';
-import {API} from '../../constants/api';
+import { format } from 'date-fns';
+import { API } from '../../constants/api';
 import LoadingScreen from '../../components/LoadingScreen';
 import dayjs from 'dayjs';
 import Modal, {
@@ -19,11 +19,11 @@ import Modal, {
 } from 'react-native-modals';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
-import {useEffect} from 'react';
+import { useEffect } from 'react';
 import database from '@react-native-firebase/database';
-import {checkSystemState} from '../../common/utils';
+import { checkSystemState } from '../../common/utils';
 
-const EditDeliveryDate = ({navigation, route}) => {
+const EditDeliveryDate = ({ navigation, route }) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
@@ -212,8 +212,7 @@ const EditDeliveryDate = ({navigation, route}) => {
     // }
     setLoading(true);
     fetch(
-      `${
-        API.baseURL
+      `${API.baseURL
       }/api/order/deliveryStaff/editDeliverDate/${orderId}?deliverDate=${format(
         date,
         'yyyy-MM-dd',
@@ -271,12 +270,12 @@ const EditDeliveryDate = ({navigation, route}) => {
             <Image
               source={icons.leftArrow}
               resizeMode="contain"
-              style={{width: 35, height: 35, tintColor: COLORS.primary}}
+              style={{ width: Dimensions.get('window').width * 0.1, height: 35, tintColor: COLORS.primary }}
             />
           </TouchableOpacity>
           <Text
             style={{
-              fontSize: 22,
+              fontSize: Dimensions.get('window').width * 0.05,
               textAlign: 'center',
               color: '#000000',
               fontWeight: 'bold',
@@ -321,12 +320,12 @@ const EditDeliveryDate = ({navigation, route}) => {
                 }}>
                 <Image
                   resizeMode="contain"
-                  style={{width: 25, height: 25}}
+                  style={{ width: Dimensions.get('window').width * 0.08, height: 25 }}
                   source={icons.calendar}
                 />
                 <Text
                   style={{
-                    fontSize: 20,
+                    fontSize: Dimensions.get('window').width * 0.06,
                     fontFamily: 'Roboto',
                     color: 'black',
                   }}>
@@ -482,7 +481,7 @@ const EditDeliveryDate = ({navigation, route}) => {
         footer={
           <ModalFooter>
             <ModalButton
-              textStyle={{color: 'red'}}
+              textStyle={{ color: 'red' }}
               text="Đóng"
               onPress={() => {
                 setOpenValidateDialog(false);
@@ -491,7 +490,7 @@ const EditDeliveryDate = ({navigation, route}) => {
           </ModalFooter>
         }>
         <View
-          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
+          style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
           <Text
             style={{
               fontSize: 20,
@@ -519,7 +518,7 @@ const EditDeliveryDate = ({navigation, route}) => {
           marginTop: 20,
           elevation: 10,
         }}>
-        <View style={{width: '95%'}}>
+        <View style={{ width: '95%' }}>
           <TouchableOpacity
             onPress={() => {
               handleEdit();

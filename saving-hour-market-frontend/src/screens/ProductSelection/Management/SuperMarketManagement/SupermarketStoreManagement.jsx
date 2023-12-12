@@ -5,9 +5,10 @@ import MuiAlert from "@mui/material/Alert";
 import { Dialog, Snackbar } from "@mui/material";
 import AddSupermarketStore from "./AddSupermarketStore";
 import EditSupermatketStore from "./EditSupermatketStore";
-import { auth } from "../../../../firebase/firebase.config";
+import { auth, database } from "../../../../firebase/firebase.config";
 import { API } from "../../../../contanst/api";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
+import { child, get, ref } from "firebase/database";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -22,6 +23,7 @@ const SupermarketStoreManagement = ({
   searchValue,
   supermarketId,
   isSwitchRecovery,
+  supermarketName,
 }) => {
   const [openCreate, setOpenCreate] = useState(false);
   const handleOpenCreate = () => setOpenCreate(true);
@@ -112,8 +114,62 @@ const SupermarketStoreManagement = ({
           <td>{item?.pickupPoint.address}</td>
           {!isSwitchRecovery && (
             <td>
-              <i onClick={handleOpenEdit} class="bi bi-pencil-square"></i>
-              <i onClick={handleOpenDelete} class="bi bi-trash-fill"></i>
+              <i
+                onClick={async () => {
+                  let isSystemDisable = true;
+                  await get(child(ref(database), "systemStatus")).then(
+                    (snapshot) => {
+                      const data = snapshot.val();
+                      if (data !== null) {
+                        if (data === 1) {
+                          setOpenSnackbar({
+                            ...openSnackbar,
+                            open: true,
+                            severity: "error",
+                            text: "Hệ thống không trong trạng thái bảo trì",
+                          });
+
+                          isSystemDisable = false;
+                        }
+                      }
+                    }
+                  );
+                  if (!isSystemDisable) {
+                    setLoading(false);
+                    return;
+                  }
+                  handleOpenEdit();
+                }}
+                class="bi bi-pencil-square"
+              ></i>
+              <i
+                onClick={async () => {
+                  let isSystemDisable = true;
+                  await get(child(ref(database), "systemStatus")).then(
+                    (snapshot) => {
+                      const data = snapshot.val();
+                      if (data !== null) {
+                        if (data === 1) {
+                          setOpenSnackbar({
+                            ...openSnackbar,
+                            open: true,
+                            severity: "error",
+                            text: "Hệ thống không trong trạng thái bảo trì",
+                          });
+
+                          isSystemDisable = false;
+                        }
+                      }
+                    }
+                  );
+                  if (!isSystemDisable) {
+                    setLoading(false);
+                    return;
+                  }
+                  handleOpenDelete();
+                }}
+                class="bi bi-trash-fill"
+              ></i>
             </td>
           )}
         </tr>
@@ -181,7 +237,9 @@ const SupermarketStoreManagement = ({
       style={{ width: "max-content", boxSizing: "content-box" }}
     >
       <div className="modal__container-header">
-        <h3 className="modal__container-header-title">Chi tiết chi nhánh</h3>
+        <h3 className="modal__container-header-title">
+          Chi tiết chi nhánh của {supermarketName}{" "}
+        </h3>
         <FontAwesomeIcon icon={faXmark} onClick={handleClose} />
       </div>
 
@@ -194,7 +252,31 @@ const SupermarketStoreManagement = ({
             <div></div>
 
             <div
-              onClick={handleOpenCreate}
+              onClick={async () => {
+                let isSystemDisable = true;
+                await get(child(ref(database), "systemStatus")).then(
+                  (snapshot) => {
+                    const data = snapshot.val();
+                    if (data !== null) {
+                      if (data === 1) {
+                        setOpenSnackbar({
+                          ...openSnackbar,
+                          open: true,
+                          severity: "error",
+                          text: "Hệ thống không trong trạng thái bảo trì",
+                        });
+
+                        isSystemDisable = false;
+                      }
+                    }
+                  }
+                );
+                if (!isSystemDisable) {
+                  setLoading(false);
+                  return;
+                }
+                handleOpenCreate();
+              }}
               className="supermarket__header-button"
             >
               <FontAwesomeIcon icon={faPlus} />

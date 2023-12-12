@@ -76,7 +76,7 @@ const Report = ({ navigation }) => {
       let numberTotal = 0;
       await fetch(
         `${API.baseURL
-        }/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${pickupPoint && pickupPoint.id ? `pickupPointId=${pickupPoint.id}` : ''
+        }/api/order/packageStaff/getOrders?deliveryMethod=DOOR_TO_DOOR&${pickupPoint && pickupPoint.id ? `pickupPointId=${pickupPoint.id}&getOldOrder=true` : ''
         }`,
         {
           method: 'GET',
@@ -160,7 +160,7 @@ const Report = ({ navigation }) => {
 
       await fetch(
         `${API.baseURL
-        }/api/order/packageStaff/getOrders?deliveryMethod=PICKUP_POINT&${pickupPoint && pickupPoint.id ? `pickupPointId=${pickupPoint.id}` : ''
+        }/api/order/packageStaff/getOrders?deliveryMethod=PICKUP_POINT&${pickupPoint && pickupPoint.id ? `pickupPointId=${pickupPoint.id}&getOldOrder=true` : ''
         }`,
         {
           method: 'GET',
@@ -539,12 +539,13 @@ const Report = ({ navigation }) => {
         Keyboard.dismiss;
         setOpen(false);
       }}
-      accessible={false}>
+      accessible={false}
+      >
       <>
         <ScrollView
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}
-          style={{ marginBottom: 80 }}>
+          style={{paddingBottom:"22%",height:Dimensions.get('window').height *0.8}}>
           <ImageBackground
             source={require('../../assets/image/backgroundStaff.jpeg')}
             style={styles.container}>
@@ -588,7 +589,7 @@ const Report = ({ navigation }) => {
                     <TouchableOpacity
                       style={{
                         position: 'absolute',
-                        bottom: '-17%',
+                        bottom: -21,
                         zIndex: 100,
                         width: 75,
                         height: 35,
@@ -613,7 +614,6 @@ const Report = ({ navigation }) => {
                 </View>
               </View>
             </View>
-
             <View style={styles.body}>
               <View
                 style={{
@@ -791,7 +791,7 @@ const Report = ({ navigation }) => {
                       shadowRadius: 4,
                       elevation: 3,
                       marginHorizontal: 15,
-                      marginBottom: 20,
+                      marginBottom: '20%',
                     }}>
                     <View
                       style={{

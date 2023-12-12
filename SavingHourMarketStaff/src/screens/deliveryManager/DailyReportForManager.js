@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  Dimensions,
+  Pressable,
 } from 'react-native';
 import React, {useEffect, useState, useCallback} from 'react';
 import auth from '@react-native-firebase/auth';
@@ -181,19 +183,19 @@ const DailyReportForManager = ({navigation}) => {
               <Image
                 source={icons.leftArrow}
                 resizeMode="contain"
-                style={{width: 35, height: 35, tintColor: 'white'}}
+                style={{width: 30, height: 30, tintColor: 'white'}}
               />
             </TouchableOpacity>
             <View style={styles.pageName}>
-              <Text style={{fontSize: 25, color: 'white', fontWeight: 'bold'}}>
+              <Text style={{fontSize: 24, color: 'white', fontWeight: 'bold'}}>
                 Báo cáo chi tiết
               </Text>
             </View>
           </View>
           <View
             style={{
-              paddingTop: 10,
-              paddingBottom: 20,
+              paddingTop: '3%',
+              paddingBottom: '6%',
               borderRadius: 20,
               backgroundColor: 'white',
               shadowColor: '#000',
@@ -205,9 +207,9 @@ const DailyReportForManager = ({navigation}) => {
               shadowRadius: 4,
               elevation: 5,
               marginHorizontal: 5,
-              marginBottom: 20,
-              marginTop: 10,
-              height: 280,
+              marginBottom: '6%',
+              marginTop: '5%',
+              height: '165%',
             }}>
             <CalendarProvider
               style={{paddingHorizontal: 5}}
@@ -240,11 +242,11 @@ const DailyReportForManager = ({navigation}) => {
                   });
                 }}
                 style={{
-                  width: 100,
-                  height: 108,
+                  width: '28%',
+                  height: '100%',
                   backgroundColor: COLORS.light_green,
                   borderRadius: 10,
-                  padding: 10,
+                  padding: '3%',
                   display: 'flex',
                   shadowColor: '#000',
                   shadowOffset: {
@@ -281,11 +283,11 @@ const DailyReportForManager = ({navigation}) => {
                   });
                 }}
                 style={{
-                  width: 100,
-                  height: 108,
+                  width: '28%',
+                  height: '100%',
                   backgroundColor: '#b6d8eb',
                   borderRadius: 10,
-                  padding: 10,
+                  padding: '3%',
                   display: 'flex',
                   shadowColor: '#000',
                   shadowOffset: {
@@ -294,7 +296,7 @@ const DailyReportForManager = ({navigation}) => {
                   },
                   shadowOpacity: 0.25,
                   shadowRadius: 4,
-                  elevation: 7,
+                  elevation: 5,
                 }}>
                 <View style={{flex: 1}}>
                   <Text style={{fontSize: 14, color: 'black'}}>
@@ -335,11 +337,11 @@ const DailyReportForManager = ({navigation}) => {
                   },
                   shadowOpacity: 0.25,
                   shadowRadius: 4,
-                  elevation: 7,
+                  elevation: 5,
                 }}>
                 <View style={{flex: 1}}>
                   <Text style={{fontSize: 14, color: 'black'}}>
-                    Đơn trả hàng:
+                    Đơn thất bại:
                   </Text>
                 </View>
                 <View
@@ -391,7 +393,7 @@ const DailyReportForManager = ({navigation}) => {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{paddingBottom: 0}}>
               {deliverReportList?.map((item, index) => (
-                <View
+                <Pressable
                   key={index}
                   style={{
                     marginBottom: 20,
@@ -478,7 +480,7 @@ const DailyReportForManager = ({navigation}) => {
                       </Text>
                     </View>
                   </View>
-                </View>
+                </Pressable>
               ))}
             </ScrollView>
           )}

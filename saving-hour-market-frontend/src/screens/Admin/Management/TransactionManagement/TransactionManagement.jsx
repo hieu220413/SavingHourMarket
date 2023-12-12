@@ -34,7 +34,6 @@ const TransactionManagement = () => {
 
   return (
     <div>
-      <ManagementMenu menuTabs={menuTabs} />
       <SuccessTransactionManagement />
       <RefundTransactionManagement />
     </div>

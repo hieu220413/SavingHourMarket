@@ -10,6 +10,7 @@ import {
   ScrollView,
   Pressable,
   Alert,
+  Dimensions,
 } from 'react-native';
 import Modal, {
   ModalFooter,
@@ -52,6 +53,7 @@ const PickStaff = ({navigation, route}) => {
   const [showLogout, setShowLogout] = useState(false);
   const [openValidateDialog, setOpenValidateDialog] = useState(false);
   const [openConfirmModal, setOpenConfirmModal] = useState(false);
+  const [config, setConfig] = useState(null);
 
   // const onAuthStateChange = async userInfo => {
   //   // console.log(userInfo);
@@ -284,6 +286,48 @@ const PickStaff = ({navigation, route}) => {
           }
         }
       };
+
+      const fetchDataConfig = async () => {
+        const currentUser = await AsyncStorage.getItem('userInfo');
+        if (auth().currentUser) {
+          const tokenId = await auth().currentUser.getIdToken();
+          if (tokenId) {
+            setLoading(true);
+            fetch(`${API.baseURL}/api/configuration/getConfiguration`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokenId}`,
+              },
+            })
+              .then(async res => {
+                if (res.status === 403 || res.status === 401) {
+                  const tokenIdCheck = await auth()
+                    .currentUser.getIdToken(true)
+                    .catch(async err => {
+                      await AsyncStorage.setItem('isDisableAccount', '1');
+                      return null;
+                    });
+                  if (!tokenIdCheck) {
+                    throw new Error();
+                  }
+                  // Cac loi 403 khac thi handle duoi day neu co
+                }
+                return res.json();
+              })
+              .then(respond => {
+                console.log('respond:', respond);
+                setConfig(respond);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.log(err);
+                setLoading(false);
+              });
+          }
+        }
+      };
+      fetchDataConfig();
       fetchData();
     }, []),
   );
@@ -292,6 +336,15 @@ const PickStaff = ({navigation, route}) => {
     Toast.show({
       type: 'success',
       text1: 'Thành công',
+      text2: message + '👋',
+      visibilityTime: 1000,
+    });
+  };
+
+  const showFailToast = message => {
+    Toast.show({
+      type: 'unsuccess',
+      text1: 'Thất bại',
       text2: message + '👋',
       visibilityTime: 1000,
     });
@@ -334,6 +387,11 @@ const PickStaff = ({navigation, route}) => {
                 return res.text();
               })
               .then(respond => {
+                if (respond.code === 409) {
+                  showFailToast(respond.message);
+                  setLoading(false);
+                  return;
+                }
                 console.log('res:', respond);
                 showToast(respond);
                 setLoading(false);
@@ -396,6 +454,11 @@ const PickStaff = ({navigation, route}) => {
                 return res.text();
               })
               .then(respond => {
+                if (respond.code === 409) {
+                  showFailToast(respond.message);
+                  setLoading(false);
+                  return;
+                }
                 console.log('res:', respond);
                 showToast(respond);
                 setLoading(false);
@@ -445,6 +508,11 @@ const PickStaff = ({navigation, route}) => {
               return res.text();
             })
             .then(respond => {
+              if (respond.code === 409) {
+                showFailToast(respond.message);
+                setLoading(false);
+                return;
+              }
               console.log('res:', respond);
               showToast(respond);
               setLoading(false);
@@ -471,7 +539,7 @@ const PickStaff = ({navigation, route}) => {
           gap: 20,
 
           backgroundColor: '#ffffff',
-          padding: 20,
+          padding: '5%',
           marginBottom: 10,
         }}>
         <TouchableOpacity
@@ -481,12 +549,12 @@ const PickStaff = ({navigation, route}) => {
           <Image
             source={icons.leftArrow}
             resizeMode="contain"
-            style={{width: 35, height: 35, tintColor: COLORS.primary}}
+            style={{width: 30, height: 30, tintColor: COLORS.primary}}
           />
         </TouchableOpacity>
         <Text
           style={{
-            fontSize: 25,
+            fontSize: 24,
             textAlign: 'center',
             color: '#000000',
             fontWeight: 'bold',
@@ -504,7 +572,7 @@ const PickStaff = ({navigation, route}) => {
           />
           <Text
             style={{
-              fontSize: 20,
+              fontSize: 18,
               fontFamily: 'Roboto',
               // color: 'black',
               fontWeight: 'bold',
@@ -514,8 +582,61 @@ const PickStaff = ({navigation, route}) => {
         </View>
       ) : (
         <>
-          <ScrollView contentContainerStyle={{marginTop: 10}}>
-            <View style={{marginBottom: 100, paddingHorizontal: 10}}>
+          <View
+            style={{
+              backgroundColor: '#FFFFFF',
+              marginHorizontal: '3%',
+              padding: '5%',
+              flexDirection: 'column',
+              marginTop: '2%',
+              marginBottom: '2%',
+              gap: 8,
+            }}>
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: 'bold',
+                fontFamily: 'Roboto',
+                color: COLORS.primary,
+              }}>
+              Thông tin
+            </Text>
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: 'bold',
+                fontFamily: 'Roboto',
+                color: 'black',
+              }}>
+              Ngày giao hàng : {deliverDate}
+            </Text>
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: 'bold',
+                fontFamily: 'Roboto',
+                color: 'black',
+              }}>
+              Giờ giao hàng : {timeFrame?.fromHour} đến {timeFrame?.toHour}
+            </Text>
+            <Text
+              style={{
+                fontSize: 14,
+                fontWeight: 'bold',
+                fontFamily: 'Roboto',
+                color: 'orange',
+              }}>
+              Giới hạn khoảng cách trên mỗi phút là {config.limitMeterPerMinute}
+              m. Số khoảng cách vượt quá giới hạn được tính bằng: khoảng cách
+              cần giao – (giới hạn khoảng cách trên mỗi phút x số phút chênh
+              lệch giữa 2 khung giờ)
+            </Text>
+          </View>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{marginTop: '3%'}}>
+            <View style={{marginBottom: 100, paddingHorizontal: '3%'}}>
               {staffList.map((item, index) => (
                 <View
                   key={item.id}
@@ -523,10 +644,10 @@ const PickStaff = ({navigation, route}) => {
                     item?.isAvailableForDelivering === true
                       ? {
                           backgroundColor: '#FFFFFF',
-                          marginBottom: 20,
+                          marginBottom: '5%',
                           // borderRadius: 10,
                         }
-                      : {backgroundColor: '#E5E5E5', marginBottom: 20}
+                      : {backgroundColor: '#E5E5E5', marginBottom: '5%'}
                   }>
                   {/* List staff */}
                   <Pressable
@@ -541,9 +662,9 @@ const PickStaff = ({navigation, route}) => {
                         flexDirection: 'row',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        padding: 20,
+                        padding: '5%',
                       }}>
-                      <View style={{flexDirection: 'column', gap: 8}}>
+                      <View style={{flexDirection: 'column', gap: 8, flex: 10}}>
                         <Text
                           style={{
                             fontSize: 20,
@@ -556,13 +677,13 @@ const PickStaff = ({navigation, route}) => {
                         <View
                           style={{
                             position: 'absolute',
-                            right: -10,
-                            top: -10,
+                            right: '3%',
+                            top: '-6%',
                           }}>
                           <Image
                             style={{
-                              width: 60,
-                              height: 60,
+                              width: 45,
+                              height: 45,
                               borderRadius: 40,
                             }}
                             resizeMode="contain"
@@ -573,7 +694,7 @@ const PickStaff = ({navigation, route}) => {
                         </View>
                         <Text
                           style={{
-                            fontSize: 17,
+                            fontSize: 16,
                             fontWeight: 'bold',
                             fontFamily: 'Roboto',
                             color: 'black',
@@ -582,7 +703,7 @@ const PickStaff = ({navigation, route}) => {
                         </Text>
                         <Text
                           style={{
-                            fontSize: 17,
+                            fontSize: 16,
                             fontWeight: 'bold',
                             fontFamily: 'Roboto',
                             color: 'black',
@@ -594,11 +715,11 @@ const PickStaff = ({navigation, route}) => {
                               <Text
                                 key={index}
                                 style={{
-                                  fontSize: 14,
+                                  fontSize: 13,
                                   fontWeight: 'bold',
                                   fontFamily: 'Roboto',
                                   color: 'red',
-                                  width: 260,
+                                  // width: '75%',
                                 }}>
                                 * {item.alertMessage} ({item.limitExceed})
                               </Text>
@@ -607,8 +728,8 @@ const PickStaff = ({navigation, route}) => {
                         {item?.isAvailableForDelivering === false ? (
                           <Text
                             style={{
-                              fontSize: 17,
-                              width: 320,
+                              fontSize: 14,
+                              width: '100%',
                               fontWeight: 'bold',
                               fontFamily: 'Roboto',
                               color: 'red',
@@ -618,31 +739,37 @@ const PickStaff = ({navigation, route}) => {
                           </Text>
                         ) : null}
                       </View>
-                      <CheckBox
-                        disabled={
-                          item?.isAvailableForDelivering === true ? false : true
-                        }
-                        uncheckedCheckBoxColor="#000000"
-                        checkedCheckBoxColor={COLORS.primary}
-                        onClick={() => {
-                          const newStaffList = staffList.map((item, i) => {
-                            if (i === index) {
-                              if (item.checked === true) {
-                                return {...item, checked: false};
+                      <View style={{flex: 1}}>
+                        <CheckBox
+                          disabled={
+                            item?.isAvailableForDelivering === true
+                              ? false
+                              : true
+                          }
+                          uncheckedCheckBoxColor="#000000"
+                          checkedCheckBoxColor={COLORS.primary}
+                          onClick={() => {
+                            const newStaffList = staffList.map((item, i) => {
+                              if (i === index) {
+                                if (item.checked === true) {
+                                  return {...item, checked: false};
+                                }
+                                return {...item, checked: true};
                               }
-                              return {...item, checked: true};
-                            }
-                            return {...item, checked: false};
-                          });
-                          setStaffList(newStaffList);
-                          const selectedStaffArr = newStaffList.filter(item => {
-                            return item.checked === true;
-                          });
-                          // console.log(selectedStaffArr[0]);
-                          setSelectedStaff(selectedStaffArr[0]);
-                        }}
-                        isChecked={item.checked}
-                      />
+                              return {...item, checked: false};
+                            });
+                            setStaffList(newStaffList);
+                            const selectedStaffArr = newStaffList.filter(
+                              item => {
+                                return item.checked === true;
+                              },
+                            );
+                            // console.log(selectedStaffArr[0]);
+                            setSelectedStaff(selectedStaffArr[0]);
+                          }}
+                          isChecked={item.checked}
+                        />
+                      </View>
                     </View>
                   </Pressable>
                   {/* *********************** */}
@@ -658,13 +785,13 @@ const PickStaff = ({navigation, route}) => {
               right: 0,
               backgroundColor: 'white',
               borderTopColor: 'transparent',
-              height: 80,
+              height: 70,
               width: '100%',
               flex: 1,
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'space-between',
-              paddingHorizontal: 15,
+              paddingHorizontal: '5%',
               marginTop: 10,
             }}>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -673,7 +800,7 @@ const PickStaff = ({navigation, route}) => {
             </Text> */}
               <Text
                 style={{
-                  fontSize: 18,
+                  fontSize: 17,
                   color: COLORS.primary,
                   fontFamily: 'Roboto',
                   fontWeight: 'bold',
@@ -703,8 +830,8 @@ const PickStaff = ({navigation, route}) => {
                 }
               }}
               style={{
-                height: '60%',
-                width: '30%',
+                height: '50%',
+                width: '25%',
                 backgroundColor: COLORS.primary,
                 textAlign: 'center',
                 alignItems: 'center',
@@ -714,7 +841,7 @@ const PickStaff = ({navigation, route}) => {
               <Text
                 style={{
                   color: 'white',
-                  fontSize: 20,
+                  fontSize: 17,
                   fontFamily: 'Roboto',
                   fontWeight: 'bold',
                 }}>

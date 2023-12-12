@@ -6,6 +6,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  Dimensions,
 } from 'react-native';
 import {icons} from '../../constants';
 import {COLORS} from '../../constants/theme';
@@ -326,21 +327,21 @@ const OrderListForReport = ({navigation, route}) => {
             alignItems: 'center',
             flexDirection: 'row',
             gap: 20,
-            marginBottom: 10,
+            marginBottom: '3%',
             backgroundColor: '#ffffff',
-            padding: 20,
+            padding: '5%',
             elevation: 4,
           }}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Image
               source={icons.leftArrow}
               resizeMode="contain"
-              style={{width: 35, height: 35, tintColor: COLORS.primary}}
+              style={{width: 30, height: 30, tintColor: COLORS.primary}}
             />
           </TouchableOpacity>
           <Text
             style={{
-              fontSize: 25,
+              fontSize: 24,
               textAlign: 'center',
               color: '#000000',
               fontWeight: 'bold',
@@ -348,7 +349,7 @@ const OrderListForReport = ({navigation, route}) => {
             }}>
             {type === 'success' && 'Đơn thành công'}
             {type === 'delivering' && 'Đơn đang giao'}
-            {type === 'fail' && 'Đơn trả hàng'}
+            {type === 'fail' && 'Đơn thất bại'}
           </Text>
         </View>
 
@@ -373,14 +374,14 @@ const OrderListForReport = ({navigation, route}) => {
           <ScrollView
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}
-            style={{marginBottom: 90, marginTop: 10}}>
+            style={{marginBottom: '25%', marginTop: '2%'}}>
             {orderList?.map((item, index) => (
               <View
                 key={index}
                 style={{
                   backgroundColor: 'white',
-                  padding: 20,
-                  marginVertical: 10,
+                  padding: '5%',
+                  marginVertical: '3%',
                 }}>
                 <TouchableOpacity
                   onPress={() => {
@@ -395,7 +396,7 @@ const OrderListForReport = ({navigation, route}) => {
                       alignItems: 'center',
                       justifyContent: 'space-between',
                     }}>
-                    <View style={{flexDirection: 'column', gap: 8}}>
+                    <View style={{flexDirection: 'column', gap: 8, flex: 9}}>
                       {type === 'success' && (
                         <Text
                           style={{
@@ -426,7 +427,7 @@ const OrderListForReport = ({navigation, route}) => {
                             fontFamily: 'Roboto',
                             color: 'red',
                           }}>
-                          Đơn trả hàng
+                          Đơn thất bại
                         </Text>
                       )}
 
@@ -434,12 +435,13 @@ const OrderListForReport = ({navigation, route}) => {
                         <View
                           style={{
                             position: 'absolute',
-                            right: -30,
+                            right: '2%',
+                            bottom: '86%',
                           }}>
                           <Image
                             style={{
-                              width: 35,
-                              height: 35,
+                              width: 40,
+                              height: 40,
                               borderRadius: 40,
                             }}
                             resizeMode="contain"
@@ -453,7 +455,16 @@ const OrderListForReport = ({navigation, route}) => {
                       )}
                       <Text
                         style={{
-                          fontSize: 17,
+                          fontSize: 16,
+                          fontWeight: 'bold',
+                          fontFamily: 'Roboto',
+                          color: 'black',
+                        }}>
+                        Mã đơn hàng : {item?.code}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 16,
                           fontWeight: 'bold',
                           fontFamily: 'Roboto',
                           color: 'black',
@@ -463,7 +474,7 @@ const OrderListForReport = ({navigation, route}) => {
                       </Text>
                       <Text
                         style={{
-                          fontSize: 17,
+                          fontSize: 16,
                           fontWeight: 'bold',
                           fontFamily: 'Roboto',
                           color: 'black',
@@ -473,7 +484,7 @@ const OrderListForReport = ({navigation, route}) => {
                       </Text>
                       <Text
                         style={{
-                          fontSize: 17,
+                          fontSize: 16,
                           fontWeight: 'bold',
                           fontFamily: 'Roboto',
                           color: 'black',
@@ -483,22 +494,22 @@ const OrderListForReport = ({navigation, route}) => {
                           ? 'Giao tận nhà'
                           : 'Giao đến điểm giao hàng'}
                       </Text>
-                      <View style={{width: 320}}>
-                        <Text
-                          style={{
-                            fontSize: 17,
-                            fontWeight: 'bold',
-                            fontFamily: 'Roboto',
-                            color: 'black',
-                          }}>
-                          {item.deliveryMethod === 1
-                            ? `Địa chỉ : ${item?.addressDeliver}`
-                            : `Điểm giao hàng : ${item?.addressDeliver}`}
-                        </Text>
-                      </View>
+
                       <Text
                         style={{
-                          fontSize: 17,
+                          fontSize: 16,
+                          fontWeight: 'bold',
+                          fontFamily: 'Roboto',
+                          color: 'black',
+                        }}>
+                        {item.deliveryMethod === 1
+                          ? `Địa chỉ : ${item?.addressDeliver}`
+                          : `Điểm giao hàng : ${item?.addressDeliver}`}
+                      </Text>
+
+                      <Text
+                        style={{
+                          fontSize: 16,
                           fontWeight: 'bold',
                           fontFamily: 'Roboto',
                           color: 'black',
@@ -509,15 +520,17 @@ const OrderListForReport = ({navigation, route}) => {
                           : item?.deliverer.fullName}
                       </Text>
                     </View>
-                    <Image
-                      resizeMode="contain"
-                      style={{
-                        width: 30,
-                        height: 30,
-                        tintColor: COLORS.primary,
-                      }}
-                      source={icons.rightArrow}
-                    />
+                    <View style={{flex: 1}}>
+                      <Image
+                        resizeMode="contain"
+                        style={{
+                          width: 30,
+                          height: 30,
+                          tintColor: COLORS.primary,
+                        }}
+                        source={icons.rightArrow}
+                      />
+                    </View>
                   </View>
                 </TouchableOpacity>
               </View>

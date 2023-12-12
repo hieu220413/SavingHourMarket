@@ -1,9 +1,9 @@
 /* eslint-disable prettier/prettier */
-import React, {useEffect, useState} from 'react';
-import {createStackNavigator} from '@react-navigation/stack';
-import {NavigationContainer} from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { createStackNavigator } from '@react-navigation/stack';
+import { NavigationContainer } from '@react-navigation/native';
 import 'react-native-gesture-handler';
-import {Alert} from 'react-native';
+import { Alert } from 'react-native';
 import Tabs from './navigation/tabs';
 
 import Cart from './screens/Cart';
@@ -12,7 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import EditProfile from './screens/EditProfile';
 import Login from './screens/Login';
 import Signup from './screens/Signup';
-import {ModalPortal} from 'react-native-modals';
+import { ModalPortal } from 'react-native-modals';
 import Payment from './screens/Payment';
 import SelectPickupPoint from './screens/SelectPickupPoint';
 import SelectTimeFrame from './screens/SelectTimeFrame';
@@ -27,7 +27,7 @@ import SearchBar from './components/SearchBar';
 import ProductsBySubCategories from './screens/ProductsBySubCategories';
 import ChangePickupPoint from './screens/ChangePickupPoint';
 
-import {LogBox} from 'react-native';
+import { LogBox } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 
 Geolocation.setRNConfiguration({
@@ -52,12 +52,13 @@ import CodeReset from './screens/CodeReset';
 import ResetPassword from './screens/ResetPassword';
 import Feedback from './screens/Feedback';
 import UploadScreen from './screens/Upload';
-import Toast, {BaseToast} from 'react-native-toast-message';
-import {COLORS} from './constants/theme';
+import Toast, { BaseToast } from 'react-native-toast-message';
+import { COLORS } from './constants/theme';
 import OrderFeedback from './screens/OrderFeedback';
 import FeedbackList from './screens/FeedbackList';
 import RemotePushController from './src/services/RemotePushController';
 import StartScreen from './screens/StartScreen';
+import EditPassword from './screens/EditPassword';
 
 const Stack = createStackNavigator();
 export default function App() {
@@ -113,8 +114,8 @@ export default function App() {
     success: props => (
       <BaseToast
         {...props}
-        style={{backgroundColor: COLORS.primary, borderLeftWidth: 0}}
-        contentContainerStyle={{paddingHorizontal: 15}}
+        style={{ backgroundColor: COLORS.primary, borderLeftWidth: 0 }}
+        contentContainerStyle={{ paddingHorizontal: 15 }}
         text1Style={{
           fontSize: 16,
           fontWeight: '700',
@@ -130,8 +131,8 @@ export default function App() {
     unsuccess: props => (
       <BaseToast
         {...props}
-        style={{backgroundColor: 'red', borderLeftWidth: 0}}
-        contentContainerStyle={{paddingHorizontal: 15}}
+        style={{ backgroundColor: 'red', borderLeftWidth: 0 }}
+        contentContainerStyle={{ paddingHorizontal: 15 }}
         text1Style={{
           fontSize: 16,
           fontWeight: '700',
@@ -196,7 +197,7 @@ export default function App() {
           <Stack.Screen
             name="Order success"
             component={OrderSuccess}
-            options={{swipeEnabled: false}}
+            options={{ swipeEnabled: false }}
           />
           <Stack.Screen name="Forgot password" component={ForgetPassword} />
           <Stack.Screen name="Code reset" component={CodeReset} />
@@ -205,6 +206,7 @@ export default function App() {
           <Stack.Screen name="Upload" component={UploadScreen} />
           <Stack.Screen name="Order Feedback" component={OrderFeedback} />
           <Stack.Screen name="List Feedback" component={FeedbackList} />
+          <Stack.Screen name="Edit Password" component={EditPassword} />
           <Stack.Screen
             name="ChangePickupPoint"
             component={ChangePickupPoint}

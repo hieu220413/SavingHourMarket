@@ -9,9 +9,10 @@ import {
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { API } from "../../../../contanst/api";
-import { auth } from "../../../../firebase/firebase.config";
+import { auth, database } from "../../../../firebase/firebase.config";
 import MuiAlert from "@mui/material/Alert";
 import { Snackbar } from "@mui/material";
+import { child, get, ref } from "firebase/database";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -92,6 +93,24 @@ const EditPickuppoint = ({
   }, []);
 
   const handleCreate = async () => {
+    let isSystemDisable = true;
+    await get(child(ref(database), "systemStatus")).then((snapshot) => {
+      const data = snapshot.val();
+      if (data !== null) {
+        if (data === 1) {
+          setOpenSnackbar({
+            ...openSnackbar,
+            open: true,
+            severity: "error",
+            text: "Hệ thống không trong trạng thái bảo trì !",
+          });
+          isSystemDisable = false;
+        }
+      }
+    });
+    if (!isSystemDisable) {
+      return;
+    }
     if (!address.selectAddress) {
       setAddress({ ...address, error: "Địa chỉ không hợp lệ" });
       return;
@@ -148,6 +167,17 @@ const EditPickuppoint = ({
     )
       .then((res) => res.json())
       .then((respond) => {
+        if (respond.code === 403) {
+          setOpenValidateSnackbar({
+            ...openValidateSnackbar,
+            open: true,
+            severity: "error",
+            text: "Tồn tại đơn hàng đang xử lí tại điểm giao hàng này !",
+          });
+
+          setLoading(false);
+          return;
+        }
         if (respond?.code === 422) {
           setOpenValidateSnackbar({
             ...openValidateSnackbar,
@@ -218,7 +248,9 @@ const EditPickuppoint = ({
     >
       {/* // modal header */}
       <div className="modal__container-header">
-        <h3 className="modal__container-header-title">Thêm điểm giao hàng</h3>
+        <h3 className="modal__container-header-title">
+          Chỉnh sửa điểm giao hàng
+        </h3>
         <FontAwesomeIcon onClick={handleClose} icon={faXmark} />
       </div>
       {/* ****************** */}

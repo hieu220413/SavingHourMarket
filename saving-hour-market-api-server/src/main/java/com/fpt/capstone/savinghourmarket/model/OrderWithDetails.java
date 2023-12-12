@@ -19,6 +19,8 @@ import java.util.UUID;
 public class OrderWithDetails {
     private UUID id;
 
+    private String code;
+
     private String receiverPhone;
 
     private String receiverName;
@@ -46,6 +48,8 @@ public class OrderWithDetails {
     private Integer paymentMethod;
 
     private Integer paymentStatus;
+
+    private Boolean isFeedback;
 
     private Customer customer;
 

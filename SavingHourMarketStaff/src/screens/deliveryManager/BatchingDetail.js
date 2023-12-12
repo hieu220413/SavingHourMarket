@@ -8,6 +8,7 @@ import {
   StyleSheet,
   TouchableWithoutFeedback,
   Keyboard,
+  Dimensions,
 } from 'react-native';
 import {ScrollView, TouchableOpacity} from 'react-native-gesture-handler';
 import {icons} from '../../constants';
@@ -90,7 +91,7 @@ const BatchingDetail = ({navigation, route}) => {
       <View style={styles.container}>
         <View style={styles.header}>
           <View style={styles.pagenameAndLogout}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
+            <TouchableOpacity onPress={() => navigation.navigate('BatchList', {isGoBackFromBatchingDetail: true})}>
               <Image
                 source={icons.leftArrow}
                 resizeMode="contain"

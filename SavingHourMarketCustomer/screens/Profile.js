@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import React, {useState, useEffect, useCallback} from 'react';
 import {
   Text,
@@ -39,6 +40,7 @@ const Profile = ({navigation}) => {
   const [loading, setLoading] = useState(false);
   const [isEnable, setIsEnable] = useState(true);
   const [openAuthModal, setOpenAuthModal] = useState(false);
+  const [isPasswordLoginType, setIsPasswordLoginType] = useState(false);
   useFocusEffect(
     useCallback(() => {
       (async () => {
@@ -107,6 +109,11 @@ const Profile = ({navigation}) => {
 
         setLoading(false);
         return;
+      }
+      const loginType = (await userInfo.getIdTokenResult()).signInProvider;
+      console.log(loginType);
+      if (loginType && loginType === 'password') {
+        setIsPasswordLoginType(true);
       }
       console.log('user is logged in');
       const info = await AsyncStorage.getItem('userInfo');
@@ -187,15 +194,6 @@ const Profile = ({navigation}) => {
       {/* <Header /> */}
 
       <View style={{marginHorizontal: '6%', marginTop: '3%'}}>
-        <Text
-          style={{
-            fontSize: 25,
-            fontWeight: 'bold',
-            color: 'black',
-            fontFamily: 'Roboto',
-          }}>
-          Tôi
-        </Text>
       </View>
       {/* Profile */}
       <View
@@ -524,36 +522,72 @@ const Profile = ({navigation}) => {
         </TouchableOpacity>
         {/*  */}
         {user ? (
-          <TouchableOpacity
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginHorizontal: '3%',
-              justifyContent: 'space-between',
-            }}
-            activeOpacity={0.8}
-            onPress={() => {
-              // navigation.navigate('Login');
-              logout();
-            }}>
-            <View
+          <>
+            {isPasswordLoginType && <TouchableOpacity
               style={{
                 flexDirection: 'row',
-                columnGap: 15,
                 alignItems: 'center',
+                marginHorizontal: '3%',
+                justifyContent: 'space-between',
+              }}
+              onPress={() => {
+                if (user == null) {
+                  setOpenAuthModal(true);
+                  return;
+                } else {
+                  navigation.navigate('Edit Password', {user});
+                }
+              }}
+              activeOpacity={0.8}>
+              <View
+                style={{flexDirection: 'row', columnGap: 15, alignItems: 'center'}}>
+                <AntDesign
+                  name="lock"
+                  size={30}
+                  color="black"></AntDesign>
+                <Text
+                  style={{
+                    fontFamily: 'Roboto',
+                    fontSize: 16,
+                    fontWeight: '700',
+                    color: 'black',
+                  }}>
+                  Thay đổi mật khẩu
+                </Text>
+              </View>
+              <AntDesign name="right" size={20} color="black"></AntDesign>
+            </TouchableOpacity> }
+            <TouchableOpacity
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginHorizontal: '3%',
+                justifyContent: 'space-between',
+              }}
+              activeOpacity={0.8}
+              onPress={() => {
+                // navigation.navigate('Login');
+                logout();
               }}>
-              <AntDesign name="logout" size={30} color="red"></AntDesign>
-              <Text
+              <View
                 style={{
-                  fontFamily: 'Roboto',
-                  fontSize: 16,
-                  fontWeight: '700',
-                  color: 'red',
+                  flexDirection: 'row',
+                  columnGap: 15,
+                  alignItems: 'center',
                 }}>
-                Đăng xuất
-              </Text>
-            </View>
-          </TouchableOpacity>
+                <AntDesign name="logout" size={30} color="red"></AntDesign>
+                <Text
+                  style={{
+                    fontFamily: 'Roboto',
+                    fontSize: 16,
+                    fontWeight: '700',
+                    color: 'red',
+                  }}>
+                  Đăng xuất
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </>   
         ) : (
           <TouchableOpacity
             style={{
@@ -590,6 +624,9 @@ const Profile = ({navigation}) => {
       <Modal
         width={0.8}
         visible={openAuthModal}
+        onTouchOutside={() => {
+          setOpenAuthModal(false);
+        }}
         dialogAnimation={
           new ScaleAnimation({
             initialValue: 0, // optional
@@ -598,12 +635,6 @@ const Profile = ({navigation}) => {
         }
         footer={
           <ModalFooter>
-            <ModalButton
-              text="Ở lại trang"
-              onPress={() => {
-                setOpenAuthModal(false);
-              }}
-            />
             <ModalButton
               text="Đăng nhập"
               onPress={async () => {

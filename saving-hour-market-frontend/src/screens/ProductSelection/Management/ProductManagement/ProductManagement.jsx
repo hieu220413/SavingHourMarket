@@ -12,7 +12,7 @@ import {
   faClipboard,
   faFilter,
 } from "@fortawesome/free-solid-svg-icons";
-import { auth } from "../../../../firebase/firebase.config";
+import { auth, database } from "../../../../firebase/firebase.config";
 import { API } from "../../../../contanst/api";
 import { Dialog, Menu, MenuItem } from "@mui/material";
 import CreateProductByExcel from "./CreateProductByExcel";
@@ -26,6 +26,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import ViewProductBatch from "./ViewProductBatch";
 import ProductImageSlider from "./ProductImageSlider";
 import FilterModal from "./FilterModal";
+import { child, get, ref } from "firebase/database";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -99,6 +100,8 @@ const ProductManagement = () => {
   const [supermarketId, setSupermarketId] = useState("");
   const [productCategoryId, setProductCategoryId] = useState("");
   const [productSubCategoryId, setProductSubCategoryId] = useState("");
+
+  const [productName, setProductName] = useState("");
 
   const [openSnackbar, setOpenSnackbar] = useState({
     open: false,
@@ -225,6 +228,25 @@ const ProductManagement = () => {
 
   const handleDeleteProduct = async (id) => {
     setLoading(true);
+    let isSystemDisable = true;
+    await get(child(ref(database), "systemStatus")).then((snapshot) => {
+      const data = snapshot.val();
+      if (data !== null) {
+        if (data === 1) {
+          setOpenSnackbar({
+            ...openSnackbar,
+            open: true,
+            severity: "error",
+          });
+          setMsg("Hệ thống không trong trạng thái bảo trì !");
+          isSystemDisable = false;
+        }
+      }
+    });
+    if (!isSystemDisable) {
+      setLoading(false);
+      return;
+    }
     const tokenId = await auth.currentUser.getIdToken();
     fetch(`${API.baseURL}/api/product/disable`, {
       method: "PUT",
@@ -285,6 +307,7 @@ const ProductManagement = () => {
       setSupermarketId("");
       setProductCategoryId("");
       setProductSubCategoryId("");
+      setTextPage(1);
       if (userAuth) {
         const tokenId = await auth.currentUser.getIdToken();
         fetch(
@@ -328,6 +351,25 @@ const ProductManagement = () => {
 
   const handleRecoveryProduct = async (id) => {
     setLoading(true);
+    let isSystemDisable = true;
+    await get(child(ref(database), "systemStatus")).then((snapshot) => {
+      const data = snapshot.val();
+      if (data !== null) {
+        if (data === 1) {
+          setOpenSnackbar({
+            ...openSnackbar,
+            open: true,
+            severity: "error",
+          });
+          setMsg("Hệ thống không trong trạng thái bảo trì !");
+          isSystemDisable = false;
+        }
+      }
+    });
+    if (!isSystemDisable) {
+      setLoading(false);
+      return;
+    }
     const tokenId = await auth.currentUser.getIdToken();
     fetch(`${API.baseURL}/api/product/enable`, {
       method: "PUT",
@@ -401,6 +443,7 @@ const ProductManagement = () => {
     e.preventDefault();
     setSearchValue(textSearch);
     setPage(1);
+    setTextPage(1);
   };
 
   const ProductRow = ({ item, index }) => {
@@ -409,20 +452,32 @@ const ProductManagement = () => {
         <tr className="table-body-row">
           <td style={{ paddingTop: 30 }}>{index + 1}</td>
           <td>
-            <img
-              style={{
-                cursor: "pointer",
-              }}
-              onClick={() => {
-                setImageUrlList(item.imageUrlImageList);
-                handleOpenImageUrlList();
-              }}
-              width="80px"
-              height="60px"
-              src={item.imageUrlImageList[0].imageUrl}
-            />
+            <div style={{ position: "relative" }}>
+              <img
+                style={{
+                  cursor: "pointer",
+                }}
+                className="img-scale"
+                onClick={() => {
+                  setImageUrlList(item.imageUrlImageList);
+                  handleOpenImageUrlList();
+                }}
+                width="80px"
+                height="60px"
+                src={item.imageUrlImageList[0].imageUrl}
+              />
+              <div className="image-number">
+                1/{item.imageUrlImageList.length}
+              </div>
+            </div>
           </td>
           <td style={{ paddingTop: 30 }}>{item.name}</td>
+          <td style={{ paddingTop: 30 }}>
+            {item.priceListed.toLocaleString("vi-VN", {
+              style: "currency",
+              currency: "VND",
+            })}
+          </td>
           <td style={{ paddingTop: 30 }}>{item.unit}</td>
           <td style={{ paddingTop: 30 }}>{item.productSubCategory.name}</td>
 
@@ -430,6 +485,7 @@ const ProductManagement = () => {
             <i
               onClick={() => {
                 setProductBatch(item.productBatchList);
+                setProductName(item.name);
                 handleOpenProductBatch();
               }}
               className="bi bi-list"
@@ -437,7 +493,28 @@ const ProductManagement = () => {
           </td>
           <td style={{ paddingTop: 30 }}>
             <i
-              onClick={() => {
+              onClick={async () => {
+                let isSystemDisable = true;
+                await get(child(ref(database), "systemStatus")).then(
+                  (snapshot) => {
+                    const data = snapshot.val();
+                    if (data !== null) {
+                      if (data === 1) {
+                        setOpenSnackbar({
+                          ...openSnackbar,
+                          open: true,
+                          severity: "error",
+                        });
+                        setMsg("Hệ thống không trong trạng thái bảo trì !");
+                        isSystemDisable = false;
+                      }
+                    }
+                  }
+                );
+                if (!isSystemDisable) {
+                  setLoading(false);
+                  return;
+                }
                 setProductToEdit(item);
                 const arr = [];
                 item.productBatchList.map((item) => {
@@ -467,17 +544,29 @@ const ProductManagement = () => {
         <tr className="table-body-row">
           <td style={{ paddingTop: 30 }}>{index + 1}</td>
           <td>
-            <img
-              width="80px"
-              height="60px"
-              onClick={() => {
-                setImageUrlList(item.imageUrlImageList);
-                handleOpenImageUrlList();
-              }}
-              src={item.imageUrlImageList[0].imageUrl}
-            />
+            <div style={{ position: "relative" }}>
+              <img
+                width="80px"
+                height="60px"
+                className="img-scale"
+                onClick={() => {
+                  setImageUrlList(item.imageUrlImageList);
+                  handleOpenImageUrlList();
+                }}
+                src={item.imageUrlImageList[0].imageUrl}
+              />
+              <div className="image-number">
+                1/{item.imageUrlImageList.length}
+              </div>
+            </div>
           </td>
           <td style={{ paddingTop: 30 }}>{item.name}</td>
+          <td style={{ paddingTop: 30 }}>
+            {item.priceListed.toLocaleString("vi-VN", {
+              style: "currency",
+              currency: "VND",
+            })}
+          </td>
           <td style={{ paddingTop: 30 }}>{item.unit}</td>
           <td style={{ paddingTop: 30 }}>{item.productSubCategory.name}</td>
           <td style={{ paddingTop: 30 }}>
@@ -503,7 +592,6 @@ const ProductManagement = () => {
   };
   return (
     <div>
-      <ManagementMenu menuTabs={menuTabs} />
       {/* Table */}
       <div className="supermarket__container">
         <div className="supermarket__header">
@@ -576,7 +664,10 @@ const ProductManagement = () => {
 
         {/* data table + pagination*/}
         {!isSwitchRecovery && (
-          <div className="table__container" style={{ height: "650px" }}>
+          <div
+            className="table__container table-box-shadow"
+            style={{ height: "650px" }}
+          >
             {/* data table */}
             <table class="table ">
               <thead>
@@ -586,6 +677,7 @@ const ProductManagement = () => {
                       <th>No.</th>
                       <th>Hình ảnh</th>
                       <th>Tên Sản phẩm</th>
+                      <th>Giá niêm yết</th>
                       <th>Đơn vị</th>
                       <th>Tên loại sản phẩm phụ </th>
                       <th>Lô hàng</th>
@@ -757,6 +849,7 @@ const ProductManagement = () => {
                         <th>No.</th>
                         <th>Hình ảnh</th>
                         <th>Tên</th>
+                        <th>Giá niêm yết</th>
                         <th>Đơn vị</th>
                         <th>Tên Sản phẩm</th>
                         <th>Lô hàng</th>
@@ -1026,6 +1119,7 @@ const ProductManagement = () => {
         <ViewProductBatch
           handleClose={handleCloseProductBatch}
           productBatch={productBatch}
+          productName={productName}
         />
       </Dialog>
 
@@ -1050,6 +1144,8 @@ const ProductManagement = () => {
           setProducts={setProducts}
           isSwitchRecovery={isSwitchRecovery}
           page={page}
+          setPage={setPage}
+          setTextPage={setTextPage}
           setTotalPage={setTotalPage}
           searchValue={searchValue}
           openSnackbar={openSnackbar}

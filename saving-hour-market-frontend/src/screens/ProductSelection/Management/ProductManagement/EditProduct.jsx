@@ -144,12 +144,16 @@ const EditProduct = ({
     })
   );
 
+  const [priceListed, setPriceListed] = useState(product.priceListed);
+
   const [loading, setLoading] = useState(false);
 
   // check error
   const [checkCategorySelected, setCheckCategorySelected] = useState(false);
   const [error, setError] = useState({
     productName: "",
+    unit: "",
+    priceListed: "",
     price: "",
     priceOriginal: "",
     description: "",
@@ -240,6 +244,18 @@ const EditProduct = ({
       setError({ ...error, productName: "Vui lòng không để trống" });
       return;
     }
+    if (priceListed === "") {
+      setError({ ...error, priceListed: "Vui lòng không để trống" });
+      return;
+    }
+    if (parseInt(priceListed) <= 0) {
+      setError({ ...error, priceListed: "Giá niêm yết phải lớn hơn 0" });
+      return;
+    }
+    if (unit === "") {
+      setError({ ...error, unit: "Vui lòng không để trống" });
+      return;
+    }
     if (description === "") {
       setError({ ...error, description: "Vui lòng không để trống" });
       return;
@@ -300,20 +316,20 @@ const EditProduct = ({
         };
         return false;
       }
-      if (
-        new Date(batch.expiredDate).getTime() <
-        getDateAfterToday(allowableDisplayThreshold).getTime()
-      ) {
-        newProductBatchs[index] = {
-          ...productBatchs[index],
-          error: {
-            ...productBatchs[index].error,
-            expiredDate:
-              "Ngày hết hạn bạn nhập đã bé hơn giới hạn số ngày trước HSD",
-          },
-        };
-        return false;
-      }
+      // if (
+      //   new Date(batch.expiredDate).getTime() <
+      //   getDateAfterToday(allowableDisplayThreshold).getTime()
+      // ) {
+      //   newProductBatchs[index] = {
+      //     ...productBatchs[index],
+      //     error: {
+      //       ...productBatchs[index].error,
+      //       expiredDate:
+      //         "Ngày hết hạn bạn nhập đã bé hơn giới hạn số ngày trước HSD",
+      //     },
+      //   };
+      //   return false;
+      // }
       // validate quantity
       if (batch.quantity === "") {
         newProductBatchs[index] = {
@@ -477,6 +493,7 @@ const EditProduct = ({
       name: productName,
       description: description,
       unit: unit,
+      priceListed: priceListed,
       status: 1,
       productSubCategory: submitProductSubCategory,
       supermarket: submitSupermarket,
@@ -758,7 +775,33 @@ const EditProduct = ({
               )}
             </div>
           </div>
-          {/* unit name */}
+          {/* Listed Price */}
+          <div className="modal__container-body-inputcontrol">
+            <h4 className="modal__container-body-inputcontrol-label">
+              Giá niêm yết
+            </h4>
+            <div>
+              <input
+                value={priceListed}
+                placeholder="Nhập tên sản phẩm"
+                type="text"
+                className="modal__container-body-inputcontrol-input"
+                onChange={(e) => {
+                  setPriceListed(e.target.value);
+                  setError({ ...error, priceListed: "" });
+                }}
+              />
+              {error.priceListed && (
+                <p
+                  style={{ fontSize: "14px", marginBottom: "-10px" }}
+                  className="text-danger"
+                >
+                  {error.priceListed}
+                </p>
+              )}
+            </div>
+          </div>
+          {/* unit */}
           <div className="modal__container-body-inputcontrol">
             <h4 className="modal__container-body-inputcontrol-label">
               Đơn vị bán

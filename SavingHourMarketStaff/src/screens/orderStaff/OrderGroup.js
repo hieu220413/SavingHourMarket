@@ -16,6 +16,7 @@ import {
   Alert,
   FlatList,
   Switch,
+  Dimensions,
 } from 'react-native';
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import auth from '@react-native-firebase/auth';
@@ -1040,21 +1041,30 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                           </Text>
                           <Text
                             style={{
-                              fontSize: 17,
+                              fontSize: 16,
                               fontWeight: 'bold',
                               fontFamily: 'Roboto',
                               color: 'black',
+                              maxWidth: '97%',
                             }}>
-                            Ngày đặt :{' '}
+                            Mã đơn hàng:{' '}SHMORD21223001
+                            {/* {data.item?.code} */}
+                          </Text>
+                          <Text
+                            style={{
+                              fontSize: 16,
+                              fontFamily: 'Roboto',
+                              color: 'black',
+                            }}>
+                            Thời gian đặt :{' '}
                             {format(
                               Date.parse(order?.createdTime),
-                              'dd/MM/yyyy',
+                              'dd/MM/yyyy - HH:mm:ss',
                             )}
                           </Text>
                           <Text
                             style={{
-                              fontSize: 17,
-                              fontWeight: 'bold',
+                              fontSize: 16,
                               fontFamily: 'Roboto',
                               color: 'black',
                             }}>
@@ -1066,8 +1076,7 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                           </Text>
                           <Text
                             style={{
-                              fontSize: 17,
-                              fontWeight: 'bold',
+                              fontSize: 16,
                               fontFamily: 'Roboto',
                               color: 'black',
                             }}>
@@ -1079,8 +1088,7 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                           </Text>
                           <Text
                             style={{
-                              fontSize: 17,
-                              fontWeight: 'bold',
+                              fontSize: 16,
                               fontFamily: 'Roboto',
                               color: 'black',
                             }}>
@@ -1155,7 +1163,7 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                     </Text>
                   </View>
                 ) : (
-                  <View style={{ marginTop: 10, marginBottom: 100 }}>
+                  <View style={{ marginTop: 10, marginBottom: "17%" }}>
                     {
                       <FlatList
                         showsVerticalScrollIndicator={false}
@@ -1207,7 +1215,7 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                                   alignItems: 'center',
                                   borderRadius: 5,
                                   flexDirection: 'row',
-                                  columnGap: 15,
+                                  columnGap: 13,
                                   shadowColor: '#000',
                                   shadowOffset: {
                                     width: 0,
@@ -1254,13 +1262,13 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                                     }
                                   />
                                 </TouchableOpacity>
-                                <View
+                                <Pressable
                                   style={{
                                     flexDirection: 'row',
                                     alignItems: 'center',
                                     flexGrow: 1,
                                     flexShrink: 1,
-                                    justifyContent: 'center',
+                                    justifyContent:  data.item.isExpand ? 'center' : 'flex-start',
                                   }}>
                                   {data.item.isExpand ? (
                                     <Text
@@ -1348,7 +1356,7 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                                       )}
                                     </View>
                                   )}
-                                </View>
+                                </Pressable>
                                 <View
                                   style={{
                                     height: '100%',
@@ -1441,20 +1449,13 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                                     }
                                   })
                                   .map((order, index) => (
-                                    <TouchableOpacity
+                                    <View
                                       style={{
                                         paddingHorizontal: 0,
                                         paddingVertical: 10,
                                       }}
-                                      onPress={() => {
-                                        navigation.navigate('OrderDetail', {
-                                          id: order.id,
-                                          orderSuccess: false,
-                                          isFromOrderGroup: true,
-                                        });
-                                      }}
                                       key={index}>
-                                      <View
+                                      <TouchableOpacity
                                         style={{
                                           flexDirection: 'row',
                                           alignItems: 'center',
@@ -1472,6 +1473,13 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                                           shadowOpacity: 0.25,
                                           shadowRadius: 4,
                                           elevation: 5,
+                                        }}
+                                        onPress={() => {
+                                          navigation.navigate('OrderDetail', {
+                                            id: order.id,
+                                            orderSuccess: false,
+                                            isFromOrderGroup: true,
+                                          });
                                         }}>
                                         <View
                                           style={{
@@ -1502,7 +1510,16 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                                               fontFamily: 'Roboto',
                                               color: 'black',
                                             }}>
-                                            Ngày đặt :{' '}
+                                            Mã đơn hàng:{' '}
+                                            {order?.code}
+                                          </Text>
+                                          <Text
+                                            style={{
+                                              fontSize: 17,
+                                              fontFamily: 'Roboto',
+                                              color: 'black',
+                                            }}>
+                                            Thời gian đặt :{' '}
                                             {format(
                                               Date.parse(order?.createdTime),
                                               'dd/MM/yyyy',
@@ -1511,7 +1528,6 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                                           <Text
                                             style={{
                                               fontSize: 17,
-                                              fontWeight: 'bold',
                                               fontFamily: 'Roboto',
                                               color: 'black',
                                             }}>
@@ -1524,7 +1540,6 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                                           <Text
                                             style={{
                                               fontSize: 17,
-                                              fontWeight: 'bold',
                                               fontFamily: 'Roboto',
                                               color: 'black',
                                             }}>
@@ -1540,7 +1555,6 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                                           <Text
                                             style={{
                                               fontSize: 17,
-                                              fontWeight: 'bold',
                                               fontFamily: 'Roboto',
                                               color: 'black',
                                             }}>
@@ -1559,63 +1573,13 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                                           }}
                                           source={icons.rightArrow}
                                         />
-                                      </View>
-                                    </TouchableOpacity>
+                                      </TouchableOpacity>
+                                    </View>
                                   ))}
                             </View>
                             {/* *********************** */}
                           </View>
                         )}
-                      // renderHiddenItem={(data, rowMap) => (
-                      //   <View
-                      //     style={{
-                      //       flexDirection: 'row',
-                      //       justifyContent: 'flex-end',
-                      //       height: '89%',
-                      //       // marginVertical: '2%',
-                      //     }}>
-                      //     <TouchableOpacity
-                      //       style={{
-                      //         width: 120,
-                      //         height: '100%',
-                      //         backgroundColor: COLORS.primary,
-                      //         borderRadius: 10,
-                      //         // flex: 1,
-                      //         alignItems: 'center',
-                      //         justifyContent: 'center',
-                      //       }}
-                      //       onPress={() => {
-                      //         setVisible(true);
-                      //         // console.log(data.item.id);
-                      //         setOrder(data.item);
-                      //       }}>
-                      //       <View>
-                      //         {data.item?.status === 0 && (
-                      //           <Image
-                      //             source={icons.packaging}
-                      //             resizeMode="contain"
-                      //             style={{
-                      //               width: 40,
-                      //               height: 40,
-                      //               tintColor: 'white',
-                      //             }}
-                      //           />
-                      //         )}
-                      //         {data.item?.status === 1 && (
-                      //           <Image
-                      //             source={icons.packaged}
-                      //             resizeMode="contain"
-                      //             style={{
-                      //               width: 55,
-                      //               height: 55,
-                      //               tintColor: 'white',
-                      //             }}
-                      //           />
-                      //         )}
-                      //       </View>
-                      //     </TouchableOpacity>
-                      //   </View>
-                      // )}
                       />
                     }
                   </View>
@@ -1707,7 +1671,7 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                               borderWidth: 0.2,
                               borderRadius: 10,
                               margin: 5,
-                              width: '45%'
+                              width: '45%',
                             }
                         }>
                         <Text
@@ -1765,14 +1729,14 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                                 borderWidth: 1,
                                 borderRadius: 10,
                                 margin: 5,
-                                width:'45%'
+                                width: '45%',
                               }
                               : {
                                 borderColor: '#c8c8c8',
                                 borderWidth: 0.2,
                                 borderRadius: 10,
                                 margin: 5,
-                                width:'45%'
+                                width: '45%',
                               }
                           }>
                           <Text
@@ -1829,7 +1793,7 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                       style={{
                         flexWrap: 'wrap',
                         marginVertical: 5,
-                        alignItems:'center'
+                        alignItems: 'center',
                       }}>
                       <DatePicker
                         date={
@@ -2250,7 +2214,7 @@ const styles = StyleSheet.create({
   },
   body: {
     flex: 11,
-    // backgroundColor: 'pink',
+    backgroundColor: '#fff',
     paddingHorizontal: 15,
   },
   areaAndLogout: {

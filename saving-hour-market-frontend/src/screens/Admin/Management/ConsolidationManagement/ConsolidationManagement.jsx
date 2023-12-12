@@ -15,9 +15,10 @@ import ManagementMenu from "../../../../components/ManagementMenu/ManagementMenu
 import CreateConsolidation from "./CreateConsolidation";
 import EditConsolidation from "./EditConsolidation";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../../../../firebase/firebase.config";
+import { auth, database } from "../../../../firebase/firebase.config";
 import { API } from "../../../../contanst/api";
 import ConsolidationPickupPoint from "./ConsolidationPickupPoint";
+import { child, get, ref } from "firebase/database";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -101,6 +102,25 @@ const ConsolidationManagement = () => {
 
     const handleDelete = async () => {
       setLoading(true);
+      let isSystemDisable = true;
+      await get(child(ref(database), "systemStatus")).then((snapshot) => {
+        const data = snapshot.val();
+        if (data !== null) {
+          if (data === 1) {
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "error",
+              text: "Hệ thống không trong trạng thái bảo trì !",
+            });
+            isSystemDisable = false;
+          }
+        }
+      });
+      if (!isSystemDisable) {
+        setLoading(false);
+        return;
+      }
       const tokenId = await auth.currentUser.getIdToken();
       fetch(`${API.baseURL}/api/productConsolidationArea/updateStatus`, {
         method: "PUT",
@@ -121,6 +141,17 @@ const ConsolidationManagement = () => {
               open: true,
               severity: "error",
               text: respond.error,
+            });
+
+            setLoading(false);
+            return;
+          }
+          if (respond.code === 403) {
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "error",
+              text: "Tồn tại đơn hàng đang xử lí tại điểm tập kết này !",
             });
 
             setLoading(false);
@@ -162,6 +193,25 @@ const ConsolidationManagement = () => {
 
     const handleReverse = async () => {
       setLoading(true);
+      let isSystemDisable = true;
+      await get(child(ref(database), "systemStatus")).then((snapshot) => {
+        const data = snapshot.val();
+        if (data !== null) {
+          if (data === 1) {
+            setOpenSnackbar({
+              ...openSnackbar,
+              open: true,
+              severity: "error",
+              text: "Hệ thống không trong trạng thái bảo trì !",
+            });
+            isSystemDisable = false;
+          }
+        }
+      });
+      if (!isSystemDisable) {
+        setLoading(false);
+        return;
+      }
       const tokenId = await auth.currentUser.getIdToken();
       fetch(`${API.baseURL}/api/productConsolidationArea/updateStatus`, {
         method: "PUT",
@@ -347,7 +397,6 @@ const ConsolidationManagement = () => {
   ];
   return (
     <div>
-      <ManagementMenu menuTabs={menuTabs} />
       <div style={{ marginBottom: 50 }} className="user__container">
         <div className="user__header">
           <div className="search"></div>
@@ -364,7 +413,7 @@ const ConsolidationManagement = () => {
           )}
         </div>
         {/* data table + pagination*/}
-        <div className="table__container">
+        <div className="table__container table-box-shadow">
           {/* data table */}
           <table class="table ">
             {consolidationList.length !== 0 && (

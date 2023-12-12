@@ -23,6 +23,8 @@ public class ProductCreateList {
 
     private String description;
 
+    private Integer priceListed;
+
     private String unit;
 
     private List<String> imageUrls;
@@ -33,4 +35,14 @@ public class ProductCreateList {
 
     private ProductSubCategory productSubCategory;
 
+    @Override
+    public String toString() {
+        return
+                "name='" + name + '\'' +
+                        ", description='" + description + '\'' +
+                        ", priceListed=" + priceListed +
+                        ", unit='" + unit + '\'' +
+                        ", imageUrls=" + imageUrls +
+                        ", supermarket=" + supermarket;
+    }
 }
