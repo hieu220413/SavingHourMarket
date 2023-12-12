@@ -126,194 +126,214 @@ const SelectVoucher = ({navigation, route}) => {
       </View>
 
       {/* Voucher item */}
-      {resultVoucherList.length == 0 ? (
-        <View
-          style={{
-            alignItems: 'center',
-            justifyContent: 'center',
-            paddingHorizontal: 40,
-          }}>
-          <Image
-            style={{width: 350, height: 350}}
-            resizeMode="contain"
-            source={Empty}
-          />
-          <Text
-            style={{
-              fontSize: 20,
-              fontFamily: 'Roboto',
-              // color: 'black',
-              fontWeight: 'bold',
-              textAlign: 'center',
-            }}>
-            Không có voucher phù hợp
-          </Text>
-        </View>
-      ) : (
-        resultVoucherList.map(item => (
-          // <View key={item.id}>
-          //   <View
-          //     style={{
-          //       backgroundColor: 'white',
-          //       alignItems: 'center',
-          //       flexDirection: 'row',
-          //       marginVertical: '2%',
-          //       paddingHorizontal: 10,
-          //       paddingVertical: 20,
-          //       justifyContent: 'space-between',
-          //     }}>
-          //     <View
-          //       style={{flex: 4, alignItems: 'start', gap: 5, marginLeft: 10}}>
-          //       <Text
-          //         style={{
-          //           fontSize: 23,
-          //           color: 'black',
-          //           fontFamily: 'Roboto',
-          //           fontWeight: 'bold',
-          //         }}>
-          //         {item.name}
-          //       </Text>
-          //       <Text
-          //         style={{
-          //           fontSize: 18,
-          //           color: 'black',
-          //           fontFamily: 'Roboto',
-          //           backgroundColor: '#7ae19c',
-          //           alignSelf: 'flex-start',
-          //           paddingVertical: 5,
-          //           paddingHorizontal: 10,
-          //           borderRadius: 5,
-          //         }}>
-          //         -{item.percentage}%
-          //       </Text>
-          //       <Text
-          //         style={{
-          //           fontSize: 18,
-          //           color: 'black',
-          //           fontFamily: 'Roboto',
-          //         }}>
-          //         Áp dụng cho: {categoryName}
-          //       </Text>
-          //       <Text
-          //         style={{
-          //           fontSize: 18,
-          //           color: 'black',
-          //           fontFamily: 'Roboto',
-          //         }}>
-          //         Đơn tối thiểu:{' '}
-          //         {item.spentAmountRequired.toLocaleString('vi-VN', {
-          //           style: 'currency',
-          //           currency: 'VND',
-          //         })}
-          //       </Text>
-          //       <Text
-          //         style={{
-          //           fontSize: 16,
-          //           fontFamily: 'Roboto',
-          //           fontWeight: 'bold',
-          //         }}>
-          //         HSD: {format(Date.parse(item.expiredDate), 'dd/MM/yyyy')}
-          //       </Text>
-          //     </View>
-          //     <TouchableOpacity
-          //       onPress={() => {
-          //         handleSelect(item);
-          //       }}
-          //       style={{
-          //         alignItems: 'center',
-          //         justifyContent: 'center',
-          //         backgroundColor: COLORS.secondary,
-          //         borderRadius: 5,
-          //         padding: 15,
-          //       }}>
-          //       <Text
-          //         style={{
-          //           fontSize: 18,
-          //           fontFamily: 'Roboto',
-          //           color: 'black',
-          //         }}>
-          //         Chọn
-          //       </Text>
-          //     </TouchableOpacity>
-          //   </View>
-          // </View>
+      <ScrollView>
+        {resultVoucherList.length == 0 ? (
           <View
-            key={item.id}
             style={{
-              backgroundColor: '#F5F5F5',
-              maxWidth: '90%',
-              borderRadius: 20,
-              marginHorizontal: '5%',
-              marginBottom: 20,
-              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingHorizontal: 40,
             }}>
-            {/* Image Product */}
             <Image
+              style={{width: 350, height: 350}}
               resizeMode="contain"
-              source={{
-                uri: item.imageUrl,
-              }}
-              style={{
-                width: 130,
-                height: 130,
-                borderRadius: 20,
-                padding: 10,
-                margin: 15,
-              }}
+              source={Empty}
             />
+            <Text
+              style={{
+                fontSize: 20,
+                fontFamily: 'Roboto',
+                // color: 'black',
+                fontWeight: 'bold',
+                textAlign: 'center',
+              }}>
+              Không có voucher phù hợp
+            </Text>
+          </View>
+        ) : (
+          resultVoucherList.map(item => (
+            // <View key={item.id}>
+            //   <View
+            //     style={{
+            //       backgroundColor: 'white',
+            //       alignItems: 'center',
+            //       flexDirection: 'row',
+            //       marginVertical: '2%',
+            //       paddingHorizontal: 10,
+            //       paddingVertical: 20,
+            //       justifyContent: 'space-between',
+            //     }}>
+            //     <View
+            //       style={{flex: 4, alignItems: 'start', gap: 5, marginLeft: 10}}>
+            //       <Text
+            //         style={{
+            //           fontSize: 23,
+            //           color: 'black',
+            //           fontFamily: 'Roboto',
+            //           fontWeight: 'bold',
+            //         }}>
+            //         {item.name}
+            //       </Text>
+            //       <Text
+            //         style={{
+            //           fontSize: 18,
+            //           color: 'black',
+            //           fontFamily: 'Roboto',
+            //           backgroundColor: '#7ae19c',
+            //           alignSelf: 'flex-start',
+            //           paddingVertical: 5,
+            //           paddingHorizontal: 10,
+            //           borderRadius: 5,
+            //         }}>
+            //         -{item.percentage}%
+            //       </Text>
+            //       <Text
+            //         style={{
+            //           fontSize: 18,
+            //           color: 'black',
+            //           fontFamily: 'Roboto',
+            //         }}>
+            //         Áp dụng cho: {categoryName}
+            //       </Text>
+            //       <Text
+            //         style={{
+            //           fontSize: 18,
+            //           color: 'black',
+            //           fontFamily: 'Roboto',
+            //         }}>
+            //         Đơn tối thiểu:{' '}
+            //         {item.spentAmountRequired.toLocaleString('vi-VN', {
+            //           style: 'currency',
+            //           currency: 'VND',
+            //         })}
+            //       </Text>
+            //       <Text
+            //         style={{
+            //           fontSize: 16,
+            //           fontFamily: 'Roboto',
+            //           fontWeight: 'bold',
+            //         }}>
+            //         HSD: {format(Date.parse(item.expiredDate), 'dd/MM/yyyy')}
+            //       </Text>
+            //     </View>
+            //     <TouchableOpacity
+            //       onPress={() => {
+            //         handleSelect(item);
+            //       }}
+            //       style={{
+            //         alignItems: 'center',
+            //         justifyContent: 'center',
+            //         backgroundColor: COLORS.secondary,
+            //         borderRadius: 5,
+            //         padding: 15,
+            //       }}>
+            //       <Text
+            //         style={{
+            //           fontSize: 18,
+            //           fontFamily: 'Roboto',
+            //           color: 'black',
+            //         }}>
+            //         Chọn
+            //       </Text>
+            //     </TouchableOpacity>
+            //   </View>
+            // </View>
+            <View
+              key={item.id}
+              style={{
+                backgroundColor: '#F5F5F5',
+                maxWidth: '90%',
+                borderRadius: 20,
+                marginHorizontal: '5%',
+                marginBottom: 20,
+                flexDirection: 'row',
+              }}>
+              {/* Image Product */}
+              <Image
+                resizeMode="contain"
+                source={{
+                  uri: item.imageUrl,
+                }}
+                style={{
+                  width: 130,
+                  height: 130,
+                  borderRadius: 20,
+                  padding: 10,
+                  margin: 15,
+                }}
+              />
 
-            <View style={{justifyContent: 'center', flex: 1, marginRight: 10}}>
-              <Text
-                numberOfLines={1}
-                style={{
-                  fontFamily: FONTS.fontFamily,
-                  fontSize: 18,
-                  fontWeight: 700,
-                  maxWidth: '95%',
-                  color: 'black',
-                }}>
-                {item.name}
-              </Text>
+              <View
+                style={{justifyContent: 'center', flex: 1, marginRight: 10}}>
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    fontFamily: FONTS.fontFamily,
+                    fontSize: 18,
+                    fontWeight: 700,
+                    maxWidth: '95%',
+                    color: 'black',
+                  }}>
+                  {item.name}
+                </Text>
 
-              <Text
-                style={{
-                  fontFamily: FONTS.fontFamily,
-                  fontSize: 18,
-                  color: 'black',
-                }}>
-                Đơn tối thiểu:{' '}
-                {item.spentAmountRequired.toLocaleString('vi-VN', {
-                  style: 'currency',
-                  currency: 'VND',
-                })}
-              </Text>
-              <Text
-                style={{
-                  fontFamily: FONTS.fontFamily,
-                  fontSize: 18,
-                  marginBottom: 10,
-                }}>
-                HSD: {format(new Date(item.expiredDate), 'dd/MM/yyyy')}
-              </Text>
-              {/* Button use */}
-              <TouchableOpacity onPress={() => handleSelect(item)}>
                 <Text
                   style={{
-                    maxWidth: 120,
-                    maxHeight: 38,
-                    padding: 10,
-                    backgroundColor: COLORS.primary,
-                    borderRadius: 10,
-                    textAlign: 'center',
-                    color: '#ffffff',
+                    fontFamily: FONTS.fontFamily,
+                    fontSize: 18,
+                    color: 'black',
                   }}>
-                  Áp dụng
+                  Đơn tối thiểu:{' '}
+                  {item.spentAmountRequired.toLocaleString('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND',
+                  })}
                 </Text>
-              </TouchableOpacity>
+                <Text
+                  style={{
+                    fontFamily: FONTS.fontFamily,
+                    fontSize: 18,
+                    marginBottom: 10,
+                  }}>
+                  HSD: {format(new Date(item.expiredDate), 'dd/MM/yyyy')}
+                </Text>
+                {/* Button use */}
+                {item.spentAmountRequired > totalPriceByCategory ? (
+                  <TouchableOpacity disabled={true}>
+                    <Text
+                      style={{
+                        maxWidth: 120,
+                        maxHeight: 38,
+                        padding: 10,
+                        backgroundColor: '#cccccc',
+                        borderRadius: 10,
+                        textAlign: 'center',
+                        color: '#666666',
+                      }}>
+                      Áp dụng
+                    </Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity onPress={() => handleSelect(item)}>
+                    <Text
+                      style={{
+                        maxWidth: 120,
+                        maxHeight: 38,
+                        padding: 10,
+                        backgroundColor: COLORS.primary,
+                        borderRadius: 10,
+                        textAlign: 'center',
+                        color: '#ffffff',
+                      }}>
+                      Áp dụng
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
-          </View>
-        ))
-      )}
+          ))
+        )}
+      </ScrollView>
 
       <Modal
         width={0.8}
