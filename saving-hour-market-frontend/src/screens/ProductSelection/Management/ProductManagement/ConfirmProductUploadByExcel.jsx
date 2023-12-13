@@ -198,7 +198,7 @@ const ConfirmProductUploadByExcel = ({
         "Content-Type": "application/json",
         Authorization: `Bearer ${tokenId}`,
       },
-      body: JSON.stringify(createProductList),
+      body: JSON.stringify(confirmProductList.productList),
     })
       .then((res) => res.json())
       .then(async (res) => {
@@ -213,69 +213,79 @@ const ConfirmProductUploadByExcel = ({
           setLoading(false);
           return;
         }
-
-        fetch(
-          `${API.baseURL}/api/product/getProductsForStaff?page=${
-            page - 1
-          }&limit=5&name=${searchValue}&status=ENABLE`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${tokenId}`,
-            },
-          }
-        )
-          .then((res) => res.json())
-          .then((data) => {
-            setProducts(data.productList);
-            setTotalPage(data.totalPage);
-            setLoading(false);
-            setIsSwitchRecovery(false);
-            setMsg("Thêm mới thành công");
-            setOpenSuccessSnackbar({
-              ...openSuccessSnackbar,
-              open: true,
-              severity: "success",
-            });
-            if (
-              createProductList.length === confirmProductList.productList.length
-            ) {
-              handleClose();
-            } else {
-              let newErrorList = [...errorList];
-              newErrorList = newErrorList.map((err, i) => {
-                let count = 0;
-                createProductListWithMainIndex.map((product, numProduct) => {
-                  if (product.mainIndex < parseInt(err.index)) {
-                    count += 1;
-                  }
-                });
-
-                return { ...err, index: (err.index - count).toString() };
-              });
-              const newErrorFields = newErrorList.reduce(
-                (a, v) => ({ ...a, [v.index]: v.value }),
-                {}
-              );
-
-              setErrorList(newErrorList);
-              const errorProductList = confirmProductList.productList.filter(
-                (item, index) =>
-                  errorList.some((i) => parseInt(i.index) === index + 1) ||
-                  item.imageUrls.length === 0
-              );
-              setPageProduct(1);
-              setConfirmProductList({
-                errorFields: newErrorFields,
-                productList: errorProductList,
-              });
+        if (!isEmptyObject(res.errorFields)) {
+          let responseErrorList = Object.entries(res.errorFields).map(
+            ([key, value]) => {
+              return { index: key, value: value };
             }
-          })
-          .catch((err) => {
-            console.log(err);
-            setLoading(false);
+          );
+
+          const newErrorList = errorList.map((err, errIndex) => {
+            let count = 0;
+            responseErrorList.map((newErr, newErrIndex) => {
+              if (newErr.index < err.index) {
+                count += 1;
+              }
+            });
+            return { ...err, index: (parseInt(err.index) - count).toString() };
           });
+          const errorProductList = confirmProductList.productList.filter(
+            (item, index) =>
+              responseErrorList.some((i) => parseInt(i.index) === index + 1) ||
+              item.imageUrls.length === 0
+          );
+
+          const newErrorFields = newErrorList.reduce(
+            (a, v) => ({ ...a, [v.index]: v.value }),
+            {}
+          );
+
+          setErrorList(responseErrorList);
+          setPageProduct(1);
+          setConfirmProductList({
+            errorFields: newErrorFields,
+            productList: errorProductList,
+          });
+
+          setMsg("Thêm mới thành công");
+          setOpenSuccessSnackbar({
+            ...openSuccessSnackbar,
+            open: true,
+            severity: "success",
+          });
+          setLoading(false);
+        } else {
+          fetch(
+            `${API.baseURL}/api/product/getProductsForStaff?page=${
+              page - 1
+            }&limit=5&name=${searchValue}&status=ENABLE`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${tokenId}`,
+              },
+            }
+          )
+            .then((res) => res.json())
+            .then((data) => {
+              setProducts(data.productList);
+              setTotalPage(data.totalPage);
+              setLoading(false);
+              setIsSwitchRecovery(false);
+              handleClose();
+              setMsg("Thêm mới thành công");
+              setOpenSuccessSnackbar({
+                ...openSuccessSnackbar,
+                open: true,
+                severity: "success",
+              });
+            })
+            .catch((err) => {
+              console.log(err);
+              setLoading(false);
+            });
+        }
       })
       .catch((err) => console.log(err));
   };
