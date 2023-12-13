@@ -39,6 +39,7 @@ import {
 } from 'react-native-modals';
 import database from '@react-native-firebase/database';
 import { checkSystemState } from '../../common/utils';
+import Toast from 'react-native-toast-message';
 
 const OrderGroupForOrderStaff = ({ navigation, route }) => {
   // listen to system state
@@ -66,6 +67,15 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
     { display: 'Giao hàng', value: 'DELIVERING_SUCCESS' },
     { display: 'Đã huỷ', value: 'FAIL' },
   ];
+
+  const showToastFail = (message) => {
+    Toast.show({
+      type: 'unsuccess',
+      text1: 'Thất bại',
+      text2: message + '👋',
+      visibilityTime: 3000,
+    });
+  };
 
   // init fake timeframe
   const [timeFrameList, setTimeFrameList] = useState([
@@ -649,6 +659,15 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
 
       if (!confirmPackagingGroupRequest) {
         return;
+      }
+
+      if (
+        confirmPackagingGroupRequest.status === 409 
+      ) {
+          const error = await confirmPackagingGroupRequest.json();
+          showToastFail(error.message);
+          await filterOrderGroup();
+          return;
       }
 
       if (

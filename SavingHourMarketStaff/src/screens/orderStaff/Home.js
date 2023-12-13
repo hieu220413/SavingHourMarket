@@ -421,7 +421,10 @@ const Home = ({ navigation }) => {
                 // Cac loi 403 khac thi handle duoi day neu co
               }
               if (res.status === 409) {
-                showToastFail(res.json().message);
+                const error = await res.json();
+                showToastFail(error.message);
+                fetchOrderWithFilter();
+                throw new Error();
               }
               return res.text();
             })
@@ -465,7 +468,10 @@ const Home = ({ navigation }) => {
                 }
                 // Cac loi 403 khac thi handle duoi day neu co
                 if (res.status === 409) {
-                  showToastFail(res.json().message);
+                  const error = await res.json();
+                  showToastFail(error.message);
+                  fetchOrderWithFilter();
+                  throw new Error();
                 }
               }
               return res.text();
