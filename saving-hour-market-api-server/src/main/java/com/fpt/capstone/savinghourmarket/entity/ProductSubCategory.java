@@ -34,6 +34,9 @@ public class ProductSubCategory {
     @Column(columnDefinition = "tinyint")
     private Integer allowableDisplayThreshold;
 
+    @Column(columnDefinition = "tinyint")
+    private Integer status;
+
     @OneToMany(
             mappedBy = "productSubCategory",
             fetch = FetchType.LAZY

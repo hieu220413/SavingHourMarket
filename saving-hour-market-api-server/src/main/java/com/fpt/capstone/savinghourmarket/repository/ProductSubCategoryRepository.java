@@ -70,6 +70,7 @@ public interface ProductSubCategoryRepository extends JpaRepository<ProductSubCa
             "WHERE " +
             "((:productCategoryId IS NULL) OR (psct.productCategory.id = :productCategoryId)) " +
             "AND " +
-            "UPPER(psct.name) LIKE UPPER(CONCAT('%',:name,'%')) ")
-    Page<ProductSubCateOnly> findAllSubCategoryOnlyForStaff(String name, UUID productCategoryId, Pageable pageable);
+            "UPPER(psct.name) LIKE UPPER(CONCAT('%',:name,'%')) " +
+            "AND psct.status = :status ")
+    Page<ProductSubCateOnly> findAllSubCategoryOnlyForStaff(String name, Integer status, UUID productCategoryId, Pageable pageable);
 }

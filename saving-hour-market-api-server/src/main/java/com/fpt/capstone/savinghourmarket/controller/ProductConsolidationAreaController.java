@@ -68,10 +68,10 @@ public class ProductConsolidationAreaController {
     ) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        Configuration configuration = systemConfigurationService.getConfiguration();
-        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
-            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
-        }
+//        Configuration configuration = systemConfigurationService.getConfiguration();
+//        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+//            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+//        }
         ProductConsolidationArea productConsolidationArea = productConsolidationAreaService.create(productConsolidationAreaCreateBody);
         return ResponseEntity.status(HttpStatus.OK).body(productConsolidationArea);
     }

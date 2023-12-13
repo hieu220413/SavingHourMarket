@@ -34,6 +34,8 @@ public interface StaffService {
 
     Staff updateStaffRole(StaffRoleUpdateRequestBody staffRoleUpdateRequestBody, String email) throws FirebaseAuthException;
 
+    Staff assignPickupPointForCreateAccount(StaffPickupPointAssignmentForCreateAccountBody staffPickupPointAssignmentForCreateAccountBody);
+
     Staff assignPickupPoint(StaffPickupPointAssignmentBody staffPickupPointAssignmentBody);
 
     Staff unAssignPickupPoint(StaffPickupPointAssignmentBody staffPickupPointAssignmentBody);
