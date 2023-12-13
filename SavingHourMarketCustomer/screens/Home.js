@@ -87,10 +87,40 @@ const Home = ({ navigation }) => {
           if (value == null) {
             AsyncStorage.removeItem('PickupPoint');
             try {
-              await AsyncStorage.setItem(
-                'PickupPoint',
-                JSON.stringify(pickupPoint),
+              Geolocation.getCurrentPosition(
+                position => {
+                  const currentLongitude = position.coords.longitude;
+                  const currentLatitude = position.coords.latitude;
+                  // get nearest pick up point by current lat,long
+                  fetch(
+                    `${API.baseURL}/api/pickupPoint/getWithSortAndSuggestion?latitude=${currentLatitude}&longitude=${currentLongitude}`,
+                  )
+                    .then(res => res.json())
+                    .then(response => {
+                      setPickupPoint(response.sortedPickupPointSuggestionList[0]);
+                      AsyncStorage.setItem(
+                        'PickupPoint',
+                        JSON.stringify(response.sortedPickupPointSuggestionList[0]),
+                      );
+                      setLoading(false);
+                    })
+                    .catch(err => {
+                      console.log(err);
+                      setLoading(false);
+                    }
+                    );
+                },
+                error => {
+                  console.log(error.message);
+                },
+                {
+                  enableHighAccuracy: true,
+                },
               );
+              // await AsyncStorage.setItem(
+              //   'PickupPoint',
+              //   JSON.stringify(pickupPoint),
+              // );
               setCartList([]);
               setLoading(false);
             } catch (error) {
@@ -110,68 +140,6 @@ const Home = ({ navigation }) => {
           setLoading(false);
         }
       })();
-      if (pickupPoint === null) {
-        console.log('run geolocation');
-        Geolocation.getCurrentPosition(
-          position => {
-            const currentLongitude = position.coords.longitude;
-            const currentLatitude = position.coords.latitude;
-            // get nearest pick up point by current lat,long
-            fetch(
-              `${API.baseURL}/api/pickupPoint/getWithSortAndSuggestion?latitude=${currentLatitude}&longitude=${currentLongitude}`,
-            )
-              .then(res => res.json())
-              .then(response => {
-                setPickupPoint(response.sortedPickupPointSuggestionList[0]);
-                //fetch categories
-                fetch(
-                  `${API.baseURL}/api/product/getAllCategory?pickupPointId=${response.sortedPickupPointSuggestionList[0].id}`,
-                )
-                  .then(res => res.json())
-                  .then(category => {
-                    if (category.error) {
-                      setCategories([]);
-                      return;
-                    }
-                    setCategories(category);
-                    setCurrentCate(category[0].id);
-                    // fetch products
-                    fetch(
-                      `${API.baseURL}/api/product/getProductsForCustomer?productCategoryId=${category[0].id}&pickupPointId=${response.sortedPickupPointSuggestionList[0].id}&page=0&limit=10&quantitySortType=DESC&expiredSortType=ASC`,
-                    )
-                      .then(res => res.json())
-                      .then(data => {
-                        setProductsByCategory(data.productList);
-                        setPage(1);
-                        setTotalPage(data.totalPage);
-                        setLoading(false);
-                      })
-                      .catch(err => {
-                        console.log(err);
-                        setLoading(false);
-                      });
-                    setLoading(false);
-                  })
-                  .catch(err => {
-                    console.log(err);
-                    setLoading(false);
-                  });
-                setLoading(false);
-              })
-              .catch(err => {
-                console.log(err);
-                setLoading(false);
-              }
-              );
-          },
-          error => {
-            console.log(error.message);
-          },
-          {
-            enableHighAccuracy: true,
-          },
-        );
-      }
     }, []),
   );
 
