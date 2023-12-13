@@ -1130,6 +1130,7 @@ public class ProductServiceImpl implements ProductService {
                         productExcelCreate.setSupermarket(product.getSupermarket());
 
                         List<String> imageUrls = new ArrayList<>();
+                        Boolean duplicate = false;
                         if (product.getName() != null && product.getDescription() != null && product.getUnit() != null && product.getProductSubCategory() != null) {
                             if (productSeenData.add(productExcelCreate)) {
                                 if (productImages.get(rowIndex) != null) {
@@ -1168,7 +1169,7 @@ public class ProductServiceImpl implements ProductService {
                     }
 
                     if (errors.size() > 0) {
-                        errorFields.put(rowIndex, errors);
+                        errorFields.put(productList.size(), errors);
                     }
                 }
                 rowIndex++;
