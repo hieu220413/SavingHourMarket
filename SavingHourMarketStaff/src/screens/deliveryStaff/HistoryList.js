@@ -679,7 +679,7 @@ const HistoryList = ({ navigation }) => {
           }${sortItem?.id == 2 && isHadSortItem === true
             ? '&deliveryDateSortType=DESC'
             : ''
-          }`,
+          }${selectedTimeFrameId ? `&timeFrameId=${selectedTimeFrameId}` : ''}`,
           {
             method: 'GET',
             headers: {
@@ -1859,42 +1859,41 @@ const HistoryList = ({ navigation }) => {
                     <ModalItem item={item} key={index} />
                   ))}
                 </View>
-                {currentOptions.id !== 2 && (
-                  <>
+
+                <>
+                  <View
+                    style={{ flexDirection: 'row', alignItems: 'center' }}
+                  >
+                    <Text
+                      style={{
+                        color: 'black',
+                        fontSize: Dimensions.get('window').width * 0.045,
+                        fontWeight: 700,
+                      }}>
+                      Chọn khung giờ
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: Dimensions.get('window').width * 0.03,
+                        marginLeft: '2%',
+                      }}>
+                      {/* (Kéo xuống để hiện thị thêm) */}
+                    </Text>
+                  </View>
+                  <ScrollView>
                     <View
-                      style={{ flexDirection: 'row', alignItems: 'center' }}
-                    >
-                      <Text
-                        style={{
-                          color: 'black',
-                          fontSize: Dimensions.get('window').width * 0.045,
-                          fontWeight: 700,
-                        }}>
-                        Chọn khung giờ
-                      </Text>
-                      <Text
-                        style={{
-                          fontSize: Dimensions.get('window').width * 0.03,
-                          marginLeft: '2%',
-                        }}>
-                        {/* (Kéo xuống để hiện thị thêm) */}
-                      </Text>
+                      style={{
+                        flexDirection: 'row',
+                        flexWrap: 'wrap',
+                        marginVertical: '1%',
+                        maxHeight: Dimensions.get('window').height * 0.3,
+                      }}>
+                      {timeFrameList.map((item, index) => (
+                        <TimeFrameItem item={item} key={index} />
+                      ))}
                     </View>
-                    <ScrollView>
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          flexWrap: 'wrap',
-                          marginVertical: '1%',
-                          maxHeight: Dimensions.get('window').height * 0.3,
-                        }}>
-                        {timeFrameList.map((item, index) => (
-                          <TimeFrameItem item={item} key={index} />
-                        ))}
-                      </View>
-                    </ScrollView>
-                  </>
-                )}
+                  </ScrollView>
+                </>
 
                 <Text
                   style={{

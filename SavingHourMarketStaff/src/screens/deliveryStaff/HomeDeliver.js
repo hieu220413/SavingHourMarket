@@ -635,7 +635,7 @@ const HomeDeliver = ({ navigation }) => {
           `${API.baseURL
           }/api/order/staff/getOrders?isGrouped=false&isBatched=false&delivererId=${userFromAS?.id
           }&orderStatus=DELIVERING${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`
-          }`,
+          }${selectedTimeFrameId ? `&timeFrameId=${selectedTimeFrameId}` : ''}`,
           {
             method: 'GET',
             headers: {
@@ -1710,28 +1710,27 @@ const HomeDeliver = ({ navigation }) => {
                     />
                   </TouchableOpacity>
                 </View>
-                {currentOptions.id !== 2 && (
-                  <>
-                    <Text
-                      style={{
-                        color: 'black',
-                        fontSize: Dimensions.get('window').width * 0.045,
-                        fontWeight: 700,
-                      }}>
-                      Chọn khung giờ
-                    </Text>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        flexWrap: 'wrap',
-                        marginVertical: '1%',
-                        maxHeight: Dimensions.get('window').height * 0.3,
-                      }}>
-                      {timeFrameList.map((item, index) => (
-                        <TimeFrameItem item={item} key={index} />
-                      ))}
-                    </View></>
-                )}
+                <>
+                  <Text
+                    style={{
+                      color: 'black',
+                      fontSize: Dimensions.get('window').width * 0.045,
+                      fontWeight: 700,
+                    }}>
+                    Chọn khung giờ
+                  </Text>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      flexWrap: 'wrap',
+                      marginVertical: '1%',
+                      maxHeight: Dimensions.get('window').height * 0.3,
+                    }}>
+                    {timeFrameList.map((item, index) => (
+                      <TimeFrameItem item={item} key={index} />
+                    ))}
+                  </View></>
+
 
                 <Text
                   style={{
