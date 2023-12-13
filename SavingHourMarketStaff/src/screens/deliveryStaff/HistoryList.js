@@ -418,14 +418,14 @@ const HistoryList = ({ navigation }) => {
   ];
 
   const deliveryOptions = [
-    { id: 0, display: 'Giao hàng tại điểm nhận' },
-    { id: 1, display: 'Giao hàng tận nhà' },
+    { id: 0, display: 'Điểm nhận hàng' },
+    { id: 1, display: 'Giao tận nhà' },
     { id: 2, display: 'Đơn hàng lẻ' },
   ];
 
   const [currentOptions, setCurrentOptions] = useState({
     id: 0,
-    display: 'Giao hàng tại điểm nhận',
+    display: 'Điểm nhận hàng',
   });
 
   const sortOptions = [
@@ -1279,7 +1279,7 @@ const HistoryList = ({ navigation }) => {
                     <View
                       style={[
                         {
-                          paddingHorizontal: '1%',
+                          paddingHorizontal: '1.5%',
                           paddingVertical: '2%'
                         },
                         currentOptions.display === item.display && {
@@ -1336,7 +1336,7 @@ const HistoryList = ({ navigation }) => {
                 marginLeft: 10,
                 paddingBottom: 20,
               }}>
-              Số lượng đơn hàng đã giao:{' '}
+              Số lượng đã giao:{' '}
               {currentOptions.id === 0 || currentOptions.id === 1
                 ? orderGroupList.length + ' nhóm đơn'
                 : orders.length + ' đơn'}
@@ -1450,7 +1450,7 @@ const HistoryList = ({ navigation }) => {
                                       paddingHorizontal: data.item.isExpand ? 0 : 5,
                                       flexGrow: 1,
                                       flexShrink: 1,
-                                      justifyContent:  data.item.isExpand ? 'center' : 'flex-start'
+                                      justifyContent: data.item.isExpand ? 'center' : 'flex-start'
                                     }}>
                                     {data.item.isExpand ? (
                                       <Text
@@ -1460,9 +1460,9 @@ const HistoryList = ({ navigation }) => {
                                           fontFamily: 'Roboto',
                                           color: 'white',
                                         }}>
-                                        {data.item.timeFrame.fromHour.slice(0,5) +
+                                        {data.item.timeFrame.fromHour.slice(0, 5) +
                                           '-' +
-                                          data.item.timeFrame.toHour.slice(0,5) +
+                                          data.item.timeFrame.toHour.slice(0, 5) +
                                           ' ' +
                                           format(
                                             Date.parse(data.item.deliverDate),
@@ -1483,9 +1483,9 @@ const HistoryList = ({ navigation }) => {
                                             color: 'white',
                                           }}>
                                           Khung giờ:{' '}
-                                          {data.item.timeFrame.fromHour.slice(0,5) +
+                                          {data.item.timeFrame.fromHour.slice(0, 5) +
                                             '-' +
-                                            data.item.timeFrame.toHour.slice(0,5)}
+                                            data.item.timeFrame.toHour.slice(0, 5)}
                                         </Text>
                                         <Text
                                           style={{
@@ -1502,31 +1502,31 @@ const HistoryList = ({ navigation }) => {
                                         </Text>
                                         {data.item.pickupPoint && (
                                           <Text
-                                          style={{
-                                            fontSize: Dimensions.get('window').width * 0.045,
-                                            fontWeight: 'bold',
-                                            fontFamily: 'Roboto',
-                                            color: 'white',
-                                          }}
-                                          numberOfLines={2}>
-                                          Điểm giao:
-                                          {' ' + data.item.pickupPoint.address}
-                                        </Text>
+                                            style={{
+                                              fontSize: Dimensions.get('window').width * 0.045,
+                                              fontWeight: 'bold',
+                                              fontFamily: 'Roboto',
+                                              color: 'white',
+                                            }}
+                                            numberOfLines={2}>
+                                            Điểm giao:
+                                            {' ' + data.item.pickupPoint.address}
+                                          </Text>
                                         )}
                                         {data.item.productConsolidationArea && (
-                                        <Text
-                                          style={{
-                                            fontSize: Dimensions.get('window').width * 0.045,
-                                            fontWeight: 'bold',
-                                            fontFamily: 'Roboto',
-                                            color: 'white',
-                                          }}
-                                          numberOfLines={2}>
-                                          Điểm tập kết:
-                                          {' ' +
-                                            data.item.productConsolidationArea
-                                              .address}
-                                        </Text>
+                                          <Text
+                                            style={{
+                                              fontSize: Dimensions.get('window').width * 0.045,
+                                              fontWeight: 'bold',
+                                              fontFamily: 'Roboto',
+                                              color: 'white',
+                                            }}
+                                            numberOfLines={2}>
+                                            Điểm tập kết:
+                                            {' ' +
+                                              data.item.productConsolidationArea
+                                                .address}
+                                          </Text>
                                         )}
                                       </View>
                                     )}
@@ -1877,7 +1877,7 @@ const HistoryList = ({ navigation }) => {
                           fontSize: Dimensions.get('window').width * 0.03,
                           marginLeft: '2%',
                         }}>
-                        (Kéo xuống để hiện thị thêm)
+                        {/* (Kéo xuống để hiện thị thêm) */}
                       </Text>
                     </View>
                     <ScrollView>
@@ -1886,6 +1886,7 @@ const HistoryList = ({ navigation }) => {
                           flexDirection: 'row',
                           flexWrap: 'wrap',
                           marginVertical: '1%',
+                          maxHeight: Dimensions.get('window').height * 0.3,
                         }}>
                         {timeFrameList.map((item, index) => (
                           <TimeFrameItem item={item} key={index} />

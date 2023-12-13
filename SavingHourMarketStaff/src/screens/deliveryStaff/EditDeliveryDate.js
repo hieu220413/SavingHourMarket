@@ -39,7 +39,6 @@ const EditDeliveryDate = ({ navigation, route }) => {
   const [date, setDate] = useState(null);
   const [orderItems, setOrderItems] = useState(route.params.orderItems);
   const [initializing, setInitializing] = useState(true);
-  const [tokenId, setTokenId] = useState(null);
   const orderId = route.params.orderId;
   const expDateList = route.params.expDateList;
 
@@ -198,7 +197,7 @@ const EditDeliveryDate = ({ navigation, route }) => {
     }, [expDateList, route.params.picked]),
   );
 
-  const handleEdit = () => {
+  const handleEdit = async () => {
     if (!date) {
       setValidateMessage('Vui lòng chọn ngày giao hàng');
       setOpenValidateDialog(true);
@@ -211,6 +210,7 @@ const EditDeliveryDate = ({ navigation, route }) => {
     //     return false;
     // }
     setLoading(true);
+    const tokenId = await auth().currentUser.getIdToken();
     fetch(
       `${API.baseURL
       }/api/order/deliveryStaff/editDeliverDate/${orderId}?deliverDate=${format(
@@ -242,6 +242,7 @@ const EditDeliveryDate = ({ navigation, route }) => {
       })
       .then(data => {
         console.log('data', data);
+
         setLoading(false);
         navigation.navigate('OrderDetails', {
           id: route.params.orderId,
@@ -281,7 +282,7 @@ const EditDeliveryDate = ({ navigation, route }) => {
               fontWeight: 'bold',
               fontFamily: 'Roboto',
             }}>
-            Chỉnh sửa ngày/giờ giao hàng
+            Chỉnh sửa ngày giao hàng
           </Text>
         </View>
         <ScrollView>
@@ -325,7 +326,7 @@ const EditDeliveryDate = ({ navigation, route }) => {
                 />
                 <Text
                   style={{
-                    fontSize: Dimensions.get('window').width * 0.06,
+                    fontSize: Dimensions.get('window').width * 0.05,
                     fontFamily: 'Roboto',
                     color: 'black',
                   }}>
@@ -357,19 +358,29 @@ const EditDeliveryDate = ({ navigation, route }) => {
                 setOpenValidateDialog(true);
                 return;
               }
-
-              if (date.getTime() < minDate.getTime()) {
-                setOpen(false);
+              if (
+                dayjs(currentDate).format('YYYY/MM/DD') ==
+                dayjs(date).format('YYYY/MM/DD')
+              ) {
                 setValidateMessage(
-                  'Đơn hàng luôn được giao sau 2 ngày kể từ ngày đặt hàng',
+                  'Không thể chọn ngày giao là ngày hôm nay',
                 );
                 setOpenValidateDialog(true);
                 return;
               }
+
+              // if (date.getTime() < minDate.getTime()) {
+              //   setOpen(false);
+              //   setValidateMessage(
+              //     'Đơn hàng luôn được giao sau 2 ngày kể từ ngày đặt hàng',
+              //   );
+              //   setOpenValidateDialog(true);
+              //   return;
+              // }
               if (date.getTime() > maxDate.getTime()) {
                 setOpen(false);
                 setValidateMessage(
-                  'Đơn hàng phải giao trước HSD của sản phẩm có HSD gần nhất 1 ngày',
+                  `Đơn hàng phải giao trước HSD của sản phẩm có HSD gần nhất 1 ngày (HSD ${dayjs(maxDate).format('DD/MM/YYYY')}) `,
                 );
                 setOpenValidateDialog(true);
                 return;
@@ -485,6 +496,7 @@ const EditDeliveryDate = ({ navigation, route }) => {
               text="Đóng"
               onPress={() => {
                 setOpenValidateDialog(false);
+                setOpen(false);
               }}
             />
           </ModalFooter>
@@ -493,7 +505,7 @@ const EditDeliveryDate = ({ navigation, route }) => {
           style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
           <Text
             style={{
-              fontSize: 20,
+              fontSize: Dimensions.get('window').width * 0.06,
               fontFamily: 'Roboto',
               color: 'black',
               textAlign: 'center',
@@ -533,7 +545,7 @@ const EditDeliveryDate = ({ navigation, route }) => {
             }}>
             <Text
               style={{
-                fontSize: 18,
+                fontSize: Dimensions.get('window').width * 0.048,
                 color: 'white',
                 fontFamily: 'Roboto',
                 fontWeight: 'bold',
