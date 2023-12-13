@@ -136,6 +136,8 @@ const EditProductByExcel = ({
         width: 40,
       },
     ];
+    let prevRow = 0;
+
     const promise = Promise.all(
       confirmProductList.productList.map(async (product, i) => {
         if (product.productBatchList.length !== 0) {
@@ -223,21 +225,24 @@ const EditProductByExcel = ({
 
         if (product.imageUrls?.length !== 0 && product.imageUrls !== null) {
           for (let j = 0; j < product.imageUrls.length; j++) {
+            const row =
+              i > 0
+                ? prevRow + temProductList[i - 1].productBatchList.length
+                : i + 1;
+            prevRow = row;
             const imageUrl = await toImageUrl(product.imageUrls[j]);
-            console.log(imageUrl);
+            console.log("i second", i);
             const imageId = workbook.addImage({
               base64: imageUrl.base64Url,
               extension: "png",
             });
+
+            console.log(`${i} : ${row}`);
+
             sheet.addImage(imageId, {
               tl: {
                 col: j + 11,
-                row:
-                  i > 0
-                    ? i +
-                      1 +
-                      (temProductList[i - 1]?.productBatchList.length - 1)
-                    : i + 1,
+                row: row,
               },
               ext: { width: 100, height: 100 },
               editAs: "oneCell",
