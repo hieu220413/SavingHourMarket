@@ -12,6 +12,7 @@ import com.fpt.capstone.savinghourmarket.service.FirebaseService;
 import com.fpt.capstone.savinghourmarket.service.ProductCategoryService;
 import com.fpt.capstone.savinghourmarket.service.ProductService;
 import com.fpt.capstone.savinghourmarket.service.ProductSubCategoryService;
+import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -422,74 +423,74 @@ public class ProductServiceImpl implements ProductService {
         Integer productCount = 1;
         for (ProductCreateList productCreate : productList) {
             List<String> errors = new ArrayList<>();
-            if (productCreate.getName().length() > 255) {
-                errors.add("Tên sản phẩm: " + productCreate.getName() + " quá 255 kí tự!");
-            }
-
-            if (productCreate.getUnit().length() > 50) {
-                errors.add("Đơn vị sản phẩm: " + productCreate.getUnit() + " quá 50 kí tự!");
-            }
-
-            if (productCreate.getImageUrls().size() == 0) {
-                errors.add("Vui lòng thêm hình cho sản phẩm!");
-            }
-
-            if (productCreate.getPriceListed() < 0) {
-                errors.add("Giá niêm yết không thể âm!");
-            }
-
-            UUID productSubCategoryId = productCreate.getProductSubCategory().getId();
-            if (productSubCategoryId == null) {
-                errors.add("Vui lòng nhập thông tin Loại danh mục phụ!");
-            } else if (!productSubCategoryRepository.findById(productSubCategoryId).isPresent()) {
-                errors.add("Danh mục phụ không tìm thấy với id: " + productSubCategoryId);
-            }
-
-            UUID supermarketId = productCreate.getSupermarket().getId();
-            Optional<Supermarket> supermarket = supermarketRepository.findById(supermarketId);
-            if (supermarketId == null) {
-                errors.add("Vui lòng nhập thông tin siêu thị!");
-            } else if (!supermarket.isPresent()) {
-                errors.add("Siêu thị không tìm thấy với id: " + supermarketId);
-            }
-
-            if(errors.size() == 0 && productDuplicate(productCreate)){
-                errors.add("Thông tin sản phẩm " + productCreate.getName() + " đã tồn tại trong hệ thống!");
-            }
-
-            List<ProductBatchCreateList> productBatchesCreate = productCreate.getProductBatchList();
-            productBatchesCreate.forEach(productBatchCreate -> {
-                if (productBatchCreate.getPrice() == null) {
-                    errors.add("Vui lòng nhập giá bán của lô sản phẩm " + productBatchCreate.getExpiredDate());
-                } else if (productBatchCreate.getPrice() != null && productBatchCreate.getPrice() < 0) {
-                    errors.add("Giá bán của lô sản phẩm " + productBatchCreate.getExpiredDate() + "đang âm!");
+            if (hasNullOrEmptyFields(productCreate)) {
+                errors.add("Một số thông tin của sản phẩm đang trống! Vui lòng điền đầy đủ!");
+            } else {
+                if (productCreate.getName().length() > 255) {
+                    errors.add("Tên sản phẩm: " + productCreate.getName() + " quá 255 kí tự!");
                 }
 
-                if (productBatchCreate.getExpiredDate() == null) {
-                    errors.add("Vui lòng nhập ngày hết hạn của lô sản phẩm");
-                } else if (productBatchCreate.getExpiredDate() != null && productSubCategoryRepository.findById(productSubCategoryId).isPresent() && productBatchCreate.getExpiredDate().isBefore(LocalDate.now().plus(productCreate.getProductSubCategory().getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
-                    errors.add("Ngày hết hạn của lô sản phẩm " + productBatchCreate.getExpiredDate() + " phải sau ngày hiện tại cộng thêm số ngày điều kiện cho hàng cận hạn sử dụng có trong SUBCATEGORY!");
-                }
-                if (productBatchCreate.getPriceOriginal() == null) {
-                    errors.add("Vui lòng nhập giá gốc của lô sản phẩm " + productBatchCreate.getExpiredDate());
-                } else if (productBatchCreate.getPriceOriginal() != null && productBatchCreate.getPriceOriginal() < 0) {
-                    errors.add("Giá gốc của lô sản phẩm " + productBatchCreate.getExpiredDate() + "đang âm!");
+                if (productCreate.getUnit().length() > 50) {
+                    errors.add("Đơn vị sản phẩm: " + productCreate.getUnit() + " quá 50 kí tự!");
                 }
 
-                productBatchCreate.getProductBatchAddresses().forEach(productBatchAddressCreateList -> {
-                    if (supermarket.isPresent()) {
-                        if (supermarket.get().getSupermarketAddressList().stream()
-                                .noneMatch(supermarketAddress -> productBatchAddressCreateList.getSupermarketAddress().getAddress().equals(supermarketAddress.getAddress()))) {
-                            errors.add("Địa chỉ " + productBatchAddressCreateList.getSupermarketAddress().getAddress() + " không tìm thấy trong danh sách địa chỉ chi nhánh của siêu thị!");
-                        }
-                        if (productBatchAddressCreateList.getQuantity() == null) {
-                            errors.add("Vui lòng nhập số lượng của lô sản phẩm " + productBatchCreate.getExpiredDate());
-                        } else if (productBatchAddressCreateList.getQuantity() != null && productBatchAddressCreateList.getQuantity() <= 0) {
-                            errors.add("Số lượng của lô sản phẩm " + productBatchCreate.getExpiredDate() + "đang âm hoặc bằng 0!");
-                        }
+                if (productCreate.getImageUrls().size() == 0) {
+                    errors.add("Vui lòng thêm hình cho sản phẩm!");
+                }
+
+                if (productCreate.getPriceListed() < 0) {
+                    errors.add("Giá niêm yết không thể âm!");
+                }
+
+                UUID productSubCategoryId = productCreate.getProductSubCategory().getId();
+                if (productSubCategoryRepository.findById(productSubCategoryId).isEmpty()) {
+                    errors.add("Danh mục phụ không tìm thấy với id: " + productSubCategoryId);
+                }
+
+                UUID supermarketId = productCreate.getSupermarket().getId();
+                Optional<Supermarket> supermarket = supermarketRepository.findById(supermarketId);
+                if (supermarket.isEmpty()) {
+                    errors.add("Siêu thị không tìm thấy với id: " + supermarketId);
+                }
+
+                if (errors.size() == 0 && productDuplicate(productCreate)) {
+                    errors.add("Thông tin sản phẩm " + productCreate.getName() + " đã tồn tại trong hệ thống!");
+                }
+
+                List<ProductBatchCreateList> productBatchesCreate = productCreate.getProductBatchList();
+                productBatchesCreate.forEach(productBatchCreate -> {
+                    if (productBatchCreate.getPrice() == null) {
+                        errors.add("Vui lòng nhập giá bán của lô sản phẩm " + productBatchCreate.getExpiredDate());
+                    } else if (productBatchCreate.getPrice() != null && productBatchCreate.getPrice() < 0) {
+                        errors.add("Giá bán của lô sản phẩm " + productBatchCreate.getExpiredDate() + "đang âm!");
                     }
+
+                    if (productBatchCreate.getExpiredDate() == null) {
+                        errors.add("Vui lòng nhập ngày hết hạn của lô sản phẩm");
+                    } else if (productBatchCreate.getExpiredDate() != null && productSubCategoryRepository.findById(productSubCategoryId).isPresent() && productBatchCreate.getExpiredDate().isBefore(LocalDate.now().plus(productCreate.getProductSubCategory().getAllowableDisplayThreshold(), ChronoUnit.DAYS))) {
+                        errors.add("Ngày hết hạn của lô sản phẩm " + productBatchCreate.getExpiredDate() + " phải sau ngày hiện tại cộng thêm số ngày điều kiện cho hàng cận hạn sử dụng có trong SUBCATEGORY!");
+                    }
+                    if (productBatchCreate.getPriceOriginal() == null) {
+                        errors.add("Vui lòng nhập giá gốc của lô sản phẩm " + productBatchCreate.getExpiredDate());
+                    } else if (productBatchCreate.getPriceOriginal() != null && productBatchCreate.getPriceOriginal() < 0) {
+                        errors.add("Giá gốc của lô sản phẩm " + productBatchCreate.getExpiredDate() + "đang âm!");
+                    }
+
+                    productBatchCreate.getProductBatchAddresses().forEach(productBatchAddressCreateList -> {
+                        if (supermarket.isPresent()) {
+                            if (supermarket.get().getSupermarketAddressList().stream()
+                                    .noneMatch(supermarketAddress -> productBatchAddressCreateList.getSupermarketAddress().getAddress().equals(supermarketAddress.getAddress()))) {
+                                errors.add("Địa chỉ " + productBatchAddressCreateList.getSupermarketAddress().getAddress() + " không tìm thấy trong danh sách địa chỉ chi nhánh của siêu thị!");
+                            }
+                            if (productBatchAddressCreateList.getQuantity() == null) {
+                                errors.add("Vui lòng nhập số lượng của lô sản phẩm " + productBatchCreate.getExpiredDate());
+                            } else if (productBatchAddressCreateList.getQuantity() != null && productBatchAddressCreateList.getQuantity() <= 0) {
+                                errors.add("Số lượng của lô sản phẩm " + productBatchCreate.getExpiredDate() + "đang âm hoặc bằng 0!");
+                            }
+                        }
+                    });
                 });
-            });
+            }
 
             if (errors.size() > 0) {
                 errorFields.put(productCount, errors);
@@ -546,6 +547,59 @@ public class ProductServiceImpl implements ProductService {
         });
         return new ProductExcelResponse(productList, errorFields);
 
+    }
+
+    private static boolean hasNullOrEmptyFields(ProductCreateList productCreateList) {
+        if (productCreateList == null) {
+            return true;
+        }
+
+        if (StringUtils.isEmpty(productCreateList.getName())
+                || StringUtils.isEmpty(productCreateList.getDescription())
+                || productCreateList.getPriceListed() == null
+                || StringUtils.isEmpty(productCreateList.getUnit())
+                || productCreateList.getSupermarket().getId() == null
+                || productCreateList.getImageUrls() == null
+                || productCreateList.getProductSubCategory().getId() == null
+                || productCreateList.getProductBatchList() == null) {
+            return true;
+        } else if (productCreateList.getImageUrls() != null && productCreateList.getImageUrls().isEmpty()) {
+            return true;
+        } else if (productCreateList.getProductBatchList() != null && productCreateList.getProductBatchList().isEmpty()) {
+            return true;
+        } else if (batchHasNullOrEmptyFields(productCreateList.getProductBatchList())) {
+            return true;
+        }
+
+
+        return false;
+    }
+
+    private static boolean batchHasNullOrEmptyFields(List<ProductBatchCreateList> batchCreateList) {
+        for (ProductBatchCreateList batchCreate : batchCreateList) {
+            if (batchCreate.getPrice() == null
+                    || batchCreate.getPriceOriginal() == null
+                    || batchCreate.getExpiredDate() == null
+                    || batchCreate.getProductBatchAddresses() == null) {
+                return true;
+            } else if (batchCreate.getProductBatchAddresses() != null && batchCreateList.isEmpty()) {
+                return true;
+            } else if (batchAddressHasNullOrEmptyFields(batchCreate.getProductBatchAddresses())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean batchAddressHasNullOrEmptyFields(List<ProductBatchAddressCreateList> productBatchAddresses) {
+        for (ProductBatchAddressCreateList productBatchAddress : productBatchAddresses) {
+            if (productBatchAddress.getQuantity() == null
+                    || productBatchAddress.getSupermarketAddress() == null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Boolean productDuplicate(ProductCreateList productCreate) {
@@ -1131,17 +1185,18 @@ public class ProductServiceImpl implements ProductService {
                         product.setProductSubCategory(productSubCategory);
                         product.setSupermarket(supermarket);
 
-                        ProductExcelCreate productExcelCreate = new ProductExcelCreate();
-                        productExcelCreate.setName(product.getName());
-                        productExcelCreate.setUnit(product.getUnit());
-                        productExcelCreate.setPriceListed(product.getPriceListed());
-                        productExcelCreate.setDescription(product.getDescription().trim().replaceAll("\\s+", " "));
-                        productExcelCreate.setProductSubCategory(product.getProductSubCategory());
-                        productExcelCreate.setSupermarket(product.getSupermarket());
 
                         List<String> imageUrls = new ArrayList<>();
                         Boolean duplicate = false;
-                        if (product.getName() != null && product.getDescription() != null && product.getUnit() != null && product.getProductSubCategory() != null) {
+                        if (product.getName() != null && product.getDescription() != null && product.getUnit() != null && product.getProductSubCategory() != null && supermarket.getName() != null && !productBatchCreate.hasNullField()) {
+                            ProductExcelCreate productExcelCreate = new ProductExcelCreate();
+                            productExcelCreate.setName(product.getName());
+                            productExcelCreate.setUnit(product.getUnit());
+                            productExcelCreate.setPriceListed(product.getPriceListed());
+                            productExcelCreate.setDescription(product.getDescription() != null ? product.getDescription().trim().replaceAll("\\s+", " ") : product.getDescription());
+                            productExcelCreate.setProductSubCategory(product.getProductSubCategory());
+                            productExcelCreate.setSupermarket(product.getSupermarket());
+
                             if (productSeenData.add(productExcelCreate)) {
                                 if (productImages.get(rowIndex) != null) {
                                     productImages.get(rowIndex).forEach(image -> {
@@ -1173,6 +1228,12 @@ public class ProductServiceImpl implements ProductService {
                                 }
                             }
                         } else {
+                            if (productImages.get(rowIndex) != null) {
+                                productImages.get(rowIndex).forEach(image -> {
+                                    String imageUrl = FirebaseService.uploadImageToStorage(image, "productImage" + UUID.randomUUID().toString());
+                                    imageUrls.add(imageUrl);
+                                });
+                            }
                             product.setImageUrls(imageUrls);
                             productList.add(product);
                         }
@@ -1199,7 +1260,7 @@ public class ProductServiceImpl implements ProductService {
 
         Integer rowCheckDuplicateBatch = 1;
         for (ProductCreateList productCreateList : productList) {
-            if (hasObjectsWithSameExpiredDate(productCreateList.getProductBatchList())) {
+            if (hasObjectsWithSameExpiredDate(productCreateList.getProductBatchList().stream().filter(productBatch -> !productBatch.hasNullField()).collect(Collectors.toList()))) {
                 if (errorFields.get(rowCheckDuplicateBatch) != null) {
                     errorFields.get(rowCheckDuplicateBatch).add("Sản phẩm có tồn tại 2 hay nhiều lô hàng có cùng HSD!");
                 } else {
