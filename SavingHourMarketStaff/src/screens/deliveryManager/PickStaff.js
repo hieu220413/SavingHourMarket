@@ -384,6 +384,13 @@ const PickStaff = ({navigation, route}) => {
                   }
                   // Cac loi 403 khac thi handle duoi day neu co
                 }
+
+                if (res.status === 409) {
+                  const error = await res.json();
+                  showFailToast(error.message);
+                  navigation.navigate('OrderGroup');
+                  throw new Error();
+                }
                 return res.text();
               })
               .then(respond => {
@@ -451,6 +458,13 @@ const PickStaff = ({navigation, route}) => {
                   }
                   // Cac loi 403 khac thi handle duoi day neu co
                 }
+                
+                if (res.status === 409) {
+                  const error = await res.json();
+                  showFailToast(error.message);
+                  navigation.navigate('OrderListForManager');
+                  throw new Error();
+                }
                 return res.text();
               })
               .then(respond => {
@@ -469,7 +483,7 @@ const PickStaff = ({navigation, route}) => {
                 setLoading(false);
               });
           }
-          setLoading(false);
+          // setLoading(false);
         }
       }
     };
@@ -505,6 +519,13 @@ const PickStaff = ({navigation, route}) => {
                 }
                 // Cac loi 403 khac thi handle duoi day neu co
               }
+
+              if (res.status === 409) {
+                const error = await res.json();
+                showFailToast(error.message);
+                navigation.navigate('OrderBatch');
+                throw new Error();
+              }
               return res.text();
             })
             .then(respond => {
@@ -523,7 +544,7 @@ const PickStaff = ({navigation, route}) => {
               setLoading(false);
             });
 
-          setLoading(false);
+          // setLoading(false);
         }
       }
     };

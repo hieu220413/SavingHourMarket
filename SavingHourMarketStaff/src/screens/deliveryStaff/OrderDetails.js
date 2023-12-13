@@ -21,6 +21,7 @@ import { API } from '../../constants/api';
 import LoadingScreen from '../../components/LoadingScreen';
 import database from '@react-native-firebase/database';
 import { checkSystemState } from '../../common/utils';
+import dayjs from 'dayjs';
 
 const OrderDetails = ({ navigation, route }) => {
   // listen to system state
@@ -43,6 +44,8 @@ const OrderDetails = ({ navigation, route }) => {
   const [errorModalVisible, setErrorModalVisible] = useState(false);
   const [alertText, setAlertText] = useState('');
   const [expDateList, setExpDateList] = useState([]);
+  const [currentDate, setCurrentDate] = useState(new Date());
+
   // const onAuthStateChange = async userInfo => {
   //     setLoading(true);
   //     if (initializing) {
@@ -238,12 +241,12 @@ const OrderDetails = ({ navigation, route }) => {
             <Image
               source={icons.leftArrow}
               resizeMode="contain"
-              style={{ width: 35, height: 35, tintColor: COLORS.primary }}
+              style={{ width: Dimensions.get('window').width * 0.1, height: Dimensions.get('window').width * 0.1, tintColor: COLORS.primary }}
             />
           </TouchableOpacity>
           <Text
             style={{
-              fontSize: 22,
+              fontSize: Dimensions.get('window').width * 0.055,
               textAlign: 'center',
               color: '#000000',
               fontWeight: 'bold',
@@ -264,7 +267,7 @@ const OrderDetails = ({ navigation, route }) => {
                   : { padding: 20, backgroundColor: COLORS.primary }
               }>
               <Text
-                style={{ color: 'white', fontSize: 18, fontFamily: 'Roboto' }}>
+                style={{ color: 'white', fontSize: Dimensions.get('window').width * 0.048, fontFamily: 'Roboto' }}>
                 {item?.status === 0 && 'Đơn hàng đang chờ xác nhận'}
                 {item?.status === 1 && 'Đơn hàng đang đóng gói'}
                 {item?.status === 2 && 'Đơn hàng đã đóng gói'}
@@ -288,12 +291,12 @@ const OrderDetails = ({ navigation, route }) => {
                 <View
                   style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                   <Image
-                    style={{ width: 20, height: 20 }}
+                    style={{ width: Dimensions.get('window').width * 0.08, height: Dimensions.get('window').width * 0.08 }}
                     resizeMode="contain"
                     source={icons.location}
                   />
                   <Text
-                    style={{ fontSize: 20, color: 'black', fontWeight: 'bold' }}>
+                    style={{ fontSize: Dimensions.get('window').width * 0.055, color: 'black', fontWeight: 'bold' }}>
                     Thông tin giao hàng
                   </Text>
                 </View>
@@ -301,13 +304,13 @@ const OrderDetails = ({ navigation, route }) => {
                   style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                   <View style={{ width: 20 }} />
                   <View style={{ gap: 8 }}>
-                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                    <Text style={{ fontSize: Dimensions.get('window').width * 0.048, fontWeight: 'bold' }}>
                       Mã đơn hàng : {item.code}
                     </Text>
                     <View style={{ gap: 3 }}>
                       <Text
                         style={{
-                          fontSize: 18,
+                          fontSize: Dimensions.get('window').width * 0.048,
                           fontWeight: 'bold',
                           maxWidth: '95%',
                         }}>
@@ -317,7 +320,7 @@ const OrderDetails = ({ navigation, route }) => {
                       </Text>
                     </View>
                     {item.timeFrame && (
-                      <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                      <Text style={{ fontSize: Dimensions.get('window').width * 0.048, fontWeight: 'bold' }}>
                         {item?.timeFrame
                           ? `${item?.timeFrame?.fromHour.slice(
                             0,
@@ -326,12 +329,12 @@ const OrderDetails = ({ navigation, route }) => {
                           : ''}
                       </Text>
                     )}
-                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                    <Text style={{ fontSize: Dimensions.get('window').width * 0.048, fontWeight: 'bold' }}>
                       Ngày giao hàng:{' '}
                       {format(new Date(item?.deliveryDate), 'dd/MM/yyyy')}
                     </Text>
                     {/* Edit date  */}
-                    {item?.status === 3 && (
+                    {item?.status === 3 && format(new Date(item?.deliveryDate), 'dd/MM/yyyy') == format(currentDate, 'dd/MM/yyyy') && isScaned === true && (
                       <TouchableOpacity
                         onPress={() => {
                           navigation.navigate('EditDeliveryDate', {
@@ -359,7 +362,7 @@ const OrderDetails = ({ navigation, route }) => {
                         }}>
                         <Text
                           style={{
-                            fontSize: 18,
+                            fontSize: Dimensions.get('window').width * 0.048,
                             color: COLORS.secondary,
                             fontWeight: 'bold',
                           }}>
@@ -367,8 +370,8 @@ const OrderDetails = ({ navigation, route }) => {
                         </Text>
                         <Image
                           style={{
-                            width: 20,
-                            height: 20,
+                            width: Dimensions.get('window').width * 0.08,
+                            height: Dimensions.get('window').width * 0.08,
                             tintColor: COLORS.secondary,
                           }}
                           resizeMode="contain"
@@ -390,23 +393,23 @@ const OrderDetails = ({ navigation, route }) => {
                 <View
                   style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                   <Image
-                    style={{ width: 20, height: 20 }}
+                    style={{ width: Dimensions.get('window').width * 0.08, height: Dimensions.get('window').width * 0.08 }}
                     resizeMode="contain"
                     source={icons.phone}
                   />
                   <Text
-                    style={{ fontSize: 20, color: 'black', fontWeight: 'bold' }}>
+                    style={{ fontSize: Dimensions.get('window').width * 0.048, color: 'black', fontWeight: 'bold' }}>
                     Thông tin liên lạc
                   </Text>
                 </View>
                 <View
                   style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                  <View style={{ width: 20 }} />
+                  <View style={{ width: Dimensions.get('window').width * 0.05 }} />
                   <View style={{ gap: 5 }}>
-                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                    <Text style={{ fontSize: Dimensions.get('window').width * 0.048, fontWeight: 'bold' }}>
                       {item.customer.fullName}
                     </Text>
-                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                    <Text style={{ fontSize: Dimensions.get('window').width * 0.048, fontWeight: 'bold' }}>
                       {item.customer.phone}
                     </Text>
                   </View>
@@ -449,7 +452,7 @@ const OrderDetails = ({ navigation, route }) => {
                     }}>
                     <Text
                       style={{
-                        fontSize: 23,
+                        fontSize: Dimensions.get('window').width * 0.06,
                         color: 'black',
                         fontFamily: 'Roboto',
                         fontWeight: 'bold',
@@ -458,7 +461,7 @@ const OrderDetails = ({ navigation, route }) => {
                     </Text>
                     <Text
                       style={{
-                        fontSize: 18,
+                        fontSize: Dimensions.get('window').width * 0.048,
                         color: COLORS.primary,
 
                         fontFamily: 'Roboto',
@@ -473,6 +476,21 @@ const OrderDetails = ({ navigation, route }) => {
                       }}>
                       {product.productCategory}
                     </Text>
+                    <Text
+                      style={{
+                        fontSize: Dimensions.get('window').width * 0.048,
+                        color: 'black',
+                        fontFamily: 'Roboto',
+                        fontWeight: 'bold',
+                      }}>
+                      HSD:
+                      {format(
+                        new Date(
+                          product.orderDetailProductBatches[0].expiredDate,
+                        ),
+                        'dd/MM/yyyy',
+                      )}
+                    </Text>
                     <View
                       style={{
                         flexDirection: 'row',
@@ -481,7 +499,7 @@ const OrderDetails = ({ navigation, route }) => {
                       }}>
                       <Text
                         style={{
-                          fontSize: 20,
+                          fontSize: Dimensions.get('window').width * 0.05,
 
                           fontFamily: 'Roboto',
                         }}>
@@ -492,7 +510,7 @@ const OrderDetails = ({ navigation, route }) => {
                       </Text>
                       <Text
                         style={{
-                          fontSize: 18,
+                          fontSize: Dimensions.get('window').width * 0.048,
                           fontFamily: 'Roboto',
                         }}>
                         x{product.boughtQuantity}
@@ -513,7 +531,7 @@ const OrderDetails = ({ navigation, route }) => {
                 }}>
                 <Text
                   style={{
-                    fontSize: 20,
+                    fontSize: Dimensions.get('window').width * 0.05,
                     fontFamily: 'Roboto',
                     color: 'black',
                   }}>
@@ -521,7 +539,7 @@ const OrderDetails = ({ navigation, route }) => {
                 </Text>
                 <Text
                   style={{
-                    fontSize: 20,
+                    fontSize: Dimensions.get('window').width * 0.05,
                     color: 'red',
                     fontFamily: 'Roboto',
                     fontWeight: 'bold',
@@ -552,7 +570,7 @@ const OrderDetails = ({ navigation, route }) => {
                 }}>
                 <Text
                   style={{
-                    fontSize: 22,
+                    fontSize: Dimensions.get('window').width * 0.05,
                     fontFamily: 'Roboto',
                     color: 'black',
                     fontWeight: 'bold',
@@ -571,10 +589,10 @@ const OrderDetails = ({ navigation, route }) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{ fontSize: 20, fontFamily: 'Roboto', color: 'black' }}>
+                  style={{ fontSize: Dimensions.get('window').width * 0.05, fontFamily: 'Roboto', color: 'black' }}>
                   Trạng thái
                 </Text>
-                <Text style={{ fontSize: 20, fontFamily: 'Roboto' }}>
+                <Text style={{ fontSize: Dimensions.get('window').width * 0.05, fontFamily: 'Roboto' }}>
                   {item.paymentStatus === 0
                     ? 'Chưa thanh toán'
                     : 'Đã thanh toán'}
@@ -587,14 +605,13 @@ const OrderDetails = ({ navigation, route }) => {
                   alignItems: 'center',
                   gap: 15,
                   paddingTop: 20,
-
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{ fontSize: 20, fontFamily: 'Roboto', color: 'black' }}>
+                  style={{ fontSize: Dimensions.get('window').width * 0.05, fontFamily: 'Roboto', color: 'black' }}>
                   Phương thức
                 </Text>
-                <Text style={{ fontSize: 20, fontFamily: 'Roboto' }}>
+                <Text style={{ fontSize: Dimensions.get('window').width * 0.05, fontFamily: 'Roboto' }}>
                   {item.paymentMethod === 0 ? 'COD' : 'VN Pay'}
                 </Text>
               </View>
@@ -617,7 +634,7 @@ const OrderDetails = ({ navigation, route }) => {
                 }}>
                 <Text
                   style={{
-                    fontSize: 22,
+                    fontSize: Dimensions.get('window').width * 0.052,
                     fontFamily: 'Roboto',
                     color: 'black',
                     fontWeight: 'bold',
@@ -636,10 +653,10 @@ const OrderDetails = ({ navigation, route }) => {
                   borderTopWidth: 0.75,
                 }}>
                 <Text
-                  style={{ fontSize: 20, fontFamily: 'Roboto', color: 'black' }}>
+                  style={{ fontSize: Dimensions.get('window').width * 0.048, fontFamily: 'Roboto', color: 'black' }}>
                   Tổng tiền sản phẩm:
                 </Text>
-                <Text style={{ fontSize: 20, fontFamily: 'Roboto' }}>
+                <Text style={{ fontSize: Dimensions.get('window').width * 0.048, fontFamily: 'Roboto' }}>
                   {item.totalPrice.toLocaleString('vi-VN', {
                     style: 'currency',
                     currency: 'VND',
@@ -656,10 +673,10 @@ const OrderDetails = ({ navigation, route }) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{ fontSize: 20, fontFamily: 'Roboto', color: 'black' }}>
+                  style={{ fontSize: Dimensions.get('window').width * 0.048, fontFamily: 'Roboto', color: 'black' }}>
                   Phí giao hàng:
                 </Text>
-                <Text style={{ fontSize: 20, fontFamily: 'Roboto' }}>
+                <Text style={{ fontSize: Dimensions.get('window').width * 0.048, fontFamily: 'Roboto' }}>
                   {item.shippingFee.toLocaleString('vi-VN', {
                     style: 'currency',
                     currency: 'VND',
@@ -676,10 +693,10 @@ const OrderDetails = ({ navigation, route }) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{ fontSize: 20, fontFamily: 'Roboto', color: 'black' }}>
+                  style={{ fontSize: Dimensions.get('window').width * 0.048, fontFamily: 'Roboto', color: 'black' }}>
                   Giá đã giảm:
                 </Text>
-                <Text style={{ fontSize: 20, fontFamily: 'Roboto' }}>
+                <Text style={{ fontSize: Dimensions.get('window').width * 0.048, fontFamily: 'Roboto' }}>
                   {item.totalDiscountPrice.toLocaleString('vi-VN', {
                     style: 'currency',
                     currency: 'VND',
@@ -695,12 +712,12 @@ const OrderDetails = ({ navigation, route }) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{ fontSize: 20, fontFamily: 'Roboto', color: 'black' }}>
+                  style={{ fontSize: Dimensions.get('window').width * 0.05, fontFamily: 'Roboto', color: 'black' }}>
                   Tổng cộng:
                 </Text>
                 <Text
                   style={{
-                    fontSize: 20,
+                    fontSize: Dimensions.get('window').width * 0.05,
                     fontFamily: 'Roboto',
                     color: 'red',
                     fontWeight: 'bold',
