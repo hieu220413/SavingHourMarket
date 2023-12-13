@@ -12,4 +12,6 @@ public interface ProductSubCateOnly {
     String getImageUrl();
 
     Integer getAllowableDisplayThreshold();
+
+    Integer getStatus();
 }

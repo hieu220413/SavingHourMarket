@@ -33,4 +33,10 @@ public class StaffExceptionHandler {
         ApiError apiError = new ApiError(LocalDateTime.now().toString(), e.getStatusCode().value(), e.getReason());
         return ResponseEntity.status(e.getStatusCode().value()).body(apiError);
     }
+
+    @ExceptionHandler(UnAssignPickupPointForStaffForbiddenException.class)
+    public ResponseEntity<ApiError> unAssignPickupPointForStaffForbiddenExceptionHandler(UnAssignPickupPointForStaffForbiddenException e) {
+        ApiError apiError = new ApiError(LocalDateTime.now().toString(), e.getStatusCode().value(), e.getReason());
+        return ResponseEntity.status(e.getStatusCode().value()).body(apiError);
+    }
 }

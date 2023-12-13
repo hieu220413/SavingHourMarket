@@ -406,6 +406,16 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public ProductCategory updateCategoryStatus(EnableDisableStatus status, UUID categoryId) {
+        return productCategoryService.updateCategoryStatus(status, categoryId);
+    }
+
+    @Override
+    public ProductSubCategory updateSubCategoryStatus(EnableDisableStatus status, UUID subCategoryId) {
+        return productSubCategoryService.updateSubCategoryStatus(status, subCategoryId);
+    }
+
+    @Override
     public ProductExcelResponse createProductList(List<ProductCreateList> productList) throws ResourceNotFoundException {
         LinkedHashMap<Integer, List<String>> errorFields = new LinkedHashMap<>();
         List<Product> productsSaved = new ArrayList<>();
@@ -443,6 +453,10 @@ public class ProductServiceImpl implements ProductService {
                 errors.add("Siêu thị không tìm thấy với id: " + supermarketId);
             }
 
+            if(errors.size() == 0 && productDuplicate(productCreate)){
+                errors.add("Thông tin sản phẩm " + productCreate.getName() + " đã tồn tại trong hệ thống!");
+            }
+
             List<ProductBatchCreateList> productBatchesCreate = productCreate.getProductBatchList();
             productBatchesCreate.forEach(productBatchCreate -> {
                 if (productBatchCreate.getPrice() == null) {
@@ -475,7 +489,6 @@ public class ProductServiceImpl implements ProductService {
                         }
                     }
                 });
-
             });
 
             if (errors.size() > 0) {
@@ -521,8 +534,11 @@ public class ProductServiceImpl implements ProductService {
 
             String unit = productEntity.getUnit().toLowerCase();
             productEntity.setUnit(unit);
+
             productEntity.setStatus(Status.ENABLE.ordinal());
+
             Product productSaved = productRepository.save(productEntity);
+
             product.setId(productSaved.getId());
 
             productsSaved.add(productSaved);
@@ -530,6 +546,16 @@ public class ProductServiceImpl implements ProductService {
         });
         return new ProductExcelResponse(productList, errorFields);
 
+    }
+
+    private Boolean productDuplicate(ProductCreateList productCreate) {
+        return productRepository.existsByNameAndPriceListedAndDescriptionAndUnitAndSupermarketAndProductSubCategory(
+                productCreate.getName(),
+                productCreate.getPriceListed(),
+                productCreate.getDescription(),
+                productCreate.getUnit(),
+                productCreate.getSupermarket(),
+                productCreate.getProductSubCategory());
     }
 
     public List<RevenueReportMonthly> getRevenueReportForEachMonth(Integer year) {
@@ -683,7 +709,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public CategoryListResponseBody getCategoryForStaff(String name, EnableDisableStatus status, Integer page, Integer limit) {
         Pageable pageable = PageRequest.of(limit == null ? 0 : page, limit == null ? Integer.MAX_VALUE : limit);
-        Page<ProductCateWithSubCate> result = productCategoryRepository.getAllProductCategoryWithSubCateForStaff(name, pageable);
+        Page<ProductCateWithSubCate> result = productCategoryRepository.getAllProductCategoryWithSubCateForStaff(name, status == null ? EnableDisableStatus.ENABLE.ordinal() : status.ordinal(), pageable);
         int totalPage = result.getTotalPages();
         long totalCategory = result.getTotalElements();
         List<ProductCateWithSubCate> productCateWithSubCateList = result.stream().toList();
@@ -694,7 +720,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public SubCategoryListResponseBody getSubCategoryForStaff(String name, EnableDisableStatus status, UUID productCategoryId, Integer page, Integer limit) {
         Pageable pageable = PageRequest.of(page, limit);
-        Page<ProductSubCateOnly> result = productSubCategoryRepository.findAllSubCategoryOnlyForStaff(name, productCategoryId == null ? null : productCategoryId, pageable);
+        Page<ProductSubCateOnly> result = productSubCategoryRepository.findAllSubCategoryOnlyForStaff(name, status == null ? EnableDisableStatus.ENABLE.ordinal() : status.ordinal(), productCategoryId == null ? null : productCategoryId, pageable);
         int totalPage = result.getTotalPages();
         long totalSubCategory = result.getTotalElements();
         List<ProductSubCateOnly> productSubCateOnlyList = result.stream().toList();
@@ -1114,6 +1140,7 @@ public class ProductServiceImpl implements ProductService {
                         productExcelCreate.setSupermarket(product.getSupermarket());
 
                         List<String> imageUrls = new ArrayList<>();
+                        Boolean duplicate = false;
                         if (product.getName() != null && product.getDescription() != null && product.getUnit() != null && product.getProductSubCategory() != null) {
                             if (productSeenData.add(productExcelCreate)) {
                                 if (productImages.get(rowIndex) != null) {
@@ -1152,7 +1179,7 @@ public class ProductServiceImpl implements ProductService {
                     }
 
                     if (errors.size() > 0) {
-                        errorFields.put(rowIndex, errors);
+                        errorFields.put(productList.size(), errors);
                     }
                 }
                 rowIndex++;

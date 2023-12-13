@@ -77,6 +77,8 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/product/update").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/product/updateSubCategory").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/product/updateCategory").hasAnyRole(selectionStaffAndAdmin)
+                            .requestMatchers("/api/product/updateCategoryStatus").hasAnyRole(selectionStaffAndAdmin)
+                            .requestMatchers("/api/product/updateSubCategoryStatus").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/product/uploadExcelFile").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/product/create").hasAnyRole(selectionStaffAndAdmin)
                             .requestMatchers("/api/product/create/list").hasAnyRole(selectionStaffAndAdmin)
@@ -130,6 +132,7 @@ public class SpringSecurityConfig {
                             .requestMatchers("/api/staff/getStaffForAdmin").hasRole("ADMIN")
                             .requestMatchers("/api/staff/updateStaffAccountStatus").hasRole("ADMIN")
                             .requestMatchers("/api/staff/updateStaffRole").hasRole("ADMIN")
+                            .requestMatchers("/api/staff/assignPickupPointForCreateAccount").hasRole("ADMIN")
                             .requestMatchers("/api/staff/assignPickupPoint").hasRole("ADMIN")
                             .requestMatchers("/api/staff/unAssignPickupPoint").hasRole("ADMIN")
 

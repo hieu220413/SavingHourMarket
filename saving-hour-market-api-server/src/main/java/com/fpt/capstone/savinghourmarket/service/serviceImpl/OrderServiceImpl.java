@@ -1054,7 +1054,7 @@ public class OrderServiceImpl implements OrderService {
             LocalDate expDateOrderProduct = productBatch.getProductBatch().getExpiredDate();
             if (deliverDate.toLocalDate().isAfter(expDateOrderProduct)) {
                 LinkedHashMap<String, String> errorFieldsFile = new LinkedHashMap<>();
-                errorFieldsFile.put("Lỗi sản phẩm quá hạn khi thay đổi ngày giao" + deliverDate, "Sản phẩm " + orderDetail.getProduct().getName() + " trong đơn hàng có lô HSD: " + expDateOrderProduct + "!");
+                errorFieldsFile.put("Lỗi sản phẩm quá hạn khi thay đổi ngày giao " + deliverDate, "Sản phẩm " + orderDetail.getProduct().getName() + " trong đơn hàng có lô HSD: " + expDateOrderProduct + "!");
                 throw new InvalidExcelFileDataException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFieldsFile);
             }
         }));

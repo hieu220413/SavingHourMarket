@@ -23,6 +23,7 @@ import Modal, {
   ScaleAnimation,
 } from 'react-native-modals';
 import database from '@react-native-firebase/database';
+import Geolocation from '@react-native-community/geolocation';
 
 const ChangePickupPoint = ({ navigation, route }) => {
   const [pickupPointSuggestionList, setPickupPointSuggestionList] = useState(
@@ -91,22 +92,36 @@ const ChangePickupPoint = ({ navigation, route }) => {
     useCallback(() => {
       // get suggest pickup point
       setLoading(true);
-      fetch(
-        `${API.baseURL}/api/pickupPoint/getWithSortAndSuggestion?latitude=${locationPicked?.lat}&longitude=${locationPicked?.long}`,
-      )
-        .then(res => res.json())
-        .then(response => {
-          setPickupPointSuggestionList(
-            response.sortedPickupPointSuggestionList,
-          );
-          setOtherPickupPointList(response.otherSortedPickupPointList);
-          setLoading(false);
-        })
-        .catch(err => {
-          console.log(err);
-          setLoading(false);
-        });
-    }, [locationPicked]),
+      Geolocation.getCurrentPosition(
+        position => {
+          const currentLongitude = position.coords.longitude;
+          const currentLatitude = position.coords.latitude;
+          // get nearest pick up point by current lat,long
+          fetch(
+            `${API.baseURL}/api/pickupPoint/getWithSortAndSuggestion?latitude=${currentLatitude}&longitude=${currentLongitude}`,
+          )
+            .then(res => res.json())
+            .then(response => {
+              setPickupPointSuggestionList(
+                response.sortedPickupPointSuggestionList,
+              );
+              setOtherPickupPointList(response.otherSortedPickupPointList);
+              setLoading(false);
+            })
+            .catch(err => {
+              console.log(err);
+              setLoading(false);
+            });
+        },
+        error => {
+          console.log(error.message);
+        },
+        {
+          enableHighAccuracy: true,
+        },
+      );
+
+    }, []),
   );
 
   useEffect(() => {
@@ -147,6 +162,21 @@ const ChangePickupPoint = ({ navigation, route }) => {
           setText(item.description);
           setSearchValue(item.description);
           setLocationPicked(picked);
+          fetch(
+            `${API.baseURL}/api/pickupPoint/getWithSortAndSuggestion?latitude=${picked.lat}&longitude=${picked.long}`,
+          )
+            .then(res => res.json())
+            .then(response => {
+              setPickupPointSuggestionList(
+                response.sortedPickupPointSuggestionList,
+              );
+              setOtherPickupPointList(response.otherSortedPickupPointList);
+              setLoading(false);
+            })
+            .catch(err => {
+              console.log(err);
+              setLoading(false);
+            });
           setLoading(false);
         } else {
           setValidateMessage('Chúng tôi chỉ giao hàng trong khu vực TP.HCM');
@@ -313,7 +343,7 @@ const ChangePickupPoint = ({ navigation, route }) => {
           ))}
         </ScrollView>
         {/* ******* */}
-        <Text
+        {/* <Text
           style={{
             fontSize: Dimensions.get('window').width * 0.055,
             color: 'black',
@@ -326,7 +356,7 @@ const ChangePickupPoint = ({ navigation, route }) => {
             marginHorizontal: '2%',
           }}>
           Khác
-        </Text>
+        </Text> */}
         {/* Order pickup point */}
         <ScrollView
           showsVerticalScrollIndicator={false}
