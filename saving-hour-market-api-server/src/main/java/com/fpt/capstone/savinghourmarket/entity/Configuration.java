@@ -37,9 +37,9 @@ public class Configuration {
     @NotNull
     private Integer limitOfOrders;
 
-    @Column(columnDefinition = "tinyint")
-    @NotNull
-    private Integer numberOfSuggestedPickupPoint;
+//    @Column(columnDefinition = "tinyint")
+//    @NotNull
+//    private Integer numberOfSuggestedPickupPoint;
 
     @Column(columnDefinition = "tinyint")
     @NotNull

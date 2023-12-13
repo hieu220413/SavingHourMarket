@@ -8,6 +8,7 @@ public interface ProductCateWithSubCate {
 
     String getName();
 
+    Integer getStatus();
 
     List<ProductSubCateOnly> getProductSubCategories();
 }

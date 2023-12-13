@@ -45,6 +45,15 @@ public class StaffController {
 //        return ResponseEntity.status(HttpStatus.OK).body(staff);
 //    }
 
+    @RequestMapping(value = "assignPickupPointForCreateAccount", method = RequestMethod.PUT)
+    public ResponseEntity<Staff> assignPickupPointForCreateAccount(@Parameter(hidden = true)  @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+            , @Valid @RequestBody StaffPickupPointAssignmentForCreateAccountBody staffPickupPointAssignmentForCreateAccountBody) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        Staff staff = staffService.assignPickupPointForCreateAccount(staffPickupPointAssignmentForCreateAccountBody);
+        return ResponseEntity.status(HttpStatus.OK).body(staff);
+    }
+
     @RequestMapping(value = "assignPickupPoint", method = RequestMethod.PUT)
     public ResponseEntity<Staff> assignPickupPoint(@Parameter(hidden = true)  @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
             , @Valid @RequestBody StaffPickupPointAssignmentBody staffPickupPointAssignmentBody) throws FirebaseAuthException {
@@ -99,10 +108,10 @@ public class StaffController {
     public ResponseEntity<Staff> createStaffAccount(@RequestBody StaffCreateRequestBody staffCreateRequestBody, @RequestParam StaffRole role, @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException, UnsupportedEncodingException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        Configuration configuration = systemConfigurationService.getConfiguration();
-        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
-            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
-        }
+//        Configuration configuration = systemConfigurationService.getConfiguration();
+//        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+//            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+//        }
         Staff staff = staffService.createStaffAccount(staffCreateRequestBody, role);
         return ResponseEntity.status(HttpStatus.OK).body(staff);
     }
@@ -148,14 +157,14 @@ public class StaffController {
 
 
     @RequestMapping(value = "/updateStaffAccountStatus", method = RequestMethod.PUT)
-    public ResponseEntity<Staff> updateCustomerAccountStatus(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
+    public ResponseEntity<Staff> updateStaffAccountStatus(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
             ,@RequestBody @Valid AccountStatusChangeBody accountStatusChangeBody) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         String email = Utils.validateIdToken(idToken, firebaseAuth);
-        Configuration configuration = systemConfigurationService.getConfiguration();
-        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
-            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
-        }
+//        Configuration configuration = systemConfigurationService.getConfiguration();
+//        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+//            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+//        }
         Staff staff = staffService.updateStaffAccountStatus(accountStatusChangeBody, email);
         return ResponseEntity.status(HttpStatus.OK).body(staff);
     }
@@ -178,10 +187,10 @@ public class StaffController {
             , @RequestBody @Valid DeliversAssignmentToManager deliversAssignmentToManager) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        Configuration configuration = systemConfigurationService.getConfiguration();
-        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
-            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
-        }
+//        Configuration configuration = systemConfigurationService.getConfiguration();
+//        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+//            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+//        }
         Staff staff = staffService.updateDeliversForDeliverManager(deliversAssignmentToManager);
         return ResponseEntity.status(HttpStatus.OK).body(staff);
     }
@@ -191,10 +200,10 @@ public class StaffController {
             , @RequestParam UUID deliverId, @RequestParam UUID deliverManagerId) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        Configuration configuration = systemConfigurationService.getConfiguration();
-        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
-            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
-        }
+//        Configuration configuration = systemConfigurationService.getConfiguration();
+//        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+//            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+//        }
         Staff staff = staffService.updateDeliverManagerForDeliver(deliverId, deliverManagerId);
         return ResponseEntity.status(HttpStatus.OK).body(staff);
     }

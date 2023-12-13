@@ -25,7 +25,7 @@ SET @orderDateForBatchGroup = DATE_FORMAT((CURDATE()),'%Y-%m-%d');
 SET @orderDateForOrderGroup = DATE_FORMAT((CURDATE() + INTERVAL 3 DAY),'%Y-%m-%d');
 SET @orderDateForFirstOrderGroupForAssignDeliver = DATE_FORMAT((CURDATE()),'%Y-%m-%d');
 SET @orderDateForSecondOrderGroupForAssignDeliver = DATE_FORMAT((CURDATE()),'%Y-%m-%d');
-SET @orderDateForThirdOrderGroupForAssignDeliver = DATE_FORMAT((CURDATE() + INTERVAL 1 DAY),'%Y-%m-%d');
+SET @orderDateForThirdOrderGroupForAssignDeliver = DATE_FORMAT((CURDATE()),'%Y-%m-%d');
 SET @orderDateForOrderSingleForProcessingStatus = DATE_FORMAT((CURDATE() + INTERVAL 4 DAY),'%Y-%m-%d');
 SET @orderDateForOrderSingleForDeliveringStatus = DATE_FORMAT((CURDATE()),'%Y-%m-%d');
 
@@ -236,9 +236,9 @@ SET @NemBoTieuXanh = 'Sản phẩm Nem Bò tiêu xanh được chế biến từ
 
 
 -- Configuration
-INSERT INTO `saving_hour_market`.`configuration` (`id`, `limit_of_orders`, `number_of_suggested_pickup_point`, `extra_shipping_fee_per_kilometer`, `initial_shipping_fee`, `min_km_distance_for_extra_shipping_fee`, `delete_unpaid_order_time`, `time_allowed_for_order_cancellation`, `limit_meter_per_minute`, `system_status`)
+INSERT INTO `saving_hour_market`.`configuration` (`id`, `limit_of_orders`, `extra_shipping_fee_per_kilometer`, `initial_shipping_fee`, `min_km_distance_for_extra_shipping_fee`, `delete_unpaid_order_time`, `time_allowed_for_order_cancellation`, `limit_meter_per_minute`, `system_status`)
 --     VALUES (`id`, `limit_of_orders`, `number_of_suggested_pickup_point`, `delete_unpaid_order_time`, `system_status`);
-    VALUES  (UUID_TO_BIN('accf78c1-5541-11ee-8a50-a85e45c41921'), 100, 3, 1000, 10000, 2, 1, 0, 5, @systemActive);
+    VALUES  (UUID_TO_BIN('accf78c1-5541-11ee-8a50-a85e45c41921'), 100, 1000, 10000, 2, 1, 0, 5, @systemActive);
 
 
 -- Customer
@@ -314,34 +314,34 @@ INSERT INTO `saving_hour_market`.`staff_pickup_point` (`staff_id`, `pickup_point
 
 
 -- Product category
-INSERT INTO `saving_hour_market`.`product_category` (`id`, `name`)
+INSERT INTO `saving_hour_market`.`product_category` (`id`, `name`, `status`)
 --     VALUES  ('id', 'name');
-    VALUES  (UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'Đồ uống'),
-            (UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'Thực phẩm'),
-            (UUID_TO_BIN('accefcee-5541-11ee-8a50-a85e45c41921'), 'Gia vị'),
-            (UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921'), 'Chăm sóc cá nhân'),
-            (UUID_TO_BIN('acceff37-5541-11ee-8a50-a85e45c41921'), 'Thức ăn cho thú cưng'),
-            (UUID_TO_BIN('accf0055-5541-11ee-8a50-a85e45c41921'), 'Vật tư vệ sinh');
+    VALUES  (UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'Đồ uống', @enable),
+            (UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'Thực phẩm', @enable),
+            (UUID_TO_BIN('accefcee-5541-11ee-8a50-a85e45c41921'), 'Gia vị', @enable),
+            (UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921'), 'Chăm sóc cá nhân', @enable),
+            (UUID_TO_BIN('acceff37-5541-11ee-8a50-a85e45c41921'), 'Thức ăn cho thú cưng', @enable),
+            (UUID_TO_BIN('accf0055-5541-11ee-8a50-a85e45c41921'), 'Vật tư vệ sinh', @enable);
 
 
 -- Product sub category
-INSERT INTO `saving_hour_market`.`product_sub_category` (`id`, `name`, `allowable_display_threshold`, `product_category_id`, `image_url`)
+INSERT INTO `saving_hour_market`.`product_sub_category` (`id`, `name`, `allowable_display_threshold`, `product_category_id`, `image_url`, `status`)
 --     VALUES ('id', 'name', 'allowable_display_threshold', 'product_category_id');
-    VALUES  (UUID_TO_BIN('accf3fdf-5541-11ee-8a50-a85e45c41921'), 'Trái cây', 3, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ffruit.png?alt=media'),
-            (UUID_TO_BIN('ec5e1ddc-56dc-11ee-8a50-a85e45c41921'), 'Rau củ', 2, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fvegetable.png?alt=media'),
-            (UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), 'Thực phẩm đông lạnh gói', 4, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ffrozen-food.png?alt=media'),
-            (UUID_TO_BIN('accf4210-5541-11ee-8a50-a85e45c41921'), 'Đồ tráng miệng lạnh', 4, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ffrozen-desert.png?alt=media'),
-            (UUID_TO_BIN('accf4875-5541-11ee-8a50-a85e45c41921'), 'Mì', 5, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnoodles.png?alt=media'),
-            (UUID_TO_BIN('accf4766-5541-11ee-8a50-a85e45c41921'), 'Mỹ phẩm', 30, UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fcosmetics.png?alt=media'),
-            (UUID_TO_BIN('accf442f-5541-11ee-8a50-a85e45c41921'), 'Đồ dùng vệ sinh cá nhân', 30, UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ftoiletries.png?alt=media'),
-            (UUID_TO_BIN('accf4547-5541-11ee-8a50-a85e45c41921'), 'Nước giặt xã', 30, UUID_TO_BIN('accf0055-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Flaundry-detergent.png?alt=media'),
-            (UUID_TO_BIN('ea6d53d6-89ad-11ee-bef9-a85e45c41921'), 'Nước rửa chén', 30, UUID_TO_BIN('accf0055-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdish-detergent.png?alt=media'),
-            (UUID_TO_BIN('ea6d7645-89ad-11ee-bef9-a85e45c41921'), 'Nước lau sàn', 30, UUID_TO_BIN('accf0055-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ffloor-cleaner.png?alt=media'),
-            (UUID_TO_BIN('ea6d814d-89ad-11ee-bef9-a85e45c41921'), 'Nước tẩy nhà vệ sinh', 30, UUID_TO_BIN('accf0055-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ftoilet-detergent.png?alt=media'),
-            (UUID_TO_BIN('accf4320-5541-11ee-8a50-a85e45c41921'), 'Sữa', 2, UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdiary-product.png?alt=media'),
-            (UUID_TO_BIN('accf4656-5541-11ee-8a50-a85e45c41921'), 'Đồ uống có cồn', 5, UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Falcoholic-drink.png?alt=media'),
-            (UUID_TO_BIN('ea6fa014-89ad-11ee-bef9-a85e45c41921'), 'Trà', 6, UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ftea.png?alt=media'),
-            (UUID_TO_BIN('ea6fbbd7-89ad-11ee-bef9-a85e45c41921'), 'Nước trái cây', 7, UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fjuice.png?alt=media');
+    VALUES  (UUID_TO_BIN('accf3fdf-5541-11ee-8a50-a85e45c41921'), 'Trái cây', 3, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ffruit.png?alt=media', @enable),
+            (UUID_TO_BIN('ec5e1ddc-56dc-11ee-8a50-a85e45c41921'), 'Rau củ', 2, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fvegetable.png?alt=media', @enable),
+            (UUID_TO_BIN('accf40fe-5541-11ee-8a50-a85e45c41921'), 'Thực phẩm đông lạnh gói', 4, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ffrozen-food.png?alt=media', @enable),
+            (UUID_TO_BIN('accf4210-5541-11ee-8a50-a85e45c41921'), 'Đồ tráng miệng lạnh', 4, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ffrozen-desert.png?alt=media', @enable),
+            (UUID_TO_BIN('accf4875-5541-11ee-8a50-a85e45c41921'), 'Mì', 5, UUID_TO_BIN('accefbca-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fnoodles.png?alt=media', @enable),
+            (UUID_TO_BIN('accf4766-5541-11ee-8a50-a85e45c41921'), 'Mỹ phẩm', 30, UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fcosmetics.png?alt=media', @enable),
+            (UUID_TO_BIN('accf442f-5541-11ee-8a50-a85e45c41921'), 'Đồ dùng vệ sinh cá nhân', 30, UUID_TO_BIN('accefe0d-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ftoiletries.png?alt=media', @enable),
+            (UUID_TO_BIN('accf4547-5541-11ee-8a50-a85e45c41921'), 'Nước giặt xã', 30, UUID_TO_BIN('accf0055-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Flaundry-detergent.png?alt=media', @enable),
+            (UUID_TO_BIN('ea6d53d6-89ad-11ee-bef9-a85e45c41921'), 'Nước rửa chén', 30, UUID_TO_BIN('accf0055-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdish-detergent.png?alt=media', @enable),
+            (UUID_TO_BIN('ea6d7645-89ad-11ee-bef9-a85e45c41921'), 'Nước lau sàn', 30, UUID_TO_BIN('accf0055-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ffloor-cleaner.png?alt=media', @enable),
+            (UUID_TO_BIN('ea6d814d-89ad-11ee-bef9-a85e45c41921'), 'Nước tẩy nhà vệ sinh', 30, UUID_TO_BIN('accf0055-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ftoilet-detergent.png?alt=media', @enable),
+            (UUID_TO_BIN('accf4320-5541-11ee-8a50-a85e45c41921'), 'Sữa', 2, UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fdiary-product.png?alt=media', @enable),
+            (UUID_TO_BIN('accf4656-5541-11ee-8a50-a85e45c41921'), 'Đồ uống có cồn', 5, UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Falcoholic-drink.png?alt=media', @enable),
+            (UUID_TO_BIN('ea6fa014-89ad-11ee-bef9-a85e45c41921'), 'Trà', 6, UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Ftea.png?alt=media', @enable),
+            (UUID_TO_BIN('ea6fbbd7-89ad-11ee-bef9-a85e45c41921'), 'Nước trái cây', 7, UUID_TO_BIN('accefaab-5541-11ee-8a50-a85e45c41921'), 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/public%2Fjuice.png?alt=media', @enable);
 
 
 
@@ -762,7 +762,7 @@ INSERT INTO `saving_hour_market`.`product_batch` (`id`, `price`, `price_original
 -- Táo Pink Lady nhập khẩu New Zealand 1kg
             (UUID_TO_BIN('ec5e4cbe-56dc-11ee-8a50-a85e45c41921'), 51000, 42000, 15, '2023-10-01 00:00:00', @TaoPinkLadyFirstBatchDate, UUID_TO_BIN('accf3897-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e9073-56dc-11ee-8a50-a85e45c41921')),
 -- Thùng 30 gói mì Omachi lẩu tôm
-            (UUID_TO_BIN('ec5e4e60-56dc-11ee-8a50-a85e45c41921'), 185000, 155000, 10, '2023-10-19 00:00:00', '2023-11-25 00:00:00', UUID_TO_BIN('accf39b0-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8f16-56dc-11ee-8a50-a85e45c41921')),
+            (UUID_TO_BIN('ec5e4e60-56dc-11ee-8a50-a85e45c41921'), 185000, 155000, 10, '2023-10-19 00:00:00', @ThungMiOmachiLauTomFirstBatchDate, UUID_TO_BIN('accf39b0-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e8f16-56dc-11ee-8a50-a85e45c41921')),
 -- Thùng 30 gói mì Hảo Hảo hương vị lẩu kim chi
             (UUID_TO_BIN('ec5e4fce-56dc-11ee-8a50-a85e45c41921'), 95000, 80000, 25, '2023-11-01 00:00:00', @ThungMiHaoHaoKimChiFirstBatchDate, UUID_TO_BIN('ec5e3e40-56dc-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5ea361-56dc-11ee-8a50-a85e45c41921')),
 -- 1 lốc Strongbow Appple Ciders Gold (6 lon)

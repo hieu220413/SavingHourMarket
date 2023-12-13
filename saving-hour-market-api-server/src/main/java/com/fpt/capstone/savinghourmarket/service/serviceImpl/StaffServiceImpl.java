@@ -265,6 +265,44 @@ public class StaffServiceImpl implements StaffService {
 
     @Override
     @Transactional
+    public Staff assignPickupPointForCreateAccount(StaffPickupPointAssignmentForCreateAccountBody staffPickupPointAssignmentForCreateAccountBody) {
+        HashMap errorFields = new HashMap<>();
+        Optional<Staff> staff = staffRepository.findByEmail(staffPickupPointAssignmentForCreateAccountBody.getStaffEmail());
+        if(!staff.isPresent()) {
+            throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_NOT_FOUND.getCode()), AdditionalResponseCode.STAFF_NOT_FOUND.toString());
+        }
+
+        List<PickupPoint> existedPickupPointList = pickupPointRepository.getAllByIdList(staffPickupPointAssignmentForCreateAccountBody.getPickupPointIdList());
+        HashMap<UUID, PickupPoint> existedPickupPointHashMap = new HashMap<>();
+        for (PickupPoint pickupPoint : existedPickupPointList) {
+            existedPickupPointHashMap.put(pickupPoint.getId(), pickupPoint);
+        }
+
+        Set<UUID> pickupPointNotFoundIdList = new HashSet<>();
+        for (UUID pickupPointId : staffPickupPointAssignmentForCreateAccountBody.getPickupPointIdList()) {
+            if(!existedPickupPointHashMap.containsKey(pickupPointId)){
+                pickupPointNotFoundIdList.add(pickupPointId);
+            }
+        }
+
+        if(pickupPointNotFoundIdList.size() > 0){
+            errorFields.put("error", "No pickup point with id " + pickupPointNotFoundIdList.stream().map(Objects::toString).collect(Collectors.joining(",")));
+        }
+
+
+        if(errorFields.size() > 0){
+            throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
+        }
+
+        for (PickupPoint pickupPoint : existedPickupPointHashMap.values().stream().collect(Collectors.toList())){
+            staff.get().getPickupPoint().add(pickupPoint);
+        }
+
+        return staff.get();
+    }
+
+    @Override
+    @Transactional
     public Staff assignPickupPoint(StaffPickupPointAssignmentBody staffPickupPointAssignmentBody) {
         Optional<Staff> staff = staffRepository.findByEmail(staffPickupPointAssignmentBody.getStaffEmail());
         if(!staff.isPresent()) {
@@ -292,8 +330,16 @@ public class StaffServiceImpl implements StaffService {
         }
 
         Optional<PickupPoint> pickupPoint = pickupPointRepository.findById(staffPickupPointAssignmentBody.getPickupPointId());
+
+
         if(!pickupPoint.isPresent()) {
             throw new ItemNotFoundException(HttpStatus.valueOf(AdditionalResponseCode.PICKUP_POINT_NOT_FOUND.getCode()), AdditionalResponseCode.PICKUP_POINT_NOT_FOUND.toString());
+        }
+
+        List<Order> processingOrderInPickupPointList = orderRepository.findStaffProcessingOrderInPickupPointById(staff.get().getId(), pickupPoint.get().getId(), PageRequest.of(0,1), List.of(OrderStatus.PROCESSING.ordinal(), OrderStatus.DELIVERING.ordinal(), OrderStatus.PACKAGING.ordinal(), OrderStatus.PACKAGED.ordinal()));
+
+        if(processingOrderInPickupPointList.size() > 0){
+            throw new UnAssignPickupPointForStaffForbiddenException(HttpStatus.valueOf(AdditionalResponseCode.STAFF_IS_IN_PROCESSING_ORDER_IN_SELECTED_PICKUP_POINT.getCode()), AdditionalResponseCode.STAFF_IS_IN_PROCESSING_ORDER_IN_SELECTED_PICKUP_POINT.toString());
         }
 
         staff.get().getPickupPoint().removeIf(pickupPoint1 -> pickupPoint1.getId().equals(pickupPoint.get().getId()));
