@@ -453,6 +453,10 @@ public class ProductServiceImpl implements ProductService {
                 errors.add("Siêu thị không tìm thấy với id: " + supermarketId);
             }
 
+            if(errors.size() == 0 && productDuplicate(productCreate)){
+                errors.add("Thông tin sản phẩm " + productCreate.getName() + " đã tồn tại trong hệ thống!");
+            }
+
             List<ProductBatchCreateList> productBatchesCreate = productCreate.getProductBatchList();
             productBatchesCreate.forEach(productBatchCreate -> {
                 if (productBatchCreate.getPrice() == null) {
@@ -485,7 +489,6 @@ public class ProductServiceImpl implements ProductService {
                         }
                     }
                 });
-
             });
 
             if (errors.size() > 0) {
@@ -531,8 +534,11 @@ public class ProductServiceImpl implements ProductService {
 
             String unit = productEntity.getUnit().toLowerCase();
             productEntity.setUnit(unit);
+
             productEntity.setStatus(Status.ENABLE.ordinal());
+
             Product productSaved = productRepository.save(productEntity);
+
             product.setId(productSaved.getId());
 
             productsSaved.add(productSaved);
@@ -540,6 +546,16 @@ public class ProductServiceImpl implements ProductService {
         });
         return new ProductExcelResponse(productList, errorFields);
 
+    }
+
+    private Boolean productDuplicate(ProductCreateList productCreate) {
+        return productRepository.existsByNameAndPriceListedAndDescriptionAndUnitAndSupermarketAndProductSubCategory(
+                productCreate.getName(),
+                productCreate.getPriceListed(),
+                productCreate.getDescription(),
+                productCreate.getUnit(),
+                productCreate.getSupermarket(),
+                productCreate.getProductSubCategory());
     }
 
     public List<RevenueReportMonthly> getRevenueReportForEachMonth(Integer year) {
@@ -1124,6 +1140,7 @@ public class ProductServiceImpl implements ProductService {
                         productExcelCreate.setSupermarket(product.getSupermarket());
 
                         List<String> imageUrls = new ArrayList<>();
+                        Boolean duplicate = false;
                         if (product.getName() != null && product.getDescription() != null && product.getUnit() != null && product.getProductSubCategory() != null) {
                             if (productSeenData.add(productExcelCreate)) {
                                 if (productImages.get(rowIndex) != null) {
@@ -1162,7 +1179,7 @@ public class ProductServiceImpl implements ProductService {
                     }
 
                     if (errors.size() > 0) {
-                        errorFields.put(rowIndex, errors);
+                        errorFields.put(productList.size(), errors);
                     }
                 }
                 rowIndex++;

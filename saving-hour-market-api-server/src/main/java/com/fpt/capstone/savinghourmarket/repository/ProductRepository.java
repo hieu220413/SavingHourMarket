@@ -1,6 +1,8 @@
 package com.fpt.capstone.savinghourmarket.repository;
 
 import com.fpt.capstone.savinghourmarket.entity.Product;
+import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
+import com.fpt.capstone.savinghourmarket.entity.Supermarket;
 import com.fpt.capstone.savinghourmarket.model.CateOderQuantityResponseBody;
 import com.fpt.capstone.savinghourmarket.model.ProductSubCateOnly;
 import com.fpt.capstone.savinghourmarket.model.SupermarketSaleReportResponseBody;
@@ -335,4 +337,13 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 //            "INNER JOIN product_sub_category subct ON p.product_sub_category_id = subct.id " +
 //            "INNER JOIN product_category ct ON subct.product_category_id =  ct.id", nativeQuery = true)
 //    List<Product> getProductsForCustomer();
+
+    boolean existsByNameAndPriceListedAndDescriptionAndUnitAndSupermarketAndProductSubCategory(
+            String name,
+            Integer priceListed,
+            String description,
+            String unit,
+            Supermarket supermarket,
+            ProductSubCategory productSubCategory
+    );
 }
