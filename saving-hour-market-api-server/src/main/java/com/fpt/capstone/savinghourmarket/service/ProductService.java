@@ -70,4 +70,8 @@ public interface ProductService {
     Product enableProduct(UUID productId) throws ResourceNotFoundException;
 
     List<ProductSubCateOnly> getAllSubCategoryForStaff();
+
+    ProductCategory updateCategoryStatus(EnableDisableStatus status, UUID subCategoryId);
+
+    ProductSubCategory updateSubCategoryStatus(EnableDisableStatus status, UUID subCategoryId);
 }

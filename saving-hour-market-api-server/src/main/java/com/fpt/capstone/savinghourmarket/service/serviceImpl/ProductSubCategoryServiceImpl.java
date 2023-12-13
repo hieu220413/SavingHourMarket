@@ -1,6 +1,7 @@
 package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
 import com.fpt.capstone.savinghourmarket.common.AdditionalResponseCode;
+import com.fpt.capstone.savinghourmarket.common.EnableDisableStatus;
 import com.fpt.capstone.savinghourmarket.entity.ProductCategory;
 import com.fpt.capstone.savinghourmarket.entity.ProductSubCategory;
 import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
@@ -65,6 +66,8 @@ public class ProductSubCategoryServiceImpl implements ProductSubCategoryService 
 
         productSubCategory.setProductCategory(productCategory.get());
 
+        productSubCategory.setStatus(EnableDisableStatus.ENABLE.ordinal());
+
         return productSubCategoryRepository.save(productSubCategory);
     }
 
@@ -117,6 +120,20 @@ public class ProductSubCategoryServiceImpl implements ProductSubCategoryService 
         if(errorFields.size() > 0){
             throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
         }
+
+        return productSubCategory.get();
+    }
+
+    @Override
+    @Transactional
+    public ProductSubCategory updateSubCategoryStatus(EnableDisableStatus status, UUID subCategoryId) {
+        Optional<ProductSubCategory> productSubCategory = productSubCategoryRepository.findByIdWithCate(subCategoryId);
+
+        if(!productSubCategory.isPresent()){
+            throw new ItemNotFoundException(HttpStatusCode.valueOf(AdditionalResponseCode.PRODUCT_SUB_CATEGORY_NOT_FOUND.getCode()), AdditionalResponseCode.PRODUCT_SUB_CATEGORY_NOT_FOUND.toString());
+        }
+
+        productSubCategory.get().setStatus(status.ordinal());
 
         return productSubCategory.get();
     }

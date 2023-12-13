@@ -44,9 +44,9 @@ public class ConfigurationSystemServiceImpl implements SystemConfigurationServic
             errorFields.put("systemStatusError", "Value must be 0 (Maintaining) or 1 (Active)");
         }
 
-        if(configurationUpdateBody.getNumberOfSuggestedPickupPoint() <= 0) {
-            errorFields.put("numberOfSuggestedPickupPointError", "Value must be higher than 0");
-        }
+//        if(configurationUpdateBody.getNumberOfSuggestedPickupPoint() <= 0) {
+//            errorFields.put("numberOfSuggestedPickupPointError", "Value must be higher than 0");
+//        }
 
         if(configurationUpdateBody.getExtraShippingFeePerKilometer() < 1000) {
             errorFields.put("extraShippingFeePerKilometerError", "Value must be higher or equal 1000VND");
@@ -76,7 +76,7 @@ public class ConfigurationSystemServiceImpl implements SystemConfigurationServic
 
         configuration.setSystemStatus(configurationUpdateBody.getSystemStatus());
         configuration.setLimitOfOrders(configurationUpdateBody.getLimitOfOrders());
-        configuration.setNumberOfSuggestedPickupPoint(configurationUpdateBody.getNumberOfSuggestedPickupPoint());
+//        configuration.setNumberOfSuggestedPickupPoint(configurationUpdateBody.getNumberOfSuggestedPickupPoint());
         configuration.setDeleteUnpaidOrderTime(configurationUpdateBody.getDeleteUnpaidOrderTime());
         configuration.setInitialShippingFee(configurationUpdateBody.getInitialShippingFee());
         configuration.setMinKmDistanceForExtraShippingFee(configurationUpdateBody.getMinKmDistanceForExtraShippingFee());

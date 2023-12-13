@@ -406,6 +406,16 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public ProductCategory updateCategoryStatus(EnableDisableStatus status, UUID categoryId) {
+        return productCategoryService.updateCategoryStatus(status, categoryId);
+    }
+
+    @Override
+    public ProductSubCategory updateSubCategoryStatus(EnableDisableStatus status, UUID subCategoryId) {
+        return productSubCategoryService.updateSubCategoryStatus(status, subCategoryId);
+    }
+
+    @Override
     public ProductExcelResponse createProductList(List<ProductCreateList> productList) throws ResourceNotFoundException {
         LinkedHashMap<Integer, List<String>> errorFields = new LinkedHashMap<>();
         List<Product> productsSaved = new ArrayList<>();
@@ -683,7 +693,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public CategoryListResponseBody getCategoryForStaff(String name, EnableDisableStatus status, Integer page, Integer limit) {
         Pageable pageable = PageRequest.of(limit == null ? 0 : page, limit == null ? Integer.MAX_VALUE : limit);
-        Page<ProductCateWithSubCate> result = productCategoryRepository.getAllProductCategoryWithSubCateForStaff(name, pageable);
+        Page<ProductCateWithSubCate> result = productCategoryRepository.getAllProductCategoryWithSubCateForStaff(name, status == null ? EnableDisableStatus.ENABLE.ordinal() : status.ordinal(), pageable);
         int totalPage = result.getTotalPages();
         long totalCategory = result.getTotalElements();
         List<ProductCateWithSubCate> productCateWithSubCateList = result.stream().toList();
@@ -694,7 +704,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public SubCategoryListResponseBody getSubCategoryForStaff(String name, EnableDisableStatus status, UUID productCategoryId, Integer page, Integer limit) {
         Pageable pageable = PageRequest.of(page, limit);
-        Page<ProductSubCateOnly> result = productSubCategoryRepository.findAllSubCategoryOnlyForStaff(name, productCategoryId == null ? null : productCategoryId, pageable);
+        Page<ProductSubCateOnly> result = productSubCategoryRepository.findAllSubCategoryOnlyForStaff(name, status == null ? EnableDisableStatus.ENABLE.ordinal() : status.ordinal(), productCategoryId == null ? null : productCategoryId, pageable);
         int totalPage = result.getTotalPages();
         long totalSubCategory = result.getTotalElements();
         List<ProductSubCateOnly> productSubCateOnlyList = result.stream().toList();

@@ -395,10 +395,10 @@ public class SupermarketServiceImpl implements SupermarketService {
             supermarket.get().setStatus(status.ordinal());
         }
         if(status.toString().equals(EnableDisableStatus.DISABLE.toString())){
-            Product product = productRepository.getProductByActiveAndSupermarketId(supermarketId, PageRequest.of(0,1));
-            if(product!=null){
-                throw new DisableSupermarketForbidden(HttpStatus.valueOf(AdditionalResponseCode.DISABLE_SUPERMARKET_FORBIDDEN.getCode()), AdditionalResponseCode.DISABLE_SUPERMARKET_FORBIDDEN.toString());
-            }
+//            Product product = productRepository.getProductByActiveAndSupermarketId(supermarketId, PageRequest.of(0,1));
+//            if(product!=null){
+//                throw new DisableSupermarketForbidden(HttpStatus.valueOf(AdditionalResponseCode.DISABLE_SUPERMARKET_FORBIDDEN.getCode()), AdditionalResponseCode.DISABLE_SUPERMARKET_FORBIDDEN.toString());
+//            }
             supermarket.get().setStatus(status.ordinal());
         }
         return supermarket.get();

@@ -138,7 +138,7 @@ public class ProductController {
     public ResponseEntity<CategoryListResponseBody> getCategoryForStaff(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
             , @RequestParam(defaultValue = "") String name
             // just in case need status
-            , @Parameter(hidden = true) @RequestParam(required = false) EnableDisableStatus status
+            , @RequestParam(required = false) EnableDisableStatus status
             , @RequestParam(defaultValue = "0") Integer page
             , @RequestParam(required = false) Integer limit) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
@@ -151,7 +151,7 @@ public class ProductController {
     public ResponseEntity<SubCategoryListResponseBody> getSubCategoryForStaff(@Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken
             , @RequestParam(defaultValue = "") String name
             // just in case need status
-            , @Parameter(hidden = true) @RequestParam(required = false) EnableDisableStatus status
+            , @RequestParam(required = false) EnableDisableStatus status
             , @RequestParam(required = false) UUID productCategoryId
             , @RequestParam(defaultValue = "0") Integer page
             , @RequestParam(defaultValue = "5") Integer limit) throws FirebaseAuthException {
@@ -174,10 +174,10 @@ public class ProductController {
                                                           @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        Configuration configuration = systemConfigurationService.getConfiguration();
-        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
-            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
-        }
+//        Configuration configuration = systemConfigurationService.getConfiguration();
+//        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+//            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+//        }
         ProductCategory productCategory = productService.createCategory(productCategoryCreateBody);
         return ResponseEntity.status(HttpStatus.OK).body(productCategory);
     }
@@ -187,10 +187,10 @@ public class ProductController {
                                                                 @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
-        Configuration configuration = systemConfigurationService.getConfiguration();
-        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
-            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
-        }
+//        Configuration configuration = systemConfigurationService.getConfiguration();
+//        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+//            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+//        }
         ProductSubCategory productSubCategory = productService.createSubCategory(productSubCategoryCreateBody);
         return ResponseEntity.status(HttpStatus.OK).body(productSubCategory);
     }
@@ -222,6 +222,48 @@ public class ProductController {
         ProductSubCategory productSubCategory = productService.updateProductSubCategory(productSubCategoryUpdateBody, subCategoryId);
         return ResponseEntity.status(HttpStatus.OK).body(productSubCategory);
     }
+
+    @RequestMapping(value = "/updateCategoryStatus", method = RequestMethod.PUT)
+    public ResponseEntity<ProductCategory> updateCategoryStatus(@RequestParam EnableDisableStatus status,
+                                                                @RequestParam UUID categoryId,
+                                                                @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        Configuration configuration = systemConfigurationService.getConfiguration();
+        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+        }
+        ProductCategory productCategory = productService.updateCategoryStatus(status, categoryId);
+        return ResponseEntity.status(HttpStatus.OK).body(productCategory);
+    }
+
+    @RequestMapping(value = "/updateSubCategoryStatus", method = RequestMethod.PUT)
+    public ResponseEntity<ProductSubCategory> updateSubCategoryStatus(@RequestParam EnableDisableStatus status,
+                                                                @RequestParam UUID subCategoryId,
+                                                                @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
+        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+        Utils.validateIdToken(idToken, firebaseAuth);
+        Configuration configuration = systemConfigurationService.getConfiguration();
+        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+        }
+        ProductSubCategory productSubCategory = productService.updateSubCategoryStatus(status, subCategoryId);
+        return ResponseEntity.status(HttpStatus.OK).body(productSubCategory);
+    }
+
+//    @RequestMapping(value = "/updateSubCategoryStatus", method = RequestMethod.PUT)
+//    public ResponseEntity<ProductSubCategory> updateSubCategoryStatus(@RequestParam EnableDisableStatus status,
+//                                                                   @RequestParam UUID subCategoryId,
+//                                                                   @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken) throws FirebaseAuthException {
+//        String idToken = Utils.parseBearTokenToIdToken(jwtToken);
+//        Utils.validateIdToken(idToken, firebaseAuth);
+//        Configuration configuration = systemConfigurationService.getConfiguration();
+//        if(configuration.getSystemStatus() != SystemStatus.MAINTAINING.ordinal()){
+//            throw new SystemNotInMaintainStateException(HttpStatus.valueOf(AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.getCode()), AdditionalResponseCode.SYSTEM_IS_NOT_IN_MAINTAINING_STATE.toString());
+//        }
+//        ProductSubCategory productSubCategory = productService.updateProductSubCategory(productSubCategoryUpdateBody, subCategoryId);
+//        return ResponseEntity.status(HttpStatus.OK).body(productSubCategory);
+//    }
 
     @RequestMapping(value = "/update", method = RequestMethod.PUT)
     public ResponseEntity<Product> updateProduct(@Valid @RequestBody ProductDisplayStaff productDisplayStaff,
