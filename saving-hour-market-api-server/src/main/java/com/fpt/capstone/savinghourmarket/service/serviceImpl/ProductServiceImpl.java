@@ -434,9 +434,6 @@ public class ProductServiceImpl implements ProductService {
                     errors.add("Đơn vị sản phẩm: " + productCreate.getUnit() + " quá 50 kí tự!");
                 }
 
-                if (productCreate.getImageUrls().size() == 0) {
-                    errors.add("Vui lòng thêm hình cho sản phẩm!");
-                }
 
                 if (productCreate.getPriceListed() < 0) {
                     errors.add("Giá niêm yết không thể âm!");
@@ -494,59 +491,71 @@ public class ProductServiceImpl implements ProductService {
 
             if (errors.size() > 0) {
                 errorFields.put(productCount, errors);
+            } else if (productCreate.getImageUrls() != null && !productCreate.getImageUrls().isEmpty()) {
+                saveProduct(productCreate);
             }
             productCount++;
         }
 
-        if (errorFields.size() > 0) {
-            return new ProductExcelResponse(productList, errorFields);
+        //filter list with new errors position
+        List<ProductCreateList> productFilterError = new ArrayList<>();
+        LinkedHashMap<Integer, List<String>> errorFieldsFilter = new LinkedHashMap<>();
+        for (int index = 0; index < productList.size(); index++) {
+            if(errorFields.get(index+1) != null && errorFields.get(index+1).size() > 0){
+                productFilterError.add(productList.get(index));
+                errorFieldsFilter.put(productFilterError.size(),errorFields.get(index+1));
+            } else if (productList.get(index).getImageUrls() == null || productList.get(index).getImageUrls().isEmpty()) {
+                productFilterError.add(productList.get(index));
+            }
         }
 
-        productList.stream().forEach(product -> {
-            Product productEntity = new Product();
-            ModelMapper mapper = new ModelMapper();
-            mapper.map(product, productEntity);
+        if (errorFieldsFilter.size() > 0) {
+            return new ProductExcelResponse(productFilterError, errorFieldsFilter);
+        }
 
-            List<ProductBatchCreateList> productBatchesCreate = product.getProductBatchList();
-            List<ProductBatch> productBatches = new ArrayList<>();
-            productBatchesCreate.forEach(batch -> {
-                batch.getProductBatchAddresses().forEach(address -> {
-                    ProductBatch productBatch = new ProductBatch();
-                    productBatch.setPrice(batch.getPrice());
-                    productBatch.setPriceOriginal(batch.getPriceOriginal());
-                    productBatch.setExpiredDate(batch.getExpiredDate());
-                    productBatch.setQuantity(address.getQuantity());
-                    productBatch.setSupermarketAddress(address.getSupermarketAddress());
-                    productBatch.setProduct(productEntity);
-                    productBatches.add(productBatch);
-                });
-            });
-            productEntity.setProductBatchList(productBatches);
-
-            List<String> productImageCreate = product.getImageUrls();
-            List<ProductImage> productImages = new ArrayList<>();
-            productImageCreate.forEach(image -> {
-                ProductImage productImage = new ProductImage();
-                productImage.setImageUrl(image);
-                productImage.setProduct(productEntity);
-                productImages.add(productImage);
-            });
-            productEntity.setProductImageList(productImages);
-
-            String unit = productEntity.getUnit().toLowerCase();
-            productEntity.setUnit(unit);
-
-            productEntity.setStatus(Status.ENABLE.ordinal());
-
-            Product productSaved = productRepository.save(productEntity);
-
-            product.setId(productSaved.getId());
-
-            productsSaved.add(productSaved);
-
-        });
         return new ProductExcelResponse(productList, errorFields);
 
+    }
+
+    private void saveProduct(ProductCreateList product) {
+        Product productEntity = new Product();
+        ModelMapper mapper = new ModelMapper();
+        mapper.map(product, productEntity);
+
+        List<ProductBatchCreateList> productBatchesCreate = product.getProductBatchList();
+        List<ProductBatch> productBatches = new ArrayList<>();
+        productBatchesCreate.forEach(batch -> {
+            batch.getProductBatchAddresses().forEach(address -> {
+                ProductBatch productBatch = new ProductBatch();
+                productBatch.setPrice(batch.getPrice());
+                productBatch.setPriceOriginal(batch.getPriceOriginal());
+                productBatch.setExpiredDate(batch.getExpiredDate());
+                productBatch.setQuantity(address.getQuantity());
+                productBatch.setSupermarketAddress(address.getSupermarketAddress());
+                productBatch.setProduct(productEntity);
+                productBatches.add(productBatch);
+            });
+        });
+        productEntity.setProductBatchList(productBatches);
+
+        List<String> productImageCreate = product.getImageUrls();
+        List<ProductImage> productImages = new ArrayList<>();
+        productImageCreate.forEach(image -> {
+            ProductImage productImage = new ProductImage();
+            productImage.setImageUrl(image);
+            productImage.setProduct(productEntity);
+            productImages.add(productImage);
+        });
+        productEntity.setProductImageList(productImages);
+
+        String unit = productEntity.getUnit().toLowerCase();
+        productEntity.setUnit(unit);
+
+        productEntity.setStatus(Status.ENABLE.ordinal());
+
+        Product productSaved = productRepository.save(productEntity);
+
+        product.setId(productSaved.getId());
     }
 
     private static boolean hasNullOrEmptyFields(ProductCreateList productCreateList) {
@@ -559,11 +568,8 @@ public class ProductServiceImpl implements ProductService {
                 || productCreateList.getPriceListed() == null
                 || StringUtils.isEmpty(productCreateList.getUnit())
                 || productCreateList.getSupermarket().getId() == null
-                || productCreateList.getImageUrls() == null
                 || productCreateList.getProductSubCategory().getId() == null
                 || productCreateList.getProductBatchList() == null) {
-            return true;
-        } else if (productCreateList.getImageUrls() != null && productCreateList.getImageUrls().isEmpty()) {
             return true;
         } else if (productCreateList.getProductBatchList() != null && productCreateList.getProductBatchList().isEmpty()) {
             return true;
