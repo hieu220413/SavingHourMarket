@@ -32,7 +32,7 @@ import database from '@react-native-firebase/database';
 const Discount = ({ navigation }) => {
   const [discounts, setDiscounts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [currentCate, setCurrentCate] = useState('');
+  const [currentCate, setCurrentCate] = useState(null);
   const [cartList, setCartList] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -53,7 +53,7 @@ const Discount = ({ navigation }) => {
       visibilityTime: 1000,
     });
   };
-
+  console.log('out side', discounts.length);
   // system status check
   useFocusEffect(
     useCallback(() => {
@@ -89,6 +89,8 @@ const Discount = ({ navigation }) => {
           console.log(err);
         }
       })();
+      setDiscounts([]);
+      setCurrentCate(null);
     }, []),
   );
 
@@ -99,19 +101,28 @@ const Discount = ({ navigation }) => {
     )
       .then(res => res.json())
       .then(data => {
-        setCategories(data);
-        setCurrentCate(data[0].id);
+        if (data.length === 0) {
+          setDiscounts([]);
+          setCategories([]);
+          setCurrentCate(null);
+        } else {
+          setCategories(data);
+          setCurrentCate(data[0]?.id);
+        }
         setLoading(false);
       })
       .catch(err => {
         console.log(err);
         setLoading(false);
       });
-  }, []);
+  }, [pickupPoint]);
 
   useEffect(() => {
     setLoading(true);
-    if (currentCate) {
+    console.log('before');
+    console.log('dis', discounts.length);
+    if (currentCate && pickupPoint) {
+      console.log('after');
       fetch(
         `${API.baseURL}/api/discount/getDiscountsForCustomer?fromPercentage=0&toPercentage=100&productCategoryId=${currentCate}&page=0&limit=9999&expiredSortType=ASC`,
       )
@@ -138,7 +149,7 @@ const Discount = ({ navigation }) => {
           setLoading(false);
         });
     }
-  }, [currentCate, pickupPoint.id]);
+  }, [categories.length, currentCate, pickupPoint]);
 
   const Item = ({ data }) => (
     <View style={styles.itemContainer}>
@@ -294,7 +305,7 @@ const Discount = ({ navigation }) => {
                 fontFamily: FONTS.fontFamily,
                 fontSize: Dimensions.get('window').width * 0.05,
               }}>
-              Đã hết mã giảm giá cho loại mặt hàng này
+              Không có mã giảm giá
             </Text>
           </View>
         ) : (
