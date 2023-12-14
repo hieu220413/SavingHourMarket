@@ -114,15 +114,22 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "pb.expiredDate = (" +
               "SELECT DISTINCT MIN(pbsub.expiredDate) FROM ProductBatch pbsub " +
               "JOIN pbsub.product psub " +
+//              "JOIN psub.supermarket " +
+//              "JOIN psub.productSubCategory " +
+//              "JOIN psub.productSubCategory.productCategory " +
               "JOIN pbsub.supermarketAddress spa " +
               "JOIN spa.pickupPoint pp " +
               "WHERE pbsub.expiredDate > CURRENT_DATE + psub.productSubCategory.allowableDisplayThreshold DAY  " +
-              "AND psub.id = p.id AND pp.id = :pickupPointId" +
+              "AND psub.id = p.id AND pp.id = :pickupPointId " +
+//              "AND psub.supermarket.status = 1 AND psub.productSubCategory.status = 1 AND psub.productSubCategory.productCategory.status = 1" +
             ") " +
             "AND pb.quantity > 0 " +
 //            "AND pbp.expiredDate > CURRENT_TIMESTAMP + p.productSubCategory.allowableDisplayThreshold DAY " +
 //            "AND pbp.quantity > 0 " +
             "AND p.status = 1 " +
+            "AND p.supermarket.status = 1 " +
+            "AND p.productSubCategory.status = 1 " +
+            "AND p.productSubCategory.productCategory.status = 1 " +
             "GROUP BY pb.expiredDate, pb.price, pb.priceOriginal, p")
     Page<Object[]> getProductsNearestExpiredBatchForCustomer(UUID supermarketId, String name, UUID productCategoryId, UUID productSubCategoryId, UUID pickupPointId, Pageable pageable);
 
