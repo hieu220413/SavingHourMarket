@@ -38,7 +38,7 @@ const TabIcon = (props) => {
       style={styles.container}>
       <Animatable.View
         ref={viewRef}
-        duration={450}
+        duration={400}
         style={styles.container}>
         <View 
         style={{
