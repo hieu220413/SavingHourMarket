@@ -35,7 +35,7 @@ import Geolocation from '@react-native-community/geolocation';
 const Home = ({ navigation }) => {
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
-  const [currentCate, setCurrentCate] = useState('');
+  const [currentCate, setCurrentCate] = useState(null);
   const [productsByCategory, setProductsByCategory] = useState([]);
   const [discountsByCategory, setDiscountsByCategory] = useState([]);
   const [page, setPage] = useState(1);
@@ -155,8 +155,17 @@ const Home = ({ navigation }) => {
             setCategories([]);
             return;
           }
-          setCategories(data);
-          setCurrentCate(data[0].id);
+          if (data.length === 0) {
+            setCategories([]);
+            setCurrentCate(null);
+            setSubCategories([]);
+            setDiscountsByCategory([]);
+            setImageDiscountForSlider([]);
+            setProductsByCategory([]);
+          } else {
+            setCategories(data);
+            setCurrentCate(data ? data[0]?.id : null);
+          }
           // setLoading(false);
         })
         .catch(err => {
@@ -183,7 +192,7 @@ const Home = ({ navigation }) => {
           console.log(err);
           setLoading(false);
         });
-
+      setLoading(true);
       fetch(
         `${API.baseURL}/api/discount/getDiscountsForCustomer?fromPercentage=0&toPercentage=100&productCategoryId=${currentCate}&page=0&limit=5&expiredSortType=ASC`,
       )
@@ -472,6 +481,7 @@ const Home = ({ navigation }) => {
         </Text>
         <TouchableOpacity
           onPress={() => {
+            setCurrentCate(null);
             navigation.navigate('ChangePickupPoint', {
               pickupPoint: pickupPoint,
               setPickupPoint,
@@ -703,6 +713,15 @@ const Home = ({ navigation }) => {
               }}>
               Không có sản phẩm
             </Text>
+            <Text
+              style={{
+                fontSize: 18,
+                fontFamily: 'Roboto',
+                fontWeight: 'bold',
+              }}>
+              Vui lòng chọn vị trí khác
+            </Text>
+
           </View>
         )}
         {/* Load more Products */}
