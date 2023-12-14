@@ -63,7 +63,7 @@ public interface ProductCategoryRepository extends JpaRepository<ProductCategory
     @Query("SELECT DISTINCT pct from ProductCategory pct " +
             "LEFT JOIN FETCH pct.productSubCategories psct " +
             "WHERE UPPER(pct.name) LIKE UPPER(CONCAT('%',:name,'%')) " +
-            "AND psct.status = 1 " +
+            "AND (psct.status IS NULL OR psct.status = 1) " +
             "AND pct.status = :status ")
     Page<ProductCateWithSubCate> getAllProductCategoryWithSubCateForStaff(String name, Integer status, Pageable pageable);
 }
