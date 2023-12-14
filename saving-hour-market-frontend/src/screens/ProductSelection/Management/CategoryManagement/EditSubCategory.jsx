@@ -17,6 +17,8 @@ const EditSubCategory = ({
   openSnackbar,
   setOpenSnackbar,
   setMsg,
+  setTotalPage,
+  setPage,
 }) => {
   const [imageSubCate, setImageSubCate] = useState(subCategoryToEdit.imageUrl);
   const [fileNameSubCate, setFileNameSubCate] = useState("");
@@ -129,7 +131,7 @@ const EditSubCategory = ({
           return;
         }
         fetch(
-          `${API.baseURL}/api/product/getSubCategoryForStaff?productCategoryId=${categoryId}&page=0&limit=10`,
+          `${API.baseURL}/api/product/getSubCategoryForStaff?productCategoryId=${categoryId}&page=0&limit=5`,
           {
             method: "GET",
             headers: {
@@ -142,6 +144,8 @@ const EditSubCategory = ({
           .then((res) => {
             console.log(res.productSubCategoryList);
             setSubCateList(res.productSubCategoryList);
+            setTotalPage(res.totalPage);
+            setPage(1);
             handleClose();
             setLoading(false);
             setOpenSnackbar({
