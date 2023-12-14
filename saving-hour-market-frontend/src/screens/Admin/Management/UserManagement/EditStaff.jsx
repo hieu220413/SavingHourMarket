@@ -35,13 +35,17 @@ const EditStaff = ({
   const [name, setName] = useState(staff.fullName);
   const [email, setEmail] = useState(staff.email);
   const [loading, setLoading] = useState(false);
-  const [isActiveDropdownPickupPoint, setIsActiveDropdownPickupPoint] =
-    useState(false);
 
   const [selectedPickupPointList, setselectedPickupPointList] = useState(
     staff.pickupPoint
   );
-  const [selectedPickupPoint, setSelectedPickupPoint] = useState(null);
+  const [selectedPickupPoint, setselectedPickupPoint] = useState([
+    {
+      isActiveDropdownPickupPoint: false,
+      selectedPickupPoint: null,
+      error: "",
+    },
+  ]);
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
   const handleOpenCreateDialog = () => setOpenCreateDialog(true);
   const handleCloseCreateDialog = () => setOpenCreateDialog(false);
@@ -199,6 +203,17 @@ const EditStaff = ({
         if (res.code === 401) {
           return;
         }
+        if (res.code === 403) {
+          handleCloseDeleteDialog();
+          setOpenAssignSnackbar({
+            ...openAssignSnackbar,
+            open: true,
+            severity: "error",
+            text: "Nhân viên có đơn hàng đang xử lí tại điểm giao hàng này",
+          });
+          setLoading(false);
+          return;
+        }
         setselectedPickupPointList(res.pickupPoint);
         handleCloseDeleteDialog();
         setOpenAssignSnackbar({
@@ -235,9 +250,35 @@ const EditStaff = ({
     }
     const tokenId = await auth.currentUser.getIdToken();
     if (staff.role !== "STAFF_ORD" && selectedRole === "STAFF_ORD") {
-      if (!selectedPickupPoint) {
-        setError({ ...error, pickupPoint: "Vui lòng chọn điểm giao hàng" });
+      const validatePickupPoint = selectedPickupPoint.findIndex(
+        (item) => !item.selectedPickupPoint
+      );
+      if (validatePickupPoint !== -1) {
+        const newSelectedPickupPointList = [...selectedPickupPoint];
+        newSelectedPickupPointList[validatePickupPoint] = {
+          ...newSelectedPickupPointList[validatePickupPoint],
+          error: "Vui lòng chọn điểm giao hàng",
+        };
+        setselectedPickupPoint(newSelectedPickupPointList);
         setLoading(false);
+        return;
+      }
+      var valueArr = selectedPickupPoint.map(function (item) {
+        return item?.selectedPickupPoint?.id;
+      });
+      var isDuplicatePickupPoint = valueArr.some(function (item, idx) {
+        return valueArr.indexOf(item) != idx;
+      });
+
+      if (isDuplicatePickupPoint) {
+        setOpenAssignSnackbar({
+          ...openAssignSnackbar,
+          open: true,
+          severity: "error",
+          text: "Có điểm giao hàng trùng nhau !",
+        });
+        setLoading(false);
+
         return;
       }
       fetch(`${API.baseURL}/api/staff/updateStaffRole`, {
@@ -260,7 +301,7 @@ const EditStaff = ({
             setLoading(false);
             return;
           }
-          fetch(`${API.baseURL}/api/staff/assignPickupPoint`, {
+          fetch(`${API.baseURL}/api/staff/assignPickupPointForCreateAccount`, {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
@@ -268,7 +309,9 @@ const EditStaff = ({
             },
             body: JSON.stringify({
               staffEmail: staff.email,
-              pickupPointId: selectedPickupPoint.id,
+              pickupPointIdList: selectedPickupPoint.map(
+                (item) => item.selectedPickupPoint.id
+              ),
             }),
           })
             .then((res) => res.json())
@@ -928,70 +971,134 @@ const EditStaff = ({
           </div>
         )}
         {selectedRole === "STAFF_ORD" && staff.role !== "STAFF_ORD" && (
-          <div className="modal__container-body-inputcontrol">
-            <h4 className="modal__container-body-inputcontrol-label">
-              Điểm giao hàng
-            </h4>
-            <div>
-              <div
-                style={{
-                  display: "flex",
-                }}
-              >
-                <div
-                  className="dropdown "
-                  style={{
-                    width: "400px",
-                    marginRight: 0,
-                  }}
-                >
+          <>
+            {selectedPickupPoint.map((item, index) => (
+              <div className="modal__container-body-inputcontrol">
+                {selectedPickupPoint.length !== 1 && (
                   <div
-                    className="dropdown-btn "
-                    onClick={(e) =>
-                      setIsActiveDropdownPickupPoint(
-                        !isActiveDropdownPickupPoint
-                      )
-                    }
+                    onClick={() => {
+                      setselectedPickupPoint(
+                        selectedPickupPoint.filter((data) => data !== item)
+                      );
+                    }}
+                    className="button__minus"
                   >
-                    {selectedPickupPoint?.address
-                      ? selectedPickupPoint.address
-                      : "Chọn điểm giao hàng"}
-                    <FontAwesomeIcon icon={faCaretDown} />
+                    <FontAwesomeIcon icon={faMinus} />
                   </div>
-                  {isActiveDropdownPickupPoint && (
+                )}
+
+                <h4 className="modal__container-body-inputcontrol-label">
+                  Điểm giao hàng
+                </h4>
+                <div>
+                  <div
+                    style={{
+                      display: "flex",
+                    }}
+                  >
                     <div
-                      style={{ height: "150px", overflowY: "scroll" }}
-                      className="dropdown-content"
+                      className="dropdown"
+                      style={{ width: "400px", marginRight: 0 }}
                     >
-                      {pickupPointList.map((item, index) => (
+                      <div
+                        className="dropdown-btn"
+                        onClick={(e) => {
+                          const newPickuppointList = selectedPickupPoint.map(
+                            (data, i) => {
+                              if (i === index) {
+                                return {
+                                  ...data,
+                                  isActiveDropdownPickupPoint:
+                                    !data.isActiveDropdownPickupPoint,
+                                };
+                              }
+                              return data;
+                            }
+                          );
+                          setselectedPickupPoint(newPickuppointList);
+                        }}
+                      >
+                        {item.selectedPickupPoint
+                          ? item.selectedPickupPoint.address
+                          : "Chọn điểm giao hàng"}
+                        <FontAwesomeIcon icon={faCaretDown} />
+                      </div>
+                      {item.isActiveDropdownPickupPoint && (
                         <div
-                          onClick={(e) => {
-                            setSelectedPickupPoint(item);
-                            setIsActiveDropdownPickupPoint(
-                              !isActiveDropdownPickupPoint
-                            );
-                          }}
-                          className="dropdown-item"
-                          key={index}
+                          style={{ height: "150px", overflowY: "scroll" }}
+                          className="dropdown-content"
                         >
-                          {item.address}
+                          {pickupPointList.map(
+                            (pickupPoint, pickupPointIndex) => (
+                              <div
+                                onClick={(e) => {
+                                  const newPickuppointList =
+                                    selectedPickupPoint.map((data, i) => {
+                                      if (i === index) {
+                                        return {
+                                          selectedPickupPoint: pickupPoint,
+                                          isActiveDropdownPickupPoint:
+                                            !data.isActiveDropdownPickupPoint,
+                                          error: "",
+                                        };
+                                      }
+                                      return data;
+                                    });
+                                  setselectedPickupPoint(newPickuppointList);
+                                }}
+                                className="dropdown-item"
+                                key={index}
+                              >
+                                {pickupPoint.address}
+                              </div>
+                            )
+                          )}
                         </div>
-                      ))}
+                      )}
                     </div>
+                  </div>
+                  {item.error && (
+                    <p
+                      style={{ fontSize: "14px", marginBottom: "-10px" }}
+                      className="text-danger"
+                    >
+                      {item.error}
+                    </p>
                   )}
                 </div>
               </div>
-
-              {error.pickupPoint && (
-                <p
-                  style={{ fontSize: "14px", marginBottom: "-10px" }}
-                  className="text-danger"
-                >
-                  {error.pickupPoint}
-                </p>
-              )}
+            ))}
+            <div className="modal__container-body-inputcontrol">
+              <button
+                onClick={() => {
+                  if (selectedPickupPoint.length === pickupPointList.length) {
+                    setOpenAssignSnackbar({
+                      ...openAssignSnackbar,
+                      open: true,
+                      severity: "error",
+                      text: `Hiện tại có ${pickupPointList.length} điểm giao hàng. Không thể tạo thêm !`,
+                    });
+                    return;
+                  }
+                  setselectedPickupPoint([
+                    ...selectedPickupPoint,
+                    {
+                      selectedPickupPoint: null,
+                      isActiveDropdownPickupPoint: false,
+                      error: "",
+                    },
+                  ]);
+                }}
+                className="buttonAddSupermarkerAddress"
+              >
+                Thêm điểm giao hàng
+                <FontAwesomeIcon
+                  icon={faPlusCircle}
+                  style={{ paddingLeft: 10 }}
+                />
+              </button>
             </div>
-          </div>
+          </>
         )}
 
         {/* name */}

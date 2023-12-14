@@ -222,22 +222,22 @@ const EditProductByExcel = ({
           });
         }
         const temProductList = [...confirmProductList.productList];
-
+        const rows = sheet.getColumn(1);
+        const rowsCount = rows["_worksheet"]["_rows"].length;
         if (product.imageUrls?.length !== 0 && product.imageUrls !== null) {
           for (let j = 0; j < product.imageUrls.length; j++) {
-            const row =
-              i > 0
-                ? prevRow + temProductList[i - 1].productBatchList.length
-                : i + 1;
+            console.log(rowsCount);
+            const row = i > 0 ? rowsCount - 1 : i + 1;
             prevRow = row;
+
+            console.log(`${i} : ${row}`);
+
             const imageUrl = await toImageUrl(product.imageUrls[j]);
-            console.log("i second", i);
+
             const imageId = workbook.addImage({
               base64: imageUrl.base64Url,
               extension: "png",
             });
-
-            console.log(`${i} : ${row}`);
 
             sheet.addImage(imageId, {
               tl: {

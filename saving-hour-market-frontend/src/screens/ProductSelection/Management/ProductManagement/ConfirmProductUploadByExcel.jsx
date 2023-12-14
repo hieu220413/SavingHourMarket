@@ -220,22 +220,16 @@ const ConfirmProductUploadByExcel = ({
             }
           );
 
-          const newErrorList = errorList.map((err, errIndex) => {
-            let count = 0;
-            responseErrorList.map((newErr, newErrIndex) => {
-              if (newErr.index < err.index) {
-                count += 1;
-              }
-            });
-            return { ...err, index: (parseInt(err.index) - count).toString() };
-          });
-          const errorProductList = confirmProductList.productList.filter(
-            (item, index) =>
-              responseErrorList.some((i) => parseInt(i.index) === index + 1) ||
-              item.imageUrls.length === 0
-          );
+          // console.log(newErrorList);
+          // const errorProductList = res.productList.filter((item, index) =>
+          //   responseErrorList.some((i) => parseInt(i.index) === index + 1)
+          // );
 
-          const newErrorFields = newErrorList.reduce(
+          // const newErrorList = responseErrorList.map((err, errIndex) => {
+          //   return { ...err, index: (errIndex + 1).toString() };
+          // });
+
+          const newErrorFields = responseErrorList.reduce(
             (a, v) => ({ ...a, [v.index]: v.value }),
             {}
           );
@@ -244,7 +238,7 @@ const ConfirmProductUploadByExcel = ({
           setPageProduct(1);
           setConfirmProductList({
             errorFields: newErrorFields,
-            productList: errorProductList,
+            productList: res.productList,
           });
 
           setMsg("Thêm mới thành công");
