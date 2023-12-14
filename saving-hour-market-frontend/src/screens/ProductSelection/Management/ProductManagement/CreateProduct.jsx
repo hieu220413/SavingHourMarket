@@ -1049,7 +1049,6 @@ const CreateProduct = ({
                     value={category}
                     onChange={(e) => {
                       setCategory(e.target.value);
-                      console.log(e.target.value);
                       setCheckDuplicatedCategory(e.target.value);
                       setError({ ...error, category: "" });
                     }}
@@ -1403,7 +1402,7 @@ const CreateProduct = ({
                       let year = date.getFullYear();
                       let currentDate = `${year}-${month}-${day}`;
                       let allowableThresholdDate = dayjs(
-                        getDateAfterToday(allowableDisplayThreshold)
+                        getDateAfterToday(parseInt(allowableDisplayThreshold))
                       ).format("DD/MM/YYYY");
 
                       const daysFromToday = dayDiffFromToday(

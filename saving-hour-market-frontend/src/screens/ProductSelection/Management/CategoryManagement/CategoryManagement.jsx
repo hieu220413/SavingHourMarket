@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import ManagementMenu from "../../../../components/ManagementMenu/ManagementMenu";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+  faClipboard,
   faMagnifyingGlass,
   faPlus,
+  faTrashCanArrowUp,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { Dialog } from "@mui/material";
@@ -18,6 +20,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { child, get, ref } from "firebase/database";
+import Empty from "../../../../assets/Empty.png";
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
@@ -33,6 +36,7 @@ const CategoryManagement = () => {
   const [searchValue, setSearchValue] = useState("");
   const [msg, setMsg] = useState("");
   const [categoryName, setCategoryName] = useState("");
+  const [isSwitchRecovery, setIsSwitchRecovery] = useState(false);
 
   const [loading, setLoading] = useState(false);
 
@@ -59,7 +63,7 @@ const CategoryManagement = () => {
         API.baseURL
       }/api/product/getCategoryForStaff?name=${searchValue}&page=${
         page - 1
-      }&limit=5`,
+      }&limit=5${isSwitchRecovery ? "&status=DISABLE" : "&status=ENABLE"}`,
       {
         method: "GET",
         headers: {
@@ -105,7 +109,7 @@ const CategoryManagement = () => {
             API.baseURL
           }/api/product/getCategoryForStaff?name=${searchValue}&page=${
             page - 1
-          }&limit=5`,
+          }&limit=5${isSwitchRecovery ? "&status=DISABLE" : "&status=ENABLE"}`,
           {
             method: "GET",
             headers: {
@@ -116,6 +120,7 @@ const CategoryManagement = () => {
         )
           .then((res) => res.json())
           .then((data) => {
+            console.log(data);
             setCategories(data.productCategoryList);
             setTotalPage(data.totalPage);
             setLoading(false);
@@ -127,7 +132,7 @@ const CategoryManagement = () => {
       }
     };
     fetchCategory();
-  }, [page, searchValue, userState[1]]);
+  }, [isSwitchRecovery, page, searchValue, userState[1]]);
 
   const onSubmitSearch = (e) => {
     e.preventDefault();
@@ -151,8 +156,189 @@ const CategoryManagement = () => {
     },
   ];
 
-  const handleDelete = async () => {
-    console.log("click");
+  const handleDelete = async (id) => {
+    setLoading(true);
+    let isSystemDisable = true;
+    await get(child(ref(database), "systemStatus")).then((snapshot) => {
+      const data = snapshot.val();
+      if (data !== null) {
+        if (data === 1) {
+          setOpenSnackbar({
+            ...openSnackbar,
+            open: true,
+            severity: "error",
+          });
+          setMsg("Hệ thống không trong trạng thái bảo trì !");
+          handleCloseDelete();
+          isSystemDisable = false;
+        }
+      }
+    });
+    if (!isSystemDisable) {
+      setLoading(false);
+      return;
+    }
+    const tokenId = await auth.currentUser.getIdToken();
+    fetch(
+      `${API.baseURL}/api/product/updateCategoryStatus?status=DISABLE&categoryId=${id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenId}`,
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((res) => {
+        if (res?.error) {
+          setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
+          setMsg(res.error);
+          return;
+        }
+        fetch(
+          `${
+            API.baseURL
+          }/api/product/getCategoryForStaff?name=${searchValue}&page=${
+            page - 1
+          }&limit=5${isSwitchRecovery ? "&status=DISABLE" : "&status=ENABLE"}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${tokenId}`,
+            },
+          }
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            setCategories(data.productCategoryList);
+            setTotalPage(data.totalPage);
+            setLoading(false);
+          })
+          .catch((err) => {
+            console.log(err);
+            setLoading(false);
+          });
+        handleCloseDelete();
+        setOpenSnackbar({
+          ...openSnackbar,
+          open: true,
+          severity: "success",
+        });
+        setMsg("Xóa loại sản phẩm thành công");
+      });
+  };
+
+  const handleSwitchRecoveryTable = (check) => {
+    onAuthStateChanged(auth, async (userAuth) => {
+      setLoading(true);
+      setTextPage(1);
+      if (userAuth) {
+        const tokenId = await auth.currentUser.getIdToken();
+        fetch(
+          `${
+            API.baseURL
+          }/api/product/getCategoryForStaff?name=${searchValue}&page=${
+            page - 1
+          }&limit=5${check ? "&status=DISABLE" : "&status=ENABLE"}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${tokenId}`,
+            },
+          }
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            setCategories(data.productCategoryList);
+            setTotalPage(data.totalPage);
+            setLoading(false);
+            setIsSwitchRecovery(!isSwitchRecovery);
+          })
+          .catch((err) => {
+            console.log(err);
+            setLoading(false);
+          });
+      }
+    });
+  };
+
+  const handleRecoveryCategory = async (id) => {
+    setLoading(true);
+    let isSystemDisable = true;
+    await get(child(ref(database), "systemStatus")).then((snapshot) => {
+      const data = snapshot.val();
+      if (data !== null) {
+        if (data === 1) {
+          setOpenSnackbar({
+            ...openSnackbar,
+            open: true,
+            severity: "error",
+          });
+          setMsg("Hệ thống không trong trạng thái bảo trì !");
+          isSystemDisable = false;
+        }
+      }
+    });
+    if (!isSystemDisable) {
+      setLoading(false);
+      return;
+    }
+    const tokenId = await auth.currentUser.getIdToken();
+    fetch(
+      `${
+        API.baseURL
+      }/api/product/updateCategoryStatus?status=ENABLE&categoryId=${id}${
+        isSwitchRecovery ? "&status=DISABLE" : "&status=ENABLE"
+      }`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenId}`,
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((res) => {
+        if (res?.error) {
+          setOpenSnackbar({ ...openSnackbar, open: true, severity: "error" });
+          setMsg(res.error);
+          return;
+        }
+        fetch(
+          `${
+            API.baseURL
+          }/api/product/getCategoryForStaff?name=${searchValue}&page=${
+            page - 1
+          }&limit=5`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${tokenId}`,
+            },
+          }
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            setCategories(data.productCategoryList);
+            setTotalPage(data.totalPage);
+            setLoading(false);
+          })
+          .catch((err) => {
+            console.log(err);
+            setLoading(false);
+          });
+        setOpenSnackbar({
+          ...openSnackbar,
+          open: true,
+          severity: "success",
+        });
+        setMsg("Phục hồi loại sản phẩm thành công");
+      });
   };
 
   const CategoryRow = ({ item, index }) => {
@@ -161,7 +347,7 @@ const CategoryManagement = () => {
         <tr className="table-body-row">
           <td style={{ paddingTop: 30 }}>{index + 1}</td>
           <td style={{ paddingTop: 30 }}>{item.name}</td>
-          <td style={{ paddingTop: 30 }}>
+          <td style={{ paddingTop: 30, paddingLeft: 30 }}>
             <i
               onClick={() => {
                 setSubCategoryToView(item);
@@ -170,6 +356,8 @@ const CategoryManagement = () => {
               }}
               className="bi bi-eye"
             ></i>
+          </td>
+          <td style={{ paddingTop: 30 }}>
             <i
               onClick={async () => {
                 let isSystemDisable = true;
@@ -198,13 +386,42 @@ const CategoryManagement = () => {
               }}
               class="bi bi-pencil-square"
             ></i>
-            {/* <i
+            <i
               onClick={() => {
                 setIdToDelete(item.id);
                 handleOpenDelete();
               }}
               class="bi bi-trash-fill"
-            ></i> */}
+            ></i>
+          </td>
+        </tr>
+      </>
+    );
+  };
+
+  const CategoryRowRecovery = ({ item, index }) => {
+    return (
+      <>
+        <tr className="table-body-row">
+          <td style={{ paddingTop: 30 }}>{index + 1}</td>
+          <td style={{ paddingTop: 30 }}>{item.name}</td>
+          <td style={{ paddingTop: 30, paddingLeft: 30 }}>
+            <i
+              onClick={() => {
+                setSubCategoryToView(item);
+                handleOpenView();
+                setCategoryName(item.name);
+              }}
+              className="bi bi-eye"
+            ></i>
+          </td>
+          <td style={{ paddingTop: 30 }}>
+            <i
+              onClick={() => {
+                handleRecoveryCategory(item.id);
+              }}
+              class="bi bi-arrow-repeat"
+            ></i>
           </td>
         </tr>
       </>
@@ -231,129 +448,345 @@ const CategoryManagement = () => {
               </form>
             </div>
             {/* ****************** */}
-
-            <div onClick={handleOpen} className="supermarket__header-button">
-              <FontAwesomeIcon icon={faPlus} />
-              Thêm loại sản phẩm
-            </div>
+            {!isSwitchRecovery && (
+              <div onClick={handleOpen} className="supermarket__header-button">
+                <FontAwesomeIcon icon={faPlus} />
+                Thêm loại sản phẩm
+              </div>
+            )}
           </div>
 
           {/* data table + pagination*/}
-          <div className="table__container table-box-shadow">
-            {/* data table */}
-            <table class="table ">
-              <thead>
-                <tr className="table-header-row">
-                  <th>No.</th>
-                  <th>Tên loại sản phẩm</th>
-                  <th>Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {categories.map((item, index) => (
-                  <CategoryRow item={item} index={index} key={index} />
-                ))}
-              </tbody>
-            </table>
-            {/* ********************** */}
-
-            {/* pagination */}
-            <div className="row pageBtn">
-              <div className="col" style={{ textAlign: "right" }}>
-                <br />
-                <form action="">
-                  <button
-                    type="submit"
-                    disabled={page === 1}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setPage(1);
-                    }}
-                    className="btn btn-success  "
-                    name="op"
-                    value="FirstPage"
-                    title="First Page"
-                  >
-                    <i className="bi bi-chevron-bar-left"></i>
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={page === 1}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setPage(page - 1);
-                    }}
-                    className="btn btn-success  "
-                    name="op"
-                    value="PreviousPage"
-                    title="Previous Page"
-                  >
-                    <i className="bi bi-chevron-left"></i>
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={page === totalPage}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setPage(page + 1);
-                    }}
-                    className="btn btn-success  "
-                    name="op"
-                    value="NextPage"
-                    title="Next Page"
-                  >
-                    <i className="bi bi-chevron-right"></i>
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={page === totalPage}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setPage(totalPage);
-                    }}
-                    className="btn btn-success  "
-                    name="op"
-                    value="LastPage"
-                    title="Last Page"
-                  >
-                    <i className="bi bi-chevron-bar-right"></i>
-                  </button>
-                  <input
-                    type="number"
-                    name="gotoPage"
-                    value={textPage}
-                    onChange={(e) => {
-                      if (e.target.value >= page && e.target.value <= totalPage)
-                        setTextPage(e.target.value);
-                    }}
-                    className=" "
+          {!isSwitchRecovery && (
+            <div className="table__container table-box-shadow">
+              {/* data table */}
+              <table class="table ">
+                <thead>
+                  <tr className="table-header-row">
+                    {categories.length !== 0 && (
+                      <>
+                        <th>No.</th>
+                        <th>Tên loại sản phẩm</th>
+                        <th>Loại sản phẩm phụ</th>
+                        <th>Thao tác</th>
+                      </>
+                    )}
+                  </tr>
+                </thead>
+                <tbody>
+                  {categories.map((item, index) => (
+                    <CategoryRow item={item} index={index} key={index} />
+                  ))}
+                </tbody>
+              </table>
+              {categories.length === 0 && (
+                <div>
+                  <div
                     style={{
-                      padding: "12px",
-                      textAlign: "center",
-                      color: "#000",
-                      width: "40px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
                     }}
-                    title="Enter page number"
-                  />
-                  <button
-                    type="submit"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setPage(textPage);
-                    }}
-                    className="btn btn-success  "
-                    name="op"
-                    value="GotoPage"
-                    title="Goto Page"
                   >
-                    <i className="bi bi-arrow-up-right-circle"></i>
-                  </button>
-                </form>
-                Page {page}/{totalPage}
+                    <img src={Empty} alt="" />
+                  </div>
+                  <p
+                    style={{
+                      textAlign: "center",
+                      color: "grey",
+                      fontSize: 24,
+                    }}
+                  >
+                    Không có loại sản phẩm nào
+                  </p>
+                </div>
+              )}
+              {/* ********************** */}
+
+              <div>
+                <button
+                  onClick={() => {
+                    setPage(1);
+                    handleSwitchRecoveryTable(!isSwitchRecovery);
+                  }}
+                  className=" buttonRecovery"
+                >
+                  Danh sách loại sản phẩm đã xóa
+                  <FontAwesomeIcon icon={faTrashCanArrowUp} />
+                </button>
               </div>
+
+              {/* pagination */}
+              {categories.length !== 0 && (
+                <div className="row pageBtn">
+                  <div className="col" style={{ textAlign: "right" }}>
+                    <br />
+                    <form action="">
+                      <button
+                        type="submit"
+                        disabled={page === 1}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setPage(1);
+                        }}
+                        className="btn btn-success  "
+                        name="op"
+                        value="FirstPage"
+                        title="First Page"
+                      >
+                        <i className="bi bi-chevron-bar-left"></i>
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={page === 1}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setPage(page - 1);
+                        }}
+                        className="btn btn-success  "
+                        name="op"
+                        value="PreviousPage"
+                        title="Previous Page"
+                      >
+                        <i className="bi bi-chevron-left"></i>
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={page === totalPage}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setPage(page + 1);
+                        }}
+                        className="btn btn-success  "
+                        name="op"
+                        value="NextPage"
+                        title="Next Page"
+                      >
+                        <i className="bi bi-chevron-right"></i>
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={page === totalPage}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setPage(totalPage);
+                        }}
+                        className="btn btn-success  "
+                        name="op"
+                        value="LastPage"
+                        title="Last Page"
+                      >
+                        <i className="bi bi-chevron-bar-right"></i>
+                      </button>
+                      <input
+                        type="number"
+                        name="gotoPage"
+                        value={textPage}
+                        onChange={(e) => {
+                          if (
+                            e.target.value >= page &&
+                            e.target.value <= totalPage
+                          )
+                            setTextPage(e.target.value);
+                        }}
+                        className=" "
+                        style={{
+                          padding: "12px",
+                          textAlign: "center",
+                          color: "#000",
+                          width: "40px",
+                        }}
+                        title="Enter page number"
+                      />
+                      <button
+                        type="submit"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setPage(textPage);
+                        }}
+                        className="btn btn-success  "
+                        name="op"
+                        value="GotoPage"
+                        title="Goto Page"
+                      >
+                        <i className="bi bi-arrow-up-right-circle"></i>
+                      </button>
+                    </form>
+                    Page {page}/{totalPage}
+                  </div>
+                </div>
+              )}
+              {/* ********************** */}
             </div>
-            {/* ********************** */}
-          </div>
+          )}
+
+          {isSwitchRecovery && (
+            <div className="table__container table-box-shadow">
+              {/* data table */}
+              <table class="table ">
+                <thead>
+                  <tr className="table-header-row">
+                    {categories.length !== 0 && (
+                      <>
+                        <th>No.</th>
+                        <th>Tên loại sản phẩm</th>
+                        <th>Loại sản phẩm phụ</th>
+                        <th>Thao tác</th>
+                      </>
+                    )}
+                  </tr>
+                </thead>
+                <tbody>
+                  {categories.map((item, index) => (
+                    <CategoryRowRecovery
+                      item={item}
+                      index={index}
+                      key={index}
+                    />
+                  ))}
+                </tbody>
+              </table>
+              {categories.length === 0 && (
+                <div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <img src={Empty} alt="" />
+                  </div>
+                  <p
+                    style={{
+                      textAlign: "center",
+                      color: "grey",
+                      fontSize: 24,
+                    }}
+                  >
+                    Không có loại sản phẩm bị xóa nào
+                  </p>
+                </div>
+              )}
+              {/* ********************** */}
+
+              <div>
+                <button
+                  onClick={() => {
+                    setPage(1);
+                    handleSwitchRecoveryTable(!isSwitchRecovery);
+                  }}
+                  className=" buttonRecovery"
+                >
+                  Danh sách loại sản phẩm
+                  <FontAwesomeIcon icon={faClipboard} />
+                </button>
+              </div>
+
+              {/* pagination */}
+              {categories.length !== 0 && (
+                <div className="row pageBtn">
+                  <div className="col" style={{ textAlign: "right" }}>
+                    <br />
+                    <form action="">
+                      <button
+                        type="submit"
+                        disabled={page === 1}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setPage(1);
+                        }}
+                        className="btn btn-success  "
+                        name="op"
+                        value="FirstPage"
+                        title="First Page"
+                      >
+                        <i className="bi bi-chevron-bar-left"></i>
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={page === 1}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setPage(page - 1);
+                        }}
+                        className="btn btn-success  "
+                        name="op"
+                        value="PreviousPage"
+                        title="Previous Page"
+                      >
+                        <i className="bi bi-chevron-left"></i>
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={page === totalPage}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setPage(page + 1);
+                        }}
+                        className="btn btn-success  "
+                        name="op"
+                        value="NextPage"
+                        title="Next Page"
+                      >
+                        <i className="bi bi-chevron-right"></i>
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={page === totalPage}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setPage(totalPage);
+                        }}
+                        className="btn btn-success  "
+                        name="op"
+                        value="LastPage"
+                        title="Last Page"
+                      >
+                        <i className="bi bi-chevron-bar-right"></i>
+                      </button>
+                      <input
+                        type="number"
+                        name="gotoPage"
+                        value={textPage}
+                        onChange={(e) => {
+                          if (
+                            e.target.value >= page &&
+                            e.target.value <= totalPage
+                          )
+                            setTextPage(e.target.value);
+                        }}
+                        className=" "
+                        style={{
+                          padding: "12px",
+                          textAlign: "center",
+                          color: "#000",
+                          width: "40px",
+                        }}
+                        title="Enter page number"
+                      />
+                      <button
+                        type="submit"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setPage(textPage);
+                        }}
+                        className="btn btn-success  "
+                        name="op"
+                        value="GotoPage"
+                        title="Goto Page"
+                      >
+                        <i className="bi bi-arrow-up-right-circle"></i>
+                      </button>
+                    </form>
+                    Page {page}/{totalPage}
+                  </div>
+                </div>
+              )}
+              {/* ********************** */}
+            </div>
+          )}
+
           {/* ***************** */}
         </div>
 

@@ -16,6 +16,9 @@ const CreateSubCategory = ({
   openSnackbar,
   setOpenSnackbar,
   setMsg,
+  page,
+  setTotalPage,
+  setPage,
 }) => {
   const [imageSubCate, setImageSubCate] = useState(null);
   const [fileNameSubCate, setFileNameSubCate] = useState(
@@ -120,7 +123,11 @@ const CreateSubCategory = ({
           return;
         }
         fetch(
-          `${API.baseURL}/api/product/getSubCategoryForStaff?productCategoryId=${categoryId}&page=0&limit=10`,
+          `${
+            API.baseURL
+          }/api/product/getSubCategoryForStaff?productCategoryId=${categoryId}&page=${
+            page - 1
+          }&limit=5`,
           {
             method: "GET",
             headers: {
@@ -131,8 +138,9 @@ const CreateSubCategory = ({
         )
           .then((res) => res.json())
           .then((res) => {
-            console.log(res.productSubCategoryList);
             setSubCateList(res.productSubCategoryList);
+            setTotalPage(res.totalPage);
+            setPage(1);
             handleClose();
             setLoading(false);
             setOpenSnackbar({
