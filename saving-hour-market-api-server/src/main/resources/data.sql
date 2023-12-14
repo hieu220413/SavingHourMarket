@@ -28,6 +28,7 @@ SET @orderDateForSecondOrderGroupForAssignDeliver = DATE_FORMAT((CURDATE()),'%Y-
 SET @orderDateForThirdOrderGroupForAssignDeliver = DATE_FORMAT((CURDATE()),'%Y-%m-%d');
 SET @orderDateForOrderSingleForProcessingStatus = DATE_FORMAT((CURDATE() + INTERVAL 4 DAY),'%Y-%m-%d');
 SET @orderDateForOrderSingleForDeliveringStatus = DATE_FORMAT((CURDATE()),'%Y-%m-%d');
+SET @orderDateForOrderCancel = DATE_FORMAT((CURDATE() + INTERVAL 3 DAY),'%Y-%m-%d');
 
 -- Order create date
 SET @orderCreateDateBatchingForGroup =  CONCAT(DATE_FORMAT((CURDATE()),'%Y-%m-%d'), " ", DATE_FORMAT((CURTIME()),'%T'));
@@ -39,6 +40,7 @@ SET @orderCreateDateForOrderGroupForPackingOrder = CONCAT(DATE_FORMAT((CURDATE()
 SET @orderCreateDateForOrderGroupForPackagedOrder = CONCAT(DATE_FORMAT((CURDATE() - INTERVAL 1 DAY),'%Y-%m-%d'), " ", DATE_FORMAT(DATE_ADD(NOW(), INTERVAL 3 HOUR), '%T'));
 SET @orderCreateDateForOrderGroupHaveDelivererForNewProcessingOrder = CONCAT(DATE_FORMAT((CURDATE() - INTERVAL 3 DAY),'%Y-%m-%d'), " ", DATE_FORMAT((CURTIME()),'%T'));
 SET @orderCreateDateForOrderSingleForDeliveringStatus = CONCAT(DATE_FORMAT((CURDATE() - INTERVAL 2 DAY),'%Y-%m-%d'), " ", DATE_FORMAT((CURTIME()),'%T'));
+SET @orderCreateDateForOrderCancel = CONCAT(DATE_FORMAT((CURDATE()),'%Y-%m-%d'), " ", DATE_FORMAT((CURTIME()),'%T'));
 -- Payment method: COD(0), VNPay(1)
 SET @cod = 0;
 SET @vnpay = 1;
@@ -51,6 +53,10 @@ SET @All = 2;
 -- Payment status: unpaid(0), paid(1)
 SET @unpaid = 0;
 SET @paid = 1;
+
+-- feedback status:
+SET @processingFeeback = 0;
+SET @completedFeedback  = 1;
 
 -- Product description
 SET @OmoDescription = 'Nước Giặt Omo Matic với công nghệ Màn chắn Kháng bẩn Polyshield Xanh, giúp bao bọc và phủ một lớp màn chắn vô hình lên bề mặt sợi vải, loại bỏ nhanh chóng vết bẩn cứng đầu và mùi hôi trên áo quần.
@@ -923,6 +929,11 @@ INSERT INTO `saving_hour_market`.`orders` (`id`, `code`, `total_price`, `total_d
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf4d19-5541-11ee-8a50-a85e45c41921'), null, null, UUID_TO_BIN('ec5e099f-56dc-11ee-8a50-a85e45c41921'), null, UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e00f7-56dc-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('ea690a79-89ad-11ee-bef9-a85e45c41921'), 'SHMORD181123000005', 111111, 0, 16000, '2023-11-18', '2023-11-19', @cod, @DoorToDoor, @paid, '640 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.84472, 106.82994, 'qr code url here', @fail,
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf4d19-5541-11ee-8a50-a85e45c41921'), null, null, UUID_TO_BIN('ec5e099f-56dc-11ee-8a50-a85e45c41921'), null, UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e00f7-56dc-11ee-8a50-a85e45c41921')),
+    --cancel status (for refund)
+            (UUID_TO_BIN('ea725183-89ad-11ee-bef9-a85e45c41921'), CONCAT('SHMORD', DATE_FORMAT((CURDATE()),'%d%m%y'), '000009'), 76000, 0, 16000, @orderCreateDateForOrderCancel, @orderDateForOrderCancel, @vnpay, @DoorToDoor, @paid, '640 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.84472, 106.82994, 'qr code url here', @cancel,
+             UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), null, null, null, UUID_TO_BIN('ec5e099f-56dc-11ee-8a50-a85e45c41921'), null, UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), null),
+            (UUID_TO_BIN('ea725256-89ad-11ee-bef9-a85e45c41921'), CONCAT('SHMORD', DATE_FORMAT((CURDATE()),'%d%m%y'), '000010'), 76000, 0, 16000, @orderCreateDateForOrderCancel, @orderDateForOrderCancel, @vnpay, @DoorToDoor, @paid, '640 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.84472, 106.82994, 'qr code url here', @cancel,
+             UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), null, null, null, UUID_TO_BIN('ec5e099f-56dc-11ee-8a50-a85e45c41921'), null, UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), null),
     --processing status
             (UUID_TO_BIN('16fd9342-8078-11ee-bef9-a85e45c41921'), 'SHMORD181123000006', 111111, 0, 16000, '2023-11-18 13:00:00', @orderDateForOrderSingleForProcessingStatus, @vnpay, @DoorToDoor, @paid, '640 Nguyễn Xiển, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.84472, 106.82994, 'qr code url here', @processing,
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), null, null, null, UUID_TO_BIN('ec5e099f-56dc-11ee-8a50-a85e45c41921'), null, UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), null),
@@ -937,7 +948,6 @@ INSERT INTO `saving_hour_market`.`orders` (`id`, `code`, `total_price`, `total_d
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf4d19-5541-11ee-8a50-a85e45c41921'), null, null, UUID_TO_BIN('ec5e0855-56dc-11ee-8a50-a85e45c41921'), null, UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e00f7-56dc-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('1b2eb7c3-e86a-4799-8877-828c2ac9c66f'), 'SHMORD181123000011', 122222, 0, 16000, @orderCreateDateForOrderSingleForDeliveringStatus, @orderDateForOrderSingleForDeliveringStatus, @vnpay, @DoorToDoor, @paid, '200 Phước Thiện, Quận 9, Hồ Chí Minh', '0902828618', 'Luu Gia Vinh', 10.84472, 106.82994, 'https://firebasestorage.googleapis.com/v0/b/capstone-project-398104.appspot.com/o/Order_QR_code%2F1b2eb7c3-e86a-4799-8877-828c2ac9c66f.png?alt=media', @delivering,
              UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf4d19-5541-11ee-8a50-a85e45c41921'), null, null, UUID_TO_BIN('ec5e0855-56dc-11ee-8a50-a85e45c41921'), null, UUID_TO_BIN('accf0ac0-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ec5e00f7-56dc-11ee-8a50-a85e45c41921')),
-
 
 --  dummy order for run batching grouping (
         --  time frame: 10:00:00 - 11:30:00
@@ -1218,6 +1228,10 @@ INSERT INTO `saving_hour_market`.`order_detail` (`id`, `product_id`, `bought_qua
             (UUID_TO_BIN('16fdd7ad-8078-11ee-bef9-a85e45c41921'), UUID_TO_BIN('accf3079-5541-11ee-8a50-a85e45c41921'), 1, 60000, 49000, UUID_TO_BIN('16fdd91e-8078-11ee-bef9-a85e45c41921')),
 
             (UUID_TO_BIN('16fdd6ec-8078-11ee-bef9-a85e45c41921'), UUID_TO_BIN('accf3079-5541-11ee-8a50-a85e45c41921'), 1, 60000, 49000, UUID_TO_BIN('ea690a79-89ad-11ee-bef9-a85e45c41921')),
+        --cancel status (for refund)
+            (UUID_TO_BIN('ea724fae-89ad-11ee-bef9-a85e45c41921'), UUID_TO_BIN('accf3079-5541-11ee-8a50-a85e45c41921'), 1, 60000, 49000, UUID_TO_BIN('ea725183-89ad-11ee-bef9-a85e45c41921')),
+
+            (UUID_TO_BIN('ea7250b6-89ad-11ee-bef9-a85e45c41921'), UUID_TO_BIN('accf3079-5541-11ee-8a50-a85e45c41921'), 1, 60000, 49000, UUID_TO_BIN('ea725256-89ad-11ee-bef9-a85e45c41921')),
         --processing status
             (UUID_TO_BIN('16fda0df-8078-11ee-bef9-a85e45c41921'), UUID_TO_BIN('accf2b04-5541-11ee-8a50-a85e45c41921'), 1, 159000, 130000, UUID_TO_BIN('16fd9342-8078-11ee-bef9-a85e45c41921')),
             (UUID_TO_BIN('16fda28e-8078-11ee-bef9-a85e45c41921'), UUID_TO_BIN('accf3664-5541-11ee-8a50-a85e45c41921'), 1, 145000, 120000, UUID_TO_BIN('16fd9342-8078-11ee-bef9-a85e45c41921')),
@@ -1442,7 +1456,10 @@ INSERT INTO `saving_hour_market`.`order_detail_product_batch` (`id`, `bought_qua
             (UUID_TO_BIN('16fdd579-8078-11ee-bef9-a85e45c41921'), 1, UUID_TO_BIN('16fdd7ad-8078-11ee-bef9-a85e45c41921'), UUID_TO_BIN('ec5eae10-56dc-11ee-8a50-a85e45c41921')),
 
             (UUID_TO_BIN('16fdd630-8078-11ee-bef9-a85e45c41921'), 1, UUID_TO_BIN('16fdd6ec-8078-11ee-bef9-a85e45c41921'), UUID_TO_BIN('ec5eae10-56dc-11ee-8a50-a85e45c41921')),
+        --cancel status (for refund)
+            (UUID_TO_BIN('ea724d7c-89ad-11ee-bef9-a85e45c41921'), 1, UUID_TO_BIN('ea724fae-89ad-11ee-bef9-a85e45c41921'), UUID_TO_BIN('ec5eae10-56dc-11ee-8a50-a85e45c41921')),
 
+            (UUID_TO_BIN('ea724e96-89ad-11ee-bef9-a85e45c41921'), 1, UUID_TO_BIN('ea7250b6-89ad-11ee-bef9-a85e45c41921'), UUID_TO_BIN('ec5eae10-56dc-11ee-8a50-a85e45c41921')),
         --processing
             (UUID_TO_BIN('16fda7a7-8078-11ee-bef9-a85e45c41921'), 1, UUID_TO_BIN('16fda0df-8078-11ee-bef9-a85e45c41921'), UUID_TO_BIN('ec5ea50d-56dc-11ee-8a50-a85e45c41921')),
             (UUID_TO_BIN('16fda882-8078-11ee-bef9-a85e45c41921'), 1, UUID_TO_BIN('16fda28e-8078-11ee-bef9-a85e45c41921'), UUID_TO_BIN('ec5e44d1-56dc-11ee-8a50-a85e45c41921')),
@@ -1619,19 +1636,26 @@ INSERT INTO `saving_hour_market`.`order_detail_product_batch` (`id`, `bought_qua
             (UUID_TO_BIN('ea6a8ca0-89ad-11ee-bef9-a85e45c41921'), 1, UUID_TO_BIN('ea6afe79-89ad-11ee-bef9-a85e45c41921'), UUID_TO_BIN('ec5eae10-56dc-11ee-8a50-a85e45c41921'));
 
 
-
+INSERT INTO `saving_hour_market`.`feed_back` (`id`, `message`, `response_message`, `rate`, `object`, `created_time`, `status`, `customer_id`, `order_id`)
+    VALUES (UUID_TO_BIN('ea7248cb-89ad-11ee-bef9-a85e45c41921'), 'Dịch vụ tốt, sản phẩm rẻ', null, 5, 'ORDER', '2023-10-20 09:00:00', @processingFeeback, UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf7b01-5541-11ee-8a50-a85e45c41921')),
+           (UUID_TO_BIN('ea7249ad-89ad-11ee-bef9-a85e45c41921'), 'Háng hóa được đóng gói cẩn thận. Đánh giá 5 sao', null, 5, 'ORDER', '2023-10-18 09:00:00', @processingFeeback, UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf7c79-5541-11ee-8a50-a85e45c41921')),
+           (UUID_TO_BIN('ea724af4-89ad-11ee-bef9-a85e45c41921'), 'Nhân viên giao hàng đúng giờ. Đánh giá 5 sao', null, 5, 'ORDER', '2023-10-18 09:00:00', @processingFeeback, UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('accf7dc4-5541-11ee-8a50-a85e45c41921')),
+           (UUID_TO_BIN('ea724c42-89ad-11ee-bef9-a85e45c41921'), 'Sản phẩm tốt, rẻ', null, 5, 'ORDER', '2023-11-20 09:00:00', @processingFeeback, UUID_TO_BIN('accef2db-5541-11ee-8a50-a85e45c41921'), UUID_TO_BIN('ea6b0aec-89ad-11ee-bef9-a85e45c41921'));
 
 INSERT INTO `saving_hour_market`.`transaction` (`id`, `payment_method`, `payment_time`, `amount_of_money`, `transaction_no`, `order_id`, `refund_id`)
 --   VALUES  (`id`, `payment_method`, `payment_time`, `amount_of_money`, `transaction_no`, `order_id`, `refund_id`)
     VALUES  (UUID_TO_BIN('16fdb03d-8078-11ee-bef9-a85e45c41921'), @vnpay, '2023-11-18 13:00:00', '111111', '11111111111111', UUID_TO_BIN('a4e3c710-78cf-11ee-a832-a85e45c41921'), null),
 
-            -- refund for transaction below it 1 row
---             (UUID_TO_BIN('16fda6c8-8078-11ee-bef9-a85e45c41921'), @vnpay, '2023-09-15 13:00:00', '546000', null, null, null),
-            (UUID_TO_BIN('16fda601-8078-11ee-bef9-a85e45c41921'), @vnpay, '2023-09-14 13:00:00', '546000', '12345567890000', UUID_TO_BIN('accf7dc4-5541-11ee-8a50-a85e45c41921'), null),
 
-            (UUID_TO_BIN('16fdbf53-8078-11ee-bef9-a85e45c41921'), @vnpay, '2023-11-17 12:00:00', '111111', '12356789111111', UUID_TO_BIN('a4e3bc3a-78cf-11ee-a832-a85e45c41921'), null),
-            (UUID_TO_BIN('16fdc00c-8078-11ee-bef9-a85e45c41921'), @vnpay, '2023-11-16 10:00:00', '111111', '12356789222222', UUID_TO_BIN('a4e3bd5d-78cf-11ee-a832-a85e45c41921'), null),
-            (UUID_TO_BIN('16fdc0cc-8078-11ee-bef9-a85e45c41921'), @vnpay, '2023-11-15 15:00:00', '111111', '12356789333333', UUID_TO_BIN('a4e3be96-78cf-11ee-a832-a85e45c41921'), null);
+--             (UUID_TO_BIN('16fda6c8-8078-11ee-bef9-a85e45c41921'), @vnpay, '2023-09-15 13:00:00', '546000', null, null, null),
+            (UUID_TO_BIN('16fda601-8078-11ee-bef9-a85e45c41921'), @vnpay, '2023-10-14 13:00:00', '546000', '12345567890000', UUID_TO_BIN('accf7dc4-5541-11ee-8a50-a85e45c41921'), null),
+            (UUID_TO_BIN('16fdbf53-8078-11ee-bef9-a85e45c41921'), @vnpay, @orderCreateDateBatchingForGroup, '111111', '12356789111111', UUID_TO_BIN('a4e3bc3a-78cf-11ee-a832-a85e45c41921'), null),
+            (UUID_TO_BIN('16fdc00c-8078-11ee-bef9-a85e45c41921'), @vnpay, @orderCreateDateBatchingForGroup, '111111', '12356789222222', UUID_TO_BIN('a4e3bd5d-78cf-11ee-a832-a85e45c41921'), null),
+            (UUID_TO_BIN('16fdc0cc-8078-11ee-bef9-a85e45c41921'), @vnpay, @orderCreateDateBatchingForGroup, '111111', '12356789333333', UUID_TO_BIN('a4e3be96-78cf-11ee-a832-a85e45c41921'), null),
+
+            -- transaction need to refund
+            (UUID_TO_BIN('ea72538f-89ad-11ee-bef9-a85e45c41921'), @vnpay, @orderCreateDateForOrderCancel, '76000', '12356789444444', UUID_TO_BIN('ea725183-89ad-11ee-bef9-a85e45c41921'), null),
+            (UUID_TO_BIN('ea72545d-89ad-11ee-bef9-a85e45c41921'), @vnpay, @orderCreateDateForOrderCancel, '76000', '12356789555555', UUID_TO_BIN('ea725256-89ad-11ee-bef9-a85e45c41921'), null);
 
 
 
@@ -1643,18 +1667,12 @@ INSERT INTO `saving_hour_market`.`transaction` (`id`, `payment_method`, `payment
 
 -- UUID gen
 
--- 'ea7248cb-89ad-11ee-bef9-a85e45c41921'
--- 'ea7249ad-89ad-11ee-bef9-a85e45c41921'
--- 'ea724af4-89ad-11ee-bef9-a85e45c41921'
--- 'ea724c42-89ad-11ee-bef9-a85e45c41921'
--- 'ea724d7c-89ad-11ee-bef9-a85e45c41921'
--- 'ea724e96-89ad-11ee-bef9-a85e45c41921'
--- 'ea724fae-89ad-11ee-bef9-a85e45c41921'
--- 'ea7250b6-89ad-11ee-bef9-a85e45c41921'
--- 'ea725183-89ad-11ee-bef9-a85e45c41921'
--- 'ea725256-89ad-11ee-bef9-a85e45c41921'
--- 'ea72538f-89ad-11ee-bef9-a85e45c41921'
--- 'ea72545d-89ad-11ee-bef9-a85e45c41921'
+
+
+
+
+
+
 -- 'ea725524-89ad-11ee-bef9-a85e45c41921'
 -- 'ea7255e4-89ad-11ee-bef9-a85e45c41921'
 -- 'ea7256a7-89ad-11ee-bef9-a85e45c41921'
