@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import React, {useState, useCallback, useEffect} from 'react';
 import {
   View,
@@ -142,6 +143,15 @@ const BatchList = ({navigation, route}) => {
     });
   };
 
+  const showToastFail = (message) => {
+    Toast.show({
+      type: 'unsuccess',
+      text1: 'Thất bại',
+      text2: message + '👋',
+      visibilityTime: 3000,
+    });
+  };
+
   const handleCreate = async () => {
     const tokenId = await auth().currentUser.getIdToken();
     let submitBatches = [];
@@ -170,6 +180,10 @@ const BatchList = ({navigation, route}) => {
       body: JSON.stringify(submitBatches),
     })
       .then(res => {
+        if(res.status === 409 || res.status === 422) {
+          showToastFail("Đã có nhân viên đảm nhận tạo nhóm cho khung giờ, ngày giao, điểm tập kết này")
+          throw new Error("Trùng các nhân viên thực hiện tạo nhóm chung điều kiện");
+        }
         return res.json();
       })
       .then(async respond => {
