@@ -1071,6 +1071,9 @@ public class OrderServiceImpl implements OrderService {
                     );
             if (orderGroup.isPresent()) {
                 group = orderGroup.get();
+                if(group.getProductConsolidationArea() != null){
+                    order.setProductConsolidationArea(group.getProductConsolidationArea());
+                }
             } else {
                 OrderGroup orderGroupNew = new OrderGroup();
                 orderGroupNew.setTimeFrame(timeFrameRepository.findById(order.getTimeFrame().getId())
@@ -1078,6 +1081,7 @@ public class OrderServiceImpl implements OrderService {
                 orderGroupNew.setPickupPoint(pickupPointRepository.findById(order.getPickupPoint().getId())
                         .orElseThrow(() -> new ResourceNotFoundException("No pick-up point found with id " + order.getPickupPoint().getId())));
                 orderGroupNew.setDeliverDate(order.getDeliveryDate().toLocalDate());
+                orderGroupNew.setProductConsolidationArea(order.getProductConsolidationArea());
                 group = orderGroupRepository.save(orderGroupNew);
             }
             order.setOrderGroup(group);

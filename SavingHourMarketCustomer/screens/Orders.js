@@ -318,7 +318,7 @@ const Orders = ({navigation}) => {
       <View
         style={{
           paddingHorizontal: 15,
-          paddingTop: 15,
+          paddingTop:'1%',
           backgroundColor: 'white',
           shadowColor: '#000',
           shadowOffset: {
@@ -347,7 +347,7 @@ const Orders = ({navigation}) => {
           </TouchableOpacity>
           <Text
             style={{
-              fontSize: 25,
+              fontSize: 20,
               textAlign: 'center',
               color: '#000000',
               fontWeight: 'bold',

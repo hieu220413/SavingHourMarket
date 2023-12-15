@@ -1064,9 +1064,9 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                               fontWeight: 'bold',
                               fontFamily: 'Roboto',
                               color: 'black',
-                              maxWidth: '97%',
+                              maxWidth: '100%',
                             }}>
-                            Mã đơn hàng:{' '}SHMORD21223001
+                            Mã đơn hàng:{' '}{order?.code}
                             {/* {data.item?.code} */}
                           </Text>
                           <Text
