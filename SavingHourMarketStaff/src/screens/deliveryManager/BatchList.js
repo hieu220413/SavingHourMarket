@@ -264,6 +264,10 @@ const BatchList = ({navigation, route}) => {
                           console.log(item.orderList);
                           navigation.navigate('BatchingDetail', {
                             orderList: item.orderList,
+                            date: date, 
+                            timeFrame: timeFrame, 
+                            productConsolidationArea: productConsolidationArea, 
+                            quantity: quantity
                           });
                         }}>
                         <View
