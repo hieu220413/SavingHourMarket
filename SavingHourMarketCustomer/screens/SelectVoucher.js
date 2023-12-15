@@ -283,7 +283,7 @@ const SelectVoucher = ({navigation, route}) => {
                     fontSize: 18,
                     color: 'black',
                   }}>
-                  Tổng giá loại sản phẩm tối thiểu:{' '}
+                  Đơn hàng tối thiểu:{' '}
                   {item.spentAmountRequired.toLocaleString('vi-VN', {
                     style: 'currency',
                     currency: 'VND',
