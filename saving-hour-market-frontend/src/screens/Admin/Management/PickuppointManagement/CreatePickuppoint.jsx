@@ -389,6 +389,17 @@ const CreatePickuppoint = ({
           <div className="modal__container-body-inputcontrol">
             <button
               onClick={() => {
+                if (
+                  selectedConsolidationList.length === consolidationList.length
+                ) {
+                  setOpenValidateSnackbar({
+                    ...openValidateSnackbar,
+                    severity: "error",
+                    open: true,
+                    text: `Hệ thống hiện có ${consolidationList.length} điểm tập kết. Không thể tạo thêm !`,
+                  });
+                  return;
+                }
                 setSelectedConsolidationList([
                   ...selectedConsolidationList,
                   {
