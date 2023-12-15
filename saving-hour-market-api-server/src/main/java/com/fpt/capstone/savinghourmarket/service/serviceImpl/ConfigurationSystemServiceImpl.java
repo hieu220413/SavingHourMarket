@@ -1,6 +1,7 @@
 package com.fpt.capstone.savinghourmarket.service.serviceImpl;
 
 
+import com.fpt.capstone.savinghourmarket.common.SystemStatus;
 import com.fpt.capstone.savinghourmarket.entity.Configuration;
 import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
 import com.fpt.capstone.savinghourmarket.repository.ConfigurationRepository;
@@ -40,9 +41,9 @@ public class ConfigurationSystemServiceImpl implements SystemConfigurationServic
             errorFields.put("limitOfOrdersError", "Value must be higher than 0");
         }
 
-        if(configurationUpdateBody.getSystemStatus() != 0 && configurationUpdateBody.getSystemStatus() != 1) {
-            errorFields.put("systemStatusError", "Value must be 0 (Maintaining) or 1 (Active)");
-        }
+//        if(configurationUpdateBody.getSystemStatus() != 0 && configurationUpdateBody.getSystemStatus() != 1) {
+//            errorFields.put("systemStatusError", "Value must be 0 (Maintaining) or 1 (Active)");
+//        }
 
 //        if(configurationUpdateBody.getNumberOfSuggestedPickupPoint() <= 0) {
 //            errorFields.put("numberOfSuggestedPickupPointError", "Value must be higher than 0");
@@ -74,7 +75,7 @@ public class ConfigurationSystemServiceImpl implements SystemConfigurationServic
 
         Configuration configuration = getConfiguration();
 
-        configuration.setSystemStatus(configurationUpdateBody.getSystemStatus());
+//        configuration.setSystemStatus(configurationUpdateBody.getSystemStatus());
         configuration.setLimitOfOrders(configurationUpdateBody.getLimitOfOrders());
 //        configuration.setNumberOfSuggestedPickupPoint(configurationUpdateBody.getNumberOfSuggestedPickupPoint());
         configuration.setDeleteUnpaidOrderTime(configurationUpdateBody.getDeleteUnpaidOrderTime());
@@ -112,6 +113,15 @@ public class ConfigurationSystemServiceImpl implements SystemConfigurationServic
 //        os.close();
 
         return configuration;
+    }
+
+    @Override
+    @Transactional
+    public Map<String, Integer> updateSystemState(SystemStatus systemState) {
+//        HashMap errorFields = new HashMap<>();
+        Configuration configuration = getConfiguration();
+        configuration.setSystemStatus(systemState == null ? SystemStatus.ACTIVE.ordinal() : systemState.ordinal());
+        return Map.of("systemStatus", configuration.getSystemStatus());
     }
 
     @Override

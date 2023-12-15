@@ -159,6 +159,7 @@ public class SpringSecurityConfig {
 
                             .requestMatchers("/api/configuration/getConfiguration").permitAll()
                             .requestMatchers("/api/configuration/updateConfiguration").hasRole("ADMIN")
+                            .requestMatchers("/api/configuration/updateSystemState").hasRole("ADMIN")
                     ;
                     auth.anyRequest().authenticated();
                 });

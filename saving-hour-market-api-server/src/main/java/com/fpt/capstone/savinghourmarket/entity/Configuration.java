@@ -30,7 +30,7 @@ public class Configuration {
     private UUID id;
 
     @Column(columnDefinition = "tinyint")
-    @NotNull
+//    @NotNull
     private Integer systemStatus;
 
     @Column(columnDefinition = "tinyint")
