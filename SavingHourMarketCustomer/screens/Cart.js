@@ -2,13 +2,13 @@
 /* eslint-disable react/self-closing-comp */
 /* eslint-disable react-native/no-inline-styles */
 
-import React, {useCallback, useState} from 'react';
-import {Image, Text, TouchableOpacity, View} from 'react-native';
-import {icons} from '../constants';
-import {COLORS} from '../constants/theme';
+import React, { useCallback, useState } from 'react';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { icons } from '../constants';
+import { COLORS } from '../constants/theme';
 import CartItem from '../components/CartItem';
 import CheckBox from 'react-native-check-box';
-import {SwipeListView} from 'react-native-swipe-list-view';
+import { SwipeListView } from 'react-native-swipe-list-view';
 import Modal, {
   ModalFooter,
   ModalButton,
@@ -17,10 +17,10 @@ import Modal, {
 } from 'react-native-modals';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CartEmpty from '../assets/image/search-empty.png';
-import {useFocusEffect} from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import database from '@react-native-firebase/database';
 
-const Cart = ({navigation}) => {
+const Cart = ({ navigation }) => {
   const [deleteDialog, setDeleteDialog] = useState({
     open: false,
     rowMap: null,
@@ -48,7 +48,7 @@ const Cart = ({navigation}) => {
           if (snapshot.val() === 0) {
             navigation.reset({
               index: 0,
-              routes: [{name: 'Initial'}],
+              routes: [{ name: 'Initial' }],
             });
           } else {
             // setSystemStatus(snapshot.val());
@@ -160,17 +160,25 @@ const Cart = ({navigation}) => {
           backgroundColor: '#ffffff',
           padding: 20,
           marginBottom: 10,
+          shadowColor: '#000',
+          shadowOffset: {
+            width: 0,
+            height: 3,
+          },
+          shadowOpacity: 0.27,
+          shadowRadius: 4.65,
+          elevation: 3,
         }}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Image
             source={icons.leftArrow}
             resizeMode="contain"
-            style={{width: 35, height: 35, tintColor: COLORS.primary}}
+            style={{ width: 35, height: 35, tintColor: COLORS.primary }}
           />
         </TouchableOpacity>
         <Text
           style={{
-            fontSize: 25,
+            fontSize: 23,
             textAlign: 'center',
             color: '#000000',
             fontWeight: 'bold',
@@ -180,9 +188,9 @@ const Cart = ({navigation}) => {
         </Text>
       </View>
       {cartItems.length === 0 ? (
-        <View style={{alignItems: 'center', justifyContent: 'center'}}>
+        <View style={{ alignItems: 'center', justifyContent: 'center' }}>
           <Image
-            style={{width: '100%', height: '65%'}}
+            style={{ width: '100%', height: '65%' }}
             resizeMode="contain"
             source={CartEmpty}
           />
@@ -200,9 +208,10 @@ const Cart = ({navigation}) => {
         <>
           <View
             style={{
-              marginBottom: 175,
+              paddingBottom: 160,
             }}>
             <SwipeListView
+              showsVerticalScrollIndicator={false}
               data={cartItems}
               keyExtractor={(item, index) => item.idList[0]}
               renderItem={(data, rowMap) => (
@@ -220,7 +229,10 @@ const Cart = ({navigation}) => {
                   style={{
                     flexDirection: 'row',
                     justifyContent: 'space-between',
-                    height: '100%',
+                    height: '94%',
+                    marginVertical: '1%',
+                    marginHorizontal: '1%',
+
                     // marginVertical: '2%',
                   }}>
                   <View></View>
@@ -228,6 +240,7 @@ const Cart = ({navigation}) => {
                     style={{
                       width: 120,
                       height: '100%',
+                      borderRadius: 10,
                       backgroundColor: 'red',
                       // flex: 1,
                       alignItems: 'center',
@@ -244,7 +257,7 @@ const Cart = ({navigation}) => {
                       <Image
                         source={icons.trashBin}
                         resizeMode="contain"
-                        style={{width: 30, height: 30, tintColor: 'white'}}
+                        style={{ width: 30, height: 30, tintColor: 'white' }}
                       />
                     </View>
                   </TouchableOpacity>
@@ -257,19 +270,30 @@ const Cart = ({navigation}) => {
           <View
             style={{
               position: 'absolute',
-              bottom: 0,
+              bottom: 3,
               left: 0,
               right: 0,
               backgroundColor: 'white',
               borderTopColor: 'transparent',
-              height: 80,
-              width: '100%',
+              height: 65,
+              width: '98%',
               flex: 1,
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'space-between',
               paddingHorizontal: 20,
               marginTop: 10,
+              marginHorizontal:'1%',
+              borderRadius:20, 
+              alignItems: 'center', 
+              shadowColor: '#000',
+              shadowOffset: {
+                width: 0,
+                height: 3,
+              },
+              shadowOpacity: 0.27,
+              shadowRadius: 4.65,
+              elevation: 3,
             }}>
             <View
               style={{
@@ -284,11 +308,11 @@ const Cart = ({navigation}) => {
                   let newCart;
                   if (!cartItems.every(item => item.isChecked === true)) {
                     newCart = cartItems.map(data => {
-                      return {...data, isChecked: true};
+                      return { ...data, isChecked: true };
                     });
                   } else {
                     newCart = cartItems.map(data => {
-                      return {...data, isChecked: false};
+                      return { ...data, isChecked: false };
                     });
                   }
 
@@ -313,7 +337,9 @@ const Cart = ({navigation}) => {
                 Chọn tất cả
               </Text>
             </View>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <View style={{
+              flexDirection: 'row'
+            }}>
               {/* <Text style={{fontSize: 18, color: 'black', fontFamily: 'Roboto'}}>
               Tổng cộng:
             </Text> */}
@@ -360,7 +386,7 @@ const Cart = ({navigation}) => {
         width={0.8}
         visible={deleteDialog.open}
         onTouchOutside={() => {
-          setDeleteDialog({...deleteDialog, open: false});
+          setDeleteDialog({ ...deleteDialog, open: false });
         }}
         dialogAnimation={
           new ScaleAnimation({
@@ -374,15 +400,15 @@ const Cart = ({navigation}) => {
               // textStyle={{color: 'red'}}
               text="Đóng"
               onPress={() => {
-                setDeleteDialog({...deleteDialog, open: false});
+                setDeleteDialog({ ...deleteDialog, open: false });
               }}
             />
             <ModalButton
-              textStyle={{color: 'red'}}
+              textStyle={{ color: 'red' }}
               text="Xóa"
               onPress={() => {
                 deleteRow(deleteDialog.rowMap, deleteDialog.rowKey);
-                setDeleteDialog({...deleteDialog, open: false});
+                setDeleteDialog({ ...deleteDialog, open: false });
               }}
             />
           </ModalFooter>
