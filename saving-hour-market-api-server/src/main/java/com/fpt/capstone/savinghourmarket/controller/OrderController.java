@@ -352,7 +352,7 @@ public class OrderController {
             @RequestParam Date deliverDate,
             @RequestParam UUID timeFrameId,
             @RequestParam UUID productConsolidationAreaId,
-            @RequestParam Integer batchQuantity) throws ResourceNotFoundException, FirebaseAuthException {
+            @RequestParam Integer batchQuantity) throws ResourceNotFoundException, FirebaseAuthException, InterruptedException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(orderService.batchingForStaff(deliverDate, timeFrameId, batchQuantity, productConsolidationAreaId));
@@ -361,7 +361,7 @@ public class OrderController {
     @PostMapping("/deliveryManager/createBatches")
     public ResponseEntity<List<OrderBatch>> createBatches(
             @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) String jwtToken,
-            @RequestBody List<@jakarta.validation.Valid OrderBatchCreateBody> orderBatchCreateBodyList) throws ResourceNotFoundException, FirebaseAuthException {
+            @RequestBody List<@jakarta.validation.Valid OrderBatchCreateBody> orderBatchCreateBodyList) throws ResourceNotFoundException, FirebaseAuthException, InterruptedException {
         String idToken = Utils.parseBearTokenToIdToken(jwtToken);
         Utils.validateIdToken(idToken, firebaseAuth);
         return ResponseEntity.status(HttpStatus.OK).body(orderService.createBatches(orderBatchCreateBodyList));
