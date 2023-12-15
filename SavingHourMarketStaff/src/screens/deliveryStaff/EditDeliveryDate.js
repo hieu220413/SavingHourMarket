@@ -1,11 +1,10 @@
 /* eslint-disable prettier/prettier */
 // eslint-disable-next-line prettier/prettier
-import { View, Text, Image, Dimensions } from 'react-native';
-
+import { View, Text, Image, Dimensions, StyleSheet, Modal as NotiModal, Modal as AlertModal, TouchableOpacity } from 'react-native';
 import React, { useCallback, useState } from 'react';
-import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
+import { ScrollView } from 'react-native-gesture-handler';
 import { icons } from '../../constants';
-import { COLORS } from '../../constants/theme';
+import { COLORS, FONTS } from '../../constants/theme';
 import { useFocusEffect } from '@react-navigation/native';
 import DatePicker from 'react-native-date-picker';
 import { format } from 'date-fns';
@@ -19,8 +18,6 @@ import Modal, {
 } from 'react-native-modals';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
-import { useEffect } from 'react';
-import database from '@react-native-firebase/database';
 import { checkSystemState } from '../../common/utils';
 
 const EditDeliveryDate = ({ navigation, route }) => {
@@ -41,6 +38,12 @@ const EditDeliveryDate = ({ navigation, route }) => {
   const [initializing, setInitializing] = useState(true);
   const orderId = route.params.orderId;
   const expDateList = route.params.expDateList;
+
+  const [modalVisibleEditDate, setModalVisibleEditDate] = useState(false);
+  const [textEditDate, setTextEditDate] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+  // console.log('modalVisibleEditDate', modalVisibleEditDate);
+  // console.log('modalVisible', modalVisible);
 
   // Check valid
   const [minDate, setMinDate] = useState(new Date());
@@ -241,13 +244,9 @@ const EditDeliveryDate = ({ navigation, route }) => {
         return res.json();
       })
       .then(data => {
-        console.log('data', data);
-
         setLoading(false);
-        navigation.navigate('OrderDetails', {
-          id: route.params.orderId,
-          picked: route.params.picked,
-        });
+        setModalVisibleEditDate(true);
+        setTextEditDate(data?.productConsolidationArea?.address);
       })
       .catch(err => {
         console.log(err);
@@ -256,146 +255,145 @@ const EditDeliveryDate = ({ navigation, route }) => {
 
   return (
     <>
-      <View>
-        <View
+      <View
+        style={{
+          alignItems: 'center',
+          flexDirection: 'row',
+          gap: 20,
+          backgroundColor: '#ffffff',
+          padding: 20,
+          elevation: 4,
+          marginBottom: 10,
+        }}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Image
+            source={icons.leftArrow}
+            resizeMode="contain"
+            style={{ width: Dimensions.get('window').width * 0.1, height: 35, tintColor: COLORS.primary }}
+          />
+        </TouchableOpacity>
+        <Text
           style={{
-            alignItems: 'center',
-            flexDirection: 'row',
-            gap: 20,
-            backgroundColor: '#ffffff',
-            padding: 20,
-            elevation: 4,
-            marginBottom: 10,
+            fontSize: Dimensions.get('window').width * 0.05,
+            textAlign: 'center',
+            color: '#000000',
+            fontWeight: 'bold',
+            fontFamily: 'Roboto',
           }}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Image
-              source={icons.leftArrow}
-              resizeMode="contain"
-              style={{ width: Dimensions.get('window').width * 0.1, height: 35, tintColor: COLORS.primary }}
-            />
-          </TouchableOpacity>
-          <Text
+          Chỉnh sửa ngày giao hàng
+        </Text>
+      </View>
+      <ScrollView>
+        {/* Manage Date */}
+        <TouchableOpacity
+          onPress={() => {
+            if (cannotChangeDate) {
+              setValidateMessage(
+                'Một trong số sản phẩm của bạn sắp hết hạn, chỉ có thể giao vào ngày này !',
+              );
+              setOpenValidateDialog(true);
+              return;
+            }
+            setOpen(true);
+          }}>
+          <View
             style={{
-              fontSize: Dimensions.get('window').width * 0.05,
-              textAlign: 'center',
-              color: '#000000',
-              fontWeight: 'bold',
-              fontFamily: 'Roboto',
-            }}>
-            Chỉnh sửa ngày giao hàng
-          </Text>
-        </View>
-        <ScrollView>
-          {/* Manage Date */}
-          <TouchableOpacity
-            onPress={() => {
-              if (cannotChangeDate) {
-                setValidateMessage(
-                  'Một trong số sản phẩm của bạn sắp hết hạn, chỉ có thể giao vào ngày này !',
-                );
-                setOpenValidateDialog(true);
-                return;
-              }
-              setOpen(true);
+              paddingHorizontal: 20,
+              paddingVertical: 20,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderTopColor: '#decbcb',
+              borderTopWidth: 0.75,
+              borderBottomWidth: 0.75,
+              borderBottomColor: '#decbcb',
+              backgroundColor: 'white',
+              marginBottom: 20,
             }}>
             <View
               style={{
-                paddingHorizontal: 20,
-                paddingVertical: 20,
                 flexDirection: 'row',
+                gap: 10,
                 alignItems: 'center',
-                justifyContent: 'space-between',
-                borderTopColor: '#decbcb',
-                borderTopWidth: 0.75,
-                borderBottomWidth: 0.75,
-                borderBottomColor: '#decbcb',
-                backgroundColor: 'white',
-                marginBottom: 20,
+                flex: 9,
               }}>
-              <View
+              <Image
+                resizeMode="contain"
+                style={{ width: Dimensions.get('window').width * 0.08, height: 25 }}
+                source={icons.calendar}
+              />
+              <Text
                 style={{
-                  flexDirection: 'row',
-                  gap: 10,
-                  alignItems: 'center',
-                  flex: 9,
+                  fontSize: Dimensions.get('window').width * 0.05,
+                  fontFamily: 'Roboto',
+                  color: 'black',
                 }}>
-                <Image
-                  resizeMode="contain"
-                  style={{ width: Dimensions.get('window').width * 0.08, height: 25 }}
-                  source={icons.calendar}
-                />
-                <Text
-                  style={{
-                    fontSize: Dimensions.get('window').width * 0.05,
-                    fontFamily: 'Roboto',
-                    color: 'black',
-                  }}>
-                  {date ? format(date, 'dd-MM-yyyy') : 'Chọn ngày giao'}
-                </Text>
-              </View>
+                {date ? format(date, 'dd-MM-yyyy') : 'Chọn ngày giao'}
+              </Text>
             </View>
-          </TouchableOpacity>
-          <DatePicker
-            modal
-            mode="date"
-            open={open}
-            date={date ? date : new Date()}
-            onDateChange={setDate}
-            onConfirm={date => {
-              const getDate = new Date();
-              let day = getDate.getDate();
-              let month = getDate.getMonth() + 1;
-              let year = getDate.getFullYear();
-              let currentDate = `${year}-${month}-${day}`;
+          </View>
+        </TouchableOpacity>
+        <DatePicker
+          modal
+          mode="date"
+          open={open}
+          date={date ? date : new Date()}
+          onDateChange={setDate}
+          onConfirm={date => {
+            const getDate = new Date();
+            let day = getDate.getDate();
+            let month = getDate.getMonth() + 1;
+            let year = getDate.getFullYear();
+            let currentDate = `${year}-${month}-${day}`;
 
-              if (
-                dayjs(currentDate).format('YYYY/MM/DD') >
-                dayjs(date).format('YYYY/MM/DD')
-              ) {
-                setValidateMessage(
-                  'Không thể chọn ngày giao trước ngày hôm nay',
-                );
-                setOpenValidateDialog(true);
-                return;
-              }
-              if (
-                dayjs(currentDate).format('YYYY/MM/DD') ==
-                dayjs(date).format('YYYY/MM/DD')
-              ) {
-                setValidateMessage(
-                  'Không thể chọn ngày giao là ngày hôm nay',
-                );
-                setOpenValidateDialog(true);
-                return;
-              }
+            if (
+              dayjs(currentDate).format('YYYY/MM/DD') >
+              dayjs(date).format('YYYY/MM/DD')
+            ) {
+              setValidateMessage(
+                'Không thể chọn ngày giao trước ngày hôm nay',
+              );
+              setOpenValidateDialog(true);
+              return;
+            }
+            if (
+              dayjs(currentDate).format('YYYY/MM/DD') ==
+              dayjs(date).format('YYYY/MM/DD')
+            ) {
+              setValidateMessage(
+                'Không thể chọn ngày giao là ngày hôm nay',
+              );
+              setOpenValidateDialog(true);
+              return;
+            }
 
-              // if (date.getTime() < minDate.getTime()) {
-              //   setOpen(false);
-              //   setValidateMessage(
-              //     'Đơn hàng luôn được giao sau 2 ngày kể từ ngày đặt hàng',
-              //   );
-              //   setOpenValidateDialog(true);
-              //   return;
-              // }
-              if (date.getTime() > maxDate.getTime()) {
-                setOpen(false);
-                setValidateMessage(
-                  `Đơn hàng phải giao trước HSD của sản phẩm có HSD gần nhất 1 ngày (HSD ${dayjs(maxDate).format('DD/MM/YYYY')}) `,
-                );
-                setOpenValidateDialog(true);
-                return;
-              }
-              console.log('date', date);
+            // if (date.getTime() < minDate.getTime()) {
+            //   setOpen(false);
+            //   setValidateMessage(
+            //     'Đơn hàng luôn được giao sau 2 ngày kể từ ngày đặt hàng',
+            //   );
+            //   setOpenValidateDialog(true);
+            //   return;
+            // }
+            if (date.getTime() > maxDate.getTime()) {
               setOpen(false);
-              setDate(date);
-              route.params.setDate(date);
-            }}
-            onCancel={() => {
-              setOpen(false);
-            }}
-          />
-          {/* Time Frame */}
-          {/* <View style={{ backgroundColor: 'white', padding: 20 }}>
+              setValidateMessage(
+                `Đơn hàng phải giao trước HSD của sản phẩm có HSD gần nhất 1 ngày (HSD ${dayjs(maxDate).format('DD/MM/YYYY')}) `,
+              );
+              setOpenValidateDialog(true);
+              return;
+            }
+            console.log('date', date);
+            setOpen(false);
+            setDate(date);
+            route.params.setDate(date);
+          }}
+          onCancel={() => {
+            setOpen(false);
+          }}
+        />
+        {/* Time Frame */}
+        {/* <View style={{ backgroundColor: 'white', padding: 20 }}>
                         <Text
                             style={{
                                 fontSize: 20,
@@ -475,8 +473,7 @@ const EditDeliveryDate = ({ navigation, route }) => {
                             </TouchableOpacity>
                         ))}
                     </View> */}
-        </ScrollView>
-      </View>
+      </ScrollView>
       <Modal
         width={0.8}
         visible={openValidateDialog}
@@ -555,9 +552,191 @@ const EditDeliveryDate = ({ navigation, route }) => {
           </TouchableOpacity>
         </View>
       </View>
+      {/* Alert Modal */}
+      <NotiModal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisibleEditDate}
+        onRequestClose={() => {
+          setModalVisibleEditDate(false);
+        }}>
+        <View
+          style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <View
+              style={{
+                // flexDirection: 'row',
+                // justifyContent: 'space-between',
+              }}>
+              <Text
+                style={{
+                  color: 'black',
+                  fontFamily: FONTS.fontFamily,
+                  fontSize: 20,
+                  fontWeight: 700,
+                  textAlign: 'center',
+                  paddingBottom: 20,
+                }}>
+                Thông báo: Ngày giao đã thay đổi
+              </Text>
+              <Text
+                style={{
+                  color: 'black',
+                  fontFamily: FONTS.fontFamily,
+                  fontSize: 18,
+                  paddingBottom: 20,
+                }}>
+                Mang hàng về tại điểm tập kết:
+              </Text>
+              <View
+                style={{ flexDirection: 'row', alignItems: 'center' }}
+              >
+                <Image
+                  resizeMode="contain"
+                  style={{ width: Dimensions.get('window').width * 0.1, height: 20, tintColor: COLORS.primary }}
+                  source={icons.location}
+                />
+                <Text
+                  style={{
+                    color: 'black',
+                    fontFamily: FONTS.fontFamily,
+                    fontSize: 18,
+                    maxWidth: '90%'
+                  }}>
+                  {textEditDate}
+                </Text>
+              </View>
+            </View>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'center',
+                marginTop: '5%',
+              }}>
+              <TouchableOpacity
+                style={{
+                  paddingHorizontal: 15,
+                  paddingVertical: 10,
+                  backgroundColor: COLORS.primary,
+                  borderRadius: 10,
+                }}
+                onPress={() => {
+                  setModalVisible(true);
+                }}>
+                <Text style={styles.textStyle}>Đóng</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </NotiModal>
+      {/* Modal confirm */}
+      <AlertModal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible);
+        }}>
+        <TouchableOpacity
+          onPress={() => setModalVisible(!modalVisible)}
+          style={styles.centeredView}>
+          <View style={styles.modalView}>
+
+            <Text
+              style={{
+                color: 'black',
+                fontFamily: FONTS.fontFamily,
+                fontSize: 20,
+                fontWeight: 700,
+                textAlign: 'center',
+                paddingBottom: 20,
+              }}>
+              Bạn đã ghi nhớ điểm tập kết chưa ?
+            </Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'center',
+                marginTop: '5%',
+              }}>
+              <TouchableOpacity
+                style={{
+                  width: '50%',
+                  paddingHorizontal: 15,
+                  paddingVertical: 10,
+                  backgroundColor: 'white',
+                  borderRadius: 10,
+                  borderColor: COLORS.red,
+                  borderWidth: 0.5,
+                  marginRight: '2%',
+                }}
+                onPress={() => {
+                  setModalVisible(!modalVisible);
+                }}>
+                <Text
+                  style={{
+                    color: COLORS.red,
+                    fontWeight: 'bold',
+                    textAlign: 'center',
+                  }}>
+                  Chưa
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={{
+                  width: '50%',
+                  paddingHorizontal: 15,
+                  paddingVertical: 10,
+                  backgroundColor: COLORS.primary,
+                  borderRadius: 10,
+                }}
+                onPress={() => {
+                  setModalVisible(!modalVisible);
+                  setModalVisibleEditDate(!modalVisibleEditDate);
+                  navigation.navigate('OrderDetails', {
+                    id: route.params.orderId,
+                    picked: route.params.picked,
+                  });
+                }}>
+                <Text style={styles.textStyle}>Rồi</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </AlertModal>
+
       {loading && <LoadingScreen />}
     </>
   );
 };
 
 export default EditDeliveryDate;
+
+const styles = StyleSheet.create({
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    // alignItems: 'center',
+    backgroundColor: 'rgba(50,50,50,0.5)',
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  textStyle: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+});
