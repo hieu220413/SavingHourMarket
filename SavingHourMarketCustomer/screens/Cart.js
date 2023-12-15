@@ -76,9 +76,11 @@ const Cart = ({navigation}) => {
       (async () => {
         try {
           const value = await AsyncStorage.getItem('PickupPoint');
+
           const cartList = await AsyncStorage.getItem(
             'CartList' + JSON.parse(value).id,
           );
+          console.log(cartList);
           setcartItems(cartList ? JSON.parse(cartList) : []);
         } catch (err) {
           console.log(err);

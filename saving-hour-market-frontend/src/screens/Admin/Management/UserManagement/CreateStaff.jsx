@@ -28,11 +28,14 @@ const CreateStaff = ({
 }) => {
   const [isActiveDropdown, setisActiveDropdown] = useState(false);
   const [selectedRole, setSelectedRole] = useState("Chọn vai trò");
-  const [isActiveDropdownPickupPoint, setisActiveDropdownPickupPoint] =
-    useState(false);
-  const [selectedPickupPoint, setselectedPickupPoint] = useState(
-    "Chọn điểm giao hàng"
-  );
+
+  const [selectedPickupPoint, setselectedPickupPoint] = useState([
+    {
+      isActiveDropdownPickupPoint: false,
+      selectedPickupPoint: null,
+      error: "",
+    },
+  ]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -148,12 +151,35 @@ const CreateStaff = ({
       setError({ ...error, role: "Vui lòng chọn vai trò" });
       return;
     }
-    if (
-      selectedRole === "STAFF_ORD" &&
-      selectedPickupPoint === "Chọn điểm giao hàng"
-    ) {
-      setError({ ...error, pickupPoint: "Vui lòng chọn điểm giao hàng" });
-      return;
+    if (selectedRole === "STAFF_ORD") {
+      const validatePickupPoint = selectedPickupPoint.findIndex(
+        (item) => !item.selectedPickupPoint
+      );
+      if (validatePickupPoint !== -1) {
+        const newSelectedPickupPointList = [...selectedPickupPoint];
+        newSelectedPickupPointList[validatePickupPoint] = {
+          ...newSelectedPickupPointList[validatePickupPoint],
+          error: "Vui lòng chọn điểm giao hàng",
+        };
+        setselectedPickupPoint(newSelectedPickupPointList);
+        return;
+      }
+      var valueArr = selectedPickupPoint.map(function (item) {
+        return item?.selectedPickupPoint?.id;
+      });
+      var isDuplicatePickupPoint = valueArr.some(function (item, idx) {
+        return valueArr.indexOf(item) != idx;
+      });
+
+      if (isDuplicatePickupPoint) {
+        setOpenAssignSnackbar({
+          ...openAssignSnackbar,
+          open: true,
+          severity: "error",
+          text: "Có điểm giao hàng trùng nhau !",
+        });
+        return;
+      }
     }
     if (selectedRole === "STAFF_DLV_1") {
       const validateDeliver = selectedDeliverList.findIndex(
@@ -260,7 +286,7 @@ const CreateStaff = ({
           return;
         }
         if (selectedRole === "STAFF_ORD") {
-          fetch(`${API.baseURL}/api/staff/assignPickupPoint`, {
+          fetch(`${API.baseURL}/api/staff/assignPickupPointForCreateAccount`, {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
@@ -268,7 +294,9 @@ const CreateStaff = ({
             },
             body: JSON.stringify({
               staffEmail: email,
-              pickupPointId: selectedPickupPoint.id,
+              pickupPointIdList: selectedPickupPoint.map(
+                (item) => item.selectedPickupPoint.id
+              ),
             }),
           })
             .then((res) => res.json())
@@ -427,7 +455,8 @@ const CreateStaff = ({
   return (
     <div
       className={`modal__container ${
-        selectedDeliverList.length >= 3 && "modal-scroll"
+        (selectedDeliverList.length >= 3 || selectedPickupPoint.length >= 3) &&
+        "modal-scroll"
       }`}
     >
       {/* // modal header */}
@@ -723,67 +752,134 @@ const CreateStaff = ({
         )}
         {/* pickuppoint */}
         {selectedRole === "STAFF_ORD" && (
-          <div className="modal__container-body-inputcontrol">
-            <h4 className="modal__container-body-inputcontrol-label">
-              Điểm giao hàng
-            </h4>
-            <div>
-              <div
-                style={{
-                  display: "flex",
-                }}
-              >
-                <div
-                  className="dropdown"
-                  style={{ width: "400px", marginRight: 0 }}
-                >
+          <>
+            {selectedPickupPoint.map((item, index) => (
+              <div className="modal__container-body-inputcontrol">
+                {selectedPickupPoint.length !== 1 && (
                   <div
-                    className="dropdown-btn"
-                    onClick={(e) =>
-                      setisActiveDropdownPickupPoint(
-                        !isActiveDropdownPickupPoint
-                      )
-                    }
+                    onClick={() => {
+                      setselectedPickupPoint(
+                        selectedPickupPoint.filter((data) => data !== item)
+                      );
+                    }}
+                    className="button__minus"
                   >
-                    {selectedPickupPoint.address
-                      ? selectedPickupPoint.address
-                      : selectedPickupPoint}
-                    <FontAwesomeIcon icon={faCaretDown} />
+                    <FontAwesomeIcon icon={faMinus} />
                   </div>
-                  {isActiveDropdownPickupPoint && (
+                )}
+
+                <h4 className="modal__container-body-inputcontrol-label">
+                  Điểm giao hàng
+                </h4>
+                <div>
+                  <div
+                    style={{
+                      display: "flex",
+                    }}
+                  >
                     <div
-                      style={{ height: "150px", overflowY: "scroll" }}
-                      className="dropdown-content"
+                      className="dropdown"
+                      style={{ width: "400px", marginRight: 0 }}
                     >
-                      {pickupPointList.map((item, index) => (
+                      <div
+                        className="dropdown-btn"
+                        onClick={(e) => {
+                          const newPickuppointList = selectedPickupPoint.map(
+                            (data, i) => {
+                              if (i === index) {
+                                return {
+                                  ...data,
+                                  isActiveDropdownPickupPoint:
+                                    !data.isActiveDropdownPickupPoint,
+                                };
+                              }
+                              return data;
+                            }
+                          );
+                          setselectedPickupPoint(newPickuppointList);
+                        }}
+                      >
+                        {item.selectedPickupPoint
+                          ? item.selectedPickupPoint.address
+                          : "Chọn điểm giao hàng"}
+                        <FontAwesomeIcon icon={faCaretDown} />
+                      </div>
+                      {item.isActiveDropdownPickupPoint && (
                         <div
-                          onClick={(e) => {
-                            setselectedPickupPoint(item);
-                            setisActiveDropdownPickupPoint(
-                              !isActiveDropdownPickupPoint
-                            );
-                            setError({ ...error, pickupPoint: "" });
-                          }}
-                          className="dropdown-item"
-                          key={index}
+                          style={{ height: "150px", overflowY: "scroll" }}
+                          className="dropdown-content"
                         >
-                          {item.address}
+                          {pickupPointList.map(
+                            (pickupPoint, pickupPointIndex) => (
+                              <div
+                                onClick={(e) => {
+                                  const newPickuppointList =
+                                    selectedPickupPoint.map((data, i) => {
+                                      if (i === index) {
+                                        return {
+                                          selectedPickupPoint: pickupPoint,
+                                          isActiveDropdownPickupPoint:
+                                            !data.isActiveDropdownPickupPoint,
+                                          error: "",
+                                        };
+                                      }
+                                      return data;
+                                    });
+                                  setselectedPickupPoint(newPickuppointList);
+                                }}
+                                className="dropdown-item"
+                                key={index}
+                              >
+                                {pickupPoint.address}
+                              </div>
+                            )
+                          )}
                         </div>
-                      ))}
+                      )}
                     </div>
+                  </div>
+                  {item.error && (
+                    <p
+                      style={{ fontSize: "14px", marginBottom: "-10px" }}
+                      className="text-danger"
+                    >
+                      {item.error}
+                    </p>
                   )}
                 </div>
               </div>
-              {error.role && (
-                <p
-                  style={{ fontSize: "14px", marginBottom: "-10px" }}
-                  className="text-danger"
-                >
-                  {error.role}
-                </p>
-              )}
+            ))}
+            <div className="modal__container-body-inputcontrol">
+              <button
+                onClick={() => {
+                  if (selectedPickupPoint.length === pickupPointList.length) {
+                    setOpenAssignSnackbar({
+                      ...openAssignSnackbar,
+                      open: true,
+                      severity: "error",
+                      text: `Hiện tại có ${pickupPointList.length} điểm giao hàng. Không thể tạo thêm !`,
+                    });
+                    return;
+                  }
+                  setselectedPickupPoint([
+                    ...selectedPickupPoint,
+                    {
+                      selectedPickupPoint: null,
+                      isActiveDropdownPickupPoint: false,
+                      error: "",
+                    },
+                  ]);
+                }}
+                className="buttonAddSupermarkerAddress"
+              >
+                Thêm điểm giao hàng
+                <FontAwesomeIcon
+                  icon={faPlusCircle}
+                  style={{ paddingLeft: 10 }}
+                />
+              </button>
             </div>
-          </div>
+          </>
         )}
 
         {/* email  */}

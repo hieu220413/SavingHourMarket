@@ -9,12 +9,12 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
-import React, { useCallback, useState, useRef, useMemo } from 'react';
-import { icons } from '../constants';
-import { COLORS, FONTS } from '../constants/theme';
+import React, {useCallback, useState, useRef, useMemo} from 'react';
+import {icons} from '../constants';
+import {COLORS, FONTS} from '../constants/theme';
 import dayjs from 'dayjs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from '@react-navigation/native';
+import {useFocusEffect} from '@react-navigation/native';
 import Modal, {
   ModalFooter,
   ModalButton,
@@ -28,10 +28,10 @@ import BottomSheet, {
   BottomSheetModalProvider,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { format } from 'date-fns';
+import {format} from 'date-fns';
 import database from '@react-native-firebase/database';
 
-const ProductDetails = ({ navigation, route }) => {
+const ProductDetails = ({navigation, route}) => {
   const product = route.params.product;
   const pickupPointId = route.params.pickupPointId;
   const [cartList, setCartList] = useState([]);
@@ -76,7 +76,7 @@ const ProductDetails = ({ navigation, route }) => {
           if (snapshot.val() === 0) {
             navigation.reset({
               index: 0,
-              routes: [{ name: 'Initial' }],
+              routes: [{name: 'Initial'}],
             });
           } else {
             // setSystemStatus(snapshot.val());
@@ -131,6 +131,10 @@ const ProductDetails = ({ navigation, route }) => {
       const user = await AsyncStorage.getItem('userInfo');
       if (!user) {
         setOpenAuthModal(true);
+        return;
+      }
+      if (!selectedProductBatch) {
+        setOpenWarnModal(true);
         return;
       }
       const item = product;
@@ -236,7 +240,11 @@ const ProductDetails = ({ navigation, route }) => {
           <Image
             source={icons.leftArrow}
             resizeMode="contain"
-            style={{ width: Dimensions.get('window').width * 0.1, height: 35, tintColor: COLORS.primary }}
+            style={{
+              width: Dimensions.get('window').width * 0.1,
+              height: 35,
+              tintColor: COLORS.primary,
+            }}
           />
         </TouchableOpacity>
         <Text
@@ -281,7 +289,7 @@ const ProductDetails = ({ navigation, route }) => {
                 justifyContent: 'center',
               }}>
               <Text
-                style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
+                style={{fontSize: 12, color: 'white', fontFamily: 'Roboto'}}>
                 {cartList.length}
               </Text>
             </View>
@@ -291,8 +299,7 @@ const ProductDetails = ({ navigation, route }) => {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-        }}>
+        contentContainerStyle={{}}>
         <Swiper
           style={{
             height: 260,
@@ -355,7 +362,7 @@ const ProductDetails = ({ navigation, route }) => {
             shadowOpacity: 0.27,
             shadowRadius: 4.65,
             elevation: 3,
-            index:10
+            index: 10,
           }}>
           <Text
             style={{
@@ -424,7 +431,7 @@ const ProductDetails = ({ navigation, route }) => {
           elevation: 2,
         }}>
         <View>
-          <View style={{ flexDirection: 'row', paddingBottom: '2%', }}>
+          <View style={{flexDirection: 'row', paddingBottom: '2%'}}>
             <Text
               style={{
                 maxWidth: '70%',
@@ -432,7 +439,7 @@ const ProductDetails = ({ navigation, route }) => {
                 lineHeight: 20,
                 fontWeight: 'bold',
                 fontFamily: FONTS.fontFamily,
-                textDecorationLine: 'line-through'
+                textDecorationLine: 'line-through',
               }}>
               {product?.priceListed.toLocaleString('vi-VN', {
                 currency: 'VND',
@@ -448,7 +455,7 @@ const ProductDetails = ({ navigation, route }) => {
               ₫
             </Text>
           </View>
-          <View style={{ flexDirection: 'row' }}>
+          <View style={{flexDirection: 'row'}}>
             <Text
               style={{
                 fontSize: 17,
@@ -456,23 +463,23 @@ const ProductDetails = ({ navigation, route }) => {
                 color: COLORS.secondary,
                 fontWeight: 700,
                 fontFamily: FONTS.fontFamily,
-                paddingRight: minPrice === maxPrice ? '24%' : '3%'
+                paddingRight: minPrice === maxPrice ? '24%' : '3%',
               }}>
               {/* {product.nearestExpiredBatch.price.toLocaleString('vi-VN', {
                 currency: 'VND',
               })} */}
               {minPrice === maxPrice
                 ? `${minPrice.toLocaleString('vi-VN', {
-                  style: 'currency',
-                  currency: 'VND',
-                })}`
+                    style: 'currency',
+                    currency: 'VND',
+                  })}`
                 : `${minPrice.toLocaleString('vi-VN', {
-                  style: 'currency',
-                  currency: 'VND',
-                })} - ${maxPrice.toLocaleString('vi-VN', {
-                  style: 'currency',
-                  currency: 'VND',
-                })}`}
+                    style: 'currency',
+                    currency: 'VND',
+                  })} - ${maxPrice.toLocaleString('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND',
+                  })}`}
             </Text>
           </View>
         </View>
@@ -537,7 +544,7 @@ const ProductDetails = ({ navigation, route }) => {
           <ModalFooter>
             <ModalButton
               text="Đăng nhập"
-              textStyle={{ color: COLORS.primary }}
+              textStyle={{color: COLORS.primary}}
               onPress={async () => {
                 try {
                   await AsyncStorage.removeItem('userInfo');
@@ -552,7 +559,7 @@ const ProductDetails = ({ navigation, route }) => {
           </ModalFooter>
         }>
         <View
-          style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
+          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
           <Text
             style={{
               fontSize: 20,
@@ -585,7 +592,7 @@ const ProductDetails = ({ navigation, route }) => {
           </ModalFooter>
         }>
         <View
-          style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
+          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
           <Text
             style={{
               fontSize: 20,
@@ -626,9 +633,9 @@ const ProductDetails = ({ navigation, route }) => {
                   borderRadius: 20,
                 }}
                 resizeMode="contain"
-                source={{ uri: product.imageUrlImageList[0].imageUrl }}
+                source={{uri: product.imageUrlImageList[0].imageUrl}}
               />
-              <View style={{ flex: 6, justifyContent: 'space-between' }}>
+              <View style={{flex: 6, justifyContent: 'space-between'}}>
                 <View></View>
                 <View>
                   <Text
@@ -648,16 +655,16 @@ const ProductDetails = ({ navigation, route }) => {
                     }}>
                     {minPrice === maxPrice
                       ? `${minPrice.toLocaleString('vi-VN', {
-                        style: 'currency',
-                        currency: 'VND',
-                      })}`
+                          style: 'currency',
+                          currency: 'VND',
+                        })}`
                       : `${minPrice.toLocaleString('vi-VN', {
-                        style: 'currency',
-                        currency: 'VND',
-                      })} - ${maxPrice.toLocaleString('vi-VN', {
-                        style: 'currency',
-                        currency: 'VND',
-                      })}`}
+                          style: 'currency',
+                          currency: 'VND',
+                        })} - ${maxPrice.toLocaleString('vi-VN', {
+                          style: 'currency',
+                          currency: 'VND',
+                        })}`}
                   </Text>
                 </View>
               </View>
@@ -669,7 +676,7 @@ const ProductDetails = ({ navigation, route }) => {
                 paddingBottom: 15,
                 marginBottom: 140,
               }}>
-              <View style={{ paddingHorizontal: 15 }}>
+              <View style={{paddingHorizontal: 15}}>
                 <Text
                   style={{
                     fontSize: 18,
@@ -780,7 +787,7 @@ const ProductDetails = ({ navigation, route }) => {
                     }}>
                     <Image
                       resizeMode="contain"
-                      style={{ height: 20, width: 20 }}
+                      style={{height: 20, width: 20}}
                       source={icons.minus}
                     />
                   </TouchableOpacity>
@@ -803,7 +810,7 @@ const ProductDetails = ({ navigation, route }) => {
                     }}>
                     <Image
                       resizeMode="contain"
-                      style={{ height: 20, width: 20 }}
+                      style={{height: 20, width: 20}}
                       source={icons.plus}
                     />
                   </TouchableOpacity>
@@ -829,7 +836,7 @@ const ProductDetails = ({ navigation, route }) => {
               marginTop: 20,
               elevation: 10,
             }}>
-            <View style={{ width: '95%' }}>
+            <View style={{width: '95%'}}>
               <TouchableOpacity
                 onPress={() => {
                   isAddToCart ? handleAddToCart(product) : handleBuy();

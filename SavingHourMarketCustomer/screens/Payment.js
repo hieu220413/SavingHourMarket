@@ -809,7 +809,9 @@ const Payment = ({navigation, route}) => {
             Thanh toán
           </Text>
         </View>
-        <ScrollView showsVerticalScrollIndicator={false}  automaticallyAdjustKeyboardInsets={true}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          automaticallyAdjustKeyboardInsets={true}>
           <View style={{marginBottom: '37%'}}>
             {/* OrderItem */}
             {Object.keys(groupByCategory).map(function (key) {
@@ -1501,7 +1503,10 @@ const Payment = ({navigation, route}) => {
                     if (date.getTime() < minDate.getTime()) {
                       setOpen(false);
                       setValidateMessage(
-                        'Đơn hàng luôn được giao sau 2 ngày kể từ ngày đặt hàng',
+                        `Đơn hàng luôn được giao sau 2 ngày kể từ ngày đặt hàng ( ${format(
+                          minDate,
+                          'dd/MM/yyyy',
+                        )} )`,
                       );
                       setOpenValidateDialog(true);
                       return;
@@ -1509,7 +1514,10 @@ const Payment = ({navigation, route}) => {
                     if (date.getTime() > maxDate.getTime()) {
                       setOpen(false);
                       setValidateMessage(
-                        'Đơn hàng phải giao trước HSD của sản phẩm có HSD gần nhất 1 ngày',
+                        `Đơn hàng phải giao trước HSD của sản phẩm có HSD gần nhất 1 ngày ( ${format(
+                          maxDate,
+                          'dd/MM/yyyy',
+                        )} )`,
                       );
                       setOpenValidateDialog(true);
                       return;
@@ -1834,7 +1842,7 @@ const Payment = ({navigation, route}) => {
             width: '90%',
             borderRadius: 30,
             flexDirection: 'row',
-            alignSelf:'center',
+            alignSelf: 'center',
             alignItems: 'center',
             justifyContent: 'center',
             marginTop: 20,
