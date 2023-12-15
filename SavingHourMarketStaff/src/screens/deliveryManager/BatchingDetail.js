@@ -34,7 +34,7 @@ const BatchingDetail = ({navigation, route}) => {
     }, []),
   );
 
-  const {orderList} = route.params;
+  const {orderList, date, timeFrame, productConsolidationArea, quantity} = route.params;
   const [initializing, setInitializing] = useState(true);
   const [tokenId, setTokenId] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -91,7 +91,16 @@ const BatchingDetail = ({navigation, route}) => {
       <View style={styles.container}>
         <View style={styles.header}>
           <View style={styles.pagenameAndLogout}>
-            <TouchableOpacity onPress={() => navigation.navigate('BatchList', {isGoBackFromBatchingDetail: true})}>
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate('BatchList', {
+                  isGoBackFromBatchingDetail: true,
+                  date: date, 
+                  timeFrame: timeFrame, 
+                  productConsolidationArea: productConsolidationArea, 
+                  quantity: quantity
+                })
+              }>
               <Image
                 source={icons.leftArrow}
                 resizeMode="contain"
