@@ -1,9 +1,6 @@
 package com.fpt.capstone.savinghourmarket.exception.handler;
 
-import com.fpt.capstone.savinghourmarket.exception.InvalidInputException;
-import com.fpt.capstone.savinghourmarket.exception.ItemNotFoundException;
-import com.fpt.capstone.savinghourmarket.exception.SystemNotInMaintainStateException;
-import com.fpt.capstone.savinghourmarket.exception.UnverifiedEmailException;
+import com.fpt.capstone.savinghourmarket.exception.*;
 import com.fpt.capstone.savinghourmarket.model.ApiError;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +31,12 @@ public class GeneralExceptionHandler {
 
     @ExceptionHandler(SystemNotInMaintainStateException.class)
     public ResponseEntity<ApiError> systemNotInMaintainStateExceptionHandler(SystemNotInMaintainStateException e) {
+        ApiError apiError = new ApiError(LocalDateTime.now().toString(), e.getStatusCode().value(), e.getReason());
+        return ResponseEntity.status(e.getStatusCode()).body(apiError);
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ApiError> conflictExceptionHandler(ConflictException e) {
         ApiError apiError = new ApiError(LocalDateTime.now().toString(), e.getStatusCode().value(), e.getReason());
         return ResponseEntity.status(e.getStatusCode()).body(apiError);
     }
