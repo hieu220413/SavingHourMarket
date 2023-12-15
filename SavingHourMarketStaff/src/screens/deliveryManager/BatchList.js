@@ -150,6 +150,7 @@ const BatchList = ({navigation, route}) => {
       item.orderList.map(item => {
         orderIdList.push(item.id);
       });
+      console.log('productConsolidationArea: ', productConsolidationArea)
       const ob = {
         deliverDate: item.deliverDate,
         timeFrameId: item.timeFrame.id,
@@ -158,7 +159,7 @@ const BatchList = ({navigation, route}) => {
       };
       submitBatches.push(ob);
     });
-    console.log(submitBatches);
+    console.log('submitBatches: ', submitBatches);
 
     setLoading(true);
     fetch(`${API.baseURL}/api/order/deliveryManager/createBatches`, {
@@ -264,6 +265,10 @@ const BatchList = ({navigation, route}) => {
                           console.log(item.orderList);
                           navigation.navigate('BatchingDetail', {
                             orderList: item.orderList,
+                            date: date, 
+                            timeFrame: timeFrame, 
+                            productConsolidationArea: productConsolidationArea, 
+                            quantity: quantity
                           });
                         }}>
                         <View
