@@ -53,7 +53,6 @@ const Discount = ({ navigation }) => {
       visibilityTime: 1000,
     });
   };
-  console.log('out side', discounts.length);
   // system status check
   useFocusEffect(
     useCallback(() => {
@@ -119,10 +118,7 @@ const Discount = ({ navigation }) => {
 
   useEffect(() => {
     setLoading(true);
-    console.log('before');
-    console.log('dis', discounts.length);
     if (currentCate && pickupPoint) {
-      console.log('after');
       fetch(
         `${API.baseURL}/api/discount/getDiscountsForCustomer?fromPercentage=0&toPercentage=100&productCategoryId=${currentCate}&page=0&limit=9999&expiredSortType=ASC`,
       )

@@ -23,8 +23,6 @@ const Configuration = () => {
   const [extraShippingFeePerKilometer, setExtraShippingFeePerKilometer] =
     useState(0);
   const [limitOfOrders, setLimitOfOrders] = useState(0);
-  const [numberOfSuggestedPickupPoint, setNumberOfSuggestedPickupPoint] =
-    useState(0);
   const [timeAllowedForOrderCancellation, setTimeAllowedForOrderCancellation] =
     useState(0);
   const [deleteUnpaidOrderTime, setDeleteUnpaidOrderTime] = useState(0);
@@ -81,9 +79,7 @@ const Configuration = () => {
               respond.extraShippingFeePerKilometer
             );
             setLimitOfOrders(respond.limitOfOrders);
-            setNumberOfSuggestedPickupPoint(
-              respond.numberOfSuggestedPickupPoint
-            );
+
             setTimeAllowedForOrderCancellation(
               respond.timeAllowedForOrderCancellation
             );
@@ -164,14 +160,7 @@ const Configuration = () => {
       });
       return;
     }
-    if (numberOfSuggestedPickupPoint == 0) {
-      setOpenSnackbar({
-        ...openSnackbar,
-        open: true,
-        text: "Số lượng điểm giao hàng đề xuất không được bỏ trống hoặc bằng 0",
-      });
-      return;
-    }
+
     if (timeAllowedForOrderCancellation == 0) {
       setOpenSnackbar({
         ...openSnackbar,
@@ -207,7 +196,6 @@ const Configuration = () => {
       body: JSON.stringify({
         systemStatus: systemStatus.value,
         limitOfOrders: parseInt(limitOfOrders),
-        numberOfSuggestedPickupPoint: parseInt(numberOfSuggestedPickupPoint),
         deleteUnpaidOrderTime: parseInt(deleteUnpaidOrderTime),
         initialShippingFee: parseInt(initialShippingFee),
         minKmDistanceForExtraShippingFee: parseInt(
@@ -305,20 +293,7 @@ const Configuration = () => {
               className="configuration__content-line-item-input"
             />
           </div>
-          <div className="configuration__content-line-item">
-            <div className="configuration__content-line-item-title">
-              Số lượng điểm giao hàng đề xuất
-            </div>
-            <input
-              value={numberOfSuggestedPickupPoint}
-              onChange={(e) => {
-                setNumberOfSuggestedPickupPoint(e.target.value);
-              }}
-              onKeyDown={(e) => handleKeypress(e)}
-              type="number"
-              className="configuration__content-line-item-input"
-            />
-          </div>
+
           <div className="configuration__content-line-item">
             <div className="configuration__content-line-item-title">
               Thời gian để hủy đơn hàng (giờ)
@@ -333,9 +308,6 @@ const Configuration = () => {
               className="configuration__content-line-item-input"
             />
           </div>
-        </div>
-
-        <div className="configuration__content-line">
           <div className="configuration__content-line-item">
             <div className="configuration__content-line-item-title">
               Thời gian tự động xóa đơn hàng lỗi thanh toán (giờ)
@@ -350,6 +322,9 @@ const Configuration = () => {
               className="configuration__content-line-item-input"
             />
           </div>
+        </div>
+
+        <div className="configuration__content-line">
           <div className="configuration__content-line-item">
             <div className="configuration__content-line-item-title">
               Giới hạn khoảng cách mỗi phút ( m )
@@ -395,6 +370,7 @@ const Configuration = () => {
               )}
             </div>
           </div>
+          <div className="configuration__content-line-item"></div>
         </div>
         <button onClick={handleSave} className="configuration__content-button">
           Lưu

@@ -1,34 +1,34 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
-import React, { useState, useCallback, useEffect } from 'react';
-import { View, Image, Text } from 'react-native';
-import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
-import { icons } from '../constants';
-import { COLORS } from '../constants/theme';
-import { useFocusEffect } from '@react-navigation/native';
+import React, {useState, useCallback, useEffect} from 'react';
+import {View, Image, Text} from 'react-native';
+import {ScrollView, TouchableOpacity} from 'react-native-gesture-handler';
+import {icons} from '../constants';
+import {COLORS} from '../constants/theme';
+import {useFocusEffect} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
-import { API } from '../constants/api';
-import { format } from 'date-fns';
+import {API} from '../constants/api';
+import {format} from 'date-fns';
 import CartEmpty from '../assets/image/search-empty.png';
 import Modal, {
   ModalFooter,
   ModalButton,
   ScaleAnimation,
 } from 'react-native-modals';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import LoadingScreen from '../components/LoadingScreen';
 import AccountDisable from '../components/AccountDisable';
 import database from '@react-native-firebase/database';
 
-const Orders = ({ navigation }) => {
+const Orders = ({navigation}) => {
   const orderStatus = [
-    { display: 'Chờ xác nhận', value: 'PROCESSING' },
-    { display: 'Đóng gói', value: 'PACKAGING' },
-    { display: 'Giao hàng', value: 'DELIVERING' },
-    { display: 'Đã giao', value: 'SUCCESS' },
-    { display: 'Đơn thất bại', value: 'FAIL' },
-    { display: 'Đã hủy', value: 'CANCEL' },
+    {display: 'Chờ xác nhận', value: 'PROCESSING'},
+    {display: 'Đóng gói', value: 'PACKAGING'},
+    {display: 'Giao hàng', value: 'DELIVERING'},
+    {display: 'Đã giao', value: 'SUCCESS'},
+    {display: 'Đơn thất bại', value: 'FAIL'},
+    {display: 'Đã hủy', value: 'CANCEL'},
   ];
   const [currentStatus, setCurrentStatus] = useState({
     display: 'Chờ xác nhận',
@@ -79,12 +79,13 @@ const Orders = ({ navigation }) => {
         });
       if (!userTokenId) {
         // sessions end. (revoke refresh token like password change, disable account, ....)
+        setOpenAccountDisableModal(true);
         setLoading(false);
         return;
       }
     } else {
       // no sessions found.
-      setOpenAuthModal(true);
+      // setOpenAuthModal(true);
       setLoading(false);
     }
   };
@@ -99,7 +100,7 @@ const Orders = ({ navigation }) => {
           if (snapshot.val() === 0) {
             navigation.reset({
               index: 0,
-              routes: [{ name: 'Initial' }],
+              routes: [{name: 'Initial'}],
             });
           } else {
             // setSystemStatus(snapshot.val());
@@ -341,7 +342,7 @@ const Orders = ({ navigation }) => {
             <Image
               source={icons.leftArrow}
               resizeMode="contain"
-              style={{ width: 35, height: 35, tintColor: COLORS.primary }}
+              style={{width: 35, height: 35, tintColor: COLORS.primary}}
             />
           </TouchableOpacity>
           <Text
@@ -381,7 +382,7 @@ const Orders = ({ navigation }) => {
                   justifyContent: 'center',
                 }}>
                 <Text
-                  style={{ fontSize: 12, color: 'white', fontFamily: 'Roboto' }}>
+                  style={{fontSize: 12, color: 'white', fontFamily: 'Roboto'}}>
                   {cartList.length}
                 </Text>
               </View>
@@ -400,7 +401,6 @@ const Orders = ({ navigation }) => {
                   {
                     paddingHorizontal: 15,
                     paddingBottom: 15,
-
                   },
                   currentStatus.display === item.display && {
                     borderBottomColor: COLORS.primary,
@@ -428,9 +428,9 @@ const Orders = ({ navigation }) => {
 
       {/* Order list */}
       {orderList.length === 0 ? (
-        <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{alignItems: 'center', justifyContent: 'center'}}>
           <Image
-            style={{ width: '100%', height: '50%' }}
+            style={{width: '100%', height: '50%'}}
             resizeMode="contain"
             source={CartEmpty}
           />
@@ -445,13 +445,15 @@ const Orders = ({ navigation }) => {
           </Text>
         </View>
       ) : (
-        <ScrollView contentContainerStyle={{ marginTop: 20 }} showsVerticalScrollIndicator={false}>
-          <View style={{ marginBottom: 100 }}>
+        <ScrollView
+          contentContainerStyle={{marginTop: 20}}
+          showsVerticalScrollIndicator={false}>
+          <View style={{marginBottom: 100}}>
             {orderList.map(item => (
               <View
                 key={item.id}
                 style={{
-                  borderRadius:10,
+                  borderRadius: 10,
                   shadowColor: '#000',
                   shadowOffset: {
                     width: 0,
@@ -461,8 +463,8 @@ const Orders = ({ navigation }) => {
                   shadowRadius: 4.65,
                   elevation: 2,
                   marginHorizontal: '2%',
-                  backgroundColor: 'white', 
-                  marginBottom: 20
+                  backgroundColor: 'white',
+                  marginBottom: 20,
                 }}>
                 {/* Order detail */}
                 <TouchableOpacity
@@ -479,13 +481,16 @@ const Orders = ({ navigation }) => {
                       justifyContent: 'space-between',
                       padding: 20,
                     }}>
-                    <View style={{ flexDirection: 'column', gap: 8 }}>
+                    <View style={{flexDirection: 'column', gap: 8}}>
                       <Text
                         style={{
                           fontSize: 20,
                           fontWeight: 'bold',
                           fontFamily: 'Roboto',
-                          color: item?.status === 5 || item?.status === 6 ? 'red' :COLORS.primary,
+                          color:
+                            item?.status === 5 || item?.status === 6
+                              ? 'red'
+                              : COLORS.primary,
                         }}>
                         {item?.status === 0 && 'Chờ xác nhận'}
                         {item?.status === 1 && 'Đang đóng gói'}
@@ -538,7 +543,7 @@ const Orders = ({ navigation }) => {
                     </View>
                     <Image
                       resizeMode="contain"
-                      style={{ width: 30, height: 30, tintColor: COLORS.primary }}
+                      style={{width: 30, height: 30, tintColor: COLORS.primary}}
                       source={icons.rightArrow}
                     />
                   </View>
@@ -591,7 +596,7 @@ const Orders = ({ navigation }) => {
           <ModalFooter>
             <ModalButton
               text="Đăng nhập"
-              textStyle={{ color: COLORS.primary }}
+              textStyle={{color: COLORS.primary}}
               onPress={async () => {
                 try {
                   await AsyncStorage.clear();
@@ -605,7 +610,7 @@ const Orders = ({ navigation }) => {
           </ModalFooter>
         }>
         <View
-          style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
+          style={{padding: 20, alignItems: 'center', justifyContent: 'center'}}>
           <Text
             style={{
               fontSize: 20,

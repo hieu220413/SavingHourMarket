@@ -40,7 +40,6 @@ const OrderDetails = ({ navigation, route }) => {
   const [date, setDate] = useState(null);
   const id = route.params.id;
   const isScaned = route.params.isScaned;
-  const [modalVisible, setModalVisible] = useState(false);
   const [errorModalVisible, setErrorModalVisible] = useState(false);
   const [alertText, setAlertText] = useState('');
   const [expDateList, setExpDateList] = useState([]);
@@ -370,8 +369,8 @@ const OrderDetails = ({ navigation, route }) => {
                         </Text>
                         <Image
                           style={{
-                            width: Dimensions.get('window').width * 0.08,
-                            height: Dimensions.get('window').width * 0.08,
+                            width: Dimensions.get('window').width * 0.05,
+                            height: Dimensions.get('window').width * 0.05,
                             tintColor: COLORS.secondary,
                           }}
                           resizeMode="contain"
@@ -823,98 +822,8 @@ const OrderDetails = ({ navigation, route }) => {
           </View>
         </View>
       )}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(!modalVisible);
-        }}>
-        <TouchableOpacity
-          onPress={() => setModalVisible(!modalVisible)}
-          style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-              }}>
-              <Text
-                style={{
-                  color: 'black',
-                  fontFamily: FONTS.fontFamily,
-                  fontSize: 20,
-                  fontWeight: 700,
-                  textAlign: 'center',
-                  paddingBottom: 20,
-                }}>
-                Xác nhận đơn hàng
-              </Text>
-              <TouchableOpacity
-                onPress={() => {
-                  setModalVisible(!modalVisible);
-                }}>
-                <Image
-                  resizeMode="contain"
-                  style={{
-                    width: 20,
-                    height: 20,
-                    tintColor: 'grey',
-                  }}
-                  source={icons.close}
-                />
-              </TouchableOpacity>
-            </View>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'center',
-                marginTop: '5%',
-              }}>
-              <TouchableOpacity
-                style={{
-                  width: '50%',
-                  paddingHorizontal: 15,
-                  paddingTop: 10,
-                  backgroundColor: 'white',
-                  borderRadius: 10,
-                  borderColor: COLORS.red,
-                  borderWidth: 0.5,
-                  marginRight: '2%',
-                }}
-                onPress={() => {
-                  confirmOrder(false);
-                  setModalVisible(!modalVisible);
-                }}>
-                <Text
-                  style={{
-                    color: COLORS.red,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                  }}>
-                  Giao hàng thất bại
-                </Text>
-              </TouchableOpacity>
 
-              <TouchableOpacity
-                style={{
-                  width: '50%',
-                  paddingHorizontal: 15,
-                  paddingTop: 10,
-                  backgroundColor: COLORS.primary,
-                  borderRadius: 10,
-                }}
-                onPress={() => {
-                  confirmOrder(true);
-                  setModalVisible(!modalVisible);
-                }}>
-                <Text style={styles.textStyle}>Giao hàng thành công</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </TouchableOpacity>
-      </Modal>
-
+      {/* System modal */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -989,7 +898,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 22,
     backgroundColor: 'rgba(50,50,50,0.5)',
   },
   modalView: {
