@@ -124,7 +124,7 @@ public interface OrderService {
     @Transactional
     String deleteOrderWithoutAuthen(UUID id) throws FirebaseAuthException, ResourceNotFoundException, OrderDeletionNotAllowedException;
 
-    List<OrderBatch> batchingForStaff(Date deliverDate, UUID timeFrameId, Integer batchQuantity, UUID productConsolidationAreaId) throws ResourceNotFoundException;
+    List<OrderBatch> batchingForStaff(Date deliverDate, UUID timeFrameId, Integer batchQuantity, UUID productConsolidationAreaId) throws ResourceNotFoundException, InterruptedException;
 
     ShippingFeeDetailResponseBody getShippingFeeDetail(Double latitude, Double longitude, UUID pickupPoint) throws IOException, InterruptedException, ApiException;
 
@@ -132,7 +132,7 @@ public interface OrderService {
 
     ReportOrdersResponse getReportOrders(OrderReportMode mode, LocalDate startDate, LocalDate endDate, Integer month, Integer year);
 
-    List<OrderBatch> createBatches(List<OrderBatchCreateBody> orderBatchCreateBodyList);
+    List<OrderBatch> createBatches(List<OrderBatchCreateBody> orderBatchCreateBodyList) throws InterruptedException;
 
     String printOrderPackaging(UUID orderId, String staffEmail) throws ResourceNotFoundException;
 

@@ -1245,64 +1245,75 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public List<OrderBatch> createBatches(List<OrderBatchCreateBody> orderBatchCreateBodyList) {
+    public List<OrderBatch> createBatches(List<OrderBatchCreateBody> orderBatchCreateBodyList) throws InterruptedException {
         List<OrderBatch> orderBatchList = new ArrayList<>();
         if (orderBatchCreateBodyList.size() > 0) {
-            HashMap<String, String> errorFields = new HashMap<>();
-            for (OrderBatchCreateBody orderBatchCreateBody : orderBatchCreateBodyList) {
-                if (errorFields.size() > 0) {
-                    break;
-                }
-
-                Optional<TimeFrame> timeFrame = timeFrameRepository.findTimeFrameActiveById(orderBatchCreateBody.getTimeFrameId());
-                if (timeFrame.isEmpty()) {
-                    errorFields.put("timeFrameIdError", "No time frame id " + orderBatchCreateBody.getTimeFrameId() + " found");
-                }
-
-                Optional<ProductConsolidationArea> productConsolidationArea = productConsolidationAreaRepository.findConsolidationAreaActiveById(orderBatchCreateBody.getProductConsolidationAreaId());
-                if (productConsolidationArea.isEmpty()) {
-                    errorFields.put("productConsolidationAreaIdError", "No product consolidation area id" + orderBatchCreateBody.getProductConsolidationAreaId() + " found");
-                }
-
-                if (orderBatchCreateBody.getDeliverDate().isBefore(LocalDate.now())) {
-                    errorFields.put("deliverDateError", "Date value must be equal or after current date");
-                }
-
-                List<Order> orderTrackList = new ArrayList<>();
-                if (!errorFields.containsKey("timeFrameIdError") && !errorFields.containsKey("deliverDateError")) {
-                    orderTrackList = repository.findOrderByIdListWithDeliveredStatus(orderBatchCreateBody.getOrderIdList(), timeFrame.get().getId(), Date.valueOf(orderBatchCreateBody.getDeliverDate()));
-                    HashMap<UUID, Order> orderTrackHashMap = new HashMap<>();
-                    orderTrackList.forEach(order -> orderTrackHashMap.put(order.getId(), order));
-                    List<UUID> orderIdNotFoundList = new ArrayList<>();
-                    for (UUID orderId : orderBatchCreateBody.getOrderIdList()) {
-                        if (!orderTrackHashMap.containsKey(orderId)) {
-                            orderIdNotFoundList.add(orderId);
+            RLock rLock = redissonClient.getFairLock(orderBatchCreateBodyList.get(0).getDeliverDate().toString()+","+orderBatchCreateBodyList.get(0).getTimeFrameId()+","+orderBatchCreateBodyList.get(0).getProductConsolidationAreaId());
+            boolean res = rLock.tryLock(0, 25, TimeUnit.SECONDS);
+            if (res) {
+                try {
+                    HashMap<String, String> errorFields = new HashMap<>();
+                    for (OrderBatchCreateBody orderBatchCreateBody : orderBatchCreateBodyList) {
+                        if (errorFields.size() > 0) {
+                            break;
                         }
+
+                        Optional<TimeFrame> timeFrame = timeFrameRepository.findTimeFrameActiveById(orderBatchCreateBody.getTimeFrameId());
+                        if (timeFrame.isEmpty()) {
+                            errorFields.put("timeFrameIdError", "No time frame id " + orderBatchCreateBody.getTimeFrameId() + " found");
+                        }
+
+                        Optional<ProductConsolidationArea> productConsolidationArea = productConsolidationAreaRepository.findConsolidationAreaActiveById(orderBatchCreateBody.getProductConsolidationAreaId());
+                        if (productConsolidationArea.isEmpty()) {
+                            errorFields.put("productConsolidationAreaIdError", "No product consolidation area id" + orderBatchCreateBody.getProductConsolidationAreaId() + " found");
+                        }
+
+                        if (orderBatchCreateBody.getDeliverDate().isBefore(LocalDate.now())) {
+                            errorFields.put("deliverDateError", "Date value must be equal or after current date");
+                        }
+
+                        List<Order> orderTrackList = new ArrayList<>();
+                        if (!errorFields.containsKey("timeFrameIdError") && !errorFields.containsKey("deliverDateError")) {
+                            orderTrackList = repository.findOrderByIdListWithDeliveredStatus(orderBatchCreateBody.getOrderIdList(), timeFrame.get().getId(), Date.valueOf(orderBatchCreateBody.getDeliverDate()));
+                            HashMap<UUID, Order> orderTrackHashMap = new HashMap<>();
+                            orderTrackList.forEach(order -> orderTrackHashMap.put(order.getId(), order));
+                            List<UUID> orderIdNotFoundList = new ArrayList<>();
+                            for (UUID orderId : orderBatchCreateBody.getOrderIdList()) {
+                                if (!orderTrackHashMap.containsKey(orderId)) {
+                                    orderIdNotFoundList.add(orderId);
+                                }
+                            }
+                            if (orderIdNotFoundList.size() > 0) {
+                                errorFields.put("orderIdListError", "Order ids '" + orderIdNotFoundList.stream().map(Objects::toString).collect(Collectors.joining(",")) + "' not found or not meet condition");
+                            }
+                        }
+
+                        if (errorFields.size() > 0) {
+                            throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
+                        }
+
+                        Double averageLatitude = orderTrackList.size() > 0 ? (orderTrackList.stream().mapToDouble(order -> order.getLatitude()).sum() / orderTrackList.size()) : 0;
+                        Double averageLongitude = orderTrackList.size() > 0 ? (orderTrackList.stream().mapToDouble(order -> order.getLongitude()).sum() / orderTrackList.size()) : 0;
+
+                        OrderBatch orderBatch = new OrderBatch();
+                        orderBatch.setDeliverDate(orderBatchCreateBody.getDeliverDate());
+                        orderBatch.setTimeFrame(timeFrame.get());
+                        orderBatch.setProductConsolidationArea(productConsolidationArea.get());
+                        orderBatch.setAverageLatitude(averageLatitude);
+                        orderBatch.setAverageLongitude(averageLongitude);
+                        orderBatch.setOrderList(orderTrackList);
+                        for (Order order : orderTrackList) {
+                            order.setOrderBatch(orderBatch);
+                        }
+                        orderBatchList.add(orderBatchRepository.save(orderBatch));
                     }
-                    if (orderIdNotFoundList.size() > 0) {
-                        errorFields.put("orderIdListError", "Order ids '" + orderIdNotFoundList.stream().map(Objects::toString).collect(Collectors.joining(",")) + "' not found or not meet condition");
-                    }
+                } finally {
+                    rLock.unlock();
                 }
-
-                if (errorFields.size() > 0) {
-                    throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
-                }
-
-                Double averageLatitude = orderTrackList.size() > 0 ? (orderTrackList.stream().mapToDouble(order -> order.getLatitude()).sum() / orderTrackList.size()) : 0;
-                Double averageLongitude = orderTrackList.size() > 0 ? (orderTrackList.stream().mapToDouble(order -> order.getLongitude()).sum() / orderTrackList.size()) : 0;
-
-                OrderBatch orderBatch = new OrderBatch();
-                orderBatch.setDeliverDate(orderBatchCreateBody.getDeliverDate());
-                orderBatch.setTimeFrame(timeFrame.get());
-                orderBatch.setProductConsolidationArea(productConsolidationArea.get());
-                orderBatch.setAverageLatitude(averageLatitude);
-                orderBatch.setAverageLongitude(averageLongitude);
-                orderBatch.setOrderList(orderTrackList);
-                for (Order order : orderTrackList) {
-                    order.setOrderBatch(orderBatch);
-                }
-                orderBatchList.add(orderBatchRepository.save(orderBatch));
+            } else {
+                throw new ConflictException(HttpStatus.valueOf(AdditionalResponseCode.BATCHING_CONFLICT.getCode()), AdditionalResponseCode.BATCHING_CONFLICT.toString());
             }
+
         }
         return orderBatchList;
     }

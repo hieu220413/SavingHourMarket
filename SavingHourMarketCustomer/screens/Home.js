@@ -102,7 +102,7 @@ const Home = ({ navigation }) => {
                         'PickupPoint',
                         JSON.stringify(response.sortedPickupPointSuggestionList[0]),
                       );
-                      setLoading(false);
+                      // setLoading(false);
                     })
                     .catch(err => {
                       console.log(err);
@@ -122,7 +122,7 @@ const Home = ({ navigation }) => {
               //   JSON.stringify(pickupPoint),
               // );
               setCartList([]);
-              setLoading(false);
+              // setLoading(false);
             } catch (error) {
               setLoading(false);
               console.log(error);
@@ -133,7 +133,7 @@ const Home = ({ navigation }) => {
               'CartList' + JSON.parse(value).id,
             );
             setCartList(cartListNew ? JSON.parse(cartListNew) : []);
-            setLoading(false);
+            // setLoading(false);
           }
         } catch (err) {
           console.log(err);
@@ -186,25 +186,24 @@ const Home = ({ navigation }) => {
           setProductsByCategory(data.productList);
           setPage(1);
           setTotalPage(data.totalPage);
-          setLoading(false);
-        })
-        .catch(err => {
-          console.log(err);
-          setLoading(false);
-        });
-      setLoading(true);
-      fetch(
-        `${API.baseURL}/api/discount/getDiscountsForCustomer?fromPercentage=0&toPercentage=100&productCategoryId=${currentCate}&page=0&limit=5&expiredSortType=ASC`,
-      )
-        .then(res => res.json())
-        .then(data => {
-          setDiscountsByCategory(data);
-          const imagesList = [];
-          data.map((item) => {
-            imagesList.push(item.imageUrl);
-          });
-          setImageDiscountForSlider(imagesList);
-          setLoading(false);
+          // Fetch discount
+          fetch(
+            `${API.baseURL}/api/discount/getDiscountsForCustomer?fromPercentage=0&toPercentage=100&productCategoryId=${currentCate}&page=0&limit=5&expiredSortType=ASC`,
+          )
+            .then(res => res.json())
+            .then(data => {
+              setDiscountsByCategory(data);
+              const imagesList = [];
+              data.map((item) => {
+                imagesList.push(item.imageUrl);
+              });
+              setImageDiscountForSlider(imagesList);
+              setLoading(false);
+            })
+            .catch(err => {
+              console.log(err);
+              setLoading(false);
+            });
         })
         .catch(err => {
           console.log(err);
@@ -214,7 +213,7 @@ const Home = ({ navigation }) => {
         item.id === currentCate && setSubCategories(item.productSubCategories);
       });
     }
-  }, [currentCate, categories, pickupPoint]);
+  }, [currentCate, pickupPoint]);
 
   const handleAddToCart = async data => {
     try {

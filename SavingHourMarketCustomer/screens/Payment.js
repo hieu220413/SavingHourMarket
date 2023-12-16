@@ -861,7 +861,7 @@ const Payment = ({navigation, route}) => {
                         source={{
                           uri: item.imageUrl,
                         }}
-                        style={{flex: 4, width: '100%', height: '100%'}}
+                        style={{flex: 4, width: '100%', height: '70%'}}
                       />
                       <View
                         style={{
@@ -871,7 +871,7 @@ const Payment = ({navigation, route}) => {
                         }}>
                         <Text
                           style={{
-                            fontSize: 23,
+                            fontSize: 18,
                             color: 'black',
                             fontFamily: 'Roboto',
                             fontWeight: 'bold',
@@ -880,14 +880,14 @@ const Payment = ({navigation, route}) => {
                         </Text>
                         <Text
                           style={{
-                            fontSize: 18,
+                            fontSize: 16,
                             color: COLORS.primary,
 
                             fontFamily: 'Roboto',
                             backgroundColor: 'white',
                             alignSelf: 'flex-start',
-                            paddingVertical: 5,
-                            paddingHorizontal: 15,
+                            paddingVertical: 3,
+                            paddingHorizontal: 17,
                             borderRadius: 15,
                             borderColor: COLORS.primary,
                             borderWidth: 1.5,
@@ -897,10 +897,9 @@ const Payment = ({navigation, route}) => {
                         </Text>
                         <Text
                           style={{
-                            fontSize: 18,
+                            fontSize: 16,
                             color: 'black',
                             fontFamily: 'Roboto',
-                            fontWeight: 'bold',
                           }}>
                           HSD:{format(item.expiredDate, 'dd/MM/yyyy')}
                         </Text>
@@ -912,7 +911,7 @@ const Payment = ({navigation, route}) => {
                           }}>
                           <Text
                             style={{
-                              fontSize: 20,
+                              fontSize: 16,
 
                               fontFamily: 'Roboto',
                             }}>

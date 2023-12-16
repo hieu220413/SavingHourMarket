@@ -65,7 +65,7 @@ const ViewSubCategory = ({ handleClose, subCategoryToView, categoryName }) => {
             API.baseURL
           }/api/product/getSubCategoryForStaff?productCategoryId=${categoryId}&page=${
             page - 1
-          }&limit=5${isSwitchRecovery ? "&status=DISABLE" : "&status=ENABLE"}`,
+          }&limit=4${isSwitchRecovery ? "&status=DISABLE" : "&status=ENABLE"}`,
           {
             method: "GET",
             headers: {
@@ -134,7 +134,7 @@ const ViewSubCategory = ({ handleClose, subCategoryToView, categoryName }) => {
             API.baseURL
           }/api/product/getSubCategoryForStaff?productCategoryId=${categoryId}&page=${
             page - 1
-          }&limit=5${isSwitchRecovery ? "&status=DISABLE" : "&status=ENABLE"}`,
+          }&limit=4${isSwitchRecovery ? "&status=DISABLE" : "&status=ENABLE"}`,
           {
             method: "GET",
             headers: {
@@ -178,7 +178,7 @@ const ViewSubCategory = ({ handleClose, subCategoryToView, categoryName }) => {
             API.baseURL
           }/api/product/getSubCategoryForStaff?productCategoryId=${categoryId}&page=${
             page - 1
-          }&limit=5${check ? "&status=DISABLE" : "&status=ENABLE"}`,
+          }&limit=4${check ? "&status=DISABLE" : "&status=ENABLE"}`,
           {
             method: "GET",
             headers: {
@@ -246,7 +246,7 @@ const ViewSubCategory = ({ handleClose, subCategoryToView, categoryName }) => {
             API.baseURL
           }/api/product/getSubCategoryForStaff?productCategoryId=${categoryId}&page=${
             page - 1
-          }&limit=5${isSwitchRecovery ? "&status=DISABLE" : "&status=ENABLE"}`,
+          }&limit=4${isSwitchRecovery ? "&status=DISABLE" : "&status=ENABLE"}`,
           {
             method: "GET",
             headers: {
@@ -369,7 +369,7 @@ const ViewSubCategory = ({ handleClose, subCategoryToView, categoryName }) => {
 
           {!isSwitchRecovery && (
             <div className="modal__container-body">
-              <div className="table__container" style={{ height: "650px" }}>
+              <div className="table__container">
                 <table class="table ">
                   <thead>
                     <tr className="table-header-row">
