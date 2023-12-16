@@ -61,4 +61,8 @@ public class Configuration {
 
     @NotNull
     private Integer limitMeterPerMinute;
+
+    @Column(columnDefinition = "tinyint")
+    @NotNull
+    private Integer allowableOrderDateThreshold;
 }

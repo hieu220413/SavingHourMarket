@@ -14,7 +14,7 @@ const Profile = () => {
         <h2 className="profile__name">{user?.fullName}</h2>
         <h2 className="profile__email">{user?.email}</h2>
         <h2 className="profile__email">{user?.role}</h2>
-        <div className="profile__changepassword">Đổi mật khẩu</div>
+        {/* <div className="profile__changepassword">Đổi mật khẩu</div> */}
       </div>
     </div>
   );
