@@ -134,7 +134,9 @@ const Login = () => {
         <img src={LoginImg} alt="" />
       </div>
       <div className="login__container-right">
-        <h2 className="login__container-right-title">Login Your Account</h2>
+        <h2 className="login__container-right-title">
+          Đăng nhập tài khoản của bạn
+        </h2>
         {error && (
           <p
             style={{ fontSize: "14px", marginBottom: "-10px" }}
@@ -166,7 +168,7 @@ const Login = () => {
           </div>
           <div className="login__container-right-form-inputcontrol">
             <label htmlFor="password">
-              Password <span>(*)</span>
+              Mật khẩu <span>(*)</span>
             </label>
             <input
               onChange={(e) => setPassword(e.target.value)}
@@ -197,7 +199,7 @@ const Login = () => {
             onClick={(e) => handleLogin(e)}
             className="login__container-right-form-button"
           >
-            Login
+            Đăng nhập
           </button>
         </form>
       </div>
