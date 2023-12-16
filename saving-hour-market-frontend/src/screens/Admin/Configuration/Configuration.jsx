@@ -8,7 +8,7 @@ import MuiAlert from "@mui/material/Alert";
 import { Snackbar } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretDown } from "@fortawesome/free-solid-svg-icons";
-import { ref, set } from "firebase/database";
+import { child, get, ref, set } from "firebase/database";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -112,6 +112,25 @@ const Configuration = () => {
   };
 
   const handleSave = async () => {
+    let isSystemDisable = true;
+    await get(child(ref(database), "systemStatus")).then((snapshot) => {
+      const data = snapshot.val();
+      if (data !== null) {
+        if (data === 1) {
+          setOpenSnackbar({
+            ...openSnackbar,
+            open: true,
+            severity: "error",
+            text: "Hệ thống không trong trạng thái bảo trì !",
+          });
+          isSystemDisable = false;
+        }
+      }
+    });
+    if (!isSystemDisable) {
+      setLoading(false);
+      return;
+    }
     if (!initialShippingFee) {
       setOpenSnackbar({
         ...openSnackbar,
@@ -194,7 +213,6 @@ const Configuration = () => {
         Authorization: `Bearer ${tokenId}`,
       },
       body: JSON.stringify({
-        systemStatus: systemStatus.value,
         limitOfOrders: parseInt(limitOfOrders),
         deleteUnpaidOrderTime: parseInt(deleteUnpaidOrderTime),
         initialShippingFee: parseInt(initialShippingFee),
@@ -208,6 +226,39 @@ const Configuration = () => {
         limitMeterPerMinute: parseInt(limitMeterPerMiniute),
       }),
     })
+      .then((res) => res.json())
+      .then((respond) => {
+        console.log(respond);
+        if (respond?.code === 422) {
+          setLoading(false);
+          return;
+        }
+        setOpenSnackbar({
+          ...openSnackbar,
+          open: true,
+          severity: "success",
+          text: "Lưu thay đổi thành công",
+        });
+        setLoading(false);
+      })
+      .catch((err) => {});
+  };
+
+  const handleSaveSystemStatus = async () => {
+    setLoading(true);
+    const tokenId = await auth.currentUser.getIdToken();
+    fetch(
+      `${API.baseURL}/api/configuration/updateSystemState?systemState=${
+        selectSystemStatus === 1 ? "ACTIVE" : "MAINTAINING"
+      }`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenId}`,
+        },
+      }
+    )
       .then((res) => res.json())
       .then((respond) => {
         console.log(respond);
@@ -324,7 +375,7 @@ const Configuration = () => {
           </div>
         </div>
 
-        <div className="configuration__content-line">
+        <div style={{ width: "520px" }} className="configuration__content-line">
           <div className="configuration__content-line-item">
             <div className="configuration__content-line-item-title">
               Giới hạn khoảng cách mỗi phút ( m )
@@ -339,11 +390,24 @@ const Configuration = () => {
               className="configuration__content-line-item-input"
             />
           </div>
+          <button
+            onClick={handleSave}
+            className="configuration__content-button "
+          >
+            Lưu
+          </button>
+        </div>
+
+        <div className="configuration__systemstatus">
+          <div className="configuration__content-header">
+            Trạng thái hệ thống
+          </div>
           <div className="configuration__content-line-item">
-            <h3 className="configuration__content-line-item-title">
+            {/* <h3 className="configuration__content-line-item-title">
               Trạng thái hệ thống :
-            </h3>
+            </h3> */}
             <div
+              style={{ marginTop: "-10px" }}
               onClick={() => {
                 setOpenSystemStatus(!openSystemStatus);
               }}
@@ -369,12 +433,14 @@ const Configuration = () => {
                 </div>
               )}
             </div>
+            <button
+              onClick={handleSaveSystemStatus}
+              className="configuration__content-button"
+            >
+              Lưu
+            </button>
           </div>
-          <div className="configuration__content-line-item"></div>
         </div>
-        <button onClick={handleSave} className="configuration__content-button">
-          Lưu
-        </button>
       </div>
       <Snackbar
         open={openSnackbar.open}

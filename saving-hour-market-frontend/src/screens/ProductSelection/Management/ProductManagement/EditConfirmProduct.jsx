@@ -226,8 +226,11 @@ const EditConfirmProduct = ({
       return;
     }
 
-    if (!priceListed) {
-      setError({ ...error, priceListed: "Vui lòng không để trống" });
+    if (!priceListed || parseInt(priceListed) === 0) {
+      setError({
+        ...error,
+        priceListed: "Giá sản phẩm không thể là 0 hoặc để trống",
+      });
       return;
     }
 
@@ -783,8 +786,9 @@ const EditConfirmProduct = ({
           <div>
             <input
               value={priceListed}
+              onKeyDown={(e) => handleKeypress(e)}
               placeholder="Nhập giá niêm yết"
-              type="text"
+              type="number"
               className="modal__container-body-inputcontrol-input"
               onChange={(e) => {
                 setPriceListed(e.target.value);
@@ -810,6 +814,9 @@ const EditConfirmProduct = ({
           </h4>
           <div>
             <textarea
+              style={{
+                height: "200px",
+              }}
               className="modal__container-body-inputcontrol-input textareaFocus"
               placeholder="Nhập thông tin sản phẩm"
               value={description}
@@ -941,7 +948,7 @@ const EditConfirmProduct = ({
                         expiredDate: e.target.value,
                         error: {
                           ...productBatchs[index].error,
-                          expiredDate: `Ngày hết hạn bạn nhập đã bé hơn giới hạn số ngày trước HSD`,
+                          expiredDate: `Số ngày tổi thiểu của ${selectedDropdownItemSubCate.name} là ${allowableThresholdDate}`,
                         },
                       };
                     } else {
