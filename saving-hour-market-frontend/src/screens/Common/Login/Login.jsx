@@ -184,7 +184,7 @@ const Login = () => {
               </p>
             )}
           </div>
-          <div className="login__container-right-form-features">
+          {/* <div className="login__container-right-form-features">
             <div className="login__container-right-form-features-rememberpassword">
               <input type="checkbox" />
               <p>Remember Password</p>
@@ -192,7 +192,7 @@ const Login = () => {
             <Link className="login__container-right-form-features-forgotpassword">
               Forgot Password ?
             </Link>
-          </div>
+          </div> */}
           <button
             onClick={(e) => handleLogin(e)}
             className="login__container-right-form-button"

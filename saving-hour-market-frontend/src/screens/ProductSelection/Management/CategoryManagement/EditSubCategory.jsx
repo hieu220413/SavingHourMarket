@@ -131,7 +131,7 @@ const EditSubCategory = ({
           return;
         }
         fetch(
-          `${API.baseURL}/api/product/getSubCategoryForStaff?productCategoryId=${categoryId}&page=0&limit=5`,
+          `${API.baseURL}/api/product/getSubCategoryForStaff?productCategoryId=${categoryId}&page=0&limit=4`,
           {
             method: "GET",
             headers: {

@@ -28,14 +28,14 @@ const Configuration = () => {
   const [deleteUnpaidOrderTime, setDeleteUnpaidOrderTime] = useState(0);
   const [limitMeterPerMiniute, setLimitMeterPerMiniute] = useState(0);
   const [systemStatus, setSystemStatus] = useState({
-    display: "Có thể sử dụng",
+    display: "Hoạt động",
     value: 1,
   });
   const [openSystemStatus, setOpenSystemStatus] = useState(false);
 
   const selectSystemStatus = [
-    { display: "Có thể sử dụng", value: 1 },
-    { display: "Vô hiệu hóa", value: 0 },
+    { display: "Hoạt động", value: 1 },
+    { display: "Bảo trì", value: 0 },
   ];
 
   const [openSnackbar, setOpenSnackbar] = useState({
