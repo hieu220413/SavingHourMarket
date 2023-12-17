@@ -514,13 +514,43 @@ const Payment = ({navigation, route}) => {
     return maxDate;
   };
 
+  const [allowableOrderDateThreshold, setAllowableOrderDateThreshold] =
+    useState(0);
+
+  useEffect(() => {
+    const fetchConfiguration = async () => {
+      const tokenId = await auth().currentUser.getIdToken();
+      fetch(`${API.baseURL}/api/configuration/getConfiguration`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${tokenId}`,
+        },
+      })
+        .then(res => res.json())
+        .then(respond => {
+          if (respond?.code === 404 || respond.status === 500) {
+            setLoading(false);
+            return;
+          }
+          setAllowableOrderDateThreshold(respond.allowableOrderDateThreshold);
+          setLoading(false);
+        })
+        .catch(err => console.log(err));
+    };
+    fetchConfiguration();
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
       const minExpDateOrderItems = new Date(
         Math.min(...orderItems.map(item => item.expiredDate)),
       );
-      if (dayDiffFromToday(minExpDateOrderItems) > 3) {
-        setMinDate(getDateAfterToday(2));
+      if (
+        dayDiffFromToday(minExpDateOrderItems) >
+        allowableOrderDateThreshold + 1
+      ) {
+        setMinDate(getDateAfterToday(allowableOrderDateThreshold));
         setMaxDate(getMaxDate(minExpDateOrderItems));
       }
       if (
@@ -532,13 +562,23 @@ const Payment = ({navigation, route}) => {
         setDate(getDateAfterToday(1));
         setCannotChangeDate(true);
       }
-      if (dayDiffFromToday(minExpDateOrderItems) == 3) {
-        setMinDate(getDateAfterToday(2));
-        setMaxDate(getDateAfterToday(2));
-        setDate(getDateAfterToday(2));
+      if (
+        dayDiffFromToday(minExpDateOrderItems) > 2 &&
+        dayDiffFromToday(minExpDateOrderItems) < allowableOrderDateThreshold
+      ) {
+        setMinDate(getDateAfterToday(1));
+        setMaxDate(getMaxDate(minExpDateOrderItems));
+      }
+      if (
+        dayDiffFromToday(minExpDateOrderItems) ==
+        allowableOrderDateThreshold + 1
+      ) {
+        setMinDate(getDateAfterToday(allowableOrderDateThreshold));
+        setMaxDate(getDateAfterToday(allowableOrderDateThreshold));
+        setDate(getDateAfterToday(allowableOrderDateThreshold));
         setCannotChangeDate(true);
       }
-    }, [orderItems]),
+    }, [orderItems, allowableOrderDateThreshold]),
   );
 
   const groupByCategory = groupByKey(orderItems, 'productCategoryId');
@@ -2046,7 +2086,8 @@ const Payment = ({navigation, route}) => {
               </Text>
               <Text
                 style={{fontSize: 18, color: 'black', fontFamily: 'Roboto'}}>
-                Đơn hàng luôn được giao sau 2 ngày kể từ ngày đặt hàng trở đi.
+                Đơn hàng luôn được giao sau {allowableOrderDateThreshold} ngày
+                kể từ ngày đặt hàng trở đi.
               </Text>
             </View>
             <View

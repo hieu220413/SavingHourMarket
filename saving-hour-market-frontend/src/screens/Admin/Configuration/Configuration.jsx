@@ -27,6 +27,8 @@ const Configuration = () => {
     useState(0);
   const [deleteUnpaidOrderTime, setDeleteUnpaidOrderTime] = useState(0);
   const [limitMeterPerMiniute, setLimitMeterPerMiniute] = useState(0);
+  const [allowableOrderDateThreshold, setAllowableOrderDateThreshold] =
+    useState(0);
   const [systemStatus, setSystemStatus] = useState({
     display: "Hoạt động",
     value: 1,
@@ -89,6 +91,7 @@ const Configuration = () => {
               (item) => item.value === respond.systemStatus
             );
             setSystemStatus(currentStatus);
+            setAllowableOrderDateThreshold(respond.allowableOrderDateThreshold);
             setLoading(false);
           })
           .catch((err) => console.log(err));
@@ -134,6 +137,7 @@ const Configuration = () => {
     if (!initialShippingFee) {
       setOpenSnackbar({
         ...openSnackbar,
+        severity: "error",
         open: true,
         text: "Vui lòng không để trống phí giao hàng khởi điểm",
       });
@@ -142,6 +146,7 @@ const Configuration = () => {
     if (initialShippingFee < 1000) {
       setOpenSnackbar({
         ...openSnackbar,
+        severity: "error",
         open: true,
         text: "Phí giao hàng khởi điểm không thể bé hơn 1000đ",
       });
@@ -150,6 +155,7 @@ const Configuration = () => {
     if (minKmDistanceForExtraShippingFee == 0) {
       setOpenSnackbar({
         ...openSnackbar,
+        severity: "error",
         open: true,
         text: "Khoảng cách tối thiểu tính thêm phí giao hàng không được bỏ trống hoặc bằng 0",
       });
@@ -158,6 +164,7 @@ const Configuration = () => {
     if (!extraShippingFeePerKilometer) {
       setOpenSnackbar({
         ...openSnackbar,
+        severity: "error",
         open: true,
         text: "Vui lòng không để trống phí cộng thêm mỗi km",
       });
@@ -166,6 +173,7 @@ const Configuration = () => {
     if (extraShippingFeePerKilometer < 1000) {
       setOpenSnackbar({
         ...openSnackbar,
+        severity: "error",
         open: true,
         text: "Phí cộng thêm mỗi km không thể bé hơn 1000đ",
       });
@@ -174,6 +182,7 @@ const Configuration = () => {
     if (limitOfOrders == 0) {
       setOpenSnackbar({
         ...openSnackbar,
+        severity: "error",
         open: true,
         text: "Số đơn hàng chờ xác nhận tối đa không được bỏ trống hoặc bằng 0",
       });
@@ -183,6 +192,7 @@ const Configuration = () => {
     if (timeAllowedForOrderCancellation == 0) {
       setOpenSnackbar({
         ...openSnackbar,
+        severity: "error",
         open: true,
         text: "Thời gian để hủy đơn hàng không được bỏ trống hoặc bằng 0",
       });
@@ -191,6 +201,7 @@ const Configuration = () => {
     if (deleteUnpaidOrderTime == 0) {
       setOpenSnackbar({
         ...openSnackbar,
+        severity: "error",
         open: true,
         text: "Thời gian tự động xóa đơn hàng lỗi thanh toán không được bỏ trống hoặc bằng 0",
       });
@@ -199,8 +210,18 @@ const Configuration = () => {
     if (limitMeterPerMiniute == 0) {
       setOpenSnackbar({
         ...openSnackbar,
+        severity: "error",
         open: true,
         text: "Giới hạn khoảng cách mỗi phút không được bỏ trống hoặc bằng 0",
+      });
+      return;
+    }
+    if (allowableOrderDateThreshold == 0) {
+      setOpenSnackbar({
+        ...openSnackbar,
+        severity: "error",
+        open: true,
+        text: "Số ngày giao tối thiểu sau ngày đặt hàng không được bỏ trống hoặc bằng 0",
       });
       return;
     }
@@ -224,6 +245,7 @@ const Configuration = () => {
           timeAllowedForOrderCancellation
         ),
         limitMeterPerMinute: parseInt(limitMeterPerMiniute),
+        allowableOrderDateThreshold: parseInt(allowableOrderDateThreshold),
       }),
     })
       .then((res) => res.json())
@@ -375,7 +397,7 @@ const Configuration = () => {
           </div>
         </div>
 
-        <div style={{ width: "520px" }} className="configuration__content-line">
+        <div className="configuration__content-line">
           <div className="configuration__content-line-item">
             <div className="configuration__content-line-item-title">
               Giới hạn khoảng cách mỗi phút ( m )
@@ -390,13 +412,25 @@ const Configuration = () => {
               className="configuration__content-line-item-input"
             />
           </div>
-          <button
-            onClick={handleSave}
-            className="configuration__content-button "
-          >
-            Lưu
-          </button>
+          <div className="configuration__content-line-item">
+            <div className="configuration__content-line-item-title">
+              Số ngày giao tối thiểu sau ngày đặt hàng ( ngày )
+            </div>
+            <input
+              onKeyDown={(e) => handleKeypress(e)}
+              onChange={(e) => {
+                setAllowableOrderDateThreshold(e.target.value);
+              }}
+              value={allowableOrderDateThreshold}
+              type="number"
+              className="configuration__content-line-item-input"
+            />
+          </div>
+          <div className="configuration__content-line-item"></div>
         </div>
+        <button onClick={handleSave} className="configuration__content-button ">
+          Lưu
+        </button>
 
         <div className="configuration__systemstatus">
           <div className="configuration__content-header">
