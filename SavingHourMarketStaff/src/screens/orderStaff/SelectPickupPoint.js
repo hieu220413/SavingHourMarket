@@ -7,21 +7,16 @@ import {
   Keyboard,
   TouchableOpacity,
   Image,
-  Dimensions,
 } from 'react-native';
-import {ScrollView, TextInput} from 'react-native-gesture-handler';
-import React, {useEffect, useState, useCallback} from 'react';
+import {ScrollView} from 'react-native-gesture-handler';
+import React, {useState, useCallback} from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {COLORS} from '../../constants/theme';
 import {icons} from '../../constants';
 import {useFocusEffect} from '@react-navigation/native';
 import {API} from '../../constants/api';
-import {format} from 'date-fns';
-import CartEmpty from '../../assets/image/search-empty.png';
-import {SwipeListView} from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
-import database from '@react-native-firebase/database';
 import {checkSystemState} from '../../common/utils';
 
 const SelectPickupPoint = ({navigation, route}) => {

@@ -1,8 +1,8 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
 
-import React, {useCallback, useState, useEffect} from 'react';
-import {View, TouchableOpacity, Image, Text, Dimensions} from 'react-native';
+import React, {useCallback, useState} from 'react';
+import {View, TouchableOpacity, Image, Text} from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import {icons} from '../../constants';
 import {COLORS} from '../../constants/theme';
@@ -11,7 +11,6 @@ import {API} from '../../constants/api';
 import LoadingScreen from '../../components/LoadingScreen';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import database from '@react-native-firebase/database';
 import {checkSystemState} from '../../common/utils';
 
 const SelectProductConsolidationArea = ({navigation, route}) => {

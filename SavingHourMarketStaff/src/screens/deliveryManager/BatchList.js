@@ -1,10 +1,9 @@
 /* eslint-disable prettier/prettier */
-import React, {useState, useCallback, useEffect} from 'react';
+import React, {useState, useCallback} from 'react';
 import {
   View,
   Image,
   Text,
-  Modal,
   Pressable,
   StyleSheet,
   TouchableWithoutFeedback,
@@ -14,17 +13,14 @@ import {
 import {ScrollView, TouchableOpacity} from 'react-native-gesture-handler';
 import {icons} from '../../constants';
 import {COLORS} from '../../constants/theme';
-import QrCode from '../../assets/image/test-qrcode.png';
 import {API} from '../../constants/api';
 import {useFocusEffect} from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
 import {format} from 'date-fns';
 import Toast from 'react-native-toast-message';
 import LoadingScreen from '../../components/LoadingScreen';
-import {SwipeListView} from 'react-native-swipe-list-view';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CartEmpty from '../../assets/image/search-empty.png';
-import database from '@react-native-firebase/database';
 import {checkSystemState} from '../../common/utils';
 
 const BatchList = ({navigation, route}) => {
@@ -41,7 +37,6 @@ const BatchList = ({navigation, route}) => {
   const [loading, setLoading] = useState(false);
   const [batchList, setBatchList] = useState([]);
   const windowWidth = Dimensions.get('window').width;
-  const windowHeight = Dimensions.get('window').height;
 
   // const onAuthStateChange = async userInfo => {
   //   setLoading(true);
@@ -105,7 +100,7 @@ const BatchList = ({navigation, route}) => {
                 if (res.status === 403 || res.status === 401) {
                   const tokenIdCheck = await auth()
                     .currentUser.getIdToken(true)
-                    .catch(async err => {
+                    .catch(async () => {
                       await AsyncStorage.setItem('isDisableAccount', '1');
                       return null;
                     });
