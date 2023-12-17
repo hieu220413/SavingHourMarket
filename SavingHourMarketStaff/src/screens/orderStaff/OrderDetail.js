@@ -50,6 +50,19 @@ const OrderDetail = ({ navigation, route }) => {
   const [selectedConsolidationAreaId, setSelectedConsolidationAreaId] =
     useState('');
 
+  const [isCollectedStatus, setIsCollectedStatus] = useState({});
+  useFocusEffect(
+    useCallback(() => {
+      const fetchIsCollectedStatus = async () => {
+        const storedStatus = await AsyncStorage.getItem('isCollectedProduct');
+        if (storedStatus) {
+          setIsCollectedStatus(JSON.parse(storedStatus));
+        }
+      };
+      fetchIsCollectedStatus();
+    }, []),
+  );
+
   const showToast = message => {
     Toast.show({
       type: 'success',
@@ -504,14 +517,14 @@ const OrderDetail = ({ navigation, route }) => {
                       {/* <Text style={{fontSize: 18, fontWeight: 'bold'}}>
                   Điểm giao hàng:
                 </Text> */}
-                      <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                      <Text style={{ fontSize: 16,color:'black' }}>
                         {item?.addressDeliver
                           ? item?.addressDeliver
                           : item?.pickupPoint.address}
                       </Text>
                     </View>
                     {item.timeFrame && (
-                      <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                      <Text style={{ fontSize: 16,color:'black' }}>
                         {item?.timeFrame
                           ? `${item?.timeFrame?.fromHour.slice(
                             0,
@@ -520,7 +533,7 @@ const OrderDetail = ({ navigation, route }) => {
                           : ''}
                       </Text>
                     )}
-                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                    <Text style={{ fontSize: 16,color:'black' }}>
                       Ngày giao hàng:{' '}
                       {format(new Date(item?.deliveryDate), 'dd/MM/yyyy')}
                     </Text>
@@ -551,10 +564,10 @@ const OrderDetail = ({ navigation, route }) => {
                   style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                   <View style={{ width: 20 }} />
                   <View style={{ gap: 5 }}>
-                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                    <Text style={{ fontSize: 16,color:'black' }}>
                       {item.receiverName}
                     </Text>
-                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                    <Text style={{ fontSize: 16,color:'black'}}>
                       {item.receiverPhone}
                     </Text>
                   </View>
@@ -609,20 +622,27 @@ const OrderDetail = ({ navigation, route }) => {
                         style={{
                           flexDirection: 'column',
                           gap: 10,
-                          flex: 7,
+                          flex: 9,
                         }}>
+                        <View style={{
+                          flexDirection: 'row',
+                          gap: 5,
+                        }}>
+                          <Text
+                            style={{
+                              fontSize: 20,
+                              color: 'black',
+                              fontFamily: 'Roboto',
+                              fontWeight: 'bold',
+                              flex: 7
+                            }}>
+                            {product.name}
+                          </Text>
+                        </View>
+
                         <Text
                           style={{
-                            fontSize: 23,
-                            color: 'black',
-                            fontFamily: 'Roboto',
-                            fontWeight: 'bold',
-                          }}>
-                          {product.name}
-                        </Text>
-                        <Text
-                          style={{
-                            fontSize: 18,
+                            fontSize: 16,
                             color: COLORS.primary,
                             fontFamily: 'Roboto',
                             backgroundColor: 'white',
@@ -638,7 +658,7 @@ const OrderDetail = ({ navigation, route }) => {
                         </Text>
                         <Text
                           style={{
-                            fontSize: 18,
+                            fontSize: 16,
                             color: 'black',
                             fontFamily: 'Roboto',
                             fontWeight: 'bold',
@@ -659,7 +679,7 @@ const OrderDetail = ({ navigation, route }) => {
                           }}>
                           <Text
                             style={{
-                              fontSize: 20,
+                              fontSize: 18,
 
                               fontFamily: 'Roboto',
                             }}>
@@ -671,33 +691,42 @@ const OrderDetail = ({ navigation, route }) => {
                         </View>
                       </View>
                     </View>
-                    {product.orderDetailProductBatches.map((item, index) => (
+                    {product.orderDetailProductBatches.map((batch, index) => (
                       <>
                         <View key={index}>
+                          <View style= {{flexDirection: 'row', gap: 10, alignItems: 'center', marginBottom: 5}}>
+                            <Text
+                              style={{
+                                fontSize: 17,
+                                color: 'black',
+                                fontFamily: 'Roboto',
+                                fontWeight: 'bold',
+                              }}>
+                              {batch.supermarketName}
+                            </Text>
+                            {isCollectedStatus[JSON.stringify(item.code + product.name.replace(/\s/g, "") + batch.expiredDate + batch.supermarketAddress.replace(/\s/g, "") + 'isCollected')] && (
+                              <Image
+                                source={icons.checked}
+                                resizeMode="contain"
+                                style={{ width: 20, height: 20}}
+                              />
+                            )}
+                          </View>
                           <Text
                             style={{
-                              fontSize: 18,
+                              fontSize: 16,
                               color: 'black',
                               fontFamily: 'Roboto',
-                              fontWeight: 'bold',
                             }}>
-                            {item.supermarketName}
+                            Chi nhánh: {batch.supermarketAddress}
                           </Text>
                           <Text
                             style={{
-                              fontSize: 18,
+                              fontSize: 16,
                               color: 'black',
                               fontFamily: 'Roboto',
                             }}>
-                            Chi nhánh: {item.supermarketAddress}
-                          </Text>
-                          <Text
-                            style={{
-                              fontSize: 18,
-                              color: 'black',
-                              fontFamily: 'Roboto',
-                            }}>
-                            Số lượng: {item.boughtQuantity} {product.unit}
+                            Số lượng: {batch.boughtQuantity} {product.unit}
                           </Text>
                         </View>
                       </>
@@ -726,7 +755,7 @@ const OrderDetail = ({ navigation, route }) => {
                 <Text
                   style={{
                     fontSize: 20,
-                    color: 'red',
+                    color: COLORS.primary,
                     fontFamily: 'Roboto',
                     fontWeight: 'bold',
                   }}>
@@ -756,7 +785,7 @@ const OrderDetail = ({ navigation, route }) => {
                 }}>
                 <Text
                   style={{
-                    fontSize: 22,
+                    fontSize: 20,
                     fontFamily: 'Roboto',
                     color: 'black',
                     fontWeight: 'bold',
@@ -776,14 +805,13 @@ const OrderDetail = ({ navigation, route }) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{ paddingBottom: 9,fontSize: 20, fontFamily: 'Roboto', color: 'black' }}>
+                  style={{ paddingBottom: 9, fontSize: 18, fontFamily: 'Roboto', color: 'black' }}>
                   Mã đơn hàng:
                 </Text>
                 <Text
                   style={{
-                    fontSize: 20,
+                    fontSize: 18,
                     fontFamily: 'Roboto',
-                    width: '60%',
                     paddingBottom: 9,
                   }}>
                   {item.code}
@@ -801,10 +829,10 @@ const OrderDetail = ({ navigation, route }) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{ fontSize: 20, fontFamily: 'Roboto', color: 'black' }}>
+                  style={{ fontSize: 18, fontFamily: 'Roboto', color: 'black' }}>
                   Trạng thái
                 </Text>
-                <Text style={{ fontSize: 20, fontFamily: 'Roboto' }}>
+                <Text style={{ fontSize: 18, fontFamily: 'Roboto' }}>
                   {item.paymentStatus === 0
                     ? 'Chưa thanh toán'
                     : 'Đã thanh toán'}
@@ -821,10 +849,10 @@ const OrderDetail = ({ navigation, route }) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{ fontSize: 20, fontFamily: 'Roboto', color: 'black' }}>
+                  style={{ fontSize: 18, fontFamily: 'Roboto', color: 'black' }}>
                   Phương thức
                 </Text>
-                <Text style={{ fontSize: 20, fontFamily: 'Roboto' }}>
+                <Text style={{ fontSize: 18, fontFamily: 'Roboto' }}>
                   {item.paymentMethod === 0 ? 'COD' : 'VN Pay'}
                 </Text>
               </View>
@@ -954,9 +982,9 @@ const OrderDetail = ({ navigation, route }) => {
                     paddingHorizontal: 15,
                     paddingVertical: 10,
                     backgroundColor:
-                    item?.status === 0 && selectedConsolidationAreaId === ''
-                          ? COLORS.light_green
-                          : COLORS.primary,
+                      item?.status === 0 && selectedConsolidationAreaId === ''
+                        ? COLORS.light_green
+                        : COLORS.primary,
                     color: 'white',
                     borderRadius: 10,
                   }}

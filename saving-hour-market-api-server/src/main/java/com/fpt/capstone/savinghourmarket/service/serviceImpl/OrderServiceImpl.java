@@ -506,11 +506,15 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new NoSuchOrderException("No order found with this id " + orderId));
         Staff staff = staffRepository.findByEmail(staffEmail).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với email: " + staffEmail));
         if (order.getDeliverer().getId().equals(staff.getId())) {
-            order.setPackager(staff);
-            order.setStatus(OrderStatus.FAIL.ordinal());
-            FirebaseService.sendPushNotification("SHM", "Đơn hàng " + order.getCode() + " đã không thể giao! Bạn vui lòng liên hệ nhân viên để được hỗ trợ giao lại!", order.getCustomer().getId().toString());
+            if(order.getDeliveryDate().toLocalDate().equals(LocalDate.now())){
+                order.setPackager(staff);
+                order.setStatus(OrderStatus.FAIL.ordinal());
+                FirebaseService.sendPushNotification("SHM", "Đơn hàng " + order.getCode() + " đã không thể giao! Bạn vui lòng liên hệ nhân viên để được hỗ trợ giao lại!", order.getCustomer().getId().toString());
+            } else {
+                return "Đơn hàng này chưa tới ngày giao!";
+            }
         } else {
-            return "Đơn hàng này chưa tới ngày giao!";
+            return "Không phải nhân viên giao hàng này đảm nhận!";
         }
         return "Đơn hàng xác nhận giao thất bại!";
     }

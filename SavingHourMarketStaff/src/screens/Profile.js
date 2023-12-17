@@ -17,6 +17,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoadingScreen from '../components/LoadingScreen';
 import database from '@react-native-firebase/database';
 import {checkSystemState} from '../common/utils';
+import messaging from '@react-native-firebase/messaging';
 
 const Profile = ({navigation}) => {
   useFocusEffect(

@@ -45,8 +45,11 @@ const batching = require('../assets/icons/batching.png');
 const print = require('../assets/icons/print.png');
 const right = require('../assets/icons/rightArrow.png');
 const historyList = require('../assets/icons/historyList.png');
-
+const checked = require('../assets/icons/checked.png');
+const unchecked = require('../assets/icons/unchecked.png');
 export default {
+  unchecked,
+  checked,
   home,
   print,
   // discount,

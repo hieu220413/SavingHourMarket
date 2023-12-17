@@ -11,20 +11,24 @@ import {
   Modal,
   Pressable,
 } from 'react-native';
-import React, {useEffect, useState, useCallback} from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {COLORS} from '../../constants/theme';
-import {icons} from '../../constants';
-import {useFocusEffect} from '@react-navigation/native';
-import {API} from '../../constants/api';
-import {format} from 'date-fns';
+import { COLORS } from '../../constants/theme';
+import { icons } from '../../constants';
+import { useFocusEffect } from '@react-navigation/native';
+import { API } from '../../constants/api';
+import { format } from 'date-fns';
 import LoadingScreen from '../../components/LoadingScreen';
 import CartEmpty from '../../assets/image/search-empty.png';
-import {useRef} from 'react';
-import {checkSystemState} from '../../common/utils';
-
-const Product = ({navigation}) => {
+import { useRef } from 'react';
+import { checkSystemState } from '../../common/utils';
+import CheckBox from 'react-native-check-box';
+import {
+  RoundedCheckbox,
+  PureRoundedCheckbox,
+} from "react-native-rounded-checkbox";
+const Product = ({ navigation }) => {
   // listen to system state
   useFocusEffect(
     useCallback(() => {
@@ -143,6 +147,7 @@ const Product = ({navigation}) => {
               });
               setProductsPackaging(filteredByKeys);
             } else {
+              console.log(groupedBySupermarket);
               setProductsPackaging(groupedBySupermarket);
             }
           }
@@ -235,73 +240,110 @@ const Product = ({navigation}) => {
     }, []),
   );
 
-  const Item = ({item, index}) => {
+  const [isCollectedStatus, setIsCollectedStatus] = useState({});
+
+  useEffect(() => {
+    const fetchIsCollectedStatus = async () => {
+      const storedStatus = await AsyncStorage.getItem('isCollectedProduct');
+      if (storedStatus) {
+        setIsCollectedStatus(JSON.parse(storedStatus));
+      } else {
+        setIsCollectedStatus(initialIsCollectedStatus(productsPackaging));
+      }
+    };
+
+    fetchIsCollectedStatus();
+  }, [productsPackaging]);
+
+  const initialIsCollectedStatus = (data) => {
+    const status = {};
+    Object.keys(data).forEach((supermarket) => {
+      Object.keys(data[supermarket]).forEach((address) => {
+        data[supermarket][address].forEach((item) => {
+          status[JSON.stringify(item.orderPackage.code + item.name.replace(/\s/g, "") + item.expiredDate + address.replace(/\s/g, "") + 'isCollected')] = false;
+        });
+      });
+    });
+    return status;
+  };
+
+  const handleCheckBoxClick = async (key) => {
+    const updatedStatus = { ...isCollectedStatus, [key]: !isCollectedStatus[key] };
+    await AsyncStorage.setItem('isCollectedProduct', JSON.stringify(updatedStatus));
+    setIsCollectedStatus(updatedStatus);
+  };
+
+  const Item = ({ item, index, address }) => {
+    const key = JSON.stringify(item.orderPackage.code + item.name.replace(/\s/g, "") + item.expiredDate + address.replace(/\s/g, "") + 'isCollected');
+
     return (
-      <TouchableOpacity
-        onPress={() => {
-          navigation.navigate('OrderDetail', {
-            id: item.orderPackage.id,
-            orderSuccess: false,
-          });
-        }}
-        key={index}
-        style={{
-          flexDirection: 'row',
-          gap: 10,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'white',
-          paddingVertical: 5,
-          borderRadius: 20,
-          shadowColor: '#000',
-          shadowOffset: {
-            width: 0,
-            height: 1,
-          },
-          shadowOpacity: 0.25,
-          shadowRadius: 20,
-          elevation: 6,
-          marginHorizontal: 5,
-          marginVertical: 12,
-        }}>
-        <View
+      <View style={{ flexDirection: 'row',gap:3 }}>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate('OrderDetail', {
+              id: item.orderPackage.id,
+              orderSuccess: false,
+            });
+          }}
+          key={index}
           style={{
-            flexDirection: 'column',
+            flex: 9,
+            flexDirection: 'row',
             gap: 10,
-            flex: 7,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'white',
+            paddingVertical: '3%',
+            borderRadius: 20,
+            shadowColor: '#000',
+            shadowOffset: {
+              width: 0,
+              height: 1,
+            },
+            shadowOpacity: 0.25,
+            shadowRadius: 20,
+            elevation: 6,
+            marginHorizontal: 5,
+            marginVertical: 12,
           }}>
           <View
             style={{
-              flexDirection: 'row',
-              gap: 10,
-              alignItems: 'center',
-              backgroundColor: 'white',
-              marginVertical: 10,
-              marginLeft: 3,
-              maxWidth: '95%',
+              flexDirection: 'column',
+              flex: 7,
             }}>
-            <Image
-              source={{
-                uri: item.imageUrlImageList[0],
-              }}
-              style={{width: 110, height: 110}}
-            />
+            <View
+              style={{
+                flexDirection: 'row',
+                gap: 10,
+                alignItems: 'center',
+                backgroundColor: 'white',
+                maxWidth: '95%',
+                marginHorizontal: '5%'
+              }}>
+              <Text
+                style={{
+                  fontSize: 18,
+                  color: 'black',
+                  fontFamily: 'Roboto',
+                  fontWeight: 'bold',
+                  flex: 8
+                }}>
+                {item.name}
+              </Text>
+              <Image
+                source={{
+                  uri: item.imageUrlImageList[0],
+                }}
+                style={{ width: 90, height: 90, flex: 3 }}
+              />
+            </View>
             <View
               style={{
                 flexDirection: 'column',
                 gap: 10,
                 flex: 7,
+                marginHorizontal: '5%'
               }}>
-              <Text
-                style={{
-                  fontSize: 20,
-                  color: 'black',
-                  fontFamily: 'Roboto',
-                  fontWeight: 'bold',
-                }}>
-                {item.name}
-              </Text>
-
               <Text
                 style={{
                   fontSize: 16,
@@ -334,13 +376,34 @@ const Product = ({navigation}) => {
                   color: 'black',
                   fontFamily: 'Roboto',
                 }}>
-                Mã đơn hàng: 
+                Mã đơn hàng:
                 {item.orderPackage.code}
               </Text>
             </View>
           </View>
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+        <RoundedCheckbox
+          key={key}
+          uncheckedColor="white"
+          checkedColor="grey"
+          outerStyle={{ alignSelf: 'center'}}
+          onPress={() => handleCheckBoxClick(key)}
+          isChecked={isCollectedStatus[key]}
+        >
+          {isCollectedStatus[key] && (<Image
+            resizeMode="contain"
+            style={{ width: '90%', height: '90%' }}
+            source={icons.checked}
+          />)}
+          {!isCollectedStatus[key] && (<Image
+            resizeMode="contain"
+            style={{ width: '90%', height: '90%', tintColor: 'black' }}
+            source={icons.unchecked}
+          />)}
+
+        </RoundedCheckbox>
+      </View>
+
     );
   };
 
@@ -355,7 +418,7 @@ const Product = ({navigation}) => {
         <View style={styles.header}>
           <View style={styles.areaAndLogout}>
             <View style={styles.area}>
-              <Text style={{fontSize: 16}}>Khu vực:</Text>
+              <Text style={{ fontSize: 16 }}>Khu vực:</Text>
               <View style={styles.pickArea}>
                 <TouchableOpacity
                   onPress={() => {
@@ -367,7 +430,7 @@ const Product = ({navigation}) => {
                   <View style={styles.pickAreaItem}>
                     <Image
                       resizeMode="contain"
-                      style={{width: 30, height: 20, tintColor: COLORS.primary}}
+                      style={{ width: 30, height: 20, tintColor: COLORS.primary }}
                       source={icons.location}
                     />
 
@@ -414,7 +477,7 @@ const Product = ({navigation}) => {
                 }}>
                 <Image
                   resizeMode="contain"
-                  style={{width: 38, height: 38}}
+                  style={{ width: 38, height: 38 }}
                   source={{
                     uri: currentUser?.avatarUrl,
                   }}
@@ -441,7 +504,7 @@ const Product = ({navigation}) => {
                       })
                       .catch(e => console.log(e));
                   }}>
-                  <Text style={{color: 'red', fontWeight: 'bold'}}>
+                  <Text style={{ color: 'red', fontWeight: 'bold' }}>
                     Đăng xuất
                   </Text>
                 </TouchableOpacity>
@@ -513,7 +576,7 @@ const Product = ({navigation}) => {
                 marginTop: 12,
               }}>
               <Image
-                style={{width: '100%', height: '50%'}}
+                style={{ width: '100%', height: '50%' }}
                 resizeMode="contain"
                 source={CartEmpty}
               />
@@ -533,7 +596,7 @@ const Product = ({navigation}) => {
               showsHorizontalScrollIndicator={false}
               data={Object.keys(productsPackaging)} // Replace 'yourData' with your actual data object
               keyExtractor={item => item.toString()}
-              renderItem={({item: supermarketName}) => (
+              renderItem={({ item: supermarketName }) => (
                 <>
                   <Text
                     style={{
@@ -571,7 +634,7 @@ const Product = ({navigation}) => {
                           }}>
                           <Image
                             resizeMode="contain"
-                            style={{width: 25, height: 25, marginTop: 10}}
+                            style={{ width: 25, height: 25, marginTop: 10 }}
                             source={icons.location}
                           />
                           <Text
@@ -587,13 +650,13 @@ const Product = ({navigation}) => {
                         </View>
                         {productsPackaging[supermarketName][address].map(
                           (item, idx) => (
-                            <Item key={idx} item={item} index={idx} />
+                            <Item key={idx} item={item} index={idx} address={address} />
                           ),
                         )}
                       </View>
                     ),
                   )}
-                  <View style={{borderBottomWidth: 0.2, borderColor: 'grey'}} />
+                  <View style={{ borderBottomWidth: 0.2, borderColor: 'grey' }} />
                 </>
               )}
               contentContainerStyle={{
@@ -669,38 +732,38 @@ const Product = ({navigation}) => {
                       style={
                         item === tempSupermarketFilterName
                           ? {
-                              borderColor: COLORS.primary,
-                              borderWidth: 1,
-                              borderRadius: 10,
-                              margin: 5,
-                              width: '45%',
-                            }
+                            borderColor: COLORS.primary,
+                            borderWidth: 1,
+                            borderRadius: 10,
+                            margin: 5,
+                            width: '45%',
+                          }
                           : {
-                              borderColor: '#c8c8c8',
-                              borderWidth: 0.2,
-                              borderRadius: 10,
-                              margin: 5,
-                              width: '45%',
-                            }
+                            borderColor: '#c8c8c8',
+                            borderWidth: 0.2,
+                            borderRadius: 10,
+                            margin: 5,
+                            width: '45%',
+                          }
                       }>
                       <Text
                         style={
                           item === tempSupermarketFilterName
                             ? {
-                                width: '100%',
-                                paddingVertical: 10,
-                                textAlign: 'center',
-                                color: COLORS.primary,
+                              width: '100%',
+                              paddingVertical: 10,
+                              textAlign: 'center',
+                              color: COLORS.primary,
 
-                                fontSize: 12,
-                              }
+                              fontSize: 12,
+                            }
                             : {
-                                width: '100%',
-                                paddingVertical: 10,
-                                textAlign: 'center',
-                                color: 'black',
-                                fontSize: 12,
-                              }
+                              width: '100%',
+                              paddingVertical: 10,
+                              textAlign: 'center',
+                              color: 'black',
+                              fontSize: 12,
+                            }
                         }>
                         {item}
                       </Text>
@@ -781,7 +844,8 @@ const styles = StyleSheet.create({
   },
   body: {
     flex: 8,
-    paddingHorizontal: 20,
+    paddingLeft: 15,
+    paddingRight:5,
     marginTop: 5,
   },
   areaAndLogout: {
