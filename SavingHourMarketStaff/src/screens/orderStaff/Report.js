@@ -19,7 +19,6 @@ import { API } from '../../constants/api';
 import { format } from 'date-fns';
 import LoadingScreen from '../../components/LoadingScreen';
 import { BarChart } from 'react-native-gifted-charts';
-import database from '@react-native-firebase/database';
 import { checkSystemState } from '../../common/utils';
 
 const Report = ({ navigation }) => {

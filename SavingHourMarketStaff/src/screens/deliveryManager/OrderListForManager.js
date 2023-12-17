@@ -6,14 +6,11 @@ import {
   Keyboard,
   StyleSheet,
   Image,
-  TextInput,
   ScrollView,
   Modal,
   Pressable,
-  Alert,
-  Dimensions,
 } from 'react-native';
-import React, {useEffect, useState, useCallback, useRef} from 'react';
+import React, {useState, useCallback, useRef} from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {COLORS} from '../../constants/theme';
@@ -27,8 +24,8 @@ import LoadingScreen from '../../components/LoadingScreen';
 import DatePicker from 'react-native-date-picker';
 import NumericInput from 'react-native-numeric-input';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import database from '@react-native-firebase/database';
 import {checkSystemState} from '../../common/utils';
+import messaging from '@react-native-firebase/messaging';
 
 const OrderListForManager = ({navigation}) => {
   // listen to system state
@@ -796,6 +793,9 @@ const OrderListForManager = ({navigation}) => {
                     backgroundColor: 'rgb(240,240,240)',
                   }}
                   onPress={() => {
+                    messaging()
+                    .unsubscribeFromTopic('MANAGER_NOTIFICATION')
+                    .then(() => console.log('Unsubscribed to topic!'));
                     auth()
                       .signOut()
                       .then(async () => {

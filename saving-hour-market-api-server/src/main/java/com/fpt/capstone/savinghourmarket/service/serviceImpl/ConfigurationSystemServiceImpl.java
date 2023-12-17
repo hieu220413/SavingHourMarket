@@ -69,6 +69,10 @@ public class ConfigurationSystemServiceImpl implements SystemConfigurationServic
             errorFields.put("timeAllowedForOrderCancellationError", "Value must not be lower than 0");
         }
 
+        if(configurationUpdateBody.getAllowableOrderDateThreshold() <= 0) {
+            errorFields.put("allowableOrderDateThresholdError", "Value must not be lower than or equal 0");
+        }
+
         if(errorFields.size() > 0){
             throw new InvalidInputException(HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase().toUpperCase().replace(" ", "_"), errorFields);
         }
@@ -83,7 +87,7 @@ public class ConfigurationSystemServiceImpl implements SystemConfigurationServic
         configuration.setMinKmDistanceForExtraShippingFee(configurationUpdateBody.getMinKmDistanceForExtraShippingFee());
         configuration.setExtraShippingFeePerKilometer(configurationUpdateBody.getExtraShippingFeePerKilometer());
         configuration.setTimeAllowedForOrderCancellation(configurationUpdateBody.getTimeAllowedForOrderCancellation());
-
+        configuration.setAllowableOrderDateThreshold(configurationUpdateBody.getAllowableOrderDateThreshold());
 //        JsonObjectBuilder configurationBuilder = Json.createObjectBuilder();
 //
 //        configurationBuilder.add("systemStatus", configurationUpdateBody.getSystemStatus());

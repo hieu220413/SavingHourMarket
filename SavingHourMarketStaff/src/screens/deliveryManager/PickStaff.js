@@ -2,15 +2,10 @@ import {
   View,
   Text,
   TouchableOpacity,
-  TouchableWithoutFeedback,
-  Keyboard,
   StyleSheet,
   Image,
-  TextInput,
   ScrollView,
   Pressable,
-  Alert,
-  Dimensions,
 } from 'react-native';
 import Modal, {
   ModalFooter,
@@ -18,21 +13,17 @@ import Modal, {
   ScaleAnimation,
   ModalContent,
 } from 'react-native-modals';
-import React, {useEffect, useState, useCallback} from 'react';
+import React, {useState, useCallback} from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {COLORS} from '../../constants/theme';
 import {icons} from '../../constants';
 import {useFocusEffect} from '@react-navigation/native';
 import {API} from '../../constants/api';
-import {format} from 'date-fns';
 import CartEmpty from '../../assets/image/search-empty.png';
-import {SwipeListView} from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
-import DatePicker from 'react-native-date-picker';
 import CheckBox from 'react-native-check-box';
 import Toast from 'react-native-toast-message';
-import database from '@react-native-firebase/database';
 import {checkSystemState} from '../../common/utils';
 
 const PickStaff = ({navigation, route}) => {
@@ -742,7 +733,7 @@ const PickStaff = ({navigation, route}) => {
                                   color: 'red',
                                   // width: '75%',
                                 }}>
-                                * {item.alertMessage} ({item.limitExceed})
+                                * {item.alertMessage} (vượt hơn giới hạn {item.limitExceed})
                               </Text>
                             ))
                           : null}

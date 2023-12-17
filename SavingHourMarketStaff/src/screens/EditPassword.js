@@ -3,29 +3,19 @@
 import {
   View,
   Text,
-  Image,
   TextInput,
-  Pressable,
   Platform,
-  Button,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Keyboard,
   Alert,
   TouchableOpacity,
 } from 'react-native';
-import {
-  GoogleSignin,
-  GoogleSigninButton,
-} from '@react-native-google-signin/google-signin';
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useCallback} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FlatButton from '../shared/button';
 import {useFocusEffect} from '@react-navigation/native';
-import auth from '@react-native-firebase/auth';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {API} from '../constants/api';
 import LoadingScreen from '../components/LoadingScreen';
 import database, {firebase} from '@react-native-firebase/database';
 import {ScrollView} from 'react-native-gesture-handler';

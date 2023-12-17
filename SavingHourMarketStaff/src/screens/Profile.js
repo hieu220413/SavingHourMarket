@@ -1,33 +1,20 @@
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable prettier/prettier */
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useCallback} from 'react';
 import {
   Text,
   View,
   SafeAreaView,
   Image,
-  Touchable,
-  Alert,
-  Switch,
 } from 'react-native';
 // import {Switch} from 'react-native-switch';
 // import Header from '../shared/Header';
-import {COLORS} from '../constants/theme';
-import {icons} from '../constants';
-import {ScrollView, TouchableOpacity} from 'react-native-gesture-handler';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import Feather from 'react-native-vector-icons/Feather';
 import auth from '@react-native-firebase/auth';
 import {useFocusEffect} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoadingScreen from '../components/LoadingScreen';
-import Modal, {
-  ModalFooter,
-  ModalButton,
-  SlideAnimation,
-  ScaleAnimation,
-} from 'react-native-modals';
 import database from '@react-native-firebase/database';
 import {checkSystemState} from '../common/utils';
 
@@ -126,6 +113,9 @@ const Profile = ({navigation}) => {
   );
 
   const logout = async () => {
+    messaging()
+    .unsubscribeFromTopic('MANAGER_NOTIFICATION')
+    .then(() => console.log('Unsubscribed to topic!'));
     auth()
       .signOut()
       .then(async () => {

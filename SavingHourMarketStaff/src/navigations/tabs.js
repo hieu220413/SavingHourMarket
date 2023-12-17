@@ -22,6 +22,12 @@ import Profile from '../screens/Profile';
 import HistoryList from '../screens/deliveryStaff/HistoryList';
 import auth from '@react-native-firebase/auth';
 import ModalAlertSignOut from '../components/ModalAlertSignOut';
+import messaging from '@react-native-firebase/messaging';
+import Toast from 'react-native-toast-message';
+import {
+  notificationListener,
+  requestUserPermission,
+} from '../common/utils';
 
 const Tab = createBottomTabNavigator();
 
@@ -87,6 +93,43 @@ const Tabs = ({ navigation }) => {
       }
     }
   };
+
+  useEffect(() => {
+    const notification = async () => {
+      let userInfo = await AsyncStorage.getItem('userInfo');
+      userInfo = userInfo ? JSON.parse(userInfo) : null;
+      if (userInfo && userInfo.role === 'STAFF_DLV_1') {
+        messaging()
+          .subscribeToTopic(userInfo ? 'MANAGER_NOTIFICATION' : '.')
+          .then(() => console.log('Subscribed to topic!'));
+      } else {
+        messaging()
+          .unsubscribeFromTopic('MANAGER_NOTIFICATION')
+          .then(() => console.log('Unsubscribed to topic!'));
+      }
+    };
+
+    notification();
+
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      // Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
+      console.log('remoteMessage', remoteMessage.notification.body);
+      Toast.show({
+        type: 'success',
+        text1: remoteMessage.notification.title,
+        text2: remoteMessage.notification.body,
+        visibilityTime: 2000,
+      });
+    });
+
+    return unsubscribe;
+  }, []);
+  useEffect(() => {
+    requestUserPermission();
+    notificationListener();
+    // const installationId = firebase.installations().getId();
+    // console.log(installationId);
+  }, []);
 
   useEffect(() => {
     const subscriber = auth().onAuthStateChanged(

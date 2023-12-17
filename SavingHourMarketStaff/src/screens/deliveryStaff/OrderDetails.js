@@ -10,7 +10,7 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
 import { icons } from '../../constants';
@@ -19,9 +19,7 @@ import { format } from 'date-fns';
 import { useFocusEffect } from '@react-navigation/native';
 import { API } from '../../constants/api';
 import LoadingScreen from '../../components/LoadingScreen';
-import database from '@react-native-firebase/database';
 import { checkSystemState } from '../../common/utils';
-import dayjs from 'dayjs';
 
 const OrderDetails = ({ navigation, route }) => {
   // listen to system state

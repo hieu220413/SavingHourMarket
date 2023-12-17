@@ -9,14 +9,11 @@ import {
   Keyboard,
   StyleSheet,
   Image,
-  TextInput,
   ScrollView,
   Modal,
   Pressable,
-  Alert,
   FlatList,
   Switch,
-  Dimensions,
 } from 'react-native';
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import auth from '@react-native-firebase/auth';
@@ -27,17 +24,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { API } from '../../constants/api';
 import { format } from 'date-fns';
 import CartEmpty from '../../assets/image/search-empty.png';
-import { SwipeListView } from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
-import { da } from 'date-fns/locale';
 import DatePicker from 'react-native-date-picker';
-import {
-  ModalButton,
-  ModalContent,
-  ModalFooter,
-  ScaleAnimation,
-} from 'react-native-modals';
-import database from '@react-native-firebase/database';
 import { checkSystemState } from '../../common/utils';
 import Toast from 'react-native-toast-message';
 

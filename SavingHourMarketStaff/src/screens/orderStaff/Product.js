@@ -10,12 +10,11 @@ import {
   FlatList,
   Modal,
   Pressable,
-  Dimensions,
 } from 'react-native';
 import React, {useEffect, useState, useCallback} from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {COLORS, FONTS} from '../../constants/theme';
+import {COLORS} from '../../constants/theme';
 import {icons} from '../../constants';
 import {useFocusEffect} from '@react-navigation/native';
 import {API} from '../../constants/api';
@@ -23,7 +22,6 @@ import {format} from 'date-fns';
 import LoadingScreen from '../../components/LoadingScreen';
 import CartEmpty from '../../assets/image/search-empty.png';
 import {useRef} from 'react';
-import database from '@react-native-firebase/database';
 import {checkSystemState} from '../../common/utils';
 
 const Product = ({navigation}) => {

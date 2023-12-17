@@ -23,14 +23,12 @@ import { useFocusEffect } from '@react-navigation/native';
 import { API } from '../../constants/api';
 import { format } from 'date-fns';
 import CartEmpty from '../../assets/image/search-empty.png';
-import { SwipeListView, SwipeRow } from 'react-native-swipe-list-view';
+import { SwipeListView } from 'react-native-swipe-list-view';
 import LoadingScreen from '../../components/LoadingScreen';
 import Toast from 'react-native-toast-message';
 import DatePicker from 'react-native-date-picker';
-import database from '@react-native-firebase/database';
 import { checkSystemState } from '../../common/utils';
 import ModalAlertSignOut from '../../components/ModalAlertSignOut';
-import { err } from 'react-native-svg/lib/typescript/xml';
 const Home = ({ navigation }) => {
   // listen to system state
   useFocusEffect(

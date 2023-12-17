@@ -7,10 +7,9 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
-  Dimensions,
   Pressable,
 } from 'react-native';
-import React, {useEffect, useState, useCallback} from 'react';
+import React, {useState, useCallback} from 'react';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {COLORS} from '../../constants/theme';
@@ -20,12 +19,9 @@ import {API} from '../../constants/api';
 import {format} from 'date-fns';
 import {
   ExpandableCalendar,
-  AgendaList,
   CalendarProvider,
-  WeekCalendar,
 } from 'react-native-calendars';
 import LoadingScreen from '../../components/LoadingScreen';
-import database from '@react-native-firebase/database';
 import {checkSystemState} from '../../common/utils';
 
 const DailyReportForManager = ({navigation}) => {
