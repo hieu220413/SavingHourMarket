@@ -453,6 +453,7 @@ public class OrderServiceImpl implements OrderService {
                 FirebaseService.sendPushNotification("SHM", "Đơn hàng " + order.getCode() + " đã hoàn thành giai đoạn đóng gói!", order.getCustomer().getId().toString());
             }
         }
+        FirebaseService.sendPushNotification("SHM", "Có nhóm đơn hàng mới đã đóng gói xong cần được giao!", "MANAGER_NOTIFICATION");
         return "Nhóm đơn hàng này đã được nhận đóng gói thành công!";
     }
 
@@ -467,6 +468,7 @@ public class OrderServiceImpl implements OrderService {
                 order.setPackager(staff);
                 order.setStatus(OrderStatus.PACKAGED.ordinal());
                 FirebaseService.sendPushNotification("SHM", "Đơn hàng " + order.getCode() + " đã hoàn thành giai đoạn đóng gói!", order.getCustomer().getId().toString());
+                FirebaseService.sendPushNotification("SHM", "Có đơn hàng mới đã đóng gói xong cần được giao!", "MANAGER_NOTIFICATION");
             } else {
                 return "Đơn hàng này chưa được nhận đóng gói (PACKAGING)!";
             }

@@ -1,4 +1,4 @@
-import React, {useCallback, useState, useEffect} from 'react';
+import React, {useCallback, useState} from 'react';
 import {
   View,
   TouchableOpacity,
@@ -6,7 +6,6 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  Dimensions,
 } from 'react-native';
 import {icons} from '../../constants';
 import {COLORS} from '../../constants/theme';
@@ -17,7 +16,6 @@ import CartEmpty from '../../assets/image/search-empty.png';
 import {format} from 'date-fns';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import database from '@react-native-firebase/database';
 import {checkSystemState} from '../../common/utils';
 
 const OrderListForReport = ({navigation, route}) => {

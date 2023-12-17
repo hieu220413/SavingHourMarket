@@ -5,7 +5,6 @@ import {
   Text,
   Dimensions,
   ActivityIndicator,
-  Alert,
   Linking,
   TouchableOpacity,
   Image,
@@ -15,7 +14,6 @@ import {React, useCallback} from 'react';
 import Pdf from 'react-native-pdf';
 import {icons} from '../../constants';
 import {COLORS} from '../../constants/theme';
-import database from '@react-native-firebase/database';
 import {checkSystemState} from '../../common/utils';
 import {useFocusEffect} from '@react-navigation/native';
 

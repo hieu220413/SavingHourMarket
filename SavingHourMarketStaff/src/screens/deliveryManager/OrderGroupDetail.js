@@ -1,30 +1,22 @@
-import React, {useState, useCallback, useEffect} from 'react';
+import React, {useState, useCallback} from 'react';
 import {
   View,
   Image,
   Text,
-  Modal,
   Pressable,
   StyleSheet,
   TouchableWithoutFeedback,
   Keyboard,
-  Dimensions,
 } from 'react-native';
 import {ScrollView, TouchableOpacity} from 'react-native-gesture-handler';
 import {icons} from '../../constants';
 import {COLORS} from '../../constants/theme';
-import QrCode from '../../assets/image/test-qrcode.png';
-import {API} from '../../constants/api';
 import {useFocusEffect} from '@react-navigation/native';
-import auth from '@react-native-firebase/auth';
 import {format} from 'date-fns';
-import Toast from 'react-native-toast-message';
 import LoadingScreen from '../../components/LoadingScreen';
-import {SwipeListView} from 'react-native-swipe-list-view';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import CartEmpty from '../../assets/image/search-empty.png';
-import database from '@react-native-firebase/database';
 import {checkSystemState} from '../../common/utils';
+
 
 const OrderGroupDetail = ({navigation, route}) => {
   // listen to system state

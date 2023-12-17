@@ -5,21 +5,14 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
-  TouchableWithoutFeedback,
-  Keyboard,
-  Dimensions,
 } from 'react-native';
-import React, {useCallback, useEffect, useState} from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import auth from '@react-native-firebase/auth';
+import React, {useCallback, useState} from 'react';
 import {Image} from 'react-native-animatable';
 import {icons} from '../../constants';
 import {COLORS, FONTS} from '../../constants/theme';
 import {useFocusEffect} from '@react-navigation/native';
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import {RNCamera} from 'react-native-camera';
-import database from '@react-native-firebase/database';
 import {checkSystemState} from '../../common/utils';
 
 const QrCodeScanner = ({navigation}) => {

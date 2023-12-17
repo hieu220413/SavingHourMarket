@@ -12,7 +12,7 @@ import {
   FlatList,
   Dimensions,
 } from 'react-native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
 import { Image } from 'react-native-animatable';
@@ -24,7 +24,6 @@ import Empty from '../../assets/image/search-empty.png';
 import LoadingScreen from '../../components/LoadingScreen';
 import { useFocusEffect } from '@react-navigation/native';
 import DatePicker from 'react-native-date-picker';
-import database from '@react-native-firebase/database';
 import { checkSystemState } from '../../common/utils';
 
 const HistoryList = ({ navigation }) => {

@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import React, { useEffect, useState } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import { NavigationContainer,useNavigation } from '@react-navigation/native';
+import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import Toast, { BaseToast } from 'react-native-toast-message';
 import { COLORS } from './src/constants/theme';
 import 'react-native-gesture-handler';
@@ -28,12 +28,16 @@ import OrderListForReport from './src/screens/deliveryManager/OrderListForReport
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EditPassword from './src/screens/EditPassword';
 
+
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
 ]);
 
 const Stack = createStackNavigator();
 export default function App() {
+
+  
+
   const toastConfig = {
     /*
     Overwrite 'success' type,
@@ -43,7 +47,7 @@ export default function App() {
       <BaseToast
         {...props}
         style={{ backgroundColor: COLORS.primary, borderLeftWidth: 0 }}
-        contentContainerStyle={{ paddingHorizontal: "5%"}}
+        contentContainerStyle={{ paddingHorizontal: "5%" }}
         text1Style={{
           fontSize: 16,
           fontWeight: '700',
@@ -60,7 +64,7 @@ export default function App() {
       <BaseToast
         {...props}
         style={{ backgroundColor: 'red', borderLeftWidth: 0 }}
-        contentContainerStyle={{ paddingHorizontal: "5%"}}
+        contentContainerStyle={{ paddingHorizontal: "5%" }}
         text1Style={{
           fontSize: 16,
           fontWeight: '700',
@@ -133,7 +137,7 @@ export default function App() {
       </NavigationContainer>
       <ModalPortal />
       <Toast config={toastConfig} />
-      
+
     </>
   );
 }
