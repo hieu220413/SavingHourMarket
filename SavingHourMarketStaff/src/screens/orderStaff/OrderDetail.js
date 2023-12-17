@@ -638,13 +638,6 @@ const OrderDetail = ({ navigation, route }) => {
                             }}>
                             {product.name}
                           </Text>
-                          {isCollectedStatus[JSON.stringify(item.code + product.name.replace(/\s/g, "") + 'isCollected')] && (
-                            <Image
-                              source={icons.checked}
-                              resizeMode="contain"
-                              style={{ width: 30, height: 30, flex: 1,marginTop:'5%'}}
-                            />
-                          )}
                         </View>
 
                         <Text
@@ -698,17 +691,34 @@ const OrderDetail = ({ navigation, route }) => {
                         </View>
                       </View>
                     </View>
-                    {product.orderDetailProductBatches.map((item, index) => (
+                    {product.orderDetailProductBatches.map((batch, index) => (
                       <>
                         <View key={index}>
+                          <View style= {{flexDirection: 'row', gap: 10, alignItems: 'center', marginBottom: 5}}>
+                            <Text
+                              style={{
+                                fontSize: 17,
+                                color: 'black',
+                                fontFamily: 'Roboto',
+                                fontWeight: 'bold',
+                              }}>
+                              {batch.supermarketName}
+                            </Text>
+                            {isCollectedStatus[JSON.stringify(item.code + product.name.replace(/\s/g, "") + batch.expiredDate + batch.supermarketAddress.replace(/\s/g, "") + 'isCollected')] && (
+                              <Image
+                                source={icons.checked}
+                                resizeMode="contain"
+                                style={{ width: 20, height: 20}}
+                              />
+                            )}
+                          </View>
                           <Text
                             style={{
-                              fontSize: 17,
+                              fontSize: 16,
                               color: 'black',
                               fontFamily: 'Roboto',
-                              fontWeight: 'bold',
                             }}>
-                            {item.supermarketName}
+                            Chi nhánh: {batch.supermarketAddress}
                           </Text>
                           <Text
                             style={{
@@ -716,15 +726,7 @@ const OrderDetail = ({ navigation, route }) => {
                               color: 'black',
                               fontFamily: 'Roboto',
                             }}>
-                            Chi nhánh: {item.supermarketAddress}
-                          </Text>
-                          <Text
-                            style={{
-                              fontSize: 16,
-                              color: 'black',
-                              fontFamily: 'Roboto',
-                            }}>
-                            Số lượng: {item.boughtQuantity} {product.unit}
+                            Số lượng: {batch.boughtQuantity} {product.unit}
                           </Text>
                         </View>
                       </>

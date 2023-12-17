@@ -260,7 +260,7 @@ const Product = ({ navigation }) => {
     Object.keys(data).forEach((supermarket) => {
       Object.keys(data[supermarket]).forEach((address) => {
         data[supermarket][address].forEach((item) => {
-          status[JSON.stringify(item.orderPackage.code + item.name.replace(/\s/g, "") + 'isCollected')] = false;
+          status[JSON.stringify(item.orderPackage.code + item.name.replace(/\s/g, "") + item.expiredDate + address.replace(/\s/g, "") + 'isCollected')] = false;
         });
       });
     });
@@ -273,11 +273,11 @@ const Product = ({ navigation }) => {
     setIsCollectedStatus(updatedStatus);
   };
 
-  const Item = ({ item, index }) => {
-    const key = JSON.stringify(item.orderPackage.code + item.name.replace(/\s/g, "") + 'isCollected');
+  const Item = ({ item, index, address }) => {
+    const key = JSON.stringify(item.orderPackage.code + item.name.replace(/\s/g, "") + item.expiredDate + address.replace(/\s/g, "") + 'isCollected');
 
     return (
-      <View style={{ flexDirection: 'row',gap:4 }}>
+      <View style={{ flexDirection: 'row',gap:3 }}>
         <TouchableOpacity
           onPress={() => {
             navigation.navigate('OrderDetail', {
@@ -386,18 +386,18 @@ const Product = ({ navigation }) => {
           key={key}
           uncheckedColor="white"
           checkedColor="grey"
-          outerStyle={{ flex: 1.2, alignSelf: 'center' }}
+          outerStyle={{ alignSelf: 'center'}}
           onPress={() => handleCheckBoxClick(key)}
           isChecked={isCollectedStatus[key]}
         >
           {isCollectedStatus[key] && (<Image
             resizeMode="contain"
-            style={{ width: '100%', height: '100%' }}
+            style={{ width: '90%', height: '90%' }}
             source={icons.checked}
           />)}
           {!isCollectedStatus[key] && (<Image
             resizeMode="contain"
-            style={{ width: '100%', height: '100%', tintColor: 'black' }}
+            style={{ width: '90%', height: '90%', tintColor: 'black' }}
             source={icons.unchecked}
           />)}
 
@@ -650,7 +650,7 @@ const Product = ({ navigation }) => {
                         </View>
                         {productsPackaging[supermarketName][address].map(
                           (item, idx) => (
-                            <Item key={idx} item={item} index={idx} />
+                            <Item key={idx} item={item} index={idx} address={address} />
                           ),
                         )}
                       </View>
