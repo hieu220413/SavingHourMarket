@@ -117,7 +117,7 @@ const FeedbackManagement = () => {
     const handleCloseEditDialog = () => setOpenEditDialog(false);
     return (
       <tr key={index} className="table-body-row">
-        <td>{index + 1}</td>
+        <td>{(page - 1) * 6 + index + 1}</td>
         <td>{item.customer.fullName}</td>
         <td>{item.message}</td>
         <td>
