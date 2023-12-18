@@ -297,7 +297,7 @@ function SuperMarketReport() {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="totalIncome" fill="#8884d8" />
+              <Bar dataKey="totalIncome" name="Tổng tiền thu trên những sản phẩm đã bán"  fill="#8884d8" />
             </BarChart>
           </ResponsiveContainer>
           <div className="donvi">
@@ -327,6 +327,7 @@ function SuperMarketReport() {
                   <Area
                     type="monotone"
                     dataKey="totalIncome"
+                    name="Tổng tiền thu trên những sản phẩm đã bán"
                     stroke="#82ca9d"
                     fill="#82ca9d"
                   />
@@ -428,6 +429,7 @@ function SuperMarketReport() {
 
                   <Radar
                     dataKey="totalOrderQuantity"
+                    name="Tổng số đơn hàng chứa loại sản phẩm này "
                     stroke="#8884d8"
                     fill="#8884d8"
                     fillOpacity={0.6}
