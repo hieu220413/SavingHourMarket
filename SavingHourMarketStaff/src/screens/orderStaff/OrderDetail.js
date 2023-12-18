@@ -734,37 +734,6 @@ const OrderDetail = ({ navigation, route }) => {
                   </View>
                 </View>
               ))}
-
-              <View
-                style={{
-                  paddingHorizontal: 20,
-                  paddingBottom: 20,
-                  marginTop: 20,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}>
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontFamily: 'Roboto',
-                    color: 'black',
-                  }}>
-                  Tổng cộng :
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 20,
-                    color: COLORS.primary,
-                    fontFamily: 'Roboto',
-                    fontWeight: 'bold',
-                  }}>
-                  {item.totalPrice.toLocaleString('vi-VN', {
-                    style: 'currency',
-                    currency: 'VND',
-                  })}
-                </Text>
-              </View>
             </View>
             {/* ********************* */}
 

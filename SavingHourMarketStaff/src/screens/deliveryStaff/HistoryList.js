@@ -1018,7 +1018,7 @@ const HistoryList = ({ navigation }) => {
                 fontWeight: 700,
                 fontFamily: FONTS.fontFamily,
               }}>
-              {item.totalPrice.toLocaleString('vi-VN', {
+              {(item.totalPrice - item.totalDiscountPrice + item.shippingFee).toLocaleString('vi-VN', {
                 currency: 'VND',
               })}
             </Text>
@@ -1759,7 +1759,7 @@ const HistoryList = ({ navigation }) => {
                                             fontWeight: 700,
                                             fontFamily: FONTS.fontFamily,
                                           }}>
-                                          {item.totalPrice.toLocaleString(
+                                          {(item.totalPrice - item.totalDiscountPrice + item.shippingFee).toLocaleString(
                                             'vi-VN',
                                             {
                                               currency: 'VND',

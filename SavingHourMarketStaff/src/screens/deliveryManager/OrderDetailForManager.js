@@ -6,6 +6,7 @@ import {
   Modal,
   Pressable,
   StyleSheet,
+  Dimensions,
 } from 'react-native';
 import {ScrollView, TouchableOpacity} from 'react-native-gesture-handler';
 import {icons} from '../../constants';
@@ -171,7 +172,7 @@ const OrderDetailForManager = ({navigation, route}) => {
           </Text>
         </View>
         {item && (
-          <ScrollView>
+          <ScrollView showsVerticalScrollIndicator={false} style={{height:Dimensions.get('screen').height*0.84}}>
             <View style={{padding: 20, backgroundColor: COLORS.primary}}>
               <Text
                 style={{color: 'white', fontSize: 18, fontFamily: 'Roboto'}}>
@@ -209,14 +210,14 @@ const OrderDetailForManager = ({navigation, route}) => {
                       {/* <Text style={{fontSize: 18, fontWeight: 'bold'}}>
                     Điểm giao hàng:
                   </Text> */}
-                      <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                      <Text style={{fontSize: 18, color:'black'}}>
                         {item?.addressDeliver
                           ? item?.addressDeliver
                           : item?.pickupPoint?.address}
                       </Text>
                     </View>
                     {item.timeFrame && (
-                      <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                      <Text style={{fontSize: 18, color:'black'}}>
                         {item?.timeFrame
                           ? `${item?.timeFrame?.fromHour.slice(
                               0,
@@ -225,7 +226,7 @@ const OrderDetailForManager = ({navigation, route}) => {
                           : ''}
                       </Text>
                     )}
-                    <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                    <Text style={{fontSize: 18, color:'black'}}>
                       Ngày giao hàng:{' '}
                       {format(new Date(item?.deliveryDate), 'dd/MM/yyyy')}
                     </Text>
@@ -256,10 +257,10 @@ const OrderDetailForManager = ({navigation, route}) => {
                   style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
                   <View style={{width: 20}} />
                   <View style={{gap: 5}}>
-                    <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                    <Text style={{fontSize: 18, color:'black'}}>
                       {item.receiverName}
                     </Text>
-                    <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                    <Text style={{fontSize: 18, color:'black'}}>
                       {item.receiverPhone}
                     </Text>
                   </View>
@@ -292,7 +293,7 @@ const OrderDetailForManager = ({navigation, route}) => {
                     source={{
                       uri: product.images[0].imageUrl,
                     }}
-                    style={{flex: 4, width: '100%', height: '95%'}}
+                    style={{flex: 4, width: '80%', height: '85%'}}
                   />
                   <View
                     style={{
@@ -302,7 +303,7 @@ const OrderDetailForManager = ({navigation, route}) => {
                     }}>
                     <Text
                       style={{
-                        fontSize: 23,
+                        fontSize: 20,
                         color: 'black',
                         fontFamily: 'Roboto',
                         fontWeight: 'bold',
@@ -311,7 +312,7 @@ const OrderDetailForManager = ({navigation, route}) => {
                     </Text>
                     <Text
                       style={{
-                        fontSize: 18,
+                        fontSize: 16,
                         color: COLORS.primary,
 
                         fontFamily: 'Roboto',
@@ -328,7 +329,7 @@ const OrderDetailForManager = ({navigation, route}) => {
                     </Text>
                     <Text
                       style={{
-                        fontSize: 18,
+                        fontSize: 16,
                         color: 'black',
                         fontFamily: 'Roboto',
                         fontWeight: 'bold',
@@ -349,7 +350,7 @@ const OrderDetailForManager = ({navigation, route}) => {
                       }}>
                       <Text
                         style={{
-                          fontSize: 20,
+                          fontSize: 16,
 
                           fontFamily: 'Roboto',
                         }}>
@@ -381,7 +382,7 @@ const OrderDetailForManager = ({navigation, route}) => {
                 }}>
                 <Text
                   style={{
-                    fontSize: 20,
+                    fontSize: 18,
                     fontFamily: 'Roboto',
                     color: 'black',
                   }}>
@@ -389,8 +390,8 @@ const OrderDetailForManager = ({navigation, route}) => {
                 </Text>
                 <Text
                   style={{
-                    fontSize: 20,
-                    color: 'red',
+                    fontSize: 18,
+                    color: COLORS.primary,
                     fontFamily: 'Roboto',
                     fontWeight: 'bold',
                   }}>
@@ -420,7 +421,7 @@ const OrderDetailForManager = ({navigation, route}) => {
                 }}>
                 <Text
                   style={{
-                    fontSize: 22,
+                    fontSize: 20,
                     fontFamily: 'Roboto',
                     color: 'black',
                     fontWeight: 'bold',
@@ -459,10 +460,10 @@ const OrderDetailForManager = ({navigation, route}) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
+                  style={{fontSize: 18, fontFamily: 'Roboto', color: 'black'}}>
                   Trạng thái
                 </Text>
-                <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
+                <Text style={{fontSize: 18, fontFamily: 'Roboto'}}>
                   {item.paymentStatus === 0
                     ? 'Chưa thanh toán'
                     : 'Đã thanh toán'}
@@ -479,10 +480,10 @@ const OrderDetailForManager = ({navigation, route}) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
+                  style={{fontSize: 18, fontFamily: 'Roboto', color: 'black'}}>
                   Phương thức
                 </Text>
-                <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
+                <Text style={{fontSize: 18, fontFamily: 'Roboto'}}>
                   {item.paymentMethod === 0 ? 'COD' : 'VN Pay'}
                 </Text>
               </View>
@@ -505,7 +506,7 @@ const OrderDetailForManager = ({navigation, route}) => {
                 }}>
                 <Text
                   style={{
-                    fontSize: 22,
+                    fontSize: 20,
                     fontFamily: 'Roboto',
                     color: 'black',
                     fontWeight: 'bold',
@@ -524,10 +525,10 @@ const OrderDetailForManager = ({navigation, route}) => {
                   borderTopWidth: 0.75,
                 }}>
                 <Text
-                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
+                  style={{fontSize: 18, fontFamily: 'Roboto', color: 'black'}}>
                   Tổng tiền sản phẩm:
                 </Text>
-                <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
+                <Text style={{fontSize: 18, fontFamily: 'Roboto'}}>
                   {item.totalPrice.toLocaleString('vi-VN', {
                     style: 'currency',
                     currency: 'VND',
@@ -544,10 +545,10 @@ const OrderDetailForManager = ({navigation, route}) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
+                  style={{fontSize: 18, fontFamily: 'Roboto', color: 'black'}}>
                   Phí giao hàng:
                 </Text>
-                <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
+                <Text style={{fontSize: 18, fontFamily: 'Roboto'}}>
                   {item.shippingFee.toLocaleString('vi-VN', {
                     style: 'currency',
                     currency: 'VND',
@@ -564,10 +565,10 @@ const OrderDetailForManager = ({navigation, route}) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
+                  style={{fontSize: 18, fontFamily: 'Roboto', color: 'black'}}>
                   Giá đã giảm:
                 </Text>
-                <Text style={{fontSize: 20, fontFamily: 'Roboto'}}>
+                <Text style={{fontSize: 18, fontFamily: 'Roboto'}}>
                   {item.totalDiscountPrice.toLocaleString('vi-VN', {
                     style: 'currency',
                     currency: 'VND',
@@ -583,17 +584,17 @@ const OrderDetailForManager = ({navigation, route}) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{fontSize: 20, fontFamily: 'Roboto', color: 'black'}}>
+                  style={{fontSize: 18, fontFamily: 'Roboto', color: 'black'}}>
                   Tổng cộng:
                 </Text>
                 <Text
                   style={{
-                    fontSize: 20,
+                    fontSize: 18,
                     fontFamily: 'Roboto',
-                    color: 'red',
+                    color: COLORS.primary,
                     fontWeight: 'bold',
                   }}>
-                  {(item.totalPrice - item.totalDiscountPrice).toLocaleString(
+                  {(item.totalPrice - item.totalDiscountPrice + item.shippingFee).toLocaleString(
                     'vi-VN',
                     {
                       style: 'currency',
@@ -708,94 +709,6 @@ const OrderDetailForManager = ({navigation, route}) => {
           </Pressable>
         </Modal>
       </View>
-      {/* {item?.status === 0 && (
-        <View
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            backgroundColor: 'white',
-            borderTopColor: 'transparent',
-            height: 70,
-            width: '100%',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-
-            marginTop: 20,
-            elevation: 10,
-          }}>
-          <View style={{width: '95%'}}>
-            <TouchableOpacity
-              onPress={() => {
-                setVisible(true);
-              }}
-              style={{
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: COLORS.primary,
-                paddingVertical: 10,
-                width: '100%',
-                borderRadius: 30,
-              }}>
-              <Text
-                style={{
-                  fontSize: 18,
-                  color: 'white',
-                  fontFamily: 'Roboto',
-                  fontWeight: 'bold',
-                }}>
-                Nhận đóng gói
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
-      {item?.status === 1 && (
-        <View
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            backgroundColor: 'white',
-            borderTopColor: 'transparent',
-            height: 70,
-            width: '100%',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-
-            marginTop: 20,
-            elevation: 10,
-          }}>
-          <View style={{width: '95%'}}>
-            <TouchableOpacity
-              onPress={() => {
-                setVisible(true);
-              }}
-              style={{
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: COLORS.primary,
-                paddingVertical: 10,
-                width: '100%',
-                borderRadius: 30,
-              }}>
-              <Text
-                style={{
-                  fontSize: 18,
-                  color: 'white',
-                  fontFamily: 'Roboto',
-                  fontWeight: 'bold',
-                }}>
-                Hoàn thành đóng gói
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )} */}
       {loading && <LoadingScreen />}
     </>
   );

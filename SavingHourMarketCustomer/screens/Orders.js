@@ -318,7 +318,7 @@ const Orders = ({navigation}) => {
       <View
         style={{
           paddingHorizontal: 15,
-          paddingTop:'1%',
+          paddingTop: '1%',
           backgroundColor: 'white',
           shadowColor: '#000',
           shadowOffset: {
@@ -535,7 +535,11 @@ const Orders = ({navigation}) => {
                           color: 'black',
                         }}>
                         Tổng tiền:{' '}
-                        {item?.totalPrice?.toLocaleString('vi-VN', {
+                        {(
+                          item.totalPrice -
+                          item.totalDiscountPrice +
+                          item.shippingFee
+                        ).toLocaleString('vi-VN', {
                           style: 'currency',
                           currency: 'VND',
                         })}
