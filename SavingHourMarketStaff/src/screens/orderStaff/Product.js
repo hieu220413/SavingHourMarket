@@ -277,7 +277,7 @@ const Product = ({ navigation }) => {
     const key = JSON.stringify(item.orderPackage.code + item.name.replace(/\s/g, "") + item.expiredDate + address.replace(/\s/g, "") + 'isCollected');
 
     return (
-      <View style={{ flexDirection: 'row',gap:3 }}>
+      <View style={{ flexDirection: 'row', gap: 3 }}>
         <TouchableOpacity
           onPress={() => {
             navigation.navigate('OrderDetail', {
@@ -316,7 +316,6 @@ const Product = ({ navigation }) => {
                 flexDirection: 'row',
                 gap: 10,
                 alignItems: 'center',
-                backgroundColor: 'white',
                 maxWidth: '95%',
                 marginHorizontal: '5%'
               }}>
@@ -386,7 +385,7 @@ const Product = ({ navigation }) => {
           key={key}
           uncheckedColor="white"
           checkedColor="grey"
-          outerStyle={{ alignSelf: 'center'}}
+          outerStyle={{ alignSelf: 'center' }}
           onPress={() => handleCheckBoxClick(key)}
           isChecked={isCollectedStatus[key]}
         >
@@ -518,7 +517,9 @@ const Product = ({ navigation }) => {
             }}>
             <Text
               style={{
-                flex: 5,
+                flexWrap: 'wrap', // This property makes items wrap inside the container
+                justifyContent: 'center', // Adjust as per your requirements
+                alignItems: 'flex-start',
                 fontSize: 16,
                 fontFamily: 'Roboto',
                 backgroundColor: 'white',
@@ -598,65 +599,68 @@ const Product = ({ navigation }) => {
               keyExtractor={item => item.toString()}
               renderItem={({ item: supermarketName }) => (
                 <>
-                  <Text
-                    style={{
-                      fontSize: 16,
-                      color: COLORS.primary,
-                      fontFamily: 'Roboto',
-                      backgroundColor: 'white',
-                      alignSelf: 'flex-start',
-                      marginTop: 15,
-                      paddingVertical: 5,
-                      paddingHorizontal: 15,
-                      borderRadius: 15,
-                      borderColor: COLORS.primary,
-                      borderWidth: 1.5,
-                      fontWeight: 700,
-                      shadowColor: '#000',
-                      shadowOffset: {
-                        width: 2,
-                        height: 1,
-                      },
-                      shadowOpacity: 0.25,
-                      shadowRadius: 4,
-                      elevation: 5,
-                    }}>
-                    Siêu thị: {supermarketName}
-                  </Text>
+                  <Pressable>
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        color: COLORS.primary,
+                        fontFamily: 'Roboto',
+                        backgroundColor: 'white',
+                        alignSelf: 'flex-start',
+                        marginTop: 15,
+                        paddingVertical: 5,
+                        paddingHorizontal: 15,
+                        borderRadius: 15,
+                        borderColor: COLORS.primary,
+                        borderWidth: 1.5,
+                        fontWeight: 700,
+                        shadowColor: '#000',
+                        shadowOffset: {
+                          width: 2,
+                          height: 1,
+                        },
+                        shadowOpacity: 0.25,
+                        shadowRadius: 4,
+                        elevation: 5,
+                      }}>
+                      Siêu thị: {supermarketName}
+                    </Text>
 
-                  {Object.keys(productsPackaging[supermarketName]).map(
-                    (address, index) => (
-                      <View key={index}>
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            marginTop: 13,
-                          }}>
-                          <Image
-                            resizeMode="contain"
-                            style={{ width: 25, height: 25, marginTop: 10 }}
-                            source={icons.location}
-                          />
-                          <Text
+                    {Object.keys(productsPackaging[supermarketName]).map(
+                      (address, index) => (
+                        <View key={index}>
+                          <View
                             style={{
-                              fontSize: 16,
-                              color: 'black',
-                              fontFamily: 'Roboto',
-                              marginLeft: 7,
-                              width: '90%',
+                              flexDirection: 'row',
+                              marginTop: 13,
                             }}>
-                            Chi nhánh: {address}
-                          </Text>
+                            <Image
+                              resizeMode="contain"
+                              style={{ width: 25, height: 25, marginTop: 10 }}
+                              source={icons.location}
+                            />
+                            <Text
+                              style={{
+                                fontSize: 16,
+                                color: 'black',
+                                fontFamily: 'Roboto',
+                                marginLeft: 7,
+                                width: '90%',
+                              }}>
+                              Chi nhánh: {address}
+                            </Text>
+                          </View>
+                          {productsPackaging[supermarketName][address].map(
+                            (item, idx) => (
+                              <Item key={idx} item={item} index={idx} address={address} />
+                            ),
+                          )}
                         </View>
-                        {productsPackaging[supermarketName][address].map(
-                          (item, idx) => (
-                            <Item key={idx} item={item} index={idx} address={address} />
-                          ),
-                        )}
-                      </View>
-                    ),
-                  )}
-                  <View style={{ borderBottomWidth: 0.2, borderColor: 'grey' }} />
+                      ),
+                    )}
+                    <View style={{ borderBottomWidth: 0.2, borderColor: 'grey' }} />
+                  </Pressable>
+
                 </>
               )}
               contentContainerStyle={{
@@ -845,7 +849,7 @@ const styles = StyleSheet.create({
   body: {
     flex: 8,
     paddingLeft: 15,
-    paddingRight:5,
+    paddingRight: 5,
     marginTop: 5,
   },
   areaAndLogout: {
