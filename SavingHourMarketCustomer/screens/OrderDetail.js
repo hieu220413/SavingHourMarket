@@ -569,13 +569,14 @@ const OrderDetail = ({navigation, route}) => {
                     color: COLORS.primary,
                     fontWeight: 'bold',
                   }}>
-                  {(item.totalPrice - item.totalDiscountPrice).toLocaleString(
-                    'vi-VN',
-                    {
-                      style: 'currency',
-                      currency: 'VND',
-                    },
-                  )}
+                  {(
+                    item.totalPrice -
+                    item.totalDiscountPrice +
+                    item.shippingFee
+                  ).toLocaleString('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND',
+                  })}
                 </Text>
               </View>
             </View>
