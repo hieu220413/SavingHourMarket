@@ -442,7 +442,7 @@ const OrderGroupDetail = ({navigation, route}) => {
                               color: 'black',
                             }}>
                             Tổng tiền:{' '}
-                            {item?.totalPrice?.toLocaleString('vi-VN', {
+                            {(item.totalPrice - item.totalDiscountPrice + item.shippingFee).toLocaleString('vi-VN', {
                               style: 'currency',
                               currency: 'VND',
                             })}

@@ -730,7 +730,7 @@ const OrderDetails = ({ navigation, route }) => {
                     color: COLORS.primary,
                     fontWeight: 'bold',
                   }}>
-                  {(item.totalPrice - item.totalDiscountPrice).toLocaleString(
+                  {(item.totalPrice - item.totalDiscountPrice + item.shippingFee).toLocaleString(
                     'vi-VN',
                     {
                       style: 'currency',

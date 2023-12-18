@@ -1088,7 +1088,7 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                               color: 'black',
                             }}>
                             Tổng tiền:{' '}
-                            {order?.totalPrice?.toLocaleString('vi-VN', {
+                            {(order.totalPrice - order.totalDiscountPrice + order.shippingFee).toLocaleString('vi-VN', {
                               style: 'currency',
                               currency: 'VND',
                             })}
@@ -1551,7 +1551,7 @@ const OrderGroupForOrderStaff = ({ navigation, route }) => {
                                               color: 'black',
                                             }}>
                                             Tổng tiền:{' '}
-                                            {order?.totalPrice?.toLocaleString(
+                                            {(order.totalPrice - order.totalDiscountPrice + order.shippingFee).toLocaleString(
                                               'vi-VN',
                                               {
                                                 style: 'currency',
