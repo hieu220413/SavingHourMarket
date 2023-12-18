@@ -313,7 +313,7 @@ const CustomerManagement = () => {
 
     return (
       <tr className="table-body-row">
-        <td>{index + 1}</td>
+        <td>{(page - 1) * 6 + index + 1}</td>
         <td>{customer.fullName}</td>
         <td>{customer.email}</td>
         <td>{customer.phone ? customer.phone : "Chưa có"}</td>

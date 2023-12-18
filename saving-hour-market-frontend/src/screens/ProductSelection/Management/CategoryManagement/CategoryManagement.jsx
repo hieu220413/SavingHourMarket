@@ -345,7 +345,7 @@ const CategoryManagement = () => {
     return (
       <>
         <tr className="table-body-row">
-          <td style={{ paddingTop: 30 }}>{index + 1}</td>
+          <td style={{ paddingTop: 30 }}>{(page - 1) * 5 + index + 1}</td>
           <td style={{ paddingTop: 30 }}>{item.name}</td>
           <td style={{ paddingTop: 30, paddingLeft: 30 }}>
             <i
