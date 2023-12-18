@@ -1216,6 +1216,7 @@ const HistoryList = ({ navigation }) => {
                     fontFamily: FONTS.fontFamily,
                     color: COLORS.primary,
                     fontWeight: 'bold',
+                    marginTop: '3%'
                   }}>
                   Lịch sử đơn đã giao
                 </Text>
@@ -1265,91 +1266,107 @@ const HistoryList = ({ navigation }) => {
               </View>
             </View>
 
-            <View style={{ flexDirection: 'row' }}>
-              {/*  */}
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {deliveryOptions.map((item, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() => {
-                      setCurrentOptions(item);
-                      fetchOrders(item.id);
-                    }}>
-                    <View
-                      style={[
-                        {
-                          paddingHorizontal: '1.5%',
-                          paddingVertical: '2%'
-                        },
-                        currentOptions.display === item.display && {
-                          borderBottomColor: COLORS.primary,
-                          borderBottomWidth: 2,
-                        },
-                      ]}>
-                      <Text
-                        style={{
-                          fontFamily: 'Roboto',
-                          fontSize: Dimensions.get('window').width * 0.045,
-                          color:
-                            currentOptions.display === item.display
-                              ? COLORS.primary
-                              : 'black',
-                          fontWeight:
-                            currentOptions.display === item.display
-                              ? 'bold'
-                              : 400,
-                        }}>
-                        {item.display}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-              {/* Filter */}
-              <TouchableOpacity
-                onPress={() => {
-                  setModalVisible(true);
+            <View
+              style={{
+                flexDirection: 'row'
+              }}>
+              <View style={{ flex: 6, paddingTop: '3%', }}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  {deliveryOptions.map((item, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() => {
+                        setCurrentOptions(item);
+                        fetchOrders(item.id);
+                      }}>
+                      <View
+                        style={[
+                          {
+                            paddingHorizontal: 15,
+                            paddingBottom: 10,
+                          },
+                          currentOptions.display === item.display && {
+                            borderBottomColor: COLORS.primary,
+                            borderBottomWidth: 2,
+                          },
+                        ]}>
+                        <Text
+                          style={{
+                            fontFamily: 'Roboto',
+                            fontSize: 16,
+                            color:
+                              currentOptions.display === item.display
+                                ? COLORS.primary
+                                : 'black',
+                            fontWeight:
+                              currentOptions.display === item.display
+                                ? 'bold'
+                                : 400,
+                          }}>
+                          {item.display}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+              <View
+                style={{
+                  justifyContent: 'center',
+                  alignItems: 'flex-end',
+                  flex: 1,
                 }}>
-                <Image
-                  resizeMode="contain"
-                  style={{
-                    tintColor: COLORS.primary,
-                    marginLeft: '1%',
-                    height: Dimensions.get('window').width * 0.08,
-                    width: Dimensions.get('window').width * 0.08,
-                    paddingHorizontal: '1%',
-                    paddingVertical: '2%'
-                  }}
-                  source={icons.filter}
-                />
-              </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    setModalVisible(true);
+                  }}>
+                  <Image
+                    resizeMode="contain"
+                    style={{
+                      height: 35,
+                      tintColor: COLORS.primary,
+                      width: 35,
+                      marginHorizontal: '1%',
+                    }}
+                    source={icons.filter}
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
           <View style={styles.body}>
-            <Text
-              style={{
-                fontFamily: FONTS.fontFamily,
-                color: 'grey',
-                fontWeight: 'bold',
-                fontSize: Dimensions.get('window').width * 0.048,
-                marginLeft: 10,
-                paddingBottom: 20,
-              }}>
-              Số lượng đã giao:{' '}
-              {currentOptions.id === 0 || currentOptions.id === 1
-                ? orderGroupList.length + ' nhóm đơn'
-                : orders.length + ' đơn'}
-            </Text>
-            <Text
-              style={{
-                fontFamily: FONTS.fontFamily,
-                color: 'black',
-                fontSize: Dimensions.get('window').width * 0.05,
-                marginLeft: 10,
-                paddingBottom: 20,
-              }}>
-              Danh sách các đơn hàng đã giao
-            </Text>
+            <View style={{
+              backgroundColor: '#fff',
+              shadowColor: '#000',
+              shadowOffset: {
+                width: 0,
+                height: 2,
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 4,
+              elevation: 5,
+              borderRadius: 20,
+              marginBottom: '3%',
+              alignSelf: 'center',
+              flexWrap: 'wrap',
+              paddingHorizontal: '5%',
+              paddingVertical: '2%'
+            }}>
+              <Text
+                style={{
+                  fontFamily: FONTS.fontFamily,
+                  color: 'grey',
+                  fontWeight: 'bold',
+                  fontSize: 18,
+                  marginLeft: 10,
+                }}>
+                Số lượng đã giao:{' '}
+                {currentOptions.id === 0 || currentOptions.id === 1
+                  ? orderGroupList.length + ' nhóm đơn'
+                  : orders.length + ' đơn'}
+              </Text>
+            </View>
+
             {currentOptions.id === 0 || currentOptions.id === 1 ? (
               <>
                 {/* Grouping & Batching Order  */}
@@ -1382,7 +1399,6 @@ const HistoryList = ({ navigation }) => {
                   <>
                     <View
                       style={{
-                        marginTop: 10,
                         marginBottom: 150,
                         paddingHorizontal: 15,
                       }}>
@@ -1408,18 +1424,36 @@ const HistoryList = ({ navigation }) => {
                             }}>
                             {/* Group detail */}
                             <View>
-                              <TouchableOpacity
-                                onPress={() => {
-                                  setOrderGroupList(
-                                    orderGroupList.map(group => {
-                                      if (group.id === data.item.id) {
-                                        group.isExpand = !group.isExpand;
-                                      }
-                                      return group;
-                                    }),
-                                  );
-                                }}>
-                                <View
+                              <View
+                                style={{
+                                  backgroundColor: COLORS.secondary,
+                                  marginBottom: 5,
+                                  alignItems: 'center',
+                                  borderRadius: 5,
+                                  flexDirection: 'row',
+                                  columnGap: 13,
+                                  shadowColor: '#000',
+                                  shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                  },
+                                  shadowOpacity: 0.25,
+                                  shadowRadius: 4,
+                                  elevation: 5,
+                                  zIndex: 20,
+                                }}
+                              >
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    setOrderGroupList(
+                                      orderGroupList.map(group => {
+                                        if (group.id === data.item.id) {
+                                          group.isExpand = !group.isExpand;
+                                        }
+                                        return group;
+                                      }),
+                                    );
+                                  }}
                                   style={{
                                     backgroundColor: COLORS.secondary,
                                     marginBottom: 5,
@@ -1530,8 +1564,8 @@ const HistoryList = ({ navigation }) => {
                                       </View>
                                     )}
                                   </View>
-                                </View>
-                              </TouchableOpacity>
+                                </TouchableOpacity>
+                              </View>
                               {/* order list in group */}
                               {data.item.isExpand &&
                                 data.item.orderList != null &&
@@ -1979,12 +2013,23 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   header: {
-    flex: 1.5,
     paddingHorizontal: 20,
+    backgroundColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
   },
   body: {
     flex: 9,
-    paddingTop: 20,
+    paddingTop: 10,
   },
   areaAndLogout: {
     paddingTop: 10,

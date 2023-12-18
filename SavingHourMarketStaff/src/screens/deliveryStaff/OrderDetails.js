@@ -264,7 +264,7 @@ const OrderDetails = ({ navigation, route }) => {
                   : { padding: 20, backgroundColor: COLORS.primary }
               }>
               <Text
-                style={{ color: 'white', fontSize: Dimensions.get('window').width * 0.048, fontFamily: 'Roboto' }}>
+                style={{ color: 'white', fontSize: 20, fontFamily: 'Roboto' }}>
                 {item?.status === 0 && 'Đơn hàng đang chờ xác nhận'}
                 {item?.status === 1 && 'Đơn hàng đang đóng gói'}
                 {item?.status === 2 && 'Đơn hàng đã đóng gói'}
@@ -293,7 +293,7 @@ const OrderDetails = ({ navigation, route }) => {
                     source={icons.location}
                   />
                   <Text
-                    style={{ fontSize: Dimensions.get('window').width * 0.055, color: 'black', fontWeight: 'bold' }}>
+                    style={{ fontSize: 20, color: 'black', fontWeight: 'bold' }}>
                     Thông tin giao hàng
                   </Text>
                 </View>
@@ -301,14 +301,17 @@ const OrderDetails = ({ navigation, route }) => {
                   style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                   <View style={{ width: 20 }} />
                   <View style={{ gap: 8 }}>
-                    <Text style={{ fontSize: Dimensions.get('window').width * 0.048, fontWeight: 'bold' }}>
+                    <Text style={{
+                      fontSize: 18,
+                      color: 'black',
+                    }}>
                       Mã đơn hàng : {item.code}
                     </Text>
                     <View style={{ gap: 3 }}>
                       <Text
                         style={{
-                          fontSize: Dimensions.get('window').width * 0.048,
-                          fontWeight: 'bold',
+                          fontSize: 18,
+                          color: 'black',
                           maxWidth: '95%',
                         }}>
                         {item?.addressDeliver
@@ -317,7 +320,10 @@ const OrderDetails = ({ navigation, route }) => {
                       </Text>
                     </View>
                     {item.timeFrame && (
-                      <Text style={{ fontSize: Dimensions.get('window').width * 0.048, fontWeight: 'bold' }}>
+                      <Text style={{
+                        fontSize: 18,
+                        color: 'black',
+                      }}>
                         {item?.timeFrame
                           ? `${item?.timeFrame?.fromHour.slice(
                             0,
@@ -326,7 +332,10 @@ const OrderDetails = ({ navigation, route }) => {
                           : ''}
                       </Text>
                     )}
-                    <Text style={{ fontSize: Dimensions.get('window').width * 0.048, fontWeight: 'bold' }}>
+                    <Text style={{
+                      fontSize: 18,
+                      color: 'black',
+                    }}>
                       Ngày giao hàng:{' '}
                       {format(new Date(item?.deliveryDate), 'dd/MM/yyyy')}
                     </Text>
@@ -395,7 +404,7 @@ const OrderDetails = ({ navigation, route }) => {
                     source={icons.phone}
                   />
                   <Text
-                    style={{ fontSize: Dimensions.get('window').width * 0.048, color: 'black', fontWeight: 'bold' }}>
+                    style={{ fontSize: 20, color: 'black', fontWeight: 'bold' }}>
                     Thông tin liên lạc
                   </Text>
                 </View>
@@ -403,10 +412,12 @@ const OrderDetails = ({ navigation, route }) => {
                   style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                   <View style={{ width: Dimensions.get('window').width * 0.05 }} />
                   <View style={{ gap: 5 }}>
-                    <Text style={{ fontSize: Dimensions.get('window').width * 0.048, fontWeight: 'bold' }}>
+                    <Text style={{ fontSize: 18,
+                          color:'black', }}>
                       {item.customer.fullName}
                     </Text>
-                    <Text style={{ fontSize: Dimensions.get('window').width * 0.048, fontWeight: 'bold' }}>
+                    <Text style={{ fontSize: 18,
+                          color:'black', }}>
                       {item.customer.phone}
                     </Text>
                   </View>
@@ -439,7 +450,7 @@ const OrderDetails = ({ navigation, route }) => {
                     source={{
                       uri: product.images[0].imageUrl,
                     }}
-                    style={{ flex: 4, width: '90%', height: '95%' }}
+                    style={{ flex: 4, width: '80%', height: '100%' }}
                   />
                   <View
                     style={{
@@ -449,7 +460,7 @@ const OrderDetails = ({ navigation, route }) => {
                     }}>
                     <Text
                       style={{
-                        fontSize: Dimensions.get('window').width * 0.05,
+                        fontSize: 18,
                         color: 'black',
                         fontFamily: 'Roboto',
                         fontWeight: 'bold',
@@ -458,14 +469,14 @@ const OrderDetails = ({ navigation, route }) => {
                     </Text>
                     <Text
                       style={{
-                        fontSize: Dimensions.get('window').width * 0.04,
+                        fontSize: 16,
                         color: COLORS.primary,
 
                         fontFamily: 'Roboto',
                         backgroundColor: 'white',
                         alignSelf: 'flex-start',
-                        paddingVertical: 5,
-                        paddingHorizontal: 15,
+                        paddingVertical: 3,
+                        paddingHorizontal: 16,
                         borderRadius: 15,
                         borderColor: COLORS.primary,
                         borderWidth: 1.5,
@@ -475,7 +486,7 @@ const OrderDetails = ({ navigation, route }) => {
                     </Text>
                     <Text
                       style={{
-                        fontSize: Dimensions.get('window').width * 0.045,
+                        fontSize: 16,
                         color: 'black',
                         fontFamily: 'Roboto',
                         fontWeight: 'bold',
@@ -496,7 +507,7 @@ const OrderDetails = ({ navigation, route }) => {
                       }}>
                       <Text
                         style={{
-                          fontSize: Dimensions.get('window').width * 0.045,
+                          fontSize: 16,
 
                           fontFamily: 'Roboto',
                         }}>
@@ -507,7 +518,7 @@ const OrderDetails = ({ navigation, route }) => {
                       </Text>
                       <Text
                         style={{
-                          fontSize: Dimensions.get('window').width * 0.04,
+                          fontSize:16,
                           fontFamily: 'Roboto',
                         }}>
                         x{product.boughtQuantity}
@@ -528,7 +539,7 @@ const OrderDetails = ({ navigation, route }) => {
                 }}>
                 <Text
                   style={{
-                    fontSize: Dimensions.get('window').width * 0.05,
+                    fontSize: 18,
                     fontFamily: 'Roboto',
                     color: 'black',
                   }}>
@@ -536,8 +547,8 @@ const OrderDetails = ({ navigation, route }) => {
                 </Text>
                 <Text
                   style={{
-                    fontSize: Dimensions.get('window').width * 0.05,
-                    color: 'red',
+                    fontSize: 18,
+                    color: COLORS.primary,
                     fontFamily: 'Roboto',
                     fontWeight: 'bold',
                   }}>
@@ -567,7 +578,7 @@ const OrderDetails = ({ navigation, route }) => {
                 }}>
                 <Text
                   style={{
-                    fontSize: Dimensions.get('window').width * 0.05,
+                    fontSize: 20,
                     fontFamily: 'Roboto',
                     color: 'black',
                     fontWeight: 'bold',
@@ -586,10 +597,10 @@ const OrderDetails = ({ navigation, route }) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{ fontSize: Dimensions.get('window').width * 0.05, fontFamily: 'Roboto', color: 'black' }}>
+                  style={{ fontSize: 18, fontFamily: 'Roboto', color: 'black' }}>
                   Trạng thái
                 </Text>
-                <Text style={{ fontSize: Dimensions.get('window').width * 0.05, fontFamily: 'Roboto' }}>
+                <Text style={{ fontSize:18, fontFamily: 'Roboto' }}>
                   {item.paymentStatus === 0
                     ? 'Chưa thanh toán'
                     : 'Đã thanh toán'}
@@ -605,10 +616,10 @@ const OrderDetails = ({ navigation, route }) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{ fontSize: Dimensions.get('window').width * 0.05, fontFamily: 'Roboto', color: 'black' }}>
+                  style={{ fontSize: 18, fontFamily: 'Roboto', color: 'black' }}>
                   Phương thức
                 </Text>
-                <Text style={{ fontSize: Dimensions.get('window').width * 0.05, fontFamily: 'Roboto' }}>
+                <Text style={{ fontSize: 18, fontFamily: 'Roboto' }}>
                   {item.paymentMethod === 0 ? 'COD' : 'VN Pay'}
                 </Text>
               </View>
@@ -631,7 +642,7 @@ const OrderDetails = ({ navigation, route }) => {
                 }}>
                 <Text
                   style={{
-                    fontSize: Dimensions.get('window').width * 0.052,
+                    fontSize: 20,
                     fontFamily: 'Roboto',
                     color: 'black',
                     fontWeight: 'bold',
@@ -650,10 +661,10 @@ const OrderDetails = ({ navigation, route }) => {
                   borderTopWidth: 0.75,
                 }}>
                 <Text
-                  style={{ fontSize: Dimensions.get('window').width * 0.048, fontFamily: 'Roboto', color: 'black' }}>
+                  style={{ fontSize: 18, fontFamily: 'Roboto', color: 'black' }}>
                   Tổng tiền sản phẩm:
                 </Text>
-                <Text style={{ fontSize: Dimensions.get('window').width * 0.048, fontFamily: 'Roboto' }}>
+                <Text style={{ fontSize: 18, fontFamily: 'Roboto' }}>
                   {item.totalPrice.toLocaleString('vi-VN', {
                     style: 'currency',
                     currency: 'VND',
@@ -670,10 +681,10 @@ const OrderDetails = ({ navigation, route }) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{ fontSize: Dimensions.get('window').width * 0.048, fontFamily: 'Roboto', color: 'black' }}>
+                  style={{ fontSize: 18, fontFamily: 'Roboto', color: 'black' }}>
                   Phí giao hàng:
                 </Text>
-                <Text style={{ fontSize: Dimensions.get('window').width * 0.048, fontFamily: 'Roboto' }}>
+                <Text style={{ fontSize: 18, fontFamily: 'Roboto' }}>
                   {item.shippingFee.toLocaleString('vi-VN', {
                     style: 'currency',
                     currency: 'VND',
@@ -690,10 +701,10 @@ const OrderDetails = ({ navigation, route }) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{ fontSize: Dimensions.get('window').width * 0.048, fontFamily: 'Roboto', color: 'black' }}>
+                  style={{ fontSize: 18, fontFamily: 'Roboto', color: 'black' }}>
                   Giá đã giảm:
                 </Text>
-                <Text style={{ fontSize: Dimensions.get('window').width * 0.048, fontFamily: 'Roboto' }}>
+                <Text style={{ fontSize: 18, fontFamily: 'Roboto' }}>
                   {item.totalDiscountPrice.toLocaleString('vi-VN', {
                     style: 'currency',
                     currency: 'VND',
@@ -709,14 +720,14 @@ const OrderDetails = ({ navigation, route }) => {
                   justifyContent: 'space-between',
                 }}>
                 <Text
-                  style={{ fontSize: Dimensions.get('window').width * 0.05, fontFamily: 'Roboto', color: 'black' }}>
+                  style={{ fontSize: 18, fontFamily: 'Roboto', color: 'black' }}>
                   Tổng cộng:
                 </Text>
                 <Text
                   style={{
-                    fontSize: Dimensions.get('window').width * 0.05,
+                    fontSize: 18,
                     fontFamily: 'Roboto',
-                    color: 'red',
+                    color: COLORS.primary,
                     fontWeight: 'bold',
                   }}>
                   {(item.totalPrice - item.totalDiscountPrice).toLocaleString(
