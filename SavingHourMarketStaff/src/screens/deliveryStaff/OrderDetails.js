@@ -331,7 +331,7 @@ const OrderDetails = ({ navigation, route }) => {
                       {format(new Date(item?.deliveryDate), 'dd/MM/yyyy')}
                     </Text>
                     {/* Edit date  */}
-                    {item?.status === 3 && format(new Date(item?.deliveryDate), 'dd/MM/yyyy') == format(currentDate, 'dd/MM/yyyy') && isScaned === true && (
+                    {item?.status === 3 && format(new Date(item?.deliveryDate), 'dd/MM/yyyy') == format(currentDate, 'dd/MM/yyyy') && (
                       <TouchableOpacity
                         onPress={() => {
                           navigation.navigate('EditDeliveryDate', {
@@ -439,7 +439,7 @@ const OrderDetails = ({ navigation, route }) => {
                     source={{
                       uri: product.images[0].imageUrl,
                     }}
-                    style={{ flex: 4, width: '100%', height: '95%' }}
+                    style={{ flex: 4, width: '90%', height: '95%' }}
                   />
                   <View
                     style={{
@@ -449,7 +449,7 @@ const OrderDetails = ({ navigation, route }) => {
                     }}>
                     <Text
                       style={{
-                        fontSize: Dimensions.get('window').width * 0.06,
+                        fontSize: Dimensions.get('window').width * 0.05,
                         color: 'black',
                         fontFamily: 'Roboto',
                         fontWeight: 'bold',
@@ -458,7 +458,7 @@ const OrderDetails = ({ navigation, route }) => {
                     </Text>
                     <Text
                       style={{
-                        fontSize: Dimensions.get('window').width * 0.048,
+                        fontSize: Dimensions.get('window').width * 0.04,
                         color: COLORS.primary,
 
                         fontFamily: 'Roboto',
@@ -475,7 +475,7 @@ const OrderDetails = ({ navigation, route }) => {
                     </Text>
                     <Text
                       style={{
-                        fontSize: Dimensions.get('window').width * 0.048,
+                        fontSize: Dimensions.get('window').width * 0.045,
                         color: 'black',
                         fontFamily: 'Roboto',
                         fontWeight: 'bold',
@@ -496,7 +496,7 @@ const OrderDetails = ({ navigation, route }) => {
                       }}>
                       <Text
                         style={{
-                          fontSize: Dimensions.get('window').width * 0.05,
+                          fontSize: Dimensions.get('window').width * 0.045,
 
                           fontFamily: 'Roboto',
                         }}>
@@ -507,7 +507,7 @@ const OrderDetails = ({ navigation, route }) => {
                       </Text>
                       <Text
                         style={{
-                          fontSize: Dimensions.get('window').width * 0.048,
+                          fontSize: Dimensions.get('window').width * 0.04,
                           fontFamily: 'Roboto',
                         }}>
                         x{product.boughtQuantity}

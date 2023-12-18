@@ -618,7 +618,6 @@ const HomeDeliver = ({ navigation }) => {
             return res.json();
           })
           .then(respond => {
-            console.log('1', respond);
             if (respond.error) {
               return;
             }
@@ -659,7 +658,6 @@ const HomeDeliver = ({ navigation }) => {
             return res.json();
           })
           .then(respond => {
-            console.log('3', respond);
             setOrders(respond);
             setLoading(false);
           })
