@@ -302,7 +302,7 @@ const StaffManagement = () => {
     };
     return (
       <tr key={staff.id} className="table-body-row">
-        <td>{index + 1}</td>
+        <td>{(page - 1) * 6 + index + 1}</td>
         <td>{staff.fullName}</td>
         <td>{staff.email}</td>
         <td>{staff.role}</td>

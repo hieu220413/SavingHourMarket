@@ -340,7 +340,7 @@ const OrderDetails = ({ navigation, route }) => {
                       {format(new Date(item?.deliveryDate), 'dd/MM/yyyy')}
                     </Text>
                     {/* Edit date  */}
-                    {item?.status === 3 && format(new Date(item?.deliveryDate), 'dd/MM/yyyy') == format(currentDate, 'dd/MM/yyyy') && (
+                    {item?.status === 3 && format(new Date(item?.deliveryDate), 'dd/MM/yyyy') == format(currentDate, 'dd/MM/yyyy') && !isScaned && (
                       <TouchableOpacity
                         onPress={() => {
                           navigation.navigate('EditDeliveryDate', {

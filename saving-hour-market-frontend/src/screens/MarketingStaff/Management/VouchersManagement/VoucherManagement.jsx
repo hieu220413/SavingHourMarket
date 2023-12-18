@@ -271,7 +271,7 @@ const VoucherManagement = () => {
     return (
       <>
         <tr className="table-body-row">
-          <td style={{ paddingTop: 30 }}>{index + 1}</td>
+          <td style={{ paddingTop: 30 }}>{(page - 1) * 5 + index + 1}</td>
           <td style={{ paddingTop: 30 }}>
             <img width="80px" height="60px" src={item.imageUrl} />
           </td>
@@ -332,7 +332,7 @@ const VoucherManagement = () => {
     return (
       <>
         <tr className="table-body-row">
-          <td style={{ paddingTop: 30 }}>{index + 1}</td>
+          <td style={{ paddingTop: 30 }}>{(page - 1) * 5 + index + 1}</td>
           <td style={{ paddingTop: 30 }}>
             <img width="80px" height="60px" src={item.imageUrl} />
           </td>

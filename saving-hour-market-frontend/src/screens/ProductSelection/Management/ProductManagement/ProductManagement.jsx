@@ -450,7 +450,7 @@ const ProductManagement = () => {
     return (
       <>
         <tr className="table-body-row">
-          <td style={{ paddingTop: 30 }}>{index + 1}</td>
+          <td style={{ paddingTop: 30 }}>{(page - 1) * 5 + index + 1}</td>
           <td>
             <div style={{ position: "relative" }}>
               <img
@@ -542,7 +542,7 @@ const ProductManagement = () => {
     return (
       <>
         <tr className="table-body-row">
-          <td style={{ paddingTop: 30 }}>{index + 1}</td>
+          <td style={{ paddingTop: 30 }}>{(page - 1) * 5 + index + 1}</td>
           <td>
             <div style={{ position: "relative" }}>
               <img

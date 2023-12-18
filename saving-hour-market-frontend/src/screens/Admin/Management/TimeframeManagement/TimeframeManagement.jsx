@@ -277,7 +277,7 @@ const TimeframeManagement = () => {
     };
     return (
       <tr className="table-body-row">
-        <td>{index + 1}</td>
+        <td>{(page - 1) * 6 + index + 1}</td>
         <td>{item.fromHour.slice(0, 5)}</td>
         <td>{item.toHour.slice(0, 5)}</td>
         <td>

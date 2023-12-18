@@ -208,7 +208,7 @@ const SupermarketItem = ({
 
   return (
     <tr key={i} className="table-body-row">
-      <td>{i + 1}</td>
+      <td>{(page - 1) * 6 + i + 1}</td>
       <td>{item.name}</td>
       <td>{item.phone}</td>
       <td>

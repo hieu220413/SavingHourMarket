@@ -316,7 +316,9 @@ const ConfirmProductUploadByExcel = ({
     return (
       <>
         <tr key={index} className="table-body-row">
-          <td style={{ paddingTop: 30 }}>{index + 1}</td>
+          <td style={{ paddingTop: 30 }}>
+            {(pageProduct - 1) * 4 + index + 1}
+          </td>
           <td>
             {item.imageUrls?.length !== 0 && item.imageUrls !== null ? (
               <div style={{ position: "relative" }}>
