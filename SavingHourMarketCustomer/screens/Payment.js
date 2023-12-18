@@ -1925,13 +1925,22 @@ const Payment = ({navigation, route}) => {
                 fontSize: 18,
                 fontFamily: 'Roboto',
               }}>
-              {(totalProductPrice - totalDiscountPrice).toLocaleString(
-                'vi-VN',
-                {
-                  style: 'currency',
-                  currency: 'VND',
-                },
-              )}
+              {customerLocationIsChecked
+                ? (
+                    totalProductPrice -
+                    totalDiscountPrice +
+                    shippingFee
+                  ).toLocaleString('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND',
+                  })
+                : (totalProductPrice - totalDiscountPrice).toLocaleString(
+                    'vi-VN',
+                    {
+                      style: 'currency',
+                      currency: 'VND',
+                    },
+                  )}
             </Text>
           </TouchableOpacity>
         </View>
