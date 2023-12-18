@@ -618,7 +618,6 @@ const HomeDeliver = ({ navigation }) => {
             return res.json();
           })
           .then(respond => {
-            console.log('1', respond);
             if (respond.error) {
               return;
             }
@@ -659,7 +658,6 @@ const HomeDeliver = ({ navigation }) => {
             return res.json();
           })
           .then(respond => {
-            console.log('3', respond);
             setOrders(respond);
             setLoading(false);
           })
@@ -956,7 +954,7 @@ const HomeDeliver = ({ navigation }) => {
                 fontWeight: 700,
                 fontFamily: FONTS.fontFamily,
               }}>
-              {item.totalPrice.toLocaleString('vi-VN', {
+              {(item.totalPrice - item.totalDiscountPrice + item.shippingFee).toLocaleString('vi-VN', {
                 currency: 'VND',
               })}
             </Text>
@@ -1101,6 +1099,7 @@ const HomeDeliver = ({ navigation }) => {
                     fontFamily: FONTS.fontFamily,
                     color: COLORS.primary,
                     fontWeight: 'bold',
+                    marginTop:'3%'
                   }}>
                   Xin Chào, {user?.fullName}
                 </Text>
@@ -1150,97 +1149,113 @@ const HomeDeliver = ({ navigation }) => {
               </View>
             </View>
 
-            <View style={{ flexDirection: 'row' }}>
-              {/*  */}
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {deliveryOptions.map((item, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() => {
-                      setCurrentOptions(item);
-                      fetchOrders(item.id);
-                    }}>
-                    <View
-                      style={[
-                        {
-                          paddingHorizontal: '1.5%',
-                          paddingVertical: '1%'
-                        },
-                        currentOptions.display === item.display && {
-                          borderBottomColor: COLORS.primary,
-                          borderBottomWidth: 2,
-                        },
-                      ]}>
-                      <Text
-                        style={{
-                          fontFamily: 'Roboto',
-                          fontSize: Dimensions.get('window').width * 0.045,
-                          color:
-                            currentOptions.display === item.display
-                              ? COLORS.primary
-                              : 'black',
-                          fontWeight:
-                            currentOptions.display === item.display
-                              ? 'bold'
-                              : 400,
-                        }}>
-                        {item.display}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-              {/* Filter */}
-              <TouchableOpacity
-                onPress={() => {
-                  setModalVisible(true);
+            <View
+              style={{
+                flexDirection: 'row'
+              }}>
+              <View style={{ flex: 6, paddingTop: '3%', }}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  {deliveryOptions.map((item, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() => {
+                        setCurrentOptions(item);
+                        fetchOrders(item.id);
+                      }}>
+                      <View
+                        style={[
+                          {
+                            paddingHorizontal: 15,
+                            paddingBottom: 10,
+                          },
+                          currentOptions.display === item.display && {
+                            borderBottomColor: COLORS.primary,
+                            borderBottomWidth: 2,
+                          },
+                        ]}>
+                        <Text
+                          style={{
+                            fontFamily: 'Roboto',
+                            fontSize: 16,
+                            color:
+                              currentOptions.display === item.display
+                                ? COLORS.primary
+                                : 'black',
+                            fontWeight:
+                              currentOptions.display === item.display
+                                ? 'bold'
+                                : 400,
+                          }}>
+                          {item.display}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+              <View
+                style={{
+                  justifyContent: 'center',
+                  alignItems: 'flex-end',
+                  flex: 1,
                 }}>
-                <Image
-                  resizeMode="contain"
-                  style={{
-                    tintColor: COLORS.primary,
-                    marginLeft: '1%',
-                    height: Dimensions.get('window').width * 0.08,
-                    width: Dimensions.get('window').width * 0.08,
-                    paddingHorizontal: '1%',
-                    paddingVertical: '2%'
-                  }}
-                  source={icons.filter}
-                />
-              </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    setModalVisible(true);
+                  }}>
+                  <Image
+                    resizeMode="contain"
+                    style={{
+                      height: 35,
+                      tintColor: COLORS.primary,
+                      width: 35,
+                      marginHorizontal: '1%',
+                    }}
+                    source={icons.filter}
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
           <View style={styles.body}>
-            <Text
-              style={{
-                fontFamily: FONTS.fontFamily,
-                color: 'grey',
-                fontWeight: 'bold',
-                fontSize: Dimensions.get('window').width * 0.048,
-                marginLeft: 10,
-                paddingBottom: 20,
-              }}>
-              Số lượng cần giao:{' '}
-              {currentOptions.id === 0 || currentOptions.id === 1
-                ? orderGroupList.length + ' nhóm đơn'
-                : orders.length + ' đơn'}
-            </Text>
-            <Text
-              style={{
-                fontFamily: FONTS.fontFamily,
-                color: 'black',
-                fontSize: Dimensions.get('window').width * 0.05,
-                marginLeft: 10,
-                paddingBottom: 20,
-              }}>
-              Danh sách các đơn hàng
-            </Text>
+          <View style={{
+              backgroundColor:'#fff',
+              shadowColor: '#000',
+              shadowOffset: {
+                width: 0,
+                height: 2,
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 4,
+              elevation: 5,
+              borderRadius:20,
+              marginBottom:'3%',
+              alignSelf:'center',
+              flexWrap:'wrap',
+              paddingHorizontal:'5%',
+              paddingVertical:'2%'
+            }}>
+              <Text
+                style={{
+                  fontFamily: FONTS.fontFamily,
+                  color: 'grey',
+                  fontWeight: 'bold',
+                  fontSize: 18,
+                  marginLeft: 10,
+                }}>
+                Số lượng cần giao:{' '}
+                {currentOptions.id === 0 || currentOptions.id === 1
+                  ? orderGroupList.length + ' nhóm đơn'
+                  : orders.length + ' đơn'}
+              </Text>
+            </View>
+
             {currentOptions.id === 0 || currentOptions.id === 1 ? (
               <>
                 {/* Grouping & Batching Order  */}
                 {orderGroupList.length === 0 ? (
                   <View
-                    style={{ alignItems: 'center', justifyContent: 'center' }}>
+                    style={{ alignItems: 'center', justifyContent: 'center', }}>
                     <Image
                       style={{ width: '100%', height: '50%' }}
                       resizeMode="contain"
@@ -1267,7 +1282,6 @@ const HomeDeliver = ({ navigation }) => {
                   <>
                     <View
                       style={{
-                        marginTop: 10,
                         marginBottom: 150,
                         paddingHorizontal: 15,
                       }}>
@@ -1292,18 +1306,35 @@ const HomeDeliver = ({ navigation }) => {
                             }}>
                             {/* Group detail */}
                             <View>
-                              <TouchableOpacity
-                                onPress={() => {
-                                  setOrderGroupList(
-                                    orderGroupList.map(group => {
-                                      if (group.id === data.item.id) {
-                                        group.isExpand = !group.isExpand;
-                                      }
-                                      return group;
-                                    }),
-                                  );
+                              <View
+                                style={{
+                                  backgroundColor: COLORS.secondary,
+                                  marginBottom: 5,
+                                  alignItems: 'center',
+                                  borderRadius: 5,
+                                  flexDirection: 'row',
+                                  columnGap: 13,
+                                  shadowColor: '#000',
+                                  shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                  },
+                                  shadowOpacity: 0.25,
+                                  shadowRadius: 4,
+                                  elevation: 5,
+                                  zIndex: 20,
                                 }}>
-                                <View
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    setOrderGroupList(
+                                      orderGroupList.map(group => {
+                                        if (group.id === data.item.id) {
+                                          group.isExpand = !group.isExpand;
+                                        }
+                                        return group;
+                                      }),
+                                    );
+                                  }}
                                   style={{
                                     backgroundColor: COLORS.secondary,
                                     marginBottom: 5,
@@ -1311,6 +1342,7 @@ const HomeDeliver = ({ navigation }) => {
                                     borderRadius: 5,
                                     padding: 10,
                                     flexDirection: 'row',
+
                                   }}>
                                   <Image
                                     resizeMode="contain"
@@ -1414,8 +1446,8 @@ const HomeDeliver = ({ navigation }) => {
                                       </View>
                                     )}
                                   </View>
-                                </View>
-                              </TouchableOpacity>
+                                </TouchableOpacity>
+                              </View>
                               {/* order list in group */}
                               {data.item.isExpand &&
                                 data.item.orderList != null &&
@@ -1595,7 +1627,7 @@ const HomeDeliver = ({ navigation }) => {
                                             fontWeight: 700,
                                             fontFamily: FONTS.fontFamily,
                                           }}>
-                                          {item.totalPrice.toLocaleString(
+                                          {(item.totalPrice - item.totalDiscountPrice + item.shippingFee).toLocaleString(
                                             'vi-VN',
                                             {
                                               currency: 'VND',
@@ -1802,8 +1834,9 @@ const HomeDeliver = ({ navigation }) => {
             </TouchableOpacity>
           </Modal>
         </View>
-      </TouchableWithoutFeedback>
-      {loading && <LoadingScreen />}
+      </TouchableWithoutFeedback >
+      {loading && <LoadingScreen />
+      }
     </>
   );
 };
@@ -1816,12 +1849,23 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   header: {
-    flex: 1.5,
     paddingHorizontal: 20,
+    backgroundColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
   },
   body: {
     flex: 9,
-    paddingTop: '1%',
+    paddingTop: '2%'
   },
   areaAndLogout: {
     paddingTop: 10,

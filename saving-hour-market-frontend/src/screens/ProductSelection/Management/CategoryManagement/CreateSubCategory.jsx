@@ -127,7 +127,7 @@ const CreateSubCategory = ({
             API.baseURL
           }/api/product/getSubCategoryForStaff?productCategoryId=${categoryId}&page=${
             page - 1
-          }&limit=5`,
+          }&limit=4`,
           {
             method: "GET",
             headers: {

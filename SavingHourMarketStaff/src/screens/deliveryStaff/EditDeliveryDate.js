@@ -378,7 +378,7 @@ const EditDeliveryDate = ({ navigation, route }) => {
             if (date.getTime() > maxDate.getTime()) {
               setOpen(false);
               setValidateMessage(
-                `Đơn hàng phải giao trước HSD của sản phẩm có HSD gần nhất 1 ngày (HSD ${dayjs(maxDate).format('DD/MM/YYYY')}) `,
+                `Đơn hàng có sản phẩm quá hạn HSD (Nên giao trước ${dayjs(maxDate).format('DD/MM/YYYY')}) `,
               );
               setOpenValidateDialog(true);
               return;
@@ -502,7 +502,7 @@ const EditDeliveryDate = ({ navigation, route }) => {
           style={{ padding: 20, alignItems: 'center', justifyContent: 'center' }}>
           <Text
             style={{
-              fontSize: Dimensions.get('window').width * 0.06,
+              fontSize: Dimensions.get('window').width * 0.045,
               fontFamily: 'Roboto',
               color: 'black',
               textAlign: 'center',
@@ -600,7 +600,7 @@ const EditDeliveryDate = ({ navigation, route }) => {
                   style={{
                     color: 'black',
                     fontFamily: FONTS.fontFamily,
-                    fontSize: 18,
+                    fontSize: Dimensions.get('window').width * 0.045,
                     maxWidth: '90%'
                   }}>
                   {textEditDate}

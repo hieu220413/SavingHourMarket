@@ -5,6 +5,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Dimensions,
 } from 'react-native';
 import React, {useCallback, useState} from 'react';
 import {Image} from 'react-native-animatable';
@@ -75,18 +76,17 @@ const QrCodeScanner = ({navigation}) => {
       <View
         style={{
           flexDirection: 'row',
-          alignItems: 'center',
-          gap: 100,
+          justifyContent:'center',
           marginVertical: 15,
           marginHorizontal: 15,
         }}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        {/* <TouchableOpacity onPress={() => navigation.goBack()}>
           <Image
             source={icons.leftArrow}
             resizeMode="contain"
             style={{width: 35, height: 35, tintColor: COLORS.primary}}
           />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <Text
           style={{
             textAlign: 'center',
@@ -98,10 +98,7 @@ const QrCodeScanner = ({navigation}) => {
         </Text>
       </View>
       {/* QR Scanner */}
-      <View
-        style={{
-          backgroundColor: 'blue',
-        }}>
+
         <QRCodeScanner
           onRead={({data}) => {
             navigation.navigate('OrderDetails', {
@@ -114,13 +111,14 @@ const QrCodeScanner = ({navigation}) => {
           showMarker={true}
           reactivateTimeout={500}
           topContent={<Text style={styles.centerText}>{data}</Text>}
+          cameraStyle={{height:Dimensions.get('window').height*0.7}}
           bottomContent={
             <TouchableOpacity style={styles.buttonTouchable}>
               <Text style={styles.buttonText}>OK. Got it!</Text>
             </TouchableOpacity>
           }
         />
-      </View>
+
     </View>
   );
 };
