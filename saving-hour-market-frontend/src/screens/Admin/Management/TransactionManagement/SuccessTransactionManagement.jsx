@@ -78,7 +78,7 @@ const SuccessTransactionManagement = () => {
     const handleCloseTransactionDetail = () => setOpenTransactionDetail(false);
     return (
       <tr className="table-body-row">
-        <td>{index + 1}</td>
+        <td>{(page - 1) * 6 + index + 1}</td>
         <td>{item.order.receiverName}</td>
         <td>
           {format(new Date(item?.paymentTime.slice(0, 10)), "dd-MM-yyyy")}{" "}

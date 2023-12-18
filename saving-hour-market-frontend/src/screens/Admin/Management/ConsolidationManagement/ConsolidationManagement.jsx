@@ -273,7 +273,7 @@ const ConsolidationManagement = () => {
     };
     return (
       <tr className="table-body-row">
-        <td>{index + 1}</td>
+        <td>{(page - 1) * 6 + index + 1}</td>
         <td>{item.address}</td>
         <td>
           {" "}
