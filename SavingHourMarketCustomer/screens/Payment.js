@@ -175,11 +175,11 @@ const Payment = ({navigation, route}) => {
   //VNPAY function/param
   const orderIdDummy = useRef('ec5dcac6-56dc-11ee-8a50-a85e45c41921');
   const totalPriceDummy = useRef(111111);
-  const processVNPay = async (totalPrice, orderId, idToken, isAddToCart) => {
+  const processVNPay = async (totalOrderPrice, orderId, idToken, isAddToCart) => {
     console.log('is in process');
     // lay payment url
     const getPaymentResponse = await fetch(
-      `${API.baseURL}/api/transaction/getPaymentUrl?paidAmount=${totalPrice}&orderId=${orderId}`,
+      `${API.baseURL}/api/transaction/getPaymentUrl?paidAmount=${totalOrderPrice}&orderId=${orderId}`,
       {
         method: 'GET',
         withCredentials: true,
@@ -777,11 +777,13 @@ const Payment = ({navigation, route}) => {
         if (paymentMethod.id === 1) {
           const createdOrderBody = respond;
           const createdOrderId = createdOrderBody.id;
-          const createdOrderTotalPrice = createdOrderBody.totalPrice;
+          const createdOrderTotalProductPrice = createdOrderBody.totalPrice;
+          const createdOrderTotalDiscountPrice = createdOrderBody.totalDiscountPrice ? createdOrderBody.totalDiscountPrice : 0;
+          const createdOrderShippingfee = createdOrderBody.shippingFee ? createdOrderBody.shippingFee : 0;
           const idToken = await auth().currentUser.getIdToken();
           console.log('processing vnpay');
           await processVNPay(
-            createdOrderTotalPrice,
+            createdOrderTotalProductPrice - createdOrderTotalDiscountPrice + createdOrderShippingfee,
             createdOrderId,
             idToken,
             isAddToCart,
