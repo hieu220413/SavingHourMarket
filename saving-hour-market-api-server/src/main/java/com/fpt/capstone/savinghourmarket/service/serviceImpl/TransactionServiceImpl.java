@@ -145,7 +145,7 @@ public class TransactionServiceImpl implements TransactionService {
                 Transaction transaction = new Transaction();
                 transaction.setTransactionNo(transactionNo);
                 transaction.setPaymentTime(transactionLocalDateTime);
-                transaction.setAmountOfMoney(Integer.valueOf(price));
+                transaction.setAmountOfMoney(Integer.valueOf(price.substring(0, price.length()-2)));
                 transaction.setPaymentMethod(PaymentMethod.VNPAY.ordinal());
 
                 //should perform lock from this part
