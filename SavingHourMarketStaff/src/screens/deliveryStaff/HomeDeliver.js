@@ -555,6 +555,7 @@ const HomeDeliver = ({ navigation }) => {
     if (tokenId) {
       setLoading(true);
       if (id === 0) {
+        console.log('fetch 0');
         fetch(
           `${API.baseURL}/api/order/staff/getOrderGroup?delivererId=${userFromAS?.id
           }${selectedDate === null ? '' : `&deliverDate=${deliverDate}`
@@ -628,44 +629,45 @@ const HomeDeliver = ({ navigation }) => {
             console.log(err);
             setLoading(false);
           });
-      } else if (id === 2) {
-        fetch(
-          `${API.baseURL
-          }/api/order/staff/getOrders?isGrouped=false&isBatched=false&delivererId=${userFromAS?.id
-          }&orderStatus=DELIVERING${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`
-          }${selectedTimeFrameId ? `&timeFrameId=${selectedTimeFrameId}` : ''}`,
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${tokenId}`,
-            },
-          },
-        )
-          .then(async res => {
-            if (res.status === 403 || res.status === 401) {
-              const tokenIdCheck = await auth()
-                .currentUser.getIdToken(true)
-                .catch(async err => {
-                  await AsyncStorage.setItem('isDisableAccount', '1');
-                  return null;
-                });
-              if (!tokenIdCheck) {
-                throw new Error();
-              }
-              // Cac loi 403 khac thi handle duoi day neu co
-            }
-            return res.json();
-          })
-          .then(respond => {
-            setOrders(respond);
-            setLoading(false);
-          })
-          .catch(err => {
-            console.log(err);
-            setLoading(false);
-          });
       }
+      console.log('fetch 2');
+      fetch(
+        `${API.baseURL
+        }/api/order/staff/getOrders?isGrouped=false&isBatched=false&delivererId=${userFromAS?.id
+        }&orderStatus=DELIVERING${selectedDate === null ? '' : `&deliveryDate=${deliverDate}`
+        }${selectedTimeFrameId ? `&timeFrameId=${selectedTimeFrameId}` : ''}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${tokenId}`,
+          },
+        },
+      )
+        .then(async res => {
+          if (res.status === 403 || res.status === 401) {
+            const tokenIdCheck = await auth()
+              .currentUser.getIdToken(true)
+              .catch(async err => {
+                await AsyncStorage.setItem('isDisableAccount', '1');
+                return null;
+              });
+            if (!tokenIdCheck) {
+              throw new Error();
+            }
+            // Cac loi 403 khac thi handle duoi day neu co
+          }
+          return res.json();
+        })
+        .then(respond => {
+          setOrders(respond);
+          setLoading(false);
+        })
+        .catch(err => {
+          console.log(err);
+          setLoading(false);
+        });
+
     }
   };
 
@@ -904,6 +906,17 @@ const HomeDeliver = ({ navigation }) => {
           {item?.addressDeliver ? item?.addressDeliver : 'Pickup point Quận 9'}
         </Text>
 
+        <Text
+          style={{
+            fontSize: Dimensions.get('window').width * 0.045,
+            fontFamily: FONTS.fontFamily,
+            color: 'black',
+            paddingBottom: 5,
+          }}>
+          Điểm tập kết:{' '}
+          {item?.productConsolidationArea?.address}
+        </Text>
+
         <View
           style={{
             flexDirection: 'row',
@@ -1099,7 +1112,7 @@ const HomeDeliver = ({ navigation }) => {
                     fontFamily: FONTS.fontFamily,
                     color: COLORS.primary,
                     fontWeight: 'bold',
-                    marginTop:'3%'
+                    marginTop: '3%'
                   }}>
                   Xin Chào, {user?.fullName}
                 </Text>
@@ -1218,8 +1231,8 @@ const HomeDeliver = ({ navigation }) => {
             </View>
           </View>
           <View style={styles.body}>
-          <View style={{
-              backgroundColor:'#fff',
+            <View style={{
+              backgroundColor: '#fff',
               shadowColor: '#000',
               shadowOffset: {
                 width: 0,
@@ -1228,12 +1241,12 @@ const HomeDeliver = ({ navigation }) => {
               shadowOpacity: 0.25,
               shadowRadius: 4,
               elevation: 5,
-              borderRadius:20,
-              marginBottom:'3%',
-              alignSelf:'center',
-              flexWrap:'wrap',
-              paddingHorizontal:'5%',
-              paddingVertical:'2%'
+              borderRadius: 20,
+              marginBottom: '3%',
+              alignSelf: 'center',
+              flexWrap: 'wrap',
+              paddingHorizontal: '5%',
+              paddingVertical: '2%'
             }}>
               <Text
                 style={{
