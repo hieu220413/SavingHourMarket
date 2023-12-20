@@ -214,11 +214,34 @@ const ConfirmProductUploadByExcel = ({
           return;
         }
         if (!isEmptyObject(res.errorFields)) {
+
           let responseErrorList = Object.entries(res.errorFields).map(
             ([key, value]) => {
               return { index: key, value: value };
             }
           );
+
+          if(responseErrorList.length === confirmProductList.productList.length){
+            setMsg("Không có sản phẩm nào đủ điều kiện !");
+              setOpenSuccessSnackbar({
+                ...openSuccessSnackbar,
+                open: true,
+                severity: "error",
+              });
+              const newErrorFields = responseErrorList.reduce(
+                (a, v) => ({ ...a, [v.index]: v.value }),
+                {}
+              );
+    
+              setErrorList(responseErrorList);
+              setPageProduct(1);
+              setConfirmProductList({
+                errorFields: newErrorFields,
+                productList: res.productList,
+              });
+              setLoading(false)
+              return;
+          }
 
           // console.log(newErrorList);
           // const errorProductList = res.productList.filter((item, index) =>
@@ -241,13 +264,38 @@ const ConfirmProductUploadByExcel = ({
             productList: res.productList,
           });
 
-          setMsg("Thêm mới thành công");
-          setOpenSuccessSnackbar({
-            ...openSuccessSnackbar,
-            open: true,
-            severity: "success",
-          });
-          setLoading(false);
+       
+          fetch(
+            `${API.baseURL}/api/product/getProductsForStaff?page=${
+              page - 1
+            }&limit=5&name=${searchValue}&status=ENABLE`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${tokenId}`,
+              },
+            }
+          )
+            .then((res) => res.json())
+            .then((data) => {
+              setProducts(data.productList);
+              setTotalPage(data.totalPage);
+              setLoading(false);
+              setIsSwitchRecovery(false);
+              setMsg("Thêm mới thành công");
+              setOpenSuccessSnackbar({
+                ...openSuccessSnackbar,
+                open: true,
+                severity: "success",
+              });
+            
+            })
+            .catch((err) => {
+              console.log(err);
+              setLoading(false);
+            });
+        
         } else {
           fetch(
             `${API.baseURL}/api/product/getProductsForStaff?page=${
@@ -478,8 +526,9 @@ const ConfirmProductUploadByExcel = ({
                       (item, i) => i !== itemIndex
                     ),
                   });
-                  setOpenSnackbar({
-                    ...openSnackbar,
+                  setMsg("Xóa thành công");
+                  setOpenSuccessSnackbar({
+                    ...openSuccessSnackbar,
                     open: true,
                     severity: "success",
                   });
