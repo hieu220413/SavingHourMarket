@@ -113,7 +113,6 @@ const EditStaff = ({
     deliverManager: "",
   });
   const roleList = [
-    "ADMIN",
     "STAFF_SLT",
     "STAFF_ORD",
     "STAFF_MKT",
